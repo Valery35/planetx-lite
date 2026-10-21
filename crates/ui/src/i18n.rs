@@ -28,6 +28,8 @@ pub enum Text {
     NoGpu,
     /// Подпись выбора основы.
     Basemap,
+    /// Подсказка в пустой строке поиска.
+    SearchHint,
 }
 
 pub fn text(lang: Lang, t: Text) -> &'static str {
@@ -36,7 +38,23 @@ pub fn text(lang: Lang, t: Text) -> &'static str {
         (Lang::En, Text::NoGpu) => "The graphics card does not support wgpu, the globe cannot be drawn.",
         (Lang::Ru, Text::Basemap) => "Основа",
         (Lang::En, Text::Basemap) => "Basemap",
+        (Lang::Ru, Text::SearchHint) => "Поиск места, Enter",
+        (Lang::En, Text::SearchHint) => "Find a place, Enter",
     }
+}
+
+/// Сообщение под строкой поиска.
+pub fn search_status(lang: Lang, status: &crate::search::Status) -> Option<String> {
+    use crate::search::Status;
+    Some(match (lang, status) {
+        (_, Status::None) => return None,
+        (Lang::Ru, Status::Searching(q)) => format!("Поиск: {q}"),
+        (Lang::En, Status::Searching(q)) => format!("Searching: {q}"),
+        (Lang::Ru, Status::NotFound(q)) => format!("Ничего не найдено: {q}"),
+        (Lang::En, Status::NotFound(q)) => format!("Nothing found: {q}"),
+        (Lang::Ru, Status::Failed(e)) => format!("Поиск не удался: {e}"),
+        (Lang::En, Status::Failed(e)) => format!("Search failed: {e}"),
+    })
 }
 
 /// Подпись источника высот, как в модуле. Это название наборов данных,

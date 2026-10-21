@@ -7,7 +7,10 @@
 //! `perm` (фаза 0): вид на Пермь из космоса, перелёт к улицам, оборот
 //! вокруг точки взгляда. Дыр нет ни в одном кадре, в любом окне 1 с
 //! замерного оборота не меньше 55 кадров, к серверу тайлов не больше
-//! двух запросов сразу.
+//! двух запросов сразу. Фаза 1 добавляет вид на Пермь на снимках Esri
+//! с подписью «Пермь» у середины кадра и поиск «Пермь»: место
+//! не дальше 1 км от середины Перми, перелёт приходит, запросы
+//! к Nominatim не чаще раза в секунду.
 //!
 //! `elbrus` (фаза 1), позы и пороги проверки фазы 1 модуля
 //! (`tools/qgis_phase1.py`): спуск к Эльбрусу из космоса, ожидание
@@ -82,6 +85,11 @@ pub const HALO_RING: f64 = 1.01;
 pub const SPACE_RING: f64 = 1.3;
 /// Доля высоты кадра сверху, где мерится небо.
 pub const SKY_BAND: u32 = 20;
+/// Поиск места: запрос, допуск найденного места от середины Перми,
+/// метры, наименьший промежуток между запросами к Nominatim, секунды.
+pub const SEARCH_QUERY: &str = "Пермь";
+pub const SEARCH_TOLERANCE: f64 = 1000.0;
+pub const SEARCH_GAP: f64 = 1.0;
 /// Подпись Перми на русском и английском.
 pub const PERM_NAMES: [&str; 2] = ["Пермь", "Perm"];
 /// Подпись Перми у середины кадра: от середины не дальше этой доли
@@ -151,6 +159,8 @@ enum Phase {
     LowFlight,
     /// Пермь: вид на снимках Esri, ожидание загрузки.
     LoadEsri,
+    /// Пермь: поиск «Пермь» и перелёт к найденному месту.
+    SearchFly,
     /// Эльбрус: кадр из космоса над Пермью.
     Space,
     /// Эльбрус: кадр неба у Эльбруса.
@@ -190,6 +200,10 @@ pub struct Check {
     sky: Option<[f64; 3]>,
     /// Пермь на Esri: подпись «Пермь» у середины кадра в последнем кадре.
     perm_label: Option<bool>,
+    /// Запрос поиска для окна, найденное место, перелёт пришёл.
+    search_request: Option<String>,
+    search_place: Option<(f64, f64)>,
+    search_arrived: Option<bool>,
     failure: Option<String>,
 }
 
@@ -305,6 +319,16 @@ pub fn summit_height(store: &HeightStore, lat: f64, lon: f64, radius: f64, step:
     (top, store.best(key).map_or(0, |t| t.z))
 }
 
+/// Расстояние между точками по поверхности шара, метры. Для допусков
+/// в километр точности хватает.
+pub fn distance_m(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
+    let (p1, p2) = (lat1.to_radians(), lat2.to_radians());
+    let dp = p2 - p1;
+    let dl = (lon2 - lon1).to_radians();
+    let a = (dp / 2.0).sin().powi(2) + p1.cos() * p2.cos() * (dl / 2.0).sin().powi(2);
+    2.0 * 6_371_008.8 * a.sqrt().min(1.0).asin()
+}
+
 /// Плавная доля: 0 и 1 на концах.
 fn ease(share: f64) -> f64 {
     let s = share.clamp(0.0, 1.0);
@@ -334,6 +358,9 @@ impl Check {
             space: None,
             sky: None,
             perm_label: None,
+            search_request: None,
+            search_place: None,
+            search_arrived: None,
             failure: None,
         }
     }
@@ -347,6 +374,16 @@ impl Check {
     /// на странице счётчик красит их пурпурным.
     pub fn count_holes(&self) -> bool {
         !matches!(self.phase, Phase::Spin | Phase::LowFlight | Phase::Space | Phase::Sky | Phase::Done)
+    }
+
+    /// Запрос поиска, который окно должно отправить, как по Enter.
+    pub fn take_search(&mut self) -> Option<String> {
+        self.search_request.take()
+    }
+
+    /// Окно начало перелёт к найденному месту.
+    pub fn note_search(&mut self, lat: f64, lon: f64) {
+        self.search_place = Some((lat, lon));
     }
 
     /// Надписи кадра. На виде Перми на Esri отмечается, есть ли подпись
@@ -411,7 +448,13 @@ impl Check {
         let t = now - start;
         let waiting = matches!(
             self.phase,
-            Phase::LoadStart | Phase::LoadPlace | Phase::Settle | Phase::LoadEsri | Phase::Space | Phase::Sky
+            Phase::LoadStart
+                | Phase::LoadPlace
+                | Phase::Settle
+                | Phase::LoadEsri
+                | Phase::SearchFly
+                | Phase::Space
+                | Phase::Sky
         );
         if waiting && t > LOAD_TIMEOUT {
             self.failure = Some(format!("загрузка не закончилась за {LOAD_TIMEOUT} с, шаг {:?}", self.phase));
@@ -439,7 +482,16 @@ impl Check {
                     self.fps_times.push(now);
                 }
             }
-            (Scenario::Perm, Phase::LoadEsri) if loaded => self.enter(Phase::Done, now),
+            (Scenario::Perm, Phase::LoadEsri) if loaded => {
+                self.search_request = Some(SEARCH_QUERY.to_string());
+                self.enter(Phase::SearchFly, now);
+            }
+            (Scenario::Perm, Phase::SearchFly) if loaded && !nav.has_flight() => {
+                if let Some((lat, lon)) = self.search_place {
+                    self.search_arrived = Some(distance_m(nav.pose.lat, nav.pose.lon, lat, lon) < 1.0);
+                    self.enter(Phase::Done, now);
+                }
+            }
             (Scenario::Perm, Phase::Settle) if loaded => self.enter(Phase::Spin, now),
             (Scenario::Elbrus, Phase::LoadStart) if loaded => self.enter(Phase::Descent, now),
             (Scenario::Elbrus, Phase::Descent) => {
@@ -498,7 +550,8 @@ impl Check {
     }
 
     /// Отчёт и итог: true - проверка пройдена.
-    pub fn report(&self, sources: &[SourceStats], size: (u32, u32)) -> (String, bool) {
+    /// search_sent - время отправки каждого запроса к Nominatim.
+    pub fn report(&self, sources: &[SourceStats], size: (u32, u32), search_sent: &[f64]) -> (String, bool) {
         let fps = min_frames_per_second(&self.fps_times);
         let mut ok = self.failure.is_none()
             && self.frames_counted > 0
@@ -533,6 +586,20 @@ impl Check {
             ok = ok && label_ok;
             out.push(format!("perm_label_near_center={label_ok}"));
             out.push("attributions=esri,openfreemap,terrain".to_string());
+            let found = self.search_place.map(|(lat, lon)| distance_m(PERM.0, PERM.1, lat, lon));
+            let gap = search_sent.windows(2).map(|w| w[1] - w[0]).reduce(f64::min);
+            let search_ok = found.is_some_and(|d| d <= SEARCH_TOLERANCE)
+                && self.search_arrived == Some(true)
+                && !search_sent.is_empty()
+                && gap.is_none_or(|g| g >= SEARCH_GAP);
+            ok = ok && search_ok;
+            out.push(format!(
+                "search_found_m={} search_arrived={} nominatim_requests={} nominatim_min_gap_s={}",
+                found.map_or("-".to_string(), |d| format!("{d:.0}")),
+                self.search_arrived.map_or("-".to_string(), |a| a.to_string()),
+                search_sent.len(),
+                gap.map_or("-".to_string(), |g| format!("{g:.2}")),
+            ));
         }
         for s in sources.iter().filter(|s| s.total + s.disk > 0) {
             out.push(format!(

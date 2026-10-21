@@ -71,7 +71,12 @@ pub enum Marker {
     Peak,
     Square,
     Shield,
+    /// Метка найденного места: красный круг с белым кольцом.
+    Pin,
 }
+
+/// Метка найденного места, как в модуле.
+pub const PIN: egui::Color32 = egui::Color32::from_rgb(219, 50, 54);
 
 /// Вид надписи класса: кегль в логических пикселях, курсив, цвет,
 /// размер значка и значок, как STYLES модуля. Жирного шрифта во
@@ -111,8 +116,8 @@ pub fn style(kind: Kind, big: bool) -> Style {
         Kind::Airport => s(11.0, false, rgba(255, 255, 255, 225), 2.6, Marker::Square),
         Kind::RoadRef => s(10.0, false, rgba(255, 255, 255, 245), 0.0, Marker::Shield),
         Kind::Village => s(11.0, false, rgba(240, 240, 240, 210), 1.8, Marker::Dot),
-        Kind::Search
-        | Kind::Mark
+        Kind::Search => s(13.0, false, rgba(255, 255, 255, 250), 5.0, Marker::Pin),
+        Kind::Mark
         | Kind::Ruler
         | Kind::Layer
         | Kind::Circle
@@ -190,6 +195,8 @@ pub struct Labels {
     pub drawn: Vec<Shown>,
     /// Кадр не окончательный: проверки или высоты не успели.
     pub pending: bool,
+    /// Метка найденного места.
+    search: Option<Place>,
 }
 
 impl Labels {
@@ -208,7 +215,13 @@ impl Labels {
             shown: HashSet::new(),
             drawn: Vec::new(),
             pending: false,
+            search: None,
         }
+    }
+
+    /// Метка найденного места, одна на окно. None - метки нет.
+    pub fn set_search(&mut self, found: Option<(&str, f64, f64)>) {
+        self.search = found.map(|(name, lat, lon)| Place::new(u64::MAX, name, Kind::Search, 0, lat, lon));
     }
 
     /// Тайлы пунктов, которые нужны тайлам кадра draw, грубые раньше.
@@ -251,7 +264,9 @@ impl Labels {
         self.pending = false;
         let altitude = camera.altitude();
         let kinds = places::kinds_at(&PLACE_KINDS.into_iter().collect(), altitude);
-        let all = self.store.collect(draw, Some(&kinds));
+        let collected = self.store.collect(draw, Some(&kinds));
+        let search = self.search.clone();
+        let all: Vec<&Place> = search.iter().chain(collected.iter()).collect();
         if all.is_empty() {
             self.shown.clear();
             return;
@@ -262,7 +277,7 @@ impl Labels {
         // Кандидаты: перед камерой, на обращённой к глазу стороне,
         // в кадре с полем 50 пикселей.
         let mut candidates = Vec::new();
-        for place in all.iter() {
+        for &place in &all {
             let id = places::identity(place);
             let Some(&(_, point, normal)) = self.points.get(&id) else {
                 continue;
@@ -337,13 +352,14 @@ impl Labels {
     /// Точки пунктов по рельефу. Новый пункт получает точку сразу,
     /// после прихода новых высот уточняется не больше
     /// [`HEIGHTS_PER_FRAME`] пунктов за кадр.
-    fn update_points(&mut self, all: &[Place], heights: &HeightStore, version: u64, e: &Ellipsoid) {
+    fn update_points(&mut self, all: &[&Place], heights: &HeightStore, version: u64, e: &Ellipsoid) {
         if self.points.len() > 50_000 {
             self.points.clear();
         }
-        let mut todo: Vec<&Place> = all.iter().filter(|p| !self.points.contains_key(&places::identity(p))).collect();
+        let mut todo: Vec<&Place> = all.iter().copied().filter(|p| !self.points.contains_key(&places::identity(p))).collect();
         let stale: Vec<&Place> = all
             .iter()
+            .copied()
             .filter(|p| self.points.get(&places::identity(p)).is_some_and(|(v, _, _)| *v != version))
             .take(HEIGHTS_PER_FRAME)
             .collect();
@@ -481,6 +497,10 @@ fn paint(
         Marker::Square => {
             let rect = egui::Rect::from_center_size(anchor, egui::vec2(1.6 * r, 1.6 * r));
             painter.rect(rect, 0.0, color, stroke, egui::StrokeKind::Middle);
+        }
+        Marker::Pin => {
+            let ring = egui::Stroke::new(r * 0.45, fade(egui::Color32::from_white_alpha(240), alpha));
+            painter.circle(anchor, r, fade(PIN, alpha), ring);
         }
         Marker::None | Marker::Shield => {}
     }

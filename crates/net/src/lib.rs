@@ -85,6 +85,17 @@ pub trait TileLoader {
     fn stats(&self) -> &Stats;
 }
 
+/// Разовый запрос, например к геокодеру. Ответ приходит позже, главный
+/// поток его не ждёт.
+pub trait Request {
+    /// Начать запрос. Прежний запрос, если он идёт, продолжается, его
+    /// ответ тоже придёт.
+    fn start(&self, url: &str);
+    /// Пришедший ответ: байты или ошибка.
+    fn take(&self) -> Option<Result<Vec<u8>, String>>;
+    fn stats(&self) -> &Stats;
+}
+
 /// Источник тайлов.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Source {

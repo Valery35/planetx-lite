@@ -21,7 +21,7 @@ use std::time::{Duration, SystemTime};
 use globe_core::lod::TileKey;
 
 use crate::{
-    FRESH, Fetched, Loaded, Queue, Source, Stats, TileLoader, cache_path, template_url, tile_url, tilejson_template,
+    FRESH, Fetched, Loaded, Queue, Request, Source, Stats, TileLoader, cache_path, template_url, tile_url, tilejson_template,
     user_agent, valid_key,
 };
 
@@ -284,4 +284,57 @@ fn write_atomic(path: &Path, bytes: &[u8]) -> io::Result<()> {
     let tmp = path.with_extension(format!("tmp{}", std::process::id()));
     fs::write(&tmp, bytes)?;
     fs::rename(&tmp, path)
+}
+
+/// Разовые запросы программы: каждый в своём потоке, с заголовком
+/// `User-Agent` программы.
+pub struct Requests {
+    agent: ureq::Agent,
+    sender: Sender<Result<Vec<u8>, String>>,
+    results: Receiver<Result<Vec<u8>, String>>,
+    stats: Arc<Stats>,
+    on_ready: Arc<dyn Fn() + Send + Sync>,
+}
+
+impl Requests {
+    /// on_ready зовётся из потока запроса, когда пришёл ответ.
+    pub fn new(on_ready: Arc<dyn Fn() + Send + Sync>) -> Self {
+        let agent: ureq::Agent = ureq::Agent::config_builder()
+            .user_agent(user_agent())
+            .timeout_global(Some(TIMEOUT))
+            .http_status_as_error(true)
+            .build()
+            .into();
+        let (sender, results) = channel();
+        Self { agent, sender, results, stats: Arc::new(Stats::default()), on_ready }
+    }
+}
+
+impl Request for Requests {
+    fn start(&self, url: &str) {
+        let (agent, sender, stats, on_ready, url) =
+            (self.agent.clone(), self.sender.clone(), self.stats.clone(), self.on_ready.clone(), url.to_string());
+        let spawned = std::thread::Builder::new().name("request".into()).spawn(move || {
+            stats.request_started();
+            let result = agent
+                .get(&url)
+                .call()
+                .and_then(|mut r| r.body_mut().with_config().limit(1 << 20).read_to_vec())
+                .map_err(|e| e.to_string());
+            stats.request_finished();
+            let _ = sender.send(result);
+            on_ready();
+        });
+        if let Err(e) = spawned {
+            let _ = self.sender.send(Err(e.to_string()));
+        }
+    }
+
+    fn take(&self) -> Option<Result<Vec<u8>, String>> {
+        self.results.try_recv().ok()
+    }
+
+    fn stats(&self) -> &Stats {
+        &self.stats
+    }
 }

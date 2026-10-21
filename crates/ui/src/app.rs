@@ -20,9 +20,10 @@ use terrain::{Encoding, HeightStore};
 
 use crate::basemap::Basemap;
 use crate::check::{self, Check, Scenario, SourceStats};
-use crate::i18n::{Lang, TERRAIN_SOURCES, Text, text};
+use crate::i18n::{Lang, TERRAIN_SOURCES, Text, search_status, text};
 use crate::input::Input;
 use crate::labels::{self, Labels};
+use crate::search::{Search, place_pose};
 
 /// Сколько снимков тайлов держать в видеокарте, сверх нужных кадру
 /// старые вытесняются. Снимок 256 × 256 занимает 256 КБ.
@@ -59,6 +60,8 @@ pub struct Loaders {
     pub terrain: Box<dyn TileLoader>,
     /// Векторные тайлы OpenFreeMap с пунктами для надписей.
     pub places: Box<dyn TileLoader>,
+    /// Запросы к Nominatim.
+    pub search: Box<dyn net::Request>,
 }
 
 impl Loaders {
@@ -128,6 +131,8 @@ pub struct LiteApp {
     report: Report,
     shot: Option<Shot>,
     labels: Labels,
+    search: Search,
+    search_text: String,
 }
 
 impl LiteApp {
@@ -160,6 +165,22 @@ impl LiteApp {
             report,
             shot: None,
             labels: Labels::new(lang),
+            search: Search::new(Some(match lang {
+                Lang::Ru => "ru",
+                Lang::En => "en",
+            })),
+            search_text: String::new(),
+        }
+    }
+
+    /// Перелёт к найденному месту и метка на нём.
+    fn fly_to_found(&mut self, place: &data::geocode::Place, now: f64) {
+        let camera = &self.nav.camera;
+        let pose = place_pose(place, camera.fov_y, camera.aspect());
+        crate::input::fly(&mut self.nav, pose, now);
+        self.labels.set_search(Some((&place.name, place.lat, place.lon)));
+        if let Some(check) = &mut self.check {
+            check.note_search(place.lat, place.lon);
         }
     }
 
@@ -294,9 +315,11 @@ impl LiteApp {
             });
     }
 
-    /// Выбор основы в углу окна.
-    fn basemap_choice(&mut self, ctx: &egui::Context) {
+    /// Выбор основы и строка поиска в углу окна.
+    fn basemap_choice(&mut self, ctx: &egui::Context, now: f64) {
         let mut chosen = self.basemap;
+        let mut submitted = false;
+        let mut picked = None;
         egui::Area::new(egui::Id::unique("basemap")).anchor(egui::Align2::LEFT_TOP, egui::vec2(8.0, 8.0)).show(
             ctx,
             |ui| {
@@ -315,10 +338,34 @@ impl LiteApp {
                                     }
                                 });
                         });
+                        let edit = ui.add(
+                            egui::TextEdit::singleline(&mut self.search_text)
+                                .hint_text(text(self.lang, Text::SearchHint))
+                                .desired_width(280.0),
+                        );
+                        // Запрос только по Enter, правило Nominatim.
+                        submitted = edit.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
+                        if let Some(message) = search_status(self.lang, &self.search.status) {
+                            ui.label(egui::RichText::new(message).color(egui::Color32::WHITE));
+                        }
+                        if self.search.found.len() > 1 {
+                            for (n, place) in self.search.found.iter().enumerate() {
+                                let line = data::geocode::place_text(place);
+                                if ui.link(egui::RichText::new(line).color(egui::Color32::LIGHT_BLUE)).clicked() {
+                                    picked = Some(n);
+                                }
+                            }
+                        }
                     });
             },
         );
         self.set_basemap(chosen);
+        if submitted && let Some(place) = self.search.submit(&self.search_text) {
+            self.fly_to_found(&place, now);
+        }
+        if let Some(place) = picked.and_then(|n| self.search.found.get(n).cloned()) {
+            self.fly_to_found(&place, now);
+        }
     }
 
     fn finish_check(&mut self, ctx: &egui::Context) {
@@ -344,7 +391,7 @@ impl LiteApp {
             source("terrarium", net::TERRARIUM.max_requests, self.loaders.terrain.as_ref()),
             source("openfreemap", net::OPENFREEMAP.max_requests, self.loaders.places.as_ref()),
         ];
-        let (report, ok) = check.report(&sources, (self.nav.camera.width, self.nav.camera.height));
+        let (report, ok) = check.report(&sources, (self.nav.camera.width, self.nav.camera.height), &self.search.sent);
         (self.report)(&report, ok);
         self.check = None;
         ctx.send_viewport_cmd(egui::ViewportCommand::Close);
@@ -374,13 +421,23 @@ impl eframe::App for LiteApp {
         let loading = self.loaders.basemap(self.basemap).busy()
             || self.loaders.terrain.busy()
             || self.loaders.places.busy()
-            || self.labels.pending;
+            || self.labels.pending
+            || self.search.busy();
         if let Some(check) = &mut self.check {
             let mut basemap = self.basemap;
             check.before_frame(&mut self.nav, now, loading, &mut basemap);
             self.set_basemap(basemap);
         } else {
             self.input.handle(&ctx, rect, &mut self.nav, now, ppp);
+        }
+        if let Some(query) = self.check.as_mut().and_then(Check::take_search) {
+            self.search_text = query.clone();
+            if let Some(place) = self.search.submit(&query) {
+                self.fly_to_found(&place, now);
+            }
+        }
+        if let Some(place) = self.search.step(now, self.loaders.search.as_ref()) {
+            self.fly_to_found(&place, now);
         }
         let moving = self.nav.step(now);
         // Ближняя плоскость - от ближайшего рельефа.
@@ -442,7 +499,7 @@ impl eframe::App for LiteApp {
         self.labels.draw(ui.painter(), rect, ppp as f32, &self.nav.camera, &selection.draw, &self.heights.read());
         self.attribution(&ctx);
         if self.check.is_none() && self.shot.is_none() {
-            self.basemap_choice(&ctx);
+            self.basemap_choice(&ctx, now);
         }
 
         if let Some(check) = &mut self.check {

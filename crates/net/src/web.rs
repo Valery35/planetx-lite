@@ -22,7 +22,7 @@ use wasm_bindgen_futures::JsFuture;
 use web_time::Instant;
 
 use crate::{
-    Fetched, Loaded, Queue, RETRY, Source, Stats, TileLoader, template_url, tile_url, tilejson_template, valid_key,
+    Fetched, Loaded, Queue, RETRY, Request, Source, Stats, TileLoader, template_url, tile_url, tilejson_template, valid_key,
 };
 
 struct State {
@@ -172,6 +172,45 @@ impl TileLoader for Loader {
 
     fn busy(&self) -> bool {
         !self.state.borrow().queue.is_idle()
+    }
+
+    fn stats(&self) -> &Stats {
+        &self.stats
+    }
+}
+
+/// Пришедшие ответы разовых запросов.
+type Answers = Rc<RefCell<VecDeque<Result<Vec<u8>, String>>>>;
+
+/// Разовые запросы страницы через fetch.
+pub struct Requests {
+    results: Answers,
+    stats: Rc<Stats>,
+    on_ready: Rc<dyn Fn()>,
+}
+
+impl Requests {
+    /// on_ready зовётся, когда пришёл ответ.
+    pub fn new(on_ready: Rc<dyn Fn()>) -> Self {
+        Self { results: Rc::new(RefCell::new(VecDeque::new())), stats: Rc::new(Stats::default()), on_ready }
+    }
+}
+
+impl Request for Requests {
+    fn start(&self, url: &str) {
+        let (results, stats, on_ready, url) =
+            (self.results.clone(), self.stats.clone(), self.on_ready.clone(), url.to_string());
+        wasm_bindgen_futures::spawn_local(async move {
+            stats.request_started();
+            let result = fetch(&url).await.map_err(|e| e.unwrap_or_else(|| "HTTP 404".to_string()));
+            stats.request_finished();
+            results.borrow_mut().push_back(result);
+            on_ready();
+        });
+    }
+
+    fn take(&self) -> Option<Result<Vec<u8>, String>> {
+        self.results.borrow_mut().pop_front()
     }
 
     fn stats(&self) -> &Stats {

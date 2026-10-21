@@ -13,6 +13,7 @@ pub mod check;
 pub mod i18n;
 pub mod input;
 pub mod labels;
+pub mod search;
 
 pub use app::{LiteApp, Loaders, Report, ShotSink};
 pub use check::Scenario;

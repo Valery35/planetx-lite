@@ -17,7 +17,7 @@ use std::process::ExitCode;
 use std::sync::{Arc, Mutex};
 
 use eframe::egui;
-use net::native::{Loader, default_cache_dir};
+use net::native::{Loader, Requests, default_cache_dir};
 use net::{ESRI, OPENFREEMAP, OSM, TERRARIUM};
 use ui::Scenario;
 
@@ -69,7 +69,8 @@ fn main() -> ExitCode {
                 esri: Box::new(Loader::new(ESRI, default_cache_dir(), repaint.clone())),
                 osm: Box::new(Loader::new(OSM, default_cache_dir(), repaint.clone())),
                 terrain: Box::new(Loader::new(TERRARIUM, default_cache_dir(), repaint.clone())),
-                places: Box::new(Loader::new(OPENFREEMAP, default_cache_dir(), repaint)),
+                places: Box::new(Loader::new(OPENFREEMAP, default_cache_dir(), repaint.clone())),
+                search: Box::new(Requests::new(repaint)),
             };
             let report: ui::Report = Box::new(move |text, ok| {
                 println!("{text}");

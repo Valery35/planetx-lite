@@ -6,7 +6,10 @@
 //!
 //! - [`mvt`] - разбор векторного тайла Mapbox Vector Tile 2;
 //! - [`places`] - пункты для надписей на глобусе, перенос
-//!   `core/places.py` модуля.
+//!   `core/places.py` модуля;
+//! - [`geocode`] - поиск места через Nominatim, перенос
+//!   `core/geocode.py` модуля.
 
+pub mod geocode;
 pub mod mvt;
 pub mod places;

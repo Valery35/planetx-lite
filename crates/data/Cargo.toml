@@ -4,7 +4,7 @@
 
 [package]
 name = "data"
-description = "Данные PlanetX Lite - пункты векторных тайлов OpenMapTiles"
+description = "Данные PlanetX Lite - пункты векторных тайлов OpenMapTiles, поиск места Nominatim"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -13,6 +13,7 @@ repository.workspace = true
 
 [dependencies]
 flate2.workspace = true
+serde_json.workspace = true
 
 [lints]
 workspace = true
