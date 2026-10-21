@@ -1,0 +1,13 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+
+[build]
+target = "index.html"
+dist = "../../dist"
+# Trunk ничего не скачивает: wasm-bindgen стоит из исходников crates.io,
+# сжатие wasm-opt пока не ставится.
+offline = true
+
+[tools]
+wasm_bindgen = "0.2.129"

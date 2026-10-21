@@ -1,0 +1,20 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "planetx-lite"
+description = "PlanetX Lite - глобус PlanetX без QGIS, настольная программа"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+net.workspace = true
+ui.workspace = true
+eframe.workspace = true
+
+[lints]
+workspace = true
