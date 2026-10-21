@@ -24,23 +24,20 @@ impl Lang {
 /// Тексты программы.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Text {
-    /// Подпись источника подложки.
-    Attribution,
     /// Нет видеокарты с поддержкой wgpu.
     NoGpu,
+    /// Подпись выбора основы.
+    Basemap,
 }
 
 pub fn text(lang: Lang, t: Text) -> &'static str {
     match (lang, t) {
-        (Lang::Ru, Text::Attribution) => "© участники OpenStreetMap",
-        (Lang::En, Text::Attribution) => "© OpenStreetMap contributors",
         (Lang::Ru, Text::NoGpu) => "Видеокарта не поддерживает wgpu, глобус не рисуется.",
         (Lang::En, Text::NoGpu) => "The graphics card does not support wgpu, the globe cannot be drawn.",
+        (Lang::Ru, Text::Basemap) => "Основа",
+        (Lang::En, Text::Basemap) => "Basemap",
     }
 }
-
-/// Страница условий OpenStreetMap для подписи.
-pub const OSM_COPYRIGHT: &str = "https://www.openstreetmap.org/copyright";
 
 /// Подпись источника высот, как в модуле. Это название наборов данных,
 /// а не текст программы, поэтому без перевода.

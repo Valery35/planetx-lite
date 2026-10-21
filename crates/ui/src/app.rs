@@ -18,8 +18,9 @@ use net::TileLoader;
 use render::{FrameOptions, Globe, wgpu};
 use terrain::{Encoding, HeightStore};
 
-use crate::check::{self, Check, Scenario};
-use crate::i18n::{Lang, OSM_COPYRIGHT, TERRAIN_SOURCES, Text, text};
+use crate::basemap::Basemap;
+use crate::check::{self, Check, Scenario, SourceStats};
+use crate::i18n::{Lang, TERRAIN_SOURCES, Text, text};
 use crate::input::Input;
 
 /// Сколько снимков тайлов держать в видеокарте, сверх нужных кадру
@@ -49,10 +50,22 @@ struct Shot {
 
 /// Загрузчики тайлов платформы.
 pub struct Loaders {
-    /// Снимки подложки.
-    pub basemap: Box<dyn TileLoader>,
+    /// Снимки Esri World Imagery.
+    pub esri: Box<dyn TileLoader>,
+    /// Карта OpenStreetMap.
+    pub osm: Box<dyn TileLoader>,
     /// Высоты рельефа.
     pub terrain: Box<dyn TileLoader>,
+}
+
+impl Loaders {
+    /// Загрузчик основы.
+    pub fn basemap(&self, basemap: Basemap) -> &dyn TileLoader {
+        match basemap {
+            Basemap::Esri => self.esri.as_ref(),
+            Basemap::Osm => self.osm.as_ref(),
+        }
+    }
 }
 
 /// Хранилище высот, общее для кадра и навигатора.
@@ -104,6 +117,7 @@ pub struct LiteApp {
     texture: Option<egui::TextureId>,
     nav: Navigator,
     loaders: Loaders,
+    basemap: Basemap,
     heights: Heights,
     input: Input,
     memo: Memo,
@@ -133,6 +147,7 @@ impl LiteApp {
             texture: None,
             nav,
             loaders,
+            basemap: scenario.map_or(Basemap::default(), Scenario::start_basemap),
             heights,
             input: Input::default(),
             memo: Memo::new(),
@@ -177,11 +192,35 @@ impl LiteApp {
         ctx.request_repaint();
     }
 
+    /// Сменить основу: снимки прежней забываются.
+    fn set_basemap(&mut self, basemap: Basemap) {
+        if basemap == self.basemap {
+            return;
+        }
+        self.basemap = basemap;
+        if let Some(globe) = &mut self.globe {
+            globe.clear_textures();
+        }
+    }
+
     /// Снимки и высоты пришедших тайлов - в видеокарту и в хранилище.
     fn upload(&mut self) {
-        if let Some(globe) = &mut self.globe {
-            for loaded in self.loaders.basemap.take() {
-                if let Ok(image) = loaded.image {
+        for basemap in Basemap::ALL {
+            // Тайлы прежней основы, пришедшие после смены, не нужны.
+            let arrived = self.loaders.basemap(basemap).take();
+            let Some(globe) = &mut self.globe else {
+                continue;
+            };
+            if basemap != self.basemap {
+                continue;
+            }
+            for loaded in arrived {
+                if loaded.missing {
+                    globe.mark_missing(loaded.key);
+                    if let Some(check) = &mut self.check {
+                        check.note_missing();
+                    }
+                } else if let Ok(image) = loaded.image {
                     globe.upload(loaded.key, image.width, image.height, &image.rgba);
                 }
             }
@@ -238,14 +277,39 @@ impl LiteApp {
                     .corner_radius(3.0)
                     .show(ui, |ui| {
                         ui.vertical(|ui| {
-                            ui.hyperlink_to(
-                                egui::RichText::new(text(self.lang, Text::Attribution)).color(egui::Color32::BLACK),
-                                OSM_COPYRIGHT,
-                            );
+                            let (credit, link) = self.basemap.attribution(self.lang);
+                            ui.hyperlink_to(egui::RichText::new(credit).color(egui::Color32::BLACK), link);
                             ui.label(egui::RichText::new(TERRAIN_SOURCES).color(egui::Color32::BLACK).small());
                         });
                     });
             });
+    }
+
+    /// Выбор основы в углу окна.
+    fn basemap_choice(&mut self, ctx: &egui::Context) {
+        let mut chosen = self.basemap;
+        egui::Area::new(egui::Id::unique("basemap")).anchor(egui::Align2::LEFT_TOP, egui::vec2(8.0, 8.0)).show(
+            ctx,
+            |ui| {
+                egui::Frame::new()
+                    .fill(egui::Color32::from_black_alpha(150))
+                    .inner_margin(egui::Margin::same(6))
+                    .corner_radius(4.0)
+                    .show(ui, |ui| {
+                        ui.horizontal(|ui| {
+                            ui.label(egui::RichText::new(text(self.lang, Text::Basemap)).color(egui::Color32::WHITE));
+                            egui::ComboBox::from_id_salt("basemap")
+                                .selected_text(chosen.name(self.lang))
+                                .show_ui(ui, |ui| {
+                                    for b in Basemap::ALL {
+                                        ui.selectable_value(&mut chosen, b, b.name(self.lang));
+                                    }
+                                });
+                        });
+                    });
+            },
+        );
+        self.set_basemap(chosen);
     }
 
     fn finish_check(&mut self, ctx: &egui::Context) {
@@ -255,13 +319,22 @@ impl LiteApp {
         if !check.done() {
             return;
         }
-        let stats = self.loaders.basemap.stats();
-        let (report, ok) = check.report(
-            stats.requests_peak.load(Ordering::SeqCst),
-            stats.requests_total.load(Ordering::SeqCst),
-            stats.disk_hits.load(Ordering::SeqCst),
-            (self.nav.camera.width, self.nav.camera.height),
-        );
+        let source = |name: &'static str, limit: usize, loader: &dyn TileLoader| {
+            let s = loader.stats();
+            SourceStats {
+                name,
+                limit,
+                peak: s.requests_peak.load(Ordering::SeqCst),
+                total: s.requests_total.load(Ordering::SeqCst),
+                disk: s.disk_hits.load(Ordering::SeqCst),
+            }
+        };
+        let sources = [
+            source("osm", net::OSM.max_requests, self.loaders.osm.as_ref()),
+            source("esri", net::ESRI.max_requests, self.loaders.esri.as_ref()),
+            source("terrarium", net::TERRARIUM.max_requests, self.loaders.terrain.as_ref()),
+        ];
+        let (report, ok) = check.report(&sources, (self.nav.camera.width, self.nav.camera.height));
         (self.report)(&report, ok);
         self.check = None;
         ctx.send_viewport_cmd(egui::ViewportCommand::Close);
@@ -288,9 +361,11 @@ impl eframe::App for LiteApp {
         self.nav.camera.width = width;
         self.nav.camera.height = height;
 
-        let loading = self.loaders.basemap.busy() || self.loaders.terrain.busy();
+        let loading = self.loaders.basemap(self.basemap).busy() || self.loaders.terrain.busy();
         if let Some(check) = &mut self.check {
-            check.before_frame(&mut self.nav, now, loading);
+            let mut basemap = self.basemap;
+            check.before_frame(&mut self.nav, now, loading, &mut basemap);
+            self.set_basemap(basemap);
         } else {
             self.input.handle(&ctx, rect, &mut self.nav, now, ppp);
         }
@@ -322,7 +397,10 @@ impl eframe::App for LiteApp {
             .map(|k| (k, lod::INFINITE_PRIORITY + 10.0 - f64::from(k.0)))
             .collect();
         wanted.extend(selection.want.iter().copied());
-        self.loaders.basemap.want(&wanted);
+        for basemap in Basemap::ALL {
+            let loader = self.loaders.basemap(basemap);
+            loader.want(if basemap == self.basemap { &wanted } else { &[] });
+        }
         self.loaders.terrain.want(&height_needs(&store, &selection));
 
         let recreated = globe.resize(width, height);
@@ -337,6 +415,9 @@ impl eframe::App for LiteApp {
             ui.painter().image(id, rect, uv, egui::Color32::WHITE);
         }
         self.attribution(&ctx);
+        if self.check.is_none() && self.shot.is_none() {
+            self.basemap_choice(&ctx);
+        }
 
         if let Some(check) = &mut self.check {
             check.after_frame(&stats, &self.nav, &self.heights.read());

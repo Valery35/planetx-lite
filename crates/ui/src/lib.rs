@@ -8,6 +8,7 @@
 //! для отчёта самопроверки, остальное общее.
 
 pub mod app;
+pub mod basemap;
 pub mod check;
 pub mod i18n;
 pub mod input;

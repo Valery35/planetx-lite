@@ -19,7 +19,7 @@ use globe_core::lod::TileKey;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 
-use crate::{Loaded, Queue, Source, Stats, TileLoader, decode_png, tile_url, valid_key};
+use crate::{Fetched, Loaded, Queue, Source, Stats, TileLoader, tile_url, valid_key};
 
 struct State {
     queue: Queue,
@@ -65,13 +65,17 @@ fn pump(source: Source, state: &Rc<RefCell<State>>, stats: &Rc<Stats>, on_ready:
         let (state, stats, on_ready) = (state.clone(), stats.clone(), on_ready.clone());
         wasm_bindgen_futures::spawn_local(async move {
             stats.request_started();
-            let image = fetch(&tile_url(&source, key)).await.and_then(|bytes| decode_png(&bytes));
+            let fetched = match fetch(&tile_url(&source, key)).await {
+                Ok(bytes) => Fetched::from_bytes(&source, &bytes),
+                Err(None) => Fetched::Missing,
+                Err(Some(e)) => Fetched::Failed(e),
+            };
             stats.request_finished();
             {
                 let mut s = state.borrow_mut();
                 s.in_flight = s.in_flight.saturating_sub(1);
-                s.queue.done(key, image.is_ok());
-                s.results.push_back(Loaded { key, image });
+                fetched.record(&mut s.queue, key);
+                s.results.push_back(fetched.into_loaded(key));
             }
             on_ready();
             pump(source, &state, &stats, &on_ready);
@@ -79,16 +83,19 @@ fn pump(source: Source, state: &Rc<RefCell<State>>, stats: &Rc<Stats>, on_ready:
     }
 }
 
-/// Байты ответа сервера.
-async fn fetch(url: &str) -> Result<Vec<u8>, String> {
-    let window = web_sys::window().ok_or("нет окна браузера")?;
-    let response = JsFuture::from(window.fetch_with_str(url)).await.map_err(|e| format!("{e:?}"))?;
-    let response: web_sys::Response = response.dyn_into().map_err(|_| "ответ не Response".to_string())?;
-    if !response.ok() {
-        return Err(format!("HTTP {}", response.status()));
+/// Байты ответа сервера. Err(None) - ответ 404, тайла нет.
+async fn fetch(url: &str) -> Result<Vec<u8>, Option<String>> {
+    let window = web_sys::window().ok_or_else(|| Some("нет окна браузера".to_string()))?;
+    let response = JsFuture::from(window.fetch_with_str(url)).await.map_err(|e| Some(format!("{e:?}")))?;
+    let response: web_sys::Response = response.dyn_into().map_err(|_| Some("ответ не Response".to_string()))?;
+    if response.status() == 404 {
+        return Err(None);
     }
-    let buffer = response.array_buffer().map_err(|e| format!("{e:?}"))?;
-    let buffer = JsFuture::from(buffer).await.map_err(|e| format!("{e:?}"))?;
+    if !response.ok() {
+        return Err(Some(format!("HTTP {}", response.status())));
+    }
+    let buffer = response.array_buffer().map_err(|e| Some(format!("{e:?}")))?;
+    let buffer = JsFuture::from(buffer).await.map_err(|e| Some(format!("{e:?}")))?;
     Ok(js_sys::Uint8Array::new(&buffer).to_vec())
 }
 

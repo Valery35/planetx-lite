@@ -78,7 +78,14 @@ struct DrawUniform {
     mvp: [f32; 16],
     hole: [f32; 4],
     color: [f32; 4],
+    window: [f32; 4],
 }
+
+/// Окно всего снимка.
+const WHOLE: [f32; 4] = [0.0, 0.0, 1.0, 0.0];
+/// Самый глубокий предок, чей снимок рисуется вместо отсутствующего
+/// тайла, как в модуле.
+pub const MAX_FILL_DEPTH: u32 = 6;
 
 #[repr(C)]
 #[derive(Clone, Copy, Pod, Zeroable)]
@@ -199,6 +206,8 @@ pub struct Globe {
     blank: wgpu::BindGroup,
     meshes: HashMap<MeshId, GpuMesh>,
     textures: HashMap<TileKey, GpuTexture>,
+    /// Тайлы, которых нет у источника.
+    missing: HashSet<TileKey>,
     target: Option<Target>,
     query_set: wgpu::QuerySet,
     query_resolve: wgpu::Buffer,
@@ -409,6 +418,7 @@ impl Globe {
             blank,
             meshes: HashMap::new(),
             textures: HashMap::new(),
+            missing: HashSet::new(),
             target: None,
             query_set,
             query_resolve,
@@ -489,13 +499,45 @@ impl Globe {
         })
     }
 
-    /// Снимок тайла пришёл в видеокарту.
+    /// Снимок для тайла: свой или доля снимка предка, если тайла нет
+    /// у источника. Ключ тайла со снимком и окно в нём (u0, v0, сторона).
+    fn picture(&self, key: TileKey) -> Option<(TileKey, [f32; 4])> {
+        if self.textures.contains_key(&key) {
+            return Some((key, WHOLE));
+        }
+        if !self.missing.contains(&key) {
+            return None;
+        }
+        let (z, x, y) = key;
+        (1..=MAX_FILL_DEPTH.min(z)).find_map(|depth| {
+            let parent = (z - depth, x >> depth, y >> depth);
+            self.textures.contains_key(&parent).then(|| {
+                let cells = 1u32 << depth;
+                let side = 1.0 / cells as f32;
+                (parent, [(x % cells) as f32 * side, (y % cells) as f32 * side, side, 0.0])
+            })
+        })
+    }
+
+    /// Тайл готов к рисованию: свой снимок или доля снимка предка.
     pub fn has_texture(&self, key: TileKey) -> bool {
-        self.textures.contains_key(&key)
+        self.picture(key).is_some()
     }
 
     pub fn texture_count(&self) -> usize {
         self.textures.len()
+    }
+
+    /// Тайла key нет у источника: вместо него рисуется доля снимка
+    /// ближайшего предка, не глубже [`MAX_FILL_DEPTH`] уровней.
+    pub fn mark_missing(&mut self, key: TileKey) {
+        self.missing.insert(key);
+    }
+
+    /// Забыть все снимки - сменилась основа.
+    pub fn clear_textures(&mut self) {
+        self.textures.clear();
+        self.missing.clear();
     }
 
     /// Загрузить снимок тайла, RGBA по 8 бит. Картинка не того размера
@@ -659,25 +701,26 @@ impl Globe {
         let mut push = |me: &mut Self,
                         kind: Kind,
                         mesh: MeshId,
-                        texture: Option<TileKey>,
+                        picture: Option<(TileKey, [f32; 4])>,
                         scale: f64,
                         hole: [f32; 4],
                         color: [f32; 4]| {
             if let Some(center) = me.mesh_for(mesh, camera, heights, &mut rebuilds) {
                 let mvp = camera.tile_mvp(center, Some(projection), scale).to_cols_array();
-                out.push(Item { kind, mesh, texture, uniform: DrawUniform { mvp, hole, color } });
+                let (texture, window) = picture.map_or((None, WHOLE), |(k, w)| (Some(k), w));
+                out.push(Item { kind, mesh, texture, uniform: DrawUniform { mvp, hole, color, window } });
             }
         };
         let flat = |rgb: [f32; 3]| [rgb[0], rgb[1], rgb[2], 1.0];
         for (key, hole) in selection.draw.iter().zip(&selection.holes) {
             let (z, x, y) = *key;
-            let has = self.textures.contains_key(key);
+            let picture = self.picture(*key);
             let hole = hole.map_or([0.0; 4], |h| {
                 let (u, v, s) = hole_rect(*key, h);
                 [u as f32, v as f32, s as f32, 1.0]
             });
-            let color = if has { [0.0; 4] } else { flat(placeholder) };
-            push(self, Kind::Tile, MeshId::Tile { z, x, y }, has.then_some(*key), 1.0, hole, color);
+            let color = if picture.is_some() { [0.0; 4] } else { flat(placeholder) };
+            push(self, Kind::Tile, MeshId::Tile { z, x, y }, picture, 1.0, hole, color);
         }
         // Подстилка ниже самой низкой высоты рельефа, у Земли дно моря
         // прижато к нулю.
@@ -687,9 +730,9 @@ impl Globe {
         under.sort_unstable();
         for key in under {
             let (z, x, y) = key;
-            let has = self.textures.contains_key(&key);
-            let color = if has { [0.0; 4] } else { flat(placeholder) };
-            push(self, Kind::Underlay, MeshId::Tile { z, x, y }, has.then_some(key), scale, [0.0; 4], color);
+            let picture = self.picture(key);
+            let color = if picture.is_some() { [0.0; 4] } else { flat(placeholder) };
+            push(self, Kind::Underlay, MeshId::Tile { z, x, y }, picture, scale, [0.0; 4], color);
         }
         let caps = [(true, NORTH_CAP), (false, SOUTH_CAP)];
         for (north, rgb) in caps {

@@ -26,6 +26,7 @@ use web_time::{Duration, Instant};
 
 #[cfg(not(target_arch = "wasm32"))]
 pub mod native;
+pub mod placeholder;
 #[cfg(target_arch = "wasm32")]
 pub mod web;
 
@@ -34,6 +35,9 @@ pub mod web;
 pub struct Loaded {
     pub key: TileKey,
     pub image: Result<Image, String>,
+    /// Тайла у источника нет: ответ 404 или заглушка вместо снимка.
+    /// Вместо него рисуется увеличенный предок, повторно он не просится.
+    pub missing: bool,
 }
 
 /// Счётчики загрузчика.
@@ -85,11 +89,32 @@ pub struct Source {
     pub max_requests: usize,
     /// Уровень самых мелких тайлов источника.
     pub max_level: u32,
+    /// Расширение файла в кэше.
+    pub ext: &'static str,
+    /// Источник отвечает заглушкой там, где снимка нет.
+    pub placeholders: bool,
 }
 
 /// Подложка OpenStreetMap.
-pub const OSM: Source =
-    Source { name: "osm", url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", max_requests: 2, max_level: 19 };
+pub const OSM: Source = Source {
+    name: "osm",
+    url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    max_requests: 2,
+    max_level: 19,
+    ext: "png",
+    placeholders: false,
+};
+
+/// Космоснимки Esri World Imagery, как в модуле. Порядок y и x в адресе
+/// обратный.
+pub const ESRI: Source = Source {
+    name: "esri",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    max_requests: 4,
+    max_level: 19,
+    ext: "jpg",
+    placeholders: true,
+};
 
 /// Высоты рельефа Mapzen Terrain Tiles в записи Terrarium, как в модуле.
 pub const TERRARIUM: Source = Source {
@@ -97,6 +122,8 @@ pub const TERRARIUM: Source = Source {
     url: "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
     max_requests: 4,
     max_level: 15,
+    ext: "png",
+    placeholders: false,
 };
 
 /// Сколько тайл в кэше считается свежим.
@@ -122,7 +149,7 @@ pub fn tile_url(source: &Source, key: TileKey) -> String {
 /// Файл тайла key в кэше с корнем root.
 pub fn cache_path(root: &Path, source: &Source, key: TileKey) -> PathBuf {
     let (z, x, y) = key;
-    root.join(source.name).join(z.to_string()).join(x.to_string()).join(format!("{y}.png"))
+    root.join(source.name).join(z.to_string()).join(x.to_string()).join(format!("{y}.{}", source.ext))
 }
 
 /// Номер тайла допустим: уровень источника и номера в пределах уровня.
@@ -140,16 +167,62 @@ pub struct Image {
     pub rgba: Vec<u8>,
 }
 
-/// Раскодировать PNG тайла. Входные байты считаются враждебными: ошибка
-/// декодера и размер не 256 × 256 дают ошибку, а не сбой.
-pub fn decode_png(bytes: &[u8]) -> Result<Image, String> {
-    let img = image::load_from_memory_with_format(bytes, image::ImageFormat::Png).map_err(|e| e.to_string())?;
+/// Раскодировать картинку тайла, PNG или JPEG. Входные байты считаются
+/// враждебными: ошибка декодера и размер не 256 × 256 дают ошибку,
+/// а не сбой.
+pub fn decode_tile(bytes: &[u8]) -> Result<Image, String> {
+    let format = image::guess_format(bytes).map_err(|e| e.to_string())?;
+    if !matches!(format, image::ImageFormat::Png | image::ImageFormat::Jpeg) {
+        return Err(format!("формат {format:?} не PNG и не JPEG"));
+    }
+    let img = image::load_from_memory_with_format(bytes, format).map_err(|e| e.to_string())?;
     let rgba = img.to_rgba8();
     let (width, height) = rgba.dimensions();
     if (width, height) != (TILE_SIZE, TILE_SIZE) {
         return Err(format!("тайл {width} × {height}, ждали {TILE_SIZE} × {TILE_SIZE}"));
     }
     Ok(Image { width, height, rgba: rgba.into_raw() })
+}
+
+/// Итог загрузки тайла: картинка, «тайла нет» или ошибка.
+pub enum Fetched {
+    Image(Image),
+    Missing,
+    Failed(String),
+}
+
+impl Fetched {
+    /// Раскодировать ответ сервера. Заглушка у источника с заглушками -
+    /// «тайла нет».
+    pub fn from_bytes(source: &Source, bytes: &[u8]) -> Self {
+        match decode_tile(bytes) {
+            Ok(img) if source.placeholders && placeholder::is_placeholder(&img.rgba) => Fetched::Missing,
+            Ok(img) => Fetched::Image(img),
+            Err(e) => Fetched::Failed(e),
+        }
+    }
+
+    /// Пришедший тайл для главного потока.
+    pub fn into_loaded(self, key: TileKey) -> Loaded {
+        match self {
+            Fetched::Image(img) => Loaded { key, image: Ok(img), missing: false },
+            Fetched::Missing => Loaded { key, image: Err("тайла нет у источника".into()), missing: true },
+            Fetched::Failed(e) => Loaded { key, image: Err(e), missing: false },
+        }
+    }
+
+    /// Загрузка закончена: картинка или «тайла нет», повтор не нужен.
+    pub fn settled(&self) -> bool {
+        !matches!(self, Fetched::Failed(_))
+    }
+
+    /// Отметить итог в очереди.
+    pub fn record(&self, queue: &mut Queue, key: TileKey) {
+        match self {
+            Fetched::Missing => queue.done_missing(key),
+            other => queue.done(key, other.settled()),
+        }
+    }
 }
 
 /// Очередь тайлов с приоритетом.
@@ -159,6 +232,8 @@ pub struct Queue {
     wanted: Vec<(TileKey, f64)>,
     in_flight: HashSet<TileKey>,
     failed: HashMap<TileKey, Instant>,
+    /// Тайлы, которых у источника нет. Они не просятся снова.
+    missing: HashSet<TileKey>,
 }
 
 impl Queue {
@@ -170,7 +245,11 @@ impl Queue {
     /// с очереди. Начатые запросы остаются.
     pub fn set_wanted(&mut self, wanted: &[(TileKey, f64)]) {
         let mut seen = HashSet::new();
-        self.wanted = wanted.iter().copied().filter(|(k, p)| !p.is_nan() && seen.insert(*k)).collect();
+        self.wanted = wanted
+            .iter()
+            .copied()
+            .filter(|(k, p)| !p.is_nan() && !self.missing.contains(k) && seen.insert(*k))
+            .collect();
         // Сортировка устойчивая: при равном приоритете раньше тот, кого
         // кадр попросил раньше, - предок.
         self.wanted.sort_by(|a, b| b.1.total_cmp(&a.1));
@@ -193,6 +272,12 @@ impl Queue {
         if !ok {
             self.failed.insert(key, Instant::now());
         }
+    }
+
+    /// Тайла нет у источника: загрузка закончена, снова он не просится.
+    pub fn done_missing(&mut self, key: TileKey) {
+        self.in_flight.remove(&key);
+        self.missing.insert(key);
     }
 
     pub fn in_flight(&self) -> usize {

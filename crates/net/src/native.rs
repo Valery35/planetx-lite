@@ -20,9 +20,7 @@ use std::time::{Duration, SystemTime};
 
 use globe_core::lod::TileKey;
 
-use crate::{
-    FRESH, Image, Loaded, Queue, Source, Stats, TileLoader, cache_path, decode_png, tile_url, user_agent, valid_key,
-};
+use crate::{Fetched, FRESH, Loaded, Queue, Source, Stats, TileLoader, cache_path, tile_url, user_agent, valid_key};
 
 /// Рабочих потоков загрузчика.
 pub const WORKERS: usize = 4;
@@ -140,9 +138,9 @@ struct Worker {
 impl Worker {
     fn run(self) {
         while let Some(key) = self.next_job() {
-            let image = self.load(key);
-            lock(&self.shared.queue).done(key, image.is_ok());
-            if self.sender.send(Loaded { key, image }).is_err() {
+            let fetched = self.load(key);
+            fetched.record(&mut lock(&self.shared.queue), key);
+            if self.sender.send(fetched.into_loaded(key)).is_err() {
                 return;
             }
             (self.on_ready)();
@@ -173,32 +171,42 @@ impl Worker {
         }
     }
 
-    fn load(&self, key: TileKey) -> Result<Image, String> {
+    fn load(&self, key: TileKey) -> Fetched {
         let path = self.cache_dir.as_ref().map(|root| cache_path(root, &self.source, key));
         let cached = path.as_deref().and_then(read_cached);
         if let Some((bytes, fresh)) = &cached
             && *fresh
-            && let Ok(image) = decode_png(bytes)
         {
-            self.shared.stats.disk_hits.fetch_add(1, Ordering::Relaxed);
-            return Ok(image);
+            let fetched = Fetched::from_bytes(&self.source, bytes);
+            if fetched.settled() {
+                self.shared.stats.disk_hits.fetch_add(1, Ordering::Relaxed);
+                return fetched;
+            }
         }
         match self.fetch(key) {
             Ok(bytes) => {
-                let image = decode_png(&bytes)?;
-                if let Some(path) = &path {
-                    // Ошибка записи кэша не мешает показать тайл.
+                let fetched = Fetched::from_bytes(&self.source, &bytes);
+                if fetched.settled()
+                    && let Some(path) = &path
+                {
+                    // Заглушка тоже кэшируется: сервер не спрашивается
+                    // о ней снова. Ошибка записи кэша не мешает показу.
                     let _ = write_atomic(path, &bytes);
                 }
-                Ok(image)
+                fetched
             }
+            Err(None) => Fetched::Missing,
             // Сервер недоступен - годится и устаревший тайл.
-            Err(e) => cached.and_then(|(bytes, _)| decode_png(&bytes).ok()).ok_or(e),
+            Err(Some(e)) => match cached.map(|(bytes, _)| Fetched::from_bytes(&self.source, &bytes)) {
+                Some(f) if f.settled() => f,
+                _ => Fetched::Failed(e),
+            },
         }
     }
 
-    fn fetch(&self, key: TileKey) -> Result<Vec<u8>, String> {
-        self.acquire()?;
+    /// Байты ответа сервера. Err(None) - ответ 404, тайла нет.
+    fn fetch(&self, key: TileKey) -> Result<Vec<u8>, Option<String>> {
+        self.acquire().map_err(Some)?;
         let stats = &self.shared.stats;
         stats.request_started();
         let result = self
@@ -206,7 +214,10 @@ impl Worker {
             .get(&tile_url(&self.source, key))
             .call()
             .and_then(|mut r| r.body_mut().with_config().limit(4 << 20).read_to_vec())
-            .map_err(|e| e.to_string());
+            .map_err(|e| match e {
+                ureq::Error::StatusCode(404) => None,
+                e => Some(e.to_string()),
+            });
         stats.request_finished();
         self.release();
         result

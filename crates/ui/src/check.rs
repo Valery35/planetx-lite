@@ -24,7 +24,23 @@ use globe_core::navigation::{MIN_ALTITUDE, Navigator, Pose, clearance};
 use render::FrameStats;
 use terrain::HeightStore;
 
+use crate::basemap::Basemap;
 use crate::input::fly;
+
+/// Вид на Пермь на снимках Esri: расстояние, азимут, наклон, как
+/// в проверке фазы 1 модуля.
+pub const PERM_ESRI: (f64, f64, f64) = (6000.0, 30.0, 60.0);
+
+/// Запросы к источнику тайлов за самопроверку.
+#[derive(Debug, Clone, Copy)]
+pub struct SourceStats {
+    pub name: &'static str,
+    /// Предел одновременных запросов источника.
+    pub limit: usize,
+    pub peak: usize,
+    pub total: usize,
+    pub disk: usize,
+}
 
 pub const PERM: (f64, f64) = (58.0105, 56.2294);
 /// Вершина Эльбруса, как в проверке модуля.
@@ -56,8 +72,6 @@ pub const IDLE_FRAMES: u32 = 10;
 pub const LOAD_TIMEOUT: f64 = 180.0;
 /// Критерий частоты кадров - кадров в любом окне 1 с.
 pub const MIN_FPS: usize = 55;
-/// Предел одновременных запросов к серверу тайлов.
-pub const MAX_REQUESTS: usize = 2;
 const M_PER_DEGREE: f64 = 111_320.0;
 
 /// Какая самопроверка.
@@ -74,6 +88,14 @@ impl Scenario {
             "perm" => Some(Self::Perm),
             "elbrus" => Some(Self::Elbrus),
             _ => None,
+        }
+    }
+
+    /// Основа в начале: Пермь начинается на OSM, как признак фазы 0.
+    pub fn start_basemap(self) -> Basemap {
+        match self {
+            Self::Perm => Basemap::Osm,
+            Self::Elbrus => Basemap::Esri,
         }
     }
 
@@ -106,6 +128,8 @@ enum Phase {
     Descent,
     /// Эльбрус: низкий полёт, замер кадров.
     LowFlight,
+    /// Пермь: вид на снимках Esri, ожидание загрузки.
+    LoadEsri,
     Done,
 }
 
@@ -130,6 +154,8 @@ pub struct Check {
     /// Наибольшая высота в радиусе 1 км от вершины и уровень тайла высот.
     summit: Option<(f64, u32)>,
     fps_times: Vec<f64>,
+    /// Тайлов, которых не оказалось у источника основы.
+    missing: usize,
     failure: Option<String>,
 }
 
@@ -197,8 +223,14 @@ impl Check {
             clearance_min: f64::INFINITY,
             summit: None,
             fps_times: Vec::new(),
+            missing: 0,
             failure: None,
         }
+    }
+
+    /// Пришёл тайл, которого нет у источника основы.
+    pub fn note_missing(&mut self) {
+        self.missing += 1;
     }
 
     /// Считать дыры в этом кадре.
@@ -212,15 +244,16 @@ impl Check {
         self.idle = 0;
     }
 
-    /// Шаг сценария до кадра. loading - загрузка тайлов идёт.
-    pub fn before_frame(&mut self, nav: &mut Navigator, now: f64, loading: bool) {
+    /// Шаг сценария до кадра. loading - загрузка тайлов идёт, basemap -
+    /// основа, сценарий может её сменить.
+    pub fn before_frame(&mut self, nav: &mut Navigator, now: f64, loading: bool, basemap: &mut Basemap) {
         let start = *self.phase_start.get_or_insert(now);
         let dt = self.last.map_or(0.0, |l| (now - l).max(0.0));
         self.last = Some(now);
         self.idle = if loading { 0 } else { self.idle + 1 };
         let loaded = self.idle >= IDLE_FRAMES;
         let t = now - start;
-        if matches!(self.phase, Phase::LoadStart | Phase::LoadPlace | Phase::Settle) && t > LOAD_TIMEOUT {
+        if matches!(self.phase, Phase::LoadStart | Phase::LoadPlace | Phase::Settle | Phase::LoadEsri) && t > LOAD_TIMEOUT {
             self.failure = Some(format!("загрузка не закончилась за {LOAD_TIMEOUT} с, шаг {:?}", self.phase));
             self.enter(Phase::Done, now);
             return;
@@ -234,13 +267,19 @@ impl Check {
             (Scenario::Perm, Phase::LoadPlace) if loaded => self.enter(Phase::Warm, now),
             (Scenario::Perm, Phase::Warm | Phase::Spin) => {
                 nav.turn(SPIN_RATE * dt, 0.0);
-                if t >= SPIN_TIME {
-                    let next = if self.phase == Phase::Warm { Phase::Settle } else { Phase::Done };
-                    self.enter(next, now);
+                if t >= SPIN_TIME && self.phase == Phase::Warm {
+                    self.enter(Phase::Settle, now);
+                } else if t >= SPIN_TIME {
+                    // Вид на снимках Esri, как в проверке фазы 1 модуля.
+                    *basemap = Basemap::Esri;
+                    let (d, h, tilt) = PERM_ESRI;
+                    nav.show(Pose::new(PERM.0, PERM.1, d, h, tilt));
+                    self.enter(Phase::LoadEsri, now);
                 } else if self.phase == Phase::Spin {
                     self.fps_times.push(now);
                 }
             }
+            (Scenario::Perm, Phase::LoadEsri) if loaded => self.enter(Phase::Done, now),
             (Scenario::Perm, Phase::Settle) if loaded => self.enter(Phase::Spin, now),
             (Scenario::Elbrus, Phase::LoadStart) if loaded => self.enter(Phase::Descent, now),
             (Scenario::Elbrus, Phase::Descent) => {
@@ -294,13 +333,13 @@ impl Check {
     }
 
     /// Отчёт и итог: true - проверка пройдена.
-    pub fn report(&self, requests_peak: usize, requests_total: usize, disk_hits: usize, size: (u32, u32)) -> (String, bool) {
+    pub fn report(&self, sources: &[SourceStats], size: (u32, u32)) -> (String, bool) {
         let fps = min_frames_per_second(&self.fps_times);
         let mut ok = self.failure.is_none()
             && self.frames_counted > 0
             && self.holes_max == 0
             && fps.is_some_and(|f| f >= MIN_FPS)
-            && requests_peak <= MAX_REQUESTS;
+            && sources.iter().all(|s| s.peak <= s.limit);
         let mut out = vec![
             format!("check={:?}", self.scenario).to_lowercase(),
             format!("frame_size={}x{}", size.0, size.1),
@@ -319,7 +358,13 @@ impl Check {
             out.push(format!("summit_m={h:.0} height_level={level} expected={ELBRUS_HEIGHT}±{ELBRUS_TOLERANCE}"));
             out.push(format!("clearance_min_m={:.1}", self.clearance_min));
         }
-        out.push(format!("requests_peak={requests_peak} requests_total={requests_total} disk_hits={disk_hits}"));
+        for s in sources.iter().filter(|s| s.total + s.disk > 0) {
+            out.push(format!(
+                "requests_{}: peak={} limit={} total={} disk_hits={}",
+                s.name, s.peak, s.limit, s.total, s.disk
+            ));
+        }
+        out.push(format!("basemap_missing_tiles={}", self.missing));
         out.push(identity());
         if let Some(f) = &self.failure {
             out.push(format!("failure={f}"));

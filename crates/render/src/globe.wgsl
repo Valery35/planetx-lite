@@ -14,6 +14,9 @@ struct Draw {
     hole: vec4<f32>,
     // Ровный цвет: rgb и доля цвета вместо снимка.
     color: vec4<f32>,
+    // Окно снимка: u0, v0, сторона. Тайла нет у источника - рисуется
+    // его доля в снимке предка.
+    window: vec4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> draw: Draw;
@@ -40,7 +43,7 @@ fn tile_vs(@location(0) offset: vec3<f32>, @location(1) uv: vec2<f32>, @location
 fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     // Выборка до ветвления: производные для фильтрации нужны во всех
     // пикселях четвёрки.
-    let picture = textureSample(tile_texture, tile_sampler, in.uv);
+    let picture = textureSample(tile_texture, tile_sampler, draw.window.xy + in.uv * draw.window.z);
     if draw.hole.w > 0.5 {
         let low = draw.hole.xy;
         let high = draw.hole.xy + vec2<f32>(draw.hole.z, draw.hole.z);

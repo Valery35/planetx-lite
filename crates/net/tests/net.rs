@@ -91,15 +91,15 @@ fn png(width: u32, height: u32) -> Vec<u8> {
 
 #[test]
 fn decode_accepts_tile_and_rejects_garbage() {
-    let image = net::decode_png(&png(256, 256)).unwrap();
+    let image = net::decode_tile(&png(256, 256)).unwrap();
     assert_eq!((image.width, image.height, image.rgba.len()), (256, 256, 256 * 256 * 4));
     assert_eq!(&image.rgba[..4], &[10, 20, 30, 255]);
-    assert!(net::decode_png(b"not a png").is_err());
-    assert!(net::decode_png(&[]).is_err());
-    assert!(net::decode_png(&png(512, 256)).is_err());
+    assert!(net::decode_tile(b"not a png").is_err());
+    assert!(net::decode_tile(&[]).is_err());
+    assert!(net::decode_tile(&png(512, 256)).is_err());
     let mut cut = png(256, 256);
     cut.truncate(cut.len() / 2);
-    assert!(net::decode_png(&cut).is_err());
+    assert!(net::decode_tile(&cut).is_err());
 }
 
 // Загрузчик на подставном сервере.
@@ -170,7 +170,7 @@ fn keys(count: u32) -> Vec<((u32, u32, u32), f64)> {
 #[test]
 fn loader_keeps_two_requests_and_sends_user_agent() {
     let s = server(Duration::from_millis(80));
-    let source = Source { name: "test", url: s.url, max_requests: 2, max_level: 19 };
+    let source = Source { name: "test", url: s.url, max_requests: 2, max_level: 19, ext: "png", placeholders: false };
     let loader = Loader::new(source, None, Arc::new(|| {}));
     loader.want(&keys(12));
     let got = wait_all(&loader, 12);
@@ -186,7 +186,7 @@ fn loader_keeps_two_requests_and_sends_user_agent() {
 #[test]
 fn disk_cache_spares_the_server() {
     let s = server(Duration::from_millis(5));
-    let source = Source { name: "test", url: s.url, max_requests: 2, max_level: 19 };
+    let source = Source { name: "test", url: s.url, max_requests: 2, max_level: 19, ext: "png", placeholders: false };
     let dir = temp_dir("cache");
     let first = Loader::new(source, Some(dir.clone()), Arc::new(|| {}));
     first.want(&keys(6));
@@ -207,11 +207,82 @@ fn dead_server_gives_error_not_crash() {
     // Порт, на котором никто не слушает.
     let port = std::net::TcpListener::bind("127.0.0.1:0").unwrap().local_addr().unwrap().port();
     let url: &'static str = Box::leak(format!("http://127.0.0.1:{port}/{{z}}/{{x}}/{{y}}.png").into_boxed_str());
-    let source = Source { name: "dead", url, max_requests: 2, max_level: 19 };
+    let source = Source { name: "dead", url, max_requests: 2, max_level: 19, ext: "png", placeholders: false };
     let loader = Loader::new(source, None, Arc::new(|| {}));
     loader.want(&keys(2));
     let got = wait_all(&loader, 2);
     assert!(got.iter().all(|l| l.image.is_err()));
     // Неудачные тайлы отложены, загрузчик не крутит их по кругу.
     assert!(!loader.busy());
+}
+
+// Тайла нет у источника: ответ 404 и заглушка Esri.
+
+/// Сервер, который на запрос с путём отвечает кодом и телом answer.
+fn answering(answer: fn(&str) -> (u16, Vec<u8>)) -> (&'static str, Arc<AtomicUsize>) {
+    let http = Arc::new(tiny_http::Server::http("127.0.0.1:0").unwrap());
+    let port = http.server_addr().to_ip().unwrap().port();
+    let url: &'static str = Box::leak(format!("http://127.0.0.1:{port}/{{z}}/{{x}}/{{y}}").into_boxed_str());
+    let total = Arc::new(AtomicUsize::new(0));
+    let t = total.clone();
+    std::thread::spawn(move || {
+        for request in http.incoming_requests() {
+            t.fetch_add(1, Ordering::SeqCst);
+            let (code, body) = answer(request.url());
+            let _ = request.respond(tiny_http::Response::from_data(body).with_status_code(code));
+        }
+    });
+    (url, total)
+}
+
+fn gray_png() -> Vec<u8> {
+    let img = image::RgbaImage::from_pixel(256, 256, image::Rgba([204, 204, 204, 255]));
+    let mut out = std::io::Cursor::new(Vec::new());
+    img.write_to(&mut out, image::ImageFormat::Png).unwrap();
+    out.into_inner()
+}
+
+#[test]
+fn not_found_is_missing_and_not_retried() {
+    let (url, total) = answering(|_| (404, b"no".to_vec()));
+    let source = Source { name: "nf", url, max_requests: 2, max_level: 19, ext: "png", placeholders: false };
+    let loader = Loader::new(source, None, Arc::new(|| {}));
+    loader.want(&keys(3));
+    let got = wait_all(&loader, 3);
+    assert!(got.iter().all(|l| l.missing && l.image.is_err()));
+    // Тайл, которого нет, больше не просится.
+    loader.want(&keys(3));
+    std::thread::sleep(Duration::from_millis(300));
+    assert!(loader.take().is_empty());
+    assert_eq!(total.load(Ordering::SeqCst), 3);
+    assert!(!loader.busy());
+}
+
+#[test]
+fn placeholder_is_missing_only_where_expected() {
+    let (url, _) = answering(|_| (200, gray_png()));
+    let esri_like = Source { name: "ph", url, max_requests: 2, max_level: 19, ext: "png", placeholders: true };
+    let loader = Loader::new(esri_like, None, Arc::new(|| {}));
+    loader.want(&keys(2));
+    assert!(wait_all(&loader, 2).iter().all(|l| l.missing));
+    // У источника без заглушек та же серая картинка - обычный тайл.
+    let plain = Source { placeholders: false, ..esri_like };
+    let loader = Loader::new(plain, None, Arc::new(|| {}));
+    loader.want(&keys(2));
+    assert!(wait_all(&loader, 2).iter().all(|l| !l.missing && l.image.is_ok()));
+}
+
+#[test]
+fn esri_address_and_jpeg() {
+    assert_eq!(
+        net::tile_url(&net::ESRI, (16, 43004, 19735)),
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/16/19735/43004"
+    );
+    assert_eq!(net::cache_path(&PathBuf::from("c"), &net::ESRI, (1, 0, 1)), PathBuf::from("c").join("esri").join("1").join("0").join("1.jpg"));
+    let img = image::RgbImage::from_pixel(256, 256, image::Rgb([30, 90, 40]));
+    let mut out = std::io::Cursor::new(Vec::new());
+    img.write_to(&mut out, image::ImageFormat::Jpeg).unwrap();
+    let tile = net::decode_tile(&out.into_inner()).unwrap();
+    assert_eq!((tile.width, tile.height), (256, 256));
+    assert!(net::decode_tile(b"GIF89a....").is_err());
 }

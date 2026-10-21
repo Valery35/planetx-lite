@@ -78,7 +78,8 @@ fn main() {
                     let ctx = cc.egui_ctx.clone();
                     let repaint: Rc<dyn Fn()> = Rc::new(move || ctx.request_repaint());
                     let loaders = ui::Loaders {
-                        basemap: Box::new(net::web::Loader::new(net::OSM, repaint.clone())),
+                        esri: Box::new(net::web::Loader::new(net::ESRI, repaint.clone())),
+                        osm: Box::new(net::web::Loader::new(net::OSM, repaint.clone())),
                         terrain: Box::new(net::web::Loader::new(net::TERRARIUM, repaint)),
                     };
                     let report: ui::Report = Box::new(move |text, _ok| show(text));

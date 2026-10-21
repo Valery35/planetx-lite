@@ -18,7 +18,7 @@ use std::sync::{Arc, Mutex};
 
 use eframe::egui;
 use net::native::{Loader, default_cache_dir};
-use net::{OSM, TERRARIUM};
+use net::{ESRI, OSM, TERRARIUM};
 use ui::Scenario;
 
 /// Размер окна, решение автора от 22 октября 2026 года.
@@ -66,7 +66,8 @@ fn main() -> ExitCode {
             let ctx = cc.egui_ctx.clone();
             let repaint: Arc<dyn Fn() + Send + Sync> = Arc::new(move || ctx.request_repaint());
             let loaders = ui::Loaders {
-                basemap: Box::new(Loader::new(OSM, default_cache_dir(), repaint.clone())),
+                esri: Box::new(Loader::new(ESRI, default_cache_dir(), repaint.clone())),
+                osm: Box::new(Loader::new(OSM, default_cache_dir(), repaint.clone())),
                 terrain: Box::new(Loader::new(TERRARIUM, default_cache_dir(), repaint)),
             };
             let report: ui::Report = Box::new(move |text, ok| {

@@ -87,6 +87,30 @@ fn no_holes_by_construction() {
 }
 
 #[test]
+fn missing_tile_takes_ancestor_picture() {
+    // Тайла нет у источника: он готов к рисованию, если есть снимок
+    // предка не глубже 6 уровней, и рисуется без дыр.
+    let Some((device, queue, _)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let rgba = vec![200u8; 256 * 256 * 4];
+    globe.upload((10, 600, 300), 256, 256, &rgba);
+    assert!(!globe.has_texture((12, 2401, 1202)));
+    globe.mark_missing((12, 2401, 1202));
+    assert!(globe.has_texture((12, 2401, 1202)));
+    // Глубже 6 уровней предок не берётся.
+    globe.mark_missing((17, 600 << 7, 300 << 7));
+    assert!(!globe.has_texture((17, 600 << 7, 300 << 7)));
+    let cam = view(PERM.0, PERM.1, 2.0e7, 0.0, 0.0);
+    let sel = lod::select(&cam, &|_| true, Options::default());
+    assert_eq!(holes(&mut globe, &cam, &sel).0, 0);
+    globe.clear_textures();
+    assert!(!globe.has_texture((12, 2401, 1202)));
+}
+
+#[test]
 fn missing_tile_is_counted() {
     // Сторож счётчика: без тайла под камерой дыра есть.
     let Some((device, queue, exact)) = device() else {
