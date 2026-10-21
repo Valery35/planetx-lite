@@ -31,8 +31,12 @@ use wgpu::util::DeviceExt;
 
 pub use wgpu;
 
-/// Формат кадра глобуса.
-pub const COLOR_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba8UnormSrgb;
+/// Формат кадра глобуса - без sRGB: перевод в sRGB делает шейдер, egui
+/// показывает значения как есть.
+pub const COLOR_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba8Unorm;
+/// Формат снимков тайлов - sRGB: выборка и фильтрация идут в линейном
+/// цвете.
+pub const TEXTURE_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba8UnormSrgb;
 pub const DEPTH_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 /// Фон - космос.
 pub const SPACE: wgpu::Color = wgpu::Color::BLACK;
@@ -473,7 +477,7 @@ impl Globe {
             mip_level_count: 1,
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
-            format: COLOR_FORMAT,
+            format: TEXTURE_FORMAT,
             usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
             view_formats: &[],
         });

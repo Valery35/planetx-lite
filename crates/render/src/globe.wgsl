@@ -51,5 +51,15 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
             discard;
         }
     }
-    return vec4<f32>(mix(picture.rgb, draw.color.rgb, draw.color.a) * in.shade, 1.0);
+    let linear = mix(picture.rgb, draw.color.rgb, draw.color.a) * in.shade;
+    return vec4<f32>(to_srgb(linear), 1.0);
+}
+
+// Линейный цвет в sRGB. Кадр глобуса - текстура без sRGB: egui берёт
+// из неё значения как есть. С текстурой sRGB цвет переводился дважды,
+// и снимки выходили втрое темнее, 22 октября 2026 года.
+fn to_srgb(c: vec3<f32>) -> vec3<f32> {
+    let low = c * 12.92;
+    let high = 1.055 * pow(max(c, vec3<f32>(0.0)), vec3<f32>(1.0 / 2.4)) - 0.055;
+    return select(high, low, c <= vec3<f32>(0.0031308));
 }

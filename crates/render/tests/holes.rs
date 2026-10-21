@@ -14,6 +14,8 @@ use globe_core::camera::Camera;
 use globe_core::ellipsoid::Ellipsoid;
 use globe_core::lod::{self, Options, TileKey};
 use globe_core::tiling as tl;
+use std::sync::{Mutex, MutexGuard};
+
 use render::{FrameOptions, Globe, wgpu};
 
 const PERM: (f64, f64) = (58.0105, 56.2294);
@@ -21,7 +23,12 @@ const PERM: (f64, f64) = (58.0105, 56.2294);
 /// Видеокарта, очередь и признак точного счёта пикселей. На OpenGL
 /// запрос перекрытия отвечает только 0 или 1 - есть пиксели или нет.
 /// Так на машине CI, где видеокарта - программная Mesa.
-fn device() -> Option<(wgpu::Device, wgpu::Queue, bool)> {
+///
+/// Тесты берут видеокарту по одному: при чтении кадра параллельно
+/// с другими тестами драйвер под Windows зависал.
+fn device() -> Option<(wgpu::Device, wgpu::Queue, bool, MutexGuard<'static, ()>)> {
+    static GPU: Mutex<()> = Mutex::new(());
+    let guard = GPU.lock().unwrap_or_else(|e| e.into_inner());
     // WGPU_BACKEND выбирает бэкенд, например gl - как у машины CI.
     let mut desc = wgpu::InstanceDescriptor::new_without_display_handle();
     if let Some(backends) = wgpu::Backends::from_env() {
@@ -37,7 +44,7 @@ fn device() -> Option<(wgpu::Device, wgpu::Queue, bool)> {
     .ok()?;
     let exact = adapter.get_info().backend != wgpu::Backend::Gl;
     let (device, queue) = pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).ok()?;
-    Some((device, queue, exact))
+    Some((device, queue, exact, guard))
 }
 
 fn view(lat: f64, lon: f64, distance: f64, heading: f64, tilt: f64) -> Camera {
@@ -70,7 +77,7 @@ fn holes(globe: &mut Globe, camera: &Camera, selection: &lod::Selection) -> (u64
 
 #[test]
 fn no_holes_by_construction() {
-    let Some((device, queue, _)) = device() else {
+    let Some((device, queue, _, _gpu)) = device() else {
         eprintln!("видеокарты нет, проверка дыр пропущена");
         return;
     };
@@ -90,7 +97,7 @@ fn no_holes_by_construction() {
 fn missing_tile_takes_ancestor_picture() {
     // Тайла нет у источника: он готов к рисованию, если есть снимок
     // предка не глубже 6 уровней, и рисуется без дыр.
-    let Some((device, queue, _)) = device() else {
+    let Some((device, queue, _, _gpu)) = device() else {
         eprintln!("видеокарты нет, проверка пропущена");
         return;
     };
@@ -110,10 +117,64 @@ fn missing_tile_takes_ancestor_picture() {
     assert!(!globe.has_texture((12, 2401, 1202)));
 }
 
+/// Пиксель в середине кадра глобуса, RGBA.
+fn center_pixel(device: &wgpu::Device, queue: &wgpu::Queue, globe: &Globe) -> [u8; 4] {
+    let texture = globe.color_texture().unwrap();
+    let (width, height) = (texture.width(), texture.height());
+    let row = (4 * width).div_ceil(256) * 256;
+    let buffer = device.create_buffer(&wgpu::BufferDescriptor {
+        label: None,
+        size: u64::from(row * height),
+        usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ,
+        mapped_at_creation: false,
+    });
+    let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor::default());
+    encoder.copy_texture_to_buffer(
+        texture.as_image_copy(),
+        wgpu::TexelCopyBufferInfo {
+            buffer: &buffer,
+            layout: wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(row), rows_per_image: Some(height) },
+        },
+        texture.size(),
+    );
+    queue.submit([encoder.finish()]);
+    let slice = buffer.slice(..);
+    slice.map_async(wgpu::MapMode::Read, |_| {});
+    device.poll(wgpu::PollType::wait_indefinitely()).unwrap();
+    let data = slice.get_mapped_range().unwrap();
+    let at = (row * (height / 2) + 4 * (width / 2)) as usize;
+    [data[at], data[at + 1], data[at + 2], data[at + 3]]
+}
+
+#[test]
+fn picture_keeps_its_brightness() {
+    // egui показывает кадр глобуса как есть, без перевода из sRGB. Кадр
+    // в формате sRGB выходил на экране втрое темнее снимка, 22 октября
+    // 2026 года. Серый 128 снимка - серый 128 кадра.
+    assert!(!render::COLOR_FORMAT.is_srgb());
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 500.0, 0.0, 0.0);
+    let sel = lod::select(&cam, &|_| true, Options::default());
+    let rgba = vec![128u8; 256 * 256 * 4];
+    for key in &sel.draw {
+        globe.upload(*key, 256, 256, &rgba);
+    }
+    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false });
+    let pixel = center_pixel(&device, &queue, &globe);
+    eprintln!("пиксель в середине кадра: {pixel:?}");
+    for c in &pixel[..3] {
+        assert!(c.abs_diff(128) <= 3, "{pixel:?}");
+    }
+}
+
 #[test]
 fn missing_tile_is_counted() {
     // Сторож счётчика: без тайла под камерой дыра есть.
-    let Some((device, queue, exact)) = device() else {
+    let Some((device, queue, exact, _gpu)) = device() else {
         eprintln!("видеокарты нет, проверка дыр пропущена");
         return;
     };
