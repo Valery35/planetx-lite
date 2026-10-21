@@ -405,9 +405,20 @@ impl eframe::App for LiteApp {
 
         let recreated = globe.resize(width, height);
         let count_holes = self.check.as_ref().is_some_and(Check::count_holes);
+        if self.check.as_mut().is_some_and(Check::take_grab_request) {
+            globe.grab();
+        }
         let stats =
-            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false });
+            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: true });
         drop(store);
+        if let Some(check) = &mut self.check
+            && check.waits_frame()
+            && let Some(frame) = globe.take_grab()
+        {
+            let camera = &self.nav.camera;
+            let (distance, a, fov) = (camera.eye.length(), camera.ellipsoid.a, camera.fov_y);
+            check.frame(&frame, &mut self.nav, distance, a, fov, now);
+        }
         globe.evict(&selection.keep, TEXTURE_BUDGET);
         self.show_target(recreated || self.texture.is_none());
         if let Some(id) = self.texture {

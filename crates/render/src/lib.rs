@@ -51,13 +51,14 @@ pub const UNDERLAY_LEVEL: u32 = 2;
 /// Вершин края шапки у полюса.
 pub const CAP_SEGMENTS: u32 = 256;
 
-/// Цвет sRGB в линейные доли для шейдера.
-fn linear(rgb: [u8; 3]) -> [f32; 3] {
-    rgb.map(|c| {
-        let c = f32::from(c) / 255.0;
-        if c <= 0.04045 { c / 12.92 } else { ((c + 0.055) / 1.055).powf(2.4) }
-    })
+/// Цвет в доли значений экрана для шейдера. Шейдер считает отмывку
+/// и дымку в значениях экрана, как модуль.
+fn display(rgb: [u8; 3]) -> [f32; 3] {
+    rgb.map(|c| f32::from(c) / 255.0)
 }
+
+/// Толщина оболочки атмосферы, километры, как в модуле.
+pub const SHELL_KM: f64 = 300.0;
 
 /// Переход от глубины OpenGL (-1..1) к глубине wgpu (0..1).
 fn depth_fix() -> DMat4 {
@@ -134,7 +135,32 @@ pub struct FrameOptions {
     pub count_holes: bool,
     /// Красить дыры пурпурным.
     pub show_holes: bool,
+    /// Атмосфера: небо, гало и дымка.
+    pub air: bool,
 }
+
+/// Воздух кадра, см. air.wgsl.
+#[repr(C)]
+#[derive(Clone, Copy, Pod, Zeroable)]
+struct AirUniform {
+    eye: [f32; 4],
+    axes: [f32; 4],
+    right: [f32; 4],
+    up: [f32; 4],
+    back: [f32; 4],
+    flags: [f32; 4],
+}
+
+/// Снятый кадр глобуса, RGBA по 8 бит, строки сверху вниз.
+#[derive(Debug, Clone)]
+pub struct Frame {
+    pub width: u32,
+    pub height: u32,
+    pub rgba: Vec<u8>,
+}
+
+/// Снятый кадр, когда он прочитан с видеокарты.
+type Grabbed = Arc<Mutex<Option<Frame>>>;
 
 /// Итог кадра.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -198,6 +224,12 @@ pub struct Globe {
     tile_pipeline: wgpu::RenderPipeline,
     hole_count_pipeline: wgpu::RenderPipeline,
     hole_show_pipeline: wgpu::RenderPipeline,
+    sky_pipeline: wgpu::RenderPipeline,
+    air: wgpu::Buffer,
+    air_bind: wgpu::BindGroup,
+    /// Снять следующий кадр.
+    grab_next: bool,
+    grabbed: Grabbed,
     draw_layout: wgpu::BindGroupLayout,
     texture_layout: wgpu::BindGroupLayout,
     sampler: wgpu::Sampler,
@@ -243,7 +275,8 @@ fn depth_state(write: bool, compare: wgpu::CompareFunction) -> wgpu::DepthStenci
 
 impl Globe {
     pub fn new(device: &wgpu::Device, queue: &wgpu::Queue) -> Self {
-        let globe_shader = shader(device, "globe", include_str!("globe.wgsl"));
+        let globe_shader = shader(device, "globe", concat!(include_str!("air.wgsl"), include_str!("globe.wgsl")));
+        let sky_shader = shader(device, "sky", concat!(include_str!("air.wgsl"), include_str!("sky.wgsl")));
         let holes_shader = shader(device, "holes", include_str!("holes.wgsl"));
         let draw_size = std::mem::size_of::<DrawUniform>() as u64;
         let draw_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
@@ -293,9 +326,24 @@ impl Globe {
                 count: None,
             }],
         });
+        let air_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("air"),
+            entries: &[wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
+        });
+        // Небо рисуется с тем же расположением, что и тайлы: воздух
+        // в группе 2 у обоих.
         let tile_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("tile"),
-            bind_group_layouts: &[Some(&draw_layout), Some(&texture_layout)],
+            bind_group_layouts: &[Some(&draw_layout), Some(&texture_layout), Some(&air_layout)],
             immediate_size: 0,
         });
         let hole_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -361,6 +409,42 @@ impl Globe {
                 cache: None,
             })
         };
+        let sky_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("sky"),
+            layout: Some(&tile_layout),
+            vertex: wgpu::VertexState {
+                module: &sky_shader,
+                entry_point: Some("sky_vs"),
+                compilation_options: Default::default(),
+                buffers: &[],
+            },
+            primitive: wgpu::PrimitiveState::default(),
+            depth_stencil: Some(depth_state(false, wgpu::CompareFunction::LessEqual)),
+            multisample: wgpu::MultisampleState::default(),
+            fragment: Some(wgpu::FragmentState {
+                module: &sky_shader,
+                entry_point: Some("sky_fs"),
+                compilation_options: Default::default(),
+                targets: &[Some(wgpu::ColorTargetState {
+                    format: COLOR_FORMAT,
+                    blend: None,
+                    write_mask: wgpu::ColorWrites::ALL,
+                })],
+            }),
+            multiview_mask: None,
+            cache: None,
+        });
+        let air = device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("air"),
+            size: std::mem::size_of::<AirUniform>() as u64,
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+        let air_bind = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("air"),
+            layout: &air_layout,
+            entries: &[wgpu::BindGroupEntry { binding: 0, resource: air.as_entire_binding() }],
+        });
         let hole_count_pipeline = hole_pipeline(wgpu::ColorWrites::empty(), "holes count");
         let hole_show_pipeline = hole_pipeline(wgpu::ColorWrites::ALL, "holes show");
         let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
@@ -410,6 +494,11 @@ impl Globe {
             tile_pipeline,
             hole_count_pipeline,
             hole_show_pipeline,
+            sky_pipeline,
+            air,
+            air_bind,
+            grab_next: false,
+            grabbed: Arc::new(Mutex::new(None)),
             draw_layout,
             texture_layout,
             sampler,
@@ -700,7 +789,7 @@ impl Globe {
         projection: DMat4,
     ) -> Vec<Item> {
         let mut out = Vec::new();
-        let placeholder = linear(PLACEHOLDER);
+        let placeholder = display(PLACEHOLDER);
         let mut rebuilds = REBUILDS_PER_FRAME;
         let mut push = |me: &mut Self,
                         kind: Kind,
@@ -740,7 +829,7 @@ impl Globe {
         }
         let caps = [(true, NORTH_CAP), (false, SOUTH_CAP)];
         for (north, rgb) in caps {
-            push(self, Kind::Cap, MeshId::PolarCap { north }, None, 1.0, [0.0; 4], flat(linear(rgb)));
+            push(self, Kind::Cap, MeshId::PolarCap { north }, None, 1.0, [0.0; 4], flat(display(rgb)));
         }
         out
     }
@@ -759,6 +848,82 @@ impl Globe {
             back: v4(r.z_axis * scale, 0.0),
             frame: [width as f32, height as f32, (eye.length_squared() - 1.0) as f32, 0.0],
         }
+    }
+
+    /// Воздух кадра: глаз в долях полуосей, оси камеры в ECEF. Разности
+    /// квадратов считаются в f64.
+    fn air_uniform(camera: &Camera, width: u32, height: u32, on: bool) -> AirUniform {
+        let e = &camera.ellipsoid;
+        let axes = DVec3::new(1.0 / e.a, 1.0 / e.a, 1.0 / e.b);
+        let eye = camera.eye * axes;
+        let shell = 1.0 + SHELL_KM * 1000.0 / e.a;
+        let t = (camera.fov_y.to_radians() / 2.0).tan();
+        let r = camera.rotation;
+        let v4 = |v: DVec3, w: f64| [v.x as f32, v.y as f32, v.z as f32, w as f32];
+        let squared = eye.length_squared();
+        AirUniform {
+            eye: v4(eye, squared - shell * shell),
+            axes: v4(axes, e.a / 1000.0),
+            right: v4(r.x_axis * (t * camera.aspect()), f64::from(width)),
+            up: v4(r.y_axis * t, f64::from(height)),
+            back: v4(r.z_axis, squared - 1.0),
+            flags: [if on { 1.0 } else { 0.0 }, 0.0, 0.0, 0.0],
+        }
+    }
+
+    /// Снять следующий кадр. Снимок забирает [`Globe::take_grab`].
+    pub fn grab(&mut self) {
+        self.grab_next = true;
+    }
+
+    /// Снятый кадр. В программе чтение ждёт видеокарту, на странице
+    /// кадр приходит позже, None - ещё не пришёл.
+    pub fn take_grab(&self) -> Option<Frame> {
+        #[cfg(not(target_arch = "wasm32"))]
+        let _ = self.device.poll(wgpu::PollType::wait_indefinitely());
+        self.grabbed.lock().ok()?.take()
+    }
+
+    /// Скопировать кадр в буфер и начать его чтение.
+    fn copy_grab(&self, encoder: &mut wgpu::CommandEncoder, target: &Target) -> (wgpu::Buffer, u32, u32, u32) {
+        let (width, height) = (target.width, target.height);
+        let row = (4 * width).div_ceil(256) * 256;
+        let buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("grab"),
+            size: u64::from(row) * u64::from(height),
+            usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+        encoder.copy_texture_to_buffer(
+            target.color.as_image_copy(),
+            wgpu::TexelCopyBufferInfo {
+                buffer: &buffer,
+                layout: wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(row), rows_per_image: Some(height) },
+            },
+            wgpu::Extent3d { width, height, depth_or_array_layers: 1 },
+        );
+        (buffer, width, height, row)
+    }
+
+    fn start_grab_read(&self, buffer: wgpu::Buffer, width: u32, height: u32, row: u32) {
+        let result = self.grabbed.clone();
+        let source = buffer.clone();
+        source.slice(..).map_async(wgpu::MapMode::Read, move |r| {
+            if r.is_err() {
+                return;
+            }
+            let rgba = buffer.slice(..).get_mapped_range().ok().map(|data| {
+                (0..height as usize)
+                    .filter_map(|y| data.get(y * row as usize..y * row as usize + 4 * width as usize))
+                    .flatten()
+                    .copied()
+                    .collect::<Vec<u8>>()
+            });
+            buffer.unmap();
+            if let (Some(rgba), Ok(mut slot)) = (rgba, result.lock()) {
+                *slot = Some(Frame { width, height, rgba });
+            }
+        });
     }
 
     /// Нарисовать кадр. Размер кадра - окно камеры. heights - высоты
@@ -796,6 +961,7 @@ impl Globe {
         if options.count_holes && !USE_QUERIES {
             self.ensure_pixels();
         }
+        let grab_now = std::mem::take(&mut self.grab_next);
         let Some(target) = &self.target else {
             return FrameStats::default();
         };
@@ -805,6 +971,10 @@ impl Globe {
             let rays = Self::rays_uniform(camera, target.width, target.height);
             self.queue.write_buffer(&self.rays, 0, bytemuck::bytes_of(&rays));
         }
+        // Пурпурные дыры видны только без воздуха, как в модуле.
+        let air_on = options.air && !options.show_holes;
+        let air = Self::air_uniform(camera, target.width, target.height, air_on);
+        self.queue.write_buffer(&self.air, 0, bytemuck::bytes_of(&air));
         let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("globe") });
         let mut draws = 0;
         {
@@ -826,6 +996,7 @@ impl Globe {
                 multiview_mask: None,
             });
             pass.set_pipeline(&self.tile_pipeline);
+            pass.set_bind_group(2, &self.air_bind, &[]);
             let mut underlay_open = false;
             for (i, item) in items.iter().enumerate() {
                 // Подстилка идёт подряд, её видимые пиксели считает
@@ -854,6 +1025,15 @@ impl Globe {
             }
             if underlay_open {
                 pass.end_occlusion_query();
+            }
+            // Небо и гало - там, где нет тайлов, до счётчика дыр: небо
+            // глубину не пишет, дыры оно не закрывает.
+            if air_on {
+                pass.set_pipeline(&self.sky_pipeline);
+                pass.set_bind_group(0, &self.uniform_bind, &[0]);
+                pass.set_bind_group(1, &self.blank, &[]);
+                pass.set_bind_group(2, &self.air_bind, &[]);
+                pass.draw(0..3, 0..1);
             }
             if counting {
                 let paint = options.show_holes || !USE_QUERIES;
@@ -892,7 +1072,11 @@ impl Globe {
             );
             pixel_read = Some((p.buffer.clone(), p.width, p.height, p.row));
         }
+        let grab = grab_now.then(|| self.copy_grab(&mut encoder, target));
         self.queue.submit([encoder.finish()]);
+        if let Some((buffer, width, height, row)) = grab {
+            self.start_grab_read(buffer, width, height, row);
+        }
         if read && USE_QUERIES {
             self.start_read();
         }

@@ -70,7 +70,7 @@ fn half_ready(key: TileKey) -> bool {
 
 /// Дыры и видимая подстилка.
 fn holes(globe: &mut Globe, camera: &Camera, selection: &lod::Selection) -> (u64, u64) {
-    let stats = globe.render(camera, selection, None, FrameOptions { count_holes: true, show_holes: false });
+    let stats = globe.render(camera, selection, None, FrameOptions { count_holes: true, show_holes: false, air: false });
     assert!(stats.draws > 0);
     (stats.holes.unwrap(), stats.underlay.unwrap())
 }
@@ -163,12 +163,64 @@ fn picture_keeps_its_brightness() {
     for key in &sel.draw {
         globe.upload(*key, 256, 256, &rgba);
     }
-    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false });
+    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false });
     let pixel = center_pixel(&device, &queue, &globe);
     eprintln!("пиксель в середине кадра: {pixel:?}");
     for c in &pixel[..3] {
         assert!(c.abs_diff(128) <= 3, "{pixel:?}");
     }
+}
+
+/// Снятый кадр с атмосферой или без.
+fn grab(globe: &mut Globe, cam: &Camera, air: bool) -> render::Frame {
+    let sel = lod::select(cam, &|_| true, Options::default());
+    globe.grab();
+    globe.render(cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air });
+    globe.take_grab().unwrap()
+}
+
+fn rgb(frame: &render::Frame, x: f64, y: f64) -> [u8; 3] {
+    let at = 4 * (y.round() as usize * frame.width as usize + x.round() as usize);
+    [frame.rgba[at], frame.rgba[at + 1], frame.rgba[at + 2]]
+}
+
+#[test]
+fn halo_at_the_rim_and_black_space() {
+    // Пороги модуля (`tools/qgis_phase1.py`): гало в 1 % радиуса диска
+    // за краем синее, в 30 % - чёрный космос. Без атмосферы гало нет.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 2.0e7, 0.0, 0.0);
+    let angle = (Ellipsoid::wgs84().a / cam.eye.length()).asin();
+    let radius = angle.tan() / (cam.fov_y.to_radians() / 2.0).tan() * f64::from(cam.height) / 2.0;
+    let (cx, cy) = (f64::from(cam.width) / 2.0, f64::from(cam.height) / 2.0);
+    let frame = grab(&mut globe, &cam, true);
+    // Слева от диска, по горизонтали через середину.
+    let halo = rgb(&frame, cx - 1.01 * radius, cy);
+    let space = rgb(&frame, cx - 1.3 * radius, cy);
+    eprintln!("гало {halo:?}, космос {space:?}");
+    assert!(halo[2] >= 100 && halo[2] > halo[0] + 20, "{halo:?}");
+    assert!(space.iter().all(|c| *c <= 10), "{space:?}");
+    let frame = grab(&mut globe, &cam, false);
+    assert_eq!(rgb(&frame, cx - 1.01 * radius, cy), [0, 0, 0]);
+}
+
+#[test]
+fn blue_sky_over_the_horizon() {
+    // Небо у верхнего края кадра с наклоном 80° голубое, порог модуля.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(43.24778, 42.44001, 2000.0, 0.0, 80.0);
+    let frame = grab(&mut globe, &cam, true);
+    let sky = rgb(&frame, f64::from(cam.width) / 2.0, 5.0);
+    eprintln!("небо {sky:?}");
+    assert!(sky[2] >= 150 && sky[2] > sky[0] + 40, "{sky:?}");
 }
 
 #[test]

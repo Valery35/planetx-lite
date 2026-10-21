@@ -14,14 +14,18 @@
 //! загрузки, замер высоты вершины, низкий полёт. Дыр нет, глаз не ниже
 //! 50 м над рельефом, наибольшая высота в радиусе 1 км 5642 ± 60 м
 //! на уровне высот не ниже 12, в низком полёте не меньше 55 кадров
-//! в любом окне 1 с.
+//! в любом окне 1 с. Затем кадр из космоса над Пермью и кадр неба
+//! у Эльбруса. Пороги цвета - как в модуле: гало у края диска синее
+//! (синий не меньше 100 и больше красного на 20), космос за ним чёрный
+//! (все каналы не больше 10), небо у верхнего края голубое (синий
+//! не меньше 150 и больше красного на 40).
 //!
 //! Дыры считаются, пока частота кадров не мерится: счётчик ждёт
 //! видеокарту и сбивал бы её.
 
 use globe_core::lod::TileKey;
 use globe_core::navigation::{MIN_ALTITUDE, Navigator, Pose, clearance};
-use render::FrameStats;
+use render::{Frame, FrameStats};
 use terrain::HeightStore;
 
 use crate::basemap::Basemap;
@@ -66,6 +70,15 @@ pub const LOW_FLIGHT: (f64, f64, f64, f64) = (400.0, 80.0, 0.05, 12.0);
 /// Замер высоты вершины: радиус и шаг, метры.
 pub const SUMMIT_RADIUS: f64 = 1000.0;
 pub const SUMMIT_STEP: f64 = 20.0;
+/// Небо: кадр у Эльбруса южнее вершины на эту долю градуса, расстояние
+/// и наклон, как в модуле.
+pub const SKY_POSE: (f64, f64, f64) = (0.1, 2000.0, 80.0);
+/// Кольца замера цвета: гало в 1 % радиуса диска за краем, космос
+/// в 30 %.
+pub const HALO_RING: f64 = 1.01;
+pub const SPACE_RING: f64 = 1.3;
+/// Доля высоты кадра сверху, где мерится небо.
+pub const SKY_BAND: u32 = 20;
 /// Кадров подряд без загрузки, после которых место считается загруженным.
 pub const IDLE_FRAMES: u32 = 10;
 /// Предел ожидания загрузки, секунды.
@@ -130,6 +143,10 @@ enum Phase {
     LowFlight,
     /// Пермь: вид на снимках Esri, ожидание загрузки.
     LoadEsri,
+    /// Эльбрус: кадр из космоса над Пермью.
+    Space,
+    /// Эльбрус: кадр неба у Эльбруса.
+    Sky,
     Done,
 }
 
@@ -156,7 +173,84 @@ pub struct Check {
     fps_times: Vec<f64>,
     /// Тайлов, которых не оказалось у источника основы.
     missing: usize,
+    /// Кадр нужно снять, кадр снимается.
+    grab_request: bool,
+    grab_wait: bool,
+    /// Медианы RGB: гало, космос, небо.
+    halo: Option<[f64; 3]>,
+    space: Option<[f64; 3]>,
+    sky: Option<[f64; 3]>,
     failure: Option<String>,
+}
+
+/// Медиана по каналам RGB.
+fn median(mut pixels: Vec<[u8; 3]>) -> Option<[f64; 3]> {
+    if pixels.is_empty() {
+        return None;
+    }
+    let mut out = [0.0; 3];
+    for (c, slot) in out.iter_mut().enumerate() {
+        pixels.sort_unstable_by_key(|p| p[c]);
+        let n = pixels.len();
+        let at = |i: usize| f64::from(pixels.get(i).map_or(0, |p| p[c]));
+        *slot = if n % 2 == 1 { at(n / 2) } else { (at(n / 2 - 1) + at(n / 2)) / 2.0 };
+    }
+    Some(out)
+}
+
+fn pixel(frame: &Frame, x: i64, y: i64) -> Option<[u8; 3]> {
+    let (x, y) = (u32::try_from(x).ok()?, u32::try_from(y).ok()?);
+    if x >= frame.width || y >= frame.height {
+        return None;
+    }
+    let at = 4 * (y as usize * frame.width as usize + x as usize);
+    let p = frame.rgba.get(at..at + 3)?;
+    Some([p[0], p[1], p[2]])
+}
+
+/// Радиус диска Земли в пикселях кадра: глаз на расстоянии distance
+/// от центра шара радиуса a, взгляд в центр, поле зрения fov_y градусов.
+pub fn disk_radius(distance: f64, a: f64, fov_y: f64, height: u32) -> f64 {
+    let angle = (a / distance).clamp(-1.0, 1.0).asin();
+    angle.tan() / (fov_y.to_radians() / 2.0).tan() * f64::from(height) / 2.0
+}
+
+/// Медиана RGB на окружности радиуса scale·radius вокруг середины
+/// кадра, 360 точек, как в модуле.
+pub fn ring_median(frame: &Frame, radius: f64, scale: f64) -> Option<[f64; 3]> {
+    let (cx, cy) = (f64::from(frame.width) / 2.0, f64::from(frame.height) / 2.0);
+    let points = (0..360)
+        .filter_map(|i| {
+            let a = f64::from(i).to_radians();
+            pixel(frame, (cx + scale * radius * a.cos()).round() as i64, (cy + scale * radius * a.sin()).round() as i64)
+        })
+        .collect();
+    median(points)
+}
+
+/// Медиана RGB верхней 1/[`SKY_BAND`] кадра.
+pub fn top_median(frame: &Frame) -> Option<[f64; 3]> {
+    let rows = (frame.height / SKY_BAND).max(1);
+    let points = (0..rows)
+        .flat_map(|y| (0..frame.width).filter_map(move |x| pixel(frame, i64::from(x), i64::from(y))))
+        .collect();
+    median(points)
+}
+
+pub fn halo_ok(rgb: [f64; 3]) -> bool {
+    rgb[2] >= 100.0 && rgb[2] > rgb[0] + 20.0
+}
+
+pub fn space_ok(rgb: [f64; 3]) -> bool {
+    rgb.iter().all(|c| *c <= 10.0)
+}
+
+pub fn sky_ok(rgb: [f64; 3]) -> bool {
+    rgb[2] >= 150.0 && rgb[2] > rgb[0] + 40.0
+}
+
+fn rgb_text(rgb: Option<[f64; 3]>) -> String {
+    rgb.map_or("-".to_string(), |c| format!("{:.0},{:.0},{:.0}", c[0], c[1], c[2]))
 }
 
 /// Как программа называет себя серверу тайлов.
@@ -224,6 +318,11 @@ impl Check {
             summit: None,
             fps_times: Vec::new(),
             missing: 0,
+            grab_request: false,
+            grab_wait: false,
+            halo: None,
+            space: None,
+            sky: None,
             failure: None,
         }
     }
@@ -233,9 +332,41 @@ impl Check {
         self.missing += 1;
     }
 
-    /// Считать дыры в этом кадре.
+    /// Считать дыры в этом кадре. В кадрах цвета дыры не считаются:
+    /// на странице счётчик красит их пурпурным.
     pub fn count_holes(&self) -> bool {
-        !matches!(self.phase, Phase::Spin | Phase::LowFlight | Phase::Done)
+        !matches!(self.phase, Phase::Spin | Phase::LowFlight | Phase::Space | Phase::Sky | Phase::Done)
+    }
+
+    /// Снять этот кадр. Просьба снимается вызовом.
+    pub fn take_grab_request(&mut self) -> bool {
+        std::mem::take(&mut self.grab_request)
+    }
+
+    /// Ждёт снятого кадра.
+    pub fn waits_frame(&self) -> bool {
+        self.grab_wait
+    }
+
+    /// Снятый кадр. distance - расстояние глаза от центра Земли, a -
+    /// большая полуось, fov_y - поле зрения, градусы.
+    pub fn frame(&mut self, frame: &Frame, nav: &mut Navigator, distance: f64, a: f64, fov_y: f64, now: f64) {
+        self.grab_wait = false;
+        match self.phase {
+            Phase::Space => {
+                let radius = disk_radius(distance, a, fov_y, frame.height);
+                self.halo = ring_median(frame, radius, HALO_RING);
+                self.space = ring_median(frame, radius, SPACE_RING);
+                let (south, d, tilt) = SKY_POSE;
+                nav.show(Pose::new(ELBRUS.0 - south, ELBRUS.1, d, 0.0, tilt));
+                self.enter(Phase::Sky, now);
+            }
+            Phase::Sky => {
+                self.sky = top_median(frame);
+                self.enter(Phase::Done, now);
+            }
+            _ => {}
+        }
     }
 
     fn enter(&mut self, phase: Phase, now: f64) {
@@ -253,7 +384,11 @@ impl Check {
         self.idle = if loading { 0 } else { self.idle + 1 };
         let loaded = self.idle >= IDLE_FRAMES;
         let t = now - start;
-        if matches!(self.phase, Phase::LoadStart | Phase::LoadPlace | Phase::Settle | Phase::LoadEsri) && t > LOAD_TIMEOUT {
+        let waiting = matches!(
+            self.phase,
+            Phase::LoadStart | Phase::LoadPlace | Phase::Settle | Phase::LoadEsri | Phase::Space | Phase::Sky
+        );
+        if waiting && t > LOAD_TIMEOUT {
             self.failure = Some(format!("загрузка не закончилась за {LOAD_TIMEOUT} с, шаг {:?}", self.phase));
             self.enter(Phase::Done, now);
             return;
@@ -301,8 +436,13 @@ impl Check {
                 nav.show(Pose::new(lat, ELBRUS.1, distance, 0.0, tilt));
                 self.fps_times.push(now);
                 if s >= 1.0 {
-                    self.enter(Phase::Done, now);
+                    nav.show(Pose::new(PERM.0, PERM.1, SPACE_DISTANCE, 0.0, 0.0));
+                    self.enter(Phase::Space, now);
                 }
+            }
+            (Scenario::Elbrus, Phase::Space | Phase::Sky) if loaded && !self.grab_wait => {
+                self.grab_request = true;
+                self.grab_wait = true;
             }
             _ => {}
         }
@@ -353,10 +493,15 @@ impl Check {
                 (h - ELBRUS_HEIGHT).abs() <= ELBRUS_TOLERANCE && level >= ELBRUS_MIN_LEVEL
             });
             let clear_ok = self.clearance_min >= MIN_ALTITUDE - 0.5;
-            ok = ok && summit_ok && clear_ok;
+            let colors_ok = self.halo.is_some_and(halo_ok)
+                && self.space.is_some_and(space_ok)
+                && self.sky.is_some_and(sky_ok);
+            ok = ok && summit_ok && clear_ok && colors_ok;
             let (h, level) = self.summit.unwrap_or((f64::NAN, 0));
             out.push(format!("summit_m={h:.0} height_level={level} expected={ELBRUS_HEIGHT}±{ELBRUS_TOLERANCE}"));
             out.push(format!("clearance_min_m={:.1}", self.clearance_min));
+            out.push(format!("halo_rgb={} space_rgb={}", rgb_text(self.halo), rgb_text(self.space)));
+            out.push(format!("sky_rgb={}", rgb_text(self.sky)));
         }
         for s in sources.iter().filter(|s| s.total + s.disk > 0) {
             out.push(format!(
@@ -376,7 +521,10 @@ impl Check {
 
 #[cfg(test)]
 mod tests {
-    use super::{Scenario, min_frames_per_second, summit_height};
+    use super::{
+        Frame, Scenario, disk_radius, halo_ok, min_frames_per_second, ring_median, sky_ok, space_ok, summit_height,
+        top_median,
+    };
     use terrain::{HeightStore, HeightTile, SIZE};
 
     #[test]
@@ -387,6 +535,39 @@ mod tests {
         stall.retain(|t| !(2.0..2.2).contains(t));
         assert_eq!(min_frames_per_second(&stall), Some(48));
         assert_eq!(min_frames_per_second(&[0.0, 0.5]), None);
+    }
+
+    fn ring_frame() -> Frame {
+        // Кадр 100×100: внутри круга радиуса 30 - синий, дальше чёрный.
+        let mut rgba = Vec::new();
+        for y in 0..100 {
+            for x in 0..100 {
+                let r = ((f64::from(x) - 50.0).powi(2) + (f64::from(y) - 50.0).powi(2)).sqrt();
+                rgba.extend_from_slice(if r <= 30.0 { &[40, 90, 200, 255] } else { &[0, 0, 0, 255] });
+            }
+        }
+        Frame { width: 100, height: 100, rgba }
+    }
+
+    #[test]
+    fn colors_on_rings_and_top_band() {
+        let frame = ring_frame();
+        assert_eq!(ring_median(&frame, 25.0, 1.0), Some([40.0, 90.0, 200.0]));
+        assert_eq!(ring_median(&frame, 25.0, 1.5), Some([0.0, 0.0, 0.0]));
+        assert_eq!(top_median(&frame), Some([0.0, 0.0, 0.0]));
+        // Окружность за кадром - точек нет.
+        assert_eq!(ring_median(&frame, 200.0, 1.0), None);
+        assert!(halo_ok([40.0, 90.0, 200.0]) && !halo_ok([150.0, 150.0, 160.0]));
+        assert!(space_ok([10.0, 0.0, 3.0]) && !space_ok([0.0, 0.0, 11.0]));
+        assert!(sky_ok([100.0, 170.0, 230.0]) && !sky_ok([200.0, 200.0, 230.0]));
+    }
+
+    #[test]
+    fn disk_radius_from_distance() {
+        // С расстояния двух радиусов диск виден под углом 30°.
+        let r = disk_radius(2.0, 1.0, 60.0, 1000);
+        let expected = 30f64.to_radians().tan() / 30f64.to_radians().tan() * 500.0;
+        assert!((r - expected).abs() < 1e-9);
     }
 
     #[test]
