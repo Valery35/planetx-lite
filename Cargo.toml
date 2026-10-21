@@ -4,7 +4,15 @@
 
 [workspace]
 resolver = "3"
-members = ["crates/globe-core", "crates/net", "crates/render", "crates/ui", "apps/planetx-lite", "apps/planetx-web"]
+members = [
+    "crates/globe-core",
+    "crates/terrain",
+    "crates/net",
+    "crates/render",
+    "crates/ui",
+    "apps/planetx-lite",
+    "apps/planetx-web",
+]
 
 [workspace.package]
 version = "0.1.0"
@@ -15,6 +23,7 @@ repository = "https://github.com/Valery35/planetx-lite"
 
 [workspace.dependencies]
 globe-core = { path = "crates/globe-core" }
+terrain = { path = "crates/terrain" }
 net = { path = "crates/net" }
 render = { path = "crates/render" }
 ui = { path = "crates/ui" }

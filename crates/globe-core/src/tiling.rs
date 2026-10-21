@@ -126,7 +126,7 @@ pub fn skirt_depth(e: &Ellipsoid, z: u32) -> f64 {
 /// Порядок - северный край с запада на восток, восточный с севера
 /// на юг, южный с востока на запад, западный с юга на север. Снаружи
 /// Земли этот обход идёт по часовой стрелке.
-fn ring(seg: u32) -> Vec<u32> {
+pub fn ring(seg: u32) -> Vec<u32> {
     let side = seg + 1;
     let north = 0..seg;
     let east = (0..seg).map(|j| j * side + seg);

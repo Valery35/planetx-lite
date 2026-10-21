@@ -41,9 +41,9 @@ fn main() {
         return;
     };
     let search = window.location().search().unwrap_or_default();
-    let has = |name: &str| search.trim_start_matches('?').split('&').any(|p| p == name);
-    let check = has("check=perm");
-    let gl_only = has("gl");
+    let params: Vec<&str> = search.trim_start_matches('?').split('&').collect();
+    let scenario = params.iter().find_map(|p| p.strip_prefix("check=")).and_then(ui::Scenario::from_name);
+    let gl_only = params.contains(&"gl");
     let Some(canvas) = document.get_element_by_id("globe").and_then(|e| e.dyn_into::<web_sys::HtmlCanvasElement>().ok())
     else {
         return;
@@ -76,9 +76,13 @@ fn main() {
                 options,
                 Box::new(move |cc| {
                     let ctx = cc.egui_ctx.clone();
-                    let loader = net::web::Loader::new(net::OSM, Rc::new(move || ctx.request_repaint()));
+                    let repaint: Rc<dyn Fn()> = Rc::new(move || ctx.request_repaint());
+                    let loaders = ui::Loaders {
+                        basemap: Box::new(net::web::Loader::new(net::OSM, repaint.clone())),
+                        terrain: Box::new(net::web::Loader::new(net::TERRARIUM, repaint)),
+                    };
                     let report: ui::Report = Box::new(move |text, _ok| show(text));
-                    Ok(Box::new(ui::LiteApp::new(cc, Box::new(loader), check, report)))
+                    Ok(Box::new(ui::LiteApp::new(cc, loaders, scenario, report)))
                 }),
             )
             .await;

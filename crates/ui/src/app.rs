@@ -2,21 +2,24 @@
 // Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Окно: глобус с подложкой OSM и навигация мышью и пальцами.
+//! Окно: глобус с подложкой и рельефом, навигация мышью и пальцами.
 
-use std::sync::atomic::Ordering;
+use std::collections::HashMap;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use eframe::{egui, egui_wgpu};
 use globe_core::camera::Camera;
 use globe_core::ellipsoid::Ellipsoid;
-use globe_core::lod::{self, Memo, Options, TileKey};
-use globe_core::navigation::{Navigator, Pose};
+use globe_core::lod::{self, Memo, Options, Selection, TileKey};
+use globe_core::navigation::{Navigator, Pose, nearest_terrain};
 use globe_core::{DMat3, DVec3};
 use net::TileLoader;
 use render::{FrameOptions, Globe, wgpu};
+use terrain::{Encoding, HeightStore};
 
-use crate::check::{self, Check};
-use crate::i18n::{Lang, OSM_COPYRIGHT, Text, text};
+use crate::check::{self, Check, Scenario};
+use crate::i18n::{Lang, OSM_COPYRIGHT, TERRAIN_SOURCES, Text, text};
 use crate::input::Input;
 
 /// Сколько снимков тайлов держать в видеокарте, сверх нужных кадру
@@ -25,14 +28,73 @@ pub const TEXTURE_BUDGET: usize = 800;
 /// Начальный вид - Пермь из космоса с 20 000 км, отвесно, север вверху.
 /// Решение автора от 22 октября 2026 года.
 pub const START: (f64, f64, f64) = (check::PERM.0, check::PERM.1, check::SPACE_DISTANCE);
+/// Пол высот Земли: дно моря прижато к уровню моря, подложка рисует воду.
+pub const EARTH_FLOOR: Option<f32> = Some(0.0);
 
 /// Куда отдать отчёт самопроверки: текст и итог, true - пройдена.
 pub type Report = Box<dyn FnMut(&str, bool)>;
+
+/// Куда отдать снимок окна.
+pub type ShotSink = Box<dyn FnOnce(&egui::ColorImage) + Send>;
+
+/// Кадров подряд без загрузки и движения перед снимком окна.
+pub const SHOT_IDLE_FRAMES: u32 = 30;
+
+/// Снимок окна после загрузки места.
+struct Shot {
+    sink: Option<ShotSink>,
+    done: Arc<AtomicBool>,
+    idle: u32,
+}
+
+/// Загрузчики тайлов платформы.
+pub struct Loaders {
+    /// Снимки подложки.
+    pub basemap: Box<dyn TileLoader>,
+    /// Высоты рельефа.
+    pub terrain: Box<dyn TileLoader>,
+}
+
+/// Хранилище высот, общее для кадра и навигатора.
+#[derive(Clone, Default)]
+pub struct Heights(Arc<RwLock<HeightStore>>);
+
+impl Heights {
+    pub fn read(&self) -> RwLockReadGuard<'_, HeightStore> {
+        self.0.read().unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
+    pub fn write(&self) -> RwLockWriteGuard<'_, HeightStore> {
+        self.0.write().unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+}
 
 /// Тайлы уровней 0-2: они нужны кадру всегда, кадр без них нечем
 /// закрыть Землю.
 fn start_keys() -> Vec<TileKey> {
     (0..=2u32).flat_map(|z| (0..1u32 << z).flat_map(move |x| (0..1u32 << z).map(move |y| (z, x, y)))).collect()
+}
+
+/// Недостающие тайлы высот кадра и их приоритет.
+///
+/// Высоты нужны и тайлам, которые подложка ждёт. Иначе у самой земли
+/// рисуется грубый предок, ему хватает грубых высот, и точные не просит
+/// никто. Приоритет высот - экранная ошибка тайла, который их ждёт.
+fn height_needs(store: &HeightStore, sel: &Selection) -> Vec<(TileKey, f64)> {
+    let mut wanted: HashMap<TileKey, f64> = HashMap::new();
+    let want: HashMap<TileKey, f64> = sel.want.iter().copied().collect();
+    for key in sel.draw.iter().chain(sel.want.iter().map(|(k, _)| k)) {
+        let height_key = store.wanted(*key);
+        if store.tile(height_key).is_none() {
+            let p = want.get(key).copied().unwrap_or(1.0);
+            let slot = wanted.entry(height_key).or_insert(p);
+            *slot = slot.max(p);
+        }
+    }
+    if store.tile((0, 0, 0)).is_none() {
+        wanted.insert((0, 0, 0), lod::INFINITE_PRIORITY + 10.0);
+    }
+    wanted.into_iter().collect()
 }
 
 pub struct LiteApp {
@@ -41,44 +103,108 @@ pub struct LiteApp {
     globe: Option<Globe>,
     texture: Option<egui::TextureId>,
     nav: Navigator,
-    loader: Box<dyn TileLoader>,
+    loaders: Loaders,
+    heights: Heights,
     input: Input,
     memo: Memo,
     check: Option<Check>,
     report: Report,
+    shot: Option<Shot>,
 }
 
 impl LiteApp {
-    /// check - запустить самопроверку, её отчёт уходит в report.
-    pub fn new(cc: &eframe::CreationContext<'_>, loader: Box<dyn TileLoader>, check: bool, report: Report) -> Self {
+    /// scenario - самопроверка или None, её отчёт уходит в report.
+    pub fn new(cc: &eframe::CreationContext<'_>, loaders: Loaders, scenario: Option<Scenario>, report: Report) -> Self {
         let render_state = cc.wgpu_render_state.clone();
         let globe = render_state.as_ref().map(|rs| Globe::new(&rs.device, &rs.queue));
         let camera = Camera::new(Ellipsoid::wgs84(), DVec3::ZERO, DMat3::IDENTITY);
-        let pose = if check { check::start_pose() } else { Pose::new(START.0, START.1, START.2, 0.0, 0.0) };
+        let pose = match scenario {
+            Some(s) => s.start_pose(),
+            None => Pose::new(START.0, START.1, START.2, 0.0, 0.0),
+        };
+        let heights = Heights::default();
+        let mut nav = Navigator::new(camera, pose);
+        let source = heights.clone();
+        nav.set_terrain(Some(Arc::new(move |lat, lon| source.read().height_at(lat, lon))));
         Self {
             lang: Lang::from_system(),
             render_state,
             globe,
             texture: None,
-            nav: Navigator::new(camera, pose),
-            loader,
+            nav,
+            loaders,
+            heights,
             input: Input::default(),
             memo: Memo::new(),
-            check: check.then(Check::new),
+            check: scenario.map(Check::new),
             report,
+            shot: None,
         }
     }
 
-    /// Снимки пришедших тайлов - в видеокарту.
-    fn upload(&mut self) {
-        let Some(globe) = &mut self.globe else {
+    /// Начать с позы pose вместо начального вида.
+    pub fn with_pose(mut self, pose: Pose) -> Self {
+        self.nav.show(pose);
+        self
+    }
+
+    /// Когда место загрузится, снять окно, отдать снимок в sink
+    /// и закрыться.
+    pub fn with_shot(mut self, sink: ShotSink) -> Self {
+        self.shot = Some(Shot { sink: Some(sink), done: Arc::new(AtomicBool::new(false)), idle: 0 });
+        self
+    }
+
+    /// Шаг снимка окна. busy - загрузка или движение идёт.
+    fn step_shot(&mut self, ctx: &egui::Context, busy: bool) {
+        let Some(shot) = &mut self.shot else {
             return;
         };
-        for loaded in self.loader.take() {
-            if let Ok(image) = loaded.image {
-                globe.upload(loaded.key, image.width, image.height, &image.rgba);
+        if shot.done.load(Ordering::SeqCst) {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            return;
+        }
+        shot.idle = if busy { 0 } else { shot.idle + 1 };
+        if shot.idle >= SHOT_IDLE_FRAMES
+            && let Some(sink) = shot.sink.take()
+        {
+            let done = shot.done.clone();
+            ctx.request_screenshot(move |image| {
+                sink(&image);
+                done.store(true, Ordering::SeqCst);
+            });
+        }
+        ctx.request_repaint();
+    }
+
+    /// Снимки и высоты пришедших тайлов - в видеокарту и в хранилище.
+    fn upload(&mut self) {
+        if let Some(globe) = &mut self.globe {
+            for loaded in self.loaders.basemap.take() {
+                if let Ok(image) = loaded.image {
+                    globe.upload(loaded.key, image.width, image.height, &image.rgba);
+                }
             }
         }
+        let arrived = self.loaders.terrain.take();
+        if arrived.is_empty() {
+            return;
+        }
+        {
+            let mut store = self.heights.write();
+            for loaded in arrived {
+                let (z, x, y) = loaded.key;
+                if let Some(tile) = loaded
+                    .image
+                    .ok()
+                    .and_then(|img| terrain::make_tile(z, x, y, &img.rgba, EARTH_FLOOR, Encoding::Terrarium))
+                {
+                    store.add(tile);
+                }
+            }
+        }
+        // Точные высоты могли прийти выше глаза.
+        self.nav.keep_clear();
     }
 
     /// Показ кадра глобуса в egui, текстура регистрируется заново после
@@ -111,10 +237,13 @@ impl LiteApp {
                     .inner_margin(egui::Margin::same(4))
                     .corner_radius(3.0)
                     .show(ui, |ui| {
-                        ui.hyperlink_to(
-                            egui::RichText::new(text(self.lang, Text::Attribution)).color(egui::Color32::BLACK),
-                            OSM_COPYRIGHT,
-                        );
+                        ui.vertical(|ui| {
+                            ui.hyperlink_to(
+                                egui::RichText::new(text(self.lang, Text::Attribution)).color(egui::Color32::BLACK),
+                                OSM_COPYRIGHT,
+                            );
+                            ui.label(egui::RichText::new(TERRAIN_SOURCES).color(egui::Color32::BLACK).small());
+                        });
                     });
             });
     }
@@ -126,7 +255,7 @@ impl LiteApp {
         if !check.done() {
             return;
         }
-        let stats = self.loader.stats();
+        let stats = self.loaders.basemap.stats();
         let (report, ok) = check.report(
             stats.requests_peak.load(Ordering::SeqCst),
             stats.requests_total.load(Ordering::SeqCst),
@@ -159,21 +288,33 @@ impl eframe::App for LiteApp {
         self.nav.camera.width = width;
         self.nav.camera.height = height;
 
+        let loading = self.loaders.basemap.busy() || self.loaders.terrain.busy();
         if let Some(check) = &mut self.check {
-            check.before_frame(&mut self.nav, now, self.loader.busy());
+            check.before_frame(&mut self.nav, now, loading);
         } else {
             self.input.handle(&ctx, rect, &mut self.nav, now, ppp);
         }
         let moving = self.nav.step(now);
+        // Ближняя плоскость - от ближайшего рельефа.
+        let eye = self.nav.camera.eye;
+        self.nav.camera.nearest =
+            Some(nearest_terrain(&self.nav.camera.ellipsoid, eye, self.nav.pose.terrain.as_ref()));
 
         let Some(globe) = &mut self.globe else {
             ui.centered_and_justified(|ui| ui.label(text(self.lang, Text::NoGpu)));
             return;
         };
+        let added = self.heights.write().take_added();
+        let store = self.heights.read();
         let selection = {
             let ready = |k: TileKey| k.0 <= 2 || globe.has_texture(k);
-            let memo = self.memo.bind(&self.nav.camera, lod::THRESHOLD, 0, &[]);
-            lod::select(&self.nav.camera, &ready, Options { memo: Some(memo), ..Options::default() })
+            let ranges = |k: TileKey| store.range_for(k);
+            let memo = self.memo.bind(&self.nav.camera, lod::THRESHOLD, store.version(), &added);
+            lod::select(
+                &self.nav.camera,
+                &ready,
+                Options { heights: Some(&ranges), memo: Some(memo), ..Options::default() },
+            )
         };
         let mut wanted: Vec<(TileKey, f64)> = start_keys()
             .into_iter()
@@ -181,11 +322,14 @@ impl eframe::App for LiteApp {
             .map(|k| (k, lod::INFINITE_PRIORITY + 10.0 - f64::from(k.0)))
             .collect();
         wanted.extend(selection.want.iter().copied());
-        self.loader.want(&wanted);
+        self.loaders.basemap.want(&wanted);
+        self.loaders.terrain.want(&height_needs(&store, &selection));
 
         let recreated = globe.resize(width, height);
         let count_holes = self.check.as_ref().is_some_and(Check::count_holes);
-        let stats = globe.render(&self.nav.camera, &selection, FrameOptions { count_holes, show_holes: false });
+        let stats =
+            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false });
+        drop(store);
         globe.evict(&selection.keep, TEXTURE_BUDGET);
         self.show_target(recreated || self.texture.is_none());
         if let Some(id) = self.texture {
@@ -195,10 +339,11 @@ impl eframe::App for LiteApp {
         self.attribution(&ctx);
 
         if let Some(check) = &mut self.check {
-            check.after_frame(&stats);
+            check.after_frame(&stats, &self.nav, &self.heights.read());
         }
         self.finish_check(&ctx);
-        if moving || self.loader.busy() || self.check.is_some() {
+        self.step_shot(&ctx, moving || loading);
+        if moving || loading || self.check.is_some() {
             ctx.request_repaint();
         }
     }

@@ -12,4 +12,5 @@ pub mod check;
 pub mod i18n;
 pub mod input;
 
-pub use app::{LiteApp, Report};
+pub use app::{LiteApp, Loaders, Report, ShotSink};
+pub use check::Scenario;

@@ -13,6 +13,7 @@ repository.workspace = true
 
 [dependencies]
 globe-core.workspace = true
+terrain.workspace = true
 net.workspace = true
 render.workspace = true
 eframe.workspace = true

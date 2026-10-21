@@ -63,7 +63,7 @@ fn half_ready(key: TileKey) -> bool {
 
 /// Дыры и видимая подстилка.
 fn holes(globe: &mut Globe, camera: &Camera, selection: &lod::Selection) -> (u64, u64) {
-    let stats = globe.render(camera, selection, FrameOptions { count_holes: true, show_holes: false });
+    let stats = globe.render(camera, selection, None, FrameOptions { count_holes: true, show_holes: false });
     assert!(stats.draws > 0);
     (stats.holes.unwrap(), stats.underlay.unwrap())
 }

@@ -13,6 +13,7 @@ repository.workspace = true
 
 [dependencies]
 globe-core.workspace = true
+terrain.workspace = true
 wgpu.workspace = true
 bytemuck.workspace = true
 

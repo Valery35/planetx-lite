@@ -41,3 +41,7 @@ pub fn text(lang: Lang, t: Text) -> &'static str {
 
 /// Страница условий OpenStreetMap для подписи.
 pub const OSM_COPYRIGHT: &str = "https://www.openstreetmap.org/copyright";
+
+/// Подпись источника высот, как в модуле. Это название наборов данных,
+/// а не текст программы, поэтому без перевода.
+pub const TERRAIN_SOURCES: &str = "Terrain: Mapzen, SRTM, GMTED, ETOPO1 and others";

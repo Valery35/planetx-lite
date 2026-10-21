@@ -1,0 +1,18 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "terrain"
+description = "Рельеф PlanetX Lite - высоты Terrarium, хранилище высот, сетки тайлов на рельефе"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+globe-core.workspace = true
+
+[lints]
+workspace = true

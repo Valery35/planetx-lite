@@ -23,13 +23,16 @@ struct Draw {
 struct VertexOut {
     @builtin(position) position: vec4<f32>,
     @location(0) uv: vec2<f32>,
+    // Множитель яркости отмывки рельефа.
+    @location(1) shade: f32,
 };
 
 @vertex
-fn tile_vs(@location(0) offset: vec3<f32>, @location(1) uv: vec2<f32>) -> VertexOut {
+fn tile_vs(@location(0) offset: vec3<f32>, @location(1) uv: vec2<f32>, @location(2) shade: f32) -> VertexOut {
     var out: VertexOut;
     out.position = draw.mvp * vec4<f32>(offset, 1.0);
     out.uv = uv;
+    out.shade = shade;
     return out;
 }
 
@@ -45,5 +48,5 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
             discard;
         }
     }
-    return vec4<f32>(mix(picture.rgb, draw.color.rgb, draw.color.a), 1.0);
+    return vec4<f32>(mix(picture.rgb, draw.color.rgb, draw.color.a) * in.shade, 1.0);
 }

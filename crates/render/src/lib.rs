@@ -23,7 +23,9 @@ use std::sync::{Arc, Mutex};
 use bytemuck::{Pod, Zeroable};
 use globe_core::camera::Camera;
 use globe_core::lod::{Selection, TileKey, hole_rect};
-use globe_core::tiling::{HOLE_MARGIN, MeshId, TileMesh, UNDERLAY_DEPTH, polar_cap_mesh, tile_mesh};
+use globe_core::tiling::{HOLE_MARGIN, MeshId, TileMesh, UNDERLAY_DEPTH};
+use terrain::HeightStore;
+use terrain::mesh::{TerrainMesh, polar_cap, terrain_mesh};
 use globe_core::{DMat4, DVec3};
 use wgpu::util::DeviceExt;
 
@@ -63,7 +65,12 @@ fn depth_fix() -> DMat4 {
 struct Vertex {
     offset: [f32; 3],
     uv: [f32; 2],
+    shade: f32,
 }
+
+/// Сеток, пересобираемых за кадр, когда пришли более точные высоты.
+/// Сетка без высот строится всегда, иначе в кадре была бы дыра.
+pub const REBUILDS_PER_FRAME: u32 = 24;
 
 #[repr(C)]
 #[derive(Clone, Copy, Pod, Zeroable)]
@@ -89,6 +96,10 @@ struct GpuMesh {
     index_count: u32,
     center: DVec3,
     last_used: u64,
+    /// Уровень тайла высот, по которому собрана сетка, -1 - без высот.
+    level: i32,
+    /// Вертикальный масштаб рельефа при сборке.
+    scale: f64,
 }
 
 struct GpuTexture {
@@ -282,7 +293,7 @@ impl Globe {
         let vertex_layout = wgpu::VertexBufferLayout {
             array_stride: std::mem::size_of::<Vertex>() as u64,
             step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2],
+            attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2, 2 => Float32],
         };
         let tile_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("tile"),
@@ -577,22 +588,45 @@ impl Globe {
         true
     }
 
-    fn mesh_for(&mut self, id: MeshId, camera: &Camera) -> Option<DVec3> {
+    /// Сетка на видеокарте и её центр. Сетка пересобирается, когда для
+    /// неё пришёл более точный тайл высот или сменился масштаб рельефа,
+    /// но не больше rebuilds раз за кадр.
+    fn mesh_for(
+        &mut self,
+        id: MeshId,
+        camera: &Camera,
+        heights: Option<&HeightStore>,
+        rebuilds: &mut u32,
+    ) -> Option<DVec3> {
         let frame = self.frame;
+        let (tile, level, scale) = match (id, heights) {
+            (MeshId::Tile { z, x, y }, Some(store)) => {
+                let (tile, level) = store.for_mesh((z, x, y));
+                (tile, level, store.scale())
+            }
+            _ => (None, -1, 0.0),
+        };
         if let Some(m) = self.meshes.get_mut(&id) {
             m.last_used = frame;
-            return Some(m.center);
+            let stale = level > m.level || scale != m.scale;
+            if !stale || *rebuilds == 0 {
+                return Some(m.center);
+            }
+            *rebuilds -= 1;
         }
         let e = &camera.ellipsoid;
-        let mesh: TileMesh = match id {
-            MeshId::Tile { z, x, y } => tile_mesh(e, z, x, y),
-            MeshId::PolarCap { north } => polar_cap_mesh(e, north, CAP_SEGMENTS),
+        let mesh: TerrainMesh = match id {
+            MeshId::Tile { z, x, y } => terrain_mesh(e, z, x, y, tile.as_deref(), scale),
+            MeshId::PolarCap { north } => polar_cap(e, north, CAP_SEGMENTS),
         };
+        let shade = &mesh.shade;
+        let mesh: TileMesh = mesh.mesh.clone();
         let vertices: Vec<Vertex> = mesh
             .positions
             .iter()
             .zip(&mesh.uv)
-            .map(|(p, uv)| Vertex { offset: p.to_array(), uv: uv.to_array() })
+            .zip(shade.iter().chain(std::iter::repeat(&1.0)))
+            .map(|((p, uv), s)| Vertex { offset: p.to_array(), uv: uv.to_array(), shade: *s })
             .collect();
         let vertices = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("mesh vertices"),
@@ -605,13 +639,23 @@ impl Globe {
             usage: wgpu::BufferUsages::INDEX,
         });
         let index_count = u32::try_from(mesh.indices.len()).ok()?;
-        self.meshes.insert(id, GpuMesh { vertices, indices, index_count, center: mesh.center, last_used: frame });
+        self.meshes.insert(
+            id,
+            GpuMesh { vertices, indices, index_count, center: mesh.center, last_used: frame, level, scale },
+        );
         Some(mesh.center)
     }
 
-    fn items(&mut self, camera: &Camera, selection: &Selection, projection: DMat4) -> Vec<Item> {
+    fn items(
+        &mut self,
+        camera: &Camera,
+        selection: &Selection,
+        heights: Option<&HeightStore>,
+        projection: DMat4,
+    ) -> Vec<Item> {
         let mut out = Vec::new();
         let placeholder = linear(PLACEHOLDER);
+        let mut rebuilds = REBUILDS_PER_FRAME;
         let mut push = |me: &mut Self,
                         kind: Kind,
                         mesh: MeshId,
@@ -619,7 +663,7 @@ impl Globe {
                         scale: f64,
                         hole: [f32; 4],
                         color: [f32; 4]| {
-            if let Some(center) = me.mesh_for(mesh, camera) {
+            if let Some(center) = me.mesh_for(mesh, camera, heights, &mut rebuilds) {
                 let mvp = camera.tile_mvp(center, Some(projection), scale).to_cols_array();
                 out.push(Item { kind, mesh, texture, uniform: DrawUniform { mvp, hole, color } });
             }
@@ -635,7 +679,10 @@ impl Globe {
             let color = if has { [0.0; 4] } else { flat(placeholder) };
             push(self, Kind::Tile, MeshId::Tile { z, x, y }, has.then_some(*key), 1.0, hole, color);
         }
-        let scale = 1.0 - UNDERLAY_DEPTH / camera.ellipsoid.a;
+        // Подстилка ниже самой низкой высоты рельефа, у Земли дно моря
+        // прижато к нулю.
+        let depth = heights.map_or(0.0, HeightStore::depth);
+        let scale = 1.0 - (UNDERLAY_DEPTH + depth) / camera.ellipsoid.a;
         let mut under: Vec<TileKey> = selection.keep.iter().copied().filter(|k| k.0 == UNDERLAY_LEVEL).collect();
         under.sort_unstable();
         for key in under {
@@ -667,12 +714,19 @@ impl Globe {
         }
     }
 
-    /// Нарисовать кадр. Размер кадра - окно камеры.
-    pub fn render(&mut self, camera: &Camera, selection: &Selection, options: FrameOptions) -> FrameStats {
+    /// Нарисовать кадр. Размер кадра - окно камеры. heights - высоты
+    /// рельефа, None - гладкий эллипсоид.
+    pub fn render(
+        &mut self,
+        camera: &Camera,
+        selection: &Selection,
+        heights: Option<&HeightStore>,
+        options: FrameOptions,
+    ) -> FrameStats {
         self.frame += 1;
         self.resize(camera.width, camera.height);
         let projection = depth_fix() * camera.projection();
-        let items = self.items(camera, selection, projection);
+        let items = self.items(camera, selection, heights, projection);
         let count = items.len() as u64;
         if count > self.uniform_capacity {
             let capacity = count.next_power_of_two();

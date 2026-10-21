@@ -91,6 +91,14 @@ pub struct Source {
 pub const OSM: Source =
     Source { name: "osm", url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", max_requests: 2, max_level: 19 };
 
+/// Высоты рельефа Mapzen Terrain Tiles в записи Terrarium, как в модуле.
+pub const TERRARIUM: Source = Source {
+    name: "terrarium",
+    url: "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+    max_requests: 4,
+    max_level: 15,
+};
+
 /// Сколько тайл в кэше считается свежим.
 pub const FRESH: Duration = Duration::from_secs(7 * 24 * 3600);
 /// Через сколько повторить запрос тайла, который не пришёл.

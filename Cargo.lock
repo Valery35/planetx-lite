@@ -1892,6 +1892,8 @@ name = "planetx-lite"
 version = "0.1.0"
 dependencies = [
  "eframe",
+ "globe-core",
+ "image",
  "net",
  "ui",
 ]
@@ -2123,6 +2125,7 @@ dependencies = [
  "bytemuck",
  "globe-core",
  "pollster 0.4.0",
+ "terrain",
  "wgpu",
 ]
 
@@ -2461,6 +2464,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "terrain"
+version = "0.1.0"
+dependencies = [
+ "globe-core",
+]
+
+[[package]]
 name = "thiserror"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2610,6 +2620,7 @@ dependencies = [
  "net",
  "render",
  "sys-locale",
+ "terrain",
 ]
 
 [[package]]
