@@ -18,8 +18,16 @@ use render::{FrameOptions, Globe, wgpu};
 
 const PERM: (f64, f64) = (58.0105, 56.2294);
 
-fn device() -> Option<(wgpu::Device, wgpu::Queue)> {
-    let instance = wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle());
+/// Видеокарта, очередь и признак точного счёта пикселей. На OpenGL
+/// запрос перекрытия отвечает только 0 или 1 - есть пиксели или нет.
+/// Так на машине CI, где видеокарта - программная Mesa.
+fn device() -> Option<(wgpu::Device, wgpu::Queue, bool)> {
+    // WGPU_BACKEND выбирает бэкенд, например gl - как у машины CI.
+    let mut desc = wgpu::InstanceDescriptor::new_without_display_handle();
+    if let Some(backends) = wgpu::Backends::from_env() {
+        desc.backends = backends;
+    }
+    let instance = wgpu::Instance::new(desc);
     let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
         power_preference: wgpu::PowerPreference::HighPerformance,
         force_fallback_adapter: false,
@@ -27,7 +35,9 @@ fn device() -> Option<(wgpu::Device, wgpu::Queue)> {
         apply_limit_buckets: false,
     }))
     .ok()?;
-    pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).ok()
+    let exact = adapter.get_info().backend != wgpu::Backend::Gl;
+    let (device, queue) = pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).ok()?;
+    Some((device, queue, exact))
 }
 
 fn view(lat: f64, lon: f64, distance: f64, heading: f64, tilt: f64) -> Camera {
@@ -60,7 +70,7 @@ fn holes(globe: &mut Globe, camera: &Camera, selection: &lod::Selection) -> (u64
 
 #[test]
 fn no_holes_by_construction() {
-    let Some((device, queue)) = device() else {
+    let Some((device, queue, _)) = device() else {
         eprintln!("видеокарты нет, проверка дыр пропущена");
         return;
     };
@@ -79,7 +89,7 @@ fn no_holes_by_construction() {
 #[test]
 fn missing_tile_is_counted() {
     // Сторож счётчика: без тайла под камерой дыра есть.
-    let Some((device, queue)) = device() else {
+    let Some((device, queue, exact)) = device() else {
         eprintln!("видеокарты нет, проверка дыр пропущена");
         return;
     };
@@ -94,5 +104,8 @@ fn missing_tile_is_counted() {
     let (count, underlay) = holes(&mut globe, &cam, &sel);
     eprintln!("без тайла: дыр {count}, подстилки {underlay}");
     assert_eq!(count, 0);
-    assert!(underlay > 1000, "{underlay}");
+    // Тайл закрывает тысячи пикселей. На OpenGL счётчик говорит только,
+    // что подстилка видна.
+    let floor = if exact { 1000 } else { 0 };
+    assert!(underlay > floor, "{underlay}");
 }
