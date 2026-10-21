@@ -20,7 +20,10 @@ use std::time::{Duration, SystemTime};
 
 use globe_core::lod::TileKey;
 
-use crate::{Fetched, FRESH, Loaded, Queue, Source, Stats, TileLoader, cache_path, tile_url, user_agent, valid_key};
+use crate::{
+    FRESH, Fetched, Loaded, Queue, Source, Stats, TileLoader, cache_path, template_url, tile_url, tilejson_template,
+    user_agent, valid_key,
+};
 
 /// Рабочих потоков загрузчика.
 pub const WORKERS: usize = 4;
@@ -41,6 +44,8 @@ struct Shared {
     permit_freed: Condvar,
     stop: AtomicBool,
     stats: Stats,
+    /// Шаблон адреса тайлов из TileJSON, когда он получен.
+    template: Mutex<Option<String>>,
 }
 
 /// Замок, который не роняет программу, если другой поток упал с ним.
@@ -68,6 +73,7 @@ impl Loader {
             permit_freed: Condvar::new(),
             stop: AtomicBool::new(false),
             stats: Stats::default(),
+            template: Mutex::new(None),
         });
         let (sender, results) = channel();
         let agent: ureq::Agent = ureq::Agent::config_builder()
@@ -206,14 +212,37 @@ impl Worker {
 
     /// Байты ответа сервера. Err(None) - ответ 404, тайла нет.
     fn fetch(&self, key: TileKey) -> Result<Vec<u8>, Option<String>> {
+        let url = match self.source.tilejson {
+            Some(address) => template_url(&self.template(address).map_err(Some)?, key),
+            None => tile_url(&self.source, key),
+        };
+        self.request(&url, 4 << 20)
+    }
+
+    /// Шаблон адреса тайлов. TileJSON спрашивается один раз, остальные
+    /// потоки ждут его под замком.
+    fn template(&self, address: &str) -> Result<String, String> {
+        let mut slot = lock(&self.shared.template);
+        if let Some(t) = slot.as_ref() {
+            return Ok(t.clone());
+        }
+        let bytes = self.request(address, 1 << 20).map_err(|e| e.unwrap_or_else(|| "TileJSON: 404".to_string()))?;
+        let text = String::from_utf8_lossy(&bytes);
+        let template = tilejson_template(&text).ok_or_else(|| "TileJSON без адреса тайлов".to_string())?;
+        *slot = Some(template.clone());
+        Ok(template)
+    }
+
+    /// Запрос к серверу с разрешением источника.
+    fn request(&self, url: &str, limit: u64) -> Result<Vec<u8>, Option<String>> {
         self.acquire().map_err(Some)?;
         let stats = &self.shared.stats;
         stats.request_started();
         let result = self
             .agent
-            .get(&tile_url(&self.source, key))
+            .get(url)
             .call()
-            .and_then(|mut r| r.body_mut().with_config().limit(4 << 20).read_to_vec())
+            .and_then(|mut r| r.body_mut().with_config().limit(limit).read_to_vec())
             .map_err(|e| match e {
                 ureq::Error::StatusCode(404) => None,
                 e => Some(e.to_string()),

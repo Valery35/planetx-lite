@@ -7,6 +7,7 @@ resolver = "3"
 members = [
     "crates/globe-core",
     "crates/terrain",
+    "crates/data",
     "crates/net",
     "crates/render",
     "crates/ui",
@@ -24,6 +25,7 @@ repository = "https://github.com/Valery35/planetx-lite"
 [workspace.dependencies]
 globe-core = { path = "crates/globe-core" }
 terrain = { path = "crates/terrain" }
+data = { path = "crates/data" }
 net = { path = "crates/net" }
 render = { path = "crates/render" }
 ui = { path = "crates/ui" }
@@ -43,6 +45,7 @@ egui-wgpu = "0.37"
 sys-locale = "0.3"
 tiny_http = "0.12"
 pollster = "0.4"
+flate2 = "1"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

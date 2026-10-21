@@ -30,11 +30,18 @@ pub mod placeholder;
 #[cfg(target_arch = "wasm32")]
 pub mod web;
 
+/// Содержимое тайла: картинка или байты векторного тайла.
+#[derive(Debug)]
+pub enum Content {
+    Image(Image),
+    Bytes(Vec<u8>),
+}
+
 /// Пришедший тайл.
 #[derive(Debug)]
 pub struct Loaded {
     pub key: TileKey,
-    pub image: Result<Image, String>,
+    pub content: Result<Content, String>,
     /// Тайла у источника нет: ответ 404 или заглушка вместо снимка.
     /// Вместо него рисуется увеличенный предок, повторно он не просится.
     pub missing: bool,
@@ -93,6 +100,11 @@ pub struct Source {
     pub ext: &'static str,
     /// Источник отвечает заглушкой там, где снимка нет.
     pub placeholders: bool,
+    /// Тайл - байты, а не картинка: векторный тайл.
+    pub raw: bool,
+    /// Адрес TileJSON. Шаблон адреса тайлов берётся из него, url тогда
+    /// не нужен.
+    pub tilejson: Option<&'static str>,
 }
 
 /// Подложка OpenStreetMap.
@@ -103,6 +115,8 @@ pub const OSM: Source = Source {
     max_level: 19,
     ext: "png",
     placeholders: false,
+    raw: false,
+    tilejson: None,
 };
 
 /// Космоснимки Esri World Imagery, как в модуле. Порядок y и x в адресе
@@ -114,6 +128,8 @@ pub const ESRI: Source = Source {
     max_level: 19,
     ext: "jpg",
     placeholders: true,
+    raw: false,
+    tilejson: None,
 };
 
 /// Высоты рельефа Mapzen Terrain Tiles в записи Terrarium, как в модуле.
@@ -124,6 +140,22 @@ pub const TERRARIUM: Source = Source {
     max_level: 15,
     ext: "png",
     placeholders: false,
+    raw: false,
+    tilejson: None,
+};
+
+/// Векторные тайлы OpenFreeMap, как в модуле. Адрес тайлов меняется
+/// с каждой сборкой планеты, поэтому он берётся из TileJSON. Запросов
+/// сразу - как у прочих источников модуля, не OSM.
+pub const OPENFREEMAP: Source = Source {
+    name: "openfreemap",
+    url: "",
+    max_requests: 4,
+    max_level: 14,
+    ext: "pbf",
+    placeholders: false,
+    raw: true,
+    tilejson: Some("https://tiles.openfreemap.org/planet"),
 };
 
 /// Сколько тайл в кэше считается свежим.
@@ -142,8 +174,43 @@ pub fn user_agent() -> String {
 
 /// Адрес тайла key у источника.
 pub fn tile_url(source: &Source, key: TileKey) -> String {
+    template_url(source.url, key)
+}
+
+/// Адрес тайла key по шаблону с местами {z}, {x}, {y}.
+pub fn template_url(template: &str, key: TileKey) -> String {
     let (z, x, y) = key;
-    source.url.replace("{z}", &z.to_string()).replace("{x}", &x.to_string()).replace("{y}", &y.to_string())
+    template.replace("{z}", &z.to_string()).replace("{x}", &x.to_string()).replace("{y}", &y.to_string())
+}
+
+/// Первый шаблон адреса тайлов из TileJSON - строка массива "tiles".
+/// Ответ сервера считается враждебным: разбор без сбоев, None - шаблона
+/// нет или он не https с местами {z}, {x}, {y}. Адрес http допустим
+/// только у сервера на этой машине, это сервер тестов.
+pub fn tilejson_template(text: &str) -> Option<String> {
+    let after = &text[text.find("\"tiles\"")? + 7..];
+    let after = after.trim_start().strip_prefix(':')?.trim_start().strip_prefix('[')?.trim_start();
+    let body = after.strip_prefix('"')?;
+    let mut out = String::new();
+    let mut chars = body.chars();
+    loop {
+        match chars.next()? {
+            '"' => break,
+            '\\' => match chars.next()? {
+                '/' => out.push('/'),
+                '\\' => out.push('\\'),
+                '"' => out.push('"'),
+                _ => return None,
+            },
+            c => out.push(c),
+        }
+        if out.len() > 2048 {
+            return None;
+        }
+    }
+    let scheme = out.starts_with("https://") || out.starts_with("http://127.0.0.1:");
+    let ok = scheme && ["{z}", "{x}", "{y}"].iter().all(|p| out.contains(p));
+    ok.then_some(out)
 }
 
 /// Файл тайла key в кэше с корнем root.
@@ -184,9 +251,10 @@ pub fn decode_tile(bytes: &[u8]) -> Result<Image, String> {
     Ok(Image { width, height, rgba: rgba.into_raw() })
 }
 
-/// Итог загрузки тайла: картинка, «тайла нет» или ошибка.
+/// Итог загрузки тайла: картинка, байты, «тайла нет» или ошибка.
 pub enum Fetched {
     Image(Image),
+    Bytes(Vec<u8>),
     Missing,
     Failed(String),
 }
@@ -195,6 +263,9 @@ impl Fetched {
     /// Раскодировать ответ сервера. Заглушка у источника с заглушками -
     /// «тайла нет».
     pub fn from_bytes(source: &Source, bytes: &[u8]) -> Self {
+        if source.raw {
+            return Fetched::Bytes(bytes.to_vec());
+        }
         match decode_tile(bytes) {
             Ok(img) if source.placeholders && placeholder::is_placeholder(&img.rgba) => Fetched::Missing,
             Ok(img) => Fetched::Image(img),
@@ -205,9 +276,10 @@ impl Fetched {
     /// Пришедший тайл для главного потока.
     pub fn into_loaded(self, key: TileKey) -> Loaded {
         match self {
-            Fetched::Image(img) => Loaded { key, image: Ok(img), missing: false },
-            Fetched::Missing => Loaded { key, image: Err("тайла нет у источника".into()), missing: true },
-            Fetched::Failed(e) => Loaded { key, image: Err(e), missing: false },
+            Fetched::Image(img) => Loaded { key, content: Ok(Content::Image(img)), missing: false },
+            Fetched::Bytes(b) => Loaded { key, content: Ok(Content::Bytes(b)), missing: false },
+            Fetched::Missing => Loaded { key, content: Err("тайла нет у источника".into()), missing: true },
+            Fetched::Failed(e) => Loaded { key, content: Err(e), missing: false },
         }
     }
 

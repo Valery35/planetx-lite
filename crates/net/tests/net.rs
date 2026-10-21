@@ -170,11 +170,11 @@ fn keys(count: u32) -> Vec<((u32, u32, u32), f64)> {
 #[test]
 fn loader_keeps_two_requests_and_sends_user_agent() {
     let s = server(Duration::from_millis(80));
-    let source = Source { name: "test", url: s.url, max_requests: 2, max_level: 19, ext: "png", placeholders: false };
+    let source = Source { name: "test", url: s.url, max_requests: 2, max_level: 19, ext: "png", placeholders: false, raw: false, tilejson: None };
     let loader = Loader::new(source, None, Arc::new(|| {}));
     loader.want(&keys(12));
     let got = wait_all(&loader, 12);
-    assert!(got.iter().all(|l| l.image.is_ok()));
+    assert!(got.iter().all(|l| l.content.is_ok()));
     assert_eq!(s.total.load(Ordering::SeqCst), 12);
     // Перекрытие было, но не больше двух запросов сразу.
     assert_eq!(s.peak.load(Ordering::SeqCst), 2);
@@ -186,7 +186,7 @@ fn loader_keeps_two_requests_and_sends_user_agent() {
 #[test]
 fn disk_cache_spares_the_server() {
     let s = server(Duration::from_millis(5));
-    let source = Source { name: "test", url: s.url, max_requests: 2, max_level: 19, ext: "png", placeholders: false };
+    let source = Source { name: "test", url: s.url, max_requests: 2, max_level: 19, ext: "png", placeholders: false, raw: false, tilejson: None };
     let dir = temp_dir("cache");
     let first = Loader::new(source, Some(dir.clone()), Arc::new(|| {}));
     first.want(&keys(6));
@@ -196,7 +196,7 @@ fn disk_cache_spares_the_server() {
     let second = Loader::new(source, Some(dir.clone()), Arc::new(|| {}));
     second.want(&keys(6));
     let got = wait_all(&second, 6);
-    assert!(got.iter().all(|l| l.image.is_ok()));
+    assert!(got.iter().all(|l| l.content.is_ok()));
     assert_eq!(s.total.load(Ordering::SeqCst), 6);
     assert_eq!(second.stats().disk_hits.load(Ordering::SeqCst), 6);
     let _ = std::fs::remove_dir_all(&dir);
@@ -207,11 +207,11 @@ fn dead_server_gives_error_not_crash() {
     // Порт, на котором никто не слушает.
     let port = std::net::TcpListener::bind("127.0.0.1:0").unwrap().local_addr().unwrap().port();
     let url: &'static str = Box::leak(format!("http://127.0.0.1:{port}/{{z}}/{{x}}/{{y}}.png").into_boxed_str());
-    let source = Source { name: "dead", url, max_requests: 2, max_level: 19, ext: "png", placeholders: false };
+    let source = Source { name: "dead", url, max_requests: 2, max_level: 19, ext: "png", placeholders: false, raw: false, tilejson: None };
     let loader = Loader::new(source, None, Arc::new(|| {}));
     loader.want(&keys(2));
     let got = wait_all(&loader, 2);
-    assert!(got.iter().all(|l| l.image.is_err()));
+    assert!(got.iter().all(|l| l.content.is_err()));
     // Неудачные тайлы отложены, загрузчик не крутит их по кругу.
     assert!(!loader.busy());
 }
@@ -245,11 +245,11 @@ fn gray_png() -> Vec<u8> {
 #[test]
 fn not_found_is_missing_and_not_retried() {
     let (url, total) = answering(|_| (404, b"no".to_vec()));
-    let source = Source { name: "nf", url, max_requests: 2, max_level: 19, ext: "png", placeholders: false };
+    let source = Source { name: "nf", url, max_requests: 2, max_level: 19, ext: "png", placeholders: false, raw: false, tilejson: None };
     let loader = Loader::new(source, None, Arc::new(|| {}));
     loader.want(&keys(3));
     let got = wait_all(&loader, 3);
-    assert!(got.iter().all(|l| l.missing && l.image.is_err()));
+    assert!(got.iter().all(|l| l.missing && l.content.is_err()));
     // Тайл, которого нет, больше не просится.
     loader.want(&keys(3));
     std::thread::sleep(Duration::from_millis(300));
@@ -261,7 +261,7 @@ fn not_found_is_missing_and_not_retried() {
 #[test]
 fn placeholder_is_missing_only_where_expected() {
     let (url, _) = answering(|_| (200, gray_png()));
-    let esri_like = Source { name: "ph", url, max_requests: 2, max_level: 19, ext: "png", placeholders: true };
+    let esri_like = Source { name: "ph", url, max_requests: 2, max_level: 19, ext: "png", placeholders: true, raw: false, tilejson: None };
     let loader = Loader::new(esri_like, None, Arc::new(|| {}));
     loader.want(&keys(2));
     assert!(wait_all(&loader, 2).iter().all(|l| l.missing));
@@ -269,7 +269,7 @@ fn placeholder_is_missing_only_where_expected() {
     let plain = Source { placeholders: false, ..esri_like };
     let loader = Loader::new(plain, None, Arc::new(|| {}));
     loader.want(&keys(2));
-    assert!(wait_all(&loader, 2).iter().all(|l| !l.missing && l.image.is_ok()));
+    assert!(wait_all(&loader, 2).iter().all(|l| !l.missing && l.content.is_ok()));
 }
 
 #[test]
@@ -285,4 +285,58 @@ fn esri_address_and_jpeg() {
     let tile = net::decode_tile(&out.into_inner()).unwrap();
     assert_eq!((tile.width, tile.height), (256, 256));
     assert!(net::decode_tile(b"GIF89a....").is_err());
+}
+#[test]
+fn tilejson_template_is_read_safely() {
+    let json = r#"{"tilejson":"3.0.0","tiles":["https:\/\/tiles.openfreemap.org\/planet\/20261015_001001_pt\/{z}\/{x}\/{y}.pbf"],"maxzoom":14}"#;
+    assert_eq!(
+        net::tilejson_template(json).as_deref(),
+        Some("https://tiles.openfreemap.org/planet/20261015_001001_pt/{z}/{x}/{y}.pbf")
+    );
+    // Враждебный и битый ответ - шаблона нет, сбоя нет.
+    for bad in [
+        "",
+        "{",
+        r#"{"tiles":[]}"#,
+        r#"{"tiles":["https://x/{z}/{x}"]}"#,
+        r#"{"tiles":["ftp://x/{z}/{x}/{y}"]}"#,
+        r#"{"tiles":["https://x/{z}/{x}/{y}"#,
+        r#"{"tiles":"#,
+    ] {
+        assert_eq!(net::tilejson_template(bad), None, "{bad}");
+    }
+}
+
+#[test]
+fn tilejson_source_gives_raw_bytes() {
+    // Сервер отдаёт TileJSON по /tilejson и байты тайла по остальным
+    // путям. Адрес тайлов загрузчик берёт из TileJSON один раз.
+    let http = Arc::new(tiny_http::Server::http("127.0.0.1:0").unwrap());
+    let port = http.server_addr().to_ip().unwrap().port();
+    let tilejson: &'static str = Box::leak(format!("http://127.0.0.1:{port}/tilejson").into_boxed_str());
+    let asked = Arc::new(AtomicUsize::new(0));
+    let a = asked.clone();
+    std::thread::spawn(move || {
+        for request in http.incoming_requests() {
+            let body = if request.url() == "/tilejson" {
+                a.fetch_add(1, Ordering::SeqCst);
+                format!(r#"{{"tiles":["http://127.0.0.1:{port}/v1/{{z}}/{{x}}/{{y}}.pbf"]}}"#).into_bytes()
+            } else {
+                request.url().as_bytes().to_vec()
+            };
+            let _ = request.respond(tiny_http::Response::from_data(body));
+        }
+    });
+    let source = Source { name: "vt", url: "", max_requests: 2, max_level: 14, ext: "pbf", placeholders: false, raw: true, tilejson: Some(tilejson) };
+    let loader = Loader::new(source, None, Arc::new(|| {}));
+    loader.want(&keys(4));
+    let got = wait_all(&loader, 4);
+    for l in &got {
+        let (z, x, y) = l.key;
+        match &l.content {
+            Ok(net::Content::Bytes(b)) => assert_eq!(b, format!("/v1/{z}/{x}/{y}.pbf").as_bytes()),
+            other => panic!("{other:?}"),
+        }
+    }
+    assert_eq!(asked.load(Ordering::SeqCst), 1);
 }

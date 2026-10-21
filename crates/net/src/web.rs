@@ -19,12 +19,22 @@ use globe_core::lod::TileKey;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 
-use crate::{Fetched, Loaded, Queue, Source, Stats, TileLoader, tile_url, valid_key};
+use web_time::Instant;
+
+use crate::{
+    Fetched, Loaded, Queue, RETRY, Source, Stats, TileLoader, template_url, tile_url, tilejson_template, valid_key,
+};
 
 struct State {
     queue: Queue,
     results: VecDeque<Loaded>,
     in_flight: usize,
+    /// Шаблон адреса тайлов из TileJSON, когда он получен.
+    template: Option<String>,
+    /// Запрос TileJSON идёт.
+    tilejson_busy: bool,
+    /// Когда запрос TileJSON не удался: следующий - через [`RETRY`].
+    tilejson_failed: Option<Instant>,
 }
 
 /// Загрузчик тайлов одного источника для страницы.
@@ -39,7 +49,14 @@ impl Loader {
     /// on_ready зовётся после каждого пришедшего тайла, например, чтобы
     /// попросить новый кадр.
     pub fn new(source: Source, on_ready: Rc<dyn Fn()>) -> Self {
-        let state = State { queue: Queue::new(), results: VecDeque::new(), in_flight: 0 };
+        let state = State {
+            queue: Queue::new(),
+            results: VecDeque::new(),
+            in_flight: 0,
+            template: None,
+            tilejson_busy: false,
+            tilejson_failed: None,
+        };
         Self { source, state: Rc::new(RefCell::new(state)), stats: Rc::new(Stats::default()), on_ready }
     }
 
@@ -48,10 +65,47 @@ impl Loader {
     }
 }
 
+/// Запросить TileJSON источника, если шаблона адреса ещё нет. true -
+/// шаблон есть, тайлы можно просить.
+fn ensure_template(source: Source, state: &Rc<RefCell<State>>, stats: &Rc<Stats>, on_ready: &Rc<dyn Fn()>) -> bool {
+    let Some(address) = source.tilejson else {
+        return true;
+    };
+    {
+        let mut s = state.borrow_mut();
+        if s.template.is_some() {
+            return true;
+        }
+        let waiting = s.tilejson_failed.is_some_and(|at| Instant::now().duration_since(at) < RETRY);
+        if s.tilejson_busy || waiting || s.queue.is_idle() {
+            return false;
+        }
+        s.tilejson_busy = true;
+    }
+    let (state, stats, on_ready) = (state.clone(), stats.clone(), on_ready.clone());
+    wasm_bindgen_futures::spawn_local(async move {
+        stats.request_started();
+        let template = fetch(address).await.ok().and_then(|b| tilejson_template(&String::from_utf8_lossy(&b)));
+        stats.request_finished();
+        {
+            let mut s = state.borrow_mut();
+            s.tilejson_busy = false;
+            s.tilejson_failed = template.is_none().then(Instant::now);
+            s.template = template;
+        }
+        on_ready();
+        pump(source, &state, &stats, &on_ready);
+    });
+    false
+}
+
 /// Начать запросы, пока есть место.
 fn pump(source: Source, state: &Rc<RefCell<State>>, stats: &Rc<Stats>, on_ready: &Rc<dyn Fn()>) {
+    if !ensure_template(source, state, stats, on_ready) {
+        return;
+    }
     loop {
-        let key = {
+        let (key, url) = {
             let mut s = state.borrow_mut();
             if s.in_flight >= source.max_requests.max(1) {
                 return;
@@ -60,12 +114,16 @@ fn pump(source: Source, state: &Rc<RefCell<State>>, stats: &Rc<Stats>, on_ready:
                 return;
             };
             s.in_flight += 1;
-            key
+            let url = match &s.template {
+                Some(t) => template_url(t, key),
+                None => tile_url(&source, key),
+            };
+            (key, url)
         };
         let (state, stats, on_ready) = (state.clone(), stats.clone(), on_ready.clone());
         wasm_bindgen_futures::spawn_local(async move {
             stats.request_started();
-            let fetched = match fetch(&tile_url(&source, key)).await {
+            let fetched = match fetch(&url).await {
                 Ok(bytes) => Fetched::from_bytes(&source, &bytes),
                 Err(None) => Fetched::Missing,
                 Err(Some(e)) => Fetched::Failed(e),

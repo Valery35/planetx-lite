@@ -28,8 +28,11 @@ use globe_core::navigation::{MIN_ALTITUDE, Navigator, Pose, clearance};
 use render::{Frame, FrameStats};
 use terrain::HeightStore;
 
+use eframe::egui;
+
 use crate::basemap::Basemap;
 use crate::input::fly;
+use crate::labels::Shown;
 
 /// Вид на Пермь на снимках Esri: расстояние, азимут, наклон, как
 /// в проверке фазы 1 модуля.
@@ -79,6 +82,11 @@ pub const HALO_RING: f64 = 1.01;
 pub const SPACE_RING: f64 = 1.3;
 /// Доля высоты кадра сверху, где мерится небо.
 pub const SKY_BAND: u32 = 20;
+/// Подпись Перми на русском и английском.
+pub const PERM_NAMES: [&str; 2] = ["Пермь", "Perm"];
+/// Подпись Перми у середины кадра: от середины не дальше этой доли
+/// ширины и высоты кадра.
+pub const PERM_LABEL_SHARE: f32 = 0.25;
 /// Кадров подряд без загрузки, после которых место считается загруженным.
 pub const IDLE_FRAMES: u32 = 10;
 /// Предел ожидания загрузки, секунды.
@@ -180,6 +188,8 @@ pub struct Check {
     halo: Option<[f64; 3]>,
     space: Option<[f64; 3]>,
     sky: Option<[f64; 3]>,
+    /// Пермь на Esri: подпись «Пермь» у середины кадра в последнем кадре.
+    perm_label: Option<bool>,
     failure: Option<String>,
 }
 
@@ -323,6 +333,7 @@ impl Check {
             halo: None,
             space: None,
             sky: None,
+            perm_label: None,
             failure: None,
         }
     }
@@ -336,6 +347,20 @@ impl Check {
     /// на странице счётчик красит их пурпурным.
     pub fn count_holes(&self) -> bool {
         !matches!(self.phase, Phase::Spin | Phase::LowFlight | Phase::Space | Phase::Sky | Phase::Done)
+    }
+
+    /// Надписи кадра. На виде Перми на Esri отмечается, есть ли подпись
+    /// «Пермь» у середины кадра.
+    pub fn note_labels(&mut self, drawn: &[Shown], rect: egui::Rect) {
+        if self.scenario != Scenario::Perm || self.phase != Phase::LoadEsri {
+            return;
+        }
+        let c = rect.center();
+        let near = |s: &Shown| {
+            (s.at.x - c.x).abs() <= PERM_LABEL_SHARE * rect.width()
+                && (s.at.y - c.y).abs() <= PERM_LABEL_SHARE * rect.height()
+        };
+        self.perm_label = Some(drawn.iter().any(|s| PERM_NAMES.contains(&s.text.as_str()) && near(s)));
     }
 
     /// Снять этот кадр. Просьба снимается вызовом.
@@ -502,6 +527,12 @@ impl Check {
             out.push(format!("clearance_min_m={:.1}", self.clearance_min));
             out.push(format!("halo_rgb={} space_rgb={}", rgb_text(self.halo), rgb_text(self.space)));
             out.push(format!("sky_rgb={}", rgb_text(self.sky)));
+        }
+        if self.scenario == Scenario::Perm {
+            let label_ok = self.perm_label == Some(true);
+            ok = ok && label_ok;
+            out.push(format!("perm_label_near_center={label_ok}"));
+            out.push("attributions=esri,openfreemap,terrain".to_string());
         }
         for s in sources.iter().filter(|s| s.total + s.disk > 0) {
             out.push(format!(

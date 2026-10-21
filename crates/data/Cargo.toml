@@ -1,0 +1,18 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "data"
+description = "Данные PlanetX Lite - пункты векторных тайлов OpenMapTiles"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+flate2.workspace = true
+
+[lints]
+workspace = true

@@ -18,7 +18,7 @@ use std::sync::{Arc, Mutex};
 
 use eframe::egui;
 use net::native::{Loader, default_cache_dir};
-use net::{ESRI, OSM, TERRARIUM};
+use net::{ESRI, OPENFREEMAP, OSM, TERRARIUM};
 use ui::Scenario;
 
 /// Размер окна, решение автора от 22 октября 2026 года.
@@ -68,7 +68,8 @@ fn main() -> ExitCode {
             let loaders = ui::Loaders {
                 esri: Box::new(Loader::new(ESRI, default_cache_dir(), repaint.clone())),
                 osm: Box::new(Loader::new(OSM, default_cache_dir(), repaint.clone())),
-                terrain: Box::new(Loader::new(TERRARIUM, default_cache_dir(), repaint)),
+                terrain: Box::new(Loader::new(TERRARIUM, default_cache_dir(), repaint.clone())),
+                places: Box::new(Loader::new(OPENFREEMAP, default_cache_dir(), repaint)),
             };
             let report: ui::Report = Box::new(move |text, ok| {
                 println!("{text}");

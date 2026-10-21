@@ -80,7 +80,8 @@ fn main() {
                     let loaders = ui::Loaders {
                         esri: Box::new(net::web::Loader::new(net::ESRI, repaint.clone())),
                         osm: Box::new(net::web::Loader::new(net::OSM, repaint.clone())),
-                        terrain: Box::new(net::web::Loader::new(net::TERRARIUM, repaint)),
+                        terrain: Box::new(net::web::Loader::new(net::TERRARIUM, repaint.clone())),
+                        places: Box::new(net::web::Loader::new(net::OPENFREEMAP, repaint)),
                     };
                     let report: ui::Report = Box::new(move |text, _ok| show(text));
                     Ok(Box::new(ui::LiteApp::new(cc, loaders, scenario, report)))

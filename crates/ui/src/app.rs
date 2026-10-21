@@ -22,6 +22,7 @@ use crate::basemap::Basemap;
 use crate::check::{self, Check, Scenario, SourceStats};
 use crate::i18n::{Lang, TERRAIN_SOURCES, Text, text};
 use crate::input::Input;
+use crate::labels::{self, Labels};
 
 /// Сколько снимков тайлов держать в видеокарте, сверх нужных кадру
 /// старые вытесняются. Снимок 256 × 256 занимает 256 КБ.
@@ -56,6 +57,8 @@ pub struct Loaders {
     pub osm: Box<dyn TileLoader>,
     /// Высоты рельефа.
     pub terrain: Box<dyn TileLoader>,
+    /// Векторные тайлы OpenFreeMap с пунктами для надписей.
+    pub places: Box<dyn TileLoader>,
 }
 
 impl Loaders {
@@ -124,6 +127,7 @@ pub struct LiteApp {
     check: Option<Check>,
     report: Report,
     shot: Option<Shot>,
+    labels: Labels,
 }
 
 impl LiteApp {
@@ -140,8 +144,9 @@ impl LiteApp {
         let mut nav = Navigator::new(camera, pose);
         let source = heights.clone();
         nav.set_terrain(Some(Arc::new(move |lat, lon| source.read().height_at(lat, lon))));
+        let lang = Lang::from_system();
         Self {
-            lang: Lang::from_system(),
+            lang,
             render_state,
             globe,
             texture: None,
@@ -154,6 +159,7 @@ impl LiteApp {
             check: scenario.map(Check::new),
             report,
             shot: None,
+            labels: Labels::new(lang),
         }
     }
 
@@ -220,10 +226,13 @@ impl LiteApp {
                     if let Some(check) = &mut self.check {
                         check.note_missing();
                     }
-                } else if let Ok(image) = loaded.image {
+                } else if let Ok(net::Content::Image(image)) = loaded.content {
                     globe.upload(loaded.key, image.width, image.height, &image.rgba);
                 }
             }
+        }
+        for loaded in self.loaders.places.take() {
+            self.labels.add(loaded);
         }
         let arrived = self.loaders.terrain.take();
         if arrived.is_empty() {
@@ -233,10 +242,8 @@ impl LiteApp {
             let mut store = self.heights.write();
             for loaded in arrived {
                 let (z, x, y) = loaded.key;
-                if let Some(tile) = loaded
-                    .image
-                    .ok()
-                    .and_then(|img| terrain::make_tile(z, x, y, &img.rgba, EARTH_FLOOR, Encoding::Terrarium))
+                if let Ok(net::Content::Image(img)) = loaded.content
+                    && let Some(tile) = terrain::make_tile(z, x, y, &img.rgba, EARTH_FLOOR, Encoding::Terrarium)
                 {
                     store.add(tile);
                 }
@@ -279,6 +286,8 @@ impl LiteApp {
                         ui.vertical(|ui| {
                             let (credit, link) = self.basemap.attribution(self.lang);
                             ui.hyperlink_to(egui::RichText::new(credit).color(egui::Color32::BLACK), link);
+                            let (credit, link) = labels::ATTRIBUTION;
+                            ui.hyperlink_to(egui::RichText::new(credit).color(egui::Color32::BLACK).small(), link);
                             ui.label(egui::RichText::new(TERRAIN_SOURCES).color(egui::Color32::BLACK).small());
                         });
                     });
@@ -333,6 +342,7 @@ impl LiteApp {
             source("osm", net::OSM.max_requests, self.loaders.osm.as_ref()),
             source("esri", net::ESRI.max_requests, self.loaders.esri.as_ref()),
             source("terrarium", net::TERRARIUM.max_requests, self.loaders.terrain.as_ref()),
+            source("openfreemap", net::OPENFREEMAP.max_requests, self.loaders.places.as_ref()),
         ];
         let (report, ok) = check.report(&sources, (self.nav.camera.width, self.nav.camera.height));
         (self.report)(&report, ok);
@@ -361,7 +371,10 @@ impl eframe::App for LiteApp {
         self.nav.camera.width = width;
         self.nav.camera.height = height;
 
-        let loading = self.loaders.basemap(self.basemap).busy() || self.loaders.terrain.busy();
+        let loading = self.loaders.basemap(self.basemap).busy()
+            || self.loaders.terrain.busy()
+            || self.loaders.places.busy()
+            || self.labels.pending;
         if let Some(check) = &mut self.check {
             let mut basemap = self.basemap;
             check.before_frame(&mut self.nav, now, loading, &mut basemap);
@@ -402,6 +415,7 @@ impl eframe::App for LiteApp {
             loader.want(if basemap == self.basemap { &wanted } else { &[] });
         }
         self.loaders.terrain.want(&height_needs(&store, &selection));
+        self.loaders.places.want(&self.labels.wanted(&selection.draw));
 
         let recreated = globe.resize(width, height);
         let count_holes = self.check.as_ref().is_some_and(Check::count_holes);
@@ -425,6 +439,7 @@ impl eframe::App for LiteApp {
             let uv = egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0));
             ui.painter().image(id, rect, uv, egui::Color32::WHITE);
         }
+        self.labels.draw(ui.painter(), rect, ppp as f32, &self.nav.camera, &selection.draw, &self.heights.read());
         self.attribution(&ctx);
         if self.check.is_none() && self.shot.is_none() {
             self.basemap_choice(&ctx);
@@ -432,10 +447,11 @@ impl eframe::App for LiteApp {
 
         if let Some(check) = &mut self.check {
             check.after_frame(&stats, &self.nav, &self.heights.read());
+            check.note_labels(&self.labels.drawn, rect);
         }
         self.finish_check(&ctx);
         self.step_shot(&ctx, moving || loading);
-        if moving || loading || self.check.is_some() {
+        if moving || loading || self.labels.pending || self.check.is_some() {
             ctx.request_repaint();
         }
     }
