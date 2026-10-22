@@ -561,8 +561,8 @@ impl LiteApp {
     fn marks_panel(&mut self, ui: &mut egui::Ui, now: f64) {
         let mut actions = Vec::new();
         let (title, hint, open_label, time_label) = match self.lang {
-            Lang::Ru => ("Метки", "Откройте или бросьте в окно сцену .planetx, KML, KMZ или растр высот GeoTIFF.", "Открыть…", "Время"),
-            Lang::En => ("Places", "Open or drop a .planetx scene, KML, KMZ or a GeoTIFF elevation raster into the window.", "Open…", "Time"),
+            Lang::Ru => ("Метки", "Откройте или бросьте в окно сцену .planetx, KML, KMZ, слои GeoPackage или растр высот GeoTIFF.", "Открыть…", "Время"),
+            Lang::En => ("Places", "Open or drop a .planetx scene, KML, KMZ, GeoPackage layers or a GeoTIFF elevation raster into the window.", "Open…", "Time"),
         };
         let mut open_clicked = false;
         egui::Panel::left("marks").resizable(true).default_size(280.0).show(ui, |ui| {
@@ -633,11 +633,11 @@ impl LiteApp {
     /// Выбор файла сцены. В программе - диалог системы, на странице -
     /// выбор файла браузером, байты приходят в ящик брошенных файлов.
     fn pick_file(&mut self, ctx: &egui::Context, now: f64) {
-        const KINDS: [&str; 5] = ["planetx", "kml", "kmz", "tif", "tiff"];
+        const KINDS: [&str; 6] = ["planetx", "kml", "kmz", "gpkg", "tif", "tiff"];
         #[cfg(not(target_arch = "wasm32"))]
         {
             let _ = ctx;
-            if let Some(path) = rfd::FileDialog::new().add_filter("PlanetX, KML, KMZ, GeoTIFF", &KINDS).pick_file() {
+            if let Some(path) = rfd::FileDialog::new().add_filter("PlanetX, KML, KMZ, GeoPackage, GeoTIFF", &KINDS).pick_file() {
                 let name = path.file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
                 match std::fs::read(&path) {
                     Ok(bytes) => {
@@ -653,7 +653,7 @@ impl LiteApp {
             let _ = now;
             let (slot, ctx) = (self.dropped_box.clone(), ctx.clone());
             wasm_bindgen_futures::spawn_local(async move {
-                if let Some(file) = rfd::AsyncFileDialog::new().add_filter("PlanetX, KML, KMZ, GeoTIFF", &KINDS).pick_file().await {
+                if let Some(file) = rfd::AsyncFileDialog::new().add_filter("PlanetX, KML, KMZ, GeoPackage, GeoTIFF", &KINDS).pick_file().await {
                     let bytes = file.read().await;
                     if let Ok(mut s) = slot.lock() {
                         s.push((Ok(bytes), file.file_name()));

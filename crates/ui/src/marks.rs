@@ -46,6 +46,14 @@ pub struct Opened {
 /// файла, по нему различается сцена.
 pub fn open(bytes: &[u8], name: &str) -> Result<Opened, String> {
     let lower = name.to_lowercase();
+    if lower.ends_with(".gpkg") {
+        let layers = data::layers::read(bytes.to_vec(), name)?;
+        let tree = crate::gpkg::folder(layers, name);
+        let points: Vec<(f64, f64)> = timed_shapes(&tree).iter().flat_map(|(s, _)| s.points.iter().copied()).collect();
+        // Камера - к охвату всех объектов.
+        let pose = fit_points(&points, 45.0, 1.6);
+        return Ok(Opened { tree, pose, name: name.to_string() });
+    }
     if lower.ends_with(".planetx") {
         let (scene, places) = scene::scene::read_scene(bytes).map_err(|e| format!("{e:?}"))?;
         let [lat, lon, distance, heading, tilt] = scene.camera;
