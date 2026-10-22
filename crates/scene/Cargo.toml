@@ -1,0 +1,19 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "scene"
+description = "Сцены и метки PlanetX Lite - время меток, сцена .planetx, туры"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+globe-core.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true

@@ -8,6 +8,7 @@ members = [
     "crates/globe-core",
     "crates/terrain",
     "crates/data",
+    "crates/scene",
     "crates/net",
     "crates/render",
     "crates/ui",
@@ -26,6 +27,7 @@ repository = "https://github.com/Valery35/planetx-lite"
 globe-core = { path = "crates/globe-core" }
 terrain = { path = "crates/terrain" }
 data = { path = "crates/data" }
+scene = { path = "crates/scene" }
 net = { path = "crates/net" }
 render = { path = "crates/render" }
 ui = { path = "crates/ui" }

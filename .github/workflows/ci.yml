@@ -69,12 +69,12 @@ jobs:
       - name: Clippy под wasm32
         run: >
           cargo clippy --locked --target wasm32-unknown-unknown
-          -p globe-core -p terrain -p data -p net -p render -p ui -p planetx-web -- -D warnings
+          -p globe-core -p terrain -p data -p scene -p net -p render -p ui -p planetx-web -- -D warnings
 
       - name: Сборка под wasm32
         run: >
           cargo build --locked --target wasm32-unknown-unknown
-          -p globe-core -p terrain -p data -p net -p render -p ui -p planetx-web
+          -p globe-core -p terrain -p data -p scene -p net -p render -p ui -p planetx-web
 
       - name: Лицензии зависимостей
         run: |
