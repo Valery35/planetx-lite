@@ -139,6 +139,34 @@ fn geopackages_like_gdal() {
 }
 
 #[test]
+fn quarry_dem_samples_tiles_like_the_raster() {
+    // Тайл уровня 17 над серединой «Карьера»: высоты выборки совпадают
+    // с растром в той же точке, в середине вес 1.
+    let Some(bytes) = demo("quarry/quarry_dem.tif") else {
+        return;
+    };
+    let dem = data::dem::Dem::new(Grid::read(bytes, "quarry_dem.tif").unwrap(), 0.05).unwrap();
+    let (w, s, e, n) = dem.bounds;
+    assert!(w < e && s < n);
+    // Точка растра 1 м в UTM 40N на 58.6° - около 1.9 м EPSG:3857.
+    assert!((dem.pixel - 1.92).abs() < 0.05, "{}", dem.pixel);
+    let (cx, cy) = ((w + e) / 2.0, (s + n) / 2.0);
+    let half = 2.0 * 20037508.342789244 / f64::from(1u32 << 17) / 2.0;
+    let (heights, weights) = dem.sample((cx - half, cy - half, cx + half, cy + half), 256);
+    assert_eq!(heights.len(), 256 * 256);
+    assert!(heights.iter().all(|h| h.is_finite()));
+    assert!(weights.iter().all(|w| (*w - 1.0).abs() < 1e-6));
+    // Середина тайла - точка растра под (cx, cy).
+    let g = dem.grid();
+    let t = g.transformer_from(3857).unwrap();
+    let (x, y) = t.transform(cx + half / 256.0, cy - half / 256.0).unwrap();
+    let (col, row) = g.pixel_of(x, y).unwrap();
+    let exact = g.bilinear(col, row);
+    let got = heights[128 * 256 + 128];
+    assert!((got - exact).abs() < 0.05, "{got} против {exact}");
+}
+
+#[test]
 fn hostile_bytes_are_an_error() {
     assert!(Grid::read(b"not a tiff".to_vec(), "x.tif").is_err());
     assert!(layers::read(b"not a geopackage".to_vec(), "x.gpkg").is_err());

@@ -26,6 +26,7 @@ use crate::input::Input;
 use crate::labels::{self, Labels};
 use crate::marks::{self, Marks};
 use crate::pictures::Pictures;
+use crate::relief::Relief;
 use crate::timeline::TimeBar;
 use crate::tours::Player;
 use crate::search::{Search, place_pose};
@@ -145,7 +146,7 @@ pub struct LiteApp {
     credits: Credits,
     marks: Marks,
     /// Файл, который откроется в первом кадре.
-    pending_open: Option<(Vec<u8>, String)>,
+    pending_open: Vec<(Vec<u8>, String)>,
     /// Сообщение об открытии файла: название сцены или ошибка.
     open_message: Option<String>,
     /// Прочитанные браузером брошенные файлы: байты или ошибка и имя.
@@ -168,6 +169,8 @@ pub struct LiteApp {
     scene_source: Option<String>,
     /// Сцена грузится по ссылке: имя файла и признак сцены самопроверки.
     fetching: Option<(String, bool)>,
+    /// Свой рельеф: врезанные растры высот.
+    relief: Relief,
 }
 
 /// Ящик прочитанных брошенных файлов.
@@ -210,7 +213,7 @@ impl LiteApp {
             search_text: String::new(),
             credits: Credits::default(),
             marks: Marks::default(),
-            pending_open: None,
+            pending_open: Vec::new(),
             open_message: None,
             dropped_box: DroppedBox::default(),
             shot_ui: false,
@@ -222,6 +225,7 @@ impl LiteApp {
             keep_pose: false,
             scene_source: None,
             fetching: None,
+            relief: Relief::default(),
         }
     }
 
@@ -271,7 +275,7 @@ impl LiteApp {
     /// Открыть сцену `.planetx`, KML или KMZ при старте: камера сразу
     /// встаёт в позу сцены.
     pub fn with_file(mut self, bytes: Vec<u8>, name: &str) -> Self {
-        self.pending_open = Some((bytes, name.to_string()));
+        self.pending_open.push((bytes, name.to_string()));
         self
     }
 
@@ -395,9 +399,47 @@ impl LiteApp {
         }
     }
 
+    /// Растр высот GeoTIFF - врезка своего рельефа, камера - к нему.
+    fn open_relief(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
+        let opened = data::grid::Grid::read(bytes.to_vec(), name)
+            .and_then(|grid| data::dem::Dem::new(grid, terrain::inset::BAND_SHARE));
+        let dem = match opened {
+            Ok(dem) => dem,
+            Err(e) => {
+                self.open_message = Some(match self.lang {
+                    Lang::Ru => format!("Растр не открылся: {name}: {e}"),
+                    Lang::En => format!("The raster did not open: {name}: {e}"),
+                });
+                return Err(e);
+            }
+        };
+        let corners = dem.grid().corners();
+        {
+            let mut store = self.heights.write();
+            self.relief.add(name, dem, &mut store);
+        }
+        let camera = &self.nav.camera;
+        let pose = corners.and_then(|c| marks::fit_points(&c, camera.fov_y, camera.aspect()));
+        if let Some(pose) = pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
+            match fly {
+                Some(now) => crate::input::fly(&mut self.nav, pose, now),
+                None => self.nav.show(pose),
+            }
+        }
+        self.open_message = Some(match self.lang {
+            Lang::Ru => format!("Свой рельеф: {}", self.relief.names().join(", ")),
+            Lang::En => format!("Own terrain: {}", self.relief.names().join(", ")),
+        });
+        Ok(pose)
+    }
+
     /// Открыть файл. fly - лететь к позе сцены, иначе встать в неё сразу.
     /// Возвращает позу сцены или ошибку.
     fn open_file(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
+        let lower = name.to_lowercase();
+        if lower.ends_with(".tif") || lower.ends_with(".tiff") {
+            return self.open_relief(bytes, name, fly);
+        }
         match marks::open(bytes, name) {
             Ok(opened) => {
                 self.marks.set(opened.tree, &opened.name);
@@ -519,8 +561,8 @@ impl LiteApp {
     fn marks_panel(&mut self, ui: &mut egui::Ui, now: f64) {
         let mut actions = Vec::new();
         let (title, hint, open_label, time_label) = match self.lang {
-            Lang::Ru => ("Метки", "Откройте или бросьте в окно сцену .planetx, KML или KMZ.", "Открыть…", "Время"),
-            Lang::En => ("Places", "Open or drop a .planetx scene, KML or KMZ into the window.", "Open…", "Time"),
+            Lang::Ru => ("Метки", "Откройте или бросьте в окно сцену .planetx, KML, KMZ или растр высот GeoTIFF.", "Открыть…", "Время"),
+            Lang::En => ("Places", "Open or drop a .planetx scene, KML, KMZ or a GeoTIFF elevation raster into the window.", "Open…", "Time"),
         };
         let mut open_clicked = false;
         egui::Panel::left("marks").resizable(true).default_size(280.0).show(ui, |ui| {
@@ -591,11 +633,11 @@ impl LiteApp {
     /// Выбор файла сцены. В программе - диалог системы, на странице -
     /// выбор файла браузером, байты приходят в ящик брошенных файлов.
     fn pick_file(&mut self, ctx: &egui::Context, now: f64) {
-        const KINDS: [&str; 3] = ["planetx", "kml", "kmz"];
+        const KINDS: [&str; 5] = ["planetx", "kml", "kmz", "tif", "tiff"];
         #[cfg(not(target_arch = "wasm32"))]
         {
             let _ = ctx;
-            if let Some(path) = rfd::FileDialog::new().add_filter("PlanetX, KML, KMZ", &KINDS).pick_file() {
+            if let Some(path) = rfd::FileDialog::new().add_filter("PlanetX, KML, KMZ, GeoTIFF", &KINDS).pick_file() {
                 let name = path.file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
                 match std::fs::read(&path) {
                     Ok(bytes) => {
@@ -611,7 +653,7 @@ impl LiteApp {
             let _ = now;
             let (slot, ctx) = (self.dropped_box.clone(), ctx.clone());
             wasm_bindgen_futures::spawn_local(async move {
-                if let Some(file) = rfd::AsyncFileDialog::new().add_filter("PlanetX, KML, KMZ", &KINDS).pick_file().await {
+                if let Some(file) = rfd::AsyncFileDialog::new().add_filter("PlanetX, KML, KMZ, GeoTIFF", &KINDS).pick_file().await {
                     let bytes = file.read().await;
                     if let Ok(mut s) = slot.lock() {
                         s.push((Ok(bytes), file.file_name()));
@@ -740,7 +782,7 @@ impl LiteApp {
             self.labels.add(loaded);
         }
         let arrived = self.loaders.terrain.take();
-        if arrived.is_empty() {
+        if arrived.is_empty() && !self.relief.busy() {
             return;
         }
         {
@@ -750,9 +792,11 @@ impl LiteApp {
                 if let Ok(net::Content::Image(img)) = loaded.content
                     && let Some(tile) = terrain::make_tile(z, x, y, &img.rgba, EARTH_FLOOR, Encoding::Terrarium)
                 {
-                    store.add(tile);
+                    // Свой рельеф врезается в тайл до хранилища.
+                    store.add(self.relief.patch(tile));
                 }
             }
+            self.relief.build(&mut store);
         }
         // Точные высоты могли прийти выше глаза.
         self.nav.keep_clear();
@@ -888,7 +932,8 @@ impl eframe::App for LiteApp {
             || self.labels.pending
             || self.search.busy()
             || self.pictures.busy()
-            || self.fetching.is_some();
+            || self.fetching.is_some()
+            || self.relief.busy();
         if let Some(check) = &mut self.check {
             let parts = [
                 ("basemap", self.loaders.basemap(self.basemap).busy()),
@@ -932,7 +977,7 @@ impl eframe::App for LiteApp {
             self.fly_to_found(&place, now);
         }
         self.pictures.step(self.loaders.pictures.as_ref());
-        if let Some((bytes, name)) = self.pending_open.take() {
+        for (bytes, name) in std::mem::take(&mut self.pending_open) {
             let _ = self.open_file(&bytes, &name, None);
         }
         self.dropped(&ctx, now);
@@ -973,7 +1018,9 @@ impl eframe::App for LiteApp {
             let loader = self.loaders.basemap(basemap);
             loader.want(if basemap == self.basemap { &wanted } else { &[] });
         }
-        self.loaders.terrain.want(&height_needs(&store, &selection));
+        // Высоты глубже уровня 15 у своего рельефа собираются здесь.
+        let needs = self.relief.route(height_needs(&store, &selection), &store);
+        self.loaders.terrain.want(&needs);
         self.loaders.places.want(&self.labels.wanted(&selection.draw));
 
         for key in std::mem::take(&mut self.pictures.fresh) {

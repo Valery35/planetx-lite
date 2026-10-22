@@ -10,8 +10,10 @@
 //! - [`geocode`] - поиск места через Nominatim, перенос
 //!   `core/geocode.py` модуля;
 //! - [`grid`] - свой растр GeoTIFF или COG, через terrio;
+//! - [`dem`] - растр высот для врезки своего рельефа;
 //! - [`layers`] - слои GeoPackage, через terrio.
 
+pub mod dem;
 pub mod geocode;
 pub mod grid;
 pub mod layers;

@@ -20,6 +20,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 
 use globe_core::lod::TileKey;
 
+pub mod inset;
 pub mod mesh;
 
 pub const MAX_LEVEL: u32 = 15;
@@ -328,6 +329,11 @@ impl HeightStore {
 
     pub fn tile(&self, key: TileKey) -> Option<&Arc<HeightTile>> {
         self.tiles.get(&key)
+    }
+
+    /// Ключи загруженных тайлов высот.
+    pub fn keys(&self) -> Vec<TileKey> {
+        self.tiles.keys().copied().collect()
     }
 
     pub fn len(&self) -> usize {
