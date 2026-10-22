@@ -290,6 +290,8 @@ fn write_atomic(path: &Path, bytes: &[u8]) -> io::Result<()> {
 /// `User-Agent` программы.
 pub struct Requests {
     agent: ureq::Agent,
+    /// Предел ответа, байт.
+    limit: u64,
     sender: Sender<Result<Vec<u8>, String>>,
     results: Receiver<Result<Vec<u8>, String>>,
     stats: Arc<Stats>,
@@ -299,6 +301,11 @@ pub struct Requests {
 impl Requests {
     /// on_ready зовётся из потока запроса, когда пришёл ответ.
     pub fn new(on_ready: Arc<dyn Fn() + Send + Sync>) -> Self {
+        Self::with_limit(on_ready, 1 << 20)
+    }
+
+    /// Запросы с пределом ответа limit байт, например для картинок.
+    pub fn with_limit(on_ready: Arc<dyn Fn() + Send + Sync>, limit: u64) -> Self {
         let agent: ureq::Agent = ureq::Agent::config_builder()
             .user_agent(user_agent())
             .timeout_global(Some(TIMEOUT))
@@ -306,20 +313,20 @@ impl Requests {
             .build()
             .into();
         let (sender, results) = channel();
-        Self { agent, sender, results, stats: Arc::new(Stats::default()), on_ready }
+        Self { agent, limit, sender, results, stats: Arc::new(Stats::default()), on_ready }
     }
 }
 
 impl Request for Requests {
     fn start(&self, url: &str) {
-        let (agent, sender, stats, on_ready, url) =
-            (self.agent.clone(), self.sender.clone(), self.stats.clone(), self.on_ready.clone(), url.to_string());
+        let (agent, sender, stats, on_ready, url, limit) =
+            (self.agent.clone(), self.sender.clone(), self.stats.clone(), self.on_ready.clone(), url.to_string(), self.limit);
         let spawned = std::thread::Builder::new().name("request".into()).spawn(move || {
             stats.request_started();
             let result = agent
                 .get(&url)
                 .call()
-                .and_then(|mut r| r.body_mut().with_config().limit(1 << 20).read_to_vec())
+                .and_then(|mut r| r.body_mut().with_config().limit(limit).read_to_vec())
                 .map_err(|e| e.to_string());
             stats.request_finished();
             let _ = sender.send(result);

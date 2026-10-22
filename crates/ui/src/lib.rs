@@ -15,6 +15,7 @@ pub mod i18n;
 pub mod input;
 pub mod labels;
 pub mod marks;
+pub mod pictures;
 pub mod search;
 pub mod timeline;
 pub mod tours;

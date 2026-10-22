@@ -14,7 +14,10 @@
 //! высоты - сетки собираются заново, не чаще раза в [`REBUILD_PAUSE`].
 
 use globe_core::navigation::Pose;
-use render::FeatureMesh;
+use render::{FeatureMesh, PictureMesh};
+use scene::overlays;
+
+use crate::pictures;
 use scene::features::{self, Kind, Shape};
 use scene::kml::{self, Folder, Item, Place};
 use scene::when::{self, Time};
@@ -267,7 +270,7 @@ pub fn tree_ui(ui: &mut eframe::egui::Ui, folder: &mut Folder, path: &mut Vec<us
                         if label.double_clicked() {
                             actions.push(Action::Fly(path.clone()));
                         }
-                        if ui.small_button("▶").clicked() {
+                        if crate::timeline::icon_button(ui, crate::timeline::Icon::Play).clicked() {
                             actions.push(Action::Tour(path.clone()));
                         }
                     })
@@ -284,7 +287,7 @@ pub fn tree_ui(ui: &mut eframe::egui::Ui, folder: &mut Folder, path: &mut Vec<us
                     if label.double_clicked() {
                         actions.push(Action::Fly(path.clone()));
                     }
-                    if p.tour.is_some() && ui.small_button("▶").clicked() {
+                    if p.tour.is_some() && crate::timeline::icon_button(ui, crate::timeline::Icon::Play).clicked() {
                         actions.push(Action::Tour(path.clone()));
                     }
                 });
@@ -294,7 +297,10 @@ pub fn tree_ui(ui: &mut eframe::egui::Ui, folder: &mut Folder, path: &mut Vec<us
                     if ui.checkbox(&mut o.visible, "").changed() {
                         actions.push(Action::Toggled(path.clone()));
                     }
-                    ui.label(&o.name);
+                    let name = if o.name.is_empty() { "-" } else { o.name.as_str() };
+                    if ui.add(egui::Label::new(name).sense(egui::Sense::click())).double_clicked() {
+                        actions.push(Action::Fly(path.clone()));
+                    }
                 });
             }
         }
@@ -313,6 +319,10 @@ pub struct Marks {
     window: Option<(f64, f64)>,
     /// Метки кадра: видимые и в окне шкалы.
     shapes: Vec<Shape>,
+    /// Видимые по флажкам наложения-картинки с временем.
+    timed_overlays: Vec<(kml::Overlay, Option<Time>)>,
+    /// Наложения кадра: видимые и в окне шкалы.
+    overlays: Vec<kml::Overlay>,
     /// Версия высот и время последней сборки сеток.
     built: Option<(u64, f64)>,
     /// Сетки нужно собрать заново.
@@ -333,6 +343,8 @@ impl Marks {
     pub fn refresh(&mut self) {
         self.timed = self.tree.as_ref().map(timed_shapes).unwrap_or_default();
         self.shapes = in_window(&self.timed, self.window);
+        self.timed_overlays = self.tree.as_ref().map(pictures::timed_overlays).unwrap_or_default();
+        self.overlays = pictures::in_window(&self.timed_overlays, self.window);
         self.dirty = true;
         self.built = None;
     }
@@ -344,13 +356,39 @@ impl Marks {
         }
         self.window = window;
         self.shapes = in_window(&self.timed, window);
+        self.overlays = pictures::in_window(&self.timed_overlays, window);
         self.dirty = true;
         true
     }
 
-    /// Охват шкалы по временам видимых меток.
+    /// Охват шкалы по временам видимых меток и наложений.
     pub fn extent(&self) -> Option<(f64, f64)> {
-        when::extent(self.timed.iter().map(|(_, t)| t.as_ref()))
+        when::extent(self.timed.iter().map(|(_, t)| t.as_ref()).chain(self.timed_overlays.iter().map(|(_, t)| t.as_ref())))
+    }
+
+    /// Все наложения-картинки дерева, видимые и скрытые.
+    pub fn all_overlays(&self) -> Vec<&kml::Overlay> {
+        self.tree.as_ref().map(Folder::overlays).unwrap_or_default()
+    }
+
+    /// Наложения кадра: видимые и в окне шкалы.
+    pub fn overlays(&self) -> &[kml::Overlay] {
+        &self.overlays
+    }
+
+    /// Сетки картинок кадра на поверхности и фото.
+    pub fn picture_meshes(&self, heights: &HeightStore) -> Vec<PictureMesh> {
+        self.overlays
+            .iter()
+            .filter_map(|o| {
+                let key = pictures::key_of(o);
+                match o.kind() {
+                    overlays::Kind::Ground => pictures::ground_mesh(o, &key, heights),
+                    overlays::Kind::Photo => pictures::photo_mesh(o, &key),
+                    _ => None,
+                }
+            })
+            .collect()
     }
 
     /// Флажок строки сменился: в папке-переключателе соседи гаснут,

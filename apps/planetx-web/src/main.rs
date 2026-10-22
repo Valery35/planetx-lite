@@ -82,7 +82,8 @@ fn main() {
                         osm: Box::new(net::web::Loader::new(net::OSM, repaint.clone())),
                         terrain: Box::new(net::web::Loader::new(net::TERRARIUM, repaint.clone())),
                         places: Box::new(net::web::Loader::new(net::OPENFREEMAP, repaint.clone())),
-                        search: Box::new(net::web::Requests::new(repaint)),
+                        search: Box::new(net::web::Requests::new(repaint.clone())),
+                        pictures: Box::new(net::web::Requests::new(repaint)),
                     };
                     let report: ui::Report = Box::new(move |text, _ok| show(text));
                     Ok(Box::new(ui::LiteApp::new(cc, loaders, scenario, report)))

@@ -240,6 +240,49 @@ fn feature_line_and_fill_are_drawn() {
     grab(&mut globe, &cam, false);
 }
 
+#[test]
+fn picture_lies_with_west_left_and_waits_for_image() {
+    // Картинка 2x1: левая половина красная, правая синяя, на квадрате
+    // вокруг середины кадра. Камера отвесно, север вверху: слева
+    // в кадре красное, справа синее. Без картинки сетка не рисуется.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 3000.0, 0.0, 0.0);
+    let e = Ellipsoid::wgs84();
+    let center = e.geodetic_to_ecef(PERM.0, PERM.1, 0.0);
+    let at = |dlat: f64, dlon: f64| {
+        let p = e.geodetic_to_ecef(PERM.0 + dlat, PERM.1 + dlon, 0.0) - center;
+        [p.x as f32, p.y as f32, p.z as f32]
+    };
+    let mesh = render::PictureMesh {
+        key: "k".into(),
+        center,
+        offsets: vec![at(-0.01, -0.01), at(-0.01, 0.01), at(0.01, 0.01), at(0.01, -0.01)],
+        uv: vec![[0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]],
+        indices: vec![0, 1, 2, 0, 2, 3],
+        tint: [255, 255, 255, 255],
+        pull: render::PULL,
+        order: 0,
+    };
+    globe.set_pictures(&[mesh]);
+    // Точки кадра в серединах половин картинки, u = 0.25 и 0.75.
+    let pixel = |dlon: f64| cam.project(e.geodetic_to_ecef(PERM.0, PERM.1 + dlon, 0.0)).0;
+    let (west, east) = (pixel(-0.005), pixel(0.005));
+    let frame = grab(&mut globe, &cam, false);
+    let left = rgb(&frame, west.x, west.y);
+    assert!(!(left[0] > 200 && left[2] < 60), "картинки ещё нет: {left:?}");
+    assert!(globe.set_picture_image("k", 2, 1, &[255, 0, 0, 255, 0, 0, 255, 255]));
+    assert!(!globe.set_picture_image("bad", 2, 2, &[0; 4]));
+    let frame = grab(&mut globe, &cam, false);
+    let left = rgb(&frame, west.x, west.y);
+    let right = rgb(&frame, east.x, east.y);
+    assert!(left[0] > 200 && left[2] < 60, "{left:?}");
+    assert!(right[2] > 200 && right[0] < 60, "{right:?}");
+}
+
 /// Снятый кадр с атмосферой или без.
 fn grab(globe: &mut Globe, cam: &Camera, air: bool) -> render::Frame {
     let sel = lod::select(cam, &|_| true, Options::default());

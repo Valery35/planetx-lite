@@ -88,7 +88,8 @@ fn main() -> ExitCode {
                 osm: Box::new(Loader::new(OSM, default_cache_dir(), repaint.clone())),
                 terrain: Box::new(Loader::new(TERRARIUM, default_cache_dir(), repaint.clone())),
                 places: Box::new(Loader::new(OPENFREEMAP, default_cache_dir(), repaint.clone())),
-                search: Box::new(Requests::new(repaint)),
+                search: Box::new(Requests::new(repaint.clone())),
+                pictures: Box::new(Requests::with_limit(repaint, ui::pictures::MAX_BYTES)),
             };
             let report: ui::Report = Box::new(move |text, ok| {
                 println!("{text}");

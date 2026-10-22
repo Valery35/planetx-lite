@@ -34,6 +34,9 @@ pub use wgpu;
 mod features;
 pub use features::{FeatureMesh, PULL, WALL_ALPHA};
 use features::Features;
+mod pictures;
+pub use pictures::{PictureMesh, mip_levels};
+use pictures::Pictures;
 
 /// Формат кадра глобуса - без sRGB: перевод в sRGB делает шейдер, egui
 /// показывает значения как есть.
@@ -233,6 +236,7 @@ pub struct Globe {
     hole_show_pipeline: wgpu::RenderPipeline,
     sky_pipeline: wgpu::RenderPipeline,
     features: Features,
+    pictures: Pictures,
     air: wgpu::Buffer,
     air_bind: wgpu::BindGroup,
     /// Снять следующий кадр.
@@ -504,6 +508,7 @@ impl Globe {
             hole_show_pipeline,
             sky_pipeline,
             features: Features::new(device),
+            pictures: Pictures::new(device),
             air,
             air_bind,
             grab_next: false,
@@ -893,6 +898,26 @@ impl Globe {
         self.features.set(&self.device, meshes);
     }
 
+    /// Сетки картинок-наложений кадра. Заменяют прежние.
+    pub fn set_pictures(&mut self, meshes: &[PictureMesh]) {
+        self.pictures.set(&self.device, meshes);
+    }
+
+    /// Картинка наложения по ключу, RGBA в значениях экрана. false -
+    /// размер не годится видеокарте.
+    pub fn set_picture_image(&mut self, key: &str, width: u32, height: u32, rgba: &[u8]) -> bool {
+        self.pictures.set_image(&self.device, &self.queue, key, width, height, rgba)
+    }
+
+    /// Оставить в видеокарте только картинки с ключами keep.
+    pub fn keep_picture_images(&mut self, keep: &[String]) {
+        self.pictures.keep_images(keep);
+    }
+
+    pub fn has_picture_image(&self, key: &str) -> bool {
+        self.pictures.has_image(key)
+    }
+
     /// Снять следующий кадр. Снимок забирает [`Globe::take_grab`].
     pub fn grab(&mut self) {
         self.grab_next = true;
@@ -1060,6 +1085,8 @@ impl Globe {
             // Свои объекты - после неба: небо глубину не пишет и закрыло
             // бы линию над горизонтом.
             let ratio = if options.ratio > 0.0 { options.ratio } else { 1.0 };
+            // Картинки-наложения - под своими объектами.
+            draws += self.pictures.draw(&self.device, &self.queue, &mut pass, camera);
             draws += self.features.draw(&self.device, &self.queue, &mut pass, camera, ratio);
             if counting {
                 let paint = options.show_holes || !USE_QUERIES;

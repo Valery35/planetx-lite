@@ -25,6 +25,7 @@ use crate::i18n::{Lang, Text, search_status, text};
 use crate::input::Input;
 use crate::labels::{self, Labels};
 use crate::marks::{self, Marks};
+use crate::pictures::Pictures;
 use crate::timeline::TimeBar;
 use crate::tours::Player;
 use crate::search::{Search, place_pose};
@@ -66,6 +67,8 @@ pub struct Loaders {
     pub places: Box<dyn TileLoader>,
     /// Запросы к Nominatim.
     pub search: Box<dyn net::Request>,
+    /// Картинки наложений по ссылкам, по одной.
+    pub pictures: Box<dyn net::Request>,
 }
 
 impl Loaders {
@@ -152,6 +155,12 @@ pub struct LiteApp {
     /// Остановка тура прошлого кадра: на новой шкала встаёт на её время.
     tour_index: Option<usize>,
     timebar: TimeBar,
+    /// Картинки наложений открытой сцены.
+    pictures: Pictures,
+    /// Картинки наложений на экране в egui по ключу.
+    screen_textures: HashMap<String, egui::TextureHandle>,
+    /// Поза задана при запуске: сцена при старте её не меняет.
+    keep_pose: bool,
 }
 
 /// Ящик прочитанных брошенных файлов.
@@ -201,7 +210,42 @@ impl LiteApp {
             player: None,
             tour_index: None,
             timebar: TimeBar::default(),
+            pictures: Pictures::default(),
+            screen_textures: HashMap::new(),
+            keep_pose: false,
         }
+    }
+
+    /// Картинки на экране, ScreenOverlay: поверх кадра, под надписями
+    /// интерфейса, в порядке drawOrder. Возвращает их места.
+    fn screen_overlays(&mut self, ctx: &egui::Context, painter: &egui::Painter, rect: egui::Rect) -> Vec<egui::Rect> {
+        let mut places = Vec::new();
+        let mut screen: Vec<&scene::kml::Overlay> =
+            self.marks.overlays().iter().filter(|o| o.kind() == scene::overlays::Kind::Screen).collect();
+        screen.sort_by_key(|o| o.overlay.order);
+        for o in screen {
+            let key = crate::pictures::key_of(o);
+            let Some(image) = self.pictures.image(&key) else {
+                continue;
+            };
+            let texture = self.screen_textures.entry(key.clone()).or_insert_with(|| {
+                let size = [image.width as usize, image.height as usize];
+                ctx.load_texture(format!("overlay {key}"), egui::ColorImage::from_rgba_unmultiplied(size, &image.rgba), egui::TextureOptions::LINEAR)
+            });
+            let (x, y, w, h) = scene::overlays::screen_rect(
+                &o.overlay,
+                f64::from(rect.width()),
+                f64::from(rect.height()),
+                f64::from(image.width),
+                f64::from(image.height),
+            );
+            let place = egui::Rect::from_min_size(rect.min + egui::vec2(x as f32, y as f32), egui::vec2(w as f32, h as f32));
+            let [r, g, b, a] = o.overlay.color;
+            let uv = egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0));
+            painter.image(texture.id(), place, uv, egui::Color32::from_rgba_unmultiplied(r, g, b, a));
+            places.push(place);
+        }
+        places
     }
 
     /// Перелёт к найденному месту и метка на нём.
@@ -227,10 +271,16 @@ impl LiteApp {
         match marks::open(bytes, name) {
             Ok(opened) => {
                 self.marks.set(opened.tree, &opened.name);
+                self.pictures.set(&self.marks.all_overlays());
+                self.screen_textures.clear();
+                if let Some(globe) = &mut self.globe {
+                    globe.keep_picture_images(&[]);
+                }
                 self.player = None;
                 self.timebar.set_extent(self.marks.extent());
                 self.marks_to_labels();
-                if let Some(pose) = opened.pose {
+                // Поза, заданная при запуске, сильнее позы сцены.
+                if let Some(pose) = opened.pose.filter(|_| fly.is_some() || !self.keep_pose) {
                     match fly {
                         Some(now) => crate::input::fly(&mut self.nav, pose, now),
                         None => self.nav.show(pose),
@@ -290,10 +340,11 @@ impl LiteApp {
                         ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
                         if let Some(player) = &self.player {
                             ui.horizontal(|ui| {
-                                if ui.button(if player.paused() { "▶" } else { "⏸" }).clicked() {
+                                use crate::timeline::{Icon, icon_button};
+                                if icon_button(ui, if player.paused() { Icon::Play } else { Icon::Pause }).clicked() {
                                     toggle = true;
                                 }
-                                if ui.button("⏹").clicked() {
+                                if icon_button(ui, Icon::Stop).clicked() {
                                     stop = true;
                                 }
                                 ui.label(format!(
@@ -478,6 +529,7 @@ impl LiteApp {
     /// Начать с позы pose вместо начального вида.
     pub fn with_pose(mut self, pose: Pose) -> Self {
         self.nav.show(pose);
+        self.keep_pose = true;
         self
     }
 
@@ -693,7 +745,8 @@ impl eframe::App for LiteApp {
             || self.loaders.terrain.busy()
             || self.loaders.places.busy()
             || self.labels.pending
-            || self.search.busy();
+            || self.search.busy()
+            || self.pictures.busy();
         if let Some(check) = &mut self.check {
             let mut basemap = self.basemap;
             check.before_frame(&mut self.nav, now, loading, &mut basemap);
@@ -710,6 +763,7 @@ impl eframe::App for LiteApp {
         if let Some(place) = self.search.step(now, self.loaders.search.as_ref()) {
             self.fly_to_found(&place, now);
         }
+        self.pictures.step(self.loaders.pictures.as_ref());
         if let Some((bytes, name)) = self.pending_open.take() {
             self.open_file(&bytes, &name, None);
         }
@@ -754,8 +808,14 @@ impl eframe::App for LiteApp {
         self.loaders.terrain.want(&height_needs(&store, &selection));
         self.loaders.places.want(&self.labels.wanted(&selection.draw));
 
+        for key in std::mem::take(&mut self.pictures.fresh) {
+            if let Some(image) = self.pictures.image(&key) {
+                globe.set_picture_image(&key, image.width, image.height, &image.rgba);
+            }
+        }
         if let Some(meshes) = self.marks.meshes(&store, now) {
             globe.set_features(&meshes);
+            globe.set_pictures(&self.marks.picture_meshes(&store));
         }
         let recreated = globe.resize(width, height);
         let count_holes = self.check.as_ref().is_some_and(Check::count_holes);
@@ -780,8 +840,10 @@ impl eframe::App for LiteApp {
             ui.painter().image(id, rect, uv, egui::Color32::WHITE);
         }
         // Надписи только в кадре и не под подписью источников.
-        let blocked: Vec<egui::Rect> = self.credits.rect.into_iter().collect();
+        // Картинки на экране - раньше надписей, надписи не ложатся под них.
         let painter = ui.painter().with_clip_rect(rect);
+        let mut blocked = self.screen_overlays(&ctx, &painter, rect);
+        blocked.extend(self.credits.rect);
         self.labels.draw(&painter, rect, ppp as f32, &blocked, &self.nav.camera, &selection.draw, &self.heights.read());
         self.attribution(&ctx, rect);
         self.overlays(&ctx, rect, now);

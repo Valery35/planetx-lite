@@ -106,8 +106,8 @@ impl TimeBar {
         };
         let mut changed = false;
         ui.horizontal(|ui| {
-            let play = if self.playing.is_some() { "⏸" } else { "▶" };
-            if ui.button(play).clicked() && self.playing.take().is_none() {
+            let play = if self.playing.is_some() { Icon::Pause } else { Icon::Play };
+            if icon_button(ui, play).clicked() && self.playing.take().is_none() {
                 // С конца шкалы показ идёт сначала.
                 if self.range.1 >= b {
                     let width = self.range.1 - self.range.0;
@@ -167,6 +167,41 @@ impl TimeBar {
         });
         changed
     }
+}
+
+/// Значок кнопки, рисуется фигурой: знаков ▶ ⏸ ⏹ в шрифте программы нет.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Icon {
+    Play,
+    Pause,
+    Stop,
+}
+
+/// Кнопка со значком.
+pub fn icon_button(ui: &mut egui::Ui, icon: Icon) -> egui::Response {
+    let side = ui.spacing().interact_size.y;
+    let (rect, response) = ui.allocate_exact_size(egui::vec2(side, side), egui::Sense::click());
+    let visuals = ui.style().interact(&response);
+    let painter = ui.painter();
+    painter.rect(rect, visuals.corner_radius, visuals.weak_bg_fill, visuals.bg_stroke, egui::StrokeKind::Inside);
+    let color = visuals.fg_stroke.color;
+    let c = rect.center();
+    let r = side * 0.25;
+    match icon {
+        Icon::Play => {
+            let points = vec![c + egui::vec2(-0.8 * r, -r), c + egui::vec2(-0.8 * r, r), c + egui::vec2(r, 0.0)];
+            painter.add(egui::Shape::convex_polygon(points, color, egui::Stroke::NONE));
+        }
+        Icon::Pause => {
+            for dx in [-0.55 * r, 0.55 * r] {
+                painter.rect_filled(egui::Rect::from_center_size(c + egui::vec2(dx, 0.0), egui::vec2(0.6 * r, 2.0 * r)), 0.0, color);
+            }
+        }
+        Icon::Stop => {
+            painter.rect_filled(egui::Rect::from_center_size(c, egui::vec2(1.8 * r, 1.8 * r)), 0.0, color);
+        }
+    }
+    response
 }
 
 /// Дата для подписи: время суток - если охват шкалы короче двух суток.
