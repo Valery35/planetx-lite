@@ -171,6 +171,29 @@ fn picture_keeps_its_brightness() {
     }
 }
 
+#[test]
+fn start_levels_are_never_evicted() {
+    // Снимков больше бюджета, а тайлов кадра нет: уходят снимки
+    // глубоких уровней, уровни 0-2 остаются.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let rgba = vec![100u8; 256 * 256 * 4];
+    let start: Vec<TileKey> =
+        (0..=2u32).flat_map(|z| (0..1u32 << z).flat_map(move |x| (0..1u32 << z).map(move |y| (z, x, y)))).collect();
+    for key in &start {
+        globe.upload(*key, 256, 256, &rgba);
+    }
+    for x in 0..30 {
+        globe.upload((10, x, 0), 256, 256, &rgba);
+    }
+    globe.evict(&std::collections::HashSet::new(), 5);
+    assert!(start.iter().all(|k| globe.has_texture(*k)));
+    assert_eq!(globe.texture_count(), start.len());
+}
+
 /// Снятый кадр с атмосферой или без.
 fn grab(globe: &mut Globe, cam: &Camera, air: bool) -> render::Frame {
     let sel = lod::select(cam, &|_| true, Options::default());

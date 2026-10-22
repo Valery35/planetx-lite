@@ -101,6 +101,11 @@ pub const IDLE_FRAMES: u32 = 10;
 pub const LOAD_TIMEOUT: f64 = 180.0;
 /// Критерий частоты кадров - кадров в любом окне 1 с.
 pub const MIN_FPS: usize = 55;
+/// Пауза между кадрами замера, после которой замер недействителен,
+/// секунды. Браузер останавливает кадры страницы, когда её окно
+/// закрыто другими окнами или экран погас, 22 октября 2026 года.
+/// Модуль так же отмечает прогон, пока окно было закрыто.
+pub const STALL: f64 = 0.25;
 const M_PER_DEGREE: f64 = 111_320.0;
 
 /// Какая самопроверка.
@@ -189,6 +194,8 @@ pub struct Check {
     /// Наибольшая высота в радиусе 1 км от вершины и уровень тайла высот.
     summit: Option<(f64, u32)>,
     fps_times: Vec<f64>,
+    /// Пауз дольше [`STALL`] между кадрами замера.
+    stalls: usize,
     /// Тайлов, которых не оказалось у источника основы.
     missing: usize,
     /// Кадр нужно снять, кадр снимается.
@@ -351,6 +358,7 @@ impl Check {
             clearance_min: f64::INFINITY,
             summit: None,
             fps_times: Vec::new(),
+            stalls: 0,
             missing: 0,
             grab_request: false,
             grab_wait: false,
@@ -446,6 +454,9 @@ impl Check {
         self.idle = if loading { 0 } else { self.idle + 1 };
         let loaded = self.idle >= IDLE_FRAMES;
         let t = now - start;
+        if matches!(self.phase, Phase::Spin | Phase::LowFlight) && dt > STALL {
+            self.stalls += 1;
+        }
         let waiting = matches!(
             self.phase,
             Phase::LoadStart
@@ -473,6 +484,8 @@ impl Check {
                 if t >= SPIN_TIME && self.phase == Phase::Warm {
                     self.enter(Phase::Settle, now);
                 } else if t >= SPIN_TIME {
+                    // Последний кадр замера входит в окна 1 с.
+                    self.fps_times.push(now);
                     // Вид на снимках Esri, как в проверке фазы 1 модуля.
                     *basemap = Basemap::Esri;
                     let (d, h, tilt) = PERM_ESRI;
@@ -557,6 +570,7 @@ impl Check {
             && self.frames_counted > 0
             && self.holes_max == 0
             && fps.is_some_and(|f| f >= MIN_FPS)
+            && self.stalls == 0
             && sources.iter().all(|s| s.peak <= s.limit);
         let mut out = vec![
             format!("check={:?}", self.scenario).to_lowercase(),
@@ -564,7 +578,12 @@ impl Check {
             format!("frames={} frames_counted={}", self.frames, self.frames_counted),
             format!("holes_max={} frames_with_holes={}", self.holes_max, self.frames_with_holes),
             format!("underlay_max={}", self.underlay_max.map_or("-".to_string(), |u| u.to_string())),
-            format!("fps_min_1s={} fps_frames={}", fps.map_or("-".to_string(), |f| f.to_string()), self.fps_times.len()),
+            format!(
+                "fps_min_1s={} fps_frames={} frame_stalls={}",
+                fps.map_or("-".to_string(), |f| f.to_string()),
+                self.fps_times.len(),
+                self.stalls
+            ),
         ];
         if self.scenario == Scenario::Elbrus {
             let summit_ok = self.summit.is_some_and(|(h, level)| {
@@ -666,6 +685,31 @@ mod tests {
         let r = disk_radius(2.0, 1.0, 60.0, 1000);
         let expected = 30f64.to_radians().tan() / 30f64.to_radians().tan() * 500.0;
         assert!((r - expected).abs() < 1e-9);
+    }
+
+    #[test]
+    fn frame_stall_spoils_the_measurement() {
+        // Браузер остановил кадры страницы на 7 с в конце оборота,
+        // 22 октября 2026 года. Замер с такой паузой не засчитывается.
+        use super::{Check, Phase};
+        use crate::basemap::Basemap;
+        use globe_core::camera::Camera;
+        use globe_core::ellipsoid::Ellipsoid;
+        use globe_core::navigation::Navigator;
+        use globe_core::{DMat3, DVec3};
+        let mut nav =
+            Navigator::new(Camera::new(Ellipsoid::wgs84(), DVec3::ZERO, DMat3::IDENTITY), Scenario::Perm.start_pose());
+        let mut basemap = Basemap::Osm;
+        let mut check = Check::new(Scenario::Perm);
+        check.enter(Phase::Spin, 0.0);
+        for i in 0..200 {
+            check.before_frame(&mut nav, f64::from(i) / 60.0, false, &mut basemap);
+        }
+        assert_eq!(check.stalls, 0);
+        check.before_frame(&mut nav, 10.5, false, &mut basemap);
+        assert_eq!(check.stalls, 1);
+        let (report, ok) = check.report(&[], (100, 100), &[]);
+        assert!(!ok && report.contains("frame_stalls=1"), "{report}");
     }
 
     #[test]

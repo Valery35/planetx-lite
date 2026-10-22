@@ -32,17 +32,32 @@ struct VertexOut {
     @location(0) uv: vec2<f32>,
     // Множитель яркости отмывки рельефа.
     @location(1) shade: f32,
-    // Глубина вершины, метры вдоль взгляда.
-    @location(2) depth: f32,
+    // Дымка: доля света поверхности, прошедшая к глазу, и свет воздуха.
+    @location(2) through: vec3<f32>,
+    @location(3) glow: vec3<f32>,
 };
 
+// Дымка считается в вершинах, а не в пикселях, как в модуле. На кадре
+// страницы 3840 × 1838 счёт в пикселях давал 30 кадров в секунду
+// вместо 60, 22 октября 2026 года. Дымка меняется по кадру плавно,
+// между вершинами она интерполируется.
 @vertex
 fn tile_vs(@location(0) offset: vec3<f32>, @location(1) uv: vec2<f32>, @location(2) shade: f32) -> VertexOut {
     var out: VertexOut;
     out.position = draw.mvp * vec4<f32>(offset, 1.0);
     out.uv = uv;
     out.shade = shade;
-    out.depth = out.position.w;
+    out.through = vec3<f32>(1.0);
+    out.glow = vec3<f32>(0.0);
+    let w = out.position.w;
+    if w > 0.0 {
+        // Луч через вершину: та же запись, что у view_dir в пикселе.
+        let ndc = out.position.xy / w;
+        let dir = air_frame.right.xyz * ndc.x + air_frame.up.xyz * ndc.y - air_frame.back.xyz;
+        let light = air(dir, w);
+        out.through = light.through;
+        out.glow = light.glow;
+    }
     return out;
 }
 
@@ -62,6 +77,5 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     let ground = clamp(base * in.shade, vec3<f32>(0.0), vec3<f32>(1.0));
     // Дымка: воздух между глазом и поверхностью. Белая подложка под
     // дымкой остаётся белой: through + (1 - through) = 1.
-    let light = air(view_dir(in.position.xy), in.depth);
-    return vec4<f32>(min(ground * light.through + light.glow, vec3<f32>(1.0)), 1.0);
+    return vec4<f32>(min(ground * in.through + in.glow, vec3<f32>(1.0)), 1.0);
 }

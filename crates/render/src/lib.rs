@@ -330,7 +330,7 @@ impl Globe {
             label: Some("air"),
             entries: &[wgpu::BindGroupLayoutEntry {
                 binding: 0,
-                visibility: wgpu::ShaderStages::FRAGMENT,
+                visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
                 ty: wgpu::BindingType::Buffer {
                     ty: wgpu::BufferBindingType::Uniform,
                     has_dynamic_offset: false,
@@ -646,11 +646,19 @@ impl Globe {
     }
 
     /// Вытеснить снимки и сетки, давно не нужные кадру, пока их больше
-    /// budget. Тайлы из keep не вытесняются.
+    /// budget. Тайлы из keep не вытесняются. Снимки уровней 0-2 тоже:
+    /// окно просит их всегда, на них держится подстилка. Вытесненные,
+    /// они грузились снова и снова, когда снимков кадра было больше
+    /// budget - у Эльбруса на кадре страницы 3840 × 1726, 22 октября
+    /// 2026 года.
     pub fn evict(&mut self, keep: &HashSet<TileKey>, budget: usize) {
         if self.textures.len() > budget {
-            let mut old: Vec<(u64, TileKey)> =
-                self.textures.iter().filter(|(k, _)| !keep.contains(k)).map(|(k, t)| (t.last_used, *k)).collect();
+            let mut old: Vec<(u64, TileKey)> = self
+                .textures
+                .iter()
+                .filter(|(k, _)| !keep.contains(k) && k.0 > UNDERLAY_LEVEL)
+                .map(|(k, t)| (t.last_used, *k))
+                .collect();
             old.sort_unstable();
             let extra = self.textures.len() - budget;
             for (_, key) in old.into_iter().take(extra) {
