@@ -91,6 +91,8 @@ fn number(text: &str, comma_decimal: bool) -> Option<f64> {
 
 /// Точки из текста CSV.
 fn parse(text: &str) -> Result<Vec<Point>, String> {
+    // Метка BOM в начале файла - не часть первого столбца.
+    let text = text.strip_prefix('\u{feff}').unwrap_or(text);
     let mut lines = text.lines().filter(|l| !l.trim().is_empty());
     let head = lines.next().ok_or("пустой файл")?;
     let sep = [';', '\t', ','].into_iter().find(|c| head.contains(*c)).unwrap_or(',');
@@ -134,5 +136,8 @@ mod tests {
         let p = parse("Широта;Долгота;Название\n58,01;56,23;Пермь\n").unwrap();
         assert_eq!((p[0].lat, p[0].lon), (58.01, 56.23));
         assert!(parse("x,y\n1,2").is_err());
+        // Файл с меткой BOM: название находится.
+        let p = parse("\u{feff}name,lat,lon\nА,1,2\n").unwrap();
+        assert_eq!(p[0].name, "А");
     }
 }
