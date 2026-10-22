@@ -19,6 +19,7 @@ serde_json.workspace = true
 net.workspace = true
 render.workspace = true
 eframe.workspace = true
+image.workspace = true
 sys-locale = { workspace = true, features = ["js"] }
 
 [lints]

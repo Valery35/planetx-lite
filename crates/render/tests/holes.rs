@@ -70,7 +70,7 @@ fn half_ready(key: TileKey) -> bool {
 
 /// Дыры и видимая подстилка.
 fn holes(globe: &mut Globe, camera: &Camera, selection: &lod::Selection) -> (u64, u64) {
-    let stats = globe.render(camera, selection, None, FrameOptions { count_holes: true, show_holes: false, air: false });
+    let stats = globe.render(camera, selection, None, FrameOptions { count_holes: true, show_holes: false, air: false, ratio: 1.0 });
     assert!(stats.draws > 0);
     (stats.holes.unwrap(), stats.underlay.unwrap())
 }
@@ -163,7 +163,7 @@ fn picture_keeps_its_brightness() {
     for key in &sel.draw {
         globe.upload(*key, 256, 256, &rgba);
     }
-    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false });
+    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0 });
     let pixel = center_pixel(&device, &queue, &globe);
     eprintln!("пиксель в середине кадра: {pixel:?}");
     for c in &pixel[..3] {
@@ -194,11 +194,57 @@ fn start_levels_are_never_evicted() {
     assert_eq!(globe.texture_count(), start.len());
 }
 
+#[test]
+fn feature_line_and_fill_are_drawn() {
+    // Камера отвесно в 500 м над Пермью. Линия толщиной 9 пикселей через
+    // середину кадра - середина красная. Заливка треугольником вокруг
+    // середины без линии - середина зелёная.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 500.0, 0.0, 0.0);
+    let e = Ellipsoid::wgs84();
+    let center = e.geodetic_to_ecef(PERM.0, PERM.1, 0.0);
+    let at = |dlat: f64, dlon: f64| {
+        let p = e.geodetic_to_ecef(PERM.0 + dlat, PERM.1 + dlon, 0.0) - center;
+        [p.x as f32, p.y as f32, p.z as f32]
+    };
+    let line = render::FeatureMesh {
+        center,
+        offsets: vec![at(0.0, -0.004), at(0.0, 0.004)],
+        lines: vec![0, 1],
+        line_color: [255, 0, 0, 255],
+        width: 9.0,
+        ..Default::default()
+    };
+    globe.set_features(&[line]);
+    let frame = grab(&mut globe, &cam, false);
+    let c = rgb(&frame, f64::from(cam.width) / 2.0, f64::from(cam.height) / 2.0);
+    assert!(c[0] > 200 && c[1] < 60 && c[2] < 60, "{c:?}");
+    let fill = render::FeatureMesh {
+        center,
+        offsets: vec![at(-0.002, -0.004), at(-0.002, 0.004), at(0.003, 0.0)],
+        fill: vec![0, 1, 2],
+        fill_color: Some([0, 255, 0, 255]),
+        ..Default::default()
+    };
+    globe.set_features(&[fill]);
+    let frame = grab(&mut globe, &cam, false);
+    let c = rgb(&frame, f64::from(cam.width) / 2.0, f64::from(cam.height) / 2.0);
+    assert!(c[1] > 200 && c[0] < 60, "{c:?}");
+    // Индексы за пределами вершин не роняют кадр.
+    let broken = render::FeatureMesh { center, offsets: vec![at(0.0, 0.0)], lines: vec![0, 7], fill: vec![0, 1, 9], ..Default::default() };
+    globe.set_features(&[broken]);
+    grab(&mut globe, &cam, false);
+}
+
 /// Снятый кадр с атмосферой или без.
 fn grab(globe: &mut Globe, cam: &Camera, air: bool) -> render::Frame {
     let sel = lod::select(cam, &|_| true, Options::default());
     globe.grab();
-    globe.render(cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air });
+    globe.render(cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air, ratio: 1.0 });
     globe.take_grab().unwrap()
 }
 

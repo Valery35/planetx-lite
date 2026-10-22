@@ -56,7 +56,3 @@ pub fn search_status(lang: Lang, status: &crate::search::Status) -> Option<Strin
         (Lang::En, Status::Failed(e)) => format!("Search failed: {e}"),
     })
 }
-
-/// Подпись источника высот, как в модуле. Это название наборов данных,
-/// а не текст программы, поэтому без перевода.
-pub const TERRAIN_SOURCES: &str = "Terrain: Mapzen, SRTM, GMTED, ETOPO1 and others";

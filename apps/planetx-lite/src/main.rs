@@ -53,11 +53,11 @@ fn main() -> ExitCode {
     };
     let shot = args.windows(2).find(|w| w[0] == "--shot").map(|w| std::path::PathBuf::from(&w[1]));
     let result = Arc::new(Mutex::new(None));
-    let options = eframe::NativeOptions {
-        renderer: eframe::Renderer::Wgpu,
-        viewport: egui::ViewportBuilder::default().with_title("PlanetX Lite").with_inner_size(WINDOW),
-        ..Default::default()
-    };
+    let mut viewport = egui::ViewportBuilder::default().with_title("PlanetX Lite").with_inner_size(WINDOW);
+    if let Some(icon) = ui::credits::window_icon() {
+        viewport = viewport.with_icon(icon);
+    }
+    let options = eframe::NativeOptions { renderer: eframe::Renderer::Wgpu, viewport, ..Default::default() };
     let shared = result.clone();
     let run = eframe::run_native(
         "PlanetX Lite",

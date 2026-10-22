@@ -31,6 +31,10 @@ use wgpu::util::DeviceExt;
 
 pub use wgpu;
 
+mod features;
+pub use features::{FeatureMesh, PULL, WALL_ALPHA};
+use features::Features;
+
 /// Формат кадра глобуса - без sRGB: перевод в sRGB делает шейдер, egui
 /// показывает значения как есть.
 pub const COLOR_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba8Unorm;
@@ -61,7 +65,7 @@ fn display(rgb: [u8; 3]) -> [f32; 3] {
 pub const SHELL_KM: f64 = 300.0;
 
 /// Переход от глубины OpenGL (-1..1) к глубине wgpu (0..1).
-fn depth_fix() -> DMat4 {
+pub(crate) fn depth_fix() -> DMat4 {
     DMat4::from_cols_array(&[1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5, 1.0])
 }
 
@@ -137,6 +141,9 @@ pub struct FrameOptions {
     pub show_holes: bool,
     /// Атмосфера: небо, гало и дымка.
     pub air: bool,
+    /// Пикселей кадра на логический пиксель, толщина линий объектов
+    /// умножается на него. Ноль и меньше - 1.
+    pub ratio: f32,
 }
 
 /// Воздух кадра, см. air.wgsl.
@@ -225,6 +232,7 @@ pub struct Globe {
     hole_count_pipeline: wgpu::RenderPipeline,
     hole_show_pipeline: wgpu::RenderPipeline,
     sky_pipeline: wgpu::RenderPipeline,
+    features: Features,
     air: wgpu::Buffer,
     air_bind: wgpu::BindGroup,
     /// Снять следующий кадр.
@@ -495,6 +503,7 @@ impl Globe {
             hole_count_pipeline,
             hole_show_pipeline,
             sky_pipeline,
+            features: Features::new(device),
             air,
             air_bind,
             grab_next: false,
@@ -879,6 +888,11 @@ impl Globe {
         }
     }
 
+    /// Свои объекты кадра: линии, заливки, стены. Заменяют прежние.
+    pub fn set_features(&mut self, meshes: &[FeatureMesh]) {
+        self.features.set(&self.device, meshes);
+    }
+
     /// Снять следующий кадр. Снимок забирает [`Globe::take_grab`].
     pub fn grab(&mut self) {
         self.grab_next = true;
@@ -1043,6 +1057,10 @@ impl Globe {
                 pass.set_bind_group(2, &self.air_bind, &[]);
                 pass.draw(0..3, 0..1);
             }
+            // Свои объекты - после неба: небо глубину не пишет и закрыло
+            // бы линию над горизонтом.
+            let ratio = if options.ratio > 0.0 { options.ratio } else { 1.0 };
+            draws += self.features.draw(&self.device, &self.queue, &mut pass, camera, ratio);
             if counting {
                 let paint = options.show_holes || !USE_QUERIES;
                 let pipeline = if paint { &self.hole_show_pipeline } else { &self.hole_count_pipeline };

@@ -20,7 +20,8 @@ use terrain::{Encoding, HeightStore};
 
 use crate::basemap::Basemap;
 use crate::check::{self, Check, Scenario, SourceStats};
-use crate::i18n::{Lang, TERRAIN_SOURCES, Text, search_status, text};
+use crate::credits::{self, Credits};
+use crate::i18n::{Lang, Text, search_status, text};
 use crate::input::Input;
 use crate::labels::{self, Labels};
 use crate::search::{Search, place_pose};
@@ -133,6 +134,7 @@ pub struct LiteApp {
     labels: Labels,
     search: Search,
     search_text: String,
+    credits: Credits,
 }
 
 impl LiteApp {
@@ -170,6 +172,7 @@ impl LiteApp {
                 Lang::En => "en",
             })),
             search_text: String::new(),
+            credits: Credits::default(),
         }
     }
 
@@ -295,24 +298,11 @@ impl LiteApp {
         }
     }
 
-    fn attribution(&self, ctx: &egui::Context) {
-        egui::Area::new(egui::Id::unique("attribution"))
-            .anchor(egui::Align2::RIGHT_BOTTOM, egui::vec2(-6.0, -6.0))
-            .show(ctx, |ui| {
-                egui::Frame::new()
-                    .fill(egui::Color32::from_white_alpha(200))
-                    .inner_margin(egui::Margin::same(4))
-                    .corner_radius(3.0)
-                    .show(ui, |ui| {
-                        ui.vertical(|ui| {
-                            let (credit, link) = self.basemap.attribution(self.lang);
-                            ui.hyperlink_to(egui::RichText::new(credit).color(egui::Color32::BLACK), link);
-                            let (credit, link) = labels::ATTRIBUTION;
-                            ui.hyperlink_to(egui::RichText::new(credit).color(egui::Color32::BLACK).small(), link);
-                            ui.label(egui::RichText::new(TERRAIN_SOURCES).color(egui::Color32::BLACK).small());
-                        });
-                    });
-            });
+    /// Знак PlanetX и подпись источников, как в модуле: подложка
+    /// и рельеф целиком, дальше векторная основа.
+    fn attribution(&mut self, ctx: &egui::Context) {
+        let parts = [self.basemap.attribution(self.lang), credits::TERRAIN, labels::ATTRIBUTION];
+        self.credits.show(ctx, self.lang, &parts, 2);
     }
 
     /// Выбор основы и строка поиска в углу окна.
@@ -480,7 +470,7 @@ impl eframe::App for LiteApp {
             globe.grab();
         }
         let stats =
-            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: true });
+            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: true, ratio: ppp as f32 });
         drop(store);
         if let Some(check) = &mut self.check
             && check.waits_frame()
