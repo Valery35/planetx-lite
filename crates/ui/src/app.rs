@@ -588,9 +588,9 @@ impl LiteApp {
 
     /// Знак PlanetX и подпись источников, как в модуле: подложка
     /// и рельеф целиком, дальше векторная основа.
-    fn attribution(&mut self, ctx: &egui::Context) {
+    fn attribution(&mut self, ctx: &egui::Context, view: egui::Rect) {
         let parts = [self.basemap.attribution(self.lang), credits::TERRAIN, labels::ATTRIBUTION];
-        self.credits.show(ctx, self.lang, &parts, 2);
+        self.credits.show(ctx, view, self.lang, &parts, 2);
     }
 
     /// Выбор основы и строка поиска в углу окна.
@@ -779,8 +779,11 @@ impl eframe::App for LiteApp {
             let uv = egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0));
             ui.painter().image(id, rect, uv, egui::Color32::WHITE);
         }
-        self.labels.draw(ui.painter(), rect, ppp as f32, &self.nav.camera, &selection.draw, &self.heights.read());
-        self.attribution(&ctx);
+        // Надписи только в кадре и не под подписью источников.
+        let blocked: Vec<egui::Rect> = self.credits.rect.into_iter().collect();
+        let painter = ui.painter().with_clip_rect(rect);
+        self.labels.draw(&painter, rect, ppp as f32, &blocked, &self.nav.camera, &selection.draw, &self.heights.read());
+        self.attribution(&ctx, rect);
         self.overlays(&ctx, rect, now);
 
         if let Some(check) = &mut self.check {

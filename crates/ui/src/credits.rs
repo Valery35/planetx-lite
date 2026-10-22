@@ -39,6 +39,22 @@ const ICON_PNG: &[u8] = include_bytes!("../assets/planetx.png");
 pub const TERRAIN: (&str, &str) =
     ("Terrain: Mapzen, SRTM, GMTED, ETOPO1 and others", "https://github.com/tilezen/joerd/blob/master/docs/attribution.md");
 
+/// Строки подписи шириной не больше room: перенос только между
+/// источниками, источник не разрывается. width - ширина текста.
+pub fn break_lines(pieces: &[String], room: f32, mut width: impl FnMut(&str) -> f32) -> String {
+    let mut lines: Vec<String> = Vec::new();
+    for piece in pieces {
+        match lines.last_mut() {
+            Some(last) if width(&format!("{last} · {piece}")) <= room => {
+                last.push_str(" · ");
+                last.push_str(piece);
+            }
+            _ => lines.push(piece.clone()),
+        }
+    }
+    lines.join("\n")
+}
+
 /// Короткая подпись источников на карте: названия без ссылок, лицензий
 /// и списков авторов, повтор один раз. Перенос
 /// `core/sources.short_credits` модуля. credits - подписи текстом
@@ -88,6 +104,8 @@ pub fn window_icon() -> Option<egui::IconData> {
 #[derive(Default)]
 pub struct Credits {
     icon: Option<egui::TextureHandle>,
+    /// Место знака и подписи на экране прошлого кадра.
+    pub rect: Option<egui::Rect>,
     sources_open: bool,
     about_open: bool,
 }
@@ -112,14 +130,18 @@ impl Credits {
     }
 
     /// Знак и подпись в правом нижнем углу. parts - подписи источников
-    /// с ссылками по порядку, первые keep остаются целиком.
-    pub fn show(&mut self, ctx: &egui::Context, lang: Lang, parts: &[(&str, &str)], keep: usize) {
+    /// с ссылками по порядку, первые keep остаются целиком. view - место
+    /// вида в окне.
+    pub fn show(&mut self, ctx: &egui::Context, view: egui::Rect, lang: Lang, parts: &[(&str, &str)], keep: usize) {
         let icon = self.icon(ctx);
         let texts: Vec<&str> = parts.iter().map(|(t, _)| *t).collect();
-        let line = short_credits(&texts, keep).join(" · ");
-        let screen = ctx.content_rect();
+        let pieces = short_credits(&texts, keep);
+        // Ширина вида без боковых панелей.
+        let screen = view;
         let mut open_sources = false;
         let mut open_about = false;
+        // Место знака и строки: их прямоугольники, а не вся область.
+        let mut used = egui::Rect::NOTHING;
         egui::Area::new(egui::Id::unique("planetx-credits"))
             .order(egui::Order::Foreground)
             .anchor(egui::Align2::RIGHT_BOTTOM, egui::vec2(-MARGIN, -MARGIN))
@@ -136,6 +158,7 @@ impl Credits {
                     let gap = h * 0.18;
                     let size = egui::vec2(h + gap + name.size().x + 2.0, h);
                     let (rect, brand) = ui.allocate_exact_size(size, egui::Sense::click());
+                    used = used.union(rect);
                     if let Some(id) = icon {
                         let uv = egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0));
                         ui.painter().image(id, egui::Rect::from_min_size(rect.min, egui::vec2(h, h)), uv, egui::Color32::WHITE);
@@ -146,17 +169,16 @@ impl Credits {
                         open_about = true;
                     }
                     // Подпись источников левее знака, переносится по ширине.
-                    if !line.is_empty() {
+                    if !pieces.is_empty() {
                         let room = (screen.width() - size.x - 3.0 * MARGIN).max(80.0);
-                        let mut job = egui::text::LayoutJob::simple(
-                            line.clone(),
-                            egui::FontId::proportional(ATTRIBUTION_FONT),
-                            CREDIT_COLOR,
-                            room,
-                        );
+                        let font = egui::FontId::proportional(ATTRIBUTION_FONT);
+                        let painter = ui.painter();
+                        let text = break_lines(&pieces, room, |s| painter.layout_no_wrap(s.to_string(), font.clone(), CREDIT_COLOR).size().x);
+                        let mut job = egui::text::LayoutJob::simple(text, font, CREDIT_COLOR, f32::INFINITY);
                         job.halign = egui::Align::RIGHT;
                         let galley = ui.painter().layout_job(job);
                         let (rect, credit) = ui.allocate_exact_size(galley.size(), egui::Sense::click());
+                        used = used.union(rect);
                         // Строки выровнены вправо от правого края места.
                         let pos = egui::pos2(rect.max.x, rect.min.y);
                         shadow_text(ui.painter(), pos, &galley, CREDIT_COLOR);
@@ -170,6 +192,7 @@ impl Credits {
                     }
                 });
             });
+        self.rect = used.is_positive().then(|| used.expand(MARGIN / 2.0));
         self.sources_open |= open_sources;
         self.about_open |= open_about;
         self.windows(ctx, lang, parts);
@@ -203,7 +226,16 @@ impl Credits {
 
 #[cfg(test)]
 mod tests {
-    use super::short_credits;
+    use super::{break_lines, short_credits};
+
+    #[test]
+    fn credits_break_only_between_sources() {
+        let pieces: Vec<String> = ["Esri", "Terrain", "© OpenStreetMap contributors"].map(String::from).to_vec();
+        let width = |s: &str| s.chars().count() as f32;
+        assert_eq!(break_lines(&pieces, 100.0, width), "Esri · Terrain · © OpenStreetMap contributors");
+        // Источник не разрывается, на новую строку переходит целиком.
+        assert_eq!(break_lines(&pieces, 20.0, width), "Esri · Terrain\n© OpenStreetMap contributors");
+    }
 
     #[test]
     fn short_credits_keep_first_and_copyright() {

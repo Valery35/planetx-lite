@@ -42,6 +42,8 @@ pub const MAX_CANDIDATES: usize = 600;
 /// Зазор между надписями, логических пикселей. При 3 пикселях надписи
 /// из космоса шли сплошным ковром, модуль, 26 сентября 2026 года.
 pub const PADDING: f32 = 10.0;
+/// Отступ надписи от края кадра, логических пикселей.
+pub const EDGE: f32 = 4.0;
 /// Сетка проверки наложений, логических пикселей.
 pub const CELL: f64 = 64.0;
 /// Надпись гаснет у горизонта: мера - синус угла луча зрения над
@@ -267,12 +269,15 @@ impl Labels {
     }
 
     /// Выбрать и нарисовать надписи кадра. rect - место кадра в окне,
-    /// ppp - пикселей кадра на логический пиксель.
+    /// ppp - пикселей кадра на логический пиксель. blocked - места
+    /// поверх кадра, под которыми надписей нет.
+    #[allow(clippy::too_many_arguments)]
     pub fn draw(
         &mut self,
         painter: &egui::Painter,
         rect: egui::Rect,
         ppp: f32,
+        blocked: &[egui::Rect],
         camera: &Camera,
         draw: &[TileKey],
         heights: &HeightStore,
@@ -329,10 +334,14 @@ impl Labels {
                 None => unknown = true,
             }
         }
+        // Надпись целиком в кадре и не под занятыми местами, обрезанных
+        // надписей нет.
+        let room = rect.shrink(EDGE);
         let mut layouts = Vec::new();
         let mut boxes = Vec::new();
         let mut tiers = Vec::new();
-        for c in &keep {
+        let mut placed = Vec::new();
+        for c in keep {
             let place = c.0;
             let big = matches!(place.kind, Kind::City | Kind::Capital) && place.rank <= BIG_RANK;
             let st = style(place.kind, big);
@@ -343,6 +352,11 @@ impl Labels {
             let at = rect.min + egui::vec2(c.6.x as f32 / ppp, c.6.y as f32 / ppp);
             let x0 = (at.x - ax).round();
             let y0 = (at.y - ay).round();
+            let area = egui::Rect::from_min_size(egui::pos2(x0, y0), egui::vec2(bw, bh));
+            if !room.contains_rect(area) || blocked.iter().any(|b| b.intersects(area)) {
+                continue;
+            }
+            placed.push(c);
             boxes.push([
                 f64::from(x0 - PADDING),
                 f64::from(y0 - PADDING),
@@ -352,11 +366,13 @@ impl Labels {
             tiers.push(place.kind.tier());
             layouts.push((text, st, galley, egui::pos2(x0, y0), at));
         }
-        let previous: HashSet<usize> = keep.iter().enumerate().filter(|(_, c)| self.shown.contains(&c.1)).map(|(n, _)| n).collect();
+        let previous: HashSet<usize> = placed.iter().enumerate().filter(|(_, c)| self.shown.contains(&c.1)).map(|(n, _)| n).collect();
         let chosen = select_labels(&boxes, &tiers, &previous, CELL);
         let mut shown = HashSet::new();
         for n in chosen {
-            let c = keep[n];
+            let Some(c) = placed.get(n) else {
+                continue;
+            };
             let alpha = ((c.5 - FADE_LOW) / (FADE_HIGH - FADE_LOW)).clamp(0.0, 1.0) as f32;
             let (text, st, galley, corner, at) = &layouts[n];
             paint(painter, *st, galley.clone(), *corner, text, alpha);
