@@ -49,6 +49,7 @@ tiny_http = "0.12"
 pollster = "0.4"
 flate2 = "1"
 serde_json = "1"
+rfd = "0.17"
 quick-xml = "0.42"
 # Сжатие только на Rust: в наборе zip по умолчанию есть библиотеки на C
 # (bzip2, zstd, lzma), под wasm32 они не собираются.

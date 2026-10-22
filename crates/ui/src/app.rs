@@ -143,6 +143,8 @@ pub struct LiteApp {
     open_message: Option<String>,
     /// Прочитанные браузером брошенные файлы: байты или ошибка и имя.
     dropped_box: DroppedBox,
+    /// Снимок окна вместе с панелью.
+    shot_ui: bool,
 }
 
 /// Ящик прочитанных брошенных файлов.
@@ -188,6 +190,7 @@ impl LiteApp {
             pending_open: None,
             open_message: None,
             dropped_box: DroppedBox::default(),
+            shot_ui: false,
         }
     }
 
@@ -213,10 +216,8 @@ impl LiteApp {
     fn open_file(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) {
         match marks::open(bytes, name) {
             Ok(opened) => {
-                self.marks.set(&opened.tree, &opened.name);
-                let points: Vec<(String, f64, f64)> =
-                    self.marks.points().into_iter().map(|p| (p.name, p.lat, p.lon)).collect();
-                self.labels.set_marks(&points);
+                self.marks.set(opened.tree, &opened.name);
+                self.marks_to_labels();
                 if let Some(pose) = opened.pose {
                     match fly {
                         Some(now) => crate::input::fly(&mut self.nav, pose, now),
@@ -231,6 +232,95 @@ impl LiteApp {
                     Lang::En => format!("The file did not open: {name}: {e}"),
                 });
             }
+        }
+    }
+
+    /// Точки меток - в надписи.
+    fn marks_to_labels(&mut self) {
+        let points: Vec<(String, f64, f64)> = self.marks.points().into_iter().map(|p| (p.name, p.lat, p.lon)).collect();
+        self.labels.set_marks(&points);
+    }
+
+    /// Левая панель меток: название сцены, дерево с флажками. Двойной
+    /// щелчок - перелёт к метке или папке.
+    fn marks_panel(&mut self, ui: &mut egui::Ui, now: f64) {
+        let mut actions = Vec::new();
+        let (title, hint, open_label) = match self.lang {
+            Lang::Ru => ("Метки", "Откройте или бросьте в окно сцену .planetx, KML или KMZ.", "Открыть…"),
+            Lang::En => ("Places", "Open or drop a .planetx scene, KML or KMZ into the window.", "Open…"),
+        };
+        let mut open_clicked = false;
+        egui::Panel::left("marks").resizable(true).default_size(280.0).show(ui, |ui| {
+            ui.add_space(4.0);
+            self.basemap_choice(ui, now);
+            ui.separator();
+            ui.horizontal(|ui| {
+                ui.heading(title);
+                if ui.button(open_label).clicked() {
+                    open_clicked = true;
+                }
+            });
+            if let Some(message) = &self.open_message {
+                ui.label(message);
+            }
+            match self.marks.tree.as_mut() {
+                Some(tree) => {
+                    egui::ScrollArea::vertical().show(ui, |ui| {
+                        crate::marks::tree_ui(ui, tree, &mut Vec::new(), &mut actions);
+                    });
+                }
+                None => {
+                    ui.label(hint);
+                }
+            }
+        });
+        if open_clicked {
+            self.pick_file(ui.ctx(), now);
+        }
+        for action in actions {
+            match action {
+                crate::marks::Action::Toggled(path) => {
+                    self.marks.toggled(&path);
+                    self.marks_to_labels();
+                }
+                crate::marks::Action::Fly(path) => {
+                    let camera = &self.nav.camera;
+                    if let Some(pose) = self.marks.pose_of(&path, camera.fov_y, camera.aspect()) {
+                        crate::input::fly(&mut self.nav, pose, now);
+                    }
+                }
+            }
+        }
+    }
+
+    /// Выбор файла сцены. В программе - диалог системы, на странице -
+    /// выбор файла браузером, байты приходят в ящик брошенных файлов.
+    fn pick_file(&mut self, ctx: &egui::Context, now: f64) {
+        const KINDS: [&str; 3] = ["planetx", "kml", "kmz"];
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let _ = ctx;
+            if let Some(path) = rfd::FileDialog::new().add_filter("PlanetX, KML, KMZ", &KINDS).pick_file() {
+                let name = path.file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
+                match std::fs::read(&path) {
+                    Ok(bytes) => self.open_file(&bytes, &name, Some(now)),
+                    Err(e) => self.open_message = Some(format!("{name}: {e}")),
+                }
+            }
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            let _ = now;
+            let (slot, ctx) = (self.dropped_box.clone(), ctx.clone());
+            wasm_bindgen_futures::spawn_local(async move {
+                if let Some(file) = rfd::AsyncFileDialog::new().add_filter("PlanetX, KML, KMZ", &KINDS).pick_file().await {
+                    let bytes = file.read().await;
+                    if let Ok(mut s) = slot.lock() {
+                        s.push((Ok(bytes), file.file_name()));
+                    }
+                }
+                ctx.request_repaint();
+            });
         }
     }
 
@@ -267,6 +357,12 @@ impl LiteApp {
             }
         }
     }
+    /// Снимок окна вместе с левой панелью, а не только кадр глобуса.
+    pub fn with_shot_ui(mut self) -> Self {
+        self.shot_ui = true;
+        self
+    }
+
     /// Начать с позы pose вместо начального вида.
     pub fn with_pose(mut self, pose: Pose) -> Self {
         self.nav.show(pose);
@@ -386,52 +482,35 @@ impl LiteApp {
     }
 
     /// Выбор основы и строка поиска в углу окна.
-    fn basemap_choice(&mut self, ctx: &egui::Context, now: f64) {
+    /// Поиск места и выбор основы - верх левой панели, как в Google Earth.
+    fn basemap_choice(&mut self, ui: &mut egui::Ui, now: f64) {
         let mut chosen = self.basemap;
-        let mut submitted = false;
-        let mut picked = None;
-        egui::Area::new(egui::Id::unique("basemap")).anchor(egui::Align2::LEFT_TOP, egui::vec2(8.0, 8.0)).show(
-            ctx,
-            |ui| {
-                egui::Frame::new()
-                    .fill(egui::Color32::from_black_alpha(150))
-                    .inner_margin(egui::Margin::same(6))
-                    .corner_radius(4.0)
-                    .show(ui, |ui| {
-                        ui.horizontal(|ui| {
-                            ui.label(egui::RichText::new(text(self.lang, Text::Basemap)).color(egui::Color32::WHITE));
-                            egui::ComboBox::from_id_salt("basemap")
-                                .selected_text(chosen.name(self.lang))
-                                .show_ui(ui, |ui| {
-                                    for b in Basemap::ALL {
-                                        ui.selectable_value(&mut chosen, b, b.name(self.lang));
-                                    }
-                                });
-                        });
-                        let edit = ui.add(
-                            egui::TextEdit::singleline(&mut self.search_text)
-                                .hint_text(text(self.lang, Text::SearchHint))
-                                .desired_width(280.0),
-                        );
-                        // Запрос только по Enter, правило Nominatim.
-                        submitted = edit.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
-                        if let Some(message) = search_status(self.lang, &self.search.status) {
-                            ui.label(egui::RichText::new(message).color(egui::Color32::WHITE));
-                        }
-                        if let Some(message) = &self.open_message {
-                            ui.label(egui::RichText::new(message).color(egui::Color32::WHITE));
-                        }
-                        if self.search.found.len() > 1 {
-                            for (n, place) in self.search.found.iter().enumerate() {
-                                let line = data::geocode::place_text(place);
-                                if ui.link(egui::RichText::new(line).color(egui::Color32::LIGHT_BLUE)).clicked() {
-                                    picked = Some(n);
-                                }
-                            }
-                        }
-                    });
-            },
+        let edit = ui.add(
+            egui::TextEdit::singleline(&mut self.search_text)
+                .hint_text(text(self.lang, Text::SearchHint))
+                .desired_width(f32::INFINITY),
         );
+        // Запрос только по Enter, правило Nominatim.
+        let submitted = edit.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
+        if let Some(message) = search_status(self.lang, &self.search.status) {
+            ui.label(message);
+        }
+        let mut picked = None;
+        if self.search.found.len() > 1 {
+            for (n, place) in self.search.found.iter().enumerate() {
+                if ui.link(data::geocode::place_text(place)).clicked() {
+                    picked = Some(n);
+                }
+            }
+        }
+        ui.horizontal(|ui| {
+            ui.label(text(self.lang, Text::Basemap));
+            egui::ComboBox::from_id_salt("basemap").selected_text(chosen.name(self.lang)).show_ui(ui, |ui| {
+                for b in Basemap::ALL {
+                    ui.selectable_value(&mut chosen, b, b.name(self.lang));
+                }
+            });
+        });
         self.set_basemap(chosen);
         if submitted && let Some(place) = self.search.submit(&self.search_text) {
             self.fly_to_found(&place, now);
@@ -440,7 +519,6 @@ impl LiteApp {
             self.fly_to_found(&place, now);
         }
     }
-
     fn finish_check(&mut self, ctx: &egui::Context) {
         let Some(check) = &self.check else {
             return;
@@ -476,6 +554,9 @@ impl eframe::App for LiteApp {
         let ctx = ui.ctx().clone();
         let now = ctx.input(|i| i.time);
         self.upload();
+        if self.check.is_none() && (self.shot.is_none() || self.shot_ui) {
+            self.marks_panel(ui, now);
+        }
 
         let rect = ui.available_rect_before_wrap();
         ui.allocate_rect(rect, egui::Sense::click_and_drag());
@@ -578,9 +659,6 @@ impl eframe::App for LiteApp {
         }
         self.labels.draw(ui.painter(), rect, ppp as f32, &self.nav.camera, &selection.draw, &self.heights.read());
         self.attribution(&ctx);
-        if self.check.is_none() && self.shot.is_none() {
-            self.basemap_choice(&ctx, now);
-        }
 
         if let Some(check) = &mut self.check {
             check.after_frame(&stats, &self.nav, &self.heights.read());

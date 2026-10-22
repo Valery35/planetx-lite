@@ -58,6 +58,17 @@ pub fn open(bytes: &[u8], name: &str) -> Result<Opened, String> {
     Ok(Opened { tree, pose, name: name.to_string() })
 }
 
+/// Папка по пути номеров детей, пустой путь - корень.
+fn folder_at_mut<'a>(folder: &'a mut Folder, path: &[usize]) -> Option<&'a mut Folder> {
+    match path.split_first() {
+        None => Some(folder),
+        Some((first, rest)) => match folder.children.get_mut(*first)? {
+            Item::Folder(f) => folder_at_mut(f, rest),
+            _ => None,
+        },
+    }
+}
+
 /// Объект глобуса по метке KML.
 pub fn shape_of(place: &Place) -> Shape {
     let mut s = Shape::new(place.kind, place.points.clone());
@@ -119,9 +130,153 @@ pub fn mesh(shape: &Shape, heights: &HeightStore) -> Option<FeatureMesh> {
     })
 }
 
-/// Метки открытой сцены: объекты, сетки, точки.
+/// Ближе этого расстояния перелёт к точке без вида не подходит, метры,
+/// как поиск места модуля.
+pub const POINT_DISTANCE: f64 = 3000.0;
+
+/// Поза для перелёта к метке, как `place_stop` модуля: вид метки,
+/// без него точка с [`POINT_DISTANCE`], путь и многоугольник целиком
+/// в кадре. None у метки без точек.
+pub fn place_pose(place: &Place, fov_y: f64, aspect: f64) -> Option<Pose> {
+    if let Some(v) = place.view {
+        return Some(Pose::new(v[0], v[1], v[2], v[3], v[4]));
+    }
+    fit_points(&place.points, fov_y, aspect)
+}
+
+/// Поза над точками: одна точка - с [`POINT_DISTANCE`], несколько -
+/// их охват целиком в кадре, взгляд отвесный.
+pub fn fit_points(points: &[(f64, f64)], fov_y: f64, aspect: f64) -> Option<Pose> {
+    match points {
+        [] => None,
+        [(lat, lon)] => Some(Pose::new(*lat, *lon, POINT_DISTANCE, 0.0, 0.0)),
+        _ => {
+            let south = points.iter().map(|p| p.0).fold(f64::INFINITY, f64::min);
+            let north = points.iter().map(|p| p.0).fold(f64::NEG_INFINITY, f64::max);
+            let lons: Vec<f64> = points.iter().map(|p| p.1).collect();
+            let (west, east) = globe_core::flight::lon_span(&lons);
+            let (lat, lon, d) = globe_core::flight::fit_view(west, south, east, north, fov_y, aspect);
+            Some(Pose::new(lat, lon, d.max(POINT_DISTANCE), 0.0, 0.0))
+        }
+    }
+}
+
+/// Поза для перелёта к папке: её вид, без него - охват её меток.
+pub fn folder_pose(folder: &Folder, fov_y: f64, aspect: f64) -> Option<Pose> {
+    if let Some(v) = folder.view {
+        return Some(Pose::new(v[0], v[1], v[2], v[3], v[4]));
+    }
+    let mut places = Vec::new();
+    all_places(folder, &mut places);
+    match places.as_slice() {
+        [one] => place_pose(one, fov_y, aspect),
+        _ => fit_points(&places.iter().flat_map(|p| p.points.iter().copied()).collect::<Vec<_>>(), fov_y, aspect),
+    }
+}
+
+fn all_places<'a>(folder: &'a Folder, out: &mut Vec<&'a Place>) {
+    for item in &folder.children {
+        match item {
+            Item::Folder(f) => all_places(f, out),
+            Item::Place(p) if p.tour.is_none() => out.push(p),
+            _ => {}
+        }
+    }
+}
+
+/// Строка дерева по пути номеров детей от корня.
+pub fn item_at<'a>(folder: &'a Folder, path: &[usize]) -> Option<&'a Item> {
+    let (first, rest) = path.split_first()?;
+    let item = folder.children.get(*first)?;
+    match (item, rest.is_empty()) {
+        (_, true) => Some(item),
+        (Item::Folder(f), false) => item_at(f, rest),
+        _ => None,
+    }
+}
+
+/// Флажок строки: видимость метки, папки или наложения.
+fn visible_mut(item: &mut Item) -> &mut bool {
+    match item {
+        Item::Folder(f) => &mut f.visible,
+        Item::Place(p) => &mut p.visible,
+        Item::Overlay(o) => &mut o.visible,
+    }
+}
+
+/// Папка-переключатель: включён ребёнок number - соседи гаснут.
+pub fn radio_keep(folder: &mut Folder, number: usize) {
+    if !folder.radio {
+        return;
+    }
+    for (i, child) in folder.children.iter_mut().enumerate() {
+        if i != number {
+            *visible_mut(child) = false;
+        }
+    }
+}
+
+/// Что сделали в панели.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Action {
+    /// Сменился флажок строки по этому пути.
+    Toggled(Vec<usize>),
+    /// Двойной щелчок - перелёт к строке.
+    Fly(Vec<usize>),
+}
+
+/// Дерево меток в панели: флажки и названия, папки раскрываются.
+pub fn tree_ui(ui: &mut eframe::egui::Ui, folder: &mut Folder, path: &mut Vec<usize>, actions: &mut Vec<Action>) {
+    use eframe::egui;
+    for (i, item) in folder.children.iter_mut().enumerate() {
+        path.push(i);
+        match item {
+            Item::Folder(f) => {
+                let id = ui.make_persistent_id(("marks-folder", path.clone()));
+                let header = egui::collapsing_header::CollapsingState::load_with_default_open(ui.ctx(), id, true);
+                let (_, head, _) = header
+                    .show_header(ui, |ui| {
+                        if ui.checkbox(&mut f.visible, "").changed() {
+                            actions.push(Action::Toggled(path.clone()));
+                        }
+                        let label = ui.add(egui::Label::new(egui::RichText::new(&f.name).strong()).sense(egui::Sense::click()));
+                        if label.double_clicked() {
+                            actions.push(Action::Fly(path.clone()));
+                        }
+                    })
+                    .body(|ui| tree_ui(ui, f, path, actions));
+                let _ = head;
+            }
+            Item::Place(p) => {
+                ui.horizontal(|ui| {
+                    if ui.checkbox(&mut p.visible, "").changed() {
+                        actions.push(Action::Toggled(path.clone()));
+                    }
+                    let name = if p.name.is_empty() { "-" } else { p.name.as_str() };
+                    let label = ui.add(egui::Label::new(name).sense(egui::Sense::click()));
+                    if label.double_clicked() {
+                        actions.push(Action::Fly(path.clone()));
+                    }
+                });
+            }
+            Item::Overlay(o) => {
+                ui.horizontal(|ui| {
+                    if ui.checkbox(&mut o.visible, "").changed() {
+                        actions.push(Action::Toggled(path.clone()));
+                    }
+                    ui.label(&o.name);
+                });
+            }
+        }
+        path.pop();
+    }
+}
+
+/// Метки открытой сцены: дерево, объекты, сетки, точки.
 #[derive(Default)]
 pub struct Marks {
+    /// Дерево меток открытого файла.
+    pub tree: Option<Folder>,
     shapes: Vec<Shape>,
     /// Версия высот и время последней сборки сеток.
     built: Option<(u64, f64)>,
@@ -133,11 +288,42 @@ pub struct Marks {
 
 impl Marks {
     /// Показать метки дерева tree.
-    pub fn set(&mut self, tree: &Folder, name: &str) {
-        self.shapes = visible_shapes(tree);
+    pub fn set(&mut self, tree: Folder, name: &str) {
+        self.tree = Some(tree);
         self.name = name.to_string();
+        self.refresh();
+    }
+
+    /// Объекты заново по флажкам дерева.
+    pub fn refresh(&mut self) {
+        self.shapes = self.tree.as_ref().map(visible_shapes).unwrap_or_default();
         self.dirty = true;
         self.built = None;
+    }
+
+    /// Флажок строки сменился: в папке-переключателе соседи гаснут,
+    /// объекты собираются заново.
+    pub fn toggled(&mut self, path: &[usize]) {
+        if let (Some(tree), Some((last, parent))) = (self.tree.as_mut(), path.split_last()) {
+            let checked = item_at(tree, path).is_some_and(|item| match item {
+                Item::Folder(f) => f.visible,
+                Item::Place(p) => p.visible,
+                Item::Overlay(o) => o.visible,
+            });
+            if checked && let Some(folder) = folder_at_mut(tree, parent) {
+                radio_keep(folder, *last);
+            }
+        }
+        self.refresh();
+    }
+
+    /// Поза для перелёта к строке по пути.
+    pub fn pose_of(&self, path: &[usize], fov_y: f64, aspect: f64) -> Option<Pose> {
+        match item_at(self.tree.as_ref()?, path)? {
+            Item::Folder(f) => folder_pose(f, fov_y, aspect),
+            Item::Place(p) => place_pose(p, fov_y, aspect),
+            Item::Overlay(o) => o.view.map(|v| Pose::new(v[0], v[1], v[2], v[3], v[4])),
+        }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -197,6 +383,51 @@ mod tests {
         let kinds: Vec<Kind> = shapes.iter().map(|s| s.kind).collect();
         assert_eq!(kinds, [Kind::Point, Kind::Polygon]);
         assert!(opened.pose.is_none());
+    }
+
+    #[test]
+    fn hidden_folder_unchecked_and_checked() {
+        let mut marks = super::Marks::default();
+        let opened = open(KML.as_bytes(), "test.kml").unwrap();
+        marks.set(opened.tree, "test.kml");
+        assert_eq!(marks.points().len(), 1);
+        // Флажок скрытой папки поставлен - путь виден.
+        if let Some(scene::kml::Item::Folder(f)) = marks.tree.as_mut().and_then(|t| t.children.get_mut(1)) {
+            f.visible = true;
+        }
+        marks.toggled(&[1]);
+        assert_eq!(super::visible_shapes(marks.tree.as_ref().unwrap()).len(), 3);
+    }
+
+    #[test]
+    fn radio_folder_keeps_one_child() {
+        let mut folder = scene::kml::Folder::new("Снимки");
+        folder.radio = true;
+        for n in ["a", "b", "c"] {
+            folder.children.push(scene::kml::Item::Place(scene::kml::Place::new(n, Kind::Point, vec![(0.0, 0.0)])));
+        }
+        super::radio_keep(&mut folder, 1);
+        let shown: Vec<bool> = folder
+            .children
+            .iter()
+            .map(|i| matches!(i, scene::kml::Item::Place(p) if p.visible))
+            .collect();
+        assert_eq!(shown, [false, true, false]);
+    }
+
+    #[test]
+    fn fly_targets() {
+        let point = scene::kml::Place::new("т", Kind::Point, vec![(58.0, 56.0)]);
+        let pose = super::place_pose(&point, 45.0, 1.6).unwrap();
+        assert_eq!((pose.lat, pose.lon, pose.distance), (58.0, 56.0, super::POINT_DISTANCE));
+        let line = scene::kml::Place::new("п", Kind::Line, vec![(58.0, 56.0), (58.5, 57.0)]);
+        let pose = super::place_pose(&line, 45.0, 1.6).unwrap();
+        assert!((pose.lat - 58.25).abs() < 1e-9 && pose.distance > 50_000.0);
+        let mut viewed = point.clone();
+        viewed.view = Some([1.0, 2.0, 3000.0, 10.0, 20.0]);
+        assert_eq!(super::place_pose(&viewed, 45.0, 1.6).unwrap().heading, 10.0);
+        let empty = scene::kml::Place::new("п", Kind::Line, vec![]);
+        assert!(super::place_pose(&empty, 45.0, 1.6).is_none());
     }
 
     #[test]

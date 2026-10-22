@@ -11,7 +11,7 @@
 //! начать с этой позы камеры.
 //!
 //! `planetx-lite --shot файл.png` - когда место загрузится, снять окно
-//! в файл PNG и закрыться.
+//! в файл PNG и закрыться. С `--ui` в снимке и левая панель.
 //!
 //! `planetx-lite сцена.planetx` - открыть сцену, KML или KMZ. Файл
 //! можно и бросить в окно.
@@ -102,6 +102,9 @@ fn main() -> ExitCode {
             }
             if let Some(p) = pose {
                 app = app.with_pose(p);
+            }
+            if args.iter().any(|a| a == "--ui") {
+                app = app.with_shot_ui();
             }
             if let Some(path) = shot {
                 app = app.with_shot(Box::new(move |image| {
