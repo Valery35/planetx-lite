@@ -691,11 +691,11 @@ impl LiteApp {
     /// Выбор файла сцены. В программе - диалог системы, на странице -
     /// выбор файла браузером, байты приходят в ящик брошенных файлов.
     fn pick_file(&mut self, ctx: &egui::Context, now: f64) {
-        const KINDS: [&str; 8] = ["planetx", "kml", "kmz", "gpkg", "tif", "tiff", "las", "laz"];
+        const KINDS: [&str; 9] = ["planetx", "kml", "kmz", "gpkg", "tif", "tiff", "las", "laz", "csv"];
         #[cfg(not(target_arch = "wasm32"))]
         {
             let _ = ctx;
-            if let Some(path) = rfd::FileDialog::new().add_filter("PlanetX, KML, KMZ, GeoPackage, GeoTIFF, LAS, LAZ", &KINDS).pick_file() {
+            if let Some(path) = rfd::FileDialog::new().add_filter("PlanetX, KML, KMZ, GeoPackage, GeoTIFF, LAS, LAZ, CSV", &KINDS).pick_file() {
                 let name = path.file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
                 match std::fs::read(&path) {
                     Ok(bytes) => {
@@ -711,7 +711,7 @@ impl LiteApp {
             let _ = now;
             let (slot, ctx) = (self.dropped_box.clone(), ctx.clone());
             wasm_bindgen_futures::spawn_local(async move {
-                if let Some(file) = rfd::AsyncFileDialog::new().add_filter("PlanetX, KML, KMZ, GeoPackage, GeoTIFF, LAS, LAZ", &KINDS).pick_file().await {
+                if let Some(file) = rfd::AsyncFileDialog::new().add_filter("PlanetX, KML, KMZ, GeoPackage, GeoTIFF, LAS, LAZ, CSV", &KINDS).pick_file().await {
                     let bytes = file.read().await;
                     if let Ok(mut s) = slot.lock() {
                         s.push((Ok(bytes), file.file_name()));

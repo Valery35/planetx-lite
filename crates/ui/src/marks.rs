@@ -46,6 +46,17 @@ pub struct Opened {
 /// файла, по нему различается сцена.
 pub fn open(bytes: &[u8], name: &str) -> Result<Opened, String> {
     let lower = name.to_lowercase();
+    if lower.ends_with(".csv") {
+        // Точки CSV читает встроенный аддин в песочнице.
+        let points = addin_host::Addin::load(addin_host::CSV_POINTS).and_then(|mut a| a.read_points(bytes))?;
+        let mut tree = Folder::new(name);
+        for (n, p) in points.iter().enumerate() {
+            let label = if p.name.is_empty() { format!("{} {}", name, n + 1) } else { p.name.clone() };
+            tree.children.push(Item::Place(Place::new(&label, Kind::Point, vec![(p.lat, p.lon)])));
+        }
+        let all: Vec<(f64, f64)> = points.iter().map(|p| (p.lat, p.lon)).collect();
+        return Ok(Opened { tree, pose: fit_points(&all, 45.0, 1.6), name: name.to_string() });
+    }
     if lower.ends_with(".gpkg") {
         let layers = data::layers::read(bytes.to_vec(), name)?;
         let tree = crate::gpkg::folder(layers, name);

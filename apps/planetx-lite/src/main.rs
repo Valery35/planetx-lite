@@ -48,7 +48,7 @@ fn main() -> ExitCode {
     let check_arg = args.windows(2).find(|w| w[0] == "--check").map(|w| w[1].clone());
     let scenario = check_arg.as_deref().and_then(Scenario::from_name);
     if let (Some(name), None) = (&check_arg, scenario) {
-        eprintln!("PlanetX Lite: неизвестная самопроверка {name}, есть perm, elbrus и scenes");
+        eprintln!("PlanetX Lite: неизвестная самопроверка {name}, есть perm, elbrus, scenes и addin");
         return ExitCode::FAILURE;
     }
     let check = scenario.is_some();

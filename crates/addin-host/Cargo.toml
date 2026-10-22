@@ -1,0 +1,25 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "addin-host"
+description = "Песочница аддинов PlanetX Lite - загрузка модуля WebAssembly, пределы, вызовы ABI"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+addin-api.workspace = true
+# Переносимый цикл исполнения: цепочка обработчиков wasmi растит стек
+# под wasm32 и в отладочной сборке, страница и тест падали
+# с переполнением стека, 23 октября 2026 года.
+wasmi = { workspace = true, features = ["portable-dispatch"] }
+web-time.workspace = true
+
+[lints]
+workspace = true
+[dev-dependencies]
+wat = "1"

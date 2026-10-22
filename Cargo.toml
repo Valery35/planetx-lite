@@ -12,6 +12,8 @@ members = [
     "crates/net",
     "crates/render",
     "crates/ui",
+    "crates/addin-api",
+    "crates/addin-host",
     "apps/planetx-lite",
     "apps/planetx-web",
 ]
@@ -51,6 +53,11 @@ flate2 = "1"
 serde_json = "1"
 rfd = "0.17"
 quick-xml = "0.42"
+addin-api = { path = "crates/addin-api" }
+addin-host = { path = "crates/addin-host" }
+# Песочница аддинов - интерпретатор WebAssembly на Rust, один и тот же
+# в программе и на странице. Прототип фазы 3, doc/PLAN.md, «Аддины».
+wasmi = { version = "2", default-features = false, features = ["std", "validate"] }
 # Чтение форматов, версия закреплена точно - doc/PLAN.md, «Проверка
 # terrio». Только нужные наборы: GeoTIFF и COG, LERC, GeoPackage, облака
 # точек. Без remote: сеть Lite - свой крейт net.

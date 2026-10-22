@@ -196,6 +196,7 @@ pub enum Scenario {
     Perm,
     Elbrus,
     Scenes,
+    Addin,
 }
 
 impl Scenario {
@@ -205,6 +206,7 @@ impl Scenario {
             "perm" => Some(Self::Perm),
             "elbrus" => Some(Self::Elbrus),
             "scenes" => Some(Self::Scenes),
+            "addin" => Some(Self::Addin),
             _ => None,
         }
     }
@@ -213,13 +215,13 @@ impl Scenario {
     pub fn start_basemap(self) -> Basemap {
         match self {
             Self::Perm => Basemap::Osm,
-            Self::Elbrus | Self::Scenes => Basemap::Esri,
+            Self::Elbrus | Self::Scenes | Self::Addin => Basemap::Esri,
         }
     }
 
     pub fn start_pose(self) -> Pose {
         match self {
-            Self::Perm | Self::Scenes => Pose::new(PERM.0, PERM.1, SPACE_DISTANCE, 0.0, 0.0),
+            Self::Perm | Self::Scenes | Self::Addin => Pose::new(PERM.0, PERM.1, SPACE_DISTANCE, 0.0, 0.0),
             Self::Elbrus => {
                 let (d, h, t) = DESCENT.0;
                 Pose::new(ELBRUS.0, ELBRUS.1, d, h, t)
@@ -318,6 +320,8 @@ pub struct Check {
     /// Начатых запросов всего и время, когда их количество сменилось.
     requests: usize,
     progress_mark: Option<(usize, f64)>,
+    /// Аддин: строки отчёта и итог.
+    addin: Option<(Vec<String>, bool)>,
 }
 
 /// Медиана по каналам RGB.
@@ -398,6 +402,32 @@ fn identity() -> String {
         "user_agent=- (браузер, Referer - адрес страницы)".to_string()
     } else {
         format!("user_agent={}", net::user_agent())
+    }
+}
+
+/// Самопроверка аддина: встроенный аддин CSV читает образец, отпечаток
+/// результата - как у программы ([`addin_host::SAMPLE_DIGEST`]).
+/// Строки отчёта и итог.
+pub fn addin_check() -> (Vec<String>, bool) {
+    let t0 = web_time::Instant::now();
+    let read = addin_host::Addin::load(addin_host::CSV_POINTS)
+        .and_then(|mut a| a.read_points(addin_host::SAMPLE_CSV.as_bytes()).map(|p| (a.manifest.clone(), p)));
+    let ms = t0.elapsed().as_secs_f64() * 1000.0;
+    match read {
+        Ok((manifest, points)) => {
+            let digest = addin_host::digest(&points);
+            let ok = digest == addin_host::SAMPLE_DIGEST;
+            (
+                vec![
+                    format!("addin_manifest={manifest}"),
+                    format!("addin_points={}", points.len()),
+                    format!("addin_digest={digest:#018x} expected={:#018x}", addin_host::SAMPLE_DIGEST),
+                    format!("addin_ms={ms:.1}"),
+                ],
+                ok,
+            )
+        }
+        Err(e) => (vec![format!("addin_error={e}")], false),
     }
 }
 
@@ -488,6 +518,7 @@ impl Check {
             busy: String::new(),
             requests: 0,
             progress_mark: None,
+            addin: None,
         }
     }
 
@@ -765,6 +796,10 @@ impl Check {
                 self.grab_request = true;
                 self.grab_wait = true;
             }
+            (Scenario::Addin, Phase::LoadStart) => {
+                self.addin = Some(addin_check());
+                self.enter(Phase::Done, now);
+            }
             (Scenario::Scenes, Phase::LoadStart) if loaded => {
                 self.scene_index = 0;
                 self.scene_request = SCENES.first().map(|(name, _)| (*name).to_string());
@@ -828,6 +863,13 @@ impl Check {
     /// Отчёт и итог: true - проверка пройдена.
     /// search_sent - время отправки каждого запроса к Nominatim.
     pub fn report(&self, sources: &[SourceStats], size: (u32, u32), search_sent: &[f64]) -> (String, bool) {
+        if self.scenario == Scenario::Addin {
+            let (lines, ok) = self.addin.clone().unwrap_or_else(|| (vec!["addin=не запускался".into()], false));
+            let mut out = vec!["check=addin".to_string()];
+            out.extend(lines);
+            out.push(format!("result={}", if ok { "ok" } else { "fail" }));
+            return (out.join("\n"), ok);
+        }
         let scenes = self.scenario == Scenario::Scenes;
         // У сцен частота кадров мерится по каждому туру отдельно.
         let fps = if scenes {
