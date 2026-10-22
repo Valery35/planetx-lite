@@ -13,6 +13,7 @@
 //! - [`dem`] - растр высот для врезки своего рельефа;
 //! - [`layers`] - слои GeoPackage, через terrio.
 
+pub mod cloud;
 pub mod dem;
 pub mod geocode;
 pub mod grid;

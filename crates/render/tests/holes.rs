@@ -283,6 +283,32 @@ fn picture_lies_with_west_left_and_waits_for_image() {
     assert!(right[2] > 200 && right[0] < 60, "{right:?}");
 }
 
+#[test]
+fn points_are_drawn_in_their_color() {
+    // Облако из красных точек сеткой 100 × 100 м с шагом 2 м вокруг
+    // середины кадра, точка 4 пикселя: середина кадра красная.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 500.0, 0.0, 0.0);
+    let e = Ellipsoid::wgs84();
+    let center = e.geodetic_to_ecef(PERM.0, PERM.1, 0.0);
+    let mut offsets = Vec::new();
+    for i in -25..=25 {
+        for j in -25..=25 {
+            let p = e.geodetic_to_ecef(PERM.0 + f64::from(i) * 2.0 / 111_320.0, PERM.1 + f64::from(j) * 2.0 / 58_500.0, 1.0) - center;
+            offsets.push([p.x as f32, p.y as f32, p.z as f32]);
+        }
+    }
+    let colors = vec![[255, 0, 0]; offsets.len()];
+    globe.set_points(&[render::PointsMesh { center, offsets, colors, size: 4.0 }]);
+    let frame = grab(&mut globe, &cam, false);
+    let c = rgb(&frame, f64::from(cam.width) / 2.0, f64::from(cam.height) / 2.0);
+    assert!(c[0] > 200 && c[1] < 60 && c[2] < 60, "{c:?}");
+}
+
 /// Снятый кадр с атмосферой или без.
 fn grab(globe: &mut Globe, cam: &Camera, air: bool) -> render::Frame {
     let sel = lod::select(cam, &|_| true, Options::default());

@@ -35,6 +35,9 @@ mod features;
 pub use features::{FeatureMesh, PULL, WALL_ALPHA};
 use features::Features;
 mod pictures;
+mod points;
+pub use points::PointsMesh;
+use points::Points;
 pub use pictures::{PictureMesh, mip_levels};
 use pictures::Pictures;
 
@@ -237,6 +240,7 @@ pub struct Globe {
     sky_pipeline: wgpu::RenderPipeline,
     features: Features,
     pictures: Pictures,
+    points: Points,
     air: wgpu::Buffer,
     air_bind: wgpu::BindGroup,
     /// Снять следующий кадр.
@@ -509,6 +513,7 @@ impl Globe {
             sky_pipeline,
             features: Features::new(device),
             pictures: Pictures::new(device),
+            points: Points::new(device),
             air,
             air_bind,
             grab_next: false,
@@ -898,6 +903,11 @@ impl Globe {
         self.features.set(&self.device, meshes);
     }
 
+    /// Облака точек. Заменяют прежние.
+    pub fn set_points(&mut self, clouds: &[PointsMesh]) {
+        self.points.set(&self.device, clouds);
+    }
+
     /// Сетки картинок-наложений кадра. Заменяют прежние.
     pub fn set_pictures(&mut self, meshes: &[PictureMesh]) {
         self.pictures.set(&self.device, meshes);
@@ -1086,6 +1096,7 @@ impl Globe {
             // бы линию над горизонтом.
             let ratio = if options.ratio > 0.0 { options.ratio } else { 1.0 };
             // Картинки-наложения - под своими объектами.
+            draws += self.points.draw(&self.device, &self.queue, &mut pass, camera, ratio);
             draws += self.pictures.draw(&self.device, &self.queue, &mut pass, camera);
             draws += self.features.draw(&self.device, &self.queue, &mut pass, camera, ratio);
             if counting {

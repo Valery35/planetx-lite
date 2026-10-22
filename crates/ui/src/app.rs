@@ -34,6 +34,10 @@ use crate::search::{Search, place_pose};
 /// Сколько снимков тайлов держать в видеокарте, сверх нужных кадру
 /// старые вытесняются. Снимок 256 × 256 занимает 256 КБ.
 pub const TEXTURE_BUDGET: usize = 800;
+/// Наибольшее количество точек облака в видеокарте.
+pub const CLOUD_POINTS: u64 = 2_000_000;
+/// Размер точки облака, логических пикселей.
+pub const CLOUD_POINT_SIZE: f32 = 2.0;
 /// Начальный вид - Пермь из космоса с 20 000 км, отвесно, север вверху.
 /// Решение автора от 22 октября 2026 года.
 pub const START: (f64, f64, f64) = (check::PERM.0, check::PERM.1, check::SPACE_DISTANCE);
@@ -171,6 +175,8 @@ pub struct LiteApp {
     fetching: Option<(String, bool)>,
     /// Свой рельеф: врезанные растры высот.
     relief: Relief,
+    /// Открытые облака точек.
+    clouds: Vec<render::PointsMesh>,
 }
 
 /// Ящик прочитанных брошенных файлов.
@@ -226,6 +232,7 @@ impl LiteApp {
             scene_source: None,
             fetching: None,
             relief: Relief::default(),
+            clouds: Vec::new(),
         }
     }
 
@@ -399,6 +406,50 @@ impl LiteApp {
         }
     }
 
+    /// Облако точек LAS, LAZ или COPC, камера - к нему.
+    fn open_cloud(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
+        let cloud = match data::cloud::read(bytes.to_vec(), name, CLOUD_POINTS) {
+            Ok(c) if !c.points.is_empty() => c,
+            Ok(_) => Err("в облаке нет точек".to_string())?,
+            Err(e) => {
+                self.open_message = Some(match self.lang {
+                    Lang::Ru => format!("Облако не открылось: {name}: {e}"),
+                    Lang::En => format!("The point cloud did not open: {name}: {e}"),
+                });
+                return Err(e);
+            }
+        };
+        let e = Ellipsoid::wgs84();
+        let xyz: Vec<DVec3> = cloud.points.iter().map(|p| e.geodetic_to_ecef(p[0], p[1], p[2])).collect();
+        let (center, offsets) = scene::features::centered(&xyz);
+        self.clouds.push(render::PointsMesh { center, offsets, colors: cloud.colors.clone(), size: CLOUD_POINT_SIZE });
+        if let Some(globe) = &mut self.globe {
+            globe.set_points(&self.clouds);
+        }
+        // Охват облака - углы его рамки.
+        let (mut lat0, mut lon0, mut lat1, mut lon1) = (f64::MAX, f64::MAX, f64::MIN, f64::MIN);
+        for p in &cloud.points {
+            (lat0, lon0, lat1, lon1) = (lat0.min(p[0]), lon0.min(p[1]), lat1.max(p[0]), lon1.max(p[1]));
+        }
+        let camera = &self.nav.camera;
+        let pose = marks::fit_points(&[(lat0, lon0), (lat1, lon1)], camera.fov_y, camera.aspect()).map(|mut p| {
+            // Облако видно сбоку: наклон, как у перелёта к пути.
+            p.tilt = 55.0;
+            p
+        });
+        if let Some(pose) = pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
+            match fly {
+                Some(now) => crate::input::fly(&mut self.nav, pose, now),
+                None => self.nav.show(pose),
+            }
+        }
+        self.open_message = Some(match self.lang {
+            Lang::Ru => format!("Облако {name}: {} из {} точек", cloud.points.len(), cloud.total),
+            Lang::En => format!("Point cloud {name}: {} of {} points", cloud.points.len(), cloud.total),
+        });
+        Ok(pose)
+    }
+
     /// Растр высот GeoTIFF - врезка своего рельефа, камера - к нему.
     fn open_relief(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
         let opened = data::grid::Grid::read(bytes.to_vec(), name)
@@ -439,6 +490,9 @@ impl LiteApp {
         let lower = name.to_lowercase();
         if lower.ends_with(".tif") || lower.ends_with(".tiff") {
             return self.open_relief(bytes, name, fly);
+        }
+        if lower.ends_with(".las") || lower.ends_with(".laz") {
+            return self.open_cloud(bytes, name, fly);
         }
         match marks::open(bytes, name) {
             Ok(opened) => {
@@ -561,8 +615,8 @@ impl LiteApp {
     fn marks_panel(&mut self, ui: &mut egui::Ui, now: f64) {
         let mut actions = Vec::new();
         let (title, hint, open_label, time_label) = match self.lang {
-            Lang::Ru => ("Метки", "Откройте или бросьте в окно сцену .planetx, KML, KMZ, слои GeoPackage или растр высот GeoTIFF.", "Открыть…", "Время"),
-            Lang::En => ("Places", "Open or drop a .planetx scene, KML, KMZ, GeoPackage layers or a GeoTIFF elevation raster into the window.", "Open…", "Time"),
+            Lang::Ru => ("Метки", "Откройте или бросьте в окно сцену .planetx, KML, KMZ, слои GeoPackage, растр высот GeoTIFF или облако точек LAS, LAZ, COPC.", "Открыть…", "Время"),
+            Lang::En => ("Places", "Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.", "Open…", "Time"),
         };
         let mut open_clicked = false;
         egui::Panel::left("marks").resizable(true).default_size(280.0).show(ui, |ui| {
@@ -633,11 +687,11 @@ impl LiteApp {
     /// Выбор файла сцены. В программе - диалог системы, на странице -
     /// выбор файла браузером, байты приходят в ящик брошенных файлов.
     fn pick_file(&mut self, ctx: &egui::Context, now: f64) {
-        const KINDS: [&str; 6] = ["planetx", "kml", "kmz", "gpkg", "tif", "tiff"];
+        const KINDS: [&str; 8] = ["planetx", "kml", "kmz", "gpkg", "tif", "tiff", "las", "laz"];
         #[cfg(not(target_arch = "wasm32"))]
         {
             let _ = ctx;
-            if let Some(path) = rfd::FileDialog::new().add_filter("PlanetX, KML, KMZ, GeoPackage, GeoTIFF", &KINDS).pick_file() {
+            if let Some(path) = rfd::FileDialog::new().add_filter("PlanetX, KML, KMZ, GeoPackage, GeoTIFF, LAS, LAZ", &KINDS).pick_file() {
                 let name = path.file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
                 match std::fs::read(&path) {
                     Ok(bytes) => {
@@ -653,7 +707,7 @@ impl LiteApp {
             let _ = now;
             let (slot, ctx) = (self.dropped_box.clone(), ctx.clone());
             wasm_bindgen_futures::spawn_local(async move {
-                if let Some(file) = rfd::AsyncFileDialog::new().add_filter("PlanetX, KML, KMZ, GeoPackage, GeoTIFF", &KINDS).pick_file().await {
+                if let Some(file) = rfd::AsyncFileDialog::new().add_filter("PlanetX, KML, KMZ, GeoPackage, GeoTIFF, LAS, LAZ", &KINDS).pick_file().await {
                     let bytes = file.read().await;
                     if let Ok(mut s) = slot.lock() {
                         s.push((Ok(bytes), file.file_name()));

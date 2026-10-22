@@ -167,6 +167,27 @@ fn quarry_dem_samples_tiles_like_the_raster() {
 }
 
 #[test]
+fn autzen_copc_reads_thinned_in_metres() {
+    let Ok(bytes) = std::fs::read(r"C:\Dev\pointclouds\autzen\autzen-classified.copc.laz") else {
+        eprintln!("облака Autzen нет, проверка пропущена");
+        return;
+    };
+    let c = data::cloud::read(bytes, "autzen-classified.copc.laz", 500_000).unwrap();
+    assert_eq!(c.total, 10_653_336);
+    assert!(c.points.len() <= 500_000 && c.points.len() > 50_000, "{}", c.points.len());
+    assert_eq!(c.points.len(), c.colors.len());
+    // Цвет - из каналов red, green, blue файла, а не одним цветом:
+    // каналы - целые, `coords` их не отдаёт, 23 октября 2026 года.
+    let distinct: std::collections::HashSet<[u8; 3]> = c.colors.iter().copied().collect();
+    assert!(distinct.len() > 1000, "{}", distinct.len());
+    let (lo, hi) = c.points.iter().fold((f64::MAX, f64::MIN), |(a, b), p| (a.min(p[2]), b.max(p[2])));
+    eprintln!("Autzen: {} точек, высоты {lo:.1}..{hi:.1} м, EPSG {:?}", c.points.len(), c.epsg);
+    // Autzen Stadium, Юджин, Орегон.
+    let p = c.points[0];
+    assert!((44.0..44.1).contains(&p[0]) && (-123.1..-123.0).contains(&p[1]), "{p:?}");
+}
+
+#[test]
 fn hostile_bytes_are_an_error() {
     assert!(Grid::read(b"not a tiff".to_vec(), "x.tif").is_err());
     assert!(layers::read(b"not a geopackage".to_vec(), "x.gpkg").is_err());
