@@ -8,8 +8,12 @@
 //! - [`places`] - пункты для надписей на глобусе, перенос
 //!   `core/places.py` модуля;
 //! - [`geocode`] - поиск места через Nominatim, перенос
-//!   `core/geocode.py` модуля.
+//!   `core/geocode.py` модуля;
+//! - [`grid`] - свой растр GeoTIFF или COG, через terrio;
+//! - [`layers`] - слои GeoPackage, через terrio.
 
 pub mod geocode;
+pub mod grid;
+pub mod layers;
 pub mod mvt;
 pub mod places;
