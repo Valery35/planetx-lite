@@ -16,6 +16,8 @@ pub mod input;
 pub mod labels;
 pub mod marks;
 pub mod search;
+pub mod timeline;
+pub mod tours;
 
 pub use app::{LiteApp, Loaders, Report, ShotSink};
 pub use check::Scenario;

@@ -25,6 +25,8 @@ use crate::i18n::{Lang, Text, search_status, text};
 use crate::input::Input;
 use crate::labels::{self, Labels};
 use crate::marks::{self, Marks};
+use crate::timeline::TimeBar;
+use crate::tours::Player;
 use crate::search::{Search, place_pose};
 
 /// Сколько снимков тайлов держать в видеокарте, сверх нужных кадру
@@ -145,6 +147,11 @@ pub struct LiteApp {
     dropped_box: DroppedBox,
     /// Снимок окна вместе с панелью.
     shot_ui: bool,
+    /// Идущий тур.
+    player: Option<Player>,
+    /// Остановка тура прошлого кадра: на новой шкала встаёт на её время.
+    tour_index: Option<usize>,
+    timebar: TimeBar,
 }
 
 /// Ящик прочитанных брошенных файлов.
@@ -191,6 +198,9 @@ impl LiteApp {
             open_message: None,
             dropped_box: DroppedBox::default(),
             shot_ui: false,
+            player: None,
+            tour_index: None,
+            timebar: TimeBar::default(),
         }
     }
 
@@ -217,6 +227,8 @@ impl LiteApp {
         match marks::open(bytes, name) {
             Ok(opened) => {
                 self.marks.set(opened.tree, &opened.name);
+                self.player = None;
+                self.timebar.set_extent(self.marks.extent());
                 self.marks_to_labels();
                 if let Some(pose) = opened.pose {
                     match fly {
@@ -235,6 +247,84 @@ impl LiteApp {
         }
     }
 
+    /// Шаг тура: камера в позе тура, на новой остановке с датой шкала
+    /// встаёт на её время, в конце тур снимается.
+    fn step_tour(&mut self, now: f64) {
+        let Some(player) = &self.player else {
+            return;
+        };
+        if player.done(now) {
+            self.nav.show(player.pose(now));
+            self.player = None;
+            return;
+        }
+        let index = player.index(now);
+        let time = index.and_then(|i| player.tour.stops.get(i)).and_then(|s| s.time.clone());
+        self.nav.show(player.pose(now));
+        if index != self.tour_index {
+            self.tour_index = index;
+            if let Some(time) = time {
+                self.timebar.show_time(&time);
+            }
+        }
+    }
+
+    /// Шкала времени и управление туром сверху вида, подпись остановки
+    /// снизу.
+    fn overlays(&mut self, ctx: &egui::Context, rect: egui::Rect, now: f64) {
+        let show_bar = self.timebar.open && self.timebar.extent.is_some();
+        if !show_bar && self.player.is_none() {
+            return;
+        }
+        let mut stop = false;
+        let mut toggle = false;
+        egui::Area::new(egui::Id::unique("planetx-top"))
+            .order(egui::Order::Foreground)
+            .fixed_pos(egui::pos2(rect.center().x - 220.0, rect.top() + 12.0))
+            .show(ctx, |ui| {
+                egui::Frame::new()
+                    .fill(egui::Color32::from_black_alpha(160))
+                    .inner_margin(egui::Margin::same(6))
+                    .corner_radius(4.0)
+                    .show(ui, |ui| {
+                        ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
+                        if let Some(player) = &self.player {
+                            ui.horizontal(|ui| {
+                                if ui.button(if player.paused() { "▶" } else { "⏸" }).clicked() {
+                                    toggle = true;
+                                }
+                                if ui.button("⏹").clicked() {
+                                    stop = true;
+                                }
+                                ui.label(format!(
+                                    "{}  {} / {}",
+                                    player.name,
+                                    scene::tour::clock(player.time(now)),
+                                    scene::tour::clock(player.tour.duration)
+                                ));
+                            });
+                        }
+                        if show_bar {
+                            self.timebar.ui(ui, now);
+                        }
+                    });
+            });
+        if toggle && let Some(p) = &mut self.player {
+            p.toggle(now);
+        }
+        if stop {
+            self.player = None;
+        }
+        if let Some((name, alpha)) = self.player.as_ref().and_then(|p| p.caption(now)) {
+            let painter = ctx.layer_painter(egui::LayerId::new(egui::Order::Foreground, egui::Id::unique("planetx-caption")));
+            let color = egui::Color32::WHITE.gamma_multiply(alpha as f32);
+            let galley = painter.layout_no_wrap(name.to_string(), egui::FontId::proportional(22.0), color);
+            let at = egui::pos2(rect.center().x - galley.size().x / 2.0, rect.bottom() - 90.0);
+            painter.galley_with_override_text_color(at + egui::vec2(1.0, 1.0), galley.clone(), egui::Color32::BLACK.gamma_multiply(alpha as f32));
+            painter.galley_with_override_text_color(at, galley, color);
+        }
+    }
+
     /// Точки меток - в надписи.
     fn marks_to_labels(&mut self) {
         let points: Vec<(String, f64, f64)> = self.marks.points().into_iter().map(|p| (p.name, p.lat, p.lon)).collect();
@@ -245,9 +335,9 @@ impl LiteApp {
     /// щелчок - перелёт к метке или папке.
     fn marks_panel(&mut self, ui: &mut egui::Ui, now: f64) {
         let mut actions = Vec::new();
-        let (title, hint, open_label) = match self.lang {
-            Lang::Ru => ("Метки", "Откройте или бросьте в окно сцену .planetx, KML или KMZ.", "Открыть…"),
-            Lang::En => ("Places", "Open or drop a .planetx scene, KML or KMZ into the window.", "Open…"),
+        let (title, hint, open_label, time_label) = match self.lang {
+            Lang::Ru => ("Метки", "Откройте или бросьте в окно сцену .planetx, KML или KMZ.", "Открыть…", "Время"),
+            Lang::En => ("Places", "Open or drop a .planetx scene, KML or KMZ into the window.", "Open…", "Time"),
         };
         let mut open_clicked = false;
         egui::Panel::left("marks").resizable(true).default_size(280.0).show(ui, |ui| {
@@ -258,6 +348,9 @@ impl LiteApp {
                 ui.heading(title);
                 if ui.button(open_label).clicked() {
                     open_clicked = true;
+                }
+                if self.timebar.extent.is_some() {
+                    ui.toggle_value(&mut self.timebar.open, time_label);
                 }
             });
             if let Some(message) = &self.open_message {
@@ -281,12 +374,31 @@ impl LiteApp {
             match action {
                 crate::marks::Action::Toggled(path) => {
                     self.marks.toggled(&path);
+                    let window = self.timebar.range;
+                    let open = self.timebar.open;
+                    self.timebar.set_extent(self.marks.extent());
+                    if self.timebar.extent.is_some() {
+                        self.timebar.open = open;
+                        self.timebar.range = window;
+                    }
                     self.marks_to_labels();
                 }
                 crate::marks::Action::Fly(path) => {
+                    self.player = None;
                     let camera = &self.nav.camera;
                     if let Some(pose) = self.marks.pose_of(&path, camera.fov_y, camera.aspect()) {
                         crate::input::fly(&mut self.nav, pose, now);
+                    }
+                    if let Some(time) = self.marks.time_of(&path) {
+                        self.timebar.show_time(&time);
+                    }
+                }
+                crate::marks::Action::Tour(path) => {
+                    let camera = &self.nav.camera;
+                    if let Some((name, stops)) = self.marks.tour_of(&path, camera.fov_y, camera.aspect()) {
+                        self.player = Player::new(&name, &self.nav.pose, stops, camera.fov_y, now);
+                        self.tour_index = None;
+                        self.nav.stop();
                     }
                 }
             }
@@ -559,7 +671,12 @@ impl eframe::App for LiteApp {
         }
 
         let rect = ui.available_rect_before_wrap();
-        ui.allocate_rect(rect, egui::Sense::click_and_drag());
+        let globe_response = ui.allocate_rect(rect, egui::Sense::click_and_drag());
+        // Тур останавливает своя навигация: протяжка, колесо, жест.
+        let scrolled = ctx.input(|i| i.smooth_scroll_delta != egui::Vec2::ZERO || i.multi_touch().is_some());
+        if self.player.is_some() && (globe_response.drag_started() || (scrolled && globe_response.hovered())) {
+            self.player = None;
+        }
         // Пикселей кадра глобуса на логический пиксель. Кадр больше
         // наибольшей стороны текстуры видеокарты рисуется в меньшем
         // разрешении, экран телефона бывает больше 4096 пикселей.
@@ -597,7 +714,12 @@ impl eframe::App for LiteApp {
             self.open_file(&bytes, &name, None);
         }
         self.dropped(&ctx, now);
-        let moving = self.nav.step(now);
+        self.step_tour(now);
+        self.timebar.step(now);
+        if self.marks.set_window(self.timebar.window()) {
+            self.marks_to_labels();
+        }
+        let moving = self.nav.step(now) || self.player.is_some() || self.timebar.playing();
         // Ближняя плоскость - от ближайшего рельефа.
         let eye = self.nav.camera.eye;
         self.nav.camera.nearest =
@@ -659,6 +781,7 @@ impl eframe::App for LiteApp {
         }
         self.labels.draw(ui.painter(), rect, ppp as f32, &self.nav.camera, &selection.draw, &self.heights.read());
         self.attribution(&ctx);
+        self.overlays(&ctx, rect, now);
 
         if let Some(check) = &mut self.check {
             check.after_frame(&stats, &self.nav, &self.heights.read());

@@ -17,6 +17,7 @@ use globe_core::navigation::Pose;
 use render::FeatureMesh;
 use scene::features::{self, Kind, Shape};
 use scene::kml::{self, Folder, Item, Place};
+use scene::when::{self, Time};
 use terrain::HeightStore;
 
 /// Пауза между пересадками сеток на новые высоты, секунды.
@@ -94,19 +95,40 @@ pub fn shape_of(place: &Place) -> Shape {
 /// Видимые метки дерева: папка со снятым флажком скрывает всё внутри.
 /// Записанные туры не рисуются.
 pub fn visible_shapes(folder: &Folder) -> Vec<Shape> {
+    timed_shapes(folder).into_iter().map(|(s, _)| s).collect()
+}
+
+/// Видимые метки дерева с их временем.
+pub fn timed_shapes(folder: &Folder) -> Vec<(Shape, Option<Time>)> {
     let mut out = Vec::new();
     collect(folder, &mut out);
     out
 }
 
-fn collect(folder: &Folder, out: &mut Vec<Shape>) {
+fn collect(folder: &Folder, out: &mut Vec<(Shape, Option<Time>)>) {
     for item in &folder.children {
         match item {
             Item::Folder(f) if f.visible => collect(f, out),
-            Item::Place(p) if p.visible && p.tour.is_none() && !p.points.is_empty() => out.push(shape_of(p)),
+            Item::Place(p) if p.visible && p.tour.is_none() && !p.points.is_empty() => {
+                out.push((shape_of(p), p.time.clone()));
+            }
             _ => {}
         }
     }
+}
+
+/// Объекты в окне шкалы времени: метки вне окна скрыты, путь
+/// с промежутком времени вырос на долю, прошедшую к концу окна. Без
+/// окна - все.
+pub fn in_window(shapes: &[(Shape, Option<Time>)], window: Option<(f64, f64)>) -> Vec<Shape> {
+    shapes
+        .iter()
+        .filter(|(_, t)| window.is_none_or(|(lo, hi)| when::visible(t.as_ref(), lo, hi)))
+        .map(|(s, t)| match window {
+            Some((_, hi)) => features::grown(s, when::share(t.as_ref(), hi)).into_owned(),
+            None => s.clone(),
+        })
+        .collect()
 }
 
 /// Сетка объекта для видеокарты, None у точки без стойки.
@@ -223,6 +245,8 @@ pub enum Action {
     Toggled(Vec<usize>),
     /// Двойной щелчок - перелёт к строке.
     Fly(Vec<usize>),
+    /// Кнопка тура: тур по папке или записанный тур метки.
+    Tour(Vec<usize>),
 }
 
 /// Дерево меток в панели: флажки и названия, папки раскрываются.
@@ -243,6 +267,9 @@ pub fn tree_ui(ui: &mut eframe::egui::Ui, folder: &mut Folder, path: &mut Vec<us
                         if label.double_clicked() {
                             actions.push(Action::Fly(path.clone()));
                         }
+                        if ui.small_button("▶").clicked() {
+                            actions.push(Action::Tour(path.clone()));
+                        }
                     })
                     .body(|ui| tree_ui(ui, f, path, actions));
                 let _ = head;
@@ -256,6 +283,9 @@ pub fn tree_ui(ui: &mut eframe::egui::Ui, folder: &mut Folder, path: &mut Vec<us
                     let label = ui.add(egui::Label::new(name).sense(egui::Sense::click()));
                     if label.double_clicked() {
                         actions.push(Action::Fly(path.clone()));
+                    }
+                    if p.tour.is_some() && ui.small_button("▶").clicked() {
+                        actions.push(Action::Tour(path.clone()));
                     }
                 });
             }
@@ -277,6 +307,11 @@ pub fn tree_ui(ui: &mut eframe::egui::Ui, folder: &mut Folder, path: &mut Vec<us
 pub struct Marks {
     /// Дерево меток открытого файла.
     pub tree: Option<Folder>,
+    /// Видимые по флажкам метки с временем.
+    timed: Vec<(Shape, Option<Time>)>,
+    /// Окно шкалы времени, None - шкала закрыта.
+    window: Option<(f64, f64)>,
+    /// Метки кадра: видимые и в окне шкалы.
     shapes: Vec<Shape>,
     /// Версия высот и время последней сборки сеток.
     built: Option<(u64, f64)>,
@@ -296,9 +331,26 @@ impl Marks {
 
     /// Объекты заново по флажкам дерева.
     pub fn refresh(&mut self) {
-        self.shapes = self.tree.as_ref().map(visible_shapes).unwrap_or_default();
+        self.timed = self.tree.as_ref().map(timed_shapes).unwrap_or_default();
+        self.shapes = in_window(&self.timed, self.window);
         self.dirty = true;
         self.built = None;
+    }
+
+    /// Окно шкалы времени. Возвращает, сменились ли метки кадра.
+    pub fn set_window(&mut self, window: Option<(f64, f64)>) -> bool {
+        if window == self.window {
+            return false;
+        }
+        self.window = window;
+        self.shapes = in_window(&self.timed, window);
+        self.dirty = true;
+        true
+    }
+
+    /// Охват шкалы по временам видимых меток.
+    pub fn extent(&self) -> Option<(f64, f64)> {
+        when::extent(self.timed.iter().map(|(_, t)| t.as_ref()))
     }
 
     /// Флажок строки сменился: в папке-переключателе соседи гаснут,
@@ -315,6 +367,25 @@ impl Marks {
             }
         }
         self.refresh();
+    }
+
+    /// Время строки по пути: время вида метки или её время.
+    pub fn time_of(&self, path: &[usize]) -> Option<Time> {
+        match item_at(self.tree.as_ref()?, path)? {
+            Item::Place(p) => p.view_time.clone().or_else(|| p.time.clone()),
+            Item::Overlay(o) => o.time.clone(),
+            Item::Folder(_) => None,
+        }
+    }
+
+    /// Остановки тура строки: папка - её отмеченные метки, метка -
+    /// её записанный тур. Название тура и остановки.
+    pub fn tour_of(&self, path: &[usize], fov_y: f64, aspect: f64) -> Option<(String, Vec<scene::tour::Stop>)> {
+        match item_at(self.tree.as_ref()?, path)? {
+            Item::Folder(f) => Some((f.name.clone(), crate::tours::folder_stops(f, fov_y, aspect))),
+            Item::Place(p) => Some((p.name.clone(), vec![crate::tours::recorded_stop(p)?])),
+            Item::Overlay(_) => None,
+        }
     }
 
     /// Поза для перелёта к строке по пути.
