@@ -56,6 +56,35 @@ fn queue_holds_failed_tile_for_a_while() {
 }
 
 #[test]
+fn failed_tile_waits_longer_each_time() {
+    // Сервер высот отвечал по 13-20 с и обрывался, тайл с постоянной
+    // паузой 10 с держал загрузчик занятым без конца, 23 октября 2026
+    // года. Каждая неудача подряд удваивает паузу, удача её сбрасывает.
+    use web_time::{Duration, Instant};
+    let key = (3, 1, 1);
+    let mut q = Queue::new();
+    let t0 = Instant::now();
+    q.set_wanted(&[(key, 5.0)]);
+    assert_eq!(q.take_next_at(t0), Some(key));
+    q.done_at(key, false, t0);
+    assert_eq!(q.retry_in(key, t0), Some(Duration::from_secs(10)));
+    let t1 = t0 + Duration::from_secs(11);
+    q.set_wanted(&[(key, 5.0)]);
+    assert_eq!(q.take_next_at(t1), Some(key));
+    q.done_at(key, false, t1);
+    assert_eq!(q.retry_in(key, t1), Some(Duration::from_secs(20)));
+    q.set_wanted(&[(key, 5.0)]);
+    assert_eq!(q.take_next_at(t1 + Duration::from_secs(15)), None);
+    let t2 = t1 + Duration::from_secs(21);
+    assert_eq!(q.take_next_at(t2), Some(key));
+    q.done_at(key, true, t2);
+    assert_eq!(q.retry_in(key, t2), None);
+    assert_eq!(net::retry_delay(1), Duration::from_secs(10));
+    assert_eq!(net::retry_delay(3), Duration::from_secs(40));
+    assert_eq!(net::retry_delay(30), net::MAX_RETRY);
+}
+
+#[test]
 fn queue_ignores_nan_priority() {
     let mut q = Queue::new();
     q.set_wanted(&[((3, 1, 1), f64::NAN), ((3, 2, 2), 1.0)]);

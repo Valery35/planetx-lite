@@ -67,6 +67,56 @@ pub fn recorded_stop(place: &Place) -> Option<Stop> {
     Some(Stop::recorded(&place.name, samples, &bounce, updates))
 }
 
+/// Туры сцены для самопроверки: записанные туры меток по порядку
+/// дерева, без них - тур по отмеченным меткам всей сцены. Пусто -
+/// у сцены нет ни туров, ни меток с точками.
+pub fn scene_tours(tree: &Folder, fov_y: f64, aspect: f64) -> Vec<(String, Vec<Stop>)> {
+    fn recorded(folder: &Folder, out: &mut Vec<(String, Vec<Stop>)>) {
+        for item in &folder.children {
+            match item {
+                Item::Folder(f) => recorded(f, out),
+                Item::Place(p) => {
+                    if let Some(stop) = recorded_stop(p) {
+                        out.push((p.name.clone(), vec![stop]));
+                    }
+                }
+                Item::Overlay(_) => {}
+            }
+        }
+    }
+    let mut out = Vec::new();
+    recorded(tree, &mut out);
+    if out.is_empty() {
+        let stops = folder_stops(tree, fov_y, aspect);
+        if !stops.is_empty() {
+            out.push((tree.name.clone(), stops));
+        }
+    }
+    out
+}
+
+/// Количество строк дерева: папки, метки, записанные туры, наложения.
+pub fn counts(folder: &Folder) -> [usize; 4] {
+    let mut out = [0; 4];
+    for item in &folder.children {
+        match item {
+            Item::Folder(f) => {
+                out[0] += 1;
+                let inner = counts(f);
+                for (o, i) in out.iter_mut().zip(inner) {
+                    *o += i;
+                }
+            }
+            Item::Place(p) => {
+                out[1] += 1;
+                out[2] += usize::from(p.tour.is_some());
+            }
+            Item::Overlay(_) => out[3] += 1,
+        }
+    }
+    out
+}
+
 /// Проигрыватель тура: часы тура, пауза, продолжение.
 pub struct Player {
     pub tour: Tour,
@@ -75,6 +125,9 @@ pub struct Player {
     start: f64,
     /// Время тура на паузе.
     paused: Option<f64>,
+    /// Секунд тура за секунду часов окна. Самопроверка ускоряет
+    /// длинные туры, обычный показ идёт с 1.
+    pub rate: f64,
 }
 
 impl Player {
@@ -84,12 +137,12 @@ impl Player {
             return None;
         }
         let tour = Tour::with_fov(start_pose, stops, PAUSE, fov_y);
-        Some(Self { tour, name: name.to_string(), start: now, paused: None })
+        Some(Self { tour, name: name.to_string(), start: now, paused: None, rate: 1.0 })
     }
 
     /// Время тура.
     pub fn time(&self, now: f64) -> f64 {
-        self.paused.unwrap_or(now - self.start).clamp(0.0, self.tour.duration)
+        self.paused.unwrap_or((now - self.start) * self.rate).clamp(0.0, self.tour.duration)
     }
 
     pub fn paused(&self) -> bool {
@@ -99,14 +152,14 @@ impl Player {
     /// Пауза или продолжение с того же места.
     pub fn toggle(&mut self, now: f64) {
         match self.paused.take() {
-            Some(t) => self.start = now - t,
-            None => self.paused = Some((now - self.start).clamp(0.0, self.tour.duration)),
+            Some(t) => self.start = now - t / self.rate,
+            None => self.paused = Some(((now - self.start) * self.rate).clamp(0.0, self.tour.duration)),
         }
     }
 
     /// Тур дошёл до конца.
     pub fn done(&self, now: f64) -> bool {
-        self.paused.is_none() && now - self.start >= self.tour.duration
+        self.paused.is_none() && (now - self.start) * self.rate >= self.tour.duration
     }
 
     /// Поза камеры сейчас.
@@ -168,6 +221,13 @@ mod tests {
         p.toggle(500.0);
         assert!((p.time(502.0) - 3.0).abs() < 1e-9);
         assert!(p.done(500.0 + d));
+        // Ускоренный тур кончается раньше во столько же раз.
+        let mut fast = Player::new("Прогулка", &start, folder_stops(&folder(), 45.0, 1.6), 45.0, 0.0).unwrap();
+        fast.rate = 4.0;
+        assert!(!fast.done(d / 4.0 - 0.01) && fast.done(d / 4.0));
+        fast.toggle(1.0);
+        fast.toggle(10.0);
+        assert!((fast.time(11.0) - 8.0).abs() < 1e-9);
         assert!(Player::new("пусто", &start, Vec::new(), 45.0, 0.0).is_none());
     }
 
@@ -180,6 +240,44 @@ mod tests {
         assert_eq!(stop.time, place.time);
         assert_eq!((stop.pause, stop.speed), (Some(7.0), 2.0));
         assert!(recorded_stop(&place).is_none());
+    }
+
+    #[test]
+    fn scene_tours_prefer_recorded_and_fall_back_to_places() {
+        let f = folder();
+        let tours = super::scene_tours(&f, 45.0, 1.6);
+        assert_eq!(tours.len(), 1);
+        assert_eq!(tours[0].1.len(), 2);
+        assert_eq!(super::counts(&f), [0, 3, 0, 0]);
+        let mut with_tour = folder();
+        let mut recorded = Place::new("Запись", Kind::Point, vec![(58.0, 56.2)]);
+        recorded.tour = Some(vec![[0.0, 58.0, 56.2, 1000.0, 0.0, 0.0], [5.0, 58.1, 56.2, 1000.0, 0.0, 0.0]]);
+        let mut inner = Folder::new("Внутри");
+        inner.children.push(Item::Place(recorded));
+        with_tour.children.push(Item::Folder(inner));
+        let tours = super::scene_tours(&with_tour, 45.0, 1.6);
+        assert_eq!(tours.iter().map(|t| t.0.as_str()).collect::<Vec<_>>(), ["Запись"]);
+        assert_eq!(super::counts(&with_tour), [1, 4, 1, 0]);
+        assert!(super::scene_tours(&Folder::new("пусто"), 45.0, 1.6).is_empty());
+    }
+
+    /// Длины туров сцен демо, для оценки времени самопроверки `scenes`.
+    #[test]
+    fn demo_tour_lengths() {
+        let dir = std::path::Path::new(r"C:\Dev\planetx\planetx\demo");
+        for (name, _) in crate::check::SCENES {
+            let Ok(bytes) = std::fs::read(dir.join(format!("{name}.planetx"))) else {
+                eprintln!("демо модуля нет, проверка пропущена");
+                return;
+            };
+            let opened = crate::marks::open(&bytes, &format!("{name}.planetx")).unwrap();
+            let start = opened.pose.clone().unwrap_or(Pose::new(0.0, 0.0, 2.0e7, 0.0, 0.0));
+            for (tour, stops) in super::scene_tours(&opened.tree, 45.0, 1.6) {
+                let n = stops.len();
+                let p = Player::new(&tour, &start, stops, 45.0, 0.0).unwrap();
+                eprintln!("{name}: {tour}: остановок {n}, {:.0} с", p.tour.duration);
+            }
+        }
     }
 
     #[test]

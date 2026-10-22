@@ -18,6 +18,7 @@ eframe.workspace = true
 # WebGL2 - запасной путь там, где нет WebGPU, например страница по http.
 wgpu = { workspace = true, features = ["webgl"] }
 wasm-bindgen.workspace = true
+js-sys.workspace = true
 wasm-bindgen-futures.workspace = true
 web-sys = { workspace = true, features = ["Document", "Element", "HtmlCanvasElement", "Location", "Window", "console"] }
 

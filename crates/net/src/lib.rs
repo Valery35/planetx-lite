@@ -171,8 +171,19 @@ pub const OPENFREEMAP: Source = Source {
 
 /// Сколько тайл в кэше считается свежим.
 pub const FRESH: Duration = Duration::from_secs(7 * 24 * 3600);
-/// Через сколько повторить запрос тайла, который не пришёл.
+/// Через сколько повторить запрос тайла, который не пришёл. Каждая
+/// следующая неудача того же тайла удваивает паузу до [`MAX_RETRY`].
+/// С постоянной паузой два медленных тайла по очереди держали загрузчик
+/// занятым без конца: сервер высот отвечал по 13-20 с и обрывался
+/// по пределу, 23 октября 2026 года.
 pub const RETRY: Duration = Duration::from_secs(10);
+pub const MAX_RETRY: Duration = Duration::from_secs(320);
+
+/// Пауза до повтора после failures неудач подряд, failures от 1.
+pub fn retry_delay(failures: u32) -> Duration {
+    let doubled = RETRY.saturating_mul(1u32 << failures.saturating_sub(1).min(16));
+    doubled.min(MAX_RETRY)
+}
 /// Сторона тайла в пикселях.
 pub const TILE_SIZE: u32 = 256;
 
@@ -314,7 +325,8 @@ pub struct Queue {
     /// Тайлы, которые просит кадр, по убыванию приоритета.
     wanted: Vec<(TileKey, f64)>,
     in_flight: HashSet<TileKey>,
-    failed: HashMap<TileKey, Instant>,
+    /// Тайлы после неудачи: когда можно повторить и неудач подряд.
+    failed: HashMap<TileKey, (Instant, u32)>,
     /// Тайлы, которых у источника нет. Они не просятся снова.
     missing: HashSet<TileKey>,
 }
@@ -336,25 +348,47 @@ impl Queue {
         // Сортировка устойчивая: при равном приоритете раньше тот, кого
         // кадр попросил раньше, - предок.
         self.wanted.sort_by(|a, b| b.1.total_cmp(&a.1));
+        // Неудачи тайлов, которые кадру больше не нужны и уже дождались
+        // повтора, забываются: таблица не растёт без конца.
+        let now = Instant::now();
+        self.failed.retain(|k, (at, _)| now < *at || seen.contains(k));
     }
 
     /// Следующий тайл для загрузки или None. Тайл помечается начатым.
     pub fn take_next(&mut self) -> Option<TileKey> {
-        let now = Instant::now();
-        self.failed.retain(|_, at| now.duration_since(*at) < RETRY);
-        let pos = self.wanted.iter().position(|(k, _)| !self.in_flight.contains(k) && !self.failed.contains_key(k))?;
+        self.take_next_at(Instant::now())
+    }
+
+    /// [`Queue::take_next`] на момент now.
+    pub fn take_next_at(&mut self, now: Instant) -> Option<TileKey> {
+        let waiting = |k: &TileKey, failed: &HashMap<TileKey, (Instant, u32)>| failed.get(k).is_some_and(|(at, _)| now < *at);
+        let pos = self.wanted.iter().position(|(k, _)| !self.in_flight.contains(k) && !waiting(k, &self.failed))?;
         let (key, _) = self.wanted.remove(pos);
         self.in_flight.insert(key);
         Some(key)
     }
 
     /// Загрузка тайла закончилась. Неудача откладывает повтор на
-    /// [`RETRY`].
+    /// [`retry_delay`], удача забывает прежние неудачи.
     pub fn done(&mut self, key: TileKey, ok: bool) {
+        self.done_at(key, ok, Instant::now());
+    }
+
+    /// [`Queue::done`] на момент now.
+    pub fn done_at(&mut self, key: TileKey, ok: bool, now: Instant) {
         self.in_flight.remove(&key);
-        if !ok {
-            self.failed.insert(key, Instant::now());
+        if ok {
+            self.failed.remove(&key);
+        } else {
+            let failures = self.failed.get(&key).map_or(1, |(_, n)| n + 1);
+            self.failed.insert(key, (now + retry_delay(failures), failures));
         }
+    }
+
+    /// Пауза до повтора тайла после неудачи на момент now, None - тайл
+    /// не ждёт повтора.
+    pub fn retry_in(&self, key: TileKey, now: Instant) -> Option<Duration> {
+        self.failed.get(&key).map(|(at, _)| at.saturating_duration_since(now)).filter(|d| !d.is_zero())
     }
 
     /// Тайла нет у источника: загрузка закончена, снова он не просится.
@@ -369,7 +403,8 @@ impl Queue {
 
     /// Ждущих тайлов, без начатых и отложенных после неудачи.
     pub fn pending(&self) -> usize {
-        self.wanted.iter().filter(|(k, _)| !self.in_flight.contains(k) && !self.failed.contains_key(k)).count()
+        let now = Instant::now();
+        self.wanted.iter().filter(|(k, _)| !self.in_flight.contains(k) && self.retry_in(*k, now).is_none()).count()
     }
 
     pub fn is_idle(&self) -> bool {

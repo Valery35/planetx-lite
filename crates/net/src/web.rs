@@ -19,15 +19,27 @@ use globe_core::lod::TileKey;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 
-use web_time::Instant;
+use web_time::{Duration, Instant};
 
 use crate::{
     Fetched, Loaded, Queue, RETRY, Request, Source, Stats, TileLoader, template_url, tile_url, tilejson_template, valid_key,
 };
 
+/// Ответ сервера до разбора: байты, Err(None) - тайла нет, Err(Some) -
+/// ошибка.
+type Answer = (TileKey, Result<Vec<u8>, Option<String>>);
+
+/// Время разбора пришедших тайлов за один вызов `take`, то есть за кадр.
+/// Разбор JPEG идёт в главном потоке страницы. Тайлы из кэша браузера
+/// приходят без паузы, и разбор подряд останавливал кадры на секунду
+/// в туре у Бриенца, 23 октября 2026 года.
+/// Загрузчиков три - основа, рельеф, пункты, вместе до 12 мс.
+pub const DECODE_BUDGET: Duration = Duration::from_millis(4);
+
 struct State {
     queue: Queue,
-    results: VecDeque<Loaded>,
+    /// Пришедшие и ещё не разобранные ответы.
+    answers: VecDeque<Answer>,
     in_flight: usize,
     /// Шаблон адреса тайлов из TileJSON, когда он получен.
     template: Option<String>,
@@ -51,7 +63,7 @@ impl Loader {
     pub fn new(source: Source, on_ready: Rc<dyn Fn()>) -> Self {
         let state = State {
             queue: Queue::new(),
-            results: VecDeque::new(),
+            answers: VecDeque::new(),
             in_flight: 0,
             template: None,
             tilejson_busy: false,
@@ -123,17 +135,14 @@ fn pump(source: Source, state: &Rc<RefCell<State>>, stats: &Rc<Stats>, on_ready:
         let (state, stats, on_ready) = (state.clone(), stats.clone(), on_ready.clone());
         wasm_bindgen_futures::spawn_local(async move {
             stats.request_started();
-            let fetched = match fetch(&url).await {
-                Ok(bytes) => Fetched::from_bytes(&source, &bytes),
-                Err(None) => Fetched::Missing,
-                Err(Some(e)) => Fetched::Failed(e),
-            };
+            let answer = fetch(&url).await;
             stats.request_finished();
             {
+                // Разбор - в take, по бюджету кадра. До разбора тайл
+                // в очереди считается начатым.
                 let mut s = state.borrow_mut();
                 s.in_flight = s.in_flight.saturating_sub(1);
-                fetched.record(&mut s.queue, key);
-                s.results.push_back(fetched.into_loaded(key));
+                s.answers.push_back((key, answer));
             }
             on_ready();
             pump(source, &state, &stats, &on_ready);
@@ -141,10 +150,23 @@ fn pump(source: Source, state: &Rc<RefCell<State>>, stats: &Rc<Stats>, on_ready:
     }
 }
 
+/// Предел запроса страницы, миллисекунды: ответ и тело целиком.
+pub const TIMEOUT_MS: u32 = 20_000;
+
 /// Байты ответа сервера. Err(None) - ответ 404, тайла нет.
 async fn fetch(url: &str) -> Result<Vec<u8>, Option<String>> {
     let window = web_sys::window().ok_or_else(|| Some("нет окна браузера".to_string()))?;
-    let response = JsFuture::from(window.fetch_with_str(url)).await.map_err(|e| Some(format!("{e:?}")))?;
+    // У fetch браузера своего предела нет: медленный сервер высот держал
+    // запрос минутами, загрузка не кончалась, 23 октября 2026 года.
+    // Предел - как у программы. Браузер без AbortSignal.timeout ждёт
+    // сколько ждёт.
+    let init = web_sys::RequestInit::new();
+    let has_timeout = js_sys::Reflect::get(&js_sys::global(), &"AbortSignal".into())
+        .is_ok_and(|s| !s.is_undefined() && js_sys::Reflect::has(&s, &"timeout".into()).unwrap_or(false));
+    if has_timeout {
+        init.set_signal(Some(&web_sys::AbortSignal::timeout_with_u32(TIMEOUT_MS)));
+    }
+    let response = JsFuture::from(window.fetch_with_str_and_init(url, &init)).await.map_err(|e| Some(format!("{e:?}")))?;
     let response: web_sys::Response = response.dyn_into().map_err(|_| Some("ответ не Response".to_string()))?;
     if response.status() == 404 {
         return Err(None);
@@ -166,8 +188,30 @@ impl TileLoader for Loader {
         self.pump();
     }
 
+    /// Разобрать пришедшие ответы, пока не кончился [`DECODE_BUDGET`],
+    /// хотя бы один. Остаток - в следующий кадр.
     fn take(&self) -> Vec<Loaded> {
-        self.state.borrow_mut().results.drain(..).collect()
+        let started = Instant::now();
+        let mut out = Vec::new();
+        loop {
+            let Some((key, answer)) = self.state.borrow_mut().answers.pop_front() else {
+                break;
+            };
+            let fetched = match answer {
+                Ok(bytes) => Fetched::from_bytes(&self.source, &bytes),
+                Err(None) => Fetched::Missing,
+                Err(Some(e)) => Fetched::Failed(e),
+            };
+            fetched.record(&mut self.state.borrow_mut().queue, key);
+            out.push(fetched.into_loaded(key));
+            if started.elapsed() >= DECODE_BUDGET {
+                break;
+            }
+        }
+        if !self.state.borrow().answers.is_empty() {
+            (self.on_ready)();
+        }
+        out
     }
 
     fn busy(&self) -> bool {

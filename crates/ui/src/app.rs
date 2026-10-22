@@ -69,6 +69,8 @@ pub struct Loaders {
     pub search: Box<dyn net::Request>,
     /// Картинки наложений по ссылкам, по одной.
     pub pictures: Box<dyn net::Request>,
+    /// Файлы сцен по ссылкам: на странице сцены демо и `?scene=`.
+    pub files: Box<dyn net::Request>,
 }
 
 impl Loaders {
@@ -161,6 +163,11 @@ pub struct LiteApp {
     screen_textures: HashMap<String, egui::TextureHandle>,
     /// Поза задана при запуске: сцена при старте её не меняет.
     keep_pose: bool,
+    /// Откуда самопроверка берёт сцены демо: в программе - папка,
+    /// на странице - начало адреса.
+    scene_source: Option<String>,
+    /// Сцена грузится по ссылке: имя файла и признак сцены самопроверки.
+    fetching: Option<(String, bool)>,
 }
 
 /// Ящик прочитанных брошенных файлов.
@@ -213,6 +220,8 @@ impl LiteApp {
             pictures: Pictures::default(),
             screen_textures: HashMap::new(),
             keep_pose: false,
+            scene_source: None,
+            fetching: None,
         }
     }
 
@@ -266,8 +275,129 @@ impl LiteApp {
         self
     }
 
+    /// Откуда самопроверка `scenes` берёт сцены демо: в программе -
+    /// папка, на странице - начало адреса, к нему добавляется
+    /// «имя.planetx».
+    pub fn with_scenes(mut self, source: &str) -> Self {
+        self.scene_source = Some(source.to_string());
+        self
+    }
+
+    /// Открыть сцену по ссылке, когда она загрузится. Страница так
+    /// открывает `?scene=адрес`.
+    pub fn with_scene_url(mut self, url: &str) -> Self {
+        let name = url.rsplit('/').next().unwrap_or(url).split(['?', '#']).next().unwrap_or("").to_string();
+        self.loaders.files.start(url);
+        self.fetching = Some((name, false));
+        self
+    }
+
+    /// Сцена самопроверки по имени: из папки сразу, по ссылке - позже.
+    fn load_check_scene(&mut self, name: &str, now: f64) {
+        let file = format!("{name}.planetx");
+        let Some(source) = self.scene_source.clone() else {
+            if let Some(check) = &mut self.check {
+                check.scene_opened(Err("не задано, откуда брать сцены демо".into()), now);
+            }
+            return;
+        };
+        if source.starts_with("http://") || source.starts_with("https://") || cfg!(target_arch = "wasm32") {
+            self.loaders.files.start(&format!("{source}{file}"));
+            self.fetching = Some((file, true));
+        } else {
+            self.read_check_scene(&source, &file, now);
+        }
+    }
+
+    /// Сцена самопроверки из папки.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn read_check_scene(&mut self, dir: &str, file: &str, now: f64) {
+        match std::fs::read(std::path::Path::new(dir).join(file)) {
+            Ok(bytes) => self.open_check_scene(&bytes, file, now),
+            Err(e) => {
+                if let Some(check) = &mut self.check {
+                    check.scene_opened(Err(format!("{file}: {e}")), now);
+                }
+            }
+        }
+    }
+
+    /// На странице папок нет, сцены приходят по ссылке.
+    #[cfg(target_arch = "wasm32")]
+    fn read_check_scene(&mut self, _dir: &str, _file: &str, _now: f64) {}
+
+    /// Ответ на загрузку сцены по ссылке.
+    fn step_fetch(&mut self, now: f64) {
+        if self.fetching.is_none() {
+            return;
+        }
+        let Some(answer) = self.loaders.files.take() else {
+            return;
+        };
+        let Some((name, for_check)) = self.fetching.take() else {
+            return;
+        };
+        match (answer, for_check) {
+            (Ok(bytes), true) => self.open_check_scene(&bytes, &name, now),
+            (Ok(bytes), false) => {
+                let _ = self.open_file(&bytes, &name, None);
+            }
+            (Err(e), true) => {
+                if let Some(check) = &mut self.check {
+                    check.scene_opened(Err(format!("{name}: {e}")), now);
+                }
+            }
+            (Err(e), false) => self.open_message = Some(format!("{name}: {e}")),
+        }
+    }
+
+    /// Открыть сцену самопроверки и отдать итог проверке: строки
+    /// дерева, поза, количество туров.
+    fn open_check_scene(&mut self, bytes: &[u8], name: &str, now: f64) {
+        let opened = self.open_file(bytes, name, None).map(|pose| {
+            let p = &self.nav.pose;
+            let pose_ok = pose.is_some_and(|s| {
+                (p.lat - s.lat).abs() < check::POSE_TOLERANCE
+                    && (p.lon - s.lon).abs() < check::POSE_TOLERANCE
+                    && (p.distance / s.distance - 1.0).abs() < check::POSE_TOLERANCE
+                    && (p.heading - s.heading).abs() < check::POSE_TOLERANCE
+                    && (p.tilt - s.tilt).abs() < check::POSE_TOLERANCE
+            });
+            let camera = &self.nav.camera;
+            let (counts, tours) = self.marks.tree.as_ref().map_or(([0; 4], 0), |t| {
+                (crate::tours::counts(t), crate::tours::scene_tours(t, camera.fov_y, camera.aspect()).len())
+            });
+            (counts, pose_ok, tours)
+        });
+        if let Some(check) = &mut self.check {
+            check.scene_opened(opened, now);
+        }
+    }
+
+    /// Тур сцены самопроверки по номеру.
+    fn start_check_tour(&mut self, index: usize, now: f64) {
+        let camera = &self.nav.camera;
+        let tour = self
+            .marks
+            .tree
+            .as_ref()
+            .and_then(|t| crate::tours::scene_tours(t, camera.fov_y, camera.aspect()).into_iter().nth(index));
+        self.player = tour.and_then(|(name, stops)| Player::new(&name, &self.nav.pose, stops, camera.fov_y, now));
+        self.tour_index = None;
+        self.nav.stop();
+        // Длинный тур проигрывается целиком, но ускоренно.
+        let started = self.player.as_mut().map(|p| {
+            p.rate = (p.tour.duration / check::TOUR_LIMIT).max(1.0);
+            (p.tour.duration / p.rate, p.rate)
+        });
+        if let Some(check) = &mut self.check {
+            check.tour_started(started);
+        }
+    }
+
     /// Открыть файл. fly - лететь к позе сцены, иначе встать в неё сразу.
-    fn open_file(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) {
+    /// Возвращает позу сцены или ошибку.
+    fn open_file(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
         match marks::open(bytes, name) {
             Ok(opened) => {
                 self.marks.set(opened.tree, &opened.name);
@@ -280,19 +410,21 @@ impl LiteApp {
                 self.timebar.set_extent(self.marks.extent());
                 self.marks_to_labels();
                 // Поза, заданная при запуске, сильнее позы сцены.
-                if let Some(pose) = opened.pose.filter(|_| fly.is_some() || !self.keep_pose) {
+                if let Some(pose) = opened.pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
                     match fly {
                         Some(now) => crate::input::fly(&mut self.nav, pose, now),
                         None => self.nav.show(pose),
                     }
                 }
                 self.open_message = Some(opened.name);
+                Ok(opened.pose)
             }
             Err(e) => {
                 self.open_message = Some(match self.lang {
                     Lang::Ru => format!("Файл не открылся: {name}: {e}"),
                     Lang::En => format!("The file did not open: {name}: {e}"),
                 });
+                Err(e)
             }
         }
     }
@@ -466,7 +598,10 @@ impl LiteApp {
             if let Some(path) = rfd::FileDialog::new().add_filter("PlanetX, KML, KMZ", &KINDS).pick_file() {
                 let name = path.file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
                 match std::fs::read(&path) {
-                    Ok(bytes) => self.open_file(&bytes, &name, Some(now)),
+                    Ok(bytes) => {
+                    // Ошибку открытия показывает панель.
+                    let _ = self.open_file(&bytes, &name, Some(now));
+                }
                     Err(e) => self.open_message = Some(format!("{name}: {e}")),
                 }
             }
@@ -496,7 +631,10 @@ impl LiteApp {
             let name = file.path().file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
             #[cfg(not(target_arch = "wasm32"))]
             match file.bytes() {
-                Ok(bytes) => self.open_file(&bytes, &name, Some(now)),
+                Ok(bytes) => {
+                    // Ошибку открытия показывает панель.
+                    let _ = self.open_file(&bytes, &name, Some(now));
+                }
                 Err(e) => self.open_message = Some(format!("{name}: {e}")),
             }
             #[cfg(target_arch = "wasm32")]
@@ -515,7 +653,10 @@ impl LiteApp {
             self.dropped_box.lock().map(|mut s| s.drain(..).collect()).unwrap_or_default();
         for (read, name) in arrived {
             match read {
-                Ok(bytes) => self.open_file(&bytes, &name, Some(now)),
+                Ok(bytes) => {
+                    // Ошибку открытия показывает панель.
+                    let _ = self.open_file(&bytes, &name, Some(now));
+                }
                 Err(e) => self.open_message = Some(format!("{name}: {e}")),
             }
         }
@@ -746,14 +887,41 @@ impl eframe::App for LiteApp {
             || self.loaders.places.busy()
             || self.labels.pending
             || self.search.busy()
-            || self.pictures.busy();
+            || self.pictures.busy()
+            || self.fetching.is_some();
         if let Some(check) = &mut self.check {
+            let parts = [
+                ("basemap", self.loaders.basemap(self.basemap).busy()),
+                ("terrain", self.loaders.terrain.busy()),
+                ("places", self.loaders.places.busy()),
+                ("labels", self.labels.pending),
+                ("search", self.search.busy()),
+                ("pictures", self.pictures.busy()),
+                ("fetching", self.fetching.is_some()),
+            ];
+            let loaders = &self.loaders;
+            let requests = [loaders.esri.stats(), loaders.osm.stats(), loaders.terrain.stats(), loaders.places.stats(), loaders.pictures.stats(), loaders.files.stats()]
+                .iter()
+                .map(|s| s.requests_total.load(Ordering::SeqCst))
+                .sum();
+            check.note_busy(parts.iter().filter(|(_, b)| *b).map(|(n, _)| *n).collect::<Vec<_>>().join(","), requests);
+            check.note_tour(self.player.is_some());
             let mut basemap = self.basemap;
             check.before_frame(&mut self.nav, now, loading, &mut basemap);
             self.set_basemap(basemap);
         } else {
             self.input.handle(&ctx, rect, &mut self.nav, now, ppp);
         }
+        if let Some(name) = self.check.as_mut().and_then(Check::take_scene_request) {
+            self.load_check_scene(&name, now);
+        }
+        if let Some(index) = self.check.as_mut().and_then(Check::take_tour_request) {
+            self.start_check_tour(index, now);
+        }
+        if let Some(line) = self.check.as_mut().and_then(Check::take_progress) {
+            (self.report)(&line, false);
+        }
+        self.step_fetch(now);
         if let Some(query) = self.check.as_mut().and_then(Check::take_search) {
             self.search_text = query.clone();
             if let Some(place) = self.search.submit(&query) {
@@ -765,7 +933,7 @@ impl eframe::App for LiteApp {
         }
         self.pictures.step(self.loaders.pictures.as_ref());
         if let Some((bytes, name)) = self.pending_open.take() {
-            self.open_file(&bytes, &name, None);
+            let _ = self.open_file(&bytes, &name, None);
         }
         self.dropped(&ctx, now);
         self.step_tour(now);

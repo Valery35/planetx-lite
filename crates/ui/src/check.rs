@@ -23,6 +23,13 @@
 //! (все каналы не больше 10), небо у верхнего края голубое (синий
 //! не меньше 150 и больше красного на 40).
 //!
+//! `scenes` (фаза 2): сцены демо модуля Земли без моделей, [`SCENES`],
+//! по очереди. Сцена открывается, камера встаёт в позу `scene.json`,
+//! количество папок, меток, записанных туров и наложений совпадает
+//! с модулем. После загрузки играются туры сцены до конца: записанные,
+//! без них - тур по отмеченным меткам. Дыр нет, в любом окне 1 с тура
+//! не меньше 55 кадров.
+//!
 //! Дыры считаются, пока частота кадров не мерится: счётчик ждёт
 //! видеокарту и сбивал бы её.
 
@@ -97,8 +104,13 @@ pub const PERM_NAMES: [&str; 2] = ["Пермь", "Perm"];
 pub const PERM_LABEL_SHARE: f32 = 0.25;
 /// Кадров подряд без загрузки, после которых место считается загруженным.
 pub const IDLE_FRAMES: u32 = 10;
-/// Предел ожидания загрузки, секунды.
+/// Предел ожидания загрузки без нового запроса, секунды. Пока запросы
+/// идут, загрузка ждёт до [`LOAD_LIMIT`]: страница без кэша на диске
+/// при ответе Esri около 1 с грузила Альпы дольше 180 с, 23 октября
+/// 2026 года.
 pub const LOAD_TIMEOUT: f64 = 180.0;
+/// Предел ожидания загрузки целиком, секунды.
+pub const LOAD_LIMIT: f64 = 900.0;
 /// Критерий частоты кадров - кадров в любом окне 1 с.
 pub const MIN_FPS: usize = 55;
 /// Пауза между кадрами замера, после которой замер недействителен,
@@ -108,11 +120,82 @@ pub const MIN_FPS: usize = 55;
 pub const STALL: f64 = 0.25;
 const M_PER_DEGREE: f64 = 111_320.0;
 
+/// Сцены демо модуля для самопроверки `scenes` (фаза 2): сцены Земли
+/// без 3D-моделей и подземного вида. Эталон модуля - папки, метки,
+/// записанные туры, наложения, как в тесте `scene/tests/demo.rs`.
+pub const SCENES: [(&str, [usize; 4]); 12] = [
+    ("aral", [1, 0, 0, 5]),
+    ("bocachica", [0, 7, 1, 0]),
+    ("brienz", [0, 2, 0, 0]),
+    ("flows", [0, 7, 0, 0]),
+    ("haulqgis_kachkanar", [0, 1, 0, 0]),
+    ("haulqgis_lebedinsky", [0, 1, 0, 0]),
+    ("japan", [0, 4, 0, 0]),
+    ("moscow", [0, 2, 0, 0]),
+    ("perm", [2, 12, 1, 0]),
+    ("quarry", [0, 3, 0, 0]),
+    ("superoverlay", [1, 0, 0, 0]),
+    ("vegas", [0, 8, 0, 0]),
+];
+/// Допуск позы сцены после открытия: доля расстояния и градусы.
+pub const POSE_TOLERANCE: f64 = 1e-6;
+/// Тур длиннее этого, секунды, самопроверка проигрывает ускоренно,
+/// целиком за это время. Путь вдоль линии грузопотока у модуля идёт
+/// минуты, тур сцены flows - 35 мин.
+pub const TOUR_LIMIT: f64 = 60.0;
+/// Тур идёт не дольше своей длины и этого запаса, секунды.
+pub const TOUR_MARGIN: f64 = 30.0;
+
+/// Итог одной сцены самопроверки `scenes`.
+#[derive(Debug, Clone, Default)]
+pub struct SceneResult {
+    pub name: String,
+    /// Ошибка открытия, None - открылась.
+    pub error: Option<String>,
+    pub counts: [usize; 4],
+    pub expected: [usize; 4],
+    pub pose_ok: bool,
+    pub tours: usize,
+    pub tours_done: usize,
+    /// Наименьшее количество кадров в окне 1 с по турам сцены.
+    pub fps_min: Option<usize>,
+    /// Наибольшее ускорение тура сцены, 1 - без ускорения.
+    pub rate: f64,
+}
+
+impl SceneResult {
+    /// Строка отчёта о сцене.
+    pub fn line(&self) -> String {
+        let [f, p, t, o] = self.counts;
+        let [ef, ep, et, eo] = self.expected;
+        format!(
+            "scene={} ok={} open={} pose_ok={} counts={f}/{p}/{t}/{o} expected={ef}/{ep}/{et}/{eo} tours={}/{} tour_rate={:.1} fps_min_1s={}",
+            self.name,
+            self.ok(),
+            self.error.as_deref().unwrap_or("ok"),
+            self.pose_ok,
+            self.tours_done,
+            self.tours,
+            self.rate.max(1.0),
+            self.fps_min.map_or("-".to_string(), |f| f.to_string()),
+        )
+    }
+
+    pub fn ok(&self) -> bool {
+        self.error.is_none()
+            && self.counts == self.expected
+            && self.pose_ok
+            && self.tours_done == self.tours
+            && self.fps_min.is_none_or(|f| f >= MIN_FPS)
+    }
+}
+
 /// Какая самопроверка.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Scenario {
     Perm,
     Elbrus,
+    Scenes,
 }
 
 impl Scenario {
@@ -121,6 +204,7 @@ impl Scenario {
         match name {
             "perm" => Some(Self::Perm),
             "elbrus" => Some(Self::Elbrus),
+            "scenes" => Some(Self::Scenes),
             _ => None,
         }
     }
@@ -129,13 +213,13 @@ impl Scenario {
     pub fn start_basemap(self) -> Basemap {
         match self {
             Self::Perm => Basemap::Osm,
-            Self::Elbrus => Basemap::Esri,
+            Self::Elbrus | Self::Scenes => Basemap::Esri,
         }
     }
 
     pub fn start_pose(self) -> Pose {
         match self {
-            Self::Perm => Pose::new(PERM.0, PERM.1, SPACE_DISTANCE, 0.0, 0.0),
+            Self::Perm | Self::Scenes => Pose::new(PERM.0, PERM.1, SPACE_DISTANCE, 0.0, 0.0),
             Self::Elbrus => {
                 let (d, h, t) = DESCENT.0;
                 Pose::new(ELBRUS.0, ELBRUS.1, d, h, t)
@@ -170,6 +254,10 @@ enum Phase {
     Space,
     /// Эльбрус: кадр неба у Эльбруса.
     Sky,
+    /// Сцены: файл сцены запрошен, ждёт открытия.
+    OpenScene,
+    /// Сцены: тур запрошен или идёт.
+    Tour,
     Done,
 }
 
@@ -212,6 +300,24 @@ pub struct Check {
     search_place: Option<(f64, f64)>,
     search_arrived: Option<bool>,
     failure: Option<String>,
+    /// Сцены: номер сцены в [`SCENES`], запрос сцены для окна, итоги.
+    scene_index: usize,
+    scene_request: Option<String>,
+    scenes: Vec<SceneResult>,
+    /// Сцены: номер тура, запрос тура для окна, тур идёт, длина тура.
+    tour_index: usize,
+    tour_request: Option<usize>,
+    tour_playing: bool,
+    tour_duration: f64,
+    /// Время кадров идущего тура.
+    tour_times: Vec<f64>,
+    /// Строка о пройденной сцене для отчёта по ходу.
+    progress: Option<String>,
+    /// Что грузится в этом кадре, для текста отказа.
+    busy: String,
+    /// Начатых запросов всего и время, когда их количество сменилось.
+    requests: usize,
+    progress_mark: Option<(usize, f64)>,
 }
 
 /// Медиана по каналам RGB.
@@ -370,6 +476,114 @@ impl Check {
             search_place: None,
             search_arrived: None,
             failure: None,
+            scene_index: 0,
+            scene_request: None,
+            scenes: Vec::new(),
+            tour_index: 0,
+            tour_request: None,
+            tour_playing: false,
+            tour_duration: 0.0,
+            tour_times: Vec::new(),
+            progress: None,
+            busy: String::new(),
+            requests: 0,
+            progress_mark: None,
+        }
+    }
+
+    /// Что грузится в этом кадре: имена через запятую, и сколько
+    /// запросов начато за всю проверку.
+    pub fn note_busy(&mut self, busy: String, requests: usize) {
+        self.busy = busy;
+        self.requests = requests;
+    }
+
+    /// Сцена, которую окно должно открыть: имя без расширения.
+    pub fn take_scene_request(&mut self) -> Option<String> {
+        self.scene_request.take()
+    }
+
+    /// Окно открыло запрошенную сцену или не смогло. counts - строки
+    /// дерева, pose_ok - камера встала в позу сцены, tours - туров
+    /// у сцены.
+    pub fn scene_opened(&mut self, opened: Result<([usize; 4], bool, usize), String>, now: f64) {
+        if self.phase != Phase::OpenScene {
+            return;
+        }
+        let Some((name, expected)) = SCENES.get(self.scene_index) else {
+            return;
+        };
+        let mut result = SceneResult { name: (*name).to_string(), expected: *expected, ..SceneResult::default() };
+        match opened {
+            Ok((counts, pose_ok, tours)) => {
+                result.counts = counts;
+                result.pose_ok = pose_ok;
+                result.tours = tours;
+            }
+            Err(e) => result.error = Some(e),
+        }
+        let failed = result.error.is_some();
+        self.scenes.push(result);
+        if failed {
+            self.next_scene(now);
+        } else {
+            self.tour_index = 0;
+            self.enter(Phase::LoadPlace, now);
+        }
+    }
+
+    /// Тур, который окно должно начать: номер в турах сцены.
+    pub fn take_tour_request(&mut self) -> Option<usize> {
+        self.tour_request.take()
+    }
+
+    /// Окно начало тур или не смогло (None): секунд часов окна до конца
+    /// тура и ускорение.
+    pub fn tour_started(&mut self, started: Option<(f64, f64)>) {
+        match started {
+            Some((d, rate)) => {
+                self.tour_playing = true;
+                self.tour_duration = d;
+                if let Some(scene) = self.scenes.last_mut() {
+                    scene.rate = scene.rate.max(rate);
+                }
+            }
+            None => self.tour_playing = false,
+        }
+    }
+
+    /// Идёт ли тур в окне. Вызывается каждый кадр до [`Check::before_frame`].
+    pub fn note_tour(&mut self, playing: bool) {
+        self.tour_playing = playing;
+    }
+
+    /// Строка о сцене, которую проверка только что прошла.
+    pub fn take_progress(&mut self) -> Option<String> {
+        self.progress.take()
+    }
+
+    fn next_scene(&mut self, now: f64) {
+        self.progress = self.scenes.last().map(SceneResult::line);
+        self.scene_index += 1;
+        match SCENES.get(self.scene_index) {
+            Some((name, _)) => {
+                self.scene_request = Some((*name).to_string());
+                self.enter(Phase::OpenScene, now);
+            }
+            None => self.enter(Phase::Done, now),
+        }
+    }
+
+    /// Тур сцены кончился: его замер - в итог сцены.
+    fn tour_finished(&mut self) {
+        let fps = min_frames_per_second(&self.tour_times);
+        self.tour_times.clear();
+        if let Some(scene) = self.scenes.last_mut() {
+            scene.tours_done += 1;
+            scene.fps_min = match (scene.fps_min, fps) {
+                (Some(a), Some(b)) => Some(a.min(b)),
+                (a, b) => a.or(b),
+            };
         }
     }
 
@@ -381,7 +595,7 @@ impl Check {
     /// Считать дыры в этом кадре. В кадрах цвета дыры не считаются:
     /// на странице счётчик красит их пурпурным.
     pub fn count_holes(&self) -> bool {
-        !matches!(self.phase, Phase::Spin | Phase::LowFlight | Phase::Space | Phase::Sky | Phase::Done)
+        !matches!(self.phase, Phase::Spin | Phase::LowFlight | Phase::Space | Phase::Sky | Phase::Tour | Phase::Done)
     }
 
     /// Запрос поиска, который окно должно отправить, как по Enter.
@@ -454,7 +668,8 @@ impl Check {
         self.idle = if loading { 0 } else { self.idle + 1 };
         let loaded = self.idle >= IDLE_FRAMES;
         let t = now - start;
-        if matches!(self.phase, Phase::Spin | Phase::LowFlight) && dt > STALL {
+        let measuring = matches!(self.phase, Phase::Spin | Phase::LowFlight) || (self.phase == Phase::Tour && self.tour_playing);
+        if measuring && dt > STALL {
             self.stalls += 1;
         }
         let waiting = matches!(
@@ -466,9 +681,25 @@ impl Check {
                 | Phase::SearchFly
                 | Phase::Space
                 | Phase::Sky
+                | Phase::OpenScene
         );
-        if waiting && t > LOAD_TIMEOUT {
-            self.failure = Some(format!("загрузка не закончилась за {LOAD_TIMEOUT} с, шаг {:?}", self.phase));
+        // Новый запрос - загрузка продвигается.
+        let progress_at = match self.progress_mark {
+            Some((count, at)) if count == self.requests => at.max(start),
+            _ => {
+                self.progress_mark = Some((self.requests, now));
+                now
+            }
+        };
+        if waiting && (now - progress_at > LOAD_TIMEOUT || t > LOAD_LIMIT) {
+            let scene = SCENES.get(self.scene_index).filter(|_| self.scenario == Scenario::Scenes).map_or("", |s| s.0);
+            self.failure = Some(format!(
+                "загрузка не закончилась: {:.0} с, без нового запроса {:.0} с, шаг {:?} {scene}, грузится {}",
+                t,
+                now - progress_at,
+                self.phase,
+                self.busy
+            ));
             self.enter(Phase::Done, now);
             return;
         }
@@ -534,6 +765,38 @@ impl Check {
                 self.grab_request = true;
                 self.grab_wait = true;
             }
+            (Scenario::Scenes, Phase::LoadStart) if loaded => {
+                self.scene_index = 0;
+                self.scene_request = SCENES.first().map(|(name, _)| (*name).to_string());
+                self.enter(Phase::OpenScene, now);
+            }
+            (Scenario::Scenes, Phase::LoadPlace) if loaded => {
+                let tours = self.scenes.last().map_or(0, |s| s.tours);
+                if self.tour_index < tours {
+                    self.tour_request = Some(self.tour_index);
+                    self.tour_playing = false;
+                    self.tour_times.clear();
+                    self.enter(Phase::Tour, now);
+                } else {
+                    self.next_scene(now);
+                }
+            }
+            (Scenario::Scenes, Phase::Tour) => {
+                if self.tour_playing {
+                    self.tour_times.push(now);
+                    if t > self.tour_duration + TOUR_MARGIN {
+                        self.failure = Some(format!("тур не кончился за {:.0} с", self.tour_duration + TOUR_MARGIN));
+                        self.enter(Phase::Done, now);
+                    }
+                } else if self.tour_request.is_none() {
+                    // Тур кончился или не начался: без кадров он не засчитан.
+                    if !self.tour_times.is_empty() {
+                        self.tour_finished();
+                    }
+                    self.tour_index += 1;
+                    self.enter(Phase::LoadPlace, now);
+                }
+            }
             _ => {}
         }
     }
@@ -565,7 +828,13 @@ impl Check {
     /// Отчёт и итог: true - проверка пройдена.
     /// search_sent - время отправки каждого запроса к Nominatim.
     pub fn report(&self, sources: &[SourceStats], size: (u32, u32), search_sent: &[f64]) -> (String, bool) {
-        let fps = min_frames_per_second(&self.fps_times);
+        let scenes = self.scenario == Scenario::Scenes;
+        // У сцен частота кадров мерится по каждому туру отдельно.
+        let fps = if scenes {
+            self.scenes.iter().filter_map(|s| s.fps_min).min()
+        } else {
+            min_frames_per_second(&self.fps_times)
+        };
         let mut ok = self.failure.is_none()
             && self.frames_counted > 0
             && self.holes_max == 0
@@ -619,6 +888,12 @@ impl Check {
                 search_sent.len(),
                 gap.map_or("-".to_string(), |g| format!("{g:.2}")),
             ));
+        }
+        if scenes {
+            let all = self.scenes.len() == SCENES.len() && self.scenes.iter().all(SceneResult::ok);
+            ok = ok && all;
+            out.extend(self.scenes.iter().map(SceneResult::line));
+            out.push(format!("scenes_checked={}/{}", self.scenes.len(), SCENES.len()));
         }
         for s in sources.iter().filter(|s| s.total + s.disk > 0) {
             out.push(format!(
@@ -713,9 +988,59 @@ mod tests {
     }
 
     #[test]
+    fn scenes_open_in_order_and_tours_play_to_the_end() {
+        use super::{Check, SCENES};
+        use crate::basemap::Basemap;
+        use globe_core::camera::Camera;
+        use globe_core::ellipsoid::Ellipsoid;
+        use globe_core::navigation::Navigator;
+        use globe_core::{DMat3, DVec3};
+        let mut nav =
+            Navigator::new(Camera::new(Ellipsoid::wgs84(), DVec3::ZERO, DMat3::IDENTITY), Scenario::Scenes.start_pose());
+        let mut basemap = Basemap::Esri;
+        let mut check = Check::new(Scenario::Scenes);
+        let mut now = 0.0;
+        let mut frames = |check: &mut Check, nav: &mut Navigator, n: u32| {
+            for _ in 0..n {
+                now += 1.0 / 60.0;
+                check.before_frame(nav, now, false, &mut basemap);
+            }
+            now
+        };
+        let t = frames(&mut check, &mut nav, 12);
+        assert_eq!(check.take_scene_request().as_deref(), Some("aral"));
+        check.scene_opened(Ok(([1, 0, 0, 5], true, 0)), t);
+        // Сцена без туров: после загрузки - следующая.
+        frames(&mut check, &mut nav, 12);
+        assert_eq!(check.take_scene_request().as_deref(), Some("bocachica"));
+        check.scene_opened(Ok(([0, 7, 1, 0], true, 1)), t);
+        frames(&mut check, &mut nav, 12);
+        assert_eq!(check.take_tour_request(), Some(0));
+        check.tour_started(Some((2.0, 1.0)));
+        for _ in 0..120 {
+            check.note_tour(true);
+            frames(&mut check, &mut nav, 1);
+        }
+        check.note_tour(false);
+        frames(&mut check, &mut nav, 13);
+        assert_eq!(check.take_scene_request().as_deref(), Some("brienz"));
+        let boca = &check.scenes[1];
+        assert_eq!((boca.tours_done, boca.tours), (1, 1));
+        assert!(boca.fps_min.is_some_and(|f| f >= 55), "{:?}", boca.fps_min);
+        assert!(check.scenes.iter().all(super::SceneResult::ok));
+        // Ошибка открытия - сцена не пройдена, проверка идёт дальше.
+        check.scene_opened(Err("нет файла".into()), now);
+        assert!(!check.scenes[2].ok());
+        assert_eq!(check.take_scene_request().as_deref(), Some(SCENES[3].0));
+        let (report, ok) = check.report(&[], (100, 100), &[]);
+        assert!(!ok && report.contains("scene=brienz ok=false open=нет файла"), "{report}");
+    }
+
+    #[test]
     fn scenario_names() {
         assert_eq!(Scenario::from_name("perm"), Some(Scenario::Perm));
         assert_eq!(Scenario::from_name("elbrus"), Some(Scenario::Elbrus));
+        assert_eq!(Scenario::from_name("scenes"), Some(Scenario::Scenes));
         assert_eq!(Scenario::from_name("mars"), None);
     }
 

@@ -4,8 +4,10 @@
 
 //! Настольная программа PlanetX Lite.
 //!
-//! `planetx-lite --check perm` или `--check elbrus` - самопроверка,
-//! отчёт в стандартный вывод, код выхода 0 - проверка пройдена.
+//! `planetx-lite --check perm`, `--check elbrus` или `--check scenes` -
+//! самопроверка, отчёт в стандартный вывод, код выхода 0 - проверка
+//! пройдена. Сцены демо для `scenes` - из папки `--demo папка`,
+//! `PLANETX_DEMO` или `demo` рядом с программой.
 //!
 //! `planetx-lite --pose широта,долгота,расстояние,азимут,наклон` -
 //! начать с этой позы камеры.
@@ -23,6 +25,9 @@ use eframe::egui;
 use net::native::{Loader, Requests, default_cache_dir};
 use net::{ESRI, OPENFREEMAP, OSM, TERRARIUM};
 use ui::Scenario;
+
+/// Предел файла сцены по ссылке, байт.
+const SCENE_BYTES: u64 = 64 << 20;
 
 /// Размер окна, решение автора от 22 октября 2026 года.
 const WINDOW: [f32; 2] = [1280.0, 800.0];
@@ -42,7 +47,7 @@ fn main() -> ExitCode {
     let check_arg = args.windows(2).find(|w| w[0] == "--check").map(|w| w[1].clone());
     let scenario = check_arg.as_deref().and_then(Scenario::from_name);
     if let (Some(name), None) = (&check_arg, scenario) {
-        eprintln!("PlanetX Lite: неизвестная самопроверка {name}, есть perm и elbrus");
+        eprintln!("PlanetX Lite: неизвестная самопроверка {name}, есть perm, elbrus и scenes");
         return ExitCode::FAILURE;
     }
     let check = scenario.is_some();
@@ -55,6 +60,13 @@ fn main() -> ExitCode {
         None => None,
     };
     let shot = args.windows(2).find(|w| w[0] == "--shot").map(|w| std::path::PathBuf::from(&w[1]));
+    // Папка сцен демо: --demo, PLANETX_DEMO или «demo» рядом с программой.
+    let demo = args
+        .windows(2)
+        .find(|w| w[0] == "--demo")
+        .map(|w| std::path::PathBuf::from(&w[1]))
+        .or_else(|| std::env::var_os("PLANETX_DEMO").map(std::path::PathBuf::from))
+        .or_else(|| std::env::current_exe().ok().and_then(|exe| Some(exe.parent()?.join("demo"))));
     // Файл сцены - аргумент без «--», который не значение флага.
     let file = args.iter().enumerate().skip(1).find_map(|(i, a)| {
         let is_value = args.get(i - 1).is_some_and(|prev| prev.starts_with("--"));
@@ -89,7 +101,8 @@ fn main() -> ExitCode {
                 terrain: Box::new(Loader::new(TERRARIUM, default_cache_dir(), repaint.clone())),
                 places: Box::new(Loader::new(OPENFREEMAP, default_cache_dir(), repaint.clone())),
                 search: Box::new(Requests::new(repaint.clone())),
-                pictures: Box::new(Requests::with_limit(repaint, ui::pictures::MAX_BYTES)),
+                pictures: Box::new(Requests::with_limit(repaint.clone(), ui::pictures::MAX_BYTES)),
+                files: Box::new(Requests::with_limit(repaint, SCENE_BYTES)),
             };
             let report: ui::Report = Box::new(move |text, ok| {
                 println!("{text}");
@@ -98,6 +111,9 @@ fn main() -> ExitCode {
                 }
             });
             let mut app = ui::LiteApp::new(cc, loaders, scenario, report);
+            if let Some(dir) = &demo {
+                app = app.with_scenes(&dir.to_string_lossy());
+            }
             if let Some((bytes, name)) = opened {
                 app = app.with_file(bytes, &name);
             }
