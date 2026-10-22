@@ -2681,9 +2681,11 @@ dependencies = [
  "image",
  "net",
  "render",
+ "scene",
  "serde_json",
  "sys-locale",
  "terrain",
+ "wasm-bindgen-futures",
 ]
 
 [[package]]

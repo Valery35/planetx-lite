@@ -73,7 +73,12 @@ pub enum Marker {
     Shield,
     /// Метка найденного места: красный круг с белым кольцом.
     Pin,
+    /// Своя метка: жёлтый круг с тёмным кольцом, как в Google Earth.
+    Yellow,
 }
+
+/// Своя метка, как в модуле.
+pub const MARK: egui::Color32 = egui::Color32::from_rgb(255, 214, 0);
 
 /// Метка найденного места, как в модуле.
 pub const PIN: egui::Color32 = egui::Color32::from_rgb(219, 50, 54);
@@ -117,7 +122,7 @@ pub fn style(kind: Kind, big: bool) -> Style {
         Kind::RoadRef => s(10.0, false, rgba(255, 255, 255, 245), 0.0, Marker::Shield),
         Kind::Village => s(11.0, false, rgba(240, 240, 240, 210), 1.8, Marker::Dot),
         Kind::Search => s(13.0, false, rgba(255, 255, 255, 250), 5.0, Marker::Pin),
-        Kind::Mark
+        Kind::Mark => s(12.0, false, rgba(255, 255, 255, 245), 4.5, Marker::Yellow),
         | Kind::Ruler
         | Kind::Layer
         | Kind::Circle
@@ -197,6 +202,8 @@ pub struct Labels {
     pub pending: bool,
     /// Метка найденного места.
     search: Option<Place>,
+    /// Точки меток открытой сцены.
+    marks: Vec<Place>,
 }
 
 impl Labels {
@@ -216,7 +223,17 @@ impl Labels {
             drawn: Vec::new(),
             pending: false,
             search: None,
+            marks: Vec::new(),
         }
+    }
+
+    /// Точки меток открытой сцены: название, широта, долгота.
+    pub fn set_marks(&mut self, points: &[(String, f64, f64)]) {
+        self.marks = points
+            .iter()
+            .enumerate()
+            .map(|(i, (name, lat, lon))| Place::new(u64::MAX - 1 - i as u64, name, Kind::Mark, 0, *lat, *lon))
+            .collect();
     }
 
     /// Метка найденного места, одна на окно. None - метки нет.
@@ -266,7 +283,8 @@ impl Labels {
         let kinds = places::kinds_at(&PLACE_KINDS.into_iter().collect(), altitude);
         let collected = self.store.collect(draw, Some(&kinds));
         let search = self.search.clone();
-        let all: Vec<&Place> = search.iter().chain(collected.iter()).collect();
+        let marks = self.marks.clone();
+        let all: Vec<&Place> = search.iter().chain(marks.iter()).chain(collected.iter()).collect();
         if all.is_empty() {
             self.shown.clear();
             return;
@@ -501,6 +519,10 @@ fn paint(
         Marker::Pin => {
             let ring = egui::Stroke::new(r * 0.45, fade(egui::Color32::from_white_alpha(240), alpha));
             painter.circle(anchor, r, fade(PIN, alpha), ring);
+        }
+        Marker::Yellow => {
+            let ring = egui::Stroke::new(r * 0.35, fade(egui::Color32::from_rgba_unmultiplied(60, 40, 0, 230), alpha));
+            painter.circle(anchor, r, fade(MARK, alpha), ring);
         }
         Marker::None | Marker::Shield => {}
     }

@@ -24,6 +24,7 @@ use crate::credits::{self, Credits};
 use crate::i18n::{Lang, Text, search_status, text};
 use crate::input::Input;
 use crate::labels::{self, Labels};
+use crate::marks::{self, Marks};
 use crate::search::{Search, place_pose};
 
 /// Сколько снимков тайлов держать в видеокарте, сверх нужных кадру
@@ -135,7 +136,17 @@ pub struct LiteApp {
     search: Search,
     search_text: String,
     credits: Credits,
+    marks: Marks,
+    /// Файл, который откроется в первом кадре.
+    pending_open: Option<(Vec<u8>, String)>,
+    /// Сообщение об открытии файла: название сцены или ошибка.
+    open_message: Option<String>,
+    /// Прочитанные браузером брошенные файлы: байты или ошибка и имя.
+    dropped_box: DroppedBox,
 }
+
+/// Ящик прочитанных брошенных файлов.
+type DroppedBox = Arc<std::sync::Mutex<Vec<(Result<Vec<u8>, String>, String)>>>;
 
 impl LiteApp {
     /// scenario - самопроверка или None, её отчёт уходит в report.
@@ -173,6 +184,10 @@ impl LiteApp {
             })),
             search_text: String::new(),
             credits: Credits::default(),
+            marks: Marks::default(),
+            pending_open: None,
+            open_message: None,
+            dropped_box: DroppedBox::default(),
         }
     }
 
@@ -187,6 +202,71 @@ impl LiteApp {
         }
     }
 
+    /// Открыть сцену `.planetx`, KML или KMZ при старте: камера сразу
+    /// встаёт в позу сцены.
+    pub fn with_file(mut self, bytes: Vec<u8>, name: &str) -> Self {
+        self.pending_open = Some((bytes, name.to_string()));
+        self
+    }
+
+    /// Открыть файл. fly - лететь к позе сцены, иначе встать в неё сразу.
+    fn open_file(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) {
+        match marks::open(bytes, name) {
+            Ok(opened) => {
+                self.marks.set(&opened.tree, &opened.name);
+                let points: Vec<(String, f64, f64)> =
+                    self.marks.points().into_iter().map(|p| (p.name, p.lat, p.lon)).collect();
+                self.labels.set_marks(&points);
+                if let Some(pose) = opened.pose {
+                    match fly {
+                        Some(now) => crate::input::fly(&mut self.nav, pose, now),
+                        None => self.nav.show(pose),
+                    }
+                }
+                self.open_message = Some(opened.name);
+            }
+            Err(e) => {
+                self.open_message = Some(match self.lang {
+                    Lang::Ru => format!("Файл не открылся: {name}: {e}"),
+                    Lang::En => format!("The file did not open: {name}: {e}"),
+                });
+            }
+        }
+    }
+
+    /// Файлы, брошенные в окно. В программе файл читается сразу, на
+    /// странице браузер читает его асинхронно, байты приходят в ящик
+    /// [`LiteApp::dropped_box`] и открываются в следующем кадре.
+    fn dropped(&mut self, ctx: &egui::Context, now: f64) {
+        let files = ctx.input(|i| i.raw.dropped_files.clone());
+        for file in files {
+            let name = file.path().file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
+            #[cfg(not(target_arch = "wasm32"))]
+            match file.bytes() {
+                Ok(bytes) => self.open_file(&bytes, &name, Some(now)),
+                Err(e) => self.open_message = Some(format!("{name}: {e}")),
+            }
+            #[cfg(target_arch = "wasm32")]
+            {
+                let (slot, ctx) = (self.dropped_box.clone(), ctx.clone());
+                wasm_bindgen_futures::spawn_local(async move {
+                    let read = file.bytes_async().await;
+                    if let Ok(mut s) = slot.lock() {
+                        s.push((read, name));
+                    }
+                    ctx.request_repaint();
+                });
+            }
+        }
+        let arrived: Vec<(Result<Vec<u8>, String>, String)> =
+            self.dropped_box.lock().map(|mut s| s.drain(..).collect()).unwrap_or_default();
+        for (read, name) in arrived {
+            match read {
+                Ok(bytes) => self.open_file(&bytes, &name, Some(now)),
+                Err(e) => self.open_message = Some(format!("{name}: {e}")),
+            }
+        }
+    }
     /// Начать с позы pose вместо начального вида.
     pub fn with_pose(mut self, pose: Pose) -> Self {
         self.nav.show(pose);
@@ -338,6 +418,9 @@ impl LiteApp {
                         if let Some(message) = search_status(self.lang, &self.search.status) {
                             ui.label(egui::RichText::new(message).color(egui::Color32::WHITE));
                         }
+                        if let Some(message) = &self.open_message {
+                            ui.label(egui::RichText::new(message).color(egui::Color32::WHITE));
+                        }
                         if self.search.found.len() > 1 {
                             for (n, place) in self.search.found.iter().enumerate() {
                                 let line = data::geocode::place_text(place);
@@ -429,6 +512,10 @@ impl eframe::App for LiteApp {
         if let Some(place) = self.search.step(now, self.loaders.search.as_ref()) {
             self.fly_to_found(&place, now);
         }
+        if let Some((bytes, name)) = self.pending_open.take() {
+            self.open_file(&bytes, &name, None);
+        }
+        self.dropped(&ctx, now);
         let moving = self.nav.step(now);
         // Ближняя плоскость - от ближайшего рельефа.
         let eye = self.nav.camera.eye;
@@ -464,6 +551,9 @@ impl eframe::App for LiteApp {
         self.loaders.terrain.want(&height_needs(&store, &selection));
         self.loaders.places.want(&self.labels.wanted(&selection.draw));
 
+        if let Some(meshes) = self.marks.meshes(&store, now) {
+            globe.set_features(&meshes);
+        }
         let recreated = globe.resize(width, height);
         let count_holes = self.check.as_ref().is_some_and(Check::count_holes);
         if self.check.as_mut().is_some_and(Check::take_grab_request) {

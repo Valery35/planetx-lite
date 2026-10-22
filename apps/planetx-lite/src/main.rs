@@ -12,6 +12,9 @@
 //!
 //! `planetx-lite --shot файл.png` - когда место загрузится, снять окно
 //! в файл PNG и закрыться.
+//!
+//! `planetx-lite сцена.planetx` - открыть сцену, KML или KMZ. Файл
+//! можно и бросить в окно.
 
 use std::process::ExitCode;
 use std::sync::{Arc, Mutex};
@@ -52,6 +55,21 @@ fn main() -> ExitCode {
         None => None,
     };
     let shot = args.windows(2).find(|w| w[0] == "--shot").map(|w| std::path::PathBuf::from(&w[1]));
+    // Файл сцены - аргумент без «--», который не значение флага.
+    let file = args.iter().enumerate().skip(1).find_map(|(i, a)| {
+        let is_value = args.get(i - 1).is_some_and(|prev| prev.starts_with("--"));
+        (!a.starts_with("--") && !is_value).then(|| std::path::PathBuf::from(a))
+    });
+    let opened = match &file {
+        Some(path) => match std::fs::read(path) {
+            Ok(bytes) => Some((bytes, path.file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned()))),
+            Err(e) => {
+                eprintln!("PlanetX Lite: {}: {e}", path.display());
+                return ExitCode::FAILURE;
+            }
+        },
+        None => None,
+    };
     let result = Arc::new(Mutex::new(None));
     let mut viewport = egui::ViewportBuilder::default().with_title("PlanetX Lite").with_inner_size(WINDOW);
     if let Some(icon) = ui::credits::window_icon() {
@@ -79,6 +97,9 @@ fn main() -> ExitCode {
                 }
             });
             let mut app = ui::LiteApp::new(cc, loaders, scenario, report);
+            if let Some((bytes, name)) = opened {
+                app = app.with_file(bytes, &name);
+            }
             if let Some(p) = pose {
                 app = app.with_pose(p);
             }
