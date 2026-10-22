@@ -309,6 +309,34 @@ fn points_are_drawn_in_their_color() {
     assert!(c[0] > 200 && c[1] < 60 && c[2] < 60, "{c:?}");
 }
 
+#[test]
+fn model_is_drawn_lit_from_the_sun() {
+    // Крыша куба 40 м над точкой взгляда, солнце отвесно: середина
+    // кадра - красный цвет материала полной яркости.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 500.0, 0.0, 0.0);
+    let e = Ellipsoid::wgs84();
+    let center = e.geodetic_to_ecef(PERM.0, PERM.1, 20.0);
+    let up = (e.geodetic_to_ecef(PERM.0, PERM.1, 21.0) - center).normalize();
+    let east = globe_core::DVec3::Z.cross(up).normalize();
+    let north = up.cross(east);
+    let corner = |x: f64, y: f64| {
+        let p = east * x + north * y + up * 20.0;
+        [p.x as f32, p.y as f32, p.z as f32]
+    };
+    let roof = vec![corner(-20.0, -20.0), corner(20.0, -20.0), corner(20.0, 20.0), corner(-20.0, -20.0), corner(20.0, 20.0), corner(-20.0, 20.0)];
+    let n = [up.x as f32, up.y as f32, up.z as f32];
+    let part = render::ModelPart { normals: vec![n; roof.len()], uv: vec![[0.0, 0.0]; roof.len()], positions: roof, image: None, rgba: [1.0, 0.0, 0.0, 1.0] };
+    globe.set_models(&[render::ModelMesh { center, parts: vec![part], images: Vec::new(), sun: n }]);
+    let frame = grab(&mut globe, &cam, false);
+    let c = rgb(&frame, f64::from(cam.width) / 2.0, f64::from(cam.height) / 2.0);
+    assert!(c[0] > 240 && c[1] < 30 && c[2] < 30, "{c:?}");
+}
+
 /// Снятый кадр с атмосферой или без.
 fn grab(globe: &mut Globe, cam: &Camera, air: bool) -> render::Frame {
     let sel = lod::select(cam, &|_| true, Options::default());

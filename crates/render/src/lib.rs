@@ -35,6 +35,9 @@ mod features;
 pub use features::{FeatureMesh, PULL, WALL_ALPHA};
 use features::Features;
 mod pictures;
+mod models;
+pub use models::{ModelMesh, ModelPart};
+use models::Models;
 mod points;
 pub use points::PointsMesh;
 use points::Points;
@@ -241,6 +244,7 @@ pub struct Globe {
     features: Features,
     pictures: Pictures,
     points: Points,
+    models: Models,
     air: wgpu::Buffer,
     air_bind: wgpu::BindGroup,
     /// Снять следующий кадр.
@@ -514,6 +518,7 @@ impl Globe {
             features: Features::new(device),
             pictures: Pictures::new(device),
             points: Points::new(device),
+            models: Models::new(device, queue),
             air,
             air_bind,
             grab_next: false,
@@ -903,6 +908,11 @@ impl Globe {
         self.features.set(&self.device, meshes);
     }
 
+    /// 3D-модели. Заменяют прежние.
+    pub fn set_models(&mut self, models: &[ModelMesh]) {
+        self.models.set(&self.device, &self.queue, models);
+    }
+
     /// Облака точек. Заменяют прежние.
     pub fn set_points(&mut self, clouds: &[PointsMesh]) {
         self.points.set(&self.device, clouds);
@@ -1096,6 +1106,7 @@ impl Globe {
             // бы линию над горизонтом.
             let ratio = if options.ratio > 0.0 { options.ratio } else { 1.0 };
             // Картинки-наложения - под своими объектами.
+            draws += self.models.draw(&self.device, &self.queue, &mut pass, camera);
             draws += self.points.draw(&self.device, &self.queue, &mut pass, camera, ratio);
             draws += self.pictures.draw(&self.device, &self.queue, &mut pass, camera);
             draws += self.features.draw(&self.device, &self.queue, &mut pass, camera, ratio);

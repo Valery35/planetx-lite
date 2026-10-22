@@ -11,19 +11,24 @@
 //! - [`region`] - Region KML, скрытие дальше расстояния, перенос `core/region.py`;
 //! - [`measure`] - точка по азимуту и расстоянию, перенос части `core/measure.py`;
 //! - [`overlays`] - наложения картинок и рамка 3D-модели, перенос `core/overlays.py`;
-//! - [`models`] - место 3D-модели и пакет её файлов, перенос части `core/models.py`;
+//! - [`models`] - место 3D-модели, пакет её файлов и чтение сеток, перенос `core/models.py`;
+//! - [`collada`], [`gltf`], [`obj`] - сетки Collada, glTF и OBJ, перенос `core/collada.py`,
+//!   `core/gltf.py` и `core/obj.py` без анимаций;
 //! - [`features`] - свои объекты глобуса, сгущение и заливка, перенос `core/features.py`;
 //! - [`tour`] - тур по остановкам и записанный тур, перенос `core/tour.py`;
 //! - [`xml`] - разбор XML в лёгкое дерево без сущностей DTD;
 //! - [`kml`] - чтение и запись KML и KMZ, перенос `core/kml.py`;
 //! - [`scene`] - файл сцены `.planetx`, перенос `core/scene.py`.
 
+pub mod collada;
 pub mod features;
+pub mod gltf;
 pub mod icons;
 pub mod kml;
 pub mod lookat;
 pub mod measure;
 pub mod models;
+pub mod obj;
 pub mod overlays;
 pub mod placetree;
 pub mod region;

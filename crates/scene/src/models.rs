@@ -2,9 +2,12 @@
 // Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
 // SPDX-License-Identifier: Apache-2.0
 
-//! 3D-модели на глобусе, как Model в KML Google Earth. Перенос части
-//! `core/models.py` модуля - то, что нужно KML: место модели и пакет
-//! её файлов. Чтение сеток Collada, glTF и OBJ - фаза 3.
+//! 3D-модели на глобусе, как Model в KML Google Earth. Перенос
+//! `core/models.py` модуля - место модели, пакет её файлов и чтение
+//! сеток. Сетки читают модули [`crate::collada`], [`crate::gltf`]
+//! и [`crate::obj`], итог - части [`Part`] после [`merge`]. Анимации
+//! узлов модуля (`read_animated`) не перенесены. Вершины для видеокарты
+//! (`vertices` модуля) собирает интерфейс.
 //!
 //! Модель - файл Collada (.dae), glTF (.gltf, .glb) или OBJ (.obj)
 //! с картинками. Файлы модели хранятся одним пакетом - архивом ZIP
@@ -26,16 +29,149 @@ use std::fmt;
 
 use globe_core::camera::enu;
 use globe_core::ellipsoid::Ellipsoid;
-use globe_core::{DMat3, DVec3};
+use globe_core::{DMat3, DVec2, DVec3};
 use serde_json::{Map, Value};
 
 use crate::util::{Archive, basename, dirname, normpath, unquote, write_zip};
-use crate::xml;
+use crate::{collada, gltf, obj};
 
 pub const MODES: [&str; 3] = ["clampToGround", "relativeToGround", "absolute"];
 pub const EXTENSIONS: [&str; 4] = [".dae", ".gltf", ".glb", ".obj"];
 pub const PACKAGE_NOTE: &str = "planetx.json";
 pub const GLB_MAGIC: &[u8; 4] = b"glTF";
+/// Вершин в одной модели не больше - иначе модель не грузится. Модель
+/// здания SketchUp - десятки тысяч, сетка съёмки с дрона - миллионы.
+pub const MAX_VERTICES: usize = 3_000_000;
+/// Цвет материала по умолчанию, RGBA 0-1.
+pub const GRAY: [f64; 4] = [0.8, 0.8, 0.8, 1.0];
+
+/// Картинки модели: путь в пакете или имя «gltf:номер» - байты файла.
+pub type Pictures = BTreeMap<String, Vec<u8>>;
+
+/// Часть модели одного материала: треугольники вершинами подряд.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Part {
+    /// Вершины, метры, количество кратно 3 после [`merge`].
+    pub positions: Vec<DVec3>,
+    /// Нормали вершин или None. После [`merge`] есть всегда.
+    pub normals: Option<Vec<DVec3>>,
+    /// Текстурные координаты, v от верха картинки, или None. После
+    /// [`merge`] есть всегда, у части без картинки - нули.
+    pub uv: Option<Vec<DVec2>>,
+    /// Путь картинки в пакете или None.
+    pub image: Option<String>,
+    /// Цвет 0-1, у картинки - множитель.
+    pub rgba: [f64; 4],
+}
+
+impl Part {
+    pub fn new(
+        positions: Vec<DVec3>,
+        normals: Option<Vec<DVec3>>,
+        uv: Option<Vec<DVec2>>,
+        image: Option<String>,
+        rgba: [f64; 4],
+    ) -> Self {
+        Self { positions, normals, uv, image, rgba }
+    }
+}
+
+/// Часть с осью Y вверх (glTF, Collada Y_UP, OBJ) в ось Z вверх:
+/// передняя сторона +Z смотрит на юг.
+pub fn from_y_up(part: Part) -> Part {
+    let turn = |v: DVec3| DVec3::new(v.x, -v.z, v.y);
+    Part {
+        positions: part.positions.into_iter().map(turn).collect(),
+        normals: part.normals.map(|n| n.into_iter().map(turn).collect()),
+        ..part
+    }
+}
+
+/// Нормали граней по вершинам подряд. Неполный треугольник в конце
+/// отбрасывается.
+pub fn flat_normals(positions: &[DVec3]) -> Vec<DVec3> {
+    let mut out = Vec::with_capacity(positions.len());
+    for [a, b, c] in positions.as_chunks::<3>().0 {
+        let normal = (*b - *a).cross(*c - *a);
+        let length = normal.length();
+        let normal = if length > 0.0 { normal / length } else { normal };
+        out.extend([normal; 3]);
+    }
+    out
+}
+
+/// Части одного материала - вместе, без нормалей - с нормалями граней.
+/// Пустые части и части с нечисловыми вершинами пропускаются. Вершин
+/// больше [`MAX_VERTICES`] - ошибка.
+pub fn merge(parts: Vec<Part>) -> Result<Vec<Part>, ModelError> {
+    merge_limit(parts, MAX_VERTICES)
+}
+
+/// То же, что [`merge`], с пределом вершин limit.
+pub fn merge_limit(parts: Vec<Part>, limit: usize) -> Result<Vec<Part>, ModelError> {
+    let mut groups: HashMap<(Option<String>, [u64; 4]), usize> = HashMap::new();
+    let mut out: Vec<Part> = Vec::new();
+    let mut total = 0usize;
+    for part in parts {
+        let count = part.positions.len() / 3 * 3;
+        if count == 0 {
+            continue;
+        }
+        let mut positions = part.positions;
+        positions.truncate(count);
+        if !positions.iter().all(|p| p.is_finite()) {
+            continue;
+        }
+        total += count;
+        if total > limit {
+            return Err(error(format!("too many vertices: more than {limit}")));
+        }
+        let normals = match part.normals {
+            Some(mut n) if n.len() >= count => {
+                n.truncate(count);
+                n
+            }
+            _ => flat_normals(&positions),
+        };
+        let (image, uv) = match (part.image, part.uv) {
+            (Some(image), Some(mut uv)) if uv.len() >= count => {
+                uv.truncate(count);
+                (Some(image), uv)
+            }
+            _ => (None, vec![DVec2::ZERO; count]),
+        };
+        // -0.0 и 0.0 - один цвет.
+        let key = (image.clone(), part.rgba.map(|v| (v + 0.0).to_bits()));
+        match groups.get(&key).and_then(|&i| out.get_mut(i)) {
+            Some(found) => {
+                found.positions.extend(positions);
+                found.normals.get_or_insert_with(Vec::new).extend(normals);
+                found.uv.get_or_insert_with(Vec::new).extend(uv);
+            }
+            None => {
+                groups.insert(key, out.len());
+                out.push(Part::new(positions, Some(normals), Some(uv), image, part.rgba));
+            }
+        }
+    }
+    if out.is_empty() {
+        return Err(error("no triangles"));
+    }
+    Ok(out)
+}
+
+/// Наименьшие и наибольшие координаты модели или None без вершин.
+pub fn bounds(parts: &[Part]) -> Option<[DVec3; 2]> {
+    let mut points = parts.iter().flat_map(|p| p.positions.iter().copied());
+    let first = points.next()?;
+    Some(points.fold([first, first], |[lo, hi], p| [lo.min(p), hi.max(p)]))
+}
+
+/// Радиус шара вокруг точки модели, метры, scale - масштаб по осям.
+pub fn radius(parts: &[Part], scale: [f64; 3]) -> f64 {
+    let scale = DVec3::from(scale);
+    bounds(parts).map_or(0.0, |[lo, hi]| (lo * scale).length().max((hi * scale).length()))
+}
 
 /// Файл модели не читается.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -49,12 +185,12 @@ impl fmt::Display for ModelError {
 
 impl std::error::Error for ModelError {}
 
-fn error(text: impl fmt::Display) -> ModelError {
+pub(crate) fn error(text: impl fmt::Display) -> ModelError {
     ModelError(text.to_string())
 }
 
 /// Матрица по строкам.
-fn rows(r0: [f64; 3], r1: [f64; 3], r2: [f64; 3]) -> DMat3 {
+pub(crate) fn rows(r0: [f64; 3], r1: [f64; 3], r2: [f64; 3]) -> DMat3 {
     DMat3::from_cols(DVec3::from(r0), DVec3::from(r1), DVec3::from(r2)).transpose()
 }
 
@@ -245,131 +381,7 @@ pub fn split_glb(data: &[u8]) -> Result<(&[u8], Option<&[u8]>), ModelError> {
 
 /// Пути картинок файла .dae, как записаны в library_images.
 pub fn collada_images(data: &[u8]) -> Result<Vec<String>, ModelError> {
-    let root = xml::parse(data).map_err(error)?;
-    let nodes = root.iter();
-    let mut ids: HashMap<&str, &xml::Node> = HashMap::new();
-    for node in &nodes {
-        if let Some(id) = node.get("id").filter(|i| !i.is_empty()) {
-            ids.insert(id, node);
-        }
-    }
-    let mut out: Vec<String> = Vec::new();
-    for node in nodes.iter().filter(|n| n.tag == "image") {
-        let Some(found) = node.get("id").and_then(|id| ids.get(id)).filter(|n| n.tag == "image") else {
-            continue;
-        };
-        let Some(init) = found.child("init_from") else {
-            continue;
-        };
-        // Collada 1.5 кладёт адрес во вложенный <ref>.
-        let mut text = init.child("ref").unwrap_or(init).text.trim().to_string();
-        if let Some(rest) = text.strip_prefix("file://") {
-            text = rest.to_string();
-            let b = text.as_bytes();
-            if b.len() > 2 && b[0] == b'/' && b[2] == b':' {
-                text = text[1..].to_string();
-            }
-        }
-        let path = unquote(&text.replace('\\', "/"));
-        if !path.is_empty() && !out.contains(&path) {
-            out.push(path);
-        }
-    }
-    Ok(out)
-}
-
-fn lines(data: &[u8]) -> Vec<String> {
-    String::from_utf8_lossy(data).split(['\n', '\r']).map(|l| l.trim().to_string()).collect()
-}
-
-/// Остаток строки после первого слова: имя файла может быть
-/// с пробелами.
-fn rest(line: &str) -> &str {
-    line.trim_start().split_once(char::is_whitespace).map_or("", |(_, r)| r.trim())
-}
-
-/// Имя картинки map_Kd без ключей вида -s 1 1 1.
-fn texture_name(rest: &str) -> String {
-    let mut out: Vec<&str> = Vec::new();
-    let mut skip = 0;
-    for word in rest.split_whitespace() {
-        if skip > 0 {
-            skip -= 1;
-            continue;
-        }
-        if word.starts_with('-') && out.is_empty() {
-            // -s, -o, -t берут три числа, -mm - два, прочие - одно.
-            skip = match word {
-                "-s" | "-o" | "-t" => 3,
-                "-mm" => 2,
-                _ => 1,
-            };
-            continue;
-        }
-        out.push(word);
-    }
-    out.join(" ").replace('\\', "/")
-}
-
-/// Картинки материалов файла MTL по порядку материалов.
-fn mtl_images(data: &[u8]) -> Vec<String> {
-    let mut materials: Vec<(String, Option<String>)> = Vec::new();
-    let mut current: Option<(String, Option<String>)> = None;
-    let close = |current: &mut Option<(String, Option<String>)>, materials: &mut Vec<(String, Option<String>)>| {
-        if let Some((name, image)) = current.take() {
-            match materials.iter_mut().find(|(n, _)| *n == name) {
-                Some(slot) => slot.1 = image,
-                None => materials.push((name, image)),
-            }
-        }
-    };
-    for line in lines(data) {
-        if line.is_empty() || line.starts_with('#') {
-            continue;
-        }
-        let key = line.split_whitespace().next().unwrap_or_default();
-        match key {
-            "newmtl" => {
-                close(&mut current, &mut materials);
-                current = Some((rest(&line).to_string(), None));
-            }
-            "map_Kd" => {
-                if let Some((_, image)) = current.as_mut() {
-                    let name = texture_name(rest(&line));
-                    *image = (!name.is_empty()).then_some(name);
-                }
-            }
-            _ => {}
-        }
-    }
-    close(&mut current, &mut materials);
-    materials.into_iter().filter_map(|(_, image)| image).collect()
-}
-
-/// Ссылки файла OBJ: файлы MTL и их картинки.
-fn obj_refs(data: &[u8], fetch: &dyn Fn(&str) -> Option<Vec<u8>>) -> Vec<String> {
-    let mut libraries: Vec<String> = Vec::new();
-    for line in lines(data) {
-        if line.starts_with("mtllib") {
-            let name = rest(&line).replace('\\', "/");
-            if !name.is_empty() && !libraries.contains(&name) {
-                libraries.push(name);
-            }
-        }
-    }
-    let mut out = Vec::new();
-    for name in libraries {
-        out.push(name.clone());
-        let Some(found) = fetch(&name) else {
-            continue;
-        };
-        for image in mtl_images(&found) {
-            if !out.contains(&image) {
-                out.push(image);
-            }
-        }
-    }
-    out
+    collada::images(data)
 }
 
 /// Ссылки главного файла модели на другие файлы: картинки Collada,
@@ -381,7 +393,7 @@ pub fn refs(main: &str, data: &[u8], fetch: &dyn Fn(&str) -> Option<Vec<u8>>) ->
         return collada_images(data);
     }
     if lower.ends_with(".obj") {
-        return Ok(obj_refs(data, fetch));
+        return Ok(obj::refs(data, fetch));
     }
     let text = if data.starts_with(GLB_MAGIC) { split_glb(data)?.0 } else { data };
     let doc: Value = serde_json::from_slice(text).map_err(|_| error("bad glTF JSON"))?;
@@ -428,4 +440,43 @@ pub fn collect(
         put(&mut files, path, found);
     }
     pack(&name, &files, &new_aliases)
+}
+
+/// Части модели из пакета: части после [`merge`] и картинки. Пути
+/// картинок частей - пути в пакете, у glTF - «gltf:номер». Ненайденная
+/// картинка - часть без картинки, цветом материала.
+pub fn read(data: &[u8]) -> Result<(Vec<Part>, Pictures), ModelError> {
+    let package = unpack(data)?;
+    let (files, main, aliases) = (&package.files, package.main.as_str(), &package.aliases);
+    let body = file(files, main).ok_or_else(|| error("no model file in package"))?;
+    // Ссылка glTF бывает с %XX, а файл лёг в пакет под именем без них.
+    let find = |reference: &str| {
+        resolve(files, main, reference, aliases).or_else(|| {
+            let plain = unquote(reference);
+            (plain != reference).then(|| resolve(files, main, &plain, aliases)).flatten()
+        })
+    };
+    let near = |reference: &str| find(reference).and_then(|p| file(files, &p)).map(<[u8]>::to_vec);
+    let kind = main.rsplit_once('.').map_or("", |(_, k)| k).to_lowercase();
+    let (parts, pictures) = match kind.as_str() {
+        "dae" | "obj" => {
+            let mut parts = if kind == "dae" { collada::read_dae(body)? } else { obj::read(body, &near)? };
+            let mut pictures = Pictures::new();
+            for part in &mut parts {
+                let Some(image) = part.image.take() else {
+                    continue;
+                };
+                match find(&image).and_then(|p| file(files, &p).map(|d| (p, d))) {
+                    Some((path, bytes)) => {
+                        pictures.entry(path.clone()).or_insert_with(|| bytes.to_vec());
+                        part.image = Some(path);
+                    }
+                    None => part.uv = None,
+                }
+            }
+            (parts, pictures)
+        }
+        _ => gltf::read(body, &near)?,
+    };
+    Ok((merge(parts)?, pictures))
 }

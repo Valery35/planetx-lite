@@ -177,6 +177,8 @@ pub struct LiteApp {
     relief: Relief,
     /// Открытые облака точек.
     clouds: Vec<render::PointsMesh>,
+    /// Разобранные 3D-модели сцены.
+    models: crate::models::Models,
 }
 
 /// Ящик прочитанных брошенных файлов.
@@ -233,6 +235,7 @@ impl LiteApp {
             fetching: None,
             relief: Relief::default(),
             clouds: Vec::new(),
+            models: crate::models::Models::default(),
         }
     }
 
@@ -498,6 +501,7 @@ impl LiteApp {
             Ok(opened) => {
                 self.marks.set(opened.tree, &opened.name);
                 self.pictures.set(&self.marks.all_overlays());
+                self.models.clear();
                 self.screen_textures.clear();
                 if let Some(globe) = &mut self.globe {
                     globe.keep_picture_images(&[]);
@@ -1085,6 +1089,7 @@ impl eframe::App for LiteApp {
         if let Some(meshes) = self.marks.meshes(&store, now) {
             globe.set_features(&meshes);
             globe.set_pictures(&self.marks.picture_meshes(&store));
+            globe.set_models(&self.models.meshes(self.marks.overlays(), &store));
         }
         let recreated = globe.resize(width, height);
         let count_holes = self.check.as_ref().is_some_and(Check::count_holes);

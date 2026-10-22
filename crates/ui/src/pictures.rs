@@ -51,7 +51,7 @@ pub fn is_remote(href: &str) -> bool {
     lower.starts_with("https://") || lower.starts_with("http://")
 }
 
-/// Видимые по флажкам наложения-картинки дерева с их временем.
+/// Видимые по флажкам наложения дерева с их временем: картинки и 3D-модели.
 pub fn timed_overlays(folder: &Folder) -> Vec<(Overlay, Option<Time>)> {
     let mut out = Vec::new();
     collect(folder, &mut out);
@@ -62,7 +62,7 @@ fn collect(folder: &Folder, out: &mut Vec<(Overlay, Option<Time>)>) {
     for item in &folder.children {
         match item {
             Item::Folder(f) if f.visible => collect(f, out),
-            Item::Overlay(o) if o.visible && matches!(o.kind(), Kind::Ground | Kind::Photo | Kind::Screen) => {
+            Item::Overlay(o) if o.visible && matches!(o.kind(), Kind::Ground | Kind::Photo | Kind::Screen | Kind::Model) => {
                 out.push((o.clone(), o.time.clone()));
             }
             _ => {}
