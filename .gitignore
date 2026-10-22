@@ -1,4 +1,5 @@
 /target/
+addins/*/target/
 /dist/
 **/*.rs.bk
 .vscode/
