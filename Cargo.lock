@@ -1927,6 +1927,7 @@ name = "planetx-web"
 version = "0.1.0"
 dependencies = [
  "eframe",
+ "js-sys",
  "net",
  "ui",
  "wasm-bindgen",
