@@ -95,7 +95,13 @@ fn label_name(lang: Lang, code: &str) -> String {
 /// что-то.
 pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut Settings) -> bool {
     let before = settings.clone();
-    egui::Window::new(tr(lang, "Settings")).open(open).collapsible(false).resizable(false).show(ctx, |ui| {
+    egui::Window::new(tr(lang, "Settings"))
+        .open(open)
+        .collapsible(false)
+        .resizable(false)
+        .pivot(egui::Align2::CENTER_CENTER)
+        .default_pos(ctx.content_rect().center())
+        .show(ctx, |ui| {
         egui::Grid::new("planetx-settings").num_columns(2).spacing([12.0, 8.0]).show(ui, |ui| {
             ui.label(tr(lang, "Interface language"));
             let current = settings.language.as_deref().and_then(Lang::from_code);

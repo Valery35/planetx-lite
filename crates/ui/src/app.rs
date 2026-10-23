@@ -356,8 +356,11 @@ impl LiteApp {
         let mut settings = self.settings_open;
         let mut about = false;
         let mut full = false;
+        // Уровень панели - как у окон: открытое окно встаёт поверх неё.
+        // На уровне Foreground панель закрывала окно «Источники данных»,
+        // замечание автора от 23 октября 2026 года.
         let area = egui::Area::new(egui::Id::unique("planetx-toolbar"))
-            .order(egui::Order::Foreground)
+            .order(egui::Order::Middle)
             .fixed_pos(view.left_top() + egui::vec2(8.0, 8.0))
             .show(ctx, |ui| {
                 crate::theme::plate().inner_margin(egui::Margin::same(3)).show(ui, |ui| {

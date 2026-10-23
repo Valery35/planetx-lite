@@ -200,7 +200,16 @@ impl Credits {
 
     fn windows(&mut self, ctx: &egui::Context, lang: Lang, parts: &[(&str, &str)]) {
         let (sources, about) = (tr(lang, "Data sources"), tr(lang, "About"));
-        egui::Window::new(sources).open(&mut self.sources_open).collapsible(false).resizable(false).show(ctx, |ui| {
+        // Окна открываются посередине экрана, а не в углу под панелью
+        // инструментов.
+        let center = ctx.content_rect().center();
+        egui::Window::new(sources)
+            .open(&mut self.sources_open)
+            .collapsible(false)
+            .resizable(false)
+            .pivot(egui::Align2::CENTER_CENTER)
+            .default_pos(center)
+            .show(ctx, |ui| {
             for (text, link) in parts {
                 if link.is_empty() {
                     ui.label(*text);
@@ -209,7 +218,13 @@ impl Credits {
                 }
             }
         });
-        egui::Window::new(about).open(&mut self.about_open).collapsible(false).resizable(false).show(ctx, |ui| {
+        egui::Window::new(about)
+            .open(&mut self.about_open)
+            .collapsible(false)
+            .resizable(false)
+            .pivot(egui::Align2::CENTER_CENTER)
+            .default_pos(center)
+            .show(ctx, |ui| {
             ui.heading(format!("PlanetX Lite {}", env!("CARGO_PKG_VERSION")));
             ui.label(tr(lang, "The PlanetX globe without QGIS."));
             ui.label(tr(lang, "© 2026 Inform++ LLC. Apache 2.0."));
