@@ -220,7 +220,6 @@ impl Credits {
         });
         let icon = self.icon(ctx);
         let mut about_open = self.about_open;
-        let mut close = false;
         let mut sources_request = false;
         egui::Window::new(about)
             .open(&mut about_open)
@@ -230,9 +229,13 @@ impl Credits {
             .default_pos(center)
             .show(ctx, |ui| {
                 about_body(ui, lang, icon);
+                // Кнопки переносятся в ширине текста окна: длинные
+                // переводы не раздвигают окно и не налезают друг на друга.
+                let width = ui.min_rect().width();
                 ui.add_space(10.0);
                 ui.separator();
-                ui.horizontal(|ui| {
+                ui.set_max_width(width);
+                ui.horizontal_wrapped(|ui| {
                     let open = |url: &str| ctx.open_url(egui::OpenUrl::new_tab(url));
                     if ui.button(tr(lang, "User guide")).clicked() {
                         open(&manual_url(lang));
@@ -246,14 +249,9 @@ impl Credits {
                     if ui.button(tr(lang, "Source code")).clicked() {
                         open(REPOSITORY);
                     }
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui.button(tr(lang, "Close")).clicked() {
-                            close = true;
-                        }
-                    });
                 });
             });
-        self.about_open = about_open && !close;
+        self.about_open = about_open;
         self.sources_open |= sources_request;
     }
 }
