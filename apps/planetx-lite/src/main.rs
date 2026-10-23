@@ -13,7 +13,8 @@
 //! `PLANETX_BUILTIN_FONTS` - встроенный шрифт вместо системного.
 //!
 //! `planetx-lite --pose широта,долгота,расстояние,азимут,наклон` -
-//! начать с этой позы камеры.
+//! начать с этой позы камеры. За наклоном могут идти высота точки
+//! взгляда и крен, как в ссылке «Поделиться».
 //!
 //! `planetx-lite --shot файл.png` - когда место загрузится, снять окно
 //! в файл PNG и закрыться. С `--ui` в снимке и левая панель.
@@ -41,16 +42,6 @@ const SCENE_BYTES: u64 = 64 << 20;
 /// Размер окна, решение автора от 22 октября 2026 года.
 const WINDOW: [f32; 2] = [1280.0, 800.0];
 
-/// Поза из строки «широта,долгота,расстояние,азимут,наклон».
-fn parse_pose(text: &str) -> Option<globe_core::navigation::Pose> {
-    let v: Vec<f64> = text.split(',').map(|p| p.trim().parse::<f64>()).collect::<Result<_, _>>().ok()?;
-    let [lat, lon, distance, heading, tilt] = v.as_slice() else {
-        return None;
-    };
-    let ok = v.iter().all(|x| x.is_finite()) && lat.abs() <= 90.0 && *distance > 0.0;
-    ok.then(|| globe_core::navigation::Pose::new(*lat, *lon, *distance, *heading, *tilt))
-}
-
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().collect();
     let check_arg = args.windows(2).find(|w| w[0] == "--check").map(|w| w[1].clone());
@@ -60,7 +51,7 @@ fn main() -> ExitCode {
         return ExitCode::FAILURE;
     }
     let check = scenario.is_some();
-    let pose = match args.windows(2).find(|w| w[0] == "--pose").map(|w| parse_pose(&w[1])) {
+    let pose = match args.windows(2).find(|w| w[0] == "--pose").map(|w| ui::share::parse_pose(&w[1])) {
         Some(Some(p)) => Some(p),
         Some(None) => {
             eprintln!("PlanetX Lite: поза - широта,долгота,расстояние,азимут,наклон");

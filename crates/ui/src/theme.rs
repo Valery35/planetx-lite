@@ -339,6 +339,8 @@ pub enum Tool {
     Open,
     /// Демо, академическая шапочка.
     Demo,
+    /// Поделиться ссылкой на вид: три узла, связанные линиями.
+    Share,
     /// Настройки.
     Settings,
     /// Во весь экран.
@@ -379,6 +381,14 @@ pub fn tool_button(ui: &mut egui::Ui, tool: Tool, on: bool, tip: &str) -> egui::
             painter.line_segment([q(17.5, 11.5), q(17.5, 15.5)], s);
             painter.line(vec![q(6.5, 16.0), q(9.0, 18.0), q(12.0, 18.6), q(15.0, 18.0), q(17.5, 15.5)], s);
             painter.line_segment([q(21.5, 9.5), q(21.5, 15.0)], s);
+        }
+        Tool::Share => {
+            let (a, b, c) = (q(17.5, 5.5), q(6.5, 12.0), q(17.5, 18.5));
+            painter.line_segment([q(15.2, 6.9), q(8.8, 10.6)], s);
+            painter.line_segment([q(8.8, 13.4), q(15.2, 17.1)], s);
+            for center in [a, b, c] {
+                painter.circle_stroke(center, 2.7, s);
+            }
         }
         Tool::Settings => {
             painter.circle_stroke(q(12.0, 12.0), 3.0, s);

@@ -2333,7 +2333,6 @@ name = "planetx-lite"
 version = "0.1.0"
 dependencies = [
  "eframe",
- "globe-core",
  "image",
  "net",
  "ui",

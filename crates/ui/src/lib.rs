@@ -25,6 +25,7 @@ pub mod places;
 pub mod relief;
 pub mod search;
 pub mod settings;
+pub mod share;
 pub mod theme;
 pub mod timeline;
 pub mod tours;

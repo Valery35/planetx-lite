@@ -12,7 +12,6 @@ authors.workspace = true
 repository.workspace = true
 
 [dependencies]
-globe-core.workspace = true
 net.workspace = true
 ui.workspace = true
 eframe.workspace = true

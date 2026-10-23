@@ -37,7 +37,7 @@ wasm-bindgen-futures.workspace = true
 # Скачивание сохранённого файла на странице.
 wasm-bindgen.workspace = true
 js-sys.workspace = true
-web-sys = { workspace = true, features = ["Blob", "Document", "Element", "HtmlAnchorElement", "Url", "Window"] }
+web-sys = { workspace = true, features = ["Blob", "Document", "Element", "HtmlAnchorElement", "Location", "Url", "Window"] }
 
 [lints]
 workspace = true

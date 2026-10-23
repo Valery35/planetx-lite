@@ -187,6 +187,11 @@ pub struct LiteApp {
     demo_queue: std::collections::VecDeque<&'static str>,
     /// Файл демо, который сейчас грузится.
     demo_fetching: Option<&'static str>,
+    /// Адреса сцен из ссылки, которые ещё не открыты, по порядку.
+    url_queue: std::collections::VecDeque<String>,
+    /// Адреса открытых сцен и файлов демо по порядку - для ссылки
+    /// «Поделиться». Файлы с диска адреса не имеют.
+    shared: Vec<String>,
     /// «Мои метки» изменились и ещё не записаны в хранилище.
     places_dirty: bool,
     /// Выделенная строка и переименование в «Моих метках».
@@ -326,6 +331,8 @@ impl LiteApp {
             demo_cache: None,
             demo_queue: std::collections::VecDeque::new(),
             demo_fetching: None,
+            url_queue: std::collections::VecDeque::new(),
+            shared: Vec::new(),
             places_dirty: false,
             tree_state: marks::TreeState::default(),
             relief: Relief::default(),
@@ -347,7 +354,8 @@ impl LiteApp {
     }
 
     /// Панель инструментов в левом верхнем углу глобуса, как у модуля:
-    /// панель, «Открыть», «Демо», «Настройки», во весь экран, «О программе».
+    /// панель, «Открыть», «Демо», «Поделиться», «Настройки», во весь
+    /// экран, «О программе».
     fn toolbar(&mut self, ctx: &egui::Context, view: egui::Rect, now: f64) {
         use crate::theme::{Tool, tool_button};
         let lang = self.lang;
@@ -356,6 +364,7 @@ impl LiteApp {
         let mut settings = self.settings_open;
         let mut about = false;
         let mut full = false;
+        let mut share = false;
         // Уровень панели - как у окон: открытое окно встаёт поверх неё.
         // На уровне Foreground панель закрывала окно «Источники данных»,
         // замечание автора от 23 октября 2026 года.
@@ -374,6 +383,9 @@ impl LiteApp {
                         }
                         let demo = tool_button(ui, Tool::Demo, false, tr(lang, "Demo scenes"));
                         egui::Popup::menu(&demo).show(|ui| demo_items(ui, lang, &mut clicks.demo));
+                        if tool_button(ui, Tool::Share, false, tr(lang, "Share a link to this view")).clicked() {
+                            share = true;
+                        }
                         if tool_button(ui, Tool::Settings, settings, tr(lang, "Settings")).clicked() {
                             settings = !settings;
                         }
@@ -393,6 +405,9 @@ impl LiteApp {
         if full {
             let on = ctx.input(|i| i.viewport().fullscreen.unwrap_or(false));
             ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(!on));
+        }
+        if share {
+            self.share(ctx);
         }
         if clicks.open {
             self.pick_file(ctx, now);
@@ -548,6 +563,7 @@ impl LiteApp {
     fn next_demo_file(&mut self, now: f64) {
         while let Some(path) = self.demo_queue.pop_front() {
             let name = crate::demos::name(path).to_string();
+            self.remember_url(&crate::demos::url(path));
             if let Some(bytes) = self.cached_demo(path) {
                 // Ошибку открытия показывает панель.
                 let _ = self.open_file(&bytes, &name, Some(now));
@@ -574,12 +590,53 @@ impl LiteApp {
     }
 
     /// Открыть сцену по ссылке, когда она загрузится. Страница так
-    /// открывает `?scene=адрес`.
+    /// открывает `?scene=адрес`. Сцены из нескольких вызовов
+    /// открываются по порядку.
     pub fn with_scene_url(mut self, url: &str) -> Self {
-        let name = url.rsplit('/').next().unwrap_or(url).split(['?', '#']).next().unwrap_or("").to_string();
-        self.loaders.files.start(url);
-        self.fetching = Some((name, false));
+        self.url_queue.push_back(url.to_string());
+        if self.fetching.is_none() {
+            self.next_scene_url();
+        }
         self
+    }
+
+    /// Начать грузить следующую сцену из ссылки.
+    fn next_scene_url(&mut self) {
+        let Some(url) = self.url_queue.pop_front() else {
+            return;
+        };
+        let name = url.rsplit('/').next().unwrap_or(&url).split(['?', '#']).next().unwrap_or("").to_string();
+        self.loaders.files.start(&url);
+        self.remember_url(&url);
+        self.fetching = Some((name, false));
+    }
+
+    /// Адрес открытого файла - в ссылку «Поделиться», без повторов.
+    fn remember_url(&mut self, url: &str) {
+        if !self.shared.iter().any(|u| u == url) {
+            self.shared.push(url.to_string());
+        }
+    }
+
+    /// Ссылка на вид: адреса открытых сцен и поза камеры. На странице -
+    /// её собственный адрес, у программы - страница на GitHub Pages.
+    fn share_link(&self) -> String {
+        crate::share::link(&crate::share::page_address(), &self.shared, &self.nav.pose)
+    }
+
+    /// Поделиться ссылкой на вид. На телефоне - окно «Поделиться»
+    /// системы, иначе ссылка в буфер обмена.
+    fn share(&mut self, ctx: &egui::Context) {
+        let link = self.share_link();
+        if !crate::share::system_share(&link) {
+            ctx.copy_text(link);
+        }
+        let mut message = tr(self.lang, "The link to this view is copied.").to_string();
+        if self.shared.is_empty() && self.marks.tree.as_ref().is_some_and(|t| !t.children.is_empty()) {
+            message.push(' ');
+            message.push_str(tr(self.lang, "Files opened from the disk are not in the link."));
+        }
+        self.open_message = Some(message);
     }
 
     /// Сцена самопроверки по имени: из папки сразу, по ссылке - позже.
@@ -655,6 +712,7 @@ impl LiteApp {
                 }
                 None => {
                     let _ = self.open_file(&bytes, &name, None);
+                    self.next_scene_url();
                 }
             },
             (Err(e), true) => {
@@ -665,6 +723,7 @@ impl LiteApp {
             (Err(e), false) => {
                 self.demo_fetching = None;
                 self.demo_queue.clear();
+                self.url_queue.clear();
                 self.open_message = Some(format!("{name}: {e}"));
             }
         }
@@ -1028,6 +1087,7 @@ impl LiteApp {
                 crate::marks::Action::Clear => {
                     self.tree_state.selected = None;
                     self.marks.clear();
+                    self.shared.clear();
                     self.player = None;
                     self.open_message = None;
                     self.marks_changed();

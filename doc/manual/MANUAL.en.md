@@ -53,6 +53,7 @@ The web page needs no installation: https://valery35.github.io/planetx-lite/
 | Panel | Shows or hides the left panel. On a narrow screen the panel starts hidden |
 | Open | Opens a scene, KML, KMZ or a data file |
 | Demo | The menu of demo scenes |
+| Share | Copies a link to this view: the camera and the scenes opened by address or from the Demo menu. On a phone the system Share window opens. Files opened from the disk are not in the link |
 | Settings | The Settings window |
 | Full screen | Full screen on and off |
 | About | Version, the user guide, links |
@@ -160,7 +161,9 @@ for one run of the program.
 https://valery35.github.io/planetx-lite/ works in Chrome, Edge, Firefox
 and Safari, on phones too.
 
-- `?scene=address` opens a scene, KML or KMZ by a link.
+- `?scene=address` opens a scene, KML or KMZ by a link. Several
+  `scene` parameters open in order.
+- `?pose=latitude,longitude,distance,heading,tilt` sets the camera.
 - My Places are kept in the browser, up to about 4 MB.
 - Chinese, Japanese and Korean download a font once, 1-3 MB.
 

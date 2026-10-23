@@ -8,7 +8,10 @@
 //! - `?check=perm` - самопроверка, отчёт в консоль браузера, поверх
 //!   страницы и в заголовок окна;
 //! - `?gl` - только WebGL2, как у телефона на странице по http;
-//! - `?scene=адрес` - открыть сцену `.planetx`, KML или KMZ по ссылке;
+//! - `?scene=адрес` - открыть сцену `.planetx`, KML или KMZ по ссылке.
+//!   Параметров `scene` может быть несколько, они открываются по порядку;
+//! - `?pose=широта,долгота,расстояние,азимут,наклон` - поза камеры,
+//!   как у ссылки «Поделиться» (`ui::share`);
 //! - `?demo=адрес` - откуда `?check=scenes` берёт сцены демо, по умолчанию
 //!   папка `demo` хранилища planetx-terrain.
 //!
@@ -51,7 +54,7 @@ fn main() {
     let decoded = |key: &str| {
         params.iter().find_map(|p| p.strip_prefix(key)).map(|v| js_sys::decode_uri_component(v).map_or_else(|_| v.to_string(), String::from))
     };
-    let scene = decoded("scene=");
+    let query = ui::share::parse_query(&search);
     let demo = decoded("demo=").unwrap_or_else(|| ui::demos::BASE.to_string());
     let Some(canvas) = document.get_element_by_id("globe").and_then(|e| e.dyn_into::<web_sys::HtmlCanvasElement>().ok())
     else {
@@ -97,7 +100,10 @@ fn main() {
                     };
                     let report: ui::Report = Box::new(move |text, _ok| show(text));
                     let mut app = ui::LiteApp::new(cc, loaders, scenario, report).with_scenes(&demo);
-                    if let Some(url) = &scene {
+                    if let Some(pose) = query.pose.clone() {
+                        app = app.with_pose(pose);
+                    }
+                    for url in &query.scenes {
                         app = app.with_scene_url(url);
                     }
                     Ok(Box::new(app))
