@@ -354,19 +354,31 @@ fn row_menu(response: &eframe::egui::Response, w: &Words, path: &[usize], tour: 
     });
 }
 
-/// Название строки: подпись с меню и перетаскиванием или поле
-/// переименования. Enter или щелчок мимо - новое название, Esc - отмена.
+/// Состояние дерева в панели: выделенная строка и переименование.
+#[derive(Debug, Default)]
+pub struct TreeState {
+    /// Выделенная строка, как текущая строка списка модуля.
+    pub selected: Option<Vec<usize>>,
+    /// Строка, которая переименовывается: путь и новое название.
+    pub renaming: Option<(Vec<usize>, String)>,
+}
+
+/// Название строки: подпись или поле переименования. Enter или щелчок
+/// мимо - новое название, Esc - отмена. Щелчок выделяет строку, двойной
+/// щелчок - перелёт, правая кнопка - меню. Протяжка переносит строку:
+/// строка остаётся на месте, у указателя - её название, как в списке
+/// модуля. Курсор над строкой обычный, ладошка - только у глобуса.
 fn row_name(
     ui: &mut eframe::egui::Ui,
-    text: eframe::egui::RichText,
+    text: &str,
     path: &[usize],
     tour: bool,
     w: &Words,
-    renaming: &mut Option<(Vec<usize>, String)>,
+    state: &mut TreeState,
     actions: &mut Vec<Action>,
 ) {
     use eframe::egui;
-    if let Some((at, name)) = renaming.as_mut().filter(|(at, _)| at.as_slice() == path) {
+    if let Some((at, name)) = state.renaming.as_mut().filter(|(at, _)| at.as_slice() == path) {
         let edit = ui.add(egui::TextEdit::singleline(name).desired_width(ui.available_width().max(80.0)));
         if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
             actions.push(Action::CancelRename);
@@ -377,10 +389,34 @@ fn row_name(
         }
         return;
     }
-    let id = ui.make_persistent_id(("marks-drag", path.to_vec()));
-    let label = ui
-        .dnd_drag_source(id, path.to_vec(), |ui| ui.add(egui::Label::new(text).truncate().sense(egui::Sense::click())))
-        .inner;
+    // Фон выделения - под текстом: место под него занимается до подписи.
+    let background = ui.painter().add(egui::Shape::Noop);
+    let label = ui.add(egui::Label::new(text).truncate().selectable(false).sense(egui::Sense::click_and_drag()));
+    if label.hovered() || label.dragged() {
+        ui.ctx().set_cursor_icon(egui::CursorIcon::Default);
+    }
+    let selected = state.selected.as_deref() == Some(path);
+    if selected {
+        let rect = label.rect.expand2(egui::vec2(3.0, 1.0));
+        ui.painter().set(background, egui::Shape::rect_filled(rect, 2.0, crate::theme::SELECT));
+    }
+    if label.clicked() || label.secondary_clicked() || label.drag_started() {
+        state.selected = Some(path.to_vec());
+    }
+    if label.drag_started() {
+        egui::DragAndDrop::set_payload(ui.ctx(), path.to_vec());
+    }
+    if label.dragged()
+        && let Some(at) = ui.ctx().pointer_interact_pos()
+    {
+        // Название переносимой строки у указателя.
+        let layer = egui::LayerId::new(egui::Order::Tooltip, egui::Id::unique("marks-drag-ghost"));
+        let painter = ui.ctx().layer_painter(layer);
+        let galley = painter.layout_no_wrap(text.to_string(), egui::FontId::proportional(13.0), crate::theme::TEXT);
+        let rect = egui::Rect::from_min_size(at + egui::vec2(14.0, 6.0), galley.size()).expand(3.0);
+        painter.rect_filled(rect, 2.0, crate::theme::PLATE);
+        painter.galley(rect.min + egui::vec2(3.0, 3.0), galley, crate::theme::TEXT);
+    }
     if label.double_clicked() {
         actions.push(Action::Fly(path.to_vec()));
     }
@@ -414,7 +450,7 @@ pub fn root_ui(
     ui: &mut eframe::egui::Ui,
     root: &mut Folder,
     lang: crate::i18n::Lang,
-    renaming: &mut Option<(Vec<usize>, String)>,
+    state: &mut TreeState,
     actions: &mut Vec<Action>,
 ) {
     use eframe::egui;
@@ -446,7 +482,7 @@ pub fn root_ui(
                 }
             });
         })
-        .body(|ui| tree_ui(ui, root, &mut Vec::new(), lang, renaming, actions));
+        .body(|ui| tree_ui(ui, root, &mut Vec::new(), lang, state, actions));
     // Брошенная на корень строка ложится в конец «Моих меток».
     drop_target(ui, &head.response, &[], true, actions);
 }
@@ -458,7 +494,7 @@ pub fn tree_ui(
     folder: &mut Folder,
     path: &mut Vec<usize>,
     lang: crate::i18n::Lang,
-    renaming: &mut Option<(Vec<usize>, String)>,
+    state: &mut TreeState,
     actions: &mut Vec<Action>,
 ) {
     use eframe::egui;
@@ -476,9 +512,9 @@ pub fn tree_ui(
                             actions.push(Action::Toggled(path.clone()));
                         }
                         crate::theme::folder_icon(ui);
-                        row_name(ui, egui::RichText::new(&f.name), path, true, &w, renaming, actions);
+                        row_name(ui, &f.name, path, true, &w, state, actions);
                     })
-                    .body(|ui| tree_ui(ui, f, path, lang, renaming, actions));
+                    .body(|ui| tree_ui(ui, f, path, lang, state, actions));
                 drop_target(ui, &head.response, path, true, actions);
             }
             Item::Place(p) => {
@@ -486,8 +522,19 @@ pub fn tree_ui(
                     if crate::theme::checkbox(ui, &mut p.visible).changed() {
                         actions.push(Action::Toggled(path.clone()));
                     }
+                    let icon = if p.tour.is_some() {
+                        crate::theme::RowIcon::Tour
+                    } else {
+                        match p.kind {
+                            Kind::Point => crate::theme::RowIcon::Point,
+                            Kind::Line => crate::theme::RowIcon::Line,
+                            Kind::Polygon => crate::theme::RowIcon::Polygon,
+                        }
+                    };
+                    let rgba = |c: [u8; 4]| egui::Color32::from_rgba_unmultiplied(c[0], c[1], c[2], c[3]);
+                    crate::theme::row_icon(ui, icon, rgba(p.color), p.fill.map(rgba));
                     let name = if p.name.is_empty() { "-" } else { p.name.as_str() };
-                    row_name(ui, egui::RichText::new(name), path, p.tour.is_some(), &w, renaming, actions);
+                    row_name(ui, name, path, p.tour.is_some(), &w, state, actions);
                     if p.tour.is_some() && crate::timeline::icon_button(ui, crate::timeline::Icon::Play).clicked() {
                         actions.push(Action::Tour(path.clone()));
                     }
@@ -499,8 +546,15 @@ pub fn tree_ui(
                     if crate::theme::checkbox(ui, &mut o.visible).changed() {
                         actions.push(Action::Toggled(path.clone()));
                     }
+                    let icon = match o.kind() {
+                        overlays::Kind::Ground => crate::theme::RowIcon::Ground,
+                        overlays::Kind::Photo => crate::theme::RowIcon::Photo,
+                        overlays::Kind::Screen => crate::theme::RowIcon::Screen,
+                        overlays::Kind::Model => crate::theme::RowIcon::Model,
+                    };
+                    crate::theme::row_icon(ui, icon, crate::theme::TEXT, None);
                     let name = if o.name.is_empty() { "-" } else { o.name.as_str() };
-                    row_name(ui, egui::RichText::new(name), path, false, &w, renaming, actions);
+                    row_name(ui, name, path, false, &w, state, actions);
                 });
                 drop_target(ui, &row.response, path, false, actions);
             }

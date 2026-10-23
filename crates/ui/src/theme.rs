@@ -165,6 +165,86 @@ pub fn folder_icon(ui: &mut egui::Ui) {
     painter.rect_filled(body, CornerRadius::same(1), fill);
 }
 
+/// Вид строки «Моих меток» для значка, как `place_icon` модуля.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RowIcon {
+    Point,
+    Line,
+    Polygon,
+    Tour,
+    Ground,
+    Photo,
+    Screen,
+    Model,
+}
+
+/// Значок строки: вид объекта цветом метки, как у модуля. color - цвет
+/// линии или значка метки, fill - заливка многоугольника.
+pub fn row_icon(ui: &mut egui::Ui, kind: RowIcon, color: Color32, fill: Option<Color32>) {
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(16.0, 16.0), egui::Sense::hover());
+    let p = |x: f32, y: f32| rect.left_top() + egui::vec2(x, y);
+    let light = Color32::from_rgb(0xd9, 0xdd, 0xe3);
+    // Тёмный цвет метки на тёмной панели не виден: значок светлеет.
+    let sum = u16::from(color.r()) + u16::from(color.g()) + u16::from(color.b());
+    let color = if sum < 150 { light } else { color.to_opaque() };
+    let line = Stroke::new(1.6, color);
+    let thin = Stroke::new(1.2, light);
+    let painter = ui.painter();
+    match kind {
+        RowIcon::Point => {
+            painter.circle(p(8.0, 8.0), 4.5, color, Stroke::new(1.0, Color32::from_black_alpha(160)));
+        }
+        RowIcon::Line => {
+            let pts = vec![p(2.0, 12.0), p(6.0, 5.0), p(10.0, 10.0), p(14.0, 3.5)];
+            painter.line(pts.clone(), line);
+            for q in pts {
+                painter.circle_filled(q, 1.6, color);
+            }
+        }
+        RowIcon::Polygon => {
+            let pts = vec![p(2.5, 11.5), p(5.0, 3.0), p(13.5, 4.5), p(12.0, 13.0)];
+            let fill = fill.map_or(color.gamma_multiply(0.45), |f| f.to_opaque().gamma_multiply(0.8));
+            painter.add(egui::Shape::convex_polygon(pts, fill, line));
+        }
+        RowIcon::Tour => {
+            // Плёнка с кадрами.
+            painter.rect_stroke(egui::Rect::from_min_max(p(2.0, 3.0), p(14.0, 13.0)), 1.0, thin, egui::StrokeKind::Inside);
+            for x in [4.0, 7.0, 10.0, 13.0] {
+                painter.line_segment([p(x - 1.0, 4.5), p(x, 4.5)], thin);
+                painter.line_segment([p(x - 1.0, 11.5), p(x, 11.5)], thin);
+            }
+            painter.add(egui::Shape::convex_polygon(vec![p(6.5, 6.0), p(6.5, 10.0), p(10.0, 8.0)], light, Stroke::NONE));
+        }
+        RowIcon::Ground => {
+            // Картинка: рамка, гора и солнце.
+            painter.rect_stroke(egui::Rect::from_min_max(p(1.5, 3.0), p(14.5, 13.0)), 1.0, thin, egui::StrokeKind::Inside);
+            painter.add(egui::Shape::convex_polygon(vec![p(3.0, 12.0), p(7.0, 6.5), p(11.0, 12.0)], ACCENT, Stroke::NONE));
+            painter.circle_filled(p(11.5, 6.0), 1.6, Color32::from_rgb(0xf5, 0xc2, 0x1b));
+        }
+        RowIcon::Photo => {
+            painter.rect_stroke(egui::Rect::from_min_max(p(1.5, 5.0), p(14.5, 13.5)), 1.5, thin, egui::StrokeKind::Inside);
+            painter.rect_filled(egui::Rect::from_min_max(p(5.0, 3.0), p(10.0, 5.0)), 0.5, light);
+            painter.circle_stroke(p(8.0, 9.2), 2.6, thin);
+        }
+        RowIcon::Screen => {
+            painter.rect_stroke(egui::Rect::from_min_max(p(1.5, 2.5), p(14.5, 11.0)), 1.0, thin, egui::StrokeKind::Inside);
+            painter.line_segment([p(8.0, 11.0), p(8.0, 13.5)], thin);
+            painter.line_segment([p(5.0, 13.5), p(11.0, 13.5)], thin);
+        }
+        RowIcon::Model => {
+            // Куб в изометрии.
+            let (top, left, right) = (
+                vec![p(8.0, 2.0), p(14.0, 5.0), p(8.0, 8.0), p(2.0, 5.0)],
+                vec![p(2.0, 5.0), p(8.0, 8.0), p(8.0, 14.5), p(2.0, 11.5)],
+                vec![p(8.0, 8.0), p(14.0, 5.0), p(14.0, 11.5), p(8.0, 14.5)],
+            );
+            painter.add(egui::Shape::convex_polygon(top, light, Stroke::NONE));
+            painter.add(egui::Shape::convex_polygon(left, light.gamma_multiply(0.7), Stroke::NONE));
+            painter.add(egui::Shape::convex_polygon(right, light.gamma_multiply(0.5), Stroke::NONE));
+        }
+    }
+}
+
 /// Флажок как у модуля: пустой - тёмное поле с серой рамкой, отмеченный -
 /// синий квадрат с белой галочкой.
 pub fn checkbox(ui: &mut egui::Ui, checked: &mut bool) -> egui::Response {

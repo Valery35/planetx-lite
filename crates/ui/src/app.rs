@@ -185,8 +185,8 @@ pub struct LiteApp {
     demo_fetching: Option<&'static str>,
     /// «Мои метки» изменились и ещё не записаны в хранилище.
     places_dirty: bool,
-    /// Строка, которая переименовывается: путь и новое название.
-    renaming: Option<(Vec<usize>, String)>,
+    /// Выделенная строка и переименование в «Моих метках».
+    tree_state: marks::TreeState,
     /// Свой рельеф: врезанные растры высот.
     relief: Relief,
     /// Открытые облака точек.
@@ -296,7 +296,7 @@ impl LiteApp {
             demo_queue: std::collections::VecDeque::new(),
             demo_fetching: None,
             places_dirty: false,
-            renaming: None,
+            tree_state: marks::TreeState::default(),
             relief: Relief::default(),
             clouds: Vec::new(),
             models: crate::models::Models::default(),
@@ -807,7 +807,7 @@ impl LiteApp {
                 let root = self.marks.root(marks::root_name(lang));
                 let empty = root.children.is_empty();
                 egui::ScrollArea::vertical().max_height(room).auto_shrink([false, true]).show(ui, |ui| {
-                    crate::marks::root_ui(ui, root, lang, &mut self.renaming, &mut actions);
+                    crate::marks::root_ui(ui, root, lang, &mut self.tree_state, &mut actions);
                 });
                 if empty {
                     ui.label(egui::RichText::new(hint).color(crate::theme::MUTED));
@@ -827,6 +827,16 @@ impl LiteApp {
         }
         if let Some(demo) = demo_clicked {
             self.open_demo(demo, now);
+        }
+        // Delete удаляет выделенную строку, F2 переименовывает, как
+        // в списке модуля. Пока пишется текст, клавиши - для текста.
+        let typing = ui.ctx().memory(|m| m.focused().is_some());
+        if !typing && let Some(path) = self.tree_state.selected.clone() {
+            if ui.input(|i| i.key_pressed(egui::Key::Delete)) {
+                actions.push(crate::marks::Action::Remove(path));
+            } else if ui.input(|i| i.key_pressed(egui::Key::F2)) {
+                actions.push(crate::marks::Action::StartRename(path));
+            }
         }
         for action in actions {
             match action {
@@ -861,11 +871,13 @@ impl LiteApp {
                 }
                 crate::marks::Action::Remove(path) => {
                     if self.marks.remove(&path) {
+                        self.tree_state.selected = None;
                         self.player = None;
                         self.marks_changed();
                     }
                 }
                 crate::marks::Action::Clear => {
+                    self.tree_state.selected = None;
                     self.marks.clear();
                     self.player = None;
                     self.open_message = None;
@@ -878,17 +890,18 @@ impl LiteApp {
                         scene::kml::Item::Place(p) => p.name.clone(),
                         scene::kml::Item::Overlay(o) => o.name.clone(),
                     });
-                    self.renaming = name.map(|n| (path, n));
+                    self.tree_state.renaming = name.map(|n| (path, n));
                 }
                 crate::marks::Action::Rename(path, name) => {
-                    self.renaming = None;
+                    self.tree_state.renaming = None;
                     if self.marks.rename(&path, &name) {
                         self.marks_changed();
                     }
                 }
-                crate::marks::Action::CancelRename => self.renaming = None,
+                crate::marks::Action::CancelRename => self.tree_state.renaming = None,
                 crate::marks::Action::Move(from, to, into) => {
                     if self.marks.move_to(&from, &to, into) {
+                        self.tree_state.selected = None;
                         self.player = None;
                         self.marks_changed();
                     }
