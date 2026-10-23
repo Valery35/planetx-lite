@@ -84,3 +84,70 @@ Source code	წყაროს კოდი
 Share a link to this view	ამ ხედის ბმულის გაზიარება
 The link to this view is copied.	ამ ხედის ბმული დაკოპირდა.
 Files opened from the disk are not in the link.	დისკიდან გახსნილი ფაილები ბმულში არ არის.
+New placemark, path, polygon or circle	ახალი ნიშანი, გზა, მრავალკუთხედი ან წრე
+Ruler: distance, area, ground length	სახაზავი: მანძილი, ფართობი, სიგრძე რელიეფზე
+New folder	ახალი საქაღალდე
+Properties…	თვისებები…
+To the start of the bar	ზოლის დასაწყისში
+Play: the range moves along the bar, placemarks appear and hide by their time.	დაკვრა: შუალედი მოძრაობს ზოლის გასწვრივ, ნიშნები ჩნდება და იმალება თავისი დროის მიხედვით.
+To the end of the bar	ზოლის ბოლოში
+Play in a loop: at the end of the bar the range starts again from the beginning.	დაკვრა წრიულად: ზოლის ბოლოს შუალედი თავიდან იწყება.
+Whole bar in 20 s	მთელი ზოლი 20 წმ-ში
+Playback speed. ×1 - time runs as on the clock, ×3600 - an hour per second, ×86400 - a day per second.	დაკვრის სიჩქარე. ×1 - დრო მიდის როგორც საათზე, ×3600 - საათი წამში, ×86400 - დღე-ღამე წამში.
+Close the time bar. A closed bar does not hide placemarks.	დროის ზოლის დახურვა. დახურული ზოლი ნიშნებს არ მალავს.
+My placemark	ჩემი ნიშანი
+My path	ჩემი გზა
+My polygon	ჩემი მრავალკუთხედი
+My circle	ჩემი წრე
+Ruler	სახაზავი
+New placemark	ახალი ნიშანი
+Properties	თვისებები
+Placemark	ნიშანი
+Line	ხაზი
+Path	გზა
+Polygon	მრავალკუთხედი
+Circle	წრე
+Name	სახელი
+Save	შენახვა
+Put the shape into My Places with the measurement.	ფიგურის მოთავსება „ჩემს ნიშნებში“ გაზომვასთან ერთად.
+Measurement	გაზომვა
+Clear	გასუფთავება
+Remove the points.	დასმული წერტილების მოშორება.
+Untitled	უსათაურო
+Name in My Places and the label of the point on the globe.	სახელი „ჩემს ნიშნებში“ და წერტილის წარწერა გლობუსზე.
+Description	აღწერა
+Color	ფერი
+Colour of the line and outline. The fill of a polygon is the same colour, semi-transparent.	ხაზისა და კონტურის ფერი. მრავალკუთხედის შევსება იმავე ფერისაა, ნახევრად გამჭვირვალე.
+Width	სისქე
+Width of the line and outline in screen pixels. It does not depend on the scale.	ხაზისა და კონტურის სისქე ეკრანის პიქსელებში. მასშტაბზე არ არის დამოკიდებული.
+Fill	შევსება
+OK	OK
+Write the object to My Places.	ობიექტის ჩაწერა „ჩემს ნიშნებში“.
+Cancel	გაუქმება
+Vertices are dragged with the mouse. A circle in the middle of a segment adds a vertex.	წვეროები მაუსით გადაიტანება. მონაკვეთის შუაში მდებარე წრე ახალ წვეროს ამატებს.
+A click on the globe places the placemark. The placemark is dragged with the mouse.	დაწკაპუნება გლობუსზე სვამს ნიშანს. ნიშანი მაუსით გადაიტანება.
+Two clicks on the globe set the ends of the line. Points are dragged with the mouse.	ორი დაწკაპუნება გლობუსზე სვამს ხაზის ბოლოებს. წერტილები მაუსით გადაიტანება.
+Mark the points of the path with clicks on the globe. A click on the last point finishes the path, on the first one closes the shape.	მონიშნეთ გზის წერტილები გლობუსზე დაწკაპუნებით. ბოლო წერტილზე დაწკაპუნება ასრულებს გზას, პირველზე - კრავს ფიგურას.
+Mark the vertices of the polygon with clicks on the globe. A click on the first vertex finishes drawing.	მონიშნეთ მრავალკუთხედის წვეროები გლობუსზე დაწკაპუნებით. პირველ წვეროზე დაწკაპუნება ასრულებს ხატვას.
+The first click on the globe sets the centre of the circle, the second one a point of the circle. Both points are dragged with the mouse.	გლობუსზე პირველი დაწკაპუნება სვამს წრის ცენტრს, მეორე - წრეწირის წერტილს. ორივე წერტილი მაუსით გადაიტანება.
+Map length	სიგრძე რუკაზე
+Length	სიგრძე
+Ground length	სიგრძე რელიეფზე
+Heading	კურსი
+Perimeter	პერიმეტრი
+Area	ფართობი
+Radius	რადიუსი
+Kilometres	კილომეტრები
+Miles	მილები
+Nautical miles	საზღვაო მილები
+Square metres	კვადრატული მეტრები
+Hectares	ჰექტრები
+Square kilometres	კვადრატული კილომეტრები
+Square miles	კვადრატული მილები
+Metres	მეტრები
+mi	მილი
+nmi	ზღ. მილი
+m²	მ²
+ha	ჰა
+km²	კმ²
+sq mi	კვ. მილი

@@ -90,3 +90,70 @@ Source code	Исходный код
 Share a link to this view	Поделиться ссылкой на этот вид
 The link to this view is copied.	Ссылка на этот вид скопирована.
 Files opened from the disk are not in the link.	Файлов, открытых с диска, в ссылке нет.
+New placemark, path, polygon or circle	Новая метка, путь, многоугольник или круг
+Ruler: distance, area, ground length	Линейка: расстояние, площадь, длина по рельефу
+New folder	Новая папка
+Properties…	Свойства…
+To the start of the bar	К началу шкалы
+Play: the range moves along the bar, placemarks appear and hide by their time.	Проиграть: промежуток идёт вдоль шкалы, метки появляются и скрываются по своему времени.
+To the end of the bar	К концу шкалы
+Play in a loop: at the end of the bar the range starts again from the beginning.	Проигрывание по кругу: дойдя до конца шкалы, промежуток начинает с начала.
+Whole bar in 20 s	Шкала за 20 с
+Playback speed. ×1 - time runs as on the clock, ×3600 - an hour per second, ×86400 - a day per second.	Скорость проигрывания. ×1 - время идёт как на часах, ×3600 - час за секунду, ×86400 - сутки за секунду.
+Close the time bar. A closed bar does not hide placemarks.	Закрыть шкалу времени. Закрытая шкала метки не скрывает.
+My placemark	Моя метка
+My path	Мой путь
+My polygon	Мой многоугольник
+My circle	Мой круг
+Ruler	Линейка
+New placemark	Новая метка
+Properties	Свойства
+Placemark	Метка
+Line	Линия
+Path	Путь
+Polygon	Многоугольник
+Circle	Круг
+Name	Название
+Save	Сохранить
+Put the shape into My Places with the measurement.	Положить фигуру в «Мои метки» вместе с измерением.
+Measurement	Измерение
+Clear	Очистить
+Remove the points.	Убрать поставленные точки.
+Untitled	Без названия
+Name in My Places and the label of the point on the globe.	Название в «Моих метках» и подпись точки на глобусе.
+Description	Описание
+Color	Цвет
+Colour of the line and outline. The fill of a polygon is the same colour, semi-transparent.	Цвет линии и контура. Заливка многоугольника того же цвета, полупрозрачная.
+Width	Толщина
+Width of the line and outline in screen pixels. It does not depend on the scale.	Толщина линии и контура в пикселях экрана. От масштаба не зависит.
+Fill	Заливка
+OK	OK
+Write the object to My Places.	Записать объект в «Мои метки».
+Cancel	Отмена
+Vertices are dragged with the mouse. A circle in the middle of a segment adds a vertex.	Вершины перетаскиваются мышью. Кружок в середине отрезка ставит новую вершину.
+A click on the globe places the placemark. The placemark is dragged with the mouse.	Щелчок по глобусу ставит метку. Метка перетаскивается мышью.
+Two clicks on the globe set the ends of the line. Points are dragged with the mouse.	Два щелчка по глобусу ставят концы линии. Точки перетаскиваются мышью.
+Mark the points of the path with clicks on the globe. A click on the last point finishes the path, on the first one closes the shape.	Щелчками по глобусу отметьте точки пути. Щелчок по последней точке завершает путь, по первой - замыкает фигуру.
+Mark the vertices of the polygon with clicks on the globe. A click on the first vertex finishes drawing.	Щелчками по глобусу отметьте вершины многоугольника. Щелчок по первой вершине завершает рисование.
+The first click on the globe sets the centre of the circle, the second one a point of the circle. Both points are dragged with the mouse.	Первый щелчок по глобусу ставит центр круга, второй - точку окружности. Обе точки перетаскиваются мышью.
+Map length	Длина на карте
+Length	Длина
+Ground length	Длина по рельефу
+Heading	Курс
+Perimeter	Периметр
+Area	Площадь
+Radius	Радиус
+Kilometres	Километры
+Miles	Мили
+Nautical miles	Морские мили
+Square metres	Кв. метры
+Hectares	Гектары
+Square kilometres	Кв. километры
+Square miles	Кв. мили
+Metres	Метры
+mi	мили
+nmi	мор. мили
+m²	м²
+ha	га
+km²	км²
+sq mi	кв. мили

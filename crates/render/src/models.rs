@@ -5,16 +5,17 @@
 //! 3D-модели в видеокарте: части с картинкой или цветом материала.
 //!
 //! Модель считает слой выше: точка модели в f64, вершины частей
-//! смещениями от неё в осях ECEF (поворот и масштаб уже применены),
-//! нормали в тех же осях. Картинки частей - по ключу модели и пути,
+//! смещениями от неё (поворот и масштаб уже применены), нормали в тех
+//! же осях. Поворот `orient` переводит вершины в оси ECEF в кадре: у
+//! едущей модели меняются только точка и поворот. Картинки частей - по ключу модели и пути,
 //! грузятся при [`Models::set`]. Модели рисуются после тайлов, с проверкой
 //! и записью глубины, грани видны с обеих сторон.
 
 use std::collections::HashMap;
 
 use bytemuck::{Pod, Zeroable};
-use globe_core::DVec3;
 use globe_core::camera::Camera;
+use globe_core::{DMat3, DMat4, DVec3};
 use wgpu::util::DeviceExt;
 
 use crate::pictures::mip_levels;
@@ -33,6 +34,8 @@ pub struct ModelPart {
     pub image: Option<String>,
     /// Цвет материала RGBA 0-1, у картинки - множитель.
     pub rgba: [f32; 4],
+    /// Дорожка анимации или None: часть стоит.
+    pub track: Option<usize>,
 }
 
 /// Модель: точка в ECEF, части, картинки по ключу (ширина, высота,
@@ -43,6 +46,19 @@ pub struct ModelMesh {
     pub parts: Vec<ModelPart>,
     pub images: Vec<(String, u32, u32, Vec<u8>)>,
     pub sun: [f32; 3],
+    /// Поворот вершин частей перед сдвигом в точку модели. У стоящей
+    /// модели - единичный, у модели на пути меняется каждый кадр
+    /// ([`Models::place`]), вершины в видеокарте остаются прежними.
+    pub orient: DMat3,
+}
+
+/// Место модели в кадре: точка, поворот, солнце, видна ли.
+#[derive(Debug, Clone, Copy)]
+pub struct ModelPlace {
+    pub center: DVec3,
+    pub orient: DMat3,
+    pub sun: [f32; 3],
+    pub shown: bool,
 }
 
 #[repr(C)]
@@ -68,6 +84,7 @@ struct GpuPart {
     count: u32,
     texture: Option<usize>,
     rgba: [f32; 4],
+    track: Option<usize>,
 }
 
 /// Модели и их конвейер.
@@ -81,7 +98,9 @@ pub struct Models {
     uniform: wgpu::Buffer,
     capacity: u64,
     bind: wgpu::BindGroup,
-    centers: Vec<(DVec3, [f32; 3])>,
+    places: Vec<ModelPlace>,
+    /// Матрицы дорожек анимации по моделям, в осях вершин части.
+    deltas: Vec<HashMap<usize, DMat4>>,
     textures: Vec<wgpu::BindGroup>,
     parts: Vec<GpuPart>,
 }
@@ -191,7 +210,8 @@ impl Models {
             uniform,
             capacity,
             bind,
-            centers: Vec::new(),
+            places: Vec::new(),
+            deltas: Vec::new(),
             textures: Vec::new(),
             parts: Vec::new(),
         }
@@ -200,12 +220,14 @@ impl Models {
     /// Новый набор моделей. Картинка размера не по пределу видеокарты
     /// или не совпавшая с байтами - часть без картинки.
     pub fn set(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, models: &[ModelMesh]) {
-        self.centers.clear();
+        self.places.clear();
+        self.deltas.clear();
         self.textures.clear();
         self.parts.clear();
         let limit = device.limits().max_texture_dimension_2d;
         for (m, model) in models.iter().enumerate() {
-            self.centers.push((model.center, model.sun));
+            self.places.push(ModelPlace { center: model.center, orient: model.orient, sun: model.sun, shown: true });
+            self.deltas.push(HashMap::new());
             let mut keys: HashMap<&str, usize> = HashMap::new();
             for (key, w, h, rgba) in &model.images {
                 if *w == 0 || *h == 0 || *w > limit || *h > limit || rgba.len() != (*w as usize) * (*h as usize) * 4 {
@@ -237,8 +259,24 @@ impl Models {
                     count,
                     texture,
                     rgba: part.rgba,
+                    track: part.track,
                 });
             }
+        }
+    }
+
+    /// Новое место модели номер index из [`Models::set`]: модель едет.
+    pub fn place(&mut self, index: usize, place: ModelPlace) {
+        if let Some(p) = self.places.get_mut(index) {
+            *p = place;
+        }
+    }
+
+    /// Матрицы дорожек анимации модели номер index на кадр: дорожка -
+    /// матрица в осях вершин частей.
+    pub fn animate(&mut self, index: usize, deltas: HashMap<usize, DMat4>) {
+        if let Some(d) = self.deltas.get_mut(index) {
+            *d = deltas;
         }
     }
 
@@ -257,14 +295,21 @@ impl Models {
         let stride = self.stride as usize;
         let mut bytes = vec![0u8; stride * self.parts.len()];
         for (chunk, part) in bytes.chunks_exact_mut(stride).zip(&self.parts) {
-            let Some((center, sun)) = self.centers.get(part.model) else {
+            let Some(place) = self.places.get(part.model) else {
                 continue;
             };
+            // Часть с дорожкой анимации - её матрица на кадр.
+            let delta = part.track.and_then(|t| self.deltas.get(part.model)?.get(&t).copied()).unwrap_or(DMat4::IDENTITY);
+            let turn = DMat4::from_mat3(place.orient) * delta;
+            // Нормали вершин - в осях до поворота, солнце поворачивается
+            // к ним обратным поворотом.
+            let sun = DVec3::new(f64::from(place.sun[0]), f64::from(place.sun[1]), f64::from(place.sun[2]));
+            let sun = (DMat3::from_mat4(turn).transpose() * sun).normalize_or_zero();
             let u = ModelUniform {
-                mv: camera.tile_model_view(*center, 1.0).as_mat4().to_cols_array(),
+                mv: (camera.tile_model_view(place.center, 1.0) * turn).as_mat4().to_cols_array(),
                 projection,
                 rgba: part.rgba,
-                light: [sun[0], sun[1], sun[2], AMBIENT],
+                light: [sun.x as f32, sun.y as f32, sun.z as f32, AMBIENT],
             };
             let raw = bytemuck::bytes_of(&u);
             chunk[..raw.len()].copy_from_slice(raw);
@@ -273,6 +318,9 @@ impl Models {
         pass.set_pipeline(&self.pipeline);
         let mut drawn = 0;
         for (slot, part) in self.parts.iter().enumerate() {
+            if !self.places.get(part.model).is_some_and(|p| p.shown) {
+                continue;
+            }
             let Ok(offset) = u32::try_from(slot as u64 * self.stride) else {
                 continue;
             };

@@ -53,6 +53,8 @@ tiny_http = "0.12"
 pollster = "0.4"
 flate2 = "1"
 serde_json = "1"
+# Геодезия на эллипсоиде, как GeographicLib в QgsDistanceArea модуля.
+geographiclib-rs = { version = "0.2.7", default-features = false }
 rfd = "0.17"
 quick-xml = "0.42"
 addin-api = { path = "crates/addin-api" }

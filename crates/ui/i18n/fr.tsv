@@ -83,3 +83,70 @@ Source code	Code source
 Share a link to this view	Partager un lien vers cette vue
 The link to this view is copied.	Le lien vers cette vue est copié.
 Files opened from the disk are not in the link.	Les fichiers ouverts depuis le disque ne figurent pas dans le lien.
+New placemark, path, polygon or circle	Nouveau repère, trajet, polygone ou cercle
+Ruler: distance, area, ground length	Règle : distance, surface, longueur sur le relief
+New folder	Nouveau dossier
+Properties…	Propriétés…
+To the start of the bar	Au début de la barre
+Play: the range moves along the bar, placemarks appear and hide by their time.	Lecture : la plage se déplace le long de la barre, les repères apparaissent et disparaissent selon leur date.
+To the end of the bar	À la fin de la barre
+Play in a loop: at the end of the bar the range starts again from the beginning.	Lecture en boucle : à la fin de la barre, la plage recommence depuis le début.
+Whole bar in 20 s	Toute la barre en 20 s
+Playback speed. ×1 - time runs as on the clock, ×3600 - an hour per second, ×86400 - a day per second.	Vitesse de lecture. ×1 - le temps s’écoule comme sur l’horloge, ×3600 - une heure par seconde, ×86400 - un jour par seconde.
+Close the time bar. A closed bar does not hide placemarks.	Fermer la barre de temps. Une barre fermée ne masque pas les repères.
+My placemark	Mon repère
+My path	Mon trajet
+My polygon	Mon polygone
+My circle	Mon cercle
+Ruler	Règle
+New placemark	Nouveau repère
+Properties	Propriétés
+Placemark	Repère
+Line	Ligne
+Path	Trajet
+Polygon	Polygone
+Circle	Cercle
+Name	Nom
+Save	Enregistrer
+Put the shape into My Places with the measurement.	Placer la forme dans « Mes lieux » avec la mesure.
+Measurement	Mesure
+Clear	Effacer
+Remove the points.	Supprimer les points placés.
+Untitled	Sans titre
+Name in My Places and the label of the point on the globe.	Nom dans « Mes lieux » et étiquette du point sur le globe.
+Description	Description
+Color	Couleur
+Colour of the line and outline. The fill of a polygon is the same colour, semi-transparent.	Couleur de la ligne et du contour. Le remplissage d’un polygone a la même couleur, semi-transparente.
+Width	Épaisseur
+Width of the line and outline in screen pixels. It does not depend on the scale.	Épaisseur de la ligne et du contour en pixels d’écran. Elle ne dépend pas de l’échelle.
+Fill	Remplissage
+OK	OK
+Write the object to My Places.	Enregistrer l’objet dans « Mes lieux ».
+Cancel	Annuler
+Vertices are dragged with the mouse. A circle in the middle of a segment adds a vertex.	Les sommets se déplacent avec la souris. Un cercle au milieu d’un segment ajoute un sommet.
+A click on the globe places the placemark. The placemark is dragged with the mouse.	Un clic sur le globe place le repère. Le repère se déplace avec la souris.
+Two clicks on the globe set the ends of the line. Points are dragged with the mouse.	Deux clics sur le globe fixent les extrémités de la ligne. Les points se déplacent avec la souris.
+Mark the points of the path with clicks on the globe. A click on the last point finishes the path, on the first one closes the shape.	Marquez les points du trajet par des clics sur le globe. Un clic sur le dernier point termine le trajet, sur le premier il ferme la forme.
+Mark the vertices of the polygon with clicks on the globe. A click on the first vertex finishes drawing.	Marquez les sommets du polygone par des clics sur le globe. Un clic sur le premier sommet termine le dessin.
+The first click on the globe sets the centre of the circle, the second one a point of the circle. Both points are dragged with the mouse.	Le premier clic sur le globe fixe le centre du cercle, le second un point du cercle. Les deux points se déplacent avec la souris.
+Map length	Longueur sur la carte
+Length	Longueur
+Ground length	Longueur sur le relief
+Heading	Cap
+Perimeter	Périmètre
+Area	Surface
+Radius	Rayon
+Kilometres	Kilomètres
+Miles	Milles
+Nautical miles	Milles marins
+Square metres	Mètres carrés
+Hectares	Hectares
+Square kilometres	Kilomètres carrés
+Square miles	Milles carrés
+Metres	Mètres
+mi	mi
+nmi	NM
+m²	m²
+ha	ha
+km²	km²
+sq mi	mi²

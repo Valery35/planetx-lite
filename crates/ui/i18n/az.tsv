@@ -84,3 +84,70 @@ Source code	Mənbə kodu
 Share a link to this view	Bu görünüşə keçidi paylaş
 The link to this view is copied.	Bu görünüşə keçid kopyalandı.
 Files opened from the disk are not in the link.	Diskdən açılan fayllar keçiddə yoxdur.
+New placemark, path, polygon or circle	Yeni nişan, yol, çoxbucaqlı və ya dairə
+Ruler: distance, area, ground length	Xətkeş: məsafə, sahə, relyef üzrə uzunluq
+New folder	Yeni qovluq
+Properties…	Xüsusiyyətlər…
+To the start of the bar	Zolağın əvvəlinə
+Play: the range moves along the bar, placemarks appear and hide by their time.	Oynat: aralıq zolaq boyunca hərəkət edir, nişanlar öz vaxtına görə görünür və gizlənir.
+To the end of the bar	Zolağın sonuna
+Play in a loop: at the end of the bar the range starts again from the beginning.	Dövrlə oynat: zolağın sonunda aralıq yenidən əvvəldən başlayır.
+Whole bar in 20 s	Bütün zolaq 20 s ərzində
+Playback speed. ×1 - time runs as on the clock, ×3600 - an hour per second, ×86400 - a day per second.	Oynatma sürəti. ×1 - vaxt saatdakı kimi axır, ×3600 - saniyədə bir saat, ×86400 - saniyədə bir gün.
+Close the time bar. A closed bar does not hide placemarks.	Zaman zolağını bağla. Bağlı zolaq nişanları gizlətmir.
+My placemark	Mənim nişanım
+My path	Mənim yolum
+My polygon	Mənim çoxbucaqlım
+My circle	Mənim dairəm
+Ruler	Xətkeş
+New placemark	Yeni nişan
+Properties	Xüsusiyyətlər
+Placemark	Nişan
+Line	Xətt
+Path	Yol
+Polygon	Çoxbucaqlı
+Circle	Dairə
+Name	Ad
+Save	Saxla
+Put the shape into My Places with the measurement.	Fiquru ölçmə ilə birlikdə "Mənim yerlərim"ə qoy.
+Measurement	Ölçmə
+Clear	Təmizlə
+Remove the points.	Qoyulmuş nöqtələri sil.
+Untitled	Adsız
+Name in My Places and the label of the point on the globe.	"Mənim yerlərim"də ad və nöqtənin qlobusdakı yazısı.
+Description	Təsvir
+Color	Rəng
+Colour of the line and outline. The fill of a polygon is the same colour, semi-transparent.	Xəttin və konturun rəngi. Çoxbucaqlının doldurulması eyni rəngdə, yarımşəffafdır.
+Width	Qalınlıq
+Width of the line and outline in screen pixels. It does not depend on the scale.	Xəttin və konturun ekran piksellərində qalınlığı. Miqyasdan asılı deyil.
+Fill	Doldurma
+OK	OK
+Write the object to My Places.	Obyekti "Mənim yerlərim"ə yaz.
+Cancel	Ləğv et
+Vertices are dragged with the mouse. A circle in the middle of a segment adds a vertex.	Təpələr siçanla sürüklənir. Parçanın ortasındakı dairə yeni təpə əlavə edir.
+A click on the globe places the placemark. The placemark is dragged with the mouse.	Qlobusa klik nişanı qoyur. Nişan siçanla sürüklənir.
+Two clicks on the globe set the ends of the line. Points are dragged with the mouse.	Qlobusa iki klik xəttin uclarını qoyur. Nöqtələr siçanla sürüklənir.
+Mark the points of the path with clicks on the globe. A click on the last point finishes the path, on the first one closes the shape.	Yolun nöqtələrini qlobusa kliklərlə qeyd edin. Son nöqtəyə klik yolu bitirir, birinciyə klik fiquru qapayır.
+Mark the vertices of the polygon with clicks on the globe. A click on the first vertex finishes drawing.	Çoxbucaqlının təpələrini qlobusa kliklərlə qeyd edin. Birinci təpəyə klik çəkməni bitirir.
+The first click on the globe sets the centre of the circle, the second one a point of the circle. Both points are dragged with the mouse.	Qlobusa birinci klik dairənin mərkəzini, ikinci klik çevrənin nöqtəsini qoyur. Hər iki nöqtə siçanla sürüklənir.
+Map length	Xəritədə uzunluq
+Length	Uzunluq
+Ground length	Relyef üzrə uzunluq
+Heading	Kurs
+Perimeter	Perimetr
+Area	Sahə
+Radius	Radius
+Kilometres	Kilometr
+Miles	Mil
+Nautical miles	Dəniz mili
+Square metres	Kvadrat metr
+Hectares	Hektar
+Square kilometres	Kvadrat kilometr
+Square miles	Kvadrat mil
+Metres	Metr
+mi	mil
+nmi	d. mil
+m²	m²
+ha	ha
+km²	km²
+sq mi	kv. mil

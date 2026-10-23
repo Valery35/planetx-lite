@@ -57,6 +57,11 @@ pub const SHOT_IDLE_FRAMES: u32 = 30;
 /// Наибольшая строка «Моих меток» на странице, байт: localStorage
 /// браузера держит около 5 МБ на сайт.
 pub const PAGE_PLACES_LIMIT: usize = 4 << 20;
+/// Скорость шкалы в демо самосвалов, `HAUL_RATE` модуля.
+pub const HAUL_RATE: f64 = 10.0;
+/// За столько секунд до конца рейса момент возвращается к началу,
+/// `HAUL_END` модуля: момент упирается в конец шкалы, и показ там встаёт.
+pub const HAUL_END: f64 = 1.0;
 /// Окно уже этого, логические пиксели, - узкое: панель при запуске
 /// скрыта.
 pub const NARROW: f32 = 700.0;
@@ -219,6 +224,18 @@ pub struct LiteApp {
     clouds: Vec<render::PointsMesh>,
     /// Разобранные 3D-модели сцены.
     models: crate::models::Models,
+    /// Модели на путях gx:Track: их место - на момент шкалы времени.
+    movers: Vec<crate::models::Mover>,
+    /// Линейка, новая метка или правка метки, None - инструмента нет.
+    tool: Option<crate::tool::Tool>,
+    /// Модели с анимацией узлов: их матрицы - каждый кадр.
+    animated: Vec<crate::models::Animated>,
+    /// Номер набора наложений, по которому собраны картинки и модели.
+    overlays_built: Option<u64>,
+    /// Открыто демо самосвалов, рейс ещё не запущен.
+    haul_pending: bool,
+    /// Рейс самосвалов демо (начало, конец): шкала идёт по нему по кругу.
+    haul: Option<(f64, f64)>,
 }
 
 /// Ящик прочитанных брошенных файлов.
@@ -338,6 +355,12 @@ impl LiteApp {
             relief: Relief::default(),
             clouds: Vec::new(),
             models: crate::models::Models::default(),
+            movers: Vec::new(),
+            animated: Vec::new(),
+            tool: None,
+            overlays_built: None,
+            haul_pending: false,
+            haul: None,
         };
         // «Мои метки» прошлого запуска. Самопроверка начинает с пустых.
         if app.check.is_none()
@@ -365,6 +388,7 @@ impl LiteApp {
         let mut about = false;
         let mut full = false;
         let mut share = false;
+        let mut new_tool: Option<crate::tool::Tool> = None;
         // Уровень панели - как у окон: открытое окно встаёт поверх неё.
         // На уровне Foreground панель закрывала окно «Источники данных»,
         // замечание автора от 23 октября 2026 года.
@@ -385,6 +409,15 @@ impl LiteApp {
                         egui::Popup::menu(&demo).show(|ui| demo_items(ui, lang, &mut clicks.demo));
                         if tool_button(ui, Tool::Share, false, tr(lang, "Share a link to this view")).clicked() {
                             share = true;
+                        }
+                        let placing = matches!(self.tool.as_ref().map(|t| &t.purpose), Some(crate::tool::Purpose::Place));
+                        // Вид объекта - вкладки окна «Новая метка», как у модуля.
+                        if tool_button(ui, Tool::Placemark, placing, tr(lang, "New placemark, path, polygon or circle")).clicked() {
+                            new_tool = Some(if placing { crate::tool::Tool::closed() } else { crate::tool::Tool::place(crate::ruler::Mode::Point) });
+                        }
+                        let measuring = matches!(self.tool.as_ref().map(|t| &t.purpose), Some(crate::tool::Purpose::Ruler));
+                        if tool_button(ui, Tool::Ruler, measuring, tr(lang, "Ruler: distance, area, ground length")).clicked() {
+                            new_tool = if measuring { Some(crate::tool::Tool::closed()) } else { Some(crate::tool::Tool::ruler()) };
                         }
                         if tool_button(ui, Tool::Settings, settings, tr(lang, "Settings")).clicked() {
                             settings = !settings;
@@ -409,11 +442,50 @@ impl LiteApp {
         if share {
             self.share(ctx);
         }
+        if let Some(tool) = new_tool {
+            // Повторное нажатие «Линейки» закрывает её.
+            self.tool = tool.open.then_some(tool);
+        }
         if clicks.open {
             self.pick_file(ctx, now);
         }
         if let Some(demo) = clicks.demo {
             self.open_demo(demo, now);
+        }
+    }
+
+    /// Окно инструмента и его итог: новая метка ложится в выделенную
+    /// папку «Моих меток» или в корень, правка заменяет метку.
+    fn tool_window(&mut self, ctx: &egui::Context) {
+        let Some(tool) = &mut self.tool else {
+            return;
+        };
+        let names = self.marks.names();
+        // Длина по рельефу - по настоящим высотам, без масштаба рельефа.
+        let source = self.heights.clone();
+        let heights_at = move |points: &[(f64, f64)]| -> Vec<f64> {
+            let store = source.read();
+            let k = store.scale().max(1e-9);
+            points.iter().map(|(lat, lon)| store.height_at(*lat, *lon) / k).collect()
+        };
+        let ready = !self.loaders.terrain.busy();
+        let action = tool.window(ctx, self.lang, &names, Some((&heights_at, ready)));
+        if !tool.open {
+            self.tool = None;
+        }
+        let root = marks::root_name(self.lang);
+        match action {
+            Some(crate::tool::Action::Add(place)) => {
+                let folder = self.tree_state.selected.clone().unwrap_or_default();
+                self.marks.insert(&folder, scene::kml::Item::Place(place), root);
+                self.marks_changed();
+            }
+            Some(crate::tool::Action::Update(path, place)) => {
+                if self.marks.set_place(&path, place) {
+                    self.marks_changed();
+                }
+            }
+            None => {}
         }
     }
 
@@ -555,6 +627,7 @@ impl LiteApp {
         }
         self.demo_queue = demo.files.iter().copied().collect();
         self.demo_fetching = None;
+        self.haul_pending = crate::demos::is_haul(demo);
         self.next_demo_file(now);
     }
 
@@ -609,6 +682,39 @@ impl LiteApp {
         self.loaders.files.start(&url);
         self.remember_url(&url);
         self.fetching = Some((name, false));
+    }
+
+    /// Рейс самосвалов демо, как `_play_model_trucks` и `_haul_loop`
+    /// модуля: шкала-момент в начале рейса, ×[`HAUL_RATE`], показ идёт.
+    /// Момент у конца рейса или до его начала - снова начало. Пути
+    /// сменились - демо снято, рейс больше не ведётся.
+    fn step_haul(&mut self, now: f64) {
+        let span = crate::models::span(&self.movers);
+        if self.haul_pending && let Some(span) = span {
+            self.haul_pending = false;
+            self.haul = Some(span);
+            self.timebar.open = true;
+            self.timebar.rate = Some(HAUL_RATE);
+            self.timebar.set_point(true, Some(span.0));
+            if !self.timebar.playing() {
+                self.timebar.toggle(now);
+            }
+            return;
+        }
+        let Some(haul) = self.haul else {
+            return;
+        };
+        if span.map(|s| s.0) != Some(haul.0) {
+            self.haul = None;
+            return;
+        }
+        let moment = self.timebar.range.1;
+        if moment >= haul.1 - HAUL_END || moment < haul.0 {
+            self.timebar.set_point(true, Some(haul.0));
+            if !self.timebar.playing() {
+                self.timebar.toggle(now);
+            }
+        }
     }
 
     /// Адрес открытого файла - в ссылку «Поделиться», без повторов.
@@ -930,7 +1036,10 @@ impl LiteApp {
         let mut toggle = false;
         egui::Area::new(egui::Id::unique("planetx-top"))
             .order(egui::Order::Foreground)
-            .fixed_pos(egui::pos2(rect.center().x - 220.0, rect.top() + 12.0))
+            // Под панелью инструментов, как у модуля: поверх неё шкала
+            // закрывала кнопки.
+            .pivot(egui::Align2::CENTER_TOP)
+            .fixed_pos(egui::pos2(rect.center().x, self.toolbar_rect.map_or(rect.top() + 12.0, |r| r.bottom() + 6.0)))
             .show(ctx, |ui| {
                 crate::theme::plate()
                     .show(ui, |ui| {
@@ -953,7 +1062,7 @@ impl LiteApp {
                             });
                         }
                         if show_bar {
-                            self.timebar.ui(ui, now);
+                            self.timebar.ui(ui, self.lang, now);
                         }
                     });
             });
@@ -1093,6 +1202,19 @@ impl LiteApp {
                     self.marks_changed();
                 }
                 crate::marks::Action::Open => self.pick_file(ui.ctx(), now),
+                crate::marks::Action::Properties(path) => {
+                    if let Some(place) = self.marks.place(&path) {
+                        self.tool = Some(crate::tool::Tool::edit(path, place));
+                    }
+                }
+                crate::marks::Action::NewFolder(path) => {
+                    // «Новая папка 2», сразу на переименование, как у модуля.
+                    let name = scene::placetree::numbered_name(tr(self.lang, "New folder"), &self.marks.names());
+                    let at = self.marks.insert(&path, scene::kml::Item::Folder(scene::kml::Folder::new(&name)), marks::root_name(self.lang));
+                    self.tree_state.selected = Some(at.clone());
+                    self.tree_state.renaming = Some((at, name));
+                    self.marks_changed();
+                }
                 crate::marks::Action::StartRename(path) => {
                     let name = self.marks.tree.as_ref().and_then(|t| marks::item_at(t, &path)).map(|item| match item {
                         scene::kml::Item::Folder(f) => f.name.clone(),
@@ -1539,7 +1661,11 @@ impl eframe::App for LiteApp {
             check.before_frame(&mut self.nav, now, loading, &mut basemap);
             self.set_basemap(basemap);
         } else {
-            self.input.handle(&ctx, rect, &mut self.nav, now, ppp);
+            // Вершину инструмента тянет мышь - Землю она не двигает.
+            let busy = self.tool.as_mut().is_some_and(|t| t.input(&ctx, &globe_response, rect, ppp, &self.nav));
+            if !busy {
+                self.input.handle(&ctx, rect, &mut self.nav, now, ppp);
+            }
         }
         if let Some(name) = self.check.as_mut().and_then(Check::take_scene_request) {
             self.load_check_scene(&name, now);
@@ -1566,11 +1692,15 @@ impl eframe::App for LiteApp {
         }
         self.dropped(&ctx, now);
         self.step_tour(now);
+        self.step_haul(now);
         self.timebar.step(now);
         if self.marks.set_window(self.timebar.window()) {
             self.marks_to_labels();
         }
         let moving = self.nav.step(now) || self.player.is_some() || self.timebar.playing();
+        // Анимация моделей просит кадры, пока модель видна, как
+        // `render/view.py` модуля. Снимок её не ждёт: она идёт по кругу.
+        let animating = !self.animated.is_empty();
         // Ближняя плоскость - от ближайшего рельефа.
         let eye = self.nav.camera.eye;
         self.nav.camera.nearest =
@@ -1614,8 +1744,21 @@ impl eframe::App for LiteApp {
         }
         if let Some(meshes) = self.marks.meshes(&store, now) {
             globe.set_features(&meshes);
-            globe.set_pictures(&self.marks.picture_meshes(&store));
-            globe.set_models(&self.models.meshes(self.marks.overlays(), &store));
+            if self.overlays_built != Some(self.marks.overlays_version()) {
+                self.overlays_built = Some(self.marks.overlays_version());
+                globe.set_pictures(&self.marks.picture_meshes(&store));
+                let built = self.models.meshes(self.marks.overlays(), &store, now);
+                globe.set_models(&built.meshes);
+                self.movers = built.movers;
+                self.animated = built.animated;
+            }
+        }
+        let window = self.timebar.window();
+        for mover in &self.movers {
+            globe.place_model(mover.index, mover.place(window, &store));
+        }
+        for model in &self.animated {
+            globe.animate_model(model.index, model.deltas(now));
         }
         let recreated = globe.resize(width, height);
         let count_holes = self.check.as_ref().is_some_and(Check::count_holes);
@@ -1646,11 +1789,15 @@ impl eframe::App for LiteApp {
         blocked.extend(self.credits.rect);
         blocked.extend(self.toolbar_rect);
         self.labels.draw(&painter, rect, ppp as f32, &blocked, &self.nav.camera, &selection.draw, &self.heights.read());
+        if let Some(tool) = &self.tool {
+            tool.paint(&painter, rect, ppp, &self.nav, self.lang);
+        }
         self.attribution(&ctx, rect);
         self.overlays(&ctx, rect, now);
         if self.check.is_none() && (self.shot.is_none() || self.shot_ui) {
             self.toolbar(&ctx, rect, now);
             self.settings_window(&ctx);
+            self.tool_window(&ctx);
         }
 
         if let Some(check) = &mut self.check {
@@ -1659,7 +1806,7 @@ impl eframe::App for LiteApp {
         }
         self.finish_check(&ctx);
         self.step_shot(&ctx, moving || loading);
-        if moving || loading || self.labels.pending || self.check.is_some() {
+        if moving || animating || loading || self.labels.pending || self.check.is_some() {
             ctx.request_repaint();
         }
     }

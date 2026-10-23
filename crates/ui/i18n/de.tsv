@@ -83,3 +83,70 @@ Source code	Quellcode
 Share a link to this view	Link zu dieser Ansicht teilen
 The link to this view is copied.	Der Link zu dieser Ansicht ist kopiert.
 Files opened from the disk are not in the link.	Von der Festplatte geöffnete Dateien sind nicht im Link enthalten.
+New placemark, path, polygon or circle	Neue Ortsmarke, Pfad, Polygon oder Kreis
+Ruler: distance, area, ground length	Lineal: Entfernung, Fläche, Länge über Gelände
+New folder	Neuer Ordner
+Properties…	Eigenschaften…
+To the start of the bar	Zum Anfang der Leiste
+Play: the range moves along the bar, placemarks appear and hide by their time.	Abspielen: Der Bereich bewegt sich entlang der Leiste, Ortsmarken erscheinen und verschwinden nach ihrer Zeit.
+To the end of the bar	Zum Ende der Leiste
+Play in a loop: at the end of the bar the range starts again from the beginning.	In Schleife abspielen: Am Ende der Leiste beginnt der Bereich wieder von vorn.
+Whole bar in 20 s	Ganze Leiste in 20 s
+Playback speed. ×1 - time runs as on the clock, ×3600 - an hour per second, ×86400 - a day per second.	Wiedergabegeschwindigkeit. ×1 - die Zeit läuft wie auf der Uhr, ×3600 - eine Stunde pro Sekunde, ×86400 - ein Tag pro Sekunde.
+Close the time bar. A closed bar does not hide placemarks.	Zeitleiste schließen. Eine geschlossene Leiste blendet keine Ortsmarken aus.
+My placemark	Meine Ortsmarke
+My path	Mein Pfad
+My polygon	Mein Polygon
+My circle	Mein Kreis
+Ruler	Lineal
+New placemark	Neue Ortsmarke
+Properties	Eigenschaften
+Placemark	Ortsmarke
+Line	Linie
+Path	Pfad
+Polygon	Polygon
+Circle	Kreis
+Name	Name
+Save	Speichern
+Put the shape into My Places with the measurement.	Die Form mit der Messung in „Meine Orte“ ablegen.
+Measurement	Messung
+Clear	Leeren
+Remove the points.	Die gesetzten Punkte entfernen.
+Untitled	Ohne Titel
+Name in My Places and the label of the point on the globe.	Name in „Meine Orte“ und Beschriftung des Punkts auf dem Globus.
+Description	Beschreibung
+Color	Farbe
+Colour of the line and outline. The fill of a polygon is the same colour, semi-transparent.	Farbe der Linie und des Umrisses. Die Füllung eines Polygons hat dieselbe Farbe, halbtransparent.
+Width	Breite
+Width of the line and outline in screen pixels. It does not depend on the scale.	Breite der Linie und des Umrisses in Bildschirmpixeln. Sie hängt nicht vom Maßstab ab.
+Fill	Füllung
+OK	OK
+Write the object to My Places.	Das Objekt in „Meine Orte“ schreiben.
+Cancel	Abbrechen
+Vertices are dragged with the mouse. A circle in the middle of a segment adds a vertex.	Scheitelpunkte werden mit der Maus gezogen. Ein Kreis in der Mitte eines Segments fügt einen Scheitelpunkt hinzu.
+A click on the globe places the placemark. The placemark is dragged with the mouse.	Ein Klick auf den Globus setzt die Ortsmarke. Die Ortsmarke wird mit der Maus gezogen.
+Two clicks on the globe set the ends of the line. Points are dragged with the mouse.	Zwei Klicks auf den Globus setzen die Enden der Linie. Punkte werden mit der Maus gezogen.
+Mark the points of the path with clicks on the globe. A click on the last point finishes the path, on the first one closes the shape.	Markieren Sie die Punkte des Pfads mit Klicks auf den Globus. Ein Klick auf den letzten Punkt beendet den Pfad, auf den ersten schließt er die Form.
+Mark the vertices of the polygon with clicks on the globe. A click on the first vertex finishes drawing.	Markieren Sie die Scheitelpunkte des Polygons mit Klicks auf den Globus. Ein Klick auf den ersten Scheitelpunkt beendet das Zeichnen.
+The first click on the globe sets the centre of the circle, the second one a point of the circle. Both points are dragged with the mouse.	Der erste Klick auf den Globus setzt den Mittelpunkt des Kreises, der zweite einen Punkt auf dem Kreis. Beide Punkte werden mit der Maus gezogen.
+Map length	Kartenlänge
+Length	Länge
+Ground length	Länge über Gelände
+Heading	Kurs
+Perimeter	Umfang
+Area	Fläche
+Radius	Radius
+Kilometres	Kilometer
+Miles	Meilen
+Nautical miles	Seemeilen
+Square metres	Quadratmeter
+Hectares	Hektar
+Square kilometres	Quadratkilometer
+Square miles	Quadratmeilen
+Metres	Meter
+mi	mi
+nmi	sm
+m²	m²
+ha	ha
+km²	km²
+sq mi	mi²

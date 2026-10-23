@@ -84,3 +84,70 @@ Source code	Kode sumber
 Share a link to this view	Bagikan tautan ke tampilan ini
 The link to this view is copied.	Tautan ke tampilan ini telah disalin.
 Files opened from the disk are not in the link.	Berkas yang dibuka dari disk tidak ada di tautan.
+New placemark, path, polygon or circle	Penanda, jalur, poligon, atau lingkaran baru
+Ruler: distance, area, ground length	Penggaris: jarak, luas, panjang di atas relief
+New folder	Folder baru
+Properties…	Properti…
+To the start of the bar	Ke awal bilah
+Play: the range moves along the bar, placemarks appear and hide by their time.	Putar: rentang bergerak sepanjang bilah, penanda muncul dan tersembunyi sesuai waktunya.
+To the end of the bar	Ke akhir bilah
+Play in a loop: at the end of the bar the range starts again from the beginning.	Putar berulang: di akhir bilah rentang mulai lagi dari awal.
+Whole bar in 20 s	Seluruh bilah dalam 20 detik
+Playback speed. ×1 - time runs as on the clock, ×3600 - an hour per second, ×86400 - a day per second.	Kecepatan pemutaran. ×1 - waktu berjalan seperti pada jam, ×3600 - satu jam per detik, ×86400 - satu hari per detik.
+Close the time bar. A closed bar does not hide placemarks.	Tutup bilah waktu. Bilah yang ditutup tidak menyembunyikan penanda.
+My placemark	Penanda saya
+My path	Jalur saya
+My polygon	Poligon saya
+My circle	Lingkaran saya
+Ruler	Penggaris
+New placemark	Penanda baru
+Properties	Properti
+Placemark	Penanda
+Line	Garis
+Path	Jalur
+Polygon	Poligon
+Circle	Lingkaran
+Name	Nama
+Save	Simpan
+Put the shape into My Places with the measurement.	Masukkan bentuk ke "Tempat Saya" beserta pengukurannya.
+Measurement	Pengukuran
+Clear	Bersihkan
+Remove the points.	Hapus titik yang telah dipasang.
+Untitled	Tanpa judul
+Name in My Places and the label of the point on the globe.	Nama di "Tempat Saya" dan label titik di globe.
+Description	Deskripsi
+Color	Warna
+Colour of the line and outline. The fill of a polygon is the same colour, semi-transparent.	Warna garis dan kontur. Isian poligon berwarna sama, semi-transparan.
+Width	Ketebalan
+Width of the line and outline in screen pixels. It does not depend on the scale.	Ketebalan garis dan kontur dalam piksel layar. Tidak bergantung pada skala.
+Fill	Isian
+OK	OK
+Write the object to My Places.	Tulis objek ke "Tempat Saya".
+Cancel	Batal
+Vertices are dragged with the mouse. A circle in the middle of a segment adds a vertex.	Simpul diseret dengan mouse. Lingkaran di tengah segmen menambahkan simpul.
+A click on the globe places the placemark. The placemark is dragged with the mouse.	Klik pada globe memasang penanda. Penanda diseret dengan mouse.
+Two clicks on the globe set the ends of the line. Points are dragged with the mouse.	Dua klik pada globe menetapkan ujung-ujung garis. Titik diseret dengan mouse.
+Mark the points of the path with clicks on the globe. A click on the last point finishes the path, on the first one closes the shape.	Tandai titik-titik jalur dengan klik pada globe. Klik pada titik terakhir menyelesaikan jalur, pada titik pertama menutup bentuk.
+Mark the vertices of the polygon with clicks on the globe. A click on the first vertex finishes drawing.	Tandai simpul poligon dengan klik pada globe. Klik pada simpul pertama menyelesaikan gambar.
+The first click on the globe sets the centre of the circle, the second one a point of the circle. Both points are dragged with the mouse.	Klik pertama pada globe menetapkan pusat lingkaran, klik kedua sebuah titik pada lingkaran. Kedua titik diseret dengan mouse.
+Map length	Panjang di peta
+Length	Panjang
+Ground length	Panjang di atas relief
+Heading	Arah
+Perimeter	Keliling
+Area	Luas
+Radius	Jari-jari
+Kilometres	Kilometer
+Miles	Mil
+Nautical miles	Mil laut
+Square metres	Meter persegi
+Hectares	Hektare
+Square kilometres	Kilometer persegi
+Square miles	Mil persegi
+Metres	Meter
+mi	mi
+nmi	NM
+m²	m²
+ha	ha
+km²	km²
+sq mi	mi²

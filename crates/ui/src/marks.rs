@@ -145,6 +145,15 @@ fn collect(folder: &Folder, out: &mut Vec<(Shape, Option<Time>)>) {
 /// Объекты в окне шкалы времени: метки вне окна скрыты, путь
 /// с промежутком времени вырос на долю, прошедшую к концу окна. Без
 /// окна - все.
+fn overlay_indices(timed: &[(kml::Overlay, Option<Time>)], window: Option<(f64, f64)>) -> Vec<usize> {
+    timed
+        .iter()
+        .enumerate()
+        .filter(|(_, (_, t))| window.is_none_or(|(lo, hi)| when::visible(t.as_ref(), lo, hi)))
+        .map(|(i, _)| i)
+        .collect()
+}
+
 pub fn in_window(shapes: &[(Shape, Option<Time>)], window: Option<(f64, f64)>) -> Vec<Shape> {
     shapes
         .iter()
@@ -296,6 +305,18 @@ pub enum Action {
     Clear,
     /// Открыть файл в «Мои метки».
     Open,
+    /// Окно свойств метки: название, описание, цвет, вершины на глобусе.
+    Properties(Vec<usize>),
+    /// Новая папка в папке по пути, пустой путь - в корне.
+    NewFolder(Vec<usize>),
+}
+
+/// Вид строки для меню.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RowKind {
+    Folder,
+    Place,
+    Overlay,
 }
 
 /// Тексты меню строк дерева.
@@ -308,6 +329,8 @@ struct Words {
     save_scene: &'static str,
     open: &'static str,
     clear: &'static str,
+    properties: &'static str,
+    new_folder: &'static str,
 }
 
 fn words(lang: crate::i18n::Lang) -> Words {
@@ -321,6 +344,8 @@ fn words(lang: crate::i18n::Lang) -> Words {
         save_scene: tr(lang, "Save scene…"),
         open: tr(lang, "Open…"),
         clear: tr(lang, "Clear My Places"),
+        properties: tr(lang, "Properties…"),
+        new_folder: tr(lang, "New folder"),
     }
 }
 
@@ -331,8 +356,16 @@ pub fn root_name(lang: crate::i18n::Lang) -> &'static str {
 
 /// Меню правой кнопки строки, как у модуля в минимуме: перелёт, тур,
 /// удаление.
-fn row_menu(response: &eframe::egui::Response, w: &Words, path: &[usize], tour: bool, actions: &mut Vec<Action>) {
+fn row_menu(response: &eframe::egui::Response, w: &Words, path: &[usize], tour: bool, kind: RowKind, actions: &mut Vec<Action>) {
     response.context_menu(|ui| {
+        if kind == RowKind::Place && ui.button(w.properties).clicked() {
+            actions.push(Action::Properties(path.to_vec()));
+            ui.close();
+        }
+        if kind == RowKind::Folder && ui.button(w.new_folder).clicked() {
+            actions.push(Action::NewFolder(path.to_vec()));
+            ui.close();
+        }
         if ui.button(w.fly).clicked() {
             actions.push(Action::Fly(path.to_vec()));
             ui.close();
@@ -380,7 +413,7 @@ fn row_name(
     ui: &mut eframe::egui::Ui,
     text: &str,
     path: &[usize],
-    tour: bool,
+    (tour, kind): (bool, RowKind),
     w: &Words,
     state: &mut TreeState,
     actions: &mut Vec<Action>,
@@ -428,7 +461,7 @@ fn row_name(
     if label.double_clicked() {
         actions.push(Action::Fly(path.to_vec()));
     }
-    row_menu(&label, w, path, tour, actions);
+    row_menu(&label, w, path, tour, kind, actions);
 }
 
 /// Строка принимает перетащенную: линия над строкой - перед ней,
@@ -483,6 +516,10 @@ pub fn root_ui(
                     actions.push(Action::Open);
                     ui.close();
                 }
+                if ui.button(w.new_folder).clicked() {
+                    actions.push(Action::NewFolder(Vec::new()));
+                    ui.close();
+                }
                 if !root.children.is_empty() {
                     if ui.button(w.tour).clicked() {
                         actions.push(Action::Tour(Vec::new()));
@@ -535,7 +572,7 @@ pub fn tree_ui(
                             actions.push(Action::Toggled(path.clone()));
                         }
                         crate::theme::folder_icon(ui);
-                        row_name(ui, &f.name, path, true, &w, state, actions);
+                        row_name(ui, &f.name, path, (true, RowKind::Folder), &w, state, actions);
                     })
                     .body(|ui| tree_ui(ui, f, path, lang, state, actions));
                 drop_target(ui, &head.response, path, true, actions);
@@ -557,7 +594,7 @@ pub fn tree_ui(
                     let rgba = |c: [u8; 4]| egui::Color32::from_rgba_unmultiplied(c[0], c[1], c[2], c[3]);
                     crate::theme::row_icon(ui, icon, rgba(p.color), p.fill.map(rgba));
                     let name = if p.name.is_empty() { "-" } else { p.name.as_str() };
-                    row_name(ui, name, path, p.tour.is_some(), &w, state, actions);
+                    row_name(ui, name, path, (p.tour.is_some(), RowKind::Place), &w, state, actions);
                     if p.tour.is_some() && crate::timeline::icon_button(ui, crate::timeline::Icon::Play).clicked() {
                         actions.push(Action::Tour(path.clone()));
                     }
@@ -577,7 +614,7 @@ pub fn tree_ui(
                     };
                     crate::theme::row_icon(ui, icon, crate::theme::pal().text, None);
                     let name = if o.name.is_empty() { "-" } else { o.name.as_str() };
-                    row_name(ui, name, path, false, &w, state, actions);
+                    row_name(ui, name, path, (false, RowKind::Overlay), &w, state, actions);
                 });
                 drop_target(ui, &row.response, path, false, actions);
             }
@@ -605,6 +642,10 @@ pub struct Marks {
     built: Option<(u64, f64)>,
     /// Сетки нужно собрать заново.
     dirty: bool,
+    /// Номера видимых наложений в окне шкалы.
+    shown_overlays: Vec<usize>,
+    /// Номер набора наложений, [`Marks::overlays_version`].
+    overlays_version: u64,
     /// Название открытого файла.
     pub name: String,
 }
@@ -640,6 +681,67 @@ impl Marks {
             Item::Folder(f) => Some(f),
             _ => None,
         }
+    }
+
+    /// Новая строка item в конец папки по пути folder, пустой путь -
+    /// корень. Строка не папки - в папку, где она лежит. Возвращает путь
+    /// новой строки. root - название корня на языке интерфейса.
+    pub fn insert(&mut self, folder: &[usize], item: Item, root: &str) -> Vec<usize> {
+        let tree = self.root(root);
+        let mut path = folder.to_vec();
+        if !path.is_empty() && !matches!(item_at(tree, &path), Some(Item::Folder(_))) {
+            path.pop();
+        }
+        if folder_at_mut(tree, &path).is_none() {
+            path.clear();
+        }
+        let mut at = 0;
+        if let Some(target) = folder_at_mut(tree, &path) {
+            target.children.push(item);
+            at = target.children.len() - 1;
+        }
+        path.push(at);
+        self.refresh();
+        path
+    }
+
+    /// Метка по пути или None.
+    pub fn place(&self, path: &[usize]) -> Option<&Place> {
+        match item_at(self.tree.as_ref()?, path)? {
+            Item::Place(p) => Some(p),
+            _ => None,
+        }
+    }
+
+    /// Заменить метку по пути. false - метки там нет.
+    pub fn set_place(&mut self, path: &[usize], place: Place) -> bool {
+        let Some(Item::Place(slot)) = self.tree.as_mut().and_then(|t| item_at_mut(t, path)) else {
+            return false;
+        };
+        *slot = place;
+        self.refresh();
+        true
+    }
+
+    /// Названия всех меток и папок дерева, для номера новой метки.
+    pub fn names(&self) -> Vec<String> {
+        fn walk(folder: &Folder, out: &mut Vec<String>) {
+            for child in &folder.children {
+                match child {
+                    Item::Folder(f) => {
+                        out.push(f.name.clone());
+                        walk(f, out);
+                    }
+                    Item::Place(p) => out.push(p.name.clone()),
+                    Item::Overlay(o) => out.push(o.name.clone()),
+                }
+            }
+        }
+        let mut out = Vec::new();
+        if let Some(tree) = &self.tree {
+            walk(tree, &mut out);
+        }
+        out
     }
 
     /// Удалить строку по пути. false - строки нет.
@@ -764,6 +866,8 @@ impl Marks {
         self.shapes = in_window(&self.timed, self.window);
         self.timed_overlays = shown.map(pictures::timed_overlays).unwrap_or_default();
         self.overlays = pictures::in_window(&self.timed_overlays, self.window);
+        self.shown_overlays = overlay_indices(&self.timed_overlays, self.window);
+        self.overlays_version += 1;
         self.dirty = true;
         self.built = None;
     }
@@ -775,9 +879,22 @@ impl Marks {
         }
         self.window = window;
         self.shapes = in_window(&self.timed, window);
-        self.overlays = pictures::in_window(&self.timed_overlays, window);
+        // Наложения и модели пересобираются, только когда сменился их
+        // набор: при показе шкалы окно меняется каждый кадр.
+        let shown = overlay_indices(&self.timed_overlays, window);
+        if shown != self.shown_overlays {
+            self.shown_overlays = shown;
+            self.overlays = pictures::in_window(&self.timed_overlays, window);
+            self.overlays_version += 1;
+        }
         self.dirty = true;
         true
+    }
+
+    /// Номер набора наложений кадра: меняется, когда наложения или
+    /// высоты под ними надо собрать заново.
+    pub fn overlays_version(&self) -> u64 {
+        self.overlays_version
     }
 
     /// Охват шкалы по временам видимых меток и наложений.
@@ -873,6 +990,9 @@ impl Marks {
         };
         if !(self.dirty || due) {
             return None;
+        }
+        if due {
+            self.overlays_version += 1;
         }
         self.dirty = false;
         self.built = Some((version, now));

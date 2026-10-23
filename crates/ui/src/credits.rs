@@ -148,17 +148,29 @@ impl Credits {
             .order(egui::Order::Foreground)
             .anchor(egui::Align2::RIGHT_BOTTOM, egui::vec2(-MARGIN, -MARGIN))
             .show(ctx, |ui| {
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Max), |ui| {
+                // Знак PlanetX: значок и название.
+                let h = BRAND_HEIGHT;
+                let name = ui.painter().layout_no_wrap(BRAND.to_string(), egui::FontId::proportional(h * BRAND_TEXT), egui::Color32::WHITE);
+                let gap = h * 0.18;
+                let size = egui::vec2(h + gap + name.size().x + 2.0, h);
+                // Подпись источников левее знака, переносится по ширине.
+                let credit_galley = (!pieces.is_empty()).then(|| {
+                    let room = (screen.width() - size.x - 3.0 * MARGIN).max(80.0);
+                    let font = egui::FontId::proportional(ATTRIBUTION_FONT);
+                    let painter = ui.painter();
+                    let text = break_lines(&pieces, room, |s| painter.layout_no_wrap(s.to_string(), font.clone(), CREDIT_COLOR).size().x);
+                    let mut job = egui::text::LayoutJob::simple(text, font, CREDIT_COLOR, f32::INFINITY);
+                    job.halign = egui::Align::RIGHT;
+                    ui.painter().layout_job(job)
+                });
+                // Высота области - по знаку и подписи. Раскладка справа
+                // налево с выравниванием по низу иначе растягивала область
+                // на всю высоту вида, и щелчки по глобусу под ней не
+                // доходили до глобуса.
+                let height = credit_galley.as_ref().map_or(h, |g| g.size().y.max(h));
+                let room = egui::vec2(screen.width(), height);
+                ui.allocate_ui_with_layout(room, egui::Layout::right_to_left(egui::Align::Max), |ui| {
                     ui.spacing_mut().item_spacing = egui::vec2(MARGIN / 2.0, 0.0);
-                    // Знак PlanetX: значок и название.
-                    let h = BRAND_HEIGHT;
-                    let name = ui.painter().layout_no_wrap(
-                        BRAND.to_string(),
-                        egui::FontId::proportional(h * BRAND_TEXT),
-                        egui::Color32::WHITE,
-                    );
-                    let gap = h * 0.18;
-                    let size = egui::vec2(h + gap + name.size().x + 2.0, h);
                     let (rect, brand) = ui.allocate_exact_size(size, egui::Sense::click());
                     used = used.union(rect);
                     if let Some(id) = icon {
@@ -170,15 +182,7 @@ impl Credits {
                     if brand.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
                         open_about = true;
                     }
-                    // Подпись источников левее знака, переносится по ширине.
-                    if !pieces.is_empty() {
-                        let room = (screen.width() - size.x - 3.0 * MARGIN).max(80.0);
-                        let font = egui::FontId::proportional(ATTRIBUTION_FONT);
-                        let painter = ui.painter();
-                        let text = break_lines(&pieces, room, |s| painter.layout_no_wrap(s.to_string(), font.clone(), CREDIT_COLOR).size().x);
-                        let mut job = egui::text::LayoutJob::simple(text, font, CREDIT_COLOR, f32::INFINITY);
-                        job.halign = egui::Align::RIGHT;
-                        let galley = ui.painter().layout_job(job);
+                    if let Some(galley) = credit_galley {
                         let (rect, credit) = ui.allocate_exact_size(galley.size(), egui::Sense::click());
                         used = used.union(rect);
                         // Строки выровнены вправо от правого края места.

@@ -84,3 +84,70 @@ Source code	Kaynak kod
 Share a link to this view	Bu görünümün bağlantısını paylaş
 The link to this view is copied.	Bu görünümün bağlantısı kopyalandı.
 Files opened from the disk are not in the link.	Diskten açılan dosyalar bağlantıda yok.
+New placemark, path, polygon or circle	Yeni yer işareti, yol, çokgen veya daire
+Ruler: distance, area, ground length	Cetvel: mesafe, alan, arazi üzerindeki uzunluk
+New folder	Yeni klasör
+Properties…	Özellikler…
+To the start of the bar	Çubuğun başına
+Play: the range moves along the bar, placemarks appear and hide by their time.	Oynat: aralık çubuk boyunca ilerler, yer işaretleri zamanlarına göre görünür ve gizlenir.
+To the end of the bar	Çubuğun sonuna
+Play in a loop: at the end of the bar the range starts again from the beginning.	Döngüde oynat: çubuğun sonunda aralık yeniden baştan başlar.
+Whole bar in 20 s	Tüm çubuk 20 sn'de
+Playback speed. ×1 - time runs as on the clock, ×3600 - an hour per second, ×86400 - a day per second.	Oynatma hızı. ×1 - zaman saatteki gibi akar, ×3600 - saniyede bir saat, ×86400 - saniyede bir gün.
+Close the time bar. A closed bar does not hide placemarks.	Zaman çubuğunu kapat. Kapalı çubuk yer işaretlerini gizlemez.
+My placemark	Yer işaretim
+My path	Yolum
+My polygon	Çokgenim
+My circle	Dairem
+Ruler	Cetvel
+New placemark	Yeni yer işareti
+Properties	Özellikler
+Placemark	Yer işareti
+Line	Çizgi
+Path	Yol
+Polygon	Çokgen
+Circle	Daire
+Name	Ad
+Save	Kaydet
+Put the shape into My Places with the measurement.	Şekli ölçümle birlikte "Yerlerim"e koy.
+Measurement	Ölçüm
+Clear	Temizle
+Remove the points.	Konulan noktaları kaldır.
+Untitled	Adsız
+Name in My Places and the label of the point on the globe.	"Yerlerim"deki ad ve noktanın küre üzerindeki etiketi.
+Description	Açıklama
+Color	Renk
+Colour of the line and outline. The fill of a polygon is the same colour, semi-transparent.	Çizginin ve dış hattın rengi. Çokgenin dolgusu aynı renkte, yarı saydamdır.
+Width	Kalınlık
+Width of the line and outline in screen pixels. It does not depend on the scale.	Çizginin ve dış hattın ekran pikseli cinsinden kalınlığı. Ölçeğe bağlı değildir.
+Fill	Dolgu
+OK	Tamam
+Write the object to My Places.	Nesneyi "Yerlerim"e yaz.
+Cancel	İptal
+Vertices are dragged with the mouse. A circle in the middle of a segment adds a vertex.	Köşeler fareyle sürüklenir. Bir parçanın ortasındaki daire yeni köşe ekler.
+A click on the globe places the placemark. The placemark is dragged with the mouse.	Küreye bir tık yer işaretini koyar. Yer işareti fareyle sürüklenir.
+Two clicks on the globe set the ends of the line. Points are dragged with the mouse.	Küreye iki tık çizginin uçlarını belirler. Noktalar fareyle sürüklenir.
+Mark the points of the path with clicks on the globe. A click on the last point finishes the path, on the first one closes the shape.	Yolun noktalarını küreye tıklayarak işaretleyin. Son noktaya tık yolu bitirir, ilk noktaya tık şekli kapatır.
+Mark the vertices of the polygon with clicks on the globe. A click on the first vertex finishes drawing.	Çokgenin köşelerini küreye tıklayarak işaretleyin. İlk köşeye tık çizimi bitirir.
+The first click on the globe sets the centre of the circle, the second one a point of the circle. Both points are dragged with the mouse.	Küreye ilk tık dairenin merkezini, ikinci tık çember üzerinde bir noktayı belirler. Her iki nokta fareyle sürüklenir.
+Map length	Haritadaki uzunluk
+Length	Uzunluk
+Ground length	Arazi üzerindeki uzunluk
+Heading	Yön
+Perimeter	Çevre
+Area	Alan
+Radius	Yarıçap
+Kilometres	Kilometre
+Miles	Mil
+Nautical miles	Deniz mili
+Square metres	Metrekare
+Hectares	Hektar
+Square kilometres	Kilometrekare
+Square miles	Mil kare
+Metres	Metre
+mi	mi
+nmi	NM
+m²	m²
+ha	ha
+km²	km²
+sq mi	mi²

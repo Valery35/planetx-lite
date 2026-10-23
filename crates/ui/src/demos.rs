@@ -71,11 +71,18 @@ pub const MENU: [Section; 6] = [
     Section {
         en: "Haul trucks in open pits",
         demos: &[
-            Demo { en: "Haul trucks, Kachkanar", files: &["haul/haul_kachkanar.gpkg"] },
-            Demo { en: "Haul trucks, Lebedinsky", files: &["haul/haul_lebedinsky.gpkg"] },
+            // Самосвалы - пути KML с моделью, как демо модуля
+            // (`_play_model_trucks`): шкала идёт ×10 по кругу рейса.
+            Demo { en: "Haul trucks, Kachkanar", files: &["haul_kachkanar.planetx"] },
+            Demo { en: "Haul trucks, Lebedinsky", files: &["haul_lebedinsky.planetx"] },
         ],
     },
 ];
+
+/// Демо самосвалов: после открытия шкала проигрывает рейс по кругу.
+pub fn is_haul(demo: &Demo) -> bool {
+    demo.files.iter().any(|f| name(f).starts_with("haul_"))
+}
 
 /// Адрес файла демо.
 pub fn url(path: &str) -> String {

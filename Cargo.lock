@@ -2817,6 +2817,7 @@ dependencies = [
 name = "scene"
 version = "0.1.0"
 dependencies = [
+ "geographiclib-rs",
  "globe-core",
  "quick-xml 0.42.0",
  "serde_json",

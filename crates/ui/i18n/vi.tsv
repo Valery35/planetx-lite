@@ -84,3 +84,70 @@ Source code	Mã nguồn
 Share a link to this view	Chia sẻ liên kết tới khung nhìn này
 The link to this view is copied.	Đã sao chép liên kết tới khung nhìn này.
 Files opened from the disk are not in the link.	Các tệp mở từ ổ đĩa không có trong liên kết.
+New placemark, path, polygon or circle	Dấu vị trí, đường đi, đa giác hoặc hình tròn mới
+Ruler: distance, area, ground length	Thước đo: khoảng cách, diện tích, chiều dài theo địa hình
+New folder	Thư mục mới
+Properties…	Thuộc tính…
+To the start of the bar	Về đầu thanh
+Play: the range moves along the bar, placemarks appear and hide by their time.	Phát: khoảng thời gian di chuyển dọc theo thanh, các dấu vị trí xuất hiện và ẩn đi theo thời gian của chúng.
+To the end of the bar	Về cuối thanh
+Play in a loop: at the end of the bar the range starts again from the beginning.	Phát lặp lại: đến cuối thanh, khoảng thời gian bắt đầu lại từ đầu.
+Whole bar in 20 s	Cả thanh trong 20 giây
+Playback speed. ×1 - time runs as on the clock, ×3600 - an hour per second, ×86400 - a day per second.	Tốc độ phát. ×1 - thời gian trôi như trên đồng hồ, ×3600 - một giờ mỗi giây, ×86400 - một ngày mỗi giây.
+Close the time bar. A closed bar does not hide placemarks.	Đóng thanh thời gian. Thanh đã đóng không ẩn các dấu vị trí.
+My placemark	Dấu vị trí của tôi
+My path	Đường đi của tôi
+My polygon	Đa giác của tôi
+My circle	Hình tròn của tôi
+Ruler	Thước đo
+New placemark	Dấu vị trí mới
+Properties	Thuộc tính
+Placemark	Dấu vị trí
+Line	Đường thẳng
+Path	Đường đi
+Polygon	Đa giác
+Circle	Hình tròn
+Name	Tên
+Save	Lưu
+Put the shape into My Places with the measurement.	Đưa hình vào "Địa điểm của tôi" cùng với phép đo.
+Measurement	Phép đo
+Clear	Xóa hết
+Remove the points.	Xóa các điểm đã đặt.
+Untitled	Không có tiêu đề
+Name in My Places and the label of the point on the globe.	Tên trong "Địa điểm của tôi" và nhãn của điểm trên quả địa cầu.
+Description	Mô tả
+Color	Màu
+Colour of the line and outline. The fill of a polygon is the same colour, semi-transparent.	Màu của đường và đường viền. Phần tô của đa giác cùng màu, bán trong suốt.
+Width	Độ dày
+Width of the line and outline in screen pixels. It does not depend on the scale.	Độ dày của đường và đường viền tính bằng pixel màn hình. Không phụ thuộc vào tỷ lệ.
+Fill	Tô màu
+OK	OK
+Write the object to My Places.	Ghi đối tượng vào "Địa điểm của tôi".
+Cancel	Hủy
+Vertices are dragged with the mouse. A circle in the middle of a segment adds a vertex.	Các đỉnh được kéo bằng chuột. Hình tròn ở giữa đoạn thẳng thêm một đỉnh mới.
+A click on the globe places the placemark. The placemark is dragged with the mouse.	Nhấp vào quả địa cầu để đặt dấu vị trí. Dấu vị trí được kéo bằng chuột.
+Two clicks on the globe set the ends of the line. Points are dragged with the mouse.	Hai lần nhấp vào quả địa cầu đặt hai đầu của đường. Các điểm được kéo bằng chuột.
+Mark the points of the path with clicks on the globe. A click on the last point finishes the path, on the first one closes the shape.	Đánh dấu các điểm của đường đi bằng cách nhấp vào quả địa cầu. Nhấp vào điểm cuối để kết thúc đường đi, vào điểm đầu tiên để khép kín hình.
+Mark the vertices of the polygon with clicks on the globe. A click on the first vertex finishes drawing.	Đánh dấu các đỉnh của đa giác bằng cách nhấp vào quả địa cầu. Nhấp vào đỉnh đầu tiên để kết thúc vẽ.
+The first click on the globe sets the centre of the circle, the second one a point of the circle. Both points are dragged with the mouse.	Lần nhấp đầu tiên vào quả địa cầu đặt tâm hình tròn, lần thứ hai đặt một điểm trên đường tròn. Cả hai điểm được kéo bằng chuột.
+Map length	Chiều dài trên bản đồ
+Length	Chiều dài
+Ground length	Chiều dài theo địa hình
+Heading	Hướng
+Perimeter	Chu vi
+Area	Diện tích
+Radius	Bán kính
+Kilometres	Kilômét
+Miles	Dặm
+Nautical miles	Hải lý
+Square metres	Mét vuông
+Hectares	Héc-ta
+Square kilometres	Kilômét vuông
+Square miles	Dặm vuông
+Metres	Mét
+mi	dặm
+nmi	hải lý
+m²	m²
+ha	ha
+km²	km²
+sq mi	dặm²

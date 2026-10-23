@@ -341,6 +341,10 @@ pub enum Tool {
     Demo,
     /// Поделиться ссылкой на вид: три узла, связанные линиями.
     Share,
+    /// Новая метка: булавка.
+    Placemark,
+    /// Линейка: планка с делениями наискось.
+    Ruler,
     /// Настройки.
     Settings,
     /// Во весь экран.
@@ -388,6 +392,22 @@ pub fn tool_button(ui: &mut egui::Ui, tool: Tool, on: bool, tip: &str) -> egui::
             painter.line_segment([q(8.8, 13.4), q(15.2, 17.1)], s);
             for center in [a, b, c] {
                 painter.circle_stroke(center, 2.7, s);
+            }
+        }
+        Tool::Placemark => {
+            // Булавка: кружок головки и остриё вниз.
+            painter.circle_stroke(q(12.0, 9.0), 5.5, s);
+            painter.circle_filled(q(12.0, 9.0), 1.8, p.plate_text);
+            painter.line(vec![q(7.6, 12.3), q(12.0, 21.0), q(16.4, 12.3)], s);
+        }
+        Tool::Ruler => {
+            let corners = vec![q(3.0, 16.0), q(16.0, 3.0), q(21.0, 8.0), q(8.0, 21.0), q(3.0, 16.0)];
+            painter.line(corners, s);
+            for k in 1..5 {
+                let t = k as f32 * 2.6;
+                let long = if k % 2 == 0 { 3.2 } else { 2.0 };
+                let (x, y) = (3.0 + t, 16.0 - t);
+                painter.line_segment([q(x, y), q(x + long * 0.7, y + long * 0.7)], s);
             }
         }
         Tool::Settings => {

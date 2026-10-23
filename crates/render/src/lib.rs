@@ -36,7 +36,7 @@ pub use features::{FeatureMesh, PULL, WALL_ALPHA};
 use features::Features;
 mod pictures;
 mod models;
-pub use models::{ModelMesh, ModelPart};
+pub use models::{ModelMesh, ModelPart, ModelPlace};
 use models::Models;
 mod points;
 pub use points::PointsMesh;
@@ -1105,6 +1105,17 @@ impl Globe {
     /// 3D-модели. Заменяют прежние.
     pub fn set_models(&mut self, models: &[ModelMesh]) {
         self.models.set(&self.device, &self.queue, models);
+    }
+
+    /// Новое место модели номер index из [`Globe::set_models`]: модель
+    /// едет по пути.
+    pub fn place_model(&mut self, index: usize, place: ModelPlace) {
+        self.models.place(index, place);
+    }
+
+    /// Матрицы дорожек анимации модели номер index на кадр.
+    pub fn animate_model(&mut self, index: usize, deltas: std::collections::HashMap<usize, DMat4>) {
+        self.models.animate(index, deltas);
     }
 
     /// Облака точек. Заменяют прежние.

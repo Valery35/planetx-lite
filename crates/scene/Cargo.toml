@@ -14,6 +14,7 @@ repository.workspace = true
 [dependencies]
 globe-core.workspace = true
 serde_json.workspace = true
+geographiclib-rs.workspace = true
 # escape-html - таблица сущностей HTML для правки KML с &nbsp; и подобным.
 quick-xml = { workspace = true, features = ["escape-html"] }
 zip.workspace = true

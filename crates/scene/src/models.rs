@@ -5,8 +5,8 @@
 //! 3D-модели на глобусе, как Model в KML Google Earth. Перенос
 //! `core/models.py` модуля - место модели, пакет её файлов и чтение
 //! сеток. Сетки читают модули [`crate::collada`], [`crate::gltf`]
-//! и [`crate::obj`], итог - части [`Part`] после [`merge`]. Анимации
-//! узлов модуля (`read_animated`) не перенесены. Вершины для видеокарты
+//! и [`crate::obj`], итог - части [`Part`] после [`merge`]. Анимация
+//! узлов - [`read_animated`] и [`crate::animation`]. Вершины для видеокарты
 //! (`vertices` модуля) собирает интерфейс.
 //!
 //! Модель - файл Collada (.dae), glTF (.gltf, .glb) или OBJ (.obj)
@@ -32,6 +32,7 @@ use globe_core::ellipsoid::Ellipsoid;
 use globe_core::{DMat3, DVec2, DVec3};
 use serde_json::{Map, Value};
 
+use crate::animation::Animation;
 use crate::util::{Archive, basename, dirname, normpath, unquote, write_zip};
 use crate::{collada, gltf, obj};
 
@@ -62,6 +63,9 @@ pub struct Part {
     pub image: Option<String>,
     /// Цвет 0-1, у картинки - множитель.
     pub rgba: [f64; 4],
+    /// Дорожка анимации [`crate::animation`] или None у части, которая
+    /// не движется.
+    pub track: Option<usize>,
 }
 
 impl Part {
@@ -72,7 +76,7 @@ impl Part {
         image: Option<String>,
         rgba: [f64; 4],
     ) -> Self {
-        Self { positions, normals, uv, image, rgba }
+        Self { positions, normals, uv, image, rgba, track: None }
     }
 }
 
@@ -100,7 +104,8 @@ pub fn flat_normals(positions: &[DVec3]) -> Vec<DVec3> {
     out
 }
 
-/// Части одного материала - вместе, без нормалей - с нормалями граней.
+/// Части одного материала и одной дорожки анимации - вместе, без
+/// нормалей - с нормалями граней.
 /// Пустые части и части с нечисловыми вершинами пропускаются. Вершин
 /// больше [`MAX_VERTICES`] - ошибка.
 pub fn merge(parts: Vec<Part>) -> Result<Vec<Part>, ModelError> {
@@ -109,7 +114,9 @@ pub fn merge(parts: Vec<Part>) -> Result<Vec<Part>, ModelError> {
 
 /// То же, что [`merge`], с пределом вершин limit.
 pub fn merge_limit(parts: Vec<Part>, limit: usize) -> Result<Vec<Part>, ModelError> {
-    let mut groups: HashMap<(Option<String>, [u64; 4]), usize> = HashMap::new();
+    // Картинка, цвет, дорожка - номер части в out.
+    type Group = (Option<String>, [u64; 4], Option<usize>);
+    let mut groups: HashMap<Group, usize> = HashMap::new();
     let mut out: Vec<Part> = Vec::new();
     let mut total = 0usize;
     for part in parts {
@@ -141,7 +148,7 @@ pub fn merge_limit(parts: Vec<Part>, limit: usize) -> Result<Vec<Part>, ModelErr
             _ => (None, vec![DVec2::ZERO; count]),
         };
         // -0.0 и 0.0 - один цвет.
-        let key = (image.clone(), part.rgba.map(|v| (v + 0.0).to_bits()));
+        let key = (image.clone(), part.rgba.map(|v| (v + 0.0).to_bits()), part.track);
         match groups.get(&key).and_then(|&i| out.get_mut(i)) {
             Some(found) => {
                 found.positions.extend(positions);
@@ -150,7 +157,7 @@ pub fn merge_limit(parts: Vec<Part>, limit: usize) -> Result<Vec<Part>, ModelErr
             }
             None => {
                 groups.insert(key, out.len());
-                out.push(Part::new(positions, Some(normals), Some(uv), image, part.rgba));
+                out.push(Part { track: part.track, ..Part::new(positions, Some(normals), Some(uv), image, part.rgba) });
             }
         }
     }
@@ -446,6 +453,11 @@ pub fn collect(
 /// картинок частей - пути в пакете, у glTF - «gltf:номер». Ненайденная
 /// картинка - часть без картинки, цветом материала.
 pub fn read(data: &[u8]) -> Result<(Vec<Part>, Pictures), ModelError> {
+    read_animated(data).map(|(parts, pictures, _)| (parts, pictures))
+}
+
+/// То же, что [`read`], и анимация узлов или None.
+pub fn read_animated(data: &[u8]) -> Result<(Vec<Part>, Pictures, Option<Animation>), ModelError> {
     let package = unpack(data)?;
     let (files, main, aliases) = (&package.files, package.main.as_str(), &package.aliases);
     let body = file(files, main).ok_or_else(|| error("no model file in package"))?;
@@ -458,9 +470,9 @@ pub fn read(data: &[u8]) -> Result<(Vec<Part>, Pictures), ModelError> {
     };
     let near = |reference: &str| find(reference).and_then(|p| file(files, &p)).map(<[u8]>::to_vec);
     let kind = main.rsplit_once('.').map_or("", |(_, k)| k).to_lowercase();
-    let (parts, pictures) = match kind.as_str() {
+    let (parts, pictures, moving) = match kind.as_str() {
         "dae" | "obj" => {
-            let mut parts = if kind == "dae" { collada::read_dae(body)? } else { obj::read(body, &near)? };
+            let (mut parts, moving) = if kind == "dae" { collada::read_dae_animated(body)? } else { (obj::read(body, &near)?, None) };
             let mut pictures = Pictures::new();
             for part in &mut parts {
                 let Some(image) = part.image.take() else {
@@ -474,9 +486,9 @@ pub fn read(data: &[u8]) -> Result<(Vec<Part>, Pictures), ModelError> {
                     None => part.uv = None,
                 }
             }
-            (parts, pictures)
+            (parts, pictures, moving)
         }
-        _ => gltf::read(body, &near)?,
+        _ => gltf::read_animated(body, &near)?,
     };
-    Ok((merge(parts)?, pictures))
+    Ok((merge(parts)?, pictures, moving))
 }

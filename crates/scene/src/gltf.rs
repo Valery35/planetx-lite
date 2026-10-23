@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Чтение моделей glTF 2.0: .gltf с файлами рядом и .glb одним файлом.
-//! Перенос `core/gltf.py` модуля без анимаций.
+//! Перенос `core/gltf.py` модуля. Анимация - первая запись animations,
+//! ключи translation, rotation, scale узлов ([`crate::animation`]).
 //!
 //! Берутся сетки треугольников (mode 4, полосы и веера mode 5 и 6
 //! разворачиваются), POSITION, NORMAL, TEXCOORD_0, номера вершин,
@@ -21,11 +22,13 @@
 //! больше [`MAX_VERTICES`], accessor не выходит за свой bufferView.
 
 use std::borrow::Cow;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::sync::Arc;
 
-use globe_core::{DMat3, DMat4, DVec2, DVec3};
+use globe_core::{DMat3, DMat4, DVec2, DVec3, DVec4};
 use serde_json::{Map, Value};
 
+use crate::animation::{self, Animation, Mode};
 use crate::models::{GLB_MAGIC, GRAY, MAX_VERTICES, ModelError, Part, Pictures, error, from_y_up, rows, split_glb};
 
 /// Расширения сжатия, которые не читаются.
@@ -181,6 +184,11 @@ struct Doc<'a> {
     buffers: HashMap<usize, Option<Vec<u8>>>,
     visits: usize,
     vertices: usize,
+    /// Узлы с ключами анимации.
+    moving: BTreeSet<usize>,
+    /// Дорожки: узлы от корня до сетки и W⁻¹ в покое.
+    chains: BTreeMap<usize, Vec<usize>>,
+    rest: BTreeMap<usize, DMat4>,
 }
 
 impl<'a> Doc<'a> {
@@ -399,7 +407,17 @@ impl<'a> Doc<'a> {
         Ok(())
     }
 
-    fn walk(&mut self, index: &Value, parent: &DMat4, out: &mut Vec<Part>, pictures: &mut Pictures, depth: usize) -> Result<(), ModelError> {
+    /// Обход узла. chain - узлы от корня до родителя: часть, у которой
+    /// движется узел цепочки, получает дорожку.
+    fn walk(
+        &mut self,
+        index: &Value,
+        parent: &DMat4,
+        out: &mut Vec<Part>,
+        pictures: &mut Pictures,
+        depth: usize,
+        chain: &[usize],
+    ) -> Result<(), ModelError> {
         if depth > MAX_DEPTH {
             return Err(error("node nesting too deep"));
         }
@@ -409,17 +427,125 @@ impl<'a> Doc<'a> {
         }
         let node = self.item("nodes", Some(index))?;
         let matrix = *parent * node_matrix(node)?;
+        let mut chain = chain.to_vec();
+        chain.push(uint(Some(index), 0)?);
         if let Some(mesh) = node.get("mesh") {
             let mesh = self.item("meshes", Some(mesh))?;
+            let start = out.len();
             self.mesh(mesh, &matrix, out, pictures)?;
+            if out.len() > start && chain.iter().any(|n| self.moving.contains(n)) && matrix.determinant().abs() > 0.0 {
+                let track = self.chains.len();
+                self.chains.insert(track, chain.clone());
+                self.rest.insert(track, matrix.inverse());
+                for part in out.iter_mut().skip(start) {
+                    part.track = Some(track);
+                }
+            }
         }
         let children = node.get("children").and_then(Value::as_array).map_or(&[][..], Vec::as_slice);
         for child in children {
-            self.walk(child, &matrix, out, pictures, depth + 1)?;
+            self.walk(child, &matrix, out, pictures, depth + 1, &chain)?;
         }
         Ok(())
     }
+
+    /// Каналы первой анимации: узел - (путь, времена, значения, способ).
+    fn channels(&mut self) -> Result<Channels, ModelError> {
+        let mut out = Channels::new();
+        let Some(clip) = self.list("animations").first().and_then(Value::as_object) else {
+            return Ok(out);
+        };
+        let samplers = clip.get("samplers").and_then(Value::as_array).map_or(&[][..], Vec::as_slice);
+        for channel in clip.get("channels").and_then(Value::as_array).into_iter().flatten() {
+            let target = channel.get("target");
+            let path = match target.and_then(|t| t.get("path")).and_then(Value::as_str) {
+                Some("translation") => Path::Translation,
+                Some("rotation") => Path::Rotation,
+                Some("scale") => Path::Scale,
+                _ => continue,
+            };
+            let Some(node) = target.and_then(|t| t.get("node")).and_then(Value::as_u64).and_then(|n| usize::try_from(n).ok()) else {
+                continue;
+            };
+            let Some(sampler) =
+                channel.get("sampler").and_then(Value::as_u64).and_then(|i| usize::try_from(i).ok()).and_then(|i| samplers.get(i))
+            else {
+                continue;
+            };
+            let input = self.accessor(sampler.get("input"))?;
+            let times: Vec<f64> = (0..input.count()).map(|i| input.row(i).first().copied().unwrap_or(0.0)).collect();
+            if times.is_empty() || times.iter().any(|t| !t.is_finite()) {
+                continue;
+            }
+            let output = self.accessor(sampler.get("output"))?;
+            let values: Vec<Vec<f64>> = (0..output.count()).map(|i| output.row(i).to_vec()).collect();
+            let mode = Mode::of(sampler.get("interpolation").and_then(Value::as_str));
+            out.entry(node).or_default().push((path, times, values, mode));
+        }
+        Ok(out)
+    }
+
+    /// Анимация по каналам и дорожкам обхода или None.
+    fn animation(&self, channels: Channels) -> Option<Animation> {
+        if self.chains.is_empty() {
+            return None;
+        }
+        let duration = channels.values().flatten().filter_map(|(_, times, _, _)| times.last().copied()).fold(0.0, f64::max);
+        // Узлы в покое: матрица и translation, rotation, scale.
+        let nodes: Vec<(DMat4, DVec3, DVec4, DVec3)> = self
+            .list("nodes")
+            .iter()
+            .map(|n| {
+                let node = n.as_object();
+                let get = |key: &str| node.and_then(|n| n.get(key));
+                let [tx, ty, tz] = floats(get("translation"), [0.0; 3]).unwrap_or([0.0; 3]);
+                let [qx, qy, qz, qw] = floats(get("rotation"), [0.0, 0.0, 0.0, 1.0]).unwrap_or([0.0, 0.0, 0.0, 1.0]);
+                let [sx, sy, sz] = floats(get("scale"), [1.0; 3]).unwrap_or([1.0; 3]);
+                let matrix = node.and_then(|n| node_matrix(n).ok()).unwrap_or(DMat4::IDENTITY);
+                (matrix, DVec3::new(tx, ty, tz), DVec4::new(qx, qy, qz, qw), DVec3::new(sx, sy, sz))
+            })
+            .collect();
+        let local = move |index: usize, t: f64| {
+            let Some(&(matrix, mut translation, mut rotation, mut scale)) = nodes.get(index) else {
+                return DMat4::IDENTITY;
+            };
+            let Some(paths) = channels.get(&index) else {
+                return matrix;
+            };
+            for (path, times, values, mode) in paths {
+                match path {
+                    Path::Rotation => {
+                        if let Some(q) = animation::sample_rotation(times, values, t, *mode) {
+                            rotation = q;
+                        }
+                    }
+                    Path::Translation | Path::Scale => {
+                        if let Some(&[x, y, z, ..]) = animation::sample(times, values, t, *mode).as_deref() {
+                            if *path == Path::Translation {
+                                translation = DVec3::new(x, y, z);
+                            } else {
+                                scale = DVec3::new(x, y, z);
+                            }
+                        }
+                    }
+                }
+            }
+            animation::trs(translation, rotation, scale)
+        };
+        Some(Animation::new(duration, Arc::new(local), self.chains.clone(), self.rest.clone(), animation::scaled_convert(1.0, true)))
+    }
 }
+
+/// Что меняет канал glTF.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Path {
+    Translation,
+    Rotation,
+    Scale,
+}
+
+/// Каналы анимации по узлам.
+type Channels = HashMap<usize, Vec<(Path, Vec<f64>, Vec<Vec<f64>>, Mode)>>;
 
 /// Матрица узла: matrix по столбцам или translation, rotation, scale.
 fn node_matrix(node: &Map<String, Value>) -> Result<DMat4, ModelError> {
@@ -469,6 +595,11 @@ pub fn triangles(mode: u64, count: usize, indices: Option<&[usize]>) -> Vec<usiz
 /// Части с осью Z вверх и картинки «gltf:номер» из .gltf или .glb.
 /// fetch(адрес) - байты файла рядом или None.
 pub fn read(data: &[u8], fetch: Fetch<'_>) -> Result<(Vec<Part>, Pictures), ModelError> {
+    read_animated(data, fetch).map(|(parts, pictures, _)| (parts, pictures))
+}
+
+/// То же, что [`read`], и анимация первой записи animations или None.
+pub fn read_animated(data: &[u8], fetch: Fetch<'_>) -> Result<(Vec<Part>, Pictures, Option<Animation>), ModelError> {
     let (text, blob) = if data.starts_with(GLB_MAGIC) { split_glb(data)? } else { (data, None) };
     let json: Value = serde_json::from_slice(text).map_err(|_| error("bad glTF JSON"))?;
     let json = json.as_object().ok_or_else(|| error("bad glTF JSON"))?;
@@ -479,7 +610,19 @@ pub fn read(data: &[u8], fetch: Fetch<'_>) -> Result<(Vec<Part>, Pictures), Mode
             }
         }
     }
-    let mut doc = Doc { json, blob, fetch, buffers: HashMap::new(), visits: 0, vertices: 0 };
+    let mut doc = Doc {
+        json,
+        blob,
+        fetch,
+        buffers: HashMap::new(),
+        visits: 0,
+        vertices: 0,
+        moving: BTreeSet::new(),
+        chains: BTreeMap::new(),
+        rest: BTreeMap::new(),
+    };
+    let channels = doc.channels()?;
+    doc.moving = channels.keys().copied().collect();
     let scenes = doc.list("scenes");
     let roots: Vec<Value> = if scenes.is_empty() {
         (0..doc.list("nodes").len()).map(Value::from).collect()
@@ -491,7 +634,8 @@ pub fn read(data: &[u8], fetch: Fetch<'_>) -> Result<(Vec<Part>, Pictures), Mode
     let mut out = Vec::new();
     let mut pictures = Pictures::new();
     for root in &roots {
-        doc.walk(root, &DMat4::IDENTITY, &mut out, &mut pictures, 0)?;
+        doc.walk(root, &DMat4::IDENTITY, &mut out, &mut pictures, 0, &[])?;
     }
-    Ok((out.into_iter().map(from_y_up).collect(), pictures))
+    let moving = doc.animation(channels);
+    Ok((out.into_iter().map(from_y_up).collect(), pictures, moving))
 }

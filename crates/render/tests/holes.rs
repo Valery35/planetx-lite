@@ -330,8 +330,8 @@ fn model_is_drawn_lit_from_the_sun() {
     };
     let roof = vec![corner(-20.0, -20.0), corner(20.0, -20.0), corner(20.0, 20.0), corner(-20.0, -20.0), corner(20.0, 20.0), corner(-20.0, 20.0)];
     let n = [up.x as f32, up.y as f32, up.z as f32];
-    let part = render::ModelPart { normals: vec![n; roof.len()], uv: vec![[0.0, 0.0]; roof.len()], positions: roof, image: None, rgba: [1.0, 0.0, 0.0, 1.0] };
-    globe.set_models(&[render::ModelMesh { center, parts: vec![part], images: Vec::new(), sun: n }]);
+    let part = render::ModelPart { normals: vec![n; roof.len()], uv: vec![[0.0, 0.0]; roof.len()], positions: roof, image: None, rgba: [1.0, 0.0, 0.0, 1.0], track: None };
+    globe.set_models(&[render::ModelMesh { center, parts: vec![part], images: Vec::new(), sun: n, ..Default::default() }]);
     let frame = grab(&mut globe, &cam, false);
     let c = rgb(&frame, f64::from(cam.width) / 2.0, f64::from(cam.height) / 2.0);
     assert!(c[0] > 240 && c[1] < 30 && c[2] < 30, "{c:?}");

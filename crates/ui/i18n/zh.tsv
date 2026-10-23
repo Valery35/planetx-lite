@@ -88,3 +88,70 @@ Source code	源代码
 Share a link to this view	分享此视图的链接
 The link to this view is copied.	已复制此视图的链接。
 Files opened from the disk are not in the link.	从磁盘打开的文件不包含在链接中。
+New placemark, path, polygon or circle	新建地标、路径、多边形或圆
+Ruler: distance, area, ground length	标尺：距离、面积、地表长度
+New folder	新建文件夹
+Properties…	属性…
+To the start of the bar	到时间条开头
+Play: the range moves along the bar, placemarks appear and hide by their time.	播放：时间范围沿时间条移动，地标按其时间显示和隐藏。
+To the end of the bar	到时间条末尾
+Play in a loop: at the end of the bar the range starts again from the beginning.	循环播放：到达时间条末尾后，时间范围从头重新开始。
+Whole bar in 20 s	整个时间条 20 秒
+Playback speed. ×1 - time runs as on the clock, ×3600 - an hour per second, ×86400 - a day per second.	播放速度。×1 - 时间与时钟同步，×3600 - 每秒一小时，×86400 - 每秒一天。
+Close the time bar. A closed bar does not hide placemarks.	关闭时间条。关闭时间条不会隐藏地标。
+My placemark	我的地标
+My path	我的路径
+My polygon	我的多边形
+My circle	我的圆
+Ruler	标尺
+New placemark	新建地标
+Properties	属性
+Placemark	地标
+Line	直线
+Path	路径
+Polygon	多边形
+Circle	圆
+Name	名称
+Save	保存
+Put the shape into My Places with the measurement.	将图形连同测量结果放入“我的地点”。
+Measurement	测量
+Clear	清除
+Remove the points.	移除已放置的点。
+Untitled	未命名
+Name in My Places and the label of the point on the globe.	在“我的地点”中的名称以及地球上点的标签。
+Description	说明
+Color	颜色
+Colour of the line and outline. The fill of a polygon is the same colour, semi-transparent.	线条和轮廓的颜色。多边形的填充为同一颜色，半透明。
+Width	宽度
+Width of the line and outline in screen pixels. It does not depend on the scale.	线条和轮廓的宽度，以屏幕像素计。与比例尺无关。
+Fill	填充
+OK	确定
+Write the object to My Places.	将对象写入“我的地点”。
+Cancel	取消
+Vertices are dragged with the mouse. A circle in the middle of a segment adds a vertex.	可用鼠标拖动顶点。线段中间的圆点用于添加顶点。
+A click on the globe places the placemark. The placemark is dragged with the mouse.	在地球上单击放置地标。可用鼠标拖动地标。
+Two clicks on the globe set the ends of the line. Points are dragged with the mouse.	在地球上单击两次设置线的两端。可用鼠标拖动各点。
+Mark the points of the path with clicks on the globe. A click on the last point finishes the path, on the first one closes the shape.	在地球上单击标记路径的各点。单击最后一点结束路径，单击第一点闭合图形。
+Mark the vertices of the polygon with clicks on the globe. A click on the first vertex finishes drawing.	在地球上单击标记多边形的顶点。单击第一个顶点结束绘制。
+The first click on the globe sets the centre of the circle, the second one a point of the circle. Both points are dragged with the mouse.	在地球上第一次单击设置圆心，第二次单击设置圆周上的一点。两个点都可用鼠标拖动。
+Map length	地图长度
+Length	长度
+Ground length	地表长度
+Heading	方向
+Perimeter	周长
+Area	面积
+Radius	半径
+Kilometres	千米
+Miles	英里
+Nautical miles	海里
+Square metres	平方米
+Hectares	公顷
+Square kilometres	平方千米
+Square miles	平方英里
+Metres	米
+mi	英里
+nmi	海里
+m²	m²
+ha	公顷
+km²	km²
+sq mi	平方英里

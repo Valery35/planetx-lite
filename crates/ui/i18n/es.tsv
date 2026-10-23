@@ -84,3 +84,70 @@ Source code	Código fuente
 Share a link to this view	Compartir un enlace a esta vista
 The link to this view is copied.	Se ha copiado el enlace a esta vista.
 Files opened from the disk are not in the link.	Los archivos abiertos desde el disco no están en el enlace.
+New placemark, path, polygon or circle	Nueva marca, ruta, polígono o círculo
+Ruler: distance, area, ground length	Regla: distancia, área, longitud sobre el relieve
+New folder	Nueva carpeta
+Properties…	Propiedades…
+To the start of the bar	Al inicio de la barra
+Play: the range moves along the bar, placemarks appear and hide by their time.	Reproducir: el intervalo avanza por la barra, las marcas aparecen y se ocultan según su tiempo.
+To the end of the bar	Al final de la barra
+Play in a loop: at the end of the bar the range starts again from the beginning.	Reproducir en bucle: al final de la barra el intervalo vuelve a empezar desde el principio.
+Whole bar in 20 s	Toda la barra en 20 s
+Playback speed. ×1 - time runs as on the clock, ×3600 - an hour per second, ×86400 - a day per second.	Velocidad de reproducción. ×1 - el tiempo corre como en el reloj, ×3600 - una hora por segundo, ×86400 - un día por segundo.
+Close the time bar. A closed bar does not hide placemarks.	Cerrar la barra de tiempo. Una barra cerrada no oculta las marcas.
+My placemark	Mi marca
+My path	Mi ruta
+My polygon	Mi polígono
+My circle	Mi círculo
+Ruler	Regla
+New placemark	Nueva marca
+Properties	Propiedades
+Placemark	Marca
+Line	Línea
+Path	Ruta
+Polygon	Polígono
+Circle	Círculo
+Name	Nombre
+Save	Guardar
+Put the shape into My Places with the measurement.	Colocar la figura en «Mis lugares» junto con la medición.
+Measurement	Medición
+Clear	Borrar
+Remove the points.	Quitar los puntos colocados.
+Untitled	Sin título
+Name in My Places and the label of the point on the globe.	Nombre en «Mis lugares» y etiqueta del punto en el globo.
+Description	Descripción
+Color	Color
+Colour of the line and outline. The fill of a polygon is the same colour, semi-transparent.	Color de la línea y del contorno. El relleno de un polígono es del mismo color, semitransparente.
+Width	Grosor
+Width of the line and outline in screen pixels. It does not depend on the scale.	Grosor de la línea y del contorno en píxeles de pantalla. No depende de la escala.
+Fill	Relleno
+OK	Aceptar
+Write the object to My Places.	Guardar el objeto en «Mis lugares».
+Cancel	Cancelar
+Vertices are dragged with the mouse. A circle in the middle of a segment adds a vertex.	Los vértices se arrastran con el ratón. Un círculo en el centro de un segmento añade un vértice.
+A click on the globe places the placemark. The placemark is dragged with the mouse.	Un clic en el globo coloca la marca. La marca se arrastra con el ratón.
+Two clicks on the globe set the ends of the line. Points are dragged with the mouse.	Dos clics en el globo fijan los extremos de la línea. Los puntos se arrastran con el ratón.
+Mark the points of the path with clicks on the globe. A click on the last point finishes the path, on the first one closes the shape.	Marque los puntos de la ruta con clics en el globo. Un clic en el último punto termina la ruta, en el primero cierra la figura.
+Mark the vertices of the polygon with clicks on the globe. A click on the first vertex finishes drawing.	Marque los vértices del polígono con clics en el globo. Un clic en el primer vértice termina el dibujo.
+The first click on the globe sets the centre of the circle, the second one a point of the circle. Both points are dragged with the mouse.	El primer clic en el globo fija el centro del círculo, el segundo un punto de la circunferencia. Ambos puntos se arrastran con el ratón.
+Map length	Longitud en el mapa
+Length	Longitud
+Ground length	Longitud sobre el relieve
+Heading	Rumbo
+Perimeter	Perímetro
+Area	Área
+Radius	Radio
+Kilometres	Kilómetros
+Miles	Millas
+Nautical miles	Millas náuticas
+Square metres	Metros cuadrados
+Hectares	Hectáreas
+Square kilometres	Kilómetros cuadrados
+Square miles	Millas cuadradas
+Metres	Metros
+mi	mi
+nmi	NM
+m²	m²
+ha	ha
+km²	km²
+sq mi	mi²

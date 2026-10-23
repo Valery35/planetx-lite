@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Чтение моделей Collada (.dae), как в Model KML Google Earth. Перенос
-//! `core/collada.py` модуля без анимаций.
+//! `core/collada.py` модуля. Анимация - каналы library_animations на
+//! преобразования узлов по sid ([`crate::animation`]), BEZIER идёт как
+//! LINEAR.
 //!
 //! Разбор идёт через [`crate::xml`], объявления сущностей DTD
 //! запрещены, как у KML.
@@ -25,11 +27,13 @@
 //! [`MAX_DEPTH`], обходов узлов не больше [`MAX_NODES`], вершин не
 //! больше [`MAX_VERTICES`].
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::rc::Rc;
+use std::sync::Arc;
 
 use globe_core::{DMat3, DMat4, DVec2, DVec3};
 
+use crate::animation::{self, Animation, Mode};
 use crate::models::{GRAY, MAX_VERTICES, ModelError, Part, error, from_y_up, rows};
 use crate::util::unquote;
 use crate::xml::{self, Node};
@@ -92,6 +96,14 @@ struct Doc<'a> {
     sources: HashMap<String, Rc<Source>>,
     visits: usize,
     vertices: usize,
+    /// Узлы обхода: id и преобразования, номер - по адресу узла.
+    nodes: Vec<(Option<String>, Vec<Step>)>,
+    node_numbers: HashMap<usize, usize>,
+    /// id узлов с ключами анимации.
+    moving: HashSet<String>,
+    /// Дорожки: узлы от корня до сетки и W⁻¹ в покое.
+    chains: BTreeMap<usize, Vec<usize>>,
+    rest: BTreeMap<usize, DMat4>,
 }
 
 impl<'a> Doc<'a> {
@@ -111,7 +123,32 @@ impl<'a> Doc<'a> {
             }
             y_up = asset.child("up_axis").is_some_and(|a| a.text.trim().eq_ignore_ascii_case("Y_UP"));
         }
-        Self { ids, unit, y_up, materials: HashMap::new(), sources: HashMap::new(), visits: 0, vertices: 0 }
+        Self {
+            ids,
+            unit,
+            y_up,
+            materials: HashMap::new(),
+            sources: HashMap::new(),
+            visits: 0,
+            vertices: 0,
+            nodes: Vec::new(),
+            node_numbers: HashMap::new(),
+            moving: HashSet::new(),
+            chains: BTreeMap::new(),
+            rest: BTreeMap::new(),
+        }
+    }
+
+    /// Номер узла в [`Doc::nodes`], узел - один раз на адрес.
+    fn node_index(&mut self, node: &Node) -> Result<usize, ModelError> {
+        let address = std::ptr::from_ref(node) as usize;
+        if let Some(found) = self.node_numbers.get(&address) {
+            return Ok(*found);
+        }
+        let index = self.nodes.len();
+        self.nodes.push((node.get("id").filter(|i| !i.is_empty()).map(str::to_string), steps(node)?));
+        self.node_numbers.insert(address, index);
+        Ok(index)
     }
 
     fn find(&self, text: &str) -> Option<&'a Node> {
@@ -349,15 +386,37 @@ fn primitive(doc: &mut Doc<'_>, prim: &Node) -> Result<Option<Triangles>, ModelE
     Ok(Some((positions, normals, uv)))
 }
 
-/// Матрица 4×4 узла по его преобразованиям в порядке записи.
-fn transform(node: &Node) -> Result<DMat4, ModelError> {
-    let mut out = DMat4::IDENTITY;
+/// Преобразование узла: тег, sid и числа.
+#[derive(Debug, Clone)]
+struct Step {
+    tag: String,
+    sid: Option<String>,
+    values: Vec<f64>,
+}
+
+/// Преобразования узла в порядке записи.
+fn steps(node: &Node) -> Result<Vec<Step>, ModelError> {
+    let mut out = Vec::new();
     for item in &node.children {
-        if !matches!(item.tag.as_str(), "matrix" | "translate" | "rotate" | "scale") {
-            continue;
+        if matches!(item.tag.as_str(), "matrix" | "translate" | "rotate" | "scale") {
+            let sid = item.get("sid").filter(|s| !s.is_empty()).map(str::to_string);
+            out.push(Step { tag: item.tag.clone(), sid, values: numbers(Some(item))? });
         }
-        let v = numbers(Some(item))?;
-        let step = match (item.tag.as_str(), v.as_slice()) {
+    }
+    Ok(out)
+}
+
+/// Числа преобразования на момент анимации: sid и числа в покое.
+type Change<'a> = dyn Fn(&str, &[f64]) -> Option<Vec<f64>> + 'a;
+
+/// Матрица 4×4 по преобразованиям. change(sid, числа) - числа
+/// преобразования на момент анимации.
+fn compose(steps: &[Step], change: &Change<'_>) -> DMat4 {
+    let mut out = DMat4::IDENTITY;
+    for step in steps {
+        let changed = step.sid.as_deref().and_then(|sid| change(sid, &step.values));
+        let v = changed.as_deref().unwrap_or(&step.values);
+        let step = match (step.tag.as_str(), v) {
             // Матрица Collada записана по строкам.
             ("matrix", values) if values.len() == 16 => {
                 let mut cols = [0.0; 16];
@@ -371,7 +430,75 @@ fn transform(node: &Node) -> Result<DMat4, ModelError> {
         };
         out *= step;
     }
-    Ok(out)
+    out
+}
+
+/// Матрица 4×4 узла по его преобразованиям в порядке записи.
+fn transform(node: &Node) -> Result<DMat4, ModelError> {
+    Ok(compose(&steps(node)?, &|_, _| None))
+}
+
+/// Номер значения в преобразовании по имени: X, Y, Z, ANGLE.
+fn selector(name: &str) -> Option<usize> {
+    match name.to_ascii_uppercase().as_str() {
+        "X" => Some(0),
+        "Y" => Some(1),
+        "Z" => Some(2),
+        "ANGLE" => Some(3),
+        _ => None,
+    }
+}
+
+/// (id узла, sid, номер значения или None) из target канала:
+/// «узел/sid», «узел/sid.X», «узел/sid(1)(2)».
+fn target(text: &str) -> Option<(String, String, Option<usize>)> {
+    let (path, sid) = text.split_once('/')?;
+    let (sid, index) = if let Some((sid, name)) = sid.split_once('.') {
+        (sid, Some(selector(name)?))
+    } else if let Some((sid, rest)) = sid.split_once('(') {
+        let numbers: Vec<usize> = rest.replace([')', '('], " ").split_whitespace().filter_map(|v| v.parse().ok()).collect();
+        let index = match numbers.as_slice() {
+            [] => return None,
+            [row, column, ..] => row * 4 + column,
+            [one] => *one,
+        };
+        (sid, Some(index))
+    } else {
+        (sid, None)
+    };
+    (!path.is_empty() && !sid.is_empty()).then(|| (path.to_string(), sid.to_string(), index))
+}
+
+/// Ключи канала: номер значения или None, времена, значения, способ.
+type Key = (Option<usize>, Vec<f64>, Vec<Vec<f64>>, Mode);
+
+/// Ключи всех каналов library_animations по (id узла, sid).
+fn keys(doc: &mut Doc<'_>, root: &Node) -> HashMap<(String, String), Vec<Key>> {
+    let mut out: HashMap<(String, String), Vec<Key>> = HashMap::new();
+    for channel in root.iter().into_iter().filter(|n| n.tag == "channel") {
+        let (Some((path, sid, index)), Some(sampler)) =
+            (target(channel.get("target").unwrap_or_default()), doc.find(channel.get("source").unwrap_or_default()))
+        else {
+            continue;
+        };
+        let inputs: HashMap<&str, &str> =
+            sampler.children_named("input").filter_map(|i| Some((i.get("semantic")?, i.get("source")?))).collect();
+        let (Some(input), Some(output)) = (inputs.get("INPUT"), inputs.get("OUTPUT")) else {
+            continue;
+        };
+        let (Ok(times), Ok(values)) = (doc.source(input), doc.source(output)) else {
+            continue;
+        };
+        let times: Vec<f64> = times.values.chunks(times.stride).filter_map(|r| r.first().copied()).collect();
+        let values: Vec<Vec<f64>> = values.values.chunks(values.stride).map(<[f64]>::to_vec).collect();
+        if times.is_empty() || values.len() != times.len() || times.iter().any(|t| !t.is_finite()) {
+            continue;
+        }
+        let names = inputs.get("INTERPOLATION").and_then(|i| doc.find(i)).and_then(|n| n.child("Name_array"));
+        let step = names.and_then(|n| n.text.split_whitespace().next()) == Some("STEP");
+        out.entry((path, sid)).or_default().push((index, times, values, if step { Mode::Step } else { Mode::Linear }));
+    }
+    out
 }
 
 /// Поворот на degrees вокруг оси axis, нулевая ось - без поворота.
@@ -400,7 +527,9 @@ fn bindings(instance: &Node) -> HashMap<String, String> {
     out
 }
 
-fn walk<'a>(doc: &mut Doc<'a>, node: &'a Node, matrix: DMat4, out: &mut Vec<Part>, depth: usize) -> Result<(), ModelError> {
+/// Обход узла. chain - номера узлов в [`Doc::nodes`] от корня до
+/// родителя: часть, у которой движется узел цепочки, получает дорожку.
+fn walk<'a>(doc: &mut Doc<'a>, node: &'a Node, matrix: DMat4, out: &mut Vec<Part>, depth: usize, chain: &[usize]) -> Result<(), ModelError> {
     if depth > MAX_DEPTH {
         return Err(error("node nesting too deep"));
     }
@@ -409,19 +538,31 @@ fn walk<'a>(doc: &mut Doc<'a>, node: &'a Node, matrix: DMat4, out: &mut Vec<Part
         return Err(error("too many nodes"));
     }
     let matrix = matrix * transform(node)?;
+    let mut chain = chain.to_vec();
+    chain.push(doc.node_index(node)?);
     for item in &node.children {
         match item.tag.as_str() {
             "instance_geometry" => {
                 if let Some(geometry) = doc.find(item.get("url").unwrap_or_default()) {
+                    let start = out.len();
                     add_geometry(doc, geometry, &matrix, &bindings(item), out)?;
+                    let moving = chain.iter().any(|n| doc.nodes.get(*n).and_then(|d| d.0.as_ref()).is_some_and(|id| doc.moving.contains(id)));
+                    if out.len() > start && moving && matrix.determinant().abs() > 0.0 {
+                        let track = doc.chains.len();
+                        doc.chains.insert(track, chain.clone());
+                        doc.rest.insert(track, matrix.inverse());
+                        for part in out.iter_mut().skip(start) {
+                            part.track = Some(track);
+                        }
+                    }
                 }
             }
             "instance_node" => {
                 if let Some(target) = doc.find(item.get("url").unwrap_or_default()) {
-                    walk(doc, target, matrix, out, depth + 1)?;
+                    walk(doc, target, matrix, out, depth + 1, &chain)?;
                 }
             }
-            "node" => walk(doc, item, matrix, out, depth + 1)?,
+            "node" => walk(doc, item, matrix, out, depth + 1, &chain)?,
             _ => {}
         }
     }
@@ -491,11 +632,18 @@ fn parse(data: &[u8]) -> Result<Node, ModelError> {
 
 /// Части модели из байтов .dae: метры, ось Z вверх.
 pub fn read_dae(data: &[u8]) -> Result<Vec<Part>, ModelError> {
+    read_dae_animated(data).map(|(parts, _)| parts)
+}
+
+/// То же, что [`read_dae`], и анимация или None.
+pub fn read_dae_animated(data: &[u8]) -> Result<(Vec<Part>, Option<Animation>), ModelError> {
     let root = parse(data)?;
     if root.tag != "COLLADA" {
         return Err(error("not COLLADA"));
     }
     let mut doc = Doc::new(&root);
+    let keys = keys(&mut doc, &root);
+    doc.moving = keys.keys().map(|(id, _)| id.clone()).collect();
     let instance = root.child("scene").and_then(|s| s.child("instance_visual_scene"));
     let visual = instance.and_then(|i| doc.find(i.get("url").unwrap_or_default())).or_else(|| {
         root.child("library_visual_scenes").and_then(|l| l.child("visual_scene"))
@@ -503,7 +651,7 @@ pub fn read_dae(data: &[u8]) -> Result<Vec<Part>, ModelError> {
     let visual = visual.ok_or_else(|| error("no visual scene"))?;
     let mut out = Vec::new();
     for node in visual.children_named("node") {
-        walk(&mut doc, node, DMat4::IDENTITY, &mut out, 0)?;
+        walk(&mut doc, node, DMat4::IDENTITY, &mut out, 0, &[])?;
     }
     for part in &mut out {
         for p in &mut part.positions {
@@ -513,7 +661,44 @@ pub fn read_dae(data: &[u8]) -> Result<Vec<Part>, ModelError> {
     if doc.y_up {
         out = out.into_iter().map(from_y_up).collect();
     }
-    Ok(out)
+    let moving = animation_of(doc, keys);
+    Ok((out, moving))
+}
+
+/// Анимация по ключам и дорожкам обхода или None, `_animation` модуля.
+fn animation_of(doc: Doc<'_>, keys: HashMap<(String, String), Vec<Key>>) -> Option<Animation> {
+    if doc.chains.is_empty() {
+        return None;
+    }
+    let duration = keys.values().flatten().filter_map(|(_, times, _, _)| times.last().copied()).fold(0.0, f64::max);
+    let convert = animation::scaled_convert(doc.unit, doc.y_up);
+    let nodes = doc.nodes;
+    let local = move |index: usize, t: f64| {
+        let Some((id, steps)) = nodes.get(index) else {
+            return DMat4::IDENTITY;
+        };
+        let change = |sid: &str, values: &[f64]| -> Option<Vec<f64>> {
+            let items = keys.get(&(id.clone()?, sid.to_string()))?;
+            let mut values = values.to_vec();
+            for (index, times, keyed, mode) in items {
+                let Some(found) = animation::sample(times, keyed, t, *mode) else {
+                    continue;
+                };
+                match index {
+                    None if found.len() == values.len() => values = found,
+                    Some(i) if *i < values.len() => {
+                        if let (Some(slot), Some(v)) = (values.get_mut(*i), found.first()) {
+                            *slot = *v;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            Some(values)
+        };
+        compose(steps, &change)
+    };
+    Some(Animation::new(duration, Arc::new(local), doc.chains, doc.rest, convert))
 }
 
 /// Пути картинок файла .dae, как записаны в library_images.

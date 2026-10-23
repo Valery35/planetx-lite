@@ -85,3 +85,70 @@ Source code	소스 코드
 Share a link to this view	이 화면의 링크 공유
 The link to this view is copied.	이 화면의 링크를 복사했습니다.
 Files opened from the disk are not in the link.	디스크에서 연 파일은 링크에 포함되지 않습니다.
+New placemark, path, polygon or circle	새 장소 표시, 경로, 다각형 또는 원
+Ruler: distance, area, ground length	눈금자: 거리, 면적, 지형 위 길이
+New folder	새 폴더
+Properties…	속성…
+To the start of the bar	막대 처음으로
+Play: the range moves along the bar, placemarks appear and hide by their time.	재생: 범위가 막대를 따라 이동하며 장소 표시가 각자의 시간에 따라 나타나고 사라집니다.
+To the end of the bar	막대 끝으로
+Play in a loop: at the end of the bar the range starts again from the beginning.	반복 재생: 막대 끝에 이르면 범위가 처음부터 다시 시작됩니다.
+Whole bar in 20 s	막대 전체를 20초에
+Playback speed. ×1 - time runs as on the clock, ×3600 - an hour per second, ×86400 - a day per second.	재생 속도. ×1 - 시계와 같은 속도로 시간이 흐름, ×3600 - 초당 1시간, ×86400 - 초당 1일.
+Close the time bar. A closed bar does not hide placemarks.	시간 막대를 닫습니다. 닫힌 막대는 장소 표시를 숨기지 않습니다.
+My placemark	내 장소 표시
+My path	내 경로
+My polygon	내 다각형
+My circle	내 원
+Ruler	눈금자
+New placemark	새 장소 표시
+Properties	속성
+Placemark	장소 표시
+Line	선
+Path	경로
+Polygon	다각형
+Circle	원
+Name	이름
+Save	저장
+Put the shape into My Places with the measurement.	측정값과 함께 도형을 "내 장소"에 넣습니다.
+Measurement	측정
+Clear	지우기
+Remove the points.	찍은 점을 제거합니다.
+Untitled	제목 없음
+Name in My Places and the label of the point on the globe.	"내 장소"의 이름이자 지구본 위 점의 레이블입니다.
+Description	설명
+Color	색상
+Colour of the line and outline. The fill of a polygon is the same colour, semi-transparent.	선과 윤곽선의 색상. 다각형 채우기는 같은 색상의 반투명입니다.
+Width	두께
+Width of the line and outline in screen pixels. It does not depend on the scale.	화면 픽셀 단위의 선과 윤곽선 두께. 축척에 따라 달라지지 않습니다.
+Fill	채우기
+OK	확인
+Write the object to My Places.	개체를 "내 장소"에 기록합니다.
+Cancel	취소
+Vertices are dragged with the mouse. A circle in the middle of a segment adds a vertex.	꼭짓점은 마우스로 끌 수 있습니다. 선분 가운데의 원은 꼭짓점을 추가합니다.
+A click on the globe places the placemark. The placemark is dragged with the mouse.	지구본을 클릭하면 장소 표시가 놓입니다. 장소 표시는 마우스로 끌 수 있습니다.
+Two clicks on the globe set the ends of the line. Points are dragged with the mouse.	지구본을 두 번 클릭하면 선의 양 끝이 정해집니다. 점은 마우스로 끌 수 있습니다.
+Mark the points of the path with clicks on the globe. A click on the last point finishes the path, on the first one closes the shape.	지구본을 클릭하여 경로의 점을 표시합니다. 마지막 점을 클릭하면 경로가 끝나고, 첫 점을 클릭하면 도형이 닫힙니다.
+Mark the vertices of the polygon with clicks on the globe. A click on the first vertex finishes drawing.	지구본을 클릭하여 다각형의 꼭짓점을 표시합니다. 첫 꼭짓점을 클릭하면 그리기가 끝납니다.
+The first click on the globe sets the centre of the circle, the second one a point of the circle. Both points are dragged with the mouse.	지구본의 첫 번째 클릭은 원의 중심을, 두 번째 클릭은 원주 위의 점을 정합니다. 두 점 모두 마우스로 끌 수 있습니다.
+Map length	지도상 길이
+Length	길이
+Ground length	지형 위 길이
+Heading	방위
+Perimeter	둘레
+Area	면적
+Radius	반지름
+Kilometres	킬로미터
+Miles	마일
+Nautical miles	해리
+Square metres	제곱미터
+Hectares	헥타르
+Square kilometres	제곱킬로미터
+Square miles	제곱마일
+Metres	미터
+mi	마일
+nmi	해리
+m²	m²
+ha	ha
+km²	km²
+sq mi	제곱마일

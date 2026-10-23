@@ -23,11 +23,13 @@ pub mod models;
 pub mod pictures;
 pub mod places;
 pub mod relief;
+pub mod ruler;
 pub mod search;
 pub mod settings;
 pub mod share;
 pub mod theme;
 pub mod timeline;
+pub mod tool;
 pub mod tours;
 
 pub use app::{LiteApp, Loaders, Report, ShotSink};

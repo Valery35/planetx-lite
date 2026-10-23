@@ -16,6 +16,8 @@ program as a web page, on phones too.
 - [Finding a place](#finding-a-place)
 - [Opening files](#opening-files)
 - [My Places](#my-places)
+- [Drawing and editing](#drawing-and-editing)
+- [Ruler](#ruler)
 - [Tours and the time slider](#tours-and-the-time-slider)
 - [Demo scenes](#demo-scenes)
 - [Settings](#settings)
@@ -53,6 +55,8 @@ The web page needs no installation: https://valery35.github.io/planetx-lite/
 | Panel | Shows or hides the left panel. On a narrow screen the panel starts hidden |
 | Open | Opens a scene, KML, KMZ or a data file |
 | Demo | The menu of demo scenes |
+| New placemark | Draws a new placemark, path, polygon or circle on the globe |
+| Ruler | Measures length, ground length, heading, perimeter and area |
 | Share | Copies a link to this view: the camera and the scenes opened by address or from the Demo menu. On a phone the system Share window opens. Files opened from the disk are not in the link |
 | Settings | The Settings window |
 | Full screen | Full screen on and off |
@@ -125,6 +129,41 @@ contains pictures or models. "Save scene" writes a `.planetx` scene with
 the current camera. The PlanetX plugin for QGIS opens these scenes too.
 On the web page the file is downloaded.
 
+## Drawing and editing
+
+The New placemark button opens a window with tabs Placemark, Path,
+Polygon and Circle.
+
+- A click on the globe adds a point, dragging the globe still moves it.
+- A vertex is dragged with the mouse.
+- A click on the last point finishes a path, a click on the first one
+  closes the shape into a polygon.
+- After drawing, a small circle in the middle of a segment adds a vertex.
+- Backspace or Delete removes the last point.
+- Name, colour, width and fill are set in the window. Save puts the
+  object into the selected folder of My Places.
+
+"Properties…" in the menu of a placemark opens the same window for an
+existing placemark: name, description, colour, width, fill and its
+vertices on the globe. "New folder" adds a folder.
+
+## Ruler
+
+The Ruler button opens a window with tabs Line, Path, Polygon and Circle.
+Points are placed and dragged as in drawing.
+
+| Tab | Values |
+|---|---|
+| Line | Map length, ground length, heading |
+| Path | Map length, ground length |
+| Polygon | Perimeter, area |
+| Circle | Radius, perimeter, area |
+
+Lengths and areas are measured on the WGS84 ellipsoid. Ground length
+follows the terrain, "≈" means terrain tiles are still loading. Units
+are chosen next to each value. Save puts the shape into My Places with
+the measurement in its description.
+
 ## Tours and the time slider
 
 The play button next to a recorded tour starts it, "Play tour" in a
@@ -132,7 +171,12 @@ folder menu flies over the folder's placemarks. During a tour the panel
 on top shows pause and stop. Dragging the globe stops the tour.
 
 Placemarks with dates turn on the Time button in the Places section. The
-time slider on top shows the placemarks of the chosen period.
+time slider under the toolbar shows the placemarks of the chosen period.
+Its buttons go to the start, play, go to the end and play in a loop. The
+speed is a multiple of real time from ×1 to ×86400, or the whole slider
+in 20 s. 3D models on a `gx:Track` drive along it at the moment of the
+right handle, with the slider closed they stand at the end of the path.
+Animated glTF and Collada models play on their own.
 
 ## Demo scenes
 

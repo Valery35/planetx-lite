@@ -85,3 +85,70 @@ Source code	ソースコード
 Share a link to this view	この表示へのリンクを共有
 The link to this view is copied.	この表示へのリンクをコピーしました。
 Files opened from the disk are not in the link.	ディスクから開いたファイルはリンクに含まれません。
+New placemark, path, polygon or circle	新しい目印、パス、ポリゴン、円
+Ruler: distance, area, ground length	定規：距離、面積、地表の長さ
+New folder	新しいフォルダー
+Properties…	プロパティ…
+To the start of the bar	バーの先頭へ
+Play: the range moves along the bar, placemarks appear and hide by their time.	再生：範囲がバーに沿って移動し、目印がその時刻に応じて表示・非表示になります。
+To the end of the bar	バーの末尾へ
+Play in a loop: at the end of the bar the range starts again from the beginning.	ループ再生：バーの末尾に達すると、範囲が先頭から再び始まります。
+Whole bar in 20 s	バー全体を 20 秒で
+Playback speed. ×1 - time runs as on the clock, ×3600 - an hour per second, ×86400 - a day per second.	再生速度。×1 - 時計どおりに時間が進む、×3600 - 1 秒で 1 時間、×86400 - 1 秒で 1 日。
+Close the time bar. A closed bar does not hide placemarks.	タイムバーを閉じます。閉じたバーは目印を非表示にしません。
+My placemark	自分の目印
+My path	自分のパス
+My polygon	自分のポリゴン
+My circle	自分の円
+Ruler	定規
+New placemark	新しい目印
+Properties	プロパティ
+Placemark	目印
+Line	ライン
+Path	パス
+Polygon	ポリゴン
+Circle	円
+Name	名前
+Save	保存
+Put the shape into My Places with the measurement.	測定結果とともに図形を「マイプレイス」に追加します。
+Measurement	測定
+Clear	クリア
+Remove the points.	配置した点を削除します。
+Untitled	無題
+Name in My Places and the label of the point on the globe.	「マイプレイス」での名前と、地球儀上の点のラベル。
+Description	説明
+Color	色
+Colour of the line and outline. The fill of a polygon is the same colour, semi-transparent.	線と輪郭の色。ポリゴンの塗りつぶしは同じ色の半透明になります。
+Width	幅
+Width of the line and outline in screen pixels. It does not depend on the scale.	画面ピクセル単位の線と輪郭の幅。縮尺には依存しません。
+Fill	塗りつぶし
+OK	OK
+Write the object to My Places.	オブジェクトを「マイプレイス」に書き込みます。
+Cancel	キャンセル
+Vertices are dragged with the mouse. A circle in the middle of a segment adds a vertex.	頂点はマウスでドラッグできます。線分の中央の丸で頂点を追加します。
+A click on the globe places the placemark. The placemark is dragged with the mouse.	地球儀をクリックすると目印を配置します。目印はマウスでドラッグできます。
+Two clicks on the globe set the ends of the line. Points are dragged with the mouse.	地球儀を 2 回クリックして線の両端を設定します。点はマウスでドラッグできます。
+Mark the points of the path with clicks on the globe. A click on the last point finishes the path, on the first one closes the shape.	地球儀をクリックしてパスの点を指定します。最後の点をクリックするとパスが完了し、最初の点をクリックすると図形が閉じます。
+Mark the vertices of the polygon with clicks on the globe. A click on the first vertex finishes drawing.	地球儀をクリックしてポリゴンの頂点を指定します。最初の頂点をクリックすると描画が完了します。
+The first click on the globe sets the centre of the circle, the second one a point of the circle. Both points are dragged with the mouse.	地球儀の 1 回目のクリックで円の中心を、2 回目のクリックで円周上の点を設定します。両方の点はマウスでドラッグできます。
+Map length	地図上の長さ
+Length	長さ
+Ground length	地表の長さ
+Heading	方位
+Perimeter	周囲長
+Area	面積
+Radius	半径
+Kilometres	キロメートル
+Miles	マイル
+Nautical miles	海里
+Square metres	平方メートル
+Hectares	ヘクタール
+Square kilometres	平方キロメートル
+Square miles	平方マイル
+Metres	メートル
+mi	マイル
+nmi	海里
+m²	m²
+ha	ha
+km²	km²
+sq mi	平方マイル

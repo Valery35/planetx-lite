@@ -84,3 +84,70 @@ Source code	Broncode
 Share a link to this view	Een link naar deze weergave delen
 The link to this view is copied.	De link naar deze weergave is gekopieerd.
 Files opened from the disk are not in the link.	Bestanden die van de schijf zijn geopend, staan niet in de link.
+New placemark, path, polygon or circle	Nieuwe plaatsmarkering, pad, polygoon of cirkel
+Ruler: distance, area, ground length	Liniaal: afstand, oppervlakte, lengte over het reliëf
+New folder	Nieuwe map
+Properties…	Eigenschappen…
+To the start of the bar	Naar het begin van de balk
+Play: the range moves along the bar, placemarks appear and hide by their time.	Afspelen: het bereik beweegt langs de balk, plaatsmarkeringen verschijnen en verdwijnen volgens hun tijd.
+To the end of the bar	Naar het einde van de balk
+Play in a loop: at the end of the bar the range starts again from the beginning.	In een lus afspelen: aan het einde van de balk begint het bereik opnieuw vanaf het begin.
+Whole bar in 20 s	Hele balk in 20 s
+Playback speed. ×1 - time runs as on the clock, ×3600 - an hour per second, ×86400 - a day per second.	Afspeelsnelheid. ×1 - de tijd loopt als op de klok, ×3600 - een uur per seconde, ×86400 - een dag per seconde.
+Close the time bar. A closed bar does not hide placemarks.	De tijdbalk sluiten. Een gesloten balk verbergt geen plaatsmarkeringen.
+My placemark	Mijn plaatsmarkering
+My path	Mijn pad
+My polygon	Mijn polygoon
+My circle	Mijn cirkel
+Ruler	Liniaal
+New placemark	Nieuwe plaatsmarkering
+Properties	Eigenschappen
+Placemark	Plaatsmarkering
+Line	Lijn
+Path	Pad
+Polygon	Polygoon
+Circle	Cirkel
+Name	Naam
+Save	Opslaan
+Put the shape into My Places with the measurement.	De vorm met de meting in ‘Mijn plaatsen’ plaatsen.
+Measurement	Meting
+Clear	Wissen
+Remove the points.	De geplaatste punten verwijderen.
+Untitled	Zonder titel
+Name in My Places and the label of the point on the globe.	Naam in ‘Mijn plaatsen’ en label van het punt op de globe.
+Description	Beschrijving
+Color	Kleur
+Colour of the line and outline. The fill of a polygon is the same colour, semi-transparent.	Kleur van de lijn en de omtrek. De vulling van een polygoon heeft dezelfde kleur, halfdoorzichtig.
+Width	Dikte
+Width of the line and outline in screen pixels. It does not depend on the scale.	Dikte van de lijn en de omtrek in schermpixels. Ze hangt niet af van de schaal.
+Fill	Vulling
+OK	OK
+Write the object to My Places.	Het object in ‘Mijn plaatsen’ opslaan.
+Cancel	Annuleren
+Vertices are dragged with the mouse. A circle in the middle of a segment adds a vertex.	Hoekpunten worden met de muis versleept. Een cirkel in het midden van een segment voegt een hoekpunt toe.
+A click on the globe places the placemark. The placemark is dragged with the mouse.	Een klik op de globe plaatst de plaatsmarkering. De plaatsmarkering wordt met de muis versleept.
+Two clicks on the globe set the ends of the line. Points are dragged with the mouse.	Twee klikken op de globe zetten de uiteinden van de lijn. Punten worden met de muis versleept.
+Mark the points of the path with clicks on the globe. A click on the last point finishes the path, on the first one closes the shape.	Markeer de punten van het pad met klikken op de globe. Een klik op het laatste punt beëindigt het pad, op het eerste sluit hij de vorm.
+Mark the vertices of the polygon with clicks on the globe. A click on the first vertex finishes drawing.	Markeer de hoekpunten van de polygoon met klikken op de globe. Een klik op het eerste hoekpunt beëindigt het tekenen.
+The first click on the globe sets the centre of the circle, the second one a point of the circle. Both points are dragged with the mouse.	De eerste klik op de globe zet het middelpunt van de cirkel, de tweede een punt van de cirkel. Beide punten worden met de muis versleept.
+Map length	Lengte op de kaart
+Length	Lengte
+Ground length	Lengte over het reliëf
+Heading	Koers
+Perimeter	Omtrek
+Area	Oppervlakte
+Radius	Straal
+Kilometres	Kilometers
+Miles	Mijlen
+Nautical miles	Zeemijlen
+Square metres	Vierkante meters
+Hectares	Hectare
+Square kilometres	Vierkante kilometers
+Square miles	Vierkante mijlen
+Metres	Meters
+mi	mi
+nmi	NM
+m²	m²
+ha	ha
+km²	km²
+sq mi	mi²
