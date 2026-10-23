@@ -190,6 +190,19 @@ pub struct LiteApp {
 /// Ящик прочитанных брошенных файлов.
 type DroppedBox = Arc<std::sync::Mutex<Vec<(Result<Vec<u8>, String>, String)>>>;
 
+/// Целое с пробелом между тысячами: 20 000.
+fn group_thousands(n: i64) -> String {
+    let digits = n.unsigned_abs().to_string();
+    let mut out = String::new();
+    for (i, ch) in digits.chars().enumerate() {
+        if i > 0 && (digits.len() - i).is_multiple_of(3) {
+            out.push('\u{a0}');
+        }
+        out.push(ch);
+    }
+    if n < 0 { format!("-{out}") } else { out }
+}
+
 /// Меню «Демо» по разделам, как у модуля. Выбранное демо - в clicked.
 fn demo_menu(ui: &mut egui::Ui, lang: Lang, clicked: &mut Option<&'static crate::demos::Demo>) {
     let title = match lang {
@@ -222,9 +235,9 @@ impl LiteApp {
     /// scenario - самопроверка или None, её отчёт уходит в report.
     pub fn new(cc: &eframe::CreationContext<'_>, loaders: Loaders, scenario: Option<Scenario>, report: Report) -> Self {
         crate::fonts::install(&cc.egui_ctx);
-        // Тёмная тема по умолчанию, решение автора от 23 октября 2026
-        // года: панель не спорит с космосом вокруг глобуса.
-        cc.egui_ctx.set_theme(egui::ThemePreference::Dark);
+        // Тёмная тема в цветах модуля по умолчанию, решения автора
+        // от 23 октября 2026 года.
+        crate::theme::apply(&cc.egui_ctx);
         let render_state = cc.wgpu_render_state.clone();
         let globe = render_state.as_ref().map(|rs| Globe::new(&rs.device, &rs.queue));
         let camera = Camera::new(Ellipsoid::wgs84(), DVec3::ZERO, DMat3::IDENTITY);
@@ -671,10 +684,7 @@ impl LiteApp {
             .order(egui::Order::Foreground)
             .fixed_pos(egui::pos2(rect.center().x - 220.0, rect.top() + 12.0))
             .show(ctx, |ui| {
-                egui::Frame::new()
-                    .fill(egui::Color32::from_black_alpha(160))
-                    .inner_margin(egui::Margin::same(6))
-                    .corner_radius(4.0)
+                crate::theme::plate()
                     .show(ui, |ui| {
                         ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
                         if let Some(player) = &self.player {
@@ -732,33 +742,52 @@ impl LiteApp {
         let mut open_clicked = false;
         let mut demo_clicked = None;
         let lang = self.lang;
-        egui::Panel::left("marks").resizable(true).default_size(280.0).show(ui, |ui| {
-            ui.add_space(4.0);
-            self.basemap_choice(ui, now);
-            ui.separator();
-            ui.horizontal(|ui| {
-                ui.heading(title);
-                if ui.button(open_label).clicked() {
-                    open_clicked = true;
+        let layers_title = match lang {
+            Lang::Ru => "Слои",
+            Lang::En => "Layers",
+        };
+        let status = self.status_text();
+        egui::Panel::left("marks").resizable(true).default_size(300.0).show(ui, |ui| {
+            ui.add_space(6.0);
+            self.search_row(ui, now);
+            ui.add_space(6.0);
+            // Строка состояния внизу панели, как у модуля.
+            let status_height = 22.0;
+            // Под раздел «Слои»: заголовок и строка основы.
+            let layers_height = 64.0;
+            if crate::theme::section(ui, "marks", title) {
+                ui.horizontal(|ui| {
+                    if ui.button(open_label).clicked() {
+                        open_clicked = true;
+                    }
+                    demo_menu(ui, lang, &mut demo_clicked);
+                    if self.timebar.extent.is_some() {
+                        ui.toggle_value(&mut self.timebar.open, time_label);
+                    }
+                });
+                if let Some(message) = &self.open_message {
+                    ui.label(message);
                 }
-                demo_menu(ui, lang, &mut demo_clicked);
-                if self.timebar.extent.is_some() {
-                    ui.toggle_value(&mut self.timebar.open, time_label);
+                let room = (ui.available_height() - layers_height - status_height).max(60.0);
+                match self.marks.tree.as_mut() {
+                    Some(tree) => {
+                        egui::ScrollArea::vertical().max_height(room).auto_shrink([false, true]).show(ui, |ui| {
+                            crate::marks::tree_ui(ui, tree, &mut Vec::new(), &mut actions);
+                        });
+                    }
+                    None => {
+                        ui.label(egui::RichText::new(hint).color(crate::theme::MUTED));
+                    }
                 }
+                ui.add_space(6.0);
+            }
+            if crate::theme::section(ui, "layers", layers_title) {
+                self.basemap_choice(ui);
+            }
+            ui.with_layout(egui::Layout::bottom_up(egui::Align::Min), |ui| {
+                ui.add_space(4.0);
+                ui.label(egui::RichText::new(status).color(crate::theme::MUTED));
             });
-            if let Some(message) = &self.open_message {
-                ui.label(message);
-            }
-            match self.marks.tree.as_mut() {
-                Some(tree) => {
-                    egui::ScrollArea::vertical().show(ui, |ui| {
-                        crate::marks::tree_ui(ui, tree, &mut Vec::new(), &mut actions);
-                    });
-                }
-                None => {
-                    ui.label(hint);
-                }
-            }
         });
         if open_clicked {
             self.pick_file(ui.ctx(), now);
@@ -1001,17 +1030,64 @@ impl LiteApp {
         self.credits.show(ctx, view, self.lang, &parts, 2);
     }
 
-    /// Выбор основы и строка поиска в углу окна.
-    /// Поиск места и выбор основы - верх левой панели, как в Google Earth.
-    fn basemap_choice(&mut self, ui: &mut egui::Ui, now: f64) {
-        let mut chosen = self.basemap;
-        let edit = ui.add(
-            egui::TextEdit::singleline(&mut self.search_text)
-                .hint_text(text(self.lang, Text::SearchHint))
-                .desired_width(f32::INFINITY),
-        );
-        // Запрос только по Enter, правило Nominatim.
-        let submitted = edit.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
+    /// Строка состояния панели, как у модуля: высота глаза и количество
+    /// идущих запросов.
+    fn status_text(&self) -> String {
+        let e = &self.nav.camera.ellipsoid;
+        let (_, _, height) = e.ecef_to_geodetic(self.nav.camera.eye);
+        let loaders = &self.loaders;
+        let loading: usize = [
+            loaders.esri.stats(),
+            loaders.osm.stats(),
+            loaders.terrain.stats(),
+            loaders.places.stats(),
+            loaders.pictures.stats(),
+            loaders.files.stats(),
+        ]
+        .iter()
+        .map(|s| s.requests_now.load(Ordering::SeqCst))
+        .sum();
+        let (km, m) = match self.lang {
+            Lang::Ru => ("км", "м"),
+            Lang::En => ("km", "m"),
+        };
+        let height = if height.abs() >= 10_000.0 {
+            format!("{} {km}", group_thousands((height / 1000.0).round() as i64))
+        } else {
+            format!("{} {m}", group_thousands(height.round() as i64))
+        };
+        match (self.lang, loading) {
+            (Lang::Ru, 0) => format!("Высота {height}"),
+            (Lang::Ru, n) => format!("Высота {height} · загрузка {n}"),
+            (Lang::En, 0) => format!("Altitude {height}"),
+            (Lang::En, n) => format!("Altitude {height} · loading {n}"),
+        }
+    }
+
+    /// Строка поиска места с кнопкой «Поиск», как у модуля, и найденные
+    /// места под ней.
+    fn search_row(&mut self, ui: &mut egui::Ui, now: f64) {
+        let button = match self.lang {
+            Lang::Ru => "Поиск",
+            Lang::En => "Search",
+        };
+        let mut clicked = false;
+        let edit = ui
+            .horizontal(|ui| {
+                let width = ui.available_width() - 70.0;
+                let edit = ui.add(
+                    egui::TextEdit::singleline(&mut self.search_text)
+                        .hint_text(text(self.lang, Text::SearchHint))
+                        .desired_width(width.max(60.0)),
+                );
+                if ui.button(button).clicked() {
+                    clicked = true;
+                }
+                edit
+            })
+            .inner;
+        // Запрос только по Enter или кнопке, правило Nominatim.
+        let submitted = clicked || (edit.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)));
         if let Some(message) = search_status(self.lang, &self.search.status) {
             ui.label(message);
         }
@@ -1023,6 +1099,17 @@ impl LiteApp {
                 }
             }
         }
+        if submitted && let Some(place) = self.search.submit(&self.search_text) {
+            self.fly_to_found(&place, now);
+        }
+        if let Some(place) = picked.and_then(|n| self.search.found.get(n).cloned()) {
+            self.fly_to_found(&place, now);
+        }
+    }
+
+    /// Выбор основы - раздел «Слои» панели.
+    fn basemap_choice(&mut self, ui: &mut egui::Ui) {
+        let mut chosen = self.basemap;
         ui.horizontal(|ui| {
             ui.label(text(self.lang, Text::Basemap));
             egui::ComboBox::from_id_salt("basemap").selected_text(chosen.name(self.lang)).show_ui(ui, |ui| {
@@ -1032,12 +1119,6 @@ impl LiteApp {
             });
         });
         self.set_basemap(chosen);
-        if submitted && let Some(place) = self.search.submit(&self.search_text) {
-            self.fly_to_found(&place, now);
-        }
-        if let Some(place) = picked.and_then(|n| self.search.found.get(n).cloned()) {
-            self.fly_to_found(&place, now);
-        }
     }
     fn finish_check(&mut self, ctx: &egui::Context) {
         let Some(check) = &self.check else {

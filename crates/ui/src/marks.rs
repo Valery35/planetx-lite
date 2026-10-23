@@ -282,7 +282,7 @@ pub fn tree_ui(ui: &mut eframe::egui::Ui, folder: &mut Folder, path: &mut Vec<us
                 let header = egui::collapsing_header::CollapsingState::load_with_default_open(ui.ctx(), id, true);
                 let (_, head, _) = header
                     .show_header(ui, |ui| {
-                        if ui.checkbox(&mut f.visible, "").changed() {
+                        if crate::theme::checkbox(ui, &mut f.visible).changed() {
                             actions.push(Action::Toggled(path.clone()));
                         }
                         let label = ui.add(egui::Label::new(egui::RichText::new(&f.name).strong()).sense(egui::Sense::click()));
@@ -298,7 +298,7 @@ pub fn tree_ui(ui: &mut eframe::egui::Ui, folder: &mut Folder, path: &mut Vec<us
             }
             Item::Place(p) => {
                 ui.horizontal(|ui| {
-                    if ui.checkbox(&mut p.visible, "").changed() {
+                    if crate::theme::checkbox(ui, &mut p.visible).changed() {
                         actions.push(Action::Toggled(path.clone()));
                     }
                     let name = if p.name.is_empty() { "-" } else { p.name.as_str() };
@@ -313,7 +313,7 @@ pub fn tree_ui(ui: &mut eframe::egui::Ui, folder: &mut Folder, path: &mut Vec<us
             }
             Item::Overlay(o) => {
                 ui.horizontal(|ui| {
-                    if ui.checkbox(&mut o.visible, "").changed() {
+                    if crate::theme::checkbox(ui, &mut o.visible).changed() {
                         actions.push(Action::Toggled(path.clone()));
                     }
                     let name = if o.name.is_empty() { "-" } else { o.name.as_str() };
