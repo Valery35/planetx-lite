@@ -26,13 +26,16 @@ use terrain::HeightStore;
 /// Пауза между пересадками сеток на новые высоты, секунды.
 pub const REBUILD_PAUSE: f64 = 0.5;
 
-/// Точка метки для системы надписей: название, широта, долгота, цвет.
+/// Точка метки для системы надписей: название, широта, долгота, цвет
+/// подписи и цвет значка (IconStyle, без него - жёлтый, как значок
+/// строки в «Моих метках»).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Point {
     pub name: String,
     pub lat: f64,
     pub lon: f64,
     pub color: [u8; 4],
+    pub icon: [u8; 4],
 }
 
 /// Открытый файл: дерево меток и поза камеры сцены.
@@ -463,7 +466,13 @@ pub fn root_ui(
                 actions.push(Action::Toggled(Vec::new()));
             }
             crate::theme::star(ui);
-            let label = ui.add(egui::Label::new(egui::RichText::new(root_name(lang)).strong()).sense(egui::Sense::click()));
+            let label = ui.add(
+                egui::Label::new(egui::RichText::new(root_name(lang)).strong()).selectable(false).sense(egui::Sense::click()),
+            );
+            // Курсор обычный, как над строками дерева.
+            if label.hovered() {
+                ui.ctx().set_cursor_icon(egui::CursorIcon::Default);
+            }
             label.context_menu(|ui| {
                 if ui.button(w.open).clicked() {
                     actions.push(Action::Open);
@@ -844,7 +853,13 @@ impl Marks {
             .filter(|s| s.kind == Kind::Point)
             .filter_map(|s| {
                 let (lat, lon) = *s.points.first()?;
-                Some(Point { name: s.name.clone(), lat, lon, color: s.label_color.unwrap_or([255, 255, 255, 245]) })
+                Some(Point {
+                    name: s.name.clone(),
+                    lat,
+                    lon,
+                    color: s.label_color.unwrap_or([255, 255, 255, 245]),
+                    icon: s.color,
+                })
             })
             .collect()
     }

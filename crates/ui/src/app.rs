@@ -762,7 +762,8 @@ impl LiteApp {
 
     /// Точки меток - в надписи.
     fn marks_to_labels(&mut self) {
-        let points: Vec<(String, f64, f64)> = self.marks.points().into_iter().map(|p| (p.name, p.lat, p.lon)).collect();
+        let points: Vec<(String, f64, f64, [u8; 4])> =
+            self.marks.points().into_iter().map(|p| (p.name, p.lat, p.lon, p.icon)).collect();
         self.labels.set_marks(&points);
     }
 

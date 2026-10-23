@@ -206,6 +206,8 @@ pub struct Labels {
     search: Option<Place>,
     /// Точки меток открытой сцены.
     marks: Vec<Place>,
+    /// Цвет значка метки по номеру пункта.
+    mark_colors: HashMap<u64, egui::Color32>,
 }
 
 impl Labels {
@@ -226,15 +228,22 @@ impl Labels {
             pending: false,
             search: None,
             marks: Vec::new(),
+            mark_colors: HashMap::new(),
         }
     }
 
-    /// Точки меток открытой сцены: название, широта, долгота.
-    pub fn set_marks(&mut self, points: &[(String, f64, f64)]) {
+    /// Точки «Моих меток»: название, широта, долгота, цвет значка.
+    /// Значок на глобусе - цвета метки, как значок её строки в дереве.
+    pub fn set_marks(&mut self, points: &[(String, f64, f64, [u8; 4])]) {
+        self.mark_colors.clear();
         self.marks = points
             .iter()
             .enumerate()
-            .map(|(i, (name, lat, lon))| Place::new(u64::MAX - 1 - i as u64, name, Kind::Mark, 0, *lat, *lon))
+            .map(|(i, (name, lat, lon, icon))| {
+                let id = u64::MAX - 1 - i as u64;
+                self.mark_colors.insert(id, egui::Color32::from_rgb(icon[0], icon[1], icon[2]));
+                Place::new(id, name, Kind::Mark, 0, *lat, *lon)
+            })
             .collect();
     }
 
@@ -364,7 +373,8 @@ impl Labels {
                 f64::from(y0 + bh + PADDING),
             ]);
             tiers.push(place.kind.tier());
-            layouts.push((text, st, galley, egui::pos2(x0, y0), at));
+            let mark = self.mark_colors.get(&place.id).copied().filter(|_| place.kind == Kind::Mark);
+            layouts.push((text, st, galley, egui::pos2(x0, y0), at, mark));
         }
         let previous: HashSet<usize> = placed.iter().enumerate().filter(|(_, c)| self.shown.contains(&c.1)).map(|(n, _)| n).collect();
         let chosen = select_labels(&boxes, &tiers, &previous, CELL);
@@ -374,8 +384,8 @@ impl Labels {
                 continue;
             };
             let alpha = ((c.5 - FADE_LOW) / (FADE_HIGH - FADE_LOW)).clamp(0.0, 1.0) as f32;
-            let (text, st, galley, corner, at) = &layouts[n];
-            paint(painter, *st, galley.clone(), *corner, text, alpha);
+            let (text, st, galley, corner, at, mark) = &layouts[n];
+            paint(painter, *st, galley.clone(), *corner, text, alpha, *mark);
             shown.insert(c.1.clone());
             self.drawn.push(Shown { text: text.clone(), at: *at });
         }
@@ -482,7 +492,8 @@ fn fade(color: egui::Color32, alpha: f32) -> egui::Color32 {
     color.gamma_multiply(alpha)
 }
 
-/// Нарисовать надпись с левым верхним углом corner.
+/// Нарисовать надпись с левым верхним углом corner. mark - цвет значка
+/// своей метки, без него - жёлтый [`MARK`].
 fn paint(
     painter: &egui::Painter,
     st: Style,
@@ -490,6 +501,7 @@ fn paint(
     corner: egui::Pos2,
     text: &str,
     alpha: f32,
+    mark: Option<egui::Color32>,
 ) {
     let size = galley.size();
     let (w, h, ax, ay) = layout_box(st, size);
@@ -538,7 +550,7 @@ fn paint(
         }
         Marker::Yellow => {
             let ring = egui::Stroke::new(r * 0.35, fade(egui::Color32::from_rgba_unmultiplied(60, 40, 0, 230), alpha));
-            painter.circle(anchor, r, fade(MARK, alpha), ring);
+            painter.circle(anchor, r, fade(mark.unwrap_or(MARK), alpha), ring);
         }
         Marker::None | Marker::Shield => {}
     }

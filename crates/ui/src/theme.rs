@@ -185,14 +185,17 @@ pub fn row_icon(ui: &mut egui::Ui, kind: RowIcon, color: Color32, fill: Option<C
     let p = |x: f32, y: f32| rect.left_top() + egui::vec2(x, y);
     let light = Color32::from_rgb(0xd9, 0xdd, 0xe3);
     // Тёмный цвет метки на тёмной панели не виден: значок светлеет.
+    // Точка - ровно цвета значка на глобусе, тёмную видно по светлой
+    // обводке. Линию тёмного цвета на тёмной панели не видно, она светлеет.
+    let exact = color.to_opaque();
     let sum = u16::from(color.r()) + u16::from(color.g()) + u16::from(color.b());
-    let color = if sum < 150 { light } else { color.to_opaque() };
+    let color = if sum < 150 { light } else { exact };
     let line = Stroke::new(1.6, color);
     let thin = Stroke::new(1.2, light);
     let painter = ui.painter();
     match kind {
         RowIcon::Point => {
-            painter.circle(p(8.0, 8.0), 4.5, color, Stroke::new(1.0, Color32::from_black_alpha(160)));
+            painter.circle(p(8.0, 8.0), 4.5, exact, Stroke::new(1.0, light.gamma_multiply(0.6)));
         }
         RowIcon::Line => {
             let pts = vec![p(2.0, 12.0), p(6.0, 5.0), p(10.0, 10.0), p(14.0, 3.5)];
