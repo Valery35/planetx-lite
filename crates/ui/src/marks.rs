@@ -288,6 +288,10 @@ pub enum Action {
     CancelRename,
     /// Перетащили строку: откуда, куда, в папку или перед строкой.
     Move(Vec<usize>, Vec<usize>, bool),
+    /// Сохранить строку как KML или KMZ, пустой путь - все «Мои метки».
+    SaveKml(Vec<usize>),
+    /// Сохранить строку сценой с текущей камерой.
+    SaveScene(Vec<usize>),
     /// Очистить «Мои метки».
     Clear,
     /// Открыть файл в «Мои метки».
@@ -300,6 +304,8 @@ struct Words {
     tour: &'static str,
     rename: &'static str,
     remove: &'static str,
+    save_kml: &'static str,
+    save_scene: &'static str,
     open: &'static str,
     clear: &'static str,
 }
@@ -311,6 +317,8 @@ fn words(lang: crate::i18n::Lang) -> Words {
             tour: "Запустить тур",
             rename: "Переименовать",
             remove: "Удалить",
+            save_kml: "Сохранить как KML…",
+            save_scene: "Сохранить сцену…",
             open: "Открыть…",
             clear: "Очистить «Мои метки»",
         },
@@ -319,6 +327,8 @@ fn words(lang: crate::i18n::Lang) -> Words {
             tour: "Play tour",
             rename: "Rename",
             remove: "Delete",
+            save_kml: "Save as KML…",
+            save_scene: "Save scene…",
             open: "Open…",
             clear: "Clear My Places",
         },
@@ -343,6 +353,15 @@ fn row_menu(response: &eframe::egui::Response, w: &Words, path: &[usize], tour: 
         }
         if tour && ui.button(w.tour).clicked() {
             actions.push(Action::Tour(path.to_vec()));
+            ui.close();
+        }
+        ui.separator();
+        if ui.button(w.save_kml).clicked() {
+            actions.push(Action::SaveKml(path.to_vec()));
+            ui.close();
+        }
+        if ui.button(w.save_scene).clicked() {
+            actions.push(Action::SaveScene(path.to_vec()));
             ui.close();
         }
         ui.separator();
@@ -481,6 +500,15 @@ pub fn root_ui(
                 if !root.children.is_empty() {
                     if ui.button(w.tour).clicked() {
                         actions.push(Action::Tour(Vec::new()));
+                        ui.close();
+                    }
+                    ui.separator();
+                    if ui.button(w.save_kml).clicked() {
+                        actions.push(Action::SaveKml(Vec::new()));
+                        ui.close();
+                    }
+                    if ui.button(w.save_scene).clicked() {
+                        actions.push(Action::SaveScene(Vec::new()));
                         ui.close();
                     }
                     ui.separator();
@@ -712,6 +740,25 @@ impl Marks {
         };
         self.refresh();
         placed.is_some()
+    }
+
+    /// Что сохраняется по пути: пустой путь - все «Мои метки», папка -
+    /// она сама, метка или наложение - папка с ним одним под его
+    /// названием.
+    pub fn export_tree(&self, path: &[usize]) -> Option<Folder> {
+        let tree = self.tree.as_ref()?;
+        if path.is_empty() {
+            return Some(tree.clone());
+        }
+        let item = item_at(tree, path)?;
+        let name = match item {
+            Item::Folder(f) => return Some(f.clone()),
+            Item::Place(p) => p.name.clone(),
+            Item::Overlay(o) => o.name.clone(),
+        };
+        let mut folder = Folder::new(&name);
+        folder.children.push(item.clone());
+        Some(folder)
     }
 
     /// Очистить «Мои метки»: корень остаётся пустым.

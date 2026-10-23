@@ -900,6 +900,8 @@ impl LiteApp {
                     }
                 }
                 crate::marks::Action::CancelRename => self.tree_state.renaming = None,
+                crate::marks::Action::SaveKml(path) => self.save_marks(&path, crate::export::Kind::Kml),
+                crate::marks::Action::SaveScene(path) => self.save_marks(&path, crate::export::Kind::Scene),
                 crate::marks::Action::Move(from, to, into) => {
                     if self.marks.move_to(&from, &to, into) {
                         self.tree_state.selected = None;
@@ -909,6 +911,25 @@ impl LiteApp {
                 }
             }
         }
+    }
+
+    /// Сохранить строку «Моих меток» по пути: KML или KMZ, или сцену
+    /// с текущей камерой. Итог - в строке сообщения.
+    fn save_marks(&mut self, path: &[usize], kind: crate::export::Kind) {
+        let Some(tree) = self.marks.export_tree(path) else {
+            return;
+        };
+        self.open_message = match crate::export::save(kind, &tree, &self.nav.pose) {
+            Ok(Some(to)) => Some(match self.lang {
+                Lang::Ru => format!("Сохранено: {to}"),
+                Lang::En => format!("Saved: {to}"),
+            }),
+            Ok(None) => None,
+            Err(e) => Some(match self.lang {
+                Lang::Ru => format!("Не сохранено: {e}"),
+                Lang::En => format!("Not saved: {e}"),
+            }),
+        };
     }
 
     /// Выбор файла сцены. В программе - диалог системы, на странице -

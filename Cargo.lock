@@ -3351,6 +3351,7 @@ dependencies = [
  "epaint_default_fonts",
  "globe-core",
  "image",
+ "js-sys",
  "net",
  "render",
  "rfd",
@@ -3359,7 +3360,9 @@ dependencies = [
  "skrifa",
  "sys-locale",
  "terrain",
+ "wasm-bindgen",
  "wasm-bindgen-futures",
+ "web-sys",
  "web-time",
 ]
 
