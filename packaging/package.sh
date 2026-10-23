@@ -31,7 +31,9 @@ windows() {
     (cd "$stage" && 7z a -tzip -mx=9 "$out/PlanetX-Lite-$version-windows-x86_64-portable.zip" "$(basename "$dir")" > /dev/null)
     local iscc="/c/Program Files (x86)/Inno Setup 6/ISCC.exe"
     command -v iscc > /dev/null && iscc="$(command -v iscc)"
-    "$iscc" /Q "/DVersion=$version" "/DSource=$(cygpath -w "$dir")" "/O$(cygpath -w "$out")" \
+    # Git Bash превращает аргументы с «/» в пути Windows, ключам ISCC
+    # это преобразование не нужно.
+    MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*' "$iscc" /Q "/DVersion=$version" "/DSource=$(cygpath -w "$dir")" "/O$(cygpath -w "$out")" \
         "$(cygpath -w "$root/packaging/windows/planetx-lite.iss")"
 }
 
