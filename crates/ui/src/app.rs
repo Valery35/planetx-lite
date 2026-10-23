@@ -222,6 +222,9 @@ impl LiteApp {
     /// scenario - самопроверка или None, её отчёт уходит в report.
     pub fn new(cc: &eframe::CreationContext<'_>, loaders: Loaders, scenario: Option<Scenario>, report: Report) -> Self {
         crate::fonts::install(&cc.egui_ctx);
+        // Тёмная тема по умолчанию, решение автора от 23 октября 2026
+        // года: панель не спорит с космосом вокруг глобуса.
+        cc.egui_ctx.set_theme(egui::ThemePreference::Dark);
         let render_state = cc.wgpu_render_state.clone();
         let globe = render_state.as_ref().map(|rs| Globe::new(&rs.device, &rs.queue));
         let camera = Camera::new(Ellipsoid::wgs84(), DVec3::ZERO, DMat3::IDENTITY);
