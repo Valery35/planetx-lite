@@ -7,7 +7,9 @@
 //! `planetx-lite --check perm`, `--check elbrus` или `--check scenes` -
 //! самопроверка, отчёт в стандартный вывод, код выхода 0 - проверка
 //! пройдена. Сцены демо для `scenes` - из папки `--demo папка`,
-//! `PLANETX_DEMO` или `demo` рядом с программой.
+//! `PLANETX_DEMO` или `demo` рядом с программой, без них - из папки
+//! `demo` хранилища planetx-terrain по ссылке. `--demo` принимает
+//! и начало адреса.
 //!
 //! `planetx-lite --pose широта,долгота,расстояние,азимут,наклон` -
 //! начать с этой позы камеры.
@@ -61,13 +63,20 @@ fn main() -> ExitCode {
         None => None,
     };
     let shot = args.windows(2).find(|w| w[0] == "--shot").map(|w| std::path::PathBuf::from(&w[1]));
-    // Папка сцен демо: --demo, PLANETX_DEMO или «demo» рядом с программой.
+    // Сцены демо: --demo, PLANETX_DEMO, «demo» рядом с программой, иначе
+    // planetx-terrain по ссылке.
     let demo = args
         .windows(2)
         .find(|w| w[0] == "--demo")
-        .map(|w| std::path::PathBuf::from(&w[1]))
-        .or_else(|| std::env::var_os("PLANETX_DEMO").map(std::path::PathBuf::from))
-        .or_else(|| std::env::current_exe().ok().and_then(|exe| Some(exe.parent()?.join("demo"))));
+        .map(|w| w[1].clone())
+        .or_else(|| std::env::var_os("PLANETX_DEMO").map(|d| d.to_string_lossy().into_owned()))
+        .or_else(|| {
+            let dir = std::env::current_exe().ok()?.parent()?.join("demo");
+            dir.is_dir().then(|| dir.to_string_lossy().into_owned())
+        })
+        .unwrap_or_else(|| ui::demos::BASE.to_string());
+    // Кэш файлов демо - рядом с кэшем тайлов.
+    let demo_cache = default_cache_dir().and_then(|d| Some(d.parent()?.join("demo")));
     // Файлы - аргументы без «--», которые не значения флагов, по порядку:
     // растр высот, потом сцена.
     const VALUED: [&str; 4] = ["--check", "--pose", "--shot", "--demo"];
@@ -116,9 +125,9 @@ fn main() -> ExitCode {
                     *r = Some(ok);
                 }
             });
-            let mut app = ui::LiteApp::new(cc, loaders, scenario, report);
-            if let Some(dir) = &demo {
-                app = app.with_scenes(&dir.to_string_lossy());
+            let mut app = ui::LiteApp::new(cc, loaders, scenario, report).with_scenes(&demo);
+            if let Some(dir) = demo_cache {
+                app = app.with_demo_cache(dir);
             }
             for (bytes, name) in opened {
                 app = app.with_file(bytes, &name);

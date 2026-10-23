@@ -10,7 +10,7 @@
 //! - `?gl` - только WebGL2, как у телефона на странице по http;
 //! - `?scene=адрес` - открыть сцену `.planetx`, KML или KMZ по ссылке;
 //! - `?demo=адрес` - откуда `?check=scenes` берёт сцены демо, по умолчанию
-//!   папка `demo/` рядом со страницей.
+//!   папка `demo` хранилища planetx-terrain.
 //!
 //! Ошибка программы тоже выводится поверх страницы и в заголовок, её
 //! видно и на телефоне без консоли.
@@ -52,7 +52,7 @@ fn main() {
         params.iter().find_map(|p| p.strip_prefix(key)).map(|v| js_sys::decode_uri_component(v).map_or_else(|_| v.to_string(), String::from))
     };
     let scene = decoded("scene=");
-    let demo = decoded("demo=").unwrap_or_else(|| "demo/".to_string());
+    let demo = decoded("demo=").unwrap_or_else(|| ui::demos::BASE.to_string());
     let Some(canvas) = document.get_element_by_id("globe").and_then(|e| e.dyn_into::<web_sys::HtmlCanvasElement>().ok())
     else {
         return;

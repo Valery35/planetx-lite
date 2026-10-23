@@ -11,6 +11,7 @@ pub mod app;
 pub mod basemap;
 pub mod check;
 pub mod credits;
+pub mod demos;
 pub mod gpkg;
 pub mod i18n;
 pub mod input;

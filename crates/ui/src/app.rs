@@ -173,6 +173,12 @@ pub struct LiteApp {
     scene_source: Option<String>,
     /// Сцена грузится по ссылке: имя файла и признак сцены самопроверки.
     fetching: Option<(String, bool)>,
+    /// Папка кэша файлов демо, у страницы её нет.
+    demo_cache: Option<std::path::PathBuf>,
+    /// Файлы выбранного демо, которые ещё не открыты, по порядку.
+    demo_queue: std::collections::VecDeque<&'static str>,
+    /// Файл демо, который сейчас грузится.
+    demo_fetching: Option<&'static str>,
     /// Свой рельеф: врезанные растры высот.
     relief: Relief,
     /// Открытые облака точек.
@@ -183,6 +189,34 @@ pub struct LiteApp {
 
 /// Ящик прочитанных брошенных файлов.
 type DroppedBox = Arc<std::sync::Mutex<Vec<(Result<Vec<u8>, String>, String)>>>;
+
+/// Меню «Демо» по разделам, как у модуля. Выбранное демо - в clicked.
+fn demo_menu(ui: &mut egui::Ui, lang: Lang, clicked: &mut Option<&'static crate::demos::Demo>) {
+    let title = match lang {
+        Lang::Ru => "Демо",
+        Lang::En => "Demo",
+    };
+    ui.menu_button(title, |ui| {
+        for section in &crate::demos::MENU {
+            let name = match lang {
+                Lang::Ru => section.ru,
+                Lang::En => section.en,
+            };
+            ui.menu_button(name, |ui| {
+                for demo in section.demos {
+                    let label = match lang {
+                        Lang::Ru => demo.ru,
+                        Lang::En => demo.en,
+                    };
+                    if ui.button(label).clicked() {
+                        *clicked = Some(demo);
+                        ui.close();
+                    }
+                }
+            });
+        }
+    });
+}
 
 impl LiteApp {
     /// scenario - самопроверка или None, её отчёт уходит в report.
@@ -233,6 +267,9 @@ impl LiteApp {
             keep_pose: false,
             scene_source: None,
             fetching: None,
+            demo_cache: None,
+            demo_queue: std::collections::VecDeque::new(),
+            demo_fetching: None,
             relief: Relief::default(),
             clouds: Vec::new(),
             models: crate::models::Models::default(),
@@ -297,6 +334,56 @@ impl LiteApp {
         self
     }
 
+    /// Папка кэша файлов демо.
+    pub fn with_demo_cache(mut self, dir: std::path::PathBuf) -> Self {
+        self.demo_cache = Some(dir);
+        self
+    }
+
+    /// Открыть демо: файлы по порядку, из кэша или по ссылке.
+    fn open_demo(&mut self, demo: &crate::demos::Demo, now: f64) {
+        // Одна загрузка за раз: ответ прежней пришёл бы новому демо.
+        if self.fetching.is_some() {
+            return;
+        }
+        self.demo_queue = demo.files.iter().copied().collect();
+        self.demo_fetching = None;
+        self.next_demo_file(now);
+    }
+
+    /// Открыть следующие файлы демо из кэша, первый без кэша - начать
+    /// грузить.
+    fn next_demo_file(&mut self, now: f64) {
+        while let Some(path) = self.demo_queue.pop_front() {
+            let name = crate::demos::name(path).to_string();
+            if let Some(bytes) = self.cached_demo(path) {
+                // Ошибку открытия показывает панель.
+                let _ = self.open_file(&bytes, &name, Some(now));
+                continue;
+            }
+            self.loaders.files.start(&crate::demos::url(path));
+            self.open_message = Some(match self.lang {
+                Lang::Ru => format!("Загрузка демо: {name}…"),
+                Lang::En => format!("Loading the demo: {name}…"),
+            });
+            self.fetching = Some((name, false));
+            self.demo_fetching = Some(path);
+            return;
+        }
+    }
+
+    /// Файл демо из кэша программы.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn cached_demo(&self, path: &str) -> Option<Vec<u8>> {
+        crate::demos::cached(self.demo_cache.as_deref()?, path)
+    }
+
+    /// У страницы своего кэша нет, файлы хранит кэш браузера.
+    #[cfg(target_arch = "wasm32")]
+    fn cached_demo(&self, _path: &str) -> Option<Vec<u8>> {
+        None
+    }
+
     /// Открыть сцену по ссылке, когда она загрузится. Страница так
     /// открывает `?scene=адрес`.
     pub fn with_scene_url(mut self, url: &str) -> Self {
@@ -353,15 +440,31 @@ impl LiteApp {
         };
         match (answer, for_check) {
             (Ok(bytes), true) => self.open_check_scene(&bytes, &name, now),
-            (Ok(bytes), false) => {
-                let _ = self.open_file(&bytes, &name, None);
-            }
+            (Ok(bytes), false) => match self.demo_fetching.take() {
+                Some(path) => {
+                    #[cfg(not(target_arch = "wasm32"))]
+                    if let Some(dir) = &self.demo_cache {
+                        // Кэш не записался - демо всё равно открывается.
+                        let _ = crate::demos::store(dir, path, &bytes);
+                    }
+                    let _ = path;
+                    let _ = self.open_file(&bytes, &name, Some(now));
+                    self.next_demo_file(now);
+                }
+                None => {
+                    let _ = self.open_file(&bytes, &name, None);
+                }
+            },
             (Err(e), true) => {
                 if let Some(check) = &mut self.check {
                     check.scene_opened(Err(format!("{name}: {e}")), now);
                 }
             }
-            (Err(e), false) => self.open_message = Some(format!("{name}: {e}")),
+            (Err(e), false) => {
+                self.demo_fetching = None;
+                self.demo_queue.clear();
+                self.open_message = Some(format!("{name}: {e}"));
+            }
         }
     }
 
@@ -623,6 +726,8 @@ impl LiteApp {
             Lang::En => ("Places", "Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.", "Open…", "Time"),
         };
         let mut open_clicked = false;
+        let mut demo_clicked = None;
+        let lang = self.lang;
         egui::Panel::left("marks").resizable(true).default_size(280.0).show(ui, |ui| {
             ui.add_space(4.0);
             self.basemap_choice(ui, now);
@@ -632,6 +737,7 @@ impl LiteApp {
                 if ui.button(open_label).clicked() {
                     open_clicked = true;
                 }
+                demo_menu(ui, lang, &mut demo_clicked);
                 if self.timebar.extent.is_some() {
                     ui.toggle_value(&mut self.timebar.open, time_label);
                 }
@@ -652,6 +758,9 @@ impl LiteApp {
         });
         if open_clicked {
             self.pick_file(ui.ctx(), now);
+        }
+        if let Some(demo) = demo_clicked {
+            self.open_demo(demo, now);
         }
         for action in actions {
             match action {
