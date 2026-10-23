@@ -38,6 +38,14 @@ pub const SEMIBOLD_WEIGHT: f32 = 600.0;
 /// Семейство заголовков.
 pub const SEMIBOLD: &str = "semibold";
 
+/// Семейство подписей на глобусе - встроенный шрифт egui.
+pub const GLOBE: &str = "globe";
+
+/// Шрифт подписей на глобусе размером size.
+pub fn globe(size: f32) -> egui::FontId {
+    egui::FontId::new(size, egui::FontFamily::Name(GLOBE.into()))
+}
+
 /// Байты годны как шрифт: разбираются тем же skrifa, что у egui.
 pub fn is_font(bytes: &[u8]) -> bool {
     skrifa::FontRef::new(bytes).is_ok()
@@ -56,6 +64,10 @@ fn read(path: &str) -> Option<Vec<u8>> {
 /// Системные шрифты (обычный, полужирный), если нашлись.
 #[cfg(not(target_arch = "wasm32"))]
 fn system() -> Option<(Vec<u8>, Vec<u8>)> {
+    // PLANETX_BUILTIN_FONTS - встроенный шрифт egui, как у RustGIS.
+    if std::env::var_os("PLANETX_BUILTIN_FONTS").is_some() {
+        return None;
+    }
     CANDIDATES.iter().find_map(|(r, b)| {
         let regular = read(r)?;
         let semibold = read(b).unwrap_or_else(|| regular.clone());
@@ -76,6 +88,13 @@ pub fn install(ctx: &egui::Context) {
     use egui::{FontData, FontDefinitions, FontFamily};
 
     let mut fonts = FontDefinitions::default();
+    // Подписи на глобусе - встроенным шрифтом: при полёте они всё время
+    // приносят новые знаки, а Segoe UI рисует новый знак дорого.
+    // С ним на сценах «Бриенц» и «Японский жёлоб» кадр замирал больше
+    // чем на секунду, 23 октября 2026 года.
+    if let Some(prop) = fonts.families.get(&FontFamily::Proportional).cloned() {
+        fonts.families.insert(FontFamily::Name(GLOBE.into()), prop);
+    }
     let mut semi: Vec<String> = Vec::new();
     if let Some((regular, semibold)) = system() {
         fonts.font_data.insert("ui".into(), Arc::new(FontData::from_owned(regular)));

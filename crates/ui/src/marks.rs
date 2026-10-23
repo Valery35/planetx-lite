@@ -239,6 +239,12 @@ pub fn item_at<'a>(folder: &'a Folder, path: &[usize]) -> Option<&'a Item> {
     }
 }
 
+/// Строка дерева для правки по пути номеров детей от корня.
+fn item_at_mut<'a>(folder: &'a mut Folder, path: &[usize]) -> Option<&'a mut Item> {
+    let (last, parent) = path.split_last()?;
+    folder_at_mut(folder, parent)?.children.get_mut(*last)
+}
+
 /// Флажок строки: видимость метки, папки или наложения.
 fn visible_mut(item: &mut Item) -> &mut bool {
     match item {
@@ -269,58 +275,234 @@ pub enum Action {
     Fly(Vec<usize>),
     /// Кнопка тура: тур по папке или записанный тур метки.
     Tour(Vec<usize>),
+    /// Удалить строку.
+    Remove(Vec<usize>),
+    /// Начать переименование строки.
+    StartRename(Vec<usize>),
+    /// Новое название строки.
+    Rename(Vec<usize>, String),
+    /// Переименование отменено.
+    CancelRename,
+    /// Перетащили строку: откуда, куда, в папку или перед строкой.
+    Move(Vec<usize>, Vec<usize>, bool),
+    /// Очистить «Мои метки».
+    Clear,
+    /// Открыть файл в «Мои метки».
+    Open,
 }
 
-/// Дерево меток в панели: флажки и названия, папки раскрываются.
-pub fn tree_ui(ui: &mut eframe::egui::Ui, folder: &mut Folder, path: &mut Vec<usize>, actions: &mut Vec<Action>) {
+/// Тексты меню строк дерева.
+struct Words {
+    fly: &'static str,
+    tour: &'static str,
+    rename: &'static str,
+    remove: &'static str,
+    open: &'static str,
+    clear: &'static str,
+}
+
+fn words(lang: crate::i18n::Lang) -> Words {
+    match lang {
+        crate::i18n::Lang::Ru => Words {
+            fly: "Подлететь",
+            tour: "Запустить тур",
+            rename: "Переименовать",
+            remove: "Удалить",
+            open: "Открыть…",
+            clear: "Очистить «Мои метки»",
+        },
+        crate::i18n::Lang::En => Words {
+            fly: "Fly to",
+            tour: "Play tour",
+            rename: "Rename",
+            remove: "Delete",
+            open: "Open…",
+            clear: "Clear My Places",
+        },
+    }
+}
+
+/// Название корня «Мои метки».
+pub fn root_name(lang: crate::i18n::Lang) -> &'static str {
+    match lang {
+        crate::i18n::Lang::Ru => "Мои метки",
+        crate::i18n::Lang::En => "My Places",
+    }
+}
+
+/// Меню правой кнопки строки, как у модуля в минимуме: перелёт, тур,
+/// удаление.
+fn row_menu(response: &eframe::egui::Response, w: &Words, path: &[usize], tour: bool, actions: &mut Vec<Action>) {
+    response.context_menu(|ui| {
+        if ui.button(w.fly).clicked() {
+            actions.push(Action::Fly(path.to_vec()));
+            ui.close();
+        }
+        if tour && ui.button(w.tour).clicked() {
+            actions.push(Action::Tour(path.to_vec()));
+            ui.close();
+        }
+        ui.separator();
+        if ui.button(w.rename).clicked() {
+            actions.push(Action::StartRename(path.to_vec()));
+            ui.close();
+        }
+        if ui.button(w.remove).clicked() {
+            actions.push(Action::Remove(path.to_vec()));
+            ui.close();
+        }
+    });
+}
+
+/// Название строки: подпись с меню и перетаскиванием или поле
+/// переименования. Enter или щелчок мимо - новое название, Esc - отмена.
+fn row_name(
+    ui: &mut eframe::egui::Ui,
+    text: eframe::egui::RichText,
+    path: &[usize],
+    tour: bool,
+    w: &Words,
+    renaming: &mut Option<(Vec<usize>, String)>,
+    actions: &mut Vec<Action>,
+) {
     use eframe::egui;
+    if let Some((at, name)) = renaming.as_mut().filter(|(at, _)| at.as_slice() == path) {
+        let edit = ui.add(egui::TextEdit::singleline(name).desired_width(ui.available_width().max(80.0)));
+        if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+            actions.push(Action::CancelRename);
+        } else if edit.lost_focus() {
+            actions.push(Action::Rename(at.clone(), name.clone()));
+        } else if !edit.has_focus() {
+            edit.request_focus();
+        }
+        return;
+    }
+    let id = ui.make_persistent_id(("marks-drag", path.to_vec()));
+    let label = ui
+        .dnd_drag_source(id, path.to_vec(), |ui| ui.add(egui::Label::new(text).truncate().sense(egui::Sense::click())))
+        .inner;
+    if label.double_clicked() {
+        actions.push(Action::Fly(path.to_vec()));
+    }
+    row_menu(&label, w, path, tour, actions);
+}
+
+/// Строка принимает перетащенную: линия над строкой - перед ней,
+/// рамка папки - в неё.
+fn drop_target(ui: &eframe::egui::Ui, row: &eframe::egui::Response, path: &[usize], into: bool, actions: &mut Vec<Action>) {
+    use eframe::egui;
+    let Some(dragged) = row.dnd_hover_payload::<Vec<usize>>() else {
+        return;
+    };
+    if path.starts_with(&dragged) {
+        return;
+    }
+    let stroke = egui::Stroke::new(2.0, crate::theme::ACCENT);
+    if into {
+        ui.painter().rect_stroke(row.rect, 2.0, stroke, egui::StrokeKind::Inside);
+    } else {
+        ui.painter().hline(row.rect.x_range(), row.rect.top(), stroke);
+    }
+    if let Some(from) = row.dnd_release_payload::<Vec<usize>>() {
+        actions.push(Action::Move((*from).clone(), path.to_vec(), into));
+    }
+}
+
+/// Корень «Мои метки» со звездой, флажком всего дерева и меню: открыть
+/// файл, тур, очистить. Внутри - дерево [`tree_ui`].
+pub fn root_ui(
+    ui: &mut eframe::egui::Ui,
+    root: &mut Folder,
+    lang: crate::i18n::Lang,
+    renaming: &mut Option<(Vec<usize>, String)>,
+    actions: &mut Vec<Action>,
+) {
+    use eframe::egui;
+    let w = words(lang);
+    let id = ui.make_persistent_id("marks-root");
+    let header = egui::collapsing_header::CollapsingState::load_with_default_open(ui.ctx(), id, true);
+    let (_, head, _) = header
+        .show_header(ui, |ui| {
+            if crate::theme::checkbox(ui, &mut root.visible).changed() {
+                actions.push(Action::Toggled(Vec::new()));
+            }
+            crate::theme::star(ui);
+            let label = ui.add(egui::Label::new(egui::RichText::new(root_name(lang)).strong()).sense(egui::Sense::click()));
+            label.context_menu(|ui| {
+                if ui.button(w.open).clicked() {
+                    actions.push(Action::Open);
+                    ui.close();
+                }
+                if !root.children.is_empty() {
+                    if ui.button(w.tour).clicked() {
+                        actions.push(Action::Tour(Vec::new()));
+                        ui.close();
+                    }
+                    ui.separator();
+                    if ui.button(w.clear).clicked() {
+                        actions.push(Action::Clear);
+                        ui.close();
+                    }
+                }
+            });
+        })
+        .body(|ui| tree_ui(ui, root, &mut Vec::new(), lang, renaming, actions));
+    // Брошенная на корень строка ложится в конец «Моих меток».
+    drop_target(ui, &head.response, &[], true, actions);
+}
+
+/// Дерево меток в панели: флажки и названия, папки со значком
+/// раскрываются, у строк - меню правой кнопки.
+pub fn tree_ui(
+    ui: &mut eframe::egui::Ui,
+    folder: &mut Folder,
+    path: &mut Vec<usize>,
+    lang: crate::i18n::Lang,
+    renaming: &mut Option<(Vec<usize>, String)>,
+    actions: &mut Vec<Action>,
+) {
+    use eframe::egui;
+    let w = words(lang);
     for (i, item) in folder.children.iter_mut().enumerate() {
         path.push(i);
         match item {
             Item::Folder(f) => {
                 let id = ui.make_persistent_id(("marks-folder", path.clone()));
-                let header = egui::collapsing_header::CollapsingState::load_with_default_open(ui.ctx(), id, true);
+                // Папка сцены раскрыта, вложенные - свёрнуты, как у модуля.
+                let header = egui::collapsing_header::CollapsingState::load_with_default_open(ui.ctx(), id, path.len() == 1);
                 let (_, head, _) = header
                     .show_header(ui, |ui| {
                         if crate::theme::checkbox(ui, &mut f.visible).changed() {
                             actions.push(Action::Toggled(path.clone()));
                         }
-                        let label = ui.add(egui::Label::new(egui::RichText::new(&f.name).strong()).sense(egui::Sense::click()));
-                        if label.double_clicked() {
-                            actions.push(Action::Fly(path.clone()));
-                        }
-                        if crate::timeline::icon_button(ui, crate::timeline::Icon::Play).clicked() {
-                            actions.push(Action::Tour(path.clone()));
-                        }
+                        crate::theme::folder_icon(ui);
+                        row_name(ui, egui::RichText::new(&f.name), path, true, &w, renaming, actions);
                     })
-                    .body(|ui| tree_ui(ui, f, path, actions));
-                let _ = head;
+                    .body(|ui| tree_ui(ui, f, path, lang, renaming, actions));
+                drop_target(ui, &head.response, path, true, actions);
             }
             Item::Place(p) => {
-                ui.horizontal(|ui| {
+                let row = ui.horizontal(|ui| {
                     if crate::theme::checkbox(ui, &mut p.visible).changed() {
                         actions.push(Action::Toggled(path.clone()));
                     }
                     let name = if p.name.is_empty() { "-" } else { p.name.as_str() };
-                    let label = ui.add(egui::Label::new(name).sense(egui::Sense::click()));
-                    if label.double_clicked() {
-                        actions.push(Action::Fly(path.clone()));
-                    }
+                    row_name(ui, egui::RichText::new(name), path, p.tour.is_some(), &w, renaming, actions);
                     if p.tour.is_some() && crate::timeline::icon_button(ui, crate::timeline::Icon::Play).clicked() {
                         actions.push(Action::Tour(path.clone()));
                     }
                 });
+                drop_target(ui, &row.response, path, false, actions);
             }
             Item::Overlay(o) => {
-                ui.horizontal(|ui| {
+                let row = ui.horizontal(|ui| {
                     if crate::theme::checkbox(ui, &mut o.visible).changed() {
                         actions.push(Action::Toggled(path.clone()));
                     }
                     let name = if o.name.is_empty() { "-" } else { o.name.as_str() };
-                    if ui.add(egui::Label::new(name).sense(egui::Sense::click())).double_clicked() {
-                        actions.push(Action::Fly(path.clone()));
-                    }
+                    row_name(ui, egui::RichText::new(name), path, false, &w, renaming, actions);
                 });
+                drop_target(ui, &row.response, path, false, actions);
             }
         }
         path.pop();
@@ -358,11 +540,133 @@ impl Marks {
         self.refresh();
     }
 
-    /// Объекты заново по флажкам дерева.
+    /// Корень «Мои метки», как у модуля: открытые сцены и файлы лежат
+    /// в нём папками. root - название корня на языке интерфейса.
+    pub fn root(&mut self, root: &str) -> &mut Folder {
+        self.tree.get_or_insert_with(|| Folder::new(root))
+    }
+
+    /// Положить открытое дерево папкой в конец «Моих меток». Папка без
+    /// названия получает название файла.
+    pub fn add(&mut self, mut tree: Folder, name: &str, root: &str) {
+        if tree.name.trim().is_empty() {
+            tree.name = name.to_string();
+        }
+        self.root(root).children.push(Item::Folder(tree));
+        self.name = name.to_string();
+        self.refresh();
+    }
+
+    /// Последняя добавленная папка - открытая последней сцена.
+    pub fn last(&self) -> Option<&Folder> {
+        match self.tree.as_ref()?.children.last()? {
+            Item::Folder(f) => Some(f),
+            _ => None,
+        }
+    }
+
+    /// Удалить строку по пути. false - строки нет.
+    pub fn remove(&mut self, path: &[usize]) -> bool {
+        let (Some(tree), Some((last, parent))) = (self.tree.as_mut(), path.split_last()) else {
+            return false;
+        };
+        let Some(folder) = folder_at_mut(tree, parent) else {
+            return false;
+        };
+        if *last >= folder.children.len() {
+            return false;
+        }
+        folder.children.remove(*last);
+        self.refresh();
+        true
+    }
+
+    /// Переименовать строку по пути. Пустое название не ставится.
+    pub fn rename(&mut self, path: &[usize], name: &str) -> bool {
+        let name = name.trim();
+        let Some(tree) = self.tree.as_mut() else {
+            return false;
+        };
+        if name.is_empty() {
+            return false;
+        }
+        let slot = match item_at_mut(tree, path) {
+            Some(Item::Folder(f)) => &mut f.name,
+            Some(Item::Place(p)) => &mut p.name,
+            Some(Item::Overlay(o)) => &mut o.name,
+            None => return false,
+        };
+        *slot = name.to_string();
+        self.refresh();
+        true
+    }
+
+    /// Перенести строку from: into - в конец папки to, иначе - перед
+    /// строкой to. Папка не переносится в саму себя и в свою вложенную.
+    pub fn move_to(&mut self, from: &[usize], to: &[usize], into: bool) -> bool {
+        let Some(tree) = self.tree.as_mut() else {
+            return false;
+        };
+        if from.is_empty() || to.starts_with(from) || item_at(tree, from).is_none() {
+            return false;
+        }
+        // Цель проверяется до того, как строка вынута: строка не теряется.
+        let target_ok = if into {
+            to.is_empty() || matches!(item_at(tree, to), Some(Item::Folder(_)))
+        } else {
+            item_at(tree, to).is_some()
+        };
+        if !target_ok {
+            return false;
+        }
+        let (last, parent) = match from.split_last() {
+            Some(split) => split,
+            None => return false,
+        };
+        let Some(folder) = folder_at_mut(tree, parent) else {
+            return false;
+        };
+        if *last >= folder.children.len() {
+            return false;
+        }
+        let item = folder.children.remove(*last);
+        // Строки после вынутой сдвинулись на одну вверх.
+        let mut to = to.to_vec();
+        let depth = parent.len();
+        if to.len() > depth && to[..depth] == *parent && to[depth] > *last {
+            to[depth] -= 1;
+        }
+        let placed = if into {
+            folder_at_mut(tree, &to).map(|f| f.children.push(item))
+        } else {
+            match to.split_last() {
+                Some((index, dest)) => folder_at_mut(tree, dest).map(|f| {
+                    let at = (*index).min(f.children.len());
+                    f.children.insert(at, item);
+                }),
+                None => None,
+            }
+        };
+        self.refresh();
+        placed.is_some()
+    }
+
+    /// Очистить «Мои метки»: корень остаётся пустым.
+    pub fn clear(&mut self) {
+        if let Some(tree) = self.tree.as_mut() {
+            tree.children.clear();
+            tree.visible = true;
+        }
+        self.name.clear();
+        self.refresh();
+    }
+
+    /// Объекты заново по флажкам дерева. Снятый флажок корня скрывает всё.
     pub fn refresh(&mut self) {
-        self.timed = self.tree.as_ref().map(timed_shapes).unwrap_or_default();
+        let shown = self.tree.as_ref().filter(|t| t.visible);
+        self.timed = shown.map(timed_shapes).unwrap_or_default();
         self.shapes = in_window(&self.timed, self.window);
-        self.timed_overlays = self.tree.as_ref().map(pictures::timed_overlays).unwrap_or_default();
+        self.timed_overlays = shown.map(pictures::timed_overlays).unwrap_or_default();
         self.overlays = pictures::in_window(&self.timed_overlays, self.window);
         self.dirty = true;
         self.built = None;
@@ -438,7 +742,11 @@ impl Marks {
     /// Остановки тура строки: папка - её отмеченные метки, метка -
     /// её записанный тур. Название тура и остановки.
     pub fn tour_of(&self, path: &[usize], fov_y: f64, aspect: f64) -> Option<(String, Vec<scene::tour::Stop>)> {
-        match item_at(self.tree.as_ref()?, path)? {
+        let tree = self.tree.as_ref()?;
+        if path.is_empty() {
+            return Some((tree.name.clone(), crate::tours::folder_stops(tree, fov_y, aspect)));
+        }
+        match item_at(tree, path)? {
             Item::Folder(f) => Some((f.name.clone(), crate::tours::folder_stops(f, fov_y, aspect))),
             Item::Place(p) => Some((p.name.clone(), vec![crate::tours::recorded_stop(p)?])),
             Item::Overlay(_) => None,
@@ -556,6 +864,79 @@ mod tests {
         assert_eq!(super::place_pose(&viewed, 45.0, 1.6).unwrap().heading, 10.0);
         let empty = scene::kml::Place::new("п", Kind::Line, vec![]);
         assert!(super::place_pose(&empty, 45.0, 1.6).is_none());
+    }
+
+    /// Сцены копятся папками в «Моих метках», удаление и очистка
+    /// убирают их метки с глобуса, снятый флажок корня скрывает всё.
+    #[test]
+    fn my_places_add_remove_clear() {
+        let mut marks = super::Marks::default();
+        let first = open(KML.as_bytes(), "a.kml").unwrap();
+        marks.add(first.tree, "a.kml", "Мои метки");
+        let second = open(KML.as_bytes(), "b.kml").unwrap();
+        marks.add(second.tree, "b.kml", "Мои метки");
+        let root = marks.tree.as_ref().unwrap();
+        assert_eq!(root.name, "Мои метки");
+        assert_eq!(root.children.len(), 2);
+        assert_eq!(marks.points().len(), 2);
+        assert_eq!(marks.last().unwrap().name, "Тест");
+        // Метка внутри второй сцены.
+        assert!(marks.remove(&[1, 0]));
+        assert_eq!(marks.points().len(), 1);
+        assert!(!marks.remove(&[5]));
+        assert!(!marks.remove(&[]));
+        marks.tree.as_mut().unwrap().visible = false;
+        marks.toggled(&[]);
+        assert!(marks.points().is_empty());
+        marks.clear();
+        assert!(marks.tree.as_ref().unwrap().children.is_empty());
+        assert!(marks.tree.as_ref().unwrap().visible);
+        assert!(marks.points().is_empty());
+    }
+
+    fn names(folder: &scene::kml::Folder) -> Vec<String> {
+        folder
+            .children
+            .iter()
+            .map(|i| match i {
+                scene::kml::Item::Folder(f) => format!("[{}]", f.name),
+                scene::kml::Item::Place(p) => p.name.clone(),
+                scene::kml::Item::Overlay(o) => o.name.clone(),
+            })
+            .collect()
+    }
+
+    /// Переименование и перетаскивание строк «Моих меток».
+    #[test]
+    fn rename_and_move() {
+        let mut marks = super::Marks::default();
+        marks.add(open(KML.as_bytes(), "a.kml").unwrap().tree, "a.kml", "Мои метки");
+        marks.add(open(KML.as_bytes(), "b.kml").unwrap().tree, "b.kml", "Мои метки");
+        assert!(marks.rename(&[0], "  Первая  "));
+        assert!(!marks.rename(&[0], "   "));
+        assert!(!marks.rename(&[9], "x"));
+        let root = || marks.tree.as_ref().unwrap();
+        assert_eq!(names(root()), ["[Первая]", "[Тест]"]);
+        // Точка второй сцены - перед первой сценой.
+        assert!(marks.move_to(&[1, 0], &[0], false));
+        assert_eq!(names(marks.tree.as_ref().unwrap()), ["Точка", "[Первая]", "[Тест]"]);
+        // Вторая сцена - внутрь первой, в конец.
+        assert!(marks.move_to(&[2], &[1], true));
+        let root = marks.tree.as_ref().unwrap();
+        assert_eq!(names(root), ["Точка", "[Первая]"]);
+        let Some(scene::kml::Item::Folder(first)) = root.children.get(1) else { panic!("нет папки") };
+        assert_eq!(names(first).last().unwrap(), "[Тест]");
+        // Папка - не в саму себя и не в свою вложенную, не в метку.
+        assert!(!marks.move_to(&[1], &[1], true));
+        assert!(!marks.move_to(&[1], &[1, 3], true));
+        assert!(!marks.move_to(&[1], &[0], true));
+        // Строка в корень - в конец «Моих меток».
+        assert!(marks.move_to(&[0], &[], true));
+        assert_eq!(names(marks.tree.as_ref().unwrap()), ["[Первая]", "Точка"]);
+        // Вниз по тому же уровню: перед строкой после неё.
+        marks.add(open(KML.as_bytes(), "c.kml").unwrap().tree, "c.kml", "Мои метки");
+        assert!(marks.move_to(&[0], &[2], false));
+        assert_eq!(names(marks.tree.as_ref().unwrap()), ["Точка", "[Первая]", "[Тест]"]);
     }
 
     #[test]

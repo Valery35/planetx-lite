@@ -132,6 +132,39 @@ pub fn section(ui: &mut egui::Ui, id: &str, title: &str) -> bool {
     open
 }
 
+/// Золотая звезда корня «Мои метки», как у модуля.
+pub fn star(ui: &mut egui::Ui) {
+    let side = 16.0;
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(side, side), egui::Sense::hover());
+    let c = rect.center();
+    let (outer, inner) = (side * 0.5, side * 0.21);
+    let at = |k: usize, r: f32| {
+        let a = (k as f32 * 36.0 - 90.0).to_radians();
+        c + egui::vec2(a.cos() * r, a.sin() * r)
+    };
+    let gold = Color32::from_rgb(0xf5, 0xc2, 0x1b);
+    let painter = ui.painter();
+    // Звезда невыпуклая: середина-пятиугольник и пять лучей-треугольников.
+    let middle: Vec<egui::Pos2> = (0..5).map(|k| at(2 * k + 1, inner)).collect();
+    painter.add(egui::Shape::convex_polygon(middle, gold, Stroke::NONE));
+    for k in 0..5 {
+        let tip = vec![at((2 * k + 9) % 10, inner), at(2 * k, outer), at(2 * k + 1, inner)];
+        painter.add(egui::Shape::convex_polygon(tip, gold, Stroke::NONE));
+    }
+}
+
+/// Значок папки: светлый контур с ушком, чтобы папку было видно среди
+/// меток.
+pub fn folder_icon(ui: &mut egui::Ui) {
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(16.0, 16.0), egui::Sense::hover());
+    let body = egui::Rect::from_min_max(rect.left_top() + egui::vec2(1.5, 4.5), rect.right_bottom() - egui::vec2(1.5, 2.5));
+    let tab = egui::Rect::from_min_size(rect.left_top() + egui::vec2(1.5, 2.5), egui::vec2(6.0, 3.0));
+    let fill = Color32::from_rgb(0xd9, 0xdd, 0xe3);
+    let painter = ui.painter();
+    painter.rect_filled(tab, CornerRadius::same(1), fill);
+    painter.rect_filled(body, CornerRadius::same(1), fill);
+}
+
 /// Флажок как у модуля: пустой - тёмное поле с серой рамкой, отмеченный -
 /// синий квадрат с белой галочкой.
 pub fn checkbox(ui: &mut egui::Ui, checked: &mut bool) -> egui::Response {

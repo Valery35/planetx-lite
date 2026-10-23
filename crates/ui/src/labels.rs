@@ -450,7 +450,7 @@ fn job(text: &str, st: Style, color: egui::Color32) -> egui::text::LayoutJob {
     job.append(
         text,
         0.0,
-        egui::TextFormat { font_id: egui::FontId::proportional(st.size), color, italics: st.italic, ..Default::default() },
+        egui::TextFormat { font_id: crate::fonts::globe(st.size), color, italics: st.italic, ..Default::default() },
     );
     job
 }

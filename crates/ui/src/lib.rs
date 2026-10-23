@@ -20,6 +20,7 @@ pub mod labels;
 pub mod marks;
 pub mod models;
 pub mod pictures;
+pub mod places;
 pub mod relief;
 pub mod search;
 pub mod theme;

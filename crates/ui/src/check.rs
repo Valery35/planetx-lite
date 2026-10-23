@@ -137,6 +137,15 @@ pub const SCENES: [(&str, [usize; 4]); 12] = [
     ("superoverlay", [1, 0, 0, 0]),
     ("vegas", [0, 8, 0, 0]),
 ];
+/// Сцены прогона `scenes`. chosen - имена через запятую из
+/// `PLANETX_SCENES`, чтобы проверить только сцены, которых касается
+/// правка. Без выбора или без совпадений - все [`SCENES`].
+pub fn scene_list(chosen: Option<&str>) -> Vec<(&'static str, [usize; 4])> {
+    let names: Vec<&str> = chosen.unwrap_or("").split(',').map(str::trim).filter(|n| !n.is_empty()).collect();
+    let picked: Vec<_> = SCENES.iter().copied().filter(|(n, _)| names.contains(n)).collect();
+    if picked.is_empty() { SCENES.to_vec() } else { picked }
+}
+
 /// Допуск позы сцены после открытия: доля расстояния и градусы.
 pub const POSE_TOLERANCE: f64 = 1e-6;
 /// Тур длиннее этого, секунды, самопроверка проигрывает ускоренно,
@@ -304,6 +313,8 @@ pub struct Check {
     failure: Option<String>,
     /// Сцены: номер сцены в [`SCENES`], запрос сцены для окна, итоги.
     scene_index: usize,
+    /// Сцены прогона: [`SCENES`] или выбранные `PLANETX_SCENES`.
+    list: Vec<(&'static str, [usize; 4])>,
     scene_request: Option<String>,
     scenes: Vec<SceneResult>,
     /// Сцены: номер тура, запрос тура для окна, тур идёт, длина тура.
@@ -507,6 +518,7 @@ impl Check {
             search_arrived: None,
             failure: None,
             scene_index: 0,
+            list: scene_list(std::env::var("PLANETX_SCENES").ok().as_deref()),
             scene_request: None,
             scenes: Vec::new(),
             tour_index: 0,
@@ -541,7 +553,7 @@ impl Check {
         if self.phase != Phase::OpenScene {
             return;
         }
-        let Some((name, expected)) = SCENES.get(self.scene_index) else {
+        let Some((name, expected)) = self.list.get(self.scene_index) else {
             return;
         };
         let mut result = SceneResult { name: (*name).to_string(), expected: *expected, ..SceneResult::default() };
@@ -596,7 +608,7 @@ impl Check {
     fn next_scene(&mut self, now: f64) {
         self.progress = self.scenes.last().map(SceneResult::line);
         self.scene_index += 1;
-        match SCENES.get(self.scene_index) {
+        match self.list.get(self.scene_index) {
             Some((name, _)) => {
                 self.scene_request = Some((*name).to_string());
                 self.enter(Phase::OpenScene, now);
@@ -723,7 +735,7 @@ impl Check {
             }
         };
         if waiting && (now - progress_at > LOAD_TIMEOUT || t > LOAD_LIMIT) {
-            let scene = SCENES.get(self.scene_index).filter(|_| self.scenario == Scenario::Scenes).map_or("", |s| s.0);
+            let scene = self.list.get(self.scene_index).filter(|_| self.scenario == Scenario::Scenes).map_or("", |s| s.0);
             self.failure = Some(format!(
                 "загрузка не закончилась: {:.0} с, без нового запроса {:.0} с, шаг {:?} {scene}, грузится {}",
                 t,
@@ -802,7 +814,7 @@ impl Check {
             }
             (Scenario::Scenes, Phase::LoadStart) if loaded => {
                 self.scene_index = 0;
-                self.scene_request = SCENES.first().map(|(name, _)| (*name).to_string());
+                self.scene_request = self.list.first().map(|(name, _)| (*name).to_string());
                 self.enter(Phase::OpenScene, now);
             }
             (Scenario::Scenes, Phase::LoadPlace) if loaded => {
@@ -932,10 +944,10 @@ impl Check {
             ));
         }
         if scenes {
-            let all = self.scenes.len() == SCENES.len() && self.scenes.iter().all(SceneResult::ok);
+            let all = self.scenes.len() == self.list.len() && self.scenes.iter().all(SceneResult::ok);
             ok = ok && all;
             out.extend(self.scenes.iter().map(SceneResult::line));
-            out.push(format!("scenes_checked={}/{}", self.scenes.len(), SCENES.len()));
+            out.push(format!("scenes_checked={}/{}", self.scenes.len(), self.list.len()));
         }
         for s in sources.iter().filter(|s| s.total + s.disk > 0) {
             out.push(format!(

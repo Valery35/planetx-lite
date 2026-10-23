@@ -194,13 +194,19 @@ pub struct Pictures {
 }
 
 impl Pictures {
-    /// Картинки сцены заново: из файла разбираются сразу, по ссылке
-    /// встают в очередь. Пришедший позже ответ прежней сцены
-    /// отбрасывается.
+    /// Картинки наложений «Моих меток»: новые из файла разбираются сразу,
+    /// по ссылке встают в очередь. Картинки, которые остались в метках,
+    /// сохраняются, удалённых - забываются. Пришедший позже ответ
+    /// удалённой картинки отбрасывается.
     pub fn set(&mut self, overlays: &[&Overlay]) {
-        self.states.clear();
-        self.queue.clear();
-        self.fresh.clear();
+        let keys: std::collections::HashSet<String> = overlays
+            .iter()
+            .filter(|o| matches!(o.kind(), Kind::Ground | Kind::Photo | Kind::Screen))
+            .map(|o| key_of(o))
+            .collect();
+        self.states.retain(|k, _| keys.contains(k));
+        self.queue.retain(|k| keys.contains(k));
+        self.fresh.retain(|k| keys.contains(k));
         for o in overlays {
             if !matches!(o.kind(), Kind::Ground | Kind::Photo | Kind::Screen) {
                 continue;

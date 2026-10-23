@@ -26,6 +26,7 @@ use crate::input::Input;
 use crate::labels::{self, Labels};
 use crate::marks::{self, Marks};
 use crate::pictures::Pictures;
+use crate::places;
 use crate::relief::Relief;
 use crate::timeline::TimeBar;
 use crate::tours::Player;
@@ -52,6 +53,9 @@ pub type ShotSink = Box<dyn FnOnce(&egui::ColorImage) + Send>;
 
 /// Кадров подряд без загрузки и движения перед снимком окна.
 pub const SHOT_IDLE_FRAMES: u32 = 30;
+/// Наибольшая строка «Моих меток» на странице, байт: localStorage
+/// браузера держит около 5 МБ на сайт.
+pub const PAGE_PLACES_LIMIT: usize = 4 << 20;
 
 /// Снимок окна после загрузки места.
 struct Shot {
@@ -179,6 +183,10 @@ pub struct LiteApp {
     demo_queue: std::collections::VecDeque<&'static str>,
     /// Файл демо, который сейчас грузится.
     demo_fetching: Option<&'static str>,
+    /// «Мои метки» изменились и ещё не записаны в хранилище.
+    places_dirty: bool,
+    /// Строка, которая переименовывается: путь и новое название.
+    renaming: Option<(Vec<usize>, String)>,
     /// Свой рельеф: врезанные растры высот.
     relief: Relief,
     /// Открытые облака точек.
@@ -250,7 +258,7 @@ impl LiteApp {
         let source = heights.clone();
         nav.set_terrain(Some(Arc::new(move |lat, lon| source.read().height_at(lat, lon))));
         let lang = Lang::from_system();
-        Self {
+        let mut app = Self {
             lang,
             render_state,
             globe,
@@ -287,10 +295,23 @@ impl LiteApp {
             demo_cache: None,
             demo_queue: std::collections::VecDeque::new(),
             demo_fetching: None,
+            places_dirty: false,
+            renaming: None,
             relief: Relief::default(),
             clouds: Vec::new(),
             models: crate::models::Models::default(),
+        };
+        // «Мои метки» прошлого запуска. Самопроверка начинает с пустых.
+        if app.check.is_none()
+            && let Some(root) = cc.storage.and_then(|s| s.get_string(places::KEY)).and_then(|t| places::from_text(&t))
+        {
+            let mut root = root;
+            root.name = marks::root_name(lang).to_string();
+            app.marks.set(root, "");
+            app.marks_changed();
+            app.places_dirty = false;
         }
+        app
     }
 
     /// Картинки на экране, ScreenOverlay: поверх кадра, под надписями
@@ -488,6 +509,8 @@ impl LiteApp {
     /// Открыть сцену самопроверки и отдать итог проверке: строки
     /// дерева, поза, количество туров.
     fn open_check_scene(&mut self, bytes: &[u8], name: &str, now: f64) {
+        // Самопроверка сверяет одну сцену: «Мои метки» перед ней пусты.
+        self.marks.clear();
         let opened = self.open_file(bytes, name, None).map(|pose| {
             let p = &self.nav.pose;
             let pose_ok = pose.is_some_and(|s| {
@@ -498,7 +521,7 @@ impl LiteApp {
                     && (p.tilt - s.tilt).abs() < check::POSE_TOLERANCE
             });
             let camera = &self.nav.camera;
-            let (counts, tours) = self.marks.tree.as_ref().map_or(([0; 4], 0), |t| {
+            let (counts, tours) = self.marks.last().map_or(([0; 4], 0), |t| {
                 (crate::tours::counts(t), crate::tours::scene_tours(t, camera.fov_y, camera.aspect()).len())
             });
             (counts, pose_ok, tours)
@@ -513,8 +536,7 @@ impl LiteApp {
         let camera = &self.nav.camera;
         let tour = self
             .marks
-            .tree
-            .as_ref()
+            .last()
             .and_then(|t| crate::tours::scene_tours(t, camera.fov_y, camera.aspect()).into_iter().nth(index));
         self.player = tour.and_then(|(name, stops)| Player::new(&name, &self.nav.pose, stops, camera.fov_y, now));
         self.tour_index = None;
@@ -619,16 +641,10 @@ impl LiteApp {
         }
         match marks::open(bytes, name) {
             Ok(opened) => {
-                self.marks.set(opened.tree, &opened.name);
-                self.pictures.set(&self.marks.all_overlays());
-                self.models.clear();
-                self.screen_textures.clear();
-                if let Some(globe) = &mut self.globe {
-                    globe.keep_picture_images(&[]);
-                }
+                // Сцена ложится папкой в «Мои метки», прежние остаются.
+                self.marks.add(opened.tree, &opened.name, marks::root_name(self.lang));
                 self.player = None;
-                self.timebar.set_extent(self.marks.extent());
-                self.marks_to_labels();
+                self.marks_changed();
                 // Поза, заданная при запуске, сильнее позы сцены.
                 if let Some(pose) = opened.pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
                     match fly {
@@ -636,7 +652,9 @@ impl LiteApp {
                         None => self.nav.show(pose),
                     }
                 }
-                self.open_message = Some(opened.name);
+                // Название сцены видно в «Моих метках», строка
+                // сообщения - для ошибок и загрузки.
+                self.open_message = None;
                 Ok(opened.pose)
             }
             Err(e) => {
@@ -647,6 +665,23 @@ impl LiteApp {
                 Err(e)
             }
         }
+    }
+
+    /// «Мои метки» изменились: картинки и модели удалённых меток
+    /// забываются, шкала времени и надписи - по новому дереву.
+    fn marks_changed(&mut self) {
+        self.pictures.set(&self.marks.all_overlays());
+        let keys: Vec<String> = self.pictures.states.keys().cloned().collect();
+        self.screen_textures.retain(|k, _| keys.contains(k));
+        if let Some(globe) = &mut self.globe {
+            globe.keep_picture_images(&keys);
+        }
+        if self.marks.all_overlays().is_empty() {
+            self.models.clear();
+        }
+        self.timebar.set_extent(self.marks.extent());
+        self.marks_to_labels();
+        self.places_dirty = true;
     }
 
     /// Шаг тура: камера в позе тура, на новой остановке с датой шкала
@@ -718,7 +753,7 @@ impl LiteApp {
         if let Some((name, alpha)) = self.player.as_ref().and_then(|p| p.caption(now)) {
             let painter = ctx.layer_painter(egui::LayerId::new(egui::Order::Foreground, egui::Id::unique("planetx-caption")));
             let color = egui::Color32::WHITE.gamma_multiply(alpha as f32);
-            let galley = painter.layout_no_wrap(name.to_string(), egui::FontId::proportional(22.0), color);
+            let galley = painter.layout_no_wrap(name.to_string(), crate::fonts::globe(22.0), color);
             let at = egui::pos2(rect.center().x - galley.size().x / 2.0, rect.bottom() - 90.0);
             painter.galley_with_override_text_color(at + egui::vec2(1.0, 1.0), galley.clone(), egui::Color32::BLACK.gamma_multiply(alpha as f32));
             painter.galley_with_override_text_color(at, galley, color);
@@ -769,15 +804,13 @@ impl LiteApp {
                     ui.label(message);
                 }
                 let room = (ui.available_height() - layers_height - status_height).max(60.0);
-                match self.marks.tree.as_mut() {
-                    Some(tree) => {
-                        egui::ScrollArea::vertical().max_height(room).auto_shrink([false, true]).show(ui, |ui| {
-                            crate::marks::tree_ui(ui, tree, &mut Vec::new(), &mut actions);
-                        });
-                    }
-                    None => {
-                        ui.label(egui::RichText::new(hint).color(crate::theme::MUTED));
-                    }
+                let root = self.marks.root(marks::root_name(lang));
+                let empty = root.children.is_empty();
+                egui::ScrollArea::vertical().max_height(room).auto_shrink([false, true]).show(ui, |ui| {
+                    crate::marks::root_ui(ui, root, lang, &mut self.renaming, &mut actions);
+                });
+                if empty {
+                    ui.label(egui::RichText::new(hint).color(crate::theme::MUTED));
                 }
                 ui.add_space(6.0);
             }
@@ -824,6 +857,40 @@ impl LiteApp {
                         self.player = Player::new(&name, &self.nav.pose, stops, camera.fov_y, now);
                         self.tour_index = None;
                         self.nav.stop();
+                    }
+                }
+                crate::marks::Action::Remove(path) => {
+                    if self.marks.remove(&path) {
+                        self.player = None;
+                        self.marks_changed();
+                    }
+                }
+                crate::marks::Action::Clear => {
+                    self.marks.clear();
+                    self.player = None;
+                    self.open_message = None;
+                    self.marks_changed();
+                }
+                crate::marks::Action::Open => self.pick_file(ui.ctx(), now),
+                crate::marks::Action::StartRename(path) => {
+                    let name = self.marks.tree.as_ref().and_then(|t| marks::item_at(t, &path)).map(|item| match item {
+                        scene::kml::Item::Folder(f) => f.name.clone(),
+                        scene::kml::Item::Place(p) => p.name.clone(),
+                        scene::kml::Item::Overlay(o) => o.name.clone(),
+                    });
+                    self.renaming = name.map(|n| (path, n));
+                }
+                crate::marks::Action::Rename(path, name) => {
+                    self.renaming = None;
+                    if self.marks.rename(&path, &name) {
+                        self.marks_changed();
+                    }
+                }
+                crate::marks::Action::CancelRename => self.renaming = None,
+                crate::marks::Action::Move(from, to, into) => {
+                    if self.marks.move_to(&from, &to, into) {
+                        self.player = None;
+                        self.marks_changed();
                     }
                 }
             }
@@ -1151,6 +1218,29 @@ impl LiteApp {
 }
 
 impl eframe::App for LiteApp {
+    /// «Мои метки» - в хранилище, если изменились. eframe зовёт это
+    /// раз в 30 с и при выходе.
+    fn save(&mut self, storage: &mut dyn eframe::Storage) {
+        if !self.places_dirty || self.check.is_some() {
+            return;
+        }
+        let Some(root) = self.marks.tree.as_ref() else {
+            return;
+        };
+        match places::to_text(root) {
+            // На странице предел localStorage около 5 МБ.
+            Ok(text) if cfg!(target_arch = "wasm32") && text.len() > PAGE_PLACES_LIMIT => {
+                self.open_message = Some(match self.lang {
+                    Lang::Ru => "«Мои метки» больше 4 МБ, страница их не сохранит".to_string(),
+                    Lang::En => "My Places exceed 4 MB, the page cannot save them".to_string(),
+                });
+            }
+            Ok(text) => storage.set_string(places::KEY, text),
+            Err(e) => self.open_message = Some(format!("{}: {e}", marks::root_name(self.lang))),
+        }
+        self.places_dirty = false;
+    }
+
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
         let now = ctx.input(|i| i.time);
