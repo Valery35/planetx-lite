@@ -37,4 +37,7 @@ allow = [
     "Unicode-3.0",
     # webpki-roots - корневые сертификаты HTTPS в ureq.
     "CDLA-Permissive-2.0",
+    # Решение автора от 23 октября 2026 года: jpeg-encoder, его тянут
+    # terrio и wbraster, - лицензия Independent JPEG Group, разрешительная.
+    "IJG",
 ]
