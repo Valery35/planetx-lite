@@ -154,10 +154,7 @@ pub const PLACE_KINDS: [Kind; 11] = [
 /// Текст надписи. У вершины после названия высота.
 pub fn label_text(place: &Place, lang: Lang) -> String {
     match (place.kind, place.info) {
-        (Kind::Peak, Some(ele)) => match lang {
-            Lang::Ru => format!("{}, {ele} м", place.name),
-            Lang::En => format!("{}, {ele} m", place.name),
-        },
+        (Kind::Peak, Some(ele)) => crate::i18n::trf(lang, "{name}, {ele} m", &[("name", &place.name), ("ele", &ele.to_string())]),
         _ => place.name.clone(),
     }
 }
@@ -211,14 +208,12 @@ pub struct Labels {
 }
 
 impl Labels {
-    pub fn new(lang: Lang) -> Self {
-        let code = match lang {
-            Lang::Ru => "ru",
-            Lang::En => "en",
-        };
+    /// Подписи на языке интерфейса lang. choice - язык названий:
+    /// [`places::AS_INTERFACE`], [`places::LOCAL`] или код языка.
+    pub fn new(lang: Lang, choice: &str) -> Self {
         Self {
             lang,
-            languages: places::name_languages(places::AS_INTERFACE, code),
+            languages: places::name_languages(choice, lang.code()),
             store: PlaceStore::default(),
             points: HashMap::new(),
             hidden: HashMap::new(),

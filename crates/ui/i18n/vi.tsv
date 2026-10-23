@@ -1,0 +1,75 @@
+# vi interface catalog: English<TAB>translation
+OpenStreetMap map	Bản đồ OpenStreetMap
+© OpenStreetMap contributors	© những người đóng góp OpenStreetMap
+The graphics card does not support wgpu, the globe cannot be drawn.	Card đồ họa không hỗ trợ wgpu, không thể vẽ quả địa cầu.
+Basemap	Bản đồ nền
+Find a place, Enter	Tìm địa điểm, Enter
+Searching: {q}	Đang tìm: {q}
+Nothing found: {q}	Không tìm thấy: {q}
+Search failed: {e}	Tìm kiếm thất bại: {e}
+Demo	Demo
+Placemarks and tours	Dấu vị trí và chuyến tham quan
+Imagery and maps	Ảnh và bản đồ
+Inside the Earth	Lòng đất
+Own terrain	Địa hình riêng
+3D models and motion	Mô hình 3D và chuyển động
+Haul trucks in open pits	Xe tải mỏ ở mỏ lộ thiên
+Boca Chica, Starbase	Boca Chica, Starbase
+Flow of goods, a scheme	Dòng hàng hóa, sơ đồ
+Aral Sea	Biển Aral
+Super-overlay, Mountain View	Lớp phủ siêu cấp, Mountain View
+Japan Trench	Rãnh Nhật Bản
+Vegas Loop tunnels	Đường hầm Vegas Loop
+Quarry, own terrain	Mỏ đá, địa hình riêng
+Lake Brienz, own bathymetry	Hồ Brienz, độ sâu riêng
+3D models, Suzdal and Perm	Mô hình 3D, Suzdal và Perm
+Animated model, wind turbines	Mô hình động, tua-bin gió
+Haul trucks, Kachkanar	Xe tải mỏ, Kachkanar
+Haul trucks, Lebedinsky	Xe tải mỏ, Lebedinsky
+Loading the demo: {name}…	Đang tải demo: {name}…
+The point cloud did not open: {name}: {e}	Không mở được đám mây điểm: {name}: {e}
+Point cloud {name}: {shown} of {total} points	Đám mây điểm {name}: {shown} trên {total} điểm
+The raster did not open: {name}: {e}	Không mở được raster: {name}: {e}
+Own terrain: {names}	Địa hình riêng: {names}
+The file did not open: {name}: {e}	Không mở được tệp: {name}: {e}
+Places	Địa điểm
+Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.	Mở hoặc kéo vào cửa sổ một cảnh .planetx, KML, KMZ, lớp GeoPackage, raster độ cao GeoTIFF hoặc đám mây điểm LAS, LAZ, COPC.
+Open…	Mở…
+Time	Thời gian
+Layers	Lớp
+Saved: {to}	Đã lưu: {to}
+Not saved: {e}	Chưa lưu: {e}
+Altitude {height}	Độ cao {height}
+Altitude {height} · loading {n}	Độ cao {height} · đang tải {n}
+Search	Tìm
+My Places exceed 4 MB, the page cannot save them	"Địa điểm của tôi" vượt quá 4 MB, trang không thể lưu
+Sources of what is on the globe. Click to open the Data sources window.	Nguồn của những gì trên quả địa cầu. Nhấp để mở cửa sổ "Nguồn dữ liệu".
+Data sources	Nguồn dữ liệu
+About	Giới thiệu
+The PlanetX globe without QGIS.	Quả địa cầu PlanetX không cần QGIS.
+Fly to	Bay đến
+Play tour	Phát chuyến tham quan
+Rename	Đổi tên
+Delete	Xóa
+Clear My Places	Xóa sạch "Địa điểm của tôi"
+Save as KML…	Lưu dạng KML…
+Save scene…	Lưu cảnh…
+My Places	Địa điểm của tôi
+Show or hide the panel	Hiện hoặc ẩn bảng
+Open a scene, KML, KMZ or a data file	Mở cảnh, KML, KMZ hoặc tệp dữ liệu
+Demo scenes	Cảnh demo
+Settings	Cài đặt
+Full screen	Toàn màn hình
+Interface language	Ngôn ngữ giao diện
+As in the system	Như hệ thống
+Appearance	Giao diện
+Dark	Tối
+Light	Sáng
+Terrain	Địa hình
+Vertical exaggeration	Phóng đại theo chiều dọc
+Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Hệ số độ cao địa hình. Trên 1 núi và thung lũng trông rõ hơn.
+Label language	Ngôn ngữ nhãn
+As the interface	Như giao diện
+Local names	Tên địa phương
+Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Ngôn ngữ tên địa danh trên quả địa cầu. Nếu không có tên bằng ngôn ngữ này, hiển thị tên Latinh hoặc tên địa phương.
+Loading the font for this language…	Đang tải phông chữ cho ngôn ngữ này…

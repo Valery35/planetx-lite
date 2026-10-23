@@ -192,15 +192,18 @@ pub fn place_kind(attrs: &Attrs) -> Option<Kind> {
 }
 
 /// Языки подписей, коды полей name:xx OpenMapTiles. Состав назначил
-/// автор модуля 27 сентября 2026 года.
-pub const LABEL_LANGUAGES: [&str; 15] =
-    ["ru", "en", "de", "fr", "es", "it", "pt", "pl", "uk", "kk", "tr", "ar", "zh", "ja", "ko"];
+/// автор модуля 27 сентября 2026 года. Lite добавил языки своего
+/// интерфейса, которых в составе не было: nl, az, id, vi, ka, решение
+/// автора о языках интерфейса от 23 октября 2026 года.
+pub const LABEL_LANGUAGES: [&str; 20] = [
+    "ru", "en", "de", "fr", "es", "it", "pt", "pl", "uk", "kk", "tr", "ar", "zh", "ja", "ko", "nl", "az", "id", "vi", "ka",
+];
 /// Выбор языка: язык интерфейса или местные названия.
 pub const AS_INTERFACE: &str = "";
 pub const LOCAL: &str = "local";
 /// Языки на латинице. Без названия на выбранном языке у них ставится
 /// название латиницей, у остальных - местное.
-const LATIN_SCRIPT: [&str; 8] = ["en", "de", "fr", "es", "it", "pt", "pl", "tr"];
+const LATIN_SCRIPT: [&str; 12] = ["en", "de", "fr", "es", "it", "pt", "pl", "tr", "nl", "az", "id", "vi"];
 
 /// Языки названий по порядку поиска для [`place_name`]. choice - код
 /// из [`LABEL_LANGUAGES`], [`AS_INTERFACE`] или [`LOCAL`]. Язык

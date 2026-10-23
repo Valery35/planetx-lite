@@ -10,7 +10,7 @@
 
 use net::Source;
 
-use crate::i18n::Lang;
+use crate::i18n::{Lang, tr};
 
 /// Основа глобуса.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -32,11 +32,9 @@ impl Basemap {
 
     /// Название в выборе основы.
     pub fn name(self, lang: Lang) -> &'static str {
-        match (self, lang) {
-            (Basemap::Esri, Lang::Ru) => "Снимки Esri World Imagery",
-            (Basemap::Esri, Lang::En) => "Esri World Imagery",
-            (Basemap::Osm, Lang::Ru) => "Карта OpenStreetMap",
-            (Basemap::Osm, Lang::En) => "OpenStreetMap map",
+        match self {
+            Basemap::Esri => tr(lang, "Esri World Imagery"),
+            Basemap::Osm => tr(lang, "OpenStreetMap map"),
         }
     }
 
@@ -44,13 +42,12 @@ impl Basemap {
     /// в описании слоя в ArcGIS Online, сверено модулем 26 сентября
     /// 2026 года, ссылка - Esri Master License Agreement.
     pub fn attribution(self, lang: Lang) -> (&'static str, &'static str) {
-        match (self, lang) {
-            (Basemap::Esri, _) => (
+        match self {
+            Basemap::Esri => (
                 "Esri, Vantor, Earthstar Geographics, and the GIS User Community",
                 "https://www.esri.com/en-us/legal/terms/full-master-agreement",
             ),
-            (Basemap::Osm, Lang::Ru) => ("© участники OpenStreetMap", "https://www.openstreetmap.org/copyright"),
-            (Basemap::Osm, Lang::En) => ("© OpenStreetMap contributors", "https://www.openstreetmap.org/copyright"),
+            Basemap::Osm => (tr(lang, "© OpenStreetMap contributors"), "https://www.openstreetmap.org/copyright"),
         }
     }
 }

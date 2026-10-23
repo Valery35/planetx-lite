@@ -311,36 +311,22 @@ struct Words {
 }
 
 fn words(lang: crate::i18n::Lang) -> Words {
-    match lang {
-        crate::i18n::Lang::Ru => Words {
-            fly: "Подлететь",
-            tour: "Запустить тур",
-            rename: "Переименовать",
-            remove: "Удалить",
-            save_kml: "Сохранить как KML…",
-            save_scene: "Сохранить сцену…",
-            open: "Открыть…",
-            clear: "Очистить «Мои метки»",
-        },
-        crate::i18n::Lang::En => Words {
-            fly: "Fly to",
-            tour: "Play tour",
-            rename: "Rename",
-            remove: "Delete",
-            save_kml: "Save as KML…",
-            save_scene: "Save scene…",
-            open: "Open…",
-            clear: "Clear My Places",
-        },
+    use crate::i18n::tr;
+    Words {
+        fly: tr(lang, "Fly to"),
+        tour: tr(lang, "Play tour"),
+        rename: tr(lang, "Rename"),
+        remove: tr(lang, "Delete"),
+        save_kml: tr(lang, "Save as KML…"),
+        save_scene: tr(lang, "Save scene…"),
+        open: tr(lang, "Open…"),
+        clear: tr(lang, "Clear My Places"),
     }
 }
 
 /// Название корня «Мои метки».
 pub fn root_name(lang: crate::i18n::Lang) -> &'static str {
-    match lang {
-        crate::i18n::Lang::Ru => "Мои метки",
-        crate::i18n::Lang::En => "My Places",
-    }
+    crate::i18n::tr(lang, "My Places")
 }
 
 /// Меню правой кнопки строки, как у модуля в минимуме: перелёт, тур,
@@ -420,7 +406,7 @@ fn row_name(
     let selected = state.selected.as_deref() == Some(path);
     if selected {
         let rect = label.rect.expand2(egui::vec2(3.0, 1.0));
-        ui.painter().set(background, egui::Shape::rect_filled(rect, 2.0, crate::theme::SELECT));
+        ui.painter().set(background, egui::Shape::rect_filled(rect, 2.0, crate::theme::pal().select));
     }
     if label.clicked() || label.secondary_clicked() || label.drag_started() {
         state.selected = Some(path.to_vec());
@@ -434,10 +420,10 @@ fn row_name(
         // Название переносимой строки у указателя.
         let layer = egui::LayerId::new(egui::Order::Tooltip, egui::Id::unique("marks-drag-ghost"));
         let painter = ui.ctx().layer_painter(layer);
-        let galley = painter.layout_no_wrap(text.to_string(), egui::FontId::proportional(13.0), crate::theme::TEXT);
+        let galley = painter.layout_no_wrap(text.to_string(), egui::FontId::proportional(13.0), crate::theme::pal().text);
         let rect = egui::Rect::from_min_size(at + egui::vec2(14.0, 6.0), galley.size()).expand(3.0);
-        painter.rect_filled(rect, 2.0, crate::theme::PLATE);
-        painter.galley(rect.min + egui::vec2(3.0, 3.0), galley, crate::theme::TEXT);
+        painter.rect_filled(rect, 2.0, crate::theme::pal().plate);
+        painter.galley(rect.min + egui::vec2(3.0, 3.0), galley, crate::theme::pal().text);
     }
     if label.double_clicked() {
         actions.push(Action::Fly(path.to_vec()));
@@ -455,7 +441,7 @@ fn drop_target(ui: &eframe::egui::Ui, row: &eframe::egui::Response, path: &[usiz
     if path.starts_with(&dragged) {
         return;
     }
-    let stroke = egui::Stroke::new(2.0, crate::theme::ACCENT);
+    let stroke = egui::Stroke::new(2.0, crate::theme::pal().accent);
     if into {
         ui.painter().rect_stroke(row.rect, 2.0, stroke, egui::StrokeKind::Inside);
     } else {
@@ -589,7 +575,7 @@ pub fn tree_ui(
                         overlays::Kind::Screen => crate::theme::RowIcon::Screen,
                         overlays::Kind::Model => crate::theme::RowIcon::Model,
                     };
-                    crate::theme::row_icon(ui, icon, crate::theme::TEXT, None);
+                    crate::theme::row_icon(ui, icon, crate::theme::pal().text, None);
                     let name = if o.name.is_empty() { "-" } else { o.name.as_str() };
                     row_name(ui, name, path, false, &w, state, actions);
                 });

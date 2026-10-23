@@ -1,0 +1,75 @@
+# de interface catalog: English<TAB>translation
+OpenStreetMap map	OpenStreetMap-Karte
+© OpenStreetMap contributors	© OpenStreetMap-Mitwirkende
+The graphics card does not support wgpu, the globe cannot be drawn.	Die Grafikkarte unterstützt wgpu nicht, der Globus kann nicht gezeichnet werden.
+Basemap	Grundkarte
+Find a place, Enter	Ort suchen, Eingabe
+Searching: {q}	Suche: {q}
+Nothing found: {q}	Nichts gefunden: {q}
+Search failed: {e}	Suche fehlgeschlagen: {e}
+Demo	Demo
+Placemarks and tours	Ortsmarken und Touren
+Imagery and maps	Bilder und Karten
+Inside the Earth	Erdinneres
+Own terrain	Eigenes Gelände
+3D models and motion	3D-Modelle und Bewegung
+Haul trucks in open pits	Muldenkipper im Tagebau
+Boca Chica, Starbase	Boca Chica, Starbase
+Flow of goods, a scheme	Warenstrom, ein Schema
+Aral Sea	Aralsee
+Super-overlay, Mountain View	Super-Overlay, Mountain View
+Japan Trench	Japangraben
+Vegas Loop tunnels	Vegas-Loop-Tunnel
+Quarry, own terrain	Steinbruch, eigenes Gelände
+Lake Brienz, own bathymetry	Brienzersee, eigene Bathymetrie
+3D models, Suzdal and Perm	3D-Modelle, Susdal und Perm
+Animated model, wind turbines	Animiertes Modell, Windräder
+Haul trucks, Kachkanar	Muldenkipper, Katschkanar
+Haul trucks, Lebedinsky	Muldenkipper, Lebedinski
+Loading the demo: {name}…	Demo wird geladen: {name}…
+The point cloud did not open: {name}: {e}	Die Punktwolke wurde nicht geöffnet: {name}: {e}
+Point cloud {name}: {shown} of {total} points	Punktwolke {name}: {shown} von {total} Punkten
+The raster did not open: {name}: {e}	Das Raster wurde nicht geöffnet: {name}: {e}
+Own terrain: {names}	Eigenes Gelände: {names}
+The file did not open: {name}: {e}	Die Datei wurde nicht geöffnet: {name}: {e}
+Places	Orte
+Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.	Öffnen oder ziehen Sie eine .planetx-Szene, KML, KMZ, GeoPackage-Layer, ein GeoTIFF-Höhenraster oder eine LAS-, LAZ-, COPC-Punktwolke in das Fenster.
+Open…	Öffnen…
+Time	Zeit
+Layers	Ebenen
+Saved: {to}	Gespeichert: {to}
+Not saved: {e}	Nicht gespeichert: {e}
+Altitude {height}	Höhe {height}
+Altitude {height} · loading {n}	Höhe {height} · lädt {n}
+Search	Suchen
+My Places exceed 4 MB, the page cannot save them	„Meine Orte“ sind größer als 4 MB, die Seite kann sie nicht speichern
+Sources of what is on the globe. Click to open the Data sources window.	Quellen der Daten auf dem Globus. Klicken öffnet das Fenster „Datenquellen“.
+Data sources	Datenquellen
+About	Über
+The PlanetX globe without QGIS.	Der PlanetX-Globus ohne QGIS.
+Fly to	Hinfliegen
+Play tour	Tour abspielen
+Rename	Umbenennen
+Delete	Löschen
+Clear My Places	„Meine Orte“ leeren
+Save as KML…	Als KML speichern…
+Save scene…	Szene speichern…
+My Places	Meine Orte
+Show or hide the panel	Seitenleiste ein- oder ausblenden
+Open a scene, KML, KMZ or a data file	Szene, KML, KMZ oder Datendatei öffnen
+Demo scenes	Demo-Szenen
+Settings	Einstellungen
+Full screen	Vollbild
+Interface language	Sprache der Oberfläche
+As in the system	Wie im System
+Appearance	Darstellung
+Dark	Dunkel
+Light	Hell
+Terrain	Gelände
+Vertical exaggeration	Überhöhung
+Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Höhenfaktor des Geländes. Über 1 wirken Berge und Täler ausgeprägter.
+Label language	Sprache der Beschriftung
+As the interface	Wie die Oberfläche
+Local names	Lokale Namen
+Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Sprache der Ortsnamen auf dem Globus. Ohne Namen in dieser Sprache wird der lateinische oder lokale Name gezeigt.
+Loading the font for this language…	Schrift für diese Sprache wird geladen…

@@ -1,0 +1,76 @@
+# ja interface catalog: English<TAB>translation
+Esri World Imagery	Esri World Imagery 衛星画像
+OpenStreetMap map	OpenStreetMap 地図
+© OpenStreetMap contributors	© OpenStreetMap 貢献者
+The graphics card does not support wgpu, the globe cannot be drawn.	グラフィックカードが wgpu に対応していないため、地球儀を描画できません。
+Basemap	背景地図
+Find a place, Enter	場所を検索、Enter
+Searching: {q}	検索中：{q}
+Nothing found: {q}	見つかりません：{q}
+Search failed: {e}	検索に失敗しました：{e}
+Demo	デモ
+Placemarks and tours	目印とツアー
+Imagery and maps	画像と地図
+Inside the Earth	地球の内部
+Own terrain	独自の地形
+3D models and motion	3D モデルと動き
+Haul trucks in open pits	露天掘りのダンプトラック
+Boca Chica, Starbase	ボカチカ、スターベース
+Flow of goods, a scheme	貨物の流れ、概略図
+Aral Sea	アラル海
+Super-overlay, Mountain View	スーパーオーバーレイ、マウンテンビュー
+Japan Trench	日本海溝
+Vegas Loop tunnels	ベガス・ループのトンネル
+Quarry, own terrain	採石場、独自の地形
+Lake Brienz, own bathymetry	ブリエンツ湖、独自の水深
+3D models, Suzdal and Perm	3D モデル、スーズダリとペルミ
+Animated model, wind turbines	アニメーションモデル、風力発電機
+Haul trucks, Kachkanar	ダンプトラック、カチカナル
+Haul trucks, Lebedinsky	ダンプトラック、レベジンスキー
+Loading the demo: {name}…	デモを読み込み中：{name}…
+The point cloud did not open: {name}: {e}	点群を開けませんでした：{name}：{e}
+Point cloud {name}: {shown} of {total} points	点群 {name}：{total} 点中 {shown} 点
+The raster did not open: {name}: {e}	ラスターを開けませんでした：{name}：{e}
+Own terrain: {names}	独自の地形：{names}
+The file did not open: {name}: {e}	ファイルを開けませんでした：{name}：{e}
+Places	目印
+Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.	.planetx シーン、KML、KMZ、GeoPackage レイヤー、GeoTIFF 標高ラスター、LAS・LAZ・COPC 点群を開くか、ウィンドウにドロップしてください。
+Open…	開く…
+Time	時間
+Layers	レイヤー
+Saved: {to}	保存しました：{to}
+Not saved: {e}	保存できませんでした：{e}
+Altitude {height}	高度 {height}
+Altitude {height} · loading {n}	高度 {height} · 読み込み {n}
+Search	検索
+My Places exceed 4 MB, the page cannot save them	「マイプレイス」が 4 MB を超えたため、ページに保存できません
+Sources of what is on the globe. Click to open the Data sources window.	地球儀に表示されているもののデータソース。クリックで「データソース」ウィンドウを開きます。
+Data sources	データソース
+About	このアプリについて
+The PlanetX globe without QGIS.	QGIS 不要の PlanetX 地球儀。
+Fly to	ここへ移動
+Play tour	ツアーを再生
+Rename	名前を変更
+Delete	削除
+Clear My Places	「マイプレイス」を空にする
+Save as KML…	KML として保存…
+Save scene…	シーンを保存…
+My Places	マイプレイス
+Show or hide the panel	パネルの表示・非表示
+Open a scene, KML, KMZ or a data file	シーン、KML、KMZ、データファイルを開く
+Demo scenes	デモシーン
+Settings	設定
+Full screen	全画面
+Interface language	表示言語
+As in the system	システムと同じ
+Appearance	外観
+Dark	ダーク
+Light	ライト
+Terrain	地形
+Vertical exaggeration	高さの強調
+Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	地形の高さの倍率。1 を超えると山や谷がより強調されます。
+Label language	ラベルの言語
+As the interface	表示言語と同じ
+Local names	現地名
+Language of place names on the globe. Without a name in this language the Latin or local name is shown.	地球儀上の地名の言語。この言語の名前がない場合はラテン文字または現地の名前を表示します。
+Loading the font for this language…	この言語のフォントを読み込み中…

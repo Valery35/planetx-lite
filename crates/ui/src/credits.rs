@@ -14,7 +14,7 @@
 
 use eframe::egui;
 
-use crate::i18n::Lang;
+use crate::i18n::{Lang, tr};
 
 /// Отступ знака и подписи от края кадра, логические пиксели.
 pub const MARGIN: f32 = 8.0;
@@ -108,6 +108,8 @@ pub struct Credits {
     pub rect: Option<egui::Rect>,
     sources_open: bool,
     about_open: bool,
+    /// Окно «О программе» попросила открыть панель инструментов.
+    pub about_request: bool,
 }
 
 /// Текст со светлым цветом и тёмной тенью, как `_shadow_text` модуля.
@@ -182,10 +184,7 @@ impl Credits {
                         // Строки выровнены вправо от правого края места.
                         let pos = egui::pos2(rect.max.x, rect.min.y);
                         shadow_text(ui.painter(), pos, &galley, CREDIT_COLOR);
-                        let tip = match lang {
-                            Lang::Ru => "Источники того, что на глобусе. Щелчок открывает окно «Источники данных».",
-                            Lang::En => "Sources of what is on the globe. Click to open the Data sources window.",
-                        };
+                        let tip = tr(lang, "Sources of what is on the globe. Click to open the Data sources window.");
                         if credit.on_hover_cursor(egui::CursorIcon::PointingHand).on_hover_text(tip).clicked() {
                             open_sources = true;
                         }
@@ -195,14 +194,12 @@ impl Credits {
         self.rect = used.is_positive().then(|| used.expand(MARGIN / 2.0));
         self.sources_open |= open_sources;
         self.about_open |= open_about;
+        self.about_open |= std::mem::take(&mut self.about_request);
         self.windows(ctx, lang, parts);
     }
 
     fn windows(&mut self, ctx: &egui::Context, lang: Lang, parts: &[(&str, &str)]) {
-        let (sources, about) = match lang {
-            Lang::Ru => ("Источники данных", "О программе"),
-            Lang::En => ("Data sources", "About"),
-        };
+        let (sources, about) = (tr(lang, "Data sources"), tr(lang, "About"));
         egui::Window::new(sources).open(&mut self.sources_open).collapsible(false).resizable(false).show(ctx, |ui| {
             for (text, link) in parts {
                 if link.is_empty() {
@@ -214,11 +211,8 @@ impl Credits {
         });
         egui::Window::new(about).open(&mut self.about_open).collapsible(false).resizable(false).show(ctx, |ui| {
             ui.heading(format!("PlanetX Lite {}", env!("CARGO_PKG_VERSION")));
-            ui.label(match lang {
-                Lang::Ru => "Глобус PlanetX без QGIS.",
-                Lang::En => "The PlanetX globe without QGIS.",
-            });
-            ui.label("© 2026 ООО «Информ++». Apache 2.0.");
+            ui.label(tr(lang, "The PlanetX globe without QGIS."));
+            ui.label(tr(lang, "© 2026 Inform++ LLC. Apache 2.0."));
             ui.hyperlink("https://github.com/Valery35/planetx-lite");
         });
     }

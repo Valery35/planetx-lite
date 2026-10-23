@@ -1,0 +1,75 @@
+# id interface catalog: English<TAB>translation
+OpenStreetMap map	Peta OpenStreetMap
+© OpenStreetMap contributors	© kontributor OpenStreetMap
+The graphics card does not support wgpu, the globe cannot be drawn.	Kartu grafis tidak mendukung wgpu, globe tidak dapat digambar.
+Basemap	Peta dasar
+Find a place, Enter	Cari tempat, Enter
+Searching: {q}	Mencari: {q}
+Nothing found: {q}	Tidak ditemukan: {q}
+Search failed: {e}	Pencarian gagal: {e}
+Demo	Demo
+Placemarks and tours	Penanda dan tur
+Imagery and maps	Citra dan peta
+Inside the Earth	Bagian dalam Bumi
+Own terrain	Relief sendiri
+3D models and motion	Model 3D dan gerakan
+Haul trucks in open pits	Truk angkut di tambang terbuka
+Boca Chica, Starbase	Boca Chica, Starbase
+Flow of goods, a scheme	Arus barang, sebuah skema
+Aral Sea	Laut Aral
+Super-overlay, Mountain View	Super-overlay, Mountain View
+Japan Trench	Palung Jepang
+Vegas Loop tunnels	Terowongan Vegas Loop
+Quarry, own terrain	Tambang batu, relief sendiri
+Lake Brienz, own bathymetry	Danau Brienz, batimetri sendiri
+3D models, Suzdal and Perm	Model 3D, Suzdal dan Perm
+Animated model, wind turbines	Model animasi, turbin angin
+Haul trucks, Kachkanar	Truk angkut, Kachkanar
+Haul trucks, Lebedinsky	Truk angkut, Lebedinsky
+Loading the demo: {name}…	Memuat demo: {name}…
+The point cloud did not open: {name}: {e}	Awan titik tidak terbuka: {name}: {e}
+Point cloud {name}: {shown} of {total} points	Awan titik {name}: {shown} dari {total} titik
+The raster did not open: {name}: {e}	Raster tidak terbuka: {name}: {e}
+Own terrain: {names}	Relief sendiri: {names}
+The file did not open: {name}: {e}	Berkas tidak terbuka: {name}: {e}
+Places	Tempat
+Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.	Buka atau seret ke jendela sebuah adegan .planetx, KML, KMZ, lapisan GeoPackage, raster ketinggian GeoTIFF, atau awan titik LAS, LAZ, COPC.
+Open…	Buka…
+Time	Waktu
+Layers	Lapisan
+Saved: {to}	Tersimpan: {to}
+Not saved: {e}	Tidak tersimpan: {e}
+Altitude {height}	Ketinggian {height}
+Altitude {height} · loading {n}	Ketinggian {height} · memuat {n}
+Search	Cari
+My Places exceed 4 MB, the page cannot save them	"Tempat Saya" melebihi 4 MB, halaman tidak dapat menyimpannya
+Sources of what is on the globe. Click to open the Data sources window.	Sumber apa yang ada di globe. Klik untuk membuka jendela "Sumber data".
+Data sources	Sumber data
+About	Tentang
+The PlanetX globe without QGIS.	Globe PlanetX tanpa QGIS.
+Fly to	Terbang ke
+Play tour	Putar tur
+Rename	Ganti nama
+Delete	Hapus
+Clear My Places	Kosongkan "Tempat Saya"
+Save as KML…	Simpan sebagai KML…
+Save scene…	Simpan adegan…
+My Places	Tempat Saya
+Show or hide the panel	Tampilkan atau sembunyikan panel
+Open a scene, KML, KMZ or a data file	Buka adegan, KML, KMZ, atau berkas data
+Demo scenes	Adegan demo
+Settings	Pengaturan
+Full screen	Layar penuh
+Interface language	Bahasa antarmuka
+As in the system	Seperti sistem
+Appearance	Tampilan
+Dark	Gelap
+Light	Terang
+Terrain	Relief
+Vertical exaggeration	Pembesaran vertikal
+Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Pengali ketinggian relief. Di atas 1 gunung dan lembah tampak lebih menonjol.
+Label language	Bahasa label
+As the interface	Seperti antarmuka
+Local names	Nama lokal
+Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Bahasa nama tempat di globe. Tanpa nama dalam bahasa ini, nama Latin atau lokal ditampilkan.
+Loading the font for this language…	Memuat fon untuk bahasa ini…

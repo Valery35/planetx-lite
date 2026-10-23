@@ -21,7 +21,8 @@ use terrain::{Encoding, HeightStore};
 use crate::basemap::Basemap;
 use crate::check::{self, Check, Scenario, SourceStats};
 use crate::credits::{self, Credits};
-use crate::i18n::{Lang, Text, search_status, text};
+use crate::i18n::{Lang, search_status, tr, trf};
+use crate::settings::Settings;
 use crate::input::Input;
 use crate::labels::{self, Labels};
 use crate::marks::{self, Marks};
@@ -56,6 +57,9 @@ pub const SHOT_IDLE_FRAMES: u32 = 30;
 /// Наибольшая строка «Моих меток» на странице, байт: localStorage
 /// браузера держит около 5 МБ на сайт.
 pub const PAGE_PLACES_LIMIT: usize = 4 << 20;
+/// Окно уже этого, логические пиксели, - узкое: панель при запуске
+/// скрыта.
+pub const NARROW: f32 = 700.0;
 
 /// Снимок окна после загрузки места.
 struct Shot {
@@ -187,6 +191,23 @@ pub struct LiteApp {
     places_dirty: bool,
     /// Выделенная строка и переименование в «Моих метках».
     tree_state: marks::TreeState,
+    /// Настройки и окно «Настройки».
+    settings: Settings,
+    settings_open: bool,
+    /// Левая панель показана.
+    panel_open: bool,
+    /// Скачанные страницей шрифты с иероглифами по коду языка.
+    web_fonts: HashMap<&'static str, Vec<u8>>,
+    /// Шрифт, который сейчас грузится.
+    font_fetching: Option<&'static str>,
+    /// Шрифты поставить заново: сменился язык или пришёл шрифт.
+    fonts_dirty: bool,
+    /// Место панели инструментов прошлого кадра: надписи не ложатся под неё.
+    toolbar_rect: Option<egui::Rect>,
+    /// Настройки изменились и ещё не записаны в хранилище.
+    settings_dirty: bool,
+    /// Ширина окна при запуске проверена.
+    layout_checked: bool,
     /// Свой рельеф: врезанные растры высот.
     relief: Relief,
     /// Открытые облака точек.
@@ -211,41 +232,42 @@ fn group_thousands(n: i64) -> String {
     if n < 0 { format!("-{out}") } else { out }
 }
 
-/// Меню «Демо» по разделам, как у модуля. Выбранное демо - в clicked.
-fn demo_menu(ui: &mut egui::Ui, lang: Lang, clicked: &mut Option<&'static crate::demos::Demo>) {
-    let title = match lang {
-        Lang::Ru => "Демо",
-        Lang::En => "Demo",
-    };
-    ui.menu_button(title, |ui| {
-        for section in &crate::demos::MENU {
-            let name = match lang {
-                Lang::Ru => section.ru,
-                Lang::En => section.en,
-            };
-            ui.menu_button(name, |ui| {
-                for demo in section.demos {
-                    let label = match lang {
-                        Lang::Ru => demo.ru,
-                        Lang::En => demo.en,
-                    };
-                    if ui.button(label).clicked() {
-                        *clicked = Some(demo);
-                        ui.close();
-                    }
+/// Пункты меню «Демо» по разделам, как у модуля. Выбранное демо -
+/// в clicked.
+fn demo_items(ui: &mut egui::Ui, lang: Lang, clicked: &mut Option<&'static crate::demos::Demo>) {
+    for section in &crate::demos::MENU {
+        ui.menu_button(tr(lang, section.en), |ui| {
+            for demo in section.demos {
+                if ui.button(tr(lang, demo.en)).clicked() {
+                    *clicked = Some(demo);
+                    ui.close();
                 }
-            });
-        }
-    });
+            }
+        });
+    }
+}
+
+/// Что нажали на панели инструментов.
+#[derive(Default)]
+struct ToolClicks {
+    open: bool,
+    demo: Option<&'static crate::demos::Demo>,
 }
 
 impl LiteApp {
     /// scenario - самопроверка или None, её отчёт уходит в report.
     pub fn new(cc: &eframe::CreationContext<'_>, loaders: Loaders, scenario: Option<Scenario>, report: Report) -> Self {
-        crate::fonts::install(&cc.egui_ctx);
+        // Настройки прошлого запуска. Самопроверка - с настройками
+        // по умолчанию.
+        let settings = if scenario.is_none() {
+            cc.storage.and_then(|s| s.get_string(crate::settings::KEY)).map(|t| Settings::from_text(&t)).unwrap_or_default()
+        } else {
+            Settings::default()
+        };
+        let lang = settings.lang();
         // Тёмная тема в цветах модуля по умолчанию, решения автора
         // от 23 октября 2026 года.
-        crate::theme::apply(&cc.egui_ctx);
+        crate::theme::apply(&cc.egui_ctx, settings.dark);
         let render_state = cc.wgpu_render_state.clone();
         let globe = render_state.as_ref().map(|rs| Globe::new(&rs.device, &rs.queue));
         let camera = Camera::new(Ellipsoid::wgs84(), DVec3::ZERO, DMat3::IDENTITY);
@@ -254,10 +276,13 @@ impl LiteApp {
             None => Pose::new(START.0, START.1, START.2, 0.0, 0.0),
         };
         let heights = Heights::default();
+        if (settings.scale - 1.0).abs() > f64::EPSILON {
+            heights.write().set_scale(settings.scale);
+        }
         let mut nav = Navigator::new(camera, pose);
         let source = heights.clone();
         nav.set_terrain(Some(Arc::new(move |lat, lon| source.read().height_at(lat, lon))));
-        let lang = Lang::from_system();
+        let labels = Labels::new(lang, &settings.labels);
         let mut app = Self {
             lang,
             render_state,
@@ -272,11 +297,17 @@ impl LiteApp {
             check: scenario.map(Check::new),
             report,
             shot: None,
-            labels: Labels::new(lang),
-            search: Search::new(Some(match lang {
-                Lang::Ru => "ru",
-                Lang::En => "en",
-            })),
+            labels,
+            search: Search::new(Some(lang.code())),
+            settings,
+            settings_open: false,
+            panel_open: true,
+            web_fonts: HashMap::new(),
+            font_fetching: None,
+            fonts_dirty: false,
+            toolbar_rect: None,
+            settings_dirty: false,
+            layout_checked: false,
             search_text: String::new(),
             credits: Credits::default(),
             marks: Marks::default(),
@@ -311,7 +342,127 @@ impl LiteApp {
             app.marks_changed();
             app.places_dirty = false;
         }
+        app.install_fonts(&cc.egui_ctx);
         app
+    }
+
+    /// Панель инструментов в левом верхнем углу глобуса, как у модуля:
+    /// панель, «Открыть», «Демо», «Настройки», во весь экран, «О программе».
+    fn toolbar(&mut self, ctx: &egui::Context, view: egui::Rect, now: f64) {
+        use crate::theme::{Tool, tool_button};
+        let lang = self.lang;
+        let mut clicks = ToolClicks::default();
+        let mut panel = self.panel_open;
+        let mut settings = self.settings_open;
+        let mut about = false;
+        let mut full = false;
+        let area = egui::Area::new(egui::Id::unique("planetx-toolbar"))
+            .order(egui::Order::Foreground)
+            .fixed_pos(view.left_top() + egui::vec2(8.0, 8.0))
+            .show(ctx, |ui| {
+                crate::theme::plate().inner_margin(egui::Margin::same(3)).show(ui, |ui| {
+                    ui.spacing_mut().item_spacing = egui::vec2(2.0, 0.0);
+                    ui.horizontal(|ui| {
+                        if tool_button(ui, Tool::Sidebar, panel, tr(lang, "Show or hide the panel")).clicked() {
+                            panel = !panel;
+                        }
+                        if tool_button(ui, Tool::Open, false, tr(lang, "Open a scene, KML, KMZ or a data file")).clicked() {
+                            clicks.open = true;
+                        }
+                        let demo = tool_button(ui, Tool::Demo, false, tr(lang, "Demo scenes"));
+                        egui::Popup::menu(&demo).show(|ui| demo_items(ui, lang, &mut clicks.demo));
+                        if tool_button(ui, Tool::Settings, settings, tr(lang, "Settings")).clicked() {
+                            settings = !settings;
+                        }
+                        if tool_button(ui, Tool::Fullscreen, false, tr(lang, "Full screen")).clicked() {
+                            full = true;
+                        }
+                        if tool_button(ui, Tool::Info, false, tr(lang, "About")).clicked() {
+                            about = true;
+                        }
+                    });
+                });
+            });
+        self.toolbar_rect = Some(area.response.rect);
+        self.panel_open = panel;
+        self.settings_open = settings;
+        self.credits.about_request |= about;
+        if full {
+            let on = ctx.input(|i| i.viewport().fullscreen.unwrap_or(false));
+            ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(!on));
+        }
+        if clicks.open {
+            self.pick_file(ctx, now);
+        }
+        if let Some(demo) = clicks.demo {
+            self.open_demo(demo, now);
+        }
+    }
+
+    /// Окно «Настройки» и перемены по нему: язык, подписи, оформление,
+    /// масштаб рельефа.
+    fn settings_window(&mut self, ctx: &egui::Context) {
+        if !self.settings_open {
+            return;
+        }
+        let before = self.settings.clone();
+        let mut open = self.settings_open;
+        if !crate::settings::window(ctx, self.lang, &mut open, &mut self.settings) {
+            self.settings_open = open;
+            return;
+        }
+        self.settings_open = open;
+        self.settings_dirty = true;
+        let s = self.settings.clone();
+        if s.dark != before.dark {
+            crate::theme::apply(ctx, s.dark);
+        }
+        if (s.scale - before.scale).abs() > f64::EPSILON {
+            self.heights.write().set_scale(s.scale);
+        }
+        if s.language != before.language || s.labels != before.labels {
+            let old_root = marks::root_name(self.lang).to_string();
+            self.lang = s.lang();
+            self.labels = Labels::new(self.lang, &s.labels);
+            self.search = Search::new(Some(self.lang.code()));
+            // Корень «Мои метки» - на новом языке, если его не переименовали.
+            let new_root = marks::root_name(self.lang);
+            if let Some(root) = self.marks.tree.as_mut().filter(|r| r.name == old_root) {
+                root.name = new_root.to_string();
+            }
+            self.marks_to_labels();
+            self.fonts_dirty = true;
+        }
+    }
+
+    /// Язык, которому нужны иероглифы: интерфейса, иначе подписей.
+    fn cjk_code(&self) -> Option<&'static str> {
+        if self.lang.needs_cjk() {
+            return Some(self.lang.code());
+        }
+        ["zh", "ja", "ko"].into_iter().find(|c| *c == self.settings.labels)
+    }
+
+    /// Шрифты интерфейса и подписей по языку. Программа берёт шрифт
+    /// с иероглифами из системы, страница скачивает свой из
+    /// planetx-terrain и ставит его по приходу.
+    fn install_fonts(&mut self, ctx: &egui::Context) {
+        let code = self.cjk_code();
+        #[cfg(not(target_arch = "wasm32"))]
+        let cjk = code.and_then(crate::fonts::system_cjk);
+        #[cfg(target_arch = "wasm32")]
+        let cjk = code.and_then(|c| self.web_fonts.get(c).cloned().map(|b| (b, 0)));
+        #[cfg(target_arch = "wasm32")]
+        if let Some(c) = code.filter(|c| !self.web_fonts.contains_key(*c))
+            && self.fetching.is_none()
+            && let Some(url) = crate::fonts::web_cjk_url(c)
+        {
+            self.loaders.files.start(&url);
+            self.fetching = Some((c.to_string(), false));
+            self.font_fetching = Some(c);
+            self.open_message = Some(tr(self.lang, "Loading the font for this language…").to_string());
+        }
+        crate::fonts::install(ctx, cjk);
     }
 
     /// Картинки на экране, ScreenOverlay: поверх кадра, под надписями
@@ -400,10 +551,7 @@ impl LiteApp {
                 continue;
             }
             self.loaders.files.start(&crate::demos::url(path));
-            self.open_message = Some(match self.lang {
-                Lang::Ru => format!("Загрузка демо: {name}…"),
-                Lang::En => format!("Loading the demo: {name}…"),
-            });
+            self.open_message = Some(trf(self.lang, "Loading the demo: {name}…", &[("name", &name)]));
             self.fetching = Some((name, false));
             self.demo_fetching = Some(path);
             return;
@@ -476,6 +624,19 @@ impl LiteApp {
         let Some((name, for_check)) = self.fetching.take() else {
             return;
         };
+        // Пришёл шрифт с иероглифами: он ставится в следующем кадре.
+        if let Some(code) = self.font_fetching.take() {
+            match answer {
+                Ok(bytes) if crate::fonts::is_font(&bytes) => {
+                    self.web_fonts.insert(code, bytes);
+                    self.fonts_dirty = true;
+                    self.open_message = None;
+                }
+                Ok(_) => self.open_message = Some(format!("{name}: не шрифт")),
+                Err(e) => self.open_message = Some(format!("{name}: {e}")),
+            }
+            return;
+        }
         match (answer, for_check) {
             (Ok(bytes), true) => self.open_check_scene(&bytes, &name, now),
             (Ok(bytes), false) => match self.demo_fetching.take() {
@@ -557,10 +718,8 @@ impl LiteApp {
             Ok(c) if !c.points.is_empty() => c,
             Ok(_) => Err("в облаке нет точек".to_string())?,
             Err(e) => {
-                self.open_message = Some(match self.lang {
-                    Lang::Ru => format!("Облако не открылось: {name}: {e}"),
-                    Lang::En => format!("The point cloud did not open: {name}: {e}"),
-                });
+                self.open_message =
+                    Some(trf(self.lang, "The point cloud did not open: {name}: {e}", &[("name", name), ("e", &e)]));
                 return Err(e);
             }
         };
@@ -588,10 +747,11 @@ impl LiteApp {
                 None => self.nav.show(pose),
             }
         }
-        self.open_message = Some(match self.lang {
-            Lang::Ru => format!("Облако {name}: {} из {} точек", cloud.points.len(), cloud.total),
-            Lang::En => format!("Point cloud {name}: {} of {} points", cloud.points.len(), cloud.total),
-        });
+        self.open_message = Some(trf(
+            self.lang,
+            "Point cloud {name}: {shown} of {total} points",
+            &[("name", name), ("shown", &cloud.points.len().to_string()), ("total", &cloud.total.to_string())],
+        ));
         Ok(pose)
     }
 
@@ -602,10 +762,7 @@ impl LiteApp {
         let dem = match opened {
             Ok(dem) => dem,
             Err(e) => {
-                self.open_message = Some(match self.lang {
-                    Lang::Ru => format!("Растр не открылся: {name}: {e}"),
-                    Lang::En => format!("The raster did not open: {name}: {e}"),
-                });
+                self.open_message = Some(trf(self.lang, "The raster did not open: {name}: {e}", &[("name", name), ("e", &e)]));
                 return Err(e);
             }
         };
@@ -622,10 +779,7 @@ impl LiteApp {
                 None => self.nav.show(pose),
             }
         }
-        self.open_message = Some(match self.lang {
-            Lang::Ru => format!("Свой рельеф: {}", self.relief.names().join(", ")),
-            Lang::En => format!("Own terrain: {}", self.relief.names().join(", ")),
-        });
+        self.open_message = Some(trf(self.lang, "Own terrain: {names}", &[("names", &self.relief.names().join(", "))]));
         Ok(pose)
     }
 
@@ -658,10 +812,7 @@ impl LiteApp {
                 Ok(opened.pose)
             }
             Err(e) => {
-                self.open_message = Some(match self.lang {
-                    Lang::Ru => format!("Файл не открылся: {name}: {e}"),
-                    Lang::En => format!("The file did not open: {name}: {e}"),
-                });
+                self.open_message = Some(trf(self.lang, "The file did not open: {name}: {e}", &[("name", name), ("e", &e)]));
                 Err(e)
             }
         }
@@ -771,18 +922,19 @@ impl LiteApp {
     /// щелчок - перелёт к метке или папке.
     fn marks_panel(&mut self, ui: &mut egui::Ui, now: f64) {
         let mut actions = Vec::new();
-        let (title, hint, open_label, time_label) = match self.lang {
-            Lang::Ru => ("Метки", "Откройте или бросьте в окно сцену .planetx, KML, KMZ, слои GeoPackage, растр высот GeoTIFF или облако точек LAS, LAZ, COPC.", "Открыть…", "Время"),
-            Lang::En => ("Places", "Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.", "Open…", "Time"),
-        };
-        let mut open_clicked = false;
-        let mut demo_clicked = None;
         let lang = self.lang;
-        let layers_title = match lang {
-            Lang::Ru => "Слои",
-            Lang::En => "Layers",
-        };
+        let title = tr(lang, "Places");
+        let hint = tr(
+            lang,
+            "Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.",
+        );
+        let time_label = tr(lang, "Time");
+        let layers_title = tr(lang, "Layers");
         let status = self.status_text();
+        if !self.panel_open {
+            self.tree_actions(ui, actions, now);
+            return;
+        }
         egui::Panel::left("marks").resizable(true).default_size(300.0).show(ui, |ui| {
             ui.add_space(6.0);
             self.search_row(ui, now);
@@ -792,15 +944,9 @@ impl LiteApp {
             // Под раздел «Слои»: заголовок и строка основы.
             let layers_height = 64.0;
             if crate::theme::section(ui, "marks", title) {
-                ui.horizontal(|ui| {
-                    if ui.button(open_label).clicked() {
-                        open_clicked = true;
-                    }
-                    demo_menu(ui, lang, &mut demo_clicked);
-                    if self.timebar.extent.is_some() {
-                        ui.toggle_value(&mut self.timebar.open, time_label);
-                    }
-                });
+                if self.timebar.extent.is_some() {
+                    ui.toggle_value(&mut self.timebar.open, time_label);
+                }
                 if let Some(message) = &self.open_message {
                     ui.label(message);
                 }
@@ -811,7 +957,7 @@ impl LiteApp {
                     crate::marks::root_ui(ui, root, lang, &mut self.tree_state, &mut actions);
                 });
                 if empty {
-                    ui.label(egui::RichText::new(hint).color(crate::theme::MUTED));
+                    ui.label(egui::RichText::new(hint).color(crate::theme::pal().muted));
                 }
                 ui.add_space(6.0);
             }
@@ -820,15 +966,14 @@ impl LiteApp {
             }
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Min), |ui| {
                 ui.add_space(4.0);
-                ui.label(egui::RichText::new(status).color(crate::theme::MUTED));
+                ui.label(egui::RichText::new(status).color(crate::theme::pal().muted));
             });
         });
-        if open_clicked {
-            self.pick_file(ui.ctx(), now);
-        }
-        if let Some(demo) = demo_clicked {
-            self.open_demo(demo, now);
-        }
+        self.tree_actions(ui, actions, now);
+    }
+
+    /// Клавиши и действия дерева «Моих меток».
+    fn tree_actions(&mut self, ui: &mut egui::Ui, mut actions: Vec<crate::marks::Action>, now: f64) {
         // Delete удаляет выделенную строку, F2 переименовывает, как
         // в списке модуля. Пока пишется текст, клавиши - для текста.
         let typing = ui.ctx().memory(|m| m.focused().is_some());
@@ -920,15 +1065,9 @@ impl LiteApp {
             return;
         };
         self.open_message = match crate::export::save(kind, &tree, &self.nav.pose) {
-            Ok(Some(to)) => Some(match self.lang {
-                Lang::Ru => format!("Сохранено: {to}"),
-                Lang::En => format!("Saved: {to}"),
-            }),
+            Ok(Some(to)) => Some(trf(self.lang, "Saved: {to}", &[("to", &to)])),
             Ok(None) => None,
-            Err(e) => Some(match self.lang {
-                Lang::Ru => format!("Не сохранено: {e}"),
-                Lang::En => format!("Not saved: {e}"),
-            }),
+            Err(e) => Some(trf(self.lang, "Not saved: {e}", &[("e", &e)])),
         };
     }
 
@@ -1149,37 +1288,29 @@ impl LiteApp {
         .iter()
         .map(|s| s.requests_now.load(Ordering::SeqCst))
         .sum();
-        let (km, m) = match self.lang {
-            Lang::Ru => ("км", "м"),
-            Lang::En => ("km", "m"),
-        };
+        let (km, m) = (tr(self.lang, "km"), tr(self.lang, "m"));
         let height = if height.abs() >= 10_000.0 {
             format!("{} {km}", group_thousands((height / 1000.0).round() as i64))
         } else {
             format!("{} {m}", group_thousands(height.round() as i64))
         };
-        match (self.lang, loading) {
-            (Lang::Ru, 0) => format!("Высота {height}"),
-            (Lang::Ru, n) => format!("Высота {height} · загрузка {n}"),
-            (Lang::En, 0) => format!("Altitude {height}"),
-            (Lang::En, n) => format!("Altitude {height} · loading {n}"),
+        match loading {
+            0 => trf(self.lang, "Altitude {height}", &[("height", &height)]),
+            n => trf(self.lang, "Altitude {height} · loading {n}", &[("height", &height), ("n", &n.to_string())]),
         }
     }
 
     /// Строка поиска места с кнопкой «Поиск», как у модуля, и найденные
     /// места под ней.
     fn search_row(&mut self, ui: &mut egui::Ui, now: f64) {
-        let button = match self.lang {
-            Lang::Ru => "Поиск",
-            Lang::En => "Search",
-        };
+        let button = tr(self.lang, "Search");
         let mut clicked = false;
         let edit = ui
             .horizontal(|ui| {
                 let width = ui.available_width() - 70.0;
                 let edit = ui.add(
                     egui::TextEdit::singleline(&mut self.search_text)
-                        .hint_text(text(self.lang, Text::SearchHint))
+                        .hint_text(tr(self.lang, "Find a place, Enter"))
                         .desired_width(width.max(60.0)),
                 );
                 if ui.button(button).clicked() {
@@ -1213,7 +1344,7 @@ impl LiteApp {
     fn basemap_choice(&mut self, ui: &mut egui::Ui) {
         let mut chosen = self.basemap;
         ui.horizontal(|ui| {
-            ui.label(text(self.lang, Text::Basemap));
+            ui.label(tr(self.lang, "Basemap"));
             egui::ComboBox::from_id_salt("basemap").selected_text(chosen.name(self.lang)).show_ui(ui, |ui| {
                 for b in Basemap::ALL {
                     ui.selectable_value(&mut chosen, b, b.name(self.lang));
@@ -1256,7 +1387,14 @@ impl eframe::App for LiteApp {
     /// «Мои метки» - в хранилище, если изменились. eframe зовёт это
     /// раз в 30 с и при выходе.
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        if !self.places_dirty || self.check.is_some() {
+        if self.check.is_some() {
+            return;
+        }
+        if self.settings_dirty {
+            storage.set_string(crate::settings::KEY, self.settings.to_text());
+            self.settings_dirty = false;
+        }
+        if !self.places_dirty {
             return;
         }
         let Some(root) = self.marks.tree.as_ref() else {
@@ -1265,10 +1403,7 @@ impl eframe::App for LiteApp {
         match places::to_text(root) {
             // На странице предел localStorage около 5 МБ.
             Ok(text) if cfg!(target_arch = "wasm32") && text.len() > PAGE_PLACES_LIMIT => {
-                self.open_message = Some(match self.lang {
-                    Lang::Ru => "«Мои метки» больше 4 МБ, страница их не сохранит".to_string(),
-                    Lang::En => "My Places exceed 4 MB, the page cannot save them".to_string(),
-                });
+                self.open_message = Some(tr(self.lang, "My Places exceed 4 MB, the page cannot save them").to_string());
             }
             Ok(text) => storage.set_string(places::KEY, text),
             Err(e) => self.open_message = Some(format!("{}: {e}", marks::root_name(self.lang))),
@@ -1280,6 +1415,15 @@ impl eframe::App for LiteApp {
         let ctx = ui.ctx().clone();
         let now = ctx.input(|i| i.time);
         self.upload();
+        if std::mem::take(&mut self.fonts_dirty) {
+            self.install_fonts(&ctx);
+        }
+        // На узком экране, телефоне стоймя, панель при запуске скрыта:
+        // глобусу остаётся весь экран, панель открывает первая кнопка
+        // панели инструментов. Замечание автора от 23 октября 2026 года.
+        if !std::mem::replace(&mut self.layout_checked, true) && ctx.content_rect().width() < NARROW {
+            self.panel_open = false;
+        }
         if self.check.is_none() && (self.shot.is_none() || self.shot_ui) {
             self.marks_panel(ui, now);
         }
@@ -1370,7 +1514,7 @@ impl eframe::App for LiteApp {
             Some(nearest_terrain(&self.nav.camera.ellipsoid, eye, self.nav.pose.terrain.as_ref()));
 
         let Some(globe) = &mut self.globe else {
-            ui.centered_and_justified(|ui| ui.label(text(self.lang, Text::NoGpu)));
+            ui.centered_and_justified(|ui| ui.label(tr(self.lang, "The graphics card does not support wgpu, the globe cannot be drawn.")));
             return;
         };
         let added = self.heights.write().take_added();
@@ -1437,9 +1581,14 @@ impl eframe::App for LiteApp {
         let painter = ui.painter().with_clip_rect(rect);
         let mut blocked = self.screen_overlays(&ctx, &painter, rect);
         blocked.extend(self.credits.rect);
+        blocked.extend(self.toolbar_rect);
         self.labels.draw(&painter, rect, ppp as f32, &blocked, &self.nav.camera, &selection.draw, &self.heights.read());
         self.attribution(&ctx, rect);
         self.overlays(&ctx, rect, now);
+        if self.check.is_none() && (self.shot.is_none() || self.shot_ui) {
+            self.toolbar(&ctx, rect, now);
+            self.settings_window(&ctx);
+        }
 
         if let Some(check) = &mut self.check {
             check.after_frame(&stats, &self.nav, &self.heights.read());

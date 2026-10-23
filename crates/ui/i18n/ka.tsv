@@ -1,0 +1,75 @@
+# ka interface catalog: English<TAB>translation
+OpenStreetMap map	OpenStreetMap-ის რუკა
+© OpenStreetMap contributors	© OpenStreetMap-ის მონაწილეები
+The graphics card does not support wgpu, the globe cannot be drawn.	ვიდეობარათი არ უჭერს მხარს wgpu-ს, გლობუსი ვერ იხატება.
+Basemap	საბაზისო რუკა
+Find a place, Enter	ადგილის ძიება, Enter
+Searching: {q}	ძიება: {q}
+Nothing found: {q}	ვერაფერი მოიძებნა: {q}
+Search failed: {e}	ძიება ვერ მოხერხდა: {e}
+Demo	დემო
+Placemarks and tours	ნიშნები და ტურები
+Imagery and maps	სურათები და რუკები
+Inside the Earth	დედამიწის წიაღი
+Own terrain	საკუთარი რელიეფი
+3D models and motion	3D მოდელები და მოძრაობა
+Haul trucks in open pits	სატვირთოები ღია კარიერებში
+Boca Chica, Starbase	ბოკა-ჩიკა, Starbase
+Flow of goods, a scheme	ტვირთების ნაკადი, სქემა
+Aral Sea	არალის ზღვა
+Super-overlay, Mountain View	სუპერგადაფარვა, მაუნტინ-ვიუ
+Japan Trench	იაპონიის ღრმული
+Vegas Loop tunnels	Vegas Loop-ის გვირაბები
+Quarry, own terrain	კარიერი, საკუთარი რელიეფი
+Lake Brienz, own bathymetry	ბრიენცის ტბა, საკუთარი ბათიმეტრია
+3D models, Suzdal and Perm	3D მოდელები, სუზდალი და პერმი
+Animated model, wind turbines	ანიმაციური მოდელი, ქარის ტურბინები
+Haul trucks, Kachkanar	სატვირთოები, კაჩკანარი
+Haul trucks, Lebedinsky	სატვირთოები, ლებედინსკი
+Loading the demo: {name}…	დემოს ჩატვირთვა: {name}…
+The point cloud did not open: {name}: {e}	წერტილების ღრუბელი ვერ გაიხსნა: {name}: {e}
+Point cloud {name}: {shown} of {total} points	წერტილების ღრუბელი {name}: {shown} {total}-დან
+The raster did not open: {name}: {e}	რასტრი ვერ გაიხსნა: {name}: {e}
+Own terrain: {names}	საკუთარი რელიეფი: {names}
+The file did not open: {name}: {e}	ფაილი ვერ გაიხსნა: {name}: {e}
+Places	ნიშნები
+Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.	გახსენით ან ჩააგდეთ ფანჯარაში .planetx სცენა, KML, KMZ, GeoPackage-ის ფენები, GeoTIFF სიმაღლეების რასტრი ან LAS, LAZ, COPC წერტილების ღრუბელი.
+Open…	გახსნა…
+Time	დრო
+Layers	ფენები
+Saved: {to}	შენახულია: {to}
+Not saved: {e}	არ შეინახა: {e}
+Altitude {height}	სიმაღლე {height}
+Altitude {height} · loading {n}	სიმაღლე {height} · იტვირთება {n}
+Search	ძიება
+My Places exceed 4 MB, the page cannot save them	„ჩემი ნიშნები“ 4 მბ-ზე მეტია, გვერდი მათ ვერ შეინახავს
+Sources of what is on the globe. Click to open the Data sources window.	გლობუსზე ნაჩვენების წყაროები. დაწკაპუნება ხსნის ფანჯარას „მონაცემთა წყაროები“.
+Data sources	მონაცემთა წყაროები
+About	პროგრამის შესახებ
+The PlanetX globe without QGIS.	PlanetX-ის გლობუსი QGIS-ის გარეშე.
+Fly to	გადაფრენა
+Play tour	ტურის დაწყება
+Rename	გადარქმევა
+Delete	წაშლა
+Clear My Places	„ჩემი ნიშნების“ გასუფთავება
+Save as KML…	შენახვა KML-ად…
+Save scene…	სცენის შენახვა…
+My Places	ჩემი ნიშნები
+Show or hide the panel	პანელის ჩვენება ან დამალვა
+Open a scene, KML, KMZ or a data file	სცენის, KML-ის, KMZ-ის ან მონაცემთა ფაილის გახსნა
+Demo scenes	დემო სცენები
+Settings	პარამეტრები
+Full screen	მთელ ეკრანზე
+Interface language	ინტერფეისის ენა
+As in the system	როგორც სისტემაში
+Appearance	გაფორმება
+Dark	მუქი
+Light	ღია
+Terrain	რელიეფი
+Vertical exaggeration	ვერტიკალური გაზვიადება
+Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	რელიეფის სიმაღლის მამრავლი. 1-ზე მეტისას მთები და ხეობები უფრო გამოკვეთილია.
+Label language	წარწერების ენა
+As the interface	როგორც ინტერფეისი
+Local names	ადგილობრივი სახელები
+Language of place names on the globe. Without a name in this language the Latin or local name is shown.	გლობუსზე ადგილების სახელების ენა. ამ ენაზე სახელის არარსებობისას ნაჩვენებია ლათინური ან ადგილობრივი სახელი.
+Loading the font for this language…	ამ ენის შრიფტის ჩატვირთვა…

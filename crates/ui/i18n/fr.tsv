@@ -1,0 +1,75 @@
+# fr interface catalog: English<TAB>translation
+OpenStreetMap map	Carte OpenStreetMap
+© OpenStreetMap contributors	© contributeurs d’OpenStreetMap
+The graphics card does not support wgpu, the globe cannot be drawn.	La carte graphique ne prend pas en charge wgpu, le globe ne peut pas être dessiné.
+Basemap	Fond de carte
+Find a place, Enter	Chercher un lieu, Entrée
+Searching: {q}	Recherche : {q}
+Nothing found: {q}	Aucun résultat : {q}
+Search failed: {e}	La recherche a échoué : {e}
+Demo	Démo
+Placemarks and tours	Repères et visites
+Imagery and maps	Images et cartes
+Inside the Earth	Intérieur de la Terre
+Own terrain	Relief personnel
+3D models and motion	Modèles 3D et mouvement
+Haul trucks in open pits	Tombereaux dans les mines à ciel ouvert
+Boca Chica, Starbase	Boca Chica, Starbase
+Flow of goods, a scheme	Flux de marchandises, un schéma
+Aral Sea	Mer d’Aral
+Super-overlay, Mountain View	Superposition, Mountain View
+Japan Trench	Fosse du Japon
+Vegas Loop tunnels	Tunnels du Vegas Loop
+Quarry, own terrain	Carrière, relief personnel
+Lake Brienz, own bathymetry	Lac de Brienz, bathymétrie personnelle
+3D models, Suzdal and Perm	Modèles 3D, Souzdal et Perm
+Animated model, wind turbines	Modèle animé, éoliennes
+Haul trucks, Kachkanar	Tombereaux, Katchkanar
+Haul trucks, Lebedinsky	Tombereaux, Lebedinski
+Loading the demo: {name}…	Chargement de la démo : {name}…
+The point cloud did not open: {name}: {e}	Le nuage de points ne s’est pas ouvert : {name} : {e}
+Point cloud {name}: {shown} of {total} points	Nuage de points {name} : {shown} sur {total} points
+The raster did not open: {name}: {e}	Le raster ne s’est pas ouvert : {name} : {e}
+Own terrain: {names}	Relief personnel : {names}
+The file did not open: {name}: {e}	Le fichier ne s’est pas ouvert : {name} : {e}
+Places	Lieux
+Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.	Ouvrez ou déposez dans la fenêtre une scène .planetx, un KML, un KMZ, des couches GeoPackage, un raster d’altitude GeoTIFF ou un nuage de points LAS, LAZ, COPC.
+Open…	Ouvrir…
+Time	Temps
+Layers	Couches
+Saved: {to}	Enregistré : {to}
+Not saved: {e}	Non enregistré : {e}
+Altitude {height}	Altitude {height}
+Altitude {height} · loading {n}	Altitude {height} · chargement {n}
+Search	Chercher
+My Places exceed 4 MB, the page cannot save them	« Mes lieux » dépassent 4 Mo, la page ne peut pas les enregistrer
+Sources of what is on the globe. Click to open the Data sources window.	Sources de ce qui est sur le globe. Un clic ouvre la fenêtre « Sources des données ».
+Data sources	Sources des données
+About	À propos
+The PlanetX globe without QGIS.	Le globe PlanetX sans QGIS.
+Fly to	Survoler
+Play tour	Lancer la visite
+Rename	Renommer
+Delete	Supprimer
+Clear My Places	Vider « Mes lieux »
+Save as KML…	Enregistrer en KML…
+Save scene…	Enregistrer la scène…
+My Places	Mes lieux
+Show or hide the panel	Afficher ou masquer le panneau
+Open a scene, KML, KMZ or a data file	Ouvrir une scène, un KML, un KMZ ou un fichier de données
+Demo scenes	Scènes de démonstration
+Settings	Paramètres
+Full screen	Plein écran
+Interface language	Langue de l’interface
+As in the system	Comme le système
+Appearance	Apparence
+Dark	Sombre
+Light	Clair
+Terrain	Relief
+Vertical exaggeration	Exagération verticale
+Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Multiplicateur de hauteur du relief. Au-dessus de 1, montagnes et vallées sont plus marquées.
+Label language	Langue des étiquettes
+As the interface	Comme l’interface
+Local names	Noms locaux
+Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Langue des noms de lieux sur le globe. Sans nom dans cette langue, le nom latin ou local est affiché.
+Loading the font for this language…	Chargement de la police pour cette langue…

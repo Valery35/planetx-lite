@@ -1,0 +1,75 @@
+# az interface catalog: English<TAB>translation
+OpenStreetMap map	OpenStreetMap xəritəsi
+© OpenStreetMap contributors	© OpenStreetMap iştirakçıları
+The graphics card does not support wgpu, the globe cannot be drawn.	Videokart wgpu-nu dəstəkləmir, qlobus çəkilə bilmir.
+Basemap	Əsas xəritə
+Find a place, Enter	Yer axtar, Enter
+Searching: {q}	Axtarılır: {q}
+Nothing found: {q}	Heç nə tapılmadı: {q}
+Search failed: {e}	Axtarış alınmadı: {e}
+Demo	Demo
+Placemarks and tours	Nişanlar və turlar
+Imagery and maps	Şəkillər və xəritələr
+Inside the Earth	Yerin daxili
+Own terrain	Öz relyef
+3D models and motion	3D modellər və hərəkət
+Haul trucks in open pits	Açıq karxanalarda yük maşınları
+Boca Chica, Starbase	Boca Chica, Starbase
+Flow of goods, a scheme	Yük axını, sxem
+Aral Sea	Aral dənizi
+Super-overlay, Mountain View	Super örtük, Mountain View
+Japan Trench	Yaponiya çökəkliyi
+Vegas Loop tunnels	Vegas Loop tunelləri
+Quarry, own terrain	Karxana, öz relyef
+Lake Brienz, own bathymetry	Brienz gölü, öz batimetriya
+3D models, Suzdal and Perm	3D modellər, Suzdal və Perm
+Animated model, wind turbines	Animasiyalı model, külək turbinləri
+Haul trucks, Kachkanar	Yük maşınları, Kaçkanar
+Haul trucks, Lebedinsky	Yük maşınları, Lebedinski
+Loading the demo: {name}…	Demo yüklənir: {name}…
+The point cloud did not open: {name}: {e}	Nöqtə buludu açılmadı: {name}: {e}
+Point cloud {name}: {shown} of {total} points	Nöqtə buludu {name}: {total} nöqtədən {shown}
+The raster did not open: {name}: {e}	Raster açılmadı: {name}: {e}
+Own terrain: {names}	Öz relyef: {names}
+The file did not open: {name}: {e}	Fayl açılmadı: {name}: {e}
+Places	Yerlər
+Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.	Pəncərəyə .planetx səhnəsi, KML, KMZ, GeoPackage layları, GeoTIFF hündürlük rastri və ya LAS, LAZ, COPC nöqtə buludu açın və ya sürükləyin.
+Open…	Aç…
+Time	Vaxt
+Layers	Laylar
+Saved: {to}	Saxlanıldı: {to}
+Not saved: {e}	Saxlanılmadı: {e}
+Altitude {height}	Hündürlük {height}
+Altitude {height} · loading {n}	Hündürlük {height} · yüklənir {n}
+Search	Axtar
+My Places exceed 4 MB, the page cannot save them	"Mənim yerlərim" 4 MB-dan böyükdür, səhifə onları saxlaya bilməz
+Sources of what is on the globe. Click to open the Data sources window.	Qlobusdakıların mənbələri. Klik "Məlumat mənbələri" pəncərəsini açır.
+Data sources	Məlumat mənbələri
+About	Haqqında
+The PlanetX globe without QGIS.	QGIS-siz PlanetX qlobusu.
+Fly to	Uç
+Play tour	Turu başlat
+Rename	Adını dəyiş
+Delete	Sil
+Clear My Places	"Mənim yerlərim"i təmizlə
+Save as KML…	KML kimi saxla…
+Save scene…	Səhnəni saxla…
+My Places	Mənim yerlərim
+Show or hide the panel	Paneli göstər və ya gizlət
+Open a scene, KML, KMZ or a data file	Səhnə, KML, KMZ və ya məlumat faylı aç
+Demo scenes	Demo səhnələri
+Settings	Parametrlər
+Full screen	Tam ekran
+Interface language	İnterfeys dili
+As in the system	Sistemdəki kimi
+Appearance	Görünüş
+Dark	Tünd
+Light	Açıq
+Terrain	Relyef
+Vertical exaggeration	Şaquli şişirtmə
+Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Relyefin hündürlük vurğusu. 1-dən yuxarı dağlar və dərələr daha qabarıq görünür.
+Label language	Yazıların dili
+As the interface	İnterfeys kimi
+Local names	Yerli adlar
+Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Qlobusdakı yer adlarının dili. Bu dildə ad yoxdursa, latın və ya yerli ad göstərilir.
+Loading the font for this language…	Bu dil üçün şrift yüklənir…

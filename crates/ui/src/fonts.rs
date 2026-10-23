@@ -38,6 +38,9 @@ pub const SEMIBOLD_WEIGHT: f32 = 600.0;
 /// Семейство заголовков.
 pub const SEMIBOLD: &str = "semibold";
 
+/// Сдвиг знаков шрифта с иероглифами вниз, доля кегля.
+pub const CJK_DROP: f32 = 0.12;
+
 /// Семейство подписей на глобусе - встроенный шрифт egui.
 pub const GLOBE: &str = "globe";
 
@@ -61,7 +64,7 @@ fn read(path: &str) -> Option<Vec<u8>> {
     is_font(&bytes).then_some(bytes)
 }
 
-/// Системные шрифты (обычный, полужирный), если нашлись.
+/// Системные шрифты (обычный, полужирный), если нашлись. Читаются один раз.
 #[cfg(not(target_arch = "wasm32"))]
 fn system() -> Option<(Vec<u8>, Vec<u8>)> {
     // PLANETX_BUILTIN_FONTS - встроенный шрифт egui, как у RustGIS.
@@ -81,13 +84,72 @@ fn system() -> Option<(Vec<u8>, Vec<u8>)> {
     None
 }
 
-/// Поставить шрифты интерфейса и заголовки полужирным.
-pub fn install(ctx: &egui::Context) {
+/// Шрифт с иероглифами языка code (zh, ja, ko) из системы, как у RustGIS:
+/// Microsoft YaHei, Yu Gothic, Malgun Gothic, PingFang, Hiragino, Apple SD
+/// Gothic Neo, Noto Sans CJK. Байты и номер шрифта в коллекции .ttc.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn system_cjk(code: &str) -> Option<(Vec<u8>, u32)> {
+    let noto = [
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/google-noto-cjk/NotoSansCJK-Regular.ttc",
+    ];
+    // Номер шрифта в Noto Sans CJK .ttc: JP 0, KR 1, SC 2.
+    let (own, index): (&[&str], u32) = match code {
+        "zh" => (&["C:\\Windows\\Fonts\\msyh.ttc", "/System/Library/Fonts/PingFang.ttc"], 2),
+        "ja" => (&["C:\\Windows\\Fonts\\YuGothM.ttc", "C:\\Windows\\Fonts\\meiryo.ttc", "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc"], 0),
+        "ko" => (&["C:\\Windows\\Fonts\\malgun.ttf", "/System/Library/Fonts/AppleSDGothicNeo.ttc"], 1),
+        _ => return None,
+    };
+    let read_at = |path: &str, at: u32| -> Option<(Vec<u8>, u32)> {
+        let meta = std::fs::metadata(path).ok()?;
+        // Шрифты с иероглифами крупные, предел выше обычного.
+        if meta.len() > 4 * MAX_FONT {
+            return None;
+        }
+        let bytes = std::fs::read(path).ok()?;
+        skrifa::FontRef::from_index(&bytes, at).is_ok().then_some((bytes, at))
+    };
+    own.iter().find_map(|p| read_at(p, 0)).or_else(|| noto.iter().find_map(|p| read_at(p, index)))
+}
+
+/// Адрес шрифта с иероглифами для страницы: урезанный Noto Sans в папке
+/// `fonts` хранилища planetx-terrain, решение автора от 23 октября
+/// 2026 года.
+pub fn web_cjk_url(code: &str) -> Option<String> {
+    let name = match code {
+        "zh" => "NotoSansSC-Regular.ttf",
+        "ja" => "NotoSansJP-Regular.ttf",
+        "ko" => "NotoSansKR-Regular.ttf",
+        _ => return None,
+    };
+    Some(format!("https://raw.githubusercontent.com/Valery35/planetx-terrain/main/fonts/{name}"))
+}
+
+/// Поставить шрифты интерфейса и заголовки полужирным. cjk - шрифт
+/// с иероглифами и номер в коллекции: запасной после основного у панели
+/// и у подписей на глобусе.
+pub fn install(ctx: &egui::Context, cjk: Option<(Vec<u8>, u32)>) {
     use std::sync::Arc;
 
     use egui::{FontData, FontDefinitions, FontFamily};
 
     let mut fonts = FontDefinitions::default();
+    // Грузинские буквы есть в Hack, моноширинном шрифте egui, как
+    // у RustGIS: он - запасной у обычного семейства.
+    if let Some(prop) = fonts.families.get_mut(&FontFamily::Proportional) {
+        prop.push("Hack".into());
+    }
+    if let Some((bytes, index)) = cjk.filter(|(b, i)| skrifa::FontRef::from_index(b, *i).is_ok()) {
+        // У шрифтов с иероглифами базовая линия выше, чем у основного:
+        // знаки сдвигаются вниз, чтобы стоять в одну строку с латиницей.
+        let mut data = FontData::from_owned(bytes).tweak(egui::FontTweak { y_offset_factor: CJK_DROP, ..Default::default() });
+        data.index = index;
+        fonts.font_data.insert("cjk".into(), Arc::new(data));
+        if let Some(prop) = fonts.families.get_mut(&FontFamily::Proportional) {
+            prop.push("cjk".into());
+        }
+    }
     // Подписи на глобусе - встроенным шрифтом: при полёте они всё время
     // приносят новые знаки, а Segoe UI рисует новый знак дорого.
     // С ним на сценах «Бриенц» и «Японский жёлоб» кадр замирал больше

@@ -1,0 +1,75 @@
+# nl interface catalog: English<TAB>translation
+OpenStreetMap map	OpenStreetMap-kaart
+© OpenStreetMap contributors	© OpenStreetMap-bijdragers
+The graphics card does not support wgpu, the globe cannot be drawn.	De videokaart ondersteunt wgpu niet, de globe kan niet worden getekend.
+Basemap	Basiskaart
+Find a place, Enter	Plaats zoeken, Enter
+Searching: {q}	Zoeken: {q}
+Nothing found: {q}	Niets gevonden: {q}
+Search failed: {e}	Zoeken mislukt: {e}
+Demo	Demo
+Placemarks and tours	Plaatsmarkeringen en rondleidingen
+Imagery and maps	Beelden en kaarten
+Inside the Earth	Binnen in de aarde
+Own terrain	Eigen reliëf
+3D models and motion	3D-modellen en beweging
+Haul trucks in open pits	Dumptrucks in dagbouwmijnen
+Boca Chica, Starbase	Boca Chica, Starbase
+Flow of goods, a scheme	Goederenstroom, een schema
+Aral Sea	Aralmeer
+Super-overlay, Mountain View	Super-overlay, Mountain View
+Japan Trench	Japantrog
+Vegas Loop tunnels	Tunnels van de Vegas Loop
+Quarry, own terrain	Groeve, eigen reliëf
+Lake Brienz, own bathymetry	Brienzermeer, eigen bathymetrie
+3D models, Suzdal and Perm	3D-modellen, Soezdal en Perm
+Animated model, wind turbines	Geanimeerd model, windturbines
+Haul trucks, Kachkanar	Dumptrucks, Katsjkanar
+Haul trucks, Lebedinsky	Dumptrucks, Lebedinski
+Loading the demo: {name}…	Demo laden: {name}…
+The point cloud did not open: {name}: {e}	De puntenwolk is niet geopend: {name}: {e}
+Point cloud {name}: {shown} of {total} points	Puntenwolk {name}: {shown} van {total} punten
+The raster did not open: {name}: {e}	Het raster is niet geopend: {name}: {e}
+Own terrain: {names}	Eigen reliëf: {names}
+The file did not open: {name}: {e}	Het bestand is niet geopend: {name}: {e}
+Places	Plaatsen
+Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.	Open of sleep een .planetx-scène, KML, KMZ, GeoPackage-lagen, een GeoTIFF-hoogteraster of een LAS-, LAZ-, COPC-puntenwolk naar het venster.
+Open…	Openen…
+Time	Tijd
+Layers	Lagen
+Saved: {to}	Opgeslagen: {to}
+Not saved: {e}	Niet opgeslagen: {e}
+Altitude {height}	Hoogte {height}
+Altitude {height} · loading {n}	Hoogte {height} · laden {n}
+Search	Zoeken
+My Places exceed 4 MB, the page cannot save them	‘Mijn plaatsen’ zijn groter dan 4 MB, de pagina kan ze niet opslaan
+Sources of what is on the globe. Click to open the Data sources window.	Bronnen van wat op de globe staat. Klikken opent het venster ‘Gegevensbronnen’.
+Data sources	Gegevensbronnen
+About	Over
+The PlanetX globe without QGIS.	De PlanetX-globe zonder QGIS.
+Fly to	Vliegen naar
+Play tour	Rondleiding afspelen
+Rename	Hernoemen
+Delete	Verwijderen
+Clear My Places	‘Mijn plaatsen’ leegmaken
+Save as KML…	Opslaan als KML…
+Save scene…	Scène opslaan…
+My Places	Mijn plaatsen
+Show or hide the panel	Paneel tonen of verbergen
+Open a scene, KML, KMZ or a data file	Een scène, KML, KMZ of gegevensbestand openen
+Demo scenes	Demoscènes
+Settings	Instellingen
+Full screen	Volledig scherm
+Interface language	Taal van de interface
+As in the system	Zoals het systeem
+Appearance	Weergave
+Dark	Donker
+Light	Licht
+Terrain	Reliëf
+Vertical exaggeration	Verticale overdrijving
+Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Hoogtevermenigvuldiger van het reliëf. Boven 1 zijn bergen en dalen sterker zichtbaar.
+Label language	Taal van de labels
+As the interface	Zoals de interface
+Local names	Lokale namen
+Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Taal van plaatsnamen op de globe. Zonder naam in deze taal wordt de Latijnse of lokale naam getoond.
+Loading the font for this language…	Lettertype voor deze taal laden…

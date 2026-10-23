@@ -1,0 +1,76 @@
+# ko interface catalog: English<TAB>translation
+Esri World Imagery	Esri World Imagery 위성 영상
+OpenStreetMap map	OpenStreetMap 지도
+© OpenStreetMap contributors	© OpenStreetMap 기여자
+The graphics card does not support wgpu, the globe cannot be drawn.	그래픽 카드가 wgpu를 지원하지 않아 지구본을 그릴 수 없습니다.
+Basemap	배경 지도
+Find a place, Enter	장소 검색, Enter
+Searching: {q}	검색 중: {q}
+Nothing found: {q}	결과 없음: {q}
+Search failed: {e}	검색 실패: {e}
+Demo	데모
+Placemarks and tours	장소 표시와 투어
+Imagery and maps	영상과 지도
+Inside the Earth	지구 내부
+Own terrain	자체 지형
+3D models and motion	3D 모델과 움직임
+Haul trucks in open pits	노천 광산의 덤프트럭
+Boca Chica, Starbase	보카치카, 스타베이스
+Flow of goods, a scheme	화물 흐름, 개략도
+Aral Sea	아랄해
+Super-overlay, Mountain View	슈퍼 오버레이, 마운틴뷰
+Japan Trench	일본 해구
+Vegas Loop tunnels	베이거스 루프 터널
+Quarry, own terrain	채석장, 자체 지형
+Lake Brienz, own bathymetry	브리엔츠 호수, 자체 수심
+3D models, Suzdal and Perm	3D 모델, 수즈달과 페름
+Animated model, wind turbines	애니메이션 모델, 풍력 발전기
+Haul trucks, Kachkanar	덤프트럭, 카치카나르
+Haul trucks, Lebedinsky	덤프트럭, 레베딘스키
+Loading the demo: {name}…	데모 불러오는 중: {name}…
+The point cloud did not open: {name}: {e}	점군을 열지 못했습니다: {name}: {e}
+Point cloud {name}: {shown} of {total} points	점군 {name}: {total}개 중 {shown}개 점
+The raster did not open: {name}: {e}	래스터를 열지 못했습니다: {name}: {e}
+Own terrain: {names}	자체 지형: {names}
+The file did not open: {name}: {e}	파일을 열지 못했습니다: {name}: {e}
+Places	장소
+Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.	.planetx 장면, KML, KMZ, GeoPackage 레이어, GeoTIFF 고도 래스터 또는 LAS, LAZ, COPC 점군을 열거나 창에 끌어다 놓으세요.
+Open…	열기…
+Time	시간
+Layers	레이어
+Saved: {to}	저장됨: {to}
+Not saved: {e}	저장되지 않음: {e}
+Altitude {height}	고도 {height}
+Altitude {height} · loading {n}	고도 {height} · 불러오는 중 {n}
+Search	검색
+My Places exceed 4 MB, the page cannot save them	"내 장소"가 4 MB를 넘어 페이지에 저장할 수 없습니다
+Sources of what is on the globe. Click to open the Data sources window.	지구본에 표시된 내용의 출처. 클릭하면 "데이터 출처" 창이 열립니다.
+Data sources	데이터 출처
+About	정보
+The PlanetX globe without QGIS.	QGIS 없는 PlanetX 지구본.
+Fly to	이동
+Play tour	투어 재생
+Rename	이름 바꾸기
+Delete	삭제
+Clear My Places	"내 장소" 비우기
+Save as KML…	KML로 저장…
+Save scene…	장면 저장…
+My Places	내 장소
+Show or hide the panel	패널 표시 또는 숨기기
+Open a scene, KML, KMZ or a data file	장면, KML, KMZ 또는 데이터 파일 열기
+Demo scenes	데모 장면
+Settings	설정
+Full screen	전체 화면
+Interface language	인터페이스 언어
+As in the system	시스템과 같게
+Appearance	모양
+Dark	어둡게
+Light	밝게
+Terrain	지형
+Vertical exaggeration	수직 과장
+Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	지형 높이 배율. 1보다 크면 산과 골짜기가 더 뚜렷해집니다.
+Label language	레이블 언어
+As the interface	인터페이스와 같게
+Local names	현지 이름
+Language of place names on the globe. Without a name in this language the Latin or local name is shown.	지구본 지명의 언어. 이 언어로 된 이름이 없으면 라틴 문자 또는 현지 이름이 표시됩니다.
+Loading the font for this language…	이 언어의 글꼴을 불러오는 중…

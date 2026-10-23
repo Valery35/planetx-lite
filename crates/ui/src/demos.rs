@@ -15,73 +15,64 @@
 /// Начало адреса файлов демо.
 pub const BASE: &str = "https://raw.githubusercontent.com/Valery35/planetx-terrain/main/demo/";
 
-/// Демо меню.
+/// Демо меню. en - название по-английски, ключ перевода [crate::i18n::tr].
 pub struct Demo {
-    pub ru: &'static str,
     pub en: &'static str,
     /// Пути файлов в папке демо, открываются по порядку: растр высот
     /// раньше сцены.
     pub files: &'static [&'static str],
 }
 
-/// Раздел меню.
+/// Раздел меню, en - как у [Demo].
 pub struct Section {
-    pub ru: &'static str,
     pub en: &'static str,
     pub demos: &'static [Demo],
 }
 
 pub const MENU: [Section; 6] = [
     Section {
-        ru: "Метки и туры",
         en: "Placemarks and tours",
         demos: &[
-            Demo { ru: "Бока-Чика, Starbase", en: "Boca Chica, Starbase", files: &["bocachica.planetx"] },
-            Demo { ru: "Поток грузов, схема", en: "Flow of goods, a scheme", files: &["flows.planetx"] },
+            Demo { en: "Boca Chica, Starbase", files: &["bocachica.planetx"] },
+            Demo { en: "Flow of goods, a scheme", files: &["flows.planetx"] },
         ],
     },
     Section {
-        ru: "Снимки и карты",
         en: "Imagery and maps",
         demos: &[
-            Demo { ru: "Аральское море", en: "Aral Sea", files: &["aral.planetx"] },
-            Demo { ru: "Суперналожение, Маунтин-Вью", en: "Super-overlay, Mountain View", files: &["superoverlay.planetx"] },
+            Demo { en: "Aral Sea", files: &["aral.planetx"] },
+            Demo { en: "Super-overlay, Mountain View", files: &["superoverlay.planetx"] },
         ],
     },
     Section {
-        ru: "Недра",
         en: "Inside the Earth",
         demos: &[
-            Demo { ru: "Японский жёлоб", en: "Japan Trench", files: &["japan.planetx"] },
-            Demo { ru: "Тоннели Vegas Loop", en: "Vegas Loop tunnels", files: &["vegas/vegas_loop.gpkg"] },
+            Demo { en: "Japan Trench", files: &["japan.planetx"] },
+            Demo { en: "Vegas Loop tunnels", files: &["vegas/vegas_loop.gpkg"] },
         ],
     },
     Section {
-        ru: "Свой рельеф",
         en: "Own terrain",
         demos: &[
-            Demo { ru: "Карьер, свой рельеф", en: "Quarry, own terrain", files: &["quarry/quarry_dem.tif", "quarry.planetx"] },
+            Demo { en: "Quarry, own terrain", files: &["quarry/quarry_dem.tif", "quarry.planetx"] },
             Demo {
-                ru: "Бриенцское озеро, своя батиметрия",
                 en: "Lake Brienz, own bathymetry",
                 files: &["brienz/brienzersee_bed.tif", "brienz.planetx"],
             },
         ],
     },
     Section {
-        ru: "3D-модели и движение",
         en: "3D models and motion",
         demos: &[
-            Demo { ru: "3D-модели, Суздаль и Пермь", en: "3D models, Suzdal and Perm", files: &["models.planetx"] },
-            Demo { ru: "Анимированная модель, ветряки", en: "Animated model, wind turbines", files: &["turbines.planetx"] },
+            Demo { en: "3D models, Suzdal and Perm", files: &["models.planetx"] },
+            Demo { en: "Animated model, wind turbines", files: &["turbines.planetx"] },
         ],
     },
     Section {
-        ru: "Самосвалы в карьерах",
         en: "Haul trucks in open pits",
         demos: &[
-            Demo { ru: "Самосвалы, Качканар", en: "Haul trucks, Kachkanar", files: &["haul/haul_kachkanar.gpkg"] },
-            Demo { ru: "Самосвалы, Лебединский", en: "Haul trucks, Lebedinsky", files: &["haul/haul_lebedinsky.gpkg"] },
+            Demo { en: "Haul trucks, Kachkanar", files: &["haul/haul_kachkanar.gpkg"] },
+            Demo { en: "Haul trucks, Lebedinsky", files: &["haul/haul_lebedinsky.gpkg"] },
         ],
     },
 ];
@@ -142,7 +133,7 @@ mod tests {
             return;
         }
         for demo in MENU.iter().flat_map(|s| s.demos) {
-            assert!(!demo.files.is_empty(), "{}", demo.ru);
+            assert!(!demo.files.is_empty(), "{}", demo.en);
             for f in demo.files {
                 assert!(dir.join(f).is_file(), "{f}");
             }

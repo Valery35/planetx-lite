@@ -1,0 +1,79 @@
+# zh interface catalog: English<TAB>translation
+Esri World Imagery	Esri World Imagery 影像
+OpenStreetMap map	OpenStreetMap 地图
+© OpenStreetMap contributors	© OpenStreetMap 贡献者
+The graphics card does not support wgpu, the globe cannot be drawn.	显卡不支持 wgpu，无法绘制地球。
+Basemap	底图
+Find a place, Enter	查找地点，回车
+Searching: {q}	正在搜索：{q}
+Nothing found: {q}	未找到：{q}
+Search failed: {e}	搜索失败：{e}
+Demo	演示
+Placemarks and tours	地标和游览
+Imagery and maps	影像和地图
+Inside the Earth	地球内部
+Own terrain	自有地形
+3D models and motion	三维模型和运动
+Haul trucks in open pits	露天矿运输卡车
+Boca Chica, Starbase	博卡奇卡，星际基地
+Flow of goods, a scheme	货物流向示意图
+Aral Sea	咸海
+Super-overlay, Mountain View	超级叠加，山景城
+Japan Trench	日本海沟
+Vegas Loop tunnels	拉斯维加斯环线隧道
+Quarry, own terrain	采石场，自有地形
+Lake Brienz, own bathymetry	布里恩茨湖，自有水深
+3D models, Suzdal and Perm	三维模型，苏兹达尔和彼尔姆
+Animated model, wind turbines	动画模型，风力发电机
+Haul trucks, Kachkanar	运输卡车，卡奇卡纳尔
+Haul trucks, Lebedinsky	运输卡车，列别金斯基
+Loading the demo: {name}…	正在加载演示：{name}…
+The point cloud did not open: {name}: {e}	无法打开点云：{name}：{e}
+Point cloud {name}: {shown} of {total} points	点云 {name}：{shown} / {total} 个点
+The raster did not open: {name}: {e}	无法打开栅格：{name}：{e}
+Own terrain: {names}	自有地形：{names}
+The file did not open: {name}: {e}	无法打开文件：{name}：{e}
+Places	地标
+Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.	打开或拖入 .planetx 场景、KML、KMZ、GeoPackage 图层、GeoTIFF 高程栅格或 LAS、LAZ、COPC 点云。
+Open…	打开…
+Time	时间
+Layers	图层
+Saved: {to}	已保存：{to}
+Not saved: {e}	未保存：{e}
+km	公里
+m	米
+Altitude {height}	高度 {height}
+Altitude {height} · loading {n}	高度 {height} · 加载 {n}
+Search	搜索
+My Places exceed 4 MB, the page cannot save them	“我的地点”超过 4 MB，网页无法保存
+Sources of what is on the globe. Click to open the Data sources window.	地球上内容的来源。点击打开“数据来源”窗口。
+Data sources	数据来源
+About	关于
+The PlanetX globe without QGIS.	无需 QGIS 的 PlanetX 地球。
+{name}, {ele} m	{name}，{ele} 米
+Fly to	飞往
+Play tour	播放游览
+Rename	重命名
+Delete	删除
+Clear My Places	清空“我的地点”
+Save as KML…	另存为 KML…
+Save scene…	保存场景…
+My Places	我的地点
+Show or hide the panel	显示或隐藏面板
+Open a scene, KML, KMZ or a data file	打开场景、KML、KMZ 或数据文件
+Demo scenes	演示场景
+Settings	设置
+Full screen	全屏
+Interface language	界面语言
+As in the system	跟随系统
+Appearance	外观
+Dark	深色
+Light	浅色
+Terrain	地形
+Vertical exaggeration	垂直夸张
+Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	地形高度倍数。大于 1 时山脉和山谷更加明显。
+Label language	标注语言
+As the interface	与界面相同
+Local names	当地名称
+Language of place names on the globe. Without a name in this language the Latin or local name is shown.	地球上地名的语言。没有该语言的名称时显示拉丁或当地名称。
+Loading the font for this language…	正在加载此语言的字体…

@@ -1,0 +1,75 @@
+# es interface catalog: English<TAB>translation
+OpenStreetMap map	Mapa de OpenStreetMap
+© OpenStreetMap contributors	© colaboradores de OpenStreetMap
+The graphics card does not support wgpu, the globe cannot be drawn.	La tarjeta gráfica no admite wgpu, no se puede dibujar el globo.
+Basemap	Mapa base
+Find a place, Enter	Buscar un lugar, Intro
+Searching: {q}	Buscando: {q}
+Nothing found: {q}	Sin resultados: {q}
+Search failed: {e}	La búsqueda falló: {e}
+Demo	Demo
+Placemarks and tours	Marcas y recorridos
+Imagery and maps	Imágenes y mapas
+Inside the Earth	Interior de la Tierra
+Own terrain	Relieve propio
+3D models and motion	Modelos 3D y movimiento
+Haul trucks in open pits	Camiones mineros en minas a cielo abierto
+Boca Chica, Starbase	Boca Chica, Starbase
+Flow of goods, a scheme	Flujo de mercancías, un esquema
+Aral Sea	Mar de Aral
+Super-overlay, Mountain View	Superposición, Mountain View
+Japan Trench	Fosa de Japón
+Vegas Loop tunnels	Túneles del Vegas Loop
+Quarry, own terrain	Cantera, relieve propio
+Lake Brienz, own bathymetry	Lago de Brienz, batimetría propia
+3D models, Suzdal and Perm	Modelos 3D, Súzdal y Perm
+Animated model, wind turbines	Modelo animado, aerogeneradores
+Haul trucks, Kachkanar	Camiones mineros, Kachkanar
+Haul trucks, Lebedinsky	Camiones mineros, Lebedinski
+Loading the demo: {name}…	Cargando la demo: {name}…
+The point cloud did not open: {name}: {e}	No se abrió la nube de puntos: {name}: {e}
+Point cloud {name}: {shown} of {total} points	Nube de puntos {name}: {shown} de {total} puntos
+The raster did not open: {name}: {e}	No se abrió el ráster: {name}: {e}
+Own terrain: {names}	Relieve propio: {names}
+The file did not open: {name}: {e}	No se abrió el archivo: {name}: {e}
+Places	Lugares
+Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.	Abra o arrastre a la ventana una escena .planetx, KML, KMZ, capas GeoPackage, un ráster de elevación GeoTIFF o una nube de puntos LAS, LAZ, COPC.
+Open…	Abrir…
+Time	Tiempo
+Layers	Capas
+Saved: {to}	Guardado: {to}
+Not saved: {e}	No guardado: {e}
+Altitude {height}	Altitud {height}
+Altitude {height} · loading {n}	Altitud {height} · cargando {n}
+Search	Buscar
+My Places exceed 4 MB, the page cannot save them	«Mis lugares» superan 4 MB, la página no puede guardarlos
+Sources of what is on the globe. Click to open the Data sources window.	Fuentes de lo que se ve en el globo. Un clic abre la ventana «Fuentes de datos».
+Data sources	Fuentes de datos
+About	Acerca de
+The PlanetX globe without QGIS.	El globo PlanetX sin QGIS.
+Fly to	Volar a
+Play tour	Reproducir recorrido
+Rename	Cambiar nombre
+Delete	Eliminar
+Clear My Places	Vaciar «Mis lugares»
+Save as KML…	Guardar como KML…
+Save scene…	Guardar escena…
+My Places	Mis lugares
+Show or hide the panel	Mostrar u ocultar el panel
+Open a scene, KML, KMZ or a data file	Abrir una escena, KML, KMZ o un archivo de datos
+Demo scenes	Escenas de demostración
+Settings	Ajustes
+Full screen	Pantalla completa
+Interface language	Idioma de la interfaz
+As in the system	Como en el sistema
+Appearance	Apariencia
+Dark	Oscura
+Light	Clara
+Terrain	Relieve
+Vertical exaggeration	Exageración vertical
+Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Multiplicador de altura del relieve. Por encima de 1 montañas y valles se ven más marcados.
+Label language	Idioma de las etiquetas
+As the interface	Como la interfaz
+Local names	Nombres locales
+Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Idioma de los nombres de lugares en el globo. Sin nombre en este idioma se muestra el nombre latino o local.
+Loading the font for this language…	Cargando la fuente para este idioma…

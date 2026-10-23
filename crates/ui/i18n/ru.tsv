@@ -1,0 +1,80 @@
+# ru interface catalog: English<TAB>translation
+Esri World Imagery	Снимки Esri World Imagery
+OpenStreetMap map	Карта OpenStreetMap
+© OpenStreetMap contributors	© участники OpenStreetMap
+The graphics card does not support wgpu, the globe cannot be drawn.	Видеокарта не поддерживает wgpu, глобус не рисуется.
+Basemap	Основа
+Find a place, Enter	Поиск места, Enter
+Searching: {q}	Поиск: {q}
+Nothing found: {q}	Ничего не найдено: {q}
+Search failed: {e}	Поиск не удался: {e}
+Demo	Демо
+Placemarks and tours	Метки и туры
+Imagery and maps	Снимки и карты
+Inside the Earth	Недра
+Own terrain	Свой рельеф
+3D models and motion	3D-модели и движение
+Haul trucks in open pits	Самосвалы в карьерах
+Boca Chica, Starbase	Бока-Чика, Starbase
+Flow of goods, a scheme	Поток грузов, схема
+Aral Sea	Аральское море
+Super-overlay, Mountain View	Суперналожение, Маунтин-Вью
+Japan Trench	Японский жёлоб
+Vegas Loop tunnels	Тоннели Vegas Loop
+Quarry, own terrain	Карьер, свой рельеф
+Lake Brienz, own bathymetry	Бриенцское озеро, своя батиметрия
+3D models, Suzdal and Perm	3D-модели, Суздаль и Пермь
+Animated model, wind turbines	Анимированная модель, ветряки
+Haul trucks, Kachkanar	Самосвалы, Качканар
+Haul trucks, Lebedinsky	Самосвалы, Лебединский
+Loading the demo: {name}…	Загрузка демо: {name}…
+The point cloud did not open: {name}: {e}	Облако не открылось: {name}: {e}
+Point cloud {name}: {shown} of {total} points	Облако {name}: {shown} из {total} точек
+The raster did not open: {name}: {e}	Растр не открылся: {name}: {e}
+Own terrain: {names}	Свой рельеф: {names}
+The file did not open: {name}: {e}	Файл не открылся: {name}: {e}
+Places	Метки
+Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.	Откройте или бросьте в окно сцену .planetx, KML, KMZ, слои GeoPackage, растр высот GeoTIFF или облако точек LAS, LAZ, COPC.
+Open…	Открыть…
+Time	Время
+Layers	Слои
+Saved: {to}	Сохранено: {to}
+Not saved: {e}	Не сохранено: {e}
+km	км
+m	м
+Altitude {height}	Высота {height}
+Altitude {height} · loading {n}	Высота {height} · загрузка {n}
+Search	Поиск
+My Places exceed 4 MB, the page cannot save them	«Мои метки» больше 4 МБ, страница их не сохранит
+Sources of what is on the globe. Click to open the Data sources window.	Источники того, что на глобусе. Щелчок открывает окно «Источники данных».
+Data sources	Источники данных
+About	О программе
+The PlanetX globe without QGIS.	Глобус PlanetX без QGIS.
+© 2026 Inform++ LLC. Apache 2.0.	© 2026 ООО «Информ++». Apache 2.0.
+{name}, {ele} m	{name}, {ele} м
+Fly to	Подлететь
+Play tour	Запустить тур
+Rename	Переименовать
+Delete	Удалить
+Clear My Places	Очистить «Мои метки»
+Save as KML…	Сохранить как KML…
+Save scene…	Сохранить сцену…
+My Places	Мои метки
+Show or hide the panel	Показать или скрыть панель
+Open a scene, KML, KMZ or a data file	Открыть сцену, KML, KMZ или файл данных
+Demo scenes	Демо
+Settings	Настройки
+Full screen	Во весь экран
+Interface language	Язык интерфейса
+As in the system	Как в системе
+Appearance	Оформление
+Dark	Тёмное
+Light	Светлое
+Terrain	Рельеф
+Vertical exaggeration	Вертикальный масштаб
+Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Множитель высот рельефа. Больше 1 - горы и долины выразительнее.
+Label language	Язык подписей
+As the interface	Как интерфейс
+Local names	Местные названия
+Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Язык названий пунктов на глобусе. Если названия на этом языке нет, ставится название латиницей или местное.
+Loading the font for this language…	Загрузка шрифта для этого языка…
