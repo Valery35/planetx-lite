@@ -1,6 +1,8 @@
 /target/
 addins/*/target/
 /dist/
+# Снимки сравнения с модулем, крупные PNG, только на диске.
+/doc/compare/
 **/*.rs.bk
 .vscode/
 .idea/
