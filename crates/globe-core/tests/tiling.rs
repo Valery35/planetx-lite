@@ -303,6 +303,40 @@ fn cap_meets_the_tiles() {
     }
 }
 
+#[test]
+fn faded_cap_meets_tiles_and_faces_outward() {
+    let e = wgs84();
+    let seg = tl::segments(0);
+    for north in [true, false] {
+        let cap = tl::polar_cap_faded_mesh(&e, north, seg);
+        let pos = world(&cap);
+        assert_eq!(pos.len(), 1 + 2 * (seg as usize + 1));
+        for t in cap.indices.as_chunks::<3>().0 {
+            let (a, b, c) = (pos[t[0] as usize], pos[t[1] as usize], pos[t[2] as usize]);
+            assert!((a + b + c).dot((b - a).cross(c - a)) > 0.0, "{north}");
+        }
+        // Кольцо края - на краю сетки тайлов, u по долготе, верхняя
+        // строка снимка шапки. Внутреннее кольцо и полюс - нижняя.
+        let sign = if north { 1.0 } else { -1.0 };
+        for k in 0..=seg as usize {
+            let (lat, lon, _) = e.ecef_to_geodetic(pos[1 + k]);
+            assert!((lat - sign * tl::MAX_LAT).abs() < 1e-6);
+            let u = f64::from(cap.uv[1 + k].x);
+            if k > 0 && k < seg as usize {
+                assert!((u * 360.0 - 180.0 - lon).abs() < 1e-3);
+            }
+            assert_eq!(cap.uv[1 + k].y, 0.25);
+            assert_eq!(cap.uv[2 + seg as usize + k].y, 0.75);
+        }
+        assert_eq!(cap.uv[0].y, 0.75);
+    }
+    let grid = tl::grid_ecef(&e, 0, 0, 0);
+    let cap = tl::polar_cap_faded_mesh(&e, true, seg);
+    for (a, b) in world(&cap)[1..=seg as usize].iter().zip(&grid) {
+        assert!((*a - *b).abs().max_element() < 2.0);
+    }
+}
+
 // Полоса счётчика дыр у края диска покрывает просадку хорд.
 
 fn measured_sag(e: &Ellipsoid, z: u32) -> f64 {

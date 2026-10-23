@@ -86,7 +86,7 @@ fn sea_lowers_mesh_to_sea_level() {
     for (p, sea) in pos[..s * s].iter().zip(&m.sea) {
         assert!((height(*p) - f64::from(sea.w)).abs() < 0.05);
     }
-    let cap = polar_cap(&wgs84(), true, 256);
+    let cap = polar_cap(&wgs84(), true, 256, None);
     assert!(cap.sea.iter().all(|s| s.w == 0.0));
     assert_eq!(cap.sea.len(), cap.mesh.positions.len());
 }

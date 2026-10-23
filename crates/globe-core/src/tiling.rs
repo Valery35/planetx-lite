@@ -273,3 +273,41 @@ pub fn polar_cap_mesh(e: &Ellipsoid, north: bool, count: u32) -> TileMesh {
     let uv = vec![Vec2::ZERO; world.len()];
     TileMesh { id: MeshId::PolarCap { north }, segments: count, center: pole, radius, positions, uv, indices }
 }
+
+/// Широта, где шапка перестаёт повторять край тайлов и становится
+/// ровной, градусы.
+pub const CAP_FADE_LAT: f64 = 88.0;
+
+/// Шапка с переходом от края тайлов к ровному цвету, для снимка шапки
+/// в две строки: верхняя - край тайла 0/0/0 по долготе, нижняя - ровный
+/// цвет. Кольцо края на [`MAX_LAT`] берёт u по долготе и v = 0.25, кольцо
+/// на [`CAP_FADE_LAT`] и полюс - v = 0.75. В кольцах по count + 1 вершин:
+/// у линии смены дат вершина повторяется с u = 1. Порядок вершин - полюс,
+/// кольцо края, внутреннее кольцо. count прижимается к 3-32766.
+pub fn polar_cap_faded_mesh(e: &Ellipsoid, north: bool, count: u32) -> TileMesh {
+    let count = count.clamp(3, (u32::from(u16::MAX) - 3) / 2);
+    let sign = if north { 1.0 } else { -1.0 };
+    let pole = e.geodetic_to_ecef(sign * 90.0, 0.0, 0.0);
+    let mut world = vec![pole];
+    let mut uv = vec![Vec2::new(0.5, 0.75)];
+    for (lat, v) in [(MAX_LAT, 0.25f32), (CAP_FADE_LAT, 0.75)] {
+        for k in 0..=count {
+            let u = f64::from(k) / f64::from(count);
+            world.push(e.geodetic_to_ecef(sign * lat, u * 360.0 - 180.0, 0.0));
+            uv.push(Vec2::new(u as f32, v));
+        }
+    }
+    let (positions, radius) = offsets(&world, pole);
+    let rim = |k: u32| (1 + k) as u16;
+    let inner = |k: u32| (2 + count + k) as u16;
+    // Обход снаружи против часовой стрелки над северным полюсом, над
+    // южным наоборот, как у [`polar_cap_mesh`].
+    let mut indices = Vec::with_capacity(9 * count as usize);
+    for k in 0..count {
+        let tris = [[0, inner(k), inner(k + 1)], [rim(k), rim(k + 1), inner(k + 1)], [rim(k), inner(k + 1), inner(k)]];
+        for [a, b, c] in tris {
+            if north { indices.extend([a, b, c]) } else { indices.extend([a, c, b]) }
+        }
+    }
+    TileMesh { id: MeshId::PolarCap { north }, segments: count, center: pole, radius, positions, uv, indices }
+}

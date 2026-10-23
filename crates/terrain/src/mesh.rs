@@ -10,7 +10,7 @@
 
 use globe_core::ellipsoid::Ellipsoid;
 use globe_core::tiling::{
-    MAX_LEVEL as TILE_MAX_LEVEL, MeshId, TileMesh, grid_latlon, index_buffer, polar_cap_mesh, ring, segments,
+    MAX_LEVEL as TILE_MAX_LEVEL, MeshId, TileMesh, grid_latlon, index_buffer, polar_cap_faded_mesh, ring, segments,
     skirt_depth,
 };
 use globe_core::{DVec3, Vec2, Vec3, Vec4};
@@ -146,16 +146,61 @@ pub fn terrain_mesh(e: &Ellipsoid, z: u32, x: u32, y: u32, tile: Option<&HeightT
     }
 }
 
-/// Шапка у полюса с данными вершин: отмывки нет, нормаль - от центра
-/// тела, высота нулевая.
-pub fn polar_cap(e: &Ellipsoid, north: bool, count: u32) -> TerrainMesh {
-    let mesh = polar_cap_mesh(e, north, count);
-    let ups: Vec<Vec3> =
-        mesh.positions.iter().map(|p| (mesh.center + p.as_dvec3()).normalize_or_zero().as_vec3()).collect();
+/// Шапка у полюса с данными вершин. Край шапки повторяет цвет края
+/// тайлов, [`globe_core::tiling::polar_cap_faded_mesh`], а с высотами -
+/// и рельеф края: кольцо края стоит на высотах store с отмывкой по
+/// склону вдоль края, внутреннее кольцо и полюс - на средней высоте
+/// и средней отмывке края. Без высот шапка на эллипсоиде без отмывки.
+/// Нормаль света - от центра тела.
+pub fn polar_cap(e: &Ellipsoid, north: bool, count: u32, store: Option<&crate::HeightStore>) -> TerrainMesh {
+    let mut mesh = polar_cap_faded_mesh(e, north, count);
+    let n = mesh.segments as usize + 1;
+    let world: Vec<DVec3> = mesh.positions.iter().map(|p| mesh.center + p.as_dvec3()).collect();
+    let mut heights = vec![0.0; world.len()];
+    let mut shading = vec![1.0; world.len()];
+    if let Some(store) = store.filter(|s| s.scale() != 0.0) {
+        let sign = if north { 1.0 } else { -1.0 };
+        let lat = sign * globe_core::tiling::MAX_LAT;
+        // Шаг разностей - около 5 км по земле в обе стороны.
+        let dlat = 0.05;
+        let dlon = dlat / lat.to_radians().cos().abs().max(1e-3);
+        let at = |la: f64, lo: f64| e.geodetic_to_ecef(la, lo, store.height_at(la, lo));
+        for k in 0..n {
+            let lon = k as f64 / (n - 1) as f64 * 360.0 - 180.0;
+            heights[1 + k] = store.height_at(lat, lon);
+            let east = at(lat, lon + dlon) - at(lat, lon - dlon);
+            // Севернее края у южной шапки - к экватору, у северной -
+            // к полюсу, там высот нет: разность берётся от края.
+            let toward = at(lat - sign * dlat, lon);
+            let here = at(lat, lon);
+            let up_north = if north { here - toward } else { toward - here };
+            shading[1 + k] = shade(lat, lon, east.cross(up_north).normalize_or_zero());
+        }
+        let rim = &heights[1..=n];
+        let mean_h = rim.iter().sum::<f64>() / n as f64;
+        let mean_s = shading[1..=n].iter().sum::<f64>() / n as f64;
+        heights[0] = mean_h;
+        shading[0] = mean_s;
+        for k in 0..n {
+            heights[1 + n + k] = mean_h;
+            shading[1 + n + k] = mean_s;
+        }
+    }
+    let ups: Vec<DVec3> = world.iter().map(|p| p.normalize_or_zero()).collect();
+    let lifted: Vec<DVec3> = world
+        .iter()
+        .zip(&heights)
+        .map(|(p, h)| {
+            let (la, lo, _) = e.ecef_to_geodetic(*p);
+            e.geodetic_to_ecef(la, lo, *h)
+        })
+        .collect();
+    mesh.radius = lifted.iter().map(|p| (*p - mesh.center).length()).fold(0.0, f64::max);
+    mesh.positions = lifted.iter().map(|p| (*p - mesh.center).as_vec3()).collect();
     TerrainMesh {
-        shade: vec![1.0; ups.len()],
-        sea: ups.iter().map(|u| u.extend(0.0)).collect(),
-        normals: ups,
+        shade: shading.iter().map(|s| *s as f32).collect(),
+        sea: ups.iter().zip(&heights).map(|(u, h)| u.as_vec3().extend(*h as f32)).collect(),
+        normals: ups.iter().map(|u| u.as_vec3()).collect(),
         mesh,
     }
 }

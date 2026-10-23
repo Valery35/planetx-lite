@@ -221,6 +221,7 @@ fn demo_menu(ui: &mut egui::Ui, lang: Lang, clicked: &mut Option<&'static crate:
 impl LiteApp {
     /// scenario - самопроверка или None, её отчёт уходит в report.
     pub fn new(cc: &eframe::CreationContext<'_>, loaders: Loaders, scenario: Option<Scenario>, report: Report) -> Self {
+        crate::fonts::install(&cc.egui_ctx);
         let render_state = cc.wgpu_render_state.clone();
         let globe = render_state.as_ref().map(|rs| Globe::new(&rs.device, &rs.queue));
         let camera = Camera::new(Ellipsoid::wgs84(), DVec3::ZERO, DMat3::IDENTITY);

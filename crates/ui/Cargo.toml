@@ -26,6 +26,11 @@ eframe.workspace = true
 image.workspace = true
 rfd.workspace = true
 sys-locale = { workspace = true, features = ["js"] }
+# Проверка файла системного шрифта, тот же разборщик, что у egui.
+skrifa = "0.44"
+
+[dev-dependencies]
+epaint_default_fonts = "0.37"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures.workspace = true

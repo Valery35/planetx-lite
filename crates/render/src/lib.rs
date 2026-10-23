@@ -55,9 +55,9 @@ pub const DEPTH_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 pub const SPACE: wgpu::Color = wgpu::Color::BLACK;
 /// Ровный цвет тайла, снимок которого ещё не пришёл, - вода OSM.
 pub const PLACEHOLDER: [u8; 3] = [0xAA, 0xD3, 0xDF];
-/// Шапка над северным краем сетки - вода OSM.
+/// Шапка над северным краем сетки до прихода тайла 0/0/0 - вода OSM.
 pub const NORTH_CAP: [u8; 3] = [0xAA, 0xD3, 0xDF];
-/// Шапка над южным краем сетки - ледник OSM.
+/// Шапка над южным краем сетки до прихода тайла 0/0/0 - ледник OSM.
 pub const SOUTH_CAP: [u8; 3] = [0xDD, 0xEC, 0xEC];
 /// Уровень тайлов подстилки.
 pub const UNDERLAY_LEVEL: u32 = 2;
@@ -205,6 +205,8 @@ struct Item {
     kind: Kind,
     mesh: MeshId,
     texture: Option<TileKey>,
+    /// Снимок шапки: 0 - северной, 1 - южной.
+    cap: Option<usize>,
     uniform: DrawUniform,
 }
 
@@ -274,6 +276,122 @@ pub struct Globe {
     query_result: Counts,
     pixels: Option<Pixels>,
     frame: u64,
+    /// Цвета шапок, северной и южной: край тайла 0/0/0 основы, до его
+    /// прихода - [`NORTH_CAP`] и [`SOUTH_CAP`].
+    caps: [[u8; 3]; 2],
+    /// Снимки шапок, [`cap_strip`].
+    cap_binds: [Option<wgpu::BindGroup>; 2],
+    /// Края снимков тайлов у северного и южного края сетки, [`edge_row`].
+    edges: [HashMap<TileKey, Vec<[u8; 3]>>; 2],
+    /// Из каких тайлов собран снимок шапки: тайл и источник снимка.
+    cap_from: [Vec<(TileKey, TileKey)>; 2],
+}
+
+/// Ширина снимка шапки, столбцов на 360° долготы.
+pub const CAP_STRIP: usize = 1024;
+
+/// Край тайла для шапки: среднее двух крайних строк по столбцам,
+/// верхних у северного края и нижних у южного. None - картинка не того
+/// размера.
+pub fn edge_row(width: u32, height: u32, rgba: &[u8], north: bool) -> Option<Vec<[u8; 3]>> {
+    let (w, h) = (width as usize, height as usize);
+    if w == 0 || h < 2 || rgba.len() != w * h * 4 {
+        return None;
+    }
+    let first = if north { 0 } else { h - 2 };
+    let row = w * 4;
+    Some(
+        (0..w)
+            .map(|x| {
+                let a = &rgba[first * row + x * 4..];
+                let b = &rgba[(first + 1) * row + x * 4..];
+                [0, 1, 2].map(|c| (u16::from(a[c]) + u16::from(b[c])).div_ceil(2) as u8)
+            })
+            .collect(),
+    )
+}
+
+/// Доля края, нарисованная тайлом: тайл подложки, окно его снимка
+/// (u0, v0, сторона, как у [`Globe`]) и край снимка.
+pub struct EdgePiece<'a> {
+    pub key: TileKey,
+    pub window: [f32; 4],
+    pub row: &'a [[u8; 3]],
+}
+
+/// Снимок шапки [`CAP_STRIP`] × 2, RGBA. Верхняя строка - край тайлов,
+/// нарисованных у края сетки: у Esri тайлы разных уровней у 85° разного
+/// цвета, и шапка из одного тайла 0/0/0 выходила светлее соседей,
+/// 23 октября 2026 года. Где у края тайлов на экране нет, берётся
+/// fallback - край тайла 0/0/0. Строка сглажена по долготе, окно 1/128
+/// ширины по кругу, иначе край растягивается к полюсу лучами. Окно шире
+/// смешивало край с соседними тайлами другого цвета, у края оставался
+/// шов. Нижняя -
+/// медиана верхней, к ней шапка переходит до широты
+/// [`globe_core::tiling::CAP_FADE_LAT`].
+pub fn cap_strip(fallback: &[[u8; 3]], pieces: &[EdgePiece<'_>]) -> Vec<u8> {
+    let w = CAP_STRIP;
+    let pick = |row: &[[u8; 3]], u: f64| row[((u * row.len() as f64) as usize).min(row.len().saturating_sub(1))];
+    let mut edge: Vec<[u8; 3]> = (0..w)
+        .map(|c| if fallback.is_empty() { [0; 3] } else { pick(fallback, (c as f64 + 0.5) / w as f64) })
+        .collect();
+    let mut order: Vec<&EdgePiece<'_>> = pieces.iter().filter(|p| !p.row.is_empty()).collect();
+    order.sort_by_key(|p| p.key.0);
+    for p in order {
+        let (z, x, _) = p.key;
+        let n = f64::from(1u32 << z.min(30));
+        let c0 = (f64::from(x) / n * w as f64).floor() as usize;
+        let c1 = ((f64::from(x + 1) / n * w as f64).ceil() as usize).clamp(c0 + 1, w);
+        for (c, slot) in edge.iter_mut().enumerate().take(c1).skip(c0) {
+            let u = ((c as f64 + 0.5) / w as f64 * n - f64::from(x)).clamp(0.0, 1.0);
+            *slot = pick(p.row, f64::from(p.window[0]) + u * f64::from(p.window[2]));
+        }
+    }
+    let radius = w / 256;
+    let mut out = Vec::with_capacity(w * 8);
+    for c in 0..w {
+        let mut sum = [0u32; 3];
+        for d in 0..=2 * radius {
+            let px = edge[(c + w + d - radius) % w];
+            for k in 0..3 {
+                sum[k] += u32::from(px[k]);
+            }
+        }
+        let n = 2 * radius as u32 + 1;
+        out.extend(sum.map(|s| ((s + n / 2) / n) as u8));
+        out.push(255);
+    }
+    let median: [u8; 3] = [0, 1, 2].map(|k| {
+        let mut v: Vec<u8> = edge.iter().map(|p| p[k]).collect();
+        v.sort_unstable();
+        v[v.len() / 2]
+    });
+    for _ in 0..w {
+        out.extend([median[0], median[1], median[2], 255]);
+    }
+    out
+}
+
+/// Цвета полярных шапок по краю тайла 0/0/0, как в модуле
+/// (`render/view.py`, `_paint_caps`): медиана каждого канала двух
+/// крайних строк, верхних для севера и нижних для юга. Медиана не
+/// замечает редких островов и подписей. None - картинка не того размера.
+pub fn cap_colors(width: u32, height: u32, rgba: &[u8]) -> Option<[[u8; 3]; 2]> {
+    let (w, h) = (width as usize, height as usize);
+    if w == 0 || h < 2 || rgba.len() != w * h * 4 {
+        return None;
+    }
+    let median = |rows: &[u8]| {
+        let mut out = [0u8; 3];
+        for (c, slot) in out.iter_mut().enumerate() {
+            let mut v: Vec<u8> = rows.iter().skip(c).step_by(4).copied().collect();
+            v.sort_unstable();
+            *slot = v[v.len() / 2];
+        }
+        out
+    };
+    let row = w * 4;
+    Some([median(&rgba[..2 * row]), median(&rgba[(h - 2) * row..])])
 }
 
 fn shader(device: &wgpu::Device, label: &str, source: &str) -> wgpu::ShaderModule {
@@ -544,6 +662,10 @@ impl Globe {
             query_result: Arc::new(Mutex::new(None)),
             pixels: None,
             frame: 0,
+            caps: [NORTH_CAP, SOUTH_CAP],
+            cap_binds: [None, None],
+            edges: [HashMap::new(), HashMap::new()],
+            cap_from: [Vec::new(), Vec::new()],
         }
     }
 
@@ -655,6 +777,10 @@ impl Globe {
     pub fn clear_textures(&mut self) {
         self.textures.clear();
         self.missing.clear();
+        self.caps = [NORTH_CAP, SOUTH_CAP];
+        self.cap_binds = [None, None];
+        self.edges = [HashMap::new(), HashMap::new()];
+        self.cap_from = [Vec::new(), Vec::new()];
     }
 
     /// Загрузить снимок тайла, RGBA по 8 бит. Картинка не того размера
@@ -667,6 +793,20 @@ impl Globe {
         let bind_group =
             Self::texture_bind(&self.device, &self.queue, &self.texture_layout, &self.sampler, width, height, rgba);
         self.textures.insert(key, GpuTexture { bind_group, last_used: self.frame });
+        if key == (0, 0, 0)
+            && let Some(caps) = cap_colors(width, height, rgba)
+        {
+            self.caps = caps;
+        }
+        let last = (1u32 << key.0.min(30)) - 1;
+        for (i, edge) in [(0usize, 0u32), (1, last)] {
+            if key.2 == edge
+                && let Some(row) = edge_row(width, height, rgba, i == 0)
+            {
+                self.edges[i].insert(key, row);
+                self.cap_from[i].clear();
+            }
+        }
     }
 
     /// Вытеснить снимки и сетки, давно не нужные кадру, пока их больше
@@ -687,6 +827,10 @@ impl Globe {
             let extra = self.textures.len() - budget;
             for (_, key) in old.into_iter().take(extra) {
                 self.textures.remove(&key);
+            }
+            let textures = &self.textures;
+            for edges in &mut self.edges {
+                edges.retain(|k, _| textures.contains_key(k));
             }
         }
         if self.meshes.len() > budget {
@@ -771,6 +915,14 @@ impl Globe {
                 let (tile, level) = store.for_mesh((z, x, y));
                 (tile, level, store.scale())
             }
+            // Шапка стоит на высотах края: пересборка, когда пришли
+            // точнее высоты всех тайлов подстилки у края.
+            (MeshId::PolarCap { north }, Some(store)) => {
+                let n = 1u32 << UNDERLAY_LEVEL;
+                let y = if north { 0 } else { n - 1 };
+                let level = (0..n).map(|x| store.for_mesh((UNDERLAY_LEVEL, x, y)).1).min().unwrap_or(-1);
+                (None, level, store.scale())
+            }
             _ => (None, -1, 0.0),
         };
         if let Some(m) = self.meshes.get_mut(&id) {
@@ -784,7 +936,7 @@ impl Globe {
         let e = &camera.ellipsoid;
         let mesh: TerrainMesh = match id {
             MeshId::Tile { z, x, y } => terrain_mesh(e, z, x, y, tile.as_deref(), scale),
-            MeshId::PolarCap { north } => polar_cap(e, north, CAP_SEGMENTS),
+            MeshId::PolarCap { north } => polar_cap(e, north, CAP_SEGMENTS, heights),
         };
         let shade = &mesh.shade;
         let mesh: TileMesh = mesh.mesh.clone();
@@ -813,6 +965,36 @@ impl Globe {
         Some(mesh.center)
     }
 
+    /// Пересобрать снимки шапок, если у края сетки нарисованы другие
+    /// тайлы или пришли новые снимки края.
+    fn update_caps(&mut self, selection: &Selection) {
+        for i in 0..2 {
+            let Some(fallback) = self.edges[i].get(&(0, 0, 0)) else {
+                continue;
+            };
+            let from: Vec<(TileKey, TileKey, [f32; 4])> = selection
+                .draw
+                .iter()
+                .filter(|k| k.2 == if i == 0 { 0 } else { (1u32 << k.0.min(30)) - 1 })
+                .filter_map(|k| self.picture(*k).map(|(src, window)| (*k, src, window)))
+                .filter(|(_, src, _)| self.edges[i].contains_key(src))
+                .collect();
+            let sig: Vec<(TileKey, TileKey)> = from.iter().map(|(k, s, _)| (*k, *s)).collect();
+            if sig == self.cap_from[i] && self.cap_binds[i].is_some() {
+                continue;
+            }
+            let pieces: Vec<EdgePiece<'_>> = from
+                .iter()
+                .filter_map(|(k, s, window)| self.edges[i].get(s).map(|row| EdgePiece { key: *k, window: *window, row }))
+                .collect();
+            let strip = cap_strip(fallback, &pieces);
+            let width = CAP_STRIP as u32;
+            let bind = Self::texture_bind(&self.device, &self.queue, &self.texture_layout, &self.sampler, width, 2, &strip);
+            self.cap_binds[i] = Some(bind);
+            self.cap_from[i] = sig;
+        }
+    }
+
     fn items(
         &mut self,
         camera: &Camera,
@@ -820,6 +1002,7 @@ impl Globe {
         heights: Option<&HeightStore>,
         projection: DMat4,
     ) -> Vec<Item> {
+        self.update_caps(selection);
         let mut out = Vec::new();
         let placeholder = display(PLACEHOLDER);
         let mut rebuilds = REBUILDS_PER_FRAME;
@@ -833,7 +1016,7 @@ impl Globe {
             if let Some(center) = me.mesh_for(mesh, camera, heights, &mut rebuilds) {
                 let mvp = camera.tile_mvp(center, Some(projection), scale).to_cols_array();
                 let (texture, window) = picture.map_or((None, WHOLE), |(k, w)| (Some(k), w));
-                out.push(Item { kind, mesh, texture, uniform: DrawUniform { mvp, hole, color, window } });
+                out.push(Item { kind, mesh, texture, cap: None, uniform: DrawUniform { mvp, hole, color, window } });
             }
         };
         let flat = |rgb: [f32; 3]| [rgb[0], rgb[1], rgb[2], 1.0];
@@ -859,9 +1042,20 @@ impl Globe {
             let color = if picture.is_some() { [0.0; 4] } else { flat(placeholder) };
             push(self, Kind::Underlay, MeshId::Tile { z, x, y }, picture, scale, [0.0; 4], color);
         }
-        let caps = [(true, NORTH_CAP), (false, SOUTH_CAP)];
+        let caps = [(true, self.caps[0]), (false, self.caps[1])];
         for (north, rgb) in caps {
             push(self, Kind::Cap, MeshId::PolarCap { north }, None, 1.0, [0.0; 4], flat(display(rgb)));
+        }
+        // С приходом тайла 0/0/0 шапка берёт свой снимок вместо ровного
+        // цвета.
+        for item in out.iter_mut() {
+            if let MeshId::PolarCap { north } = item.mesh {
+                let i = usize::from(!north);
+                if self.cap_binds[i].is_some() {
+                    item.cap = Some(i);
+                    item.uniform.color[3] = 0.0;
+                }
+            }
         }
         out
     }
@@ -1079,7 +1273,10 @@ impl Globe {
                 let Some(mesh) = self.meshes.get(&item.mesh) else {
                     continue;
                 };
-                let texture = item.texture.and_then(|k| self.textures.get(&k)).map_or(&self.blank, |t| &t.bind_group);
+                let texture = match item.cap.and_then(|i| self.cap_binds.get(i)).and_then(Option::as_ref) {
+                    Some(bind) => bind,
+                    None => item.texture.and_then(|k| self.textures.get(&k)).map_or(&self.blank, |t| &t.bind_group),
+                };
                 let Ok(offset) = u32::try_from(i as u64 * self.stride) else {
                     continue;
                 };
