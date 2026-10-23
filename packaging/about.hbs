@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<!-- PlanetX Lite - глобус PlanetX без QGIS.
+     Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+     SPDX-License-Identifier: Apache-2.0
+     Шаблон cargo-about для THIRD-PARTY-LICENSES.html. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PlanetX Lite - third-party licenses</title>
+<style>
+  body { font: 14px sans-serif; max-width: 60em; margin: 2em auto; padding: 0 1em; }
+  pre { white-space: pre-wrap; background: #f4f4f4; padding: 1em; }
+</style>
+</head>
+<body>
+<h1>PlanetX Lite - third-party licenses</h1>
+<p>PlanetX Lite is distributed under the Apache License 2.0. It includes the
+following open source components under their own licenses.</p>
+<h2>Licenses used</h2>
+<ul>
+{{#each overview}}
+  <li><a href="#{{id}}">{{name}}</a> ({{count}})</li>
+{{/each}}
+</ul>
+{{#each licenses}}
+<h2 id="{{id}}">{{name}}</h2>
+<p>Used by:</p>
+<ul>
+{{#each used_by}}
+  <li>{{crate.name}} {{crate.version}}{{#if crate.repository}} - {{crate.repository}}{{/if}}</li>
+{{/each}}
+</ul>
+<pre>{{text}}</pre>
+{{/each}}
+</body>
+</html>

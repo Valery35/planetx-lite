@@ -670,7 +670,17 @@ CI зелёный.
     - страница Lite открыта на GitHub Pages,
       `https://valery35.github.io/planetx-lite/`, её собирает
       и выкладывает `.github/workflows/pages.yml` при каждой отправке
-      в main.
+      в main;
+    - выпуск 0.1.0 без подписи, пакеты - установщик Inno Setup
+      и переносной zip для Windows, AppImage и tar.gz для Linux, dmg
+      для macOS на Apple Silicon и Intel, страница zip, `SHA256SUMS`.
+      Собирает `.github/workflows/release.yml` по метке `v*`, без
+      метки - пробный прогон. Лицензии зависимостей - cargo-about,
+      `THIRD-PARTY-LICENSES.html` в каждом пакете. Подпись Windows -
+      заявка в SignPath Foundation после выпуска, раздел «Code signing
+      policy» в README. Программа под Windows собрана как программа
+      окна без консоли, отчёт самопроверки виден при перенаправлении
+      вывода: `Start-Process -Wait -RedirectStandardOutput`.
 
 ## Аддины
 

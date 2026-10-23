@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=PlanetX Lite
+Comment=Globe with terrain, imagery, scenes and KML
+Comment[ru]=Глобус с рельефом, снимками, сценами и KML
+Exec=planetx-lite %F
+Icon=planetx-lite
+Terminal=false
+Categories=Education;Science;Geography;
+MimeType=application/vnd.google-earth.kml+xml;application/vnd.google-earth.kmz;

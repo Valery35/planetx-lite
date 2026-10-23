@@ -1,6 +1,7 @@
 /target/
 addins/*/target/
 /dist/
+/release-dist/
 # Снимки сравнения с модулем, крупные PNG, только на диске.
 /doc/compare/
 **/*.rs.bk

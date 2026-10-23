@@ -18,5 +18,9 @@ ui.workspace = true
 eframe.workspace = true
 image.workspace = true
 
+# Значок и сведения о программе в exe под Windows.
+[target.'cfg(windows)'.build-dependencies]
+winresource = "0.1"
+
 [lints]
 workspace = true

@@ -1,0 +1,236 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Выпуск. Метка v* - собрать пакеты и выложить выпуск GitHub. Без метки -
+# пробный прогон: те же пакеты остаются артефактами сценария, выпуск
+# не создаётся. Пробный прогон идёт при правке этого файла и папки
+# packaging в main и по кнопке Run workflow. Момент выпуска и метку
+# назначает автор.
+#
+# Пакеты (решение автора от 23 октября 2026 года, без подписи):
+#   Windows x86_64 - установщик Inno Setup и переносной zip,
+#   Linux x86_64   - AppImage и tar.gz,
+#   macOS          - dmg для Apple Silicon и для Intel,
+#   страница       - zip, плюс SHA256SUMS всех файлов.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+    branches: [main]
+    paths:
+      - ".github/workflows/release.yml"
+      - "packaging/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  RUST_VERSION: "1.99.1"
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
+jobs:
+  version:
+    name: Версия
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        shell: bash
+        run: |
+          crate="$(awk '/^\[/ { s = ($0 == "[workspace.package]") } s && /^version *=/ { gsub(/.*= *"|".*/, ""); print; exit }' Cargo.toml)"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "${GITHUB_REF_NAME#v}" != "$crate" ]; then
+            echo "::error::Метка $GITHUB_REF_NAME не совпадает с версией $crate в Cargo.toml."
+            exit 1
+          fi
+          echo "version=$crate" >> "$GITHUB_OUTPUT"
+
+  notices:
+    name: Лицензии зависимостей
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about@0.9.2
+      - run: cargo about generate -c packaging/about.toml -o THIRD-PARTY-LICENSES.html packaging/about.hbs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: notices
+          path: THIRD-PARTY-LICENSES.html
+          if-no-files-found: error
+
+  build:
+    name: Пакеты ${{ matrix.name }}
+    needs: [version, notices]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x86_64
+            os: windows-latest
+          - name: Linux x86_64
+            os: ubuntu-22.04
+          - name: macOS Apple Silicon
+            os: macos-latest
+          - name: macOS Intel
+            os: macos-15-intel
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rust ${{ env.RUST_VERSION }}
+        shell: bash
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal
+          rustup default "$RUST_VERSION"
+
+      - name: Системные библиотеки окна
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev libxrandr-dev libxi-dev libgl1-mesa-dev
+          curl -fsSL -o "$RUNNER_TEMP/appimagetool" \
+            https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-x86_64.AppImage
+          chmod +x "$RUNNER_TEMP/appimagetool"
+          echo "APPIMAGETOOL=$RUNNER_TEMP/appimagetool" >> "$GITHUB_ENV"
+
+      - name: Inno Setup
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          if [ ! -x "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" ]; then
+            choco install innosetup -y --no-progress
+          fi
+
+      - name: Сборка
+        shell: bash
+        run: cargo build --release --locked -p planetx-lite
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: notices
+          path: target
+
+      - name: Пакеты
+        shell: bash
+        run: bash packaging/package.sh "${{ needs.version.outputs.version }}"
+
+      # Тихая установка и удаление: программа на месте, связь с .planetx
+      # есть, после удаления папки нет.
+      - name: Проверка установщика
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $setup = (Get-Item release-dist\*-setup.exe).FullName
+          Start-Process $setup -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/CURRENTUSER', '/NORESTART' -Wait
+          $dir = "$env:LOCALAPPDATA\Programs\PlanetX Lite"
+          foreach ($f in 'planetx-lite.exe', 'LICENSE.txt', 'THIRD-PARTY-LICENSES.html') {
+            if (-not (Test-Path "$dir\$f")) { throw "нет $dir\$f" }
+          }
+          $v = (Get-Item "$dir\planetx-lite.exe").VersionInfo
+          if ($v.ProductName -ne 'PlanetX Lite') { throw "ProductName $($v.ProductName)" }
+          if ((Get-ItemProperty 'HKCU:\Software\Classes\.planetx').'(default)' -ne 'PlanetXLite.Scene') { throw 'нет связи с .planetx' }
+          Start-Process "$dir\unins000.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait
+          Start-Sleep -Seconds 5
+          if (Test-Path "$dir\planetx-lite.exe") { throw 'программа осталась после удаления' }
+
+      - name: Проверка AppImage
+        if: runner.os == 'Linux'
+        run: |
+          cd "$RUNNER_TEMP"
+          "$GITHUB_WORKSPACE"/release-dist/*.AppImage --appimage-extract > /dev/null
+          test -x squashfs-root/AppRun
+          test -x squashfs-root/usr/bin/planetx-lite
+          if ldd squashfs-root/usr/bin/planetx-lite | grep 'not found'; then exit 1; fi
+
+      - name: Проверка dmg
+        if: runner.os == 'macOS'
+        run: |
+          hdiutil attach -nobrowse -mountpoint "$RUNNER_TEMP/dmg" release-dist/*.dmg
+          codesign --verify --deep --strict "$RUNNER_TEMP/dmg/PlanetX Lite.app"
+          file "$RUNNER_TEMP/dmg/PlanetX Lite.app/Contents/MacOS/planetx-lite"
+          hdiutil detach "$RUNNER_TEMP/dmg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ matrix.os }}
+          path: release-dist/*
+          if-no-files-found: error
+
+  web:
+    name: Страница
+    needs: [version, notices]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust ${{ env.RUST_VERSION }}
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal --target wasm32-unknown-unknown
+          rustup default "$RUST_VERSION"
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: trunk@0.22.0,wasm-bindgen@0.2.129
+      - uses: actions/download-artifact@v4
+        with:
+          name: notices
+          path: dist-notices
+      - name: Страница
+        working-directory: apps/planetx-web
+        run: trunk build --release --locked --public-url ./
+      - name: Архив
+        run: |
+          name="PlanetX-Lite-${{ needs.version.outputs.version }}-web"
+          mkdir -p release-dist "$RUNNER_TEMP/$name"
+          cp -r dist/. "$RUNNER_TEMP/$name/"
+          cp LICENSE dist-notices/THIRD-PARTY-LICENSES.html "$RUNNER_TEMP/$name/"
+          (cd "$RUNNER_TEMP" && zip -qr "$GITHUB_WORKSPACE/release-dist/$name.zip" "$name")
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package-web
+          path: release-dist/*
+          if-no-files-found: error
+
+  publish:
+    name: Выпуск
+    needs: [version, build, web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: package-*
+          path: release-dist
+          merge-multiple: true
+      - name: SHA256SUMS
+        working-directory: release-dist
+        run: sha256sum -- * | tee SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ needs.version.outputs.version }}
+          path: release-dist/*
+      - name: Выпуск GitHub
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" release-dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "PlanetX Lite ${{ needs.version.outputs.version }}" \
+            --notes-file "packaging/notes/${{ needs.version.outputs.version }}.md"

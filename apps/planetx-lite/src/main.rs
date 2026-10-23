@@ -20,6 +20,11 @@
 //! `planetx-lite сцена.planetx` - открыть сцену, KML или KMZ. Растр
 //! высот GeoTIFF врезается своим рельефом. Файлов может быть несколько,
 //! они открываются по порядку. Файл можно и бросить в окно.
+//!
+//! Сборка release под Windows - программа окна без консоли. Отчёт
+//! самопроверки тогда виден, когда вывод перенаправлен в файл.
+
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::process::ExitCode;
 use std::sync::{Arc, Mutex};
