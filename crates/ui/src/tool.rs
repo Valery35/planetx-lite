@@ -66,6 +66,8 @@ pub enum Action {
     Add(Place),
     /// Метка по пути заменяется.
     Update(Vec<usize>, Place),
+    /// Профиль высот линии или пути линейки.
+    Profile,
 }
 
 /// Инструмент: точки, окно и вершины на глобусе.
@@ -236,7 +238,7 @@ impl Tool {
             .collapsible(false)
             .resizable(false)
             .pivot(egui::Align2::RIGHT_TOP)
-            .default_pos(ctx.content_rect().right_top() + egui::vec2(-12.0, 60.0))
+            .default_pos(ctx.content_rect().right_top() + egui::vec2(-crate::navpad::WIDTH - 2.0 * crate::navpad::MARGIN - 8.0, 60.0))
             .show(ctx, |ui| {
                 ui.set_max_width(300.0);
                 match self.purpose {
@@ -327,6 +329,9 @@ impl Tool {
             }
             if ui.button(tr(lang, "Clear")).on_hover_text(tr(lang, "Remove the points.")).clicked() {
                 self.ruler.clear();
+            }
+            if matches!(self.ruler.mode, Mode::Line | Mode::Path) && ui.button(tr(lang, "Elevation profile")).clicked() {
+                action = Some(Action::Profile);
             }
         });
         action

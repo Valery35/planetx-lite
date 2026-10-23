@@ -309,6 +309,12 @@ pub enum Action {
     Properties(Vec<usize>),
     /// Новая папка в папке по пути, пустой путь - в корне.
     NewFolder(Vec<usize>),
+    /// Профиль высот пути.
+    Profile(Vec<usize>),
+    /// Сохранить вид глобуса меткой в папке по пути.
+    SaveView(Vec<usize>),
+    /// Копировать строку текстом KML в буфер обмена.
+    Copy(Vec<usize>),
 }
 
 /// Вид строки для меню.
@@ -316,6 +322,8 @@ pub enum Action {
 enum RowKind {
     Folder,
     Place,
+    /// Путь: у него и профиль высот.
+    Path,
     Overlay,
 }
 
@@ -331,6 +339,9 @@ struct Words {
     clear: &'static str,
     properties: &'static str,
     new_folder: &'static str,
+    profile: &'static str,
+    save_view: &'static str,
+    copy: &'static str,
 }
 
 fn words(lang: crate::i18n::Lang) -> Words {
@@ -346,6 +357,9 @@ fn words(lang: crate::i18n::Lang) -> Words {
         clear: tr(lang, "Clear My Places"),
         properties: tr(lang, "Properties…"),
         new_folder: tr(lang, "New folder"),
+        profile: tr(lang, "Elevation profile"),
+        save_view: tr(lang, "Save view"),
+        copy: tr(lang, "Copy as KML"),
     }
 }
 
@@ -358,12 +372,20 @@ pub fn root_name(lang: crate::i18n::Lang) -> &'static str {
 /// удаление.
 fn row_menu(response: &eframe::egui::Response, w: &Words, path: &[usize], tour: bool, kind: RowKind, actions: &mut Vec<Action>) {
     response.context_menu(|ui| {
-        if kind == RowKind::Place && ui.button(w.properties).clicked() {
+        if matches!(kind, RowKind::Place | RowKind::Path) && ui.button(w.properties).clicked() {
             actions.push(Action::Properties(path.to_vec()));
+            ui.close();
+        }
+        if kind == RowKind::Path && ui.button(w.profile).clicked() {
+            actions.push(Action::Profile(path.to_vec()));
             ui.close();
         }
         if kind == RowKind::Folder && ui.button(w.new_folder).clicked() {
             actions.push(Action::NewFolder(path.to_vec()));
+            ui.close();
+        }
+        if kind == RowKind::Folder && ui.button(w.save_view).clicked() {
+            actions.push(Action::SaveView(path.to_vec()));
             ui.close();
         }
         if ui.button(w.fly).clicked() {
@@ -381,6 +403,10 @@ fn row_menu(response: &eframe::egui::Response, w: &Words, path: &[usize], tour: 
         }
         if ui.button(w.save_scene).clicked() {
             actions.push(Action::SaveScene(path.to_vec()));
+            ui.close();
+        }
+        if ui.button(w.copy).on_hover_text("Ctrl+C").clicked() {
+            actions.push(Action::Copy(path.to_vec()));
             ui.close();
         }
         ui.separator();
@@ -520,6 +546,10 @@ pub fn root_ui(
                     actions.push(Action::NewFolder(Vec::new()));
                     ui.close();
                 }
+                if ui.button(w.save_view).clicked() {
+                    actions.push(Action::SaveView(Vec::new()));
+                    ui.close();
+                }
                 if !root.children.is_empty() {
                     if ui.button(w.tour).clicked() {
                         actions.push(Action::Tour(Vec::new()));
@@ -594,7 +624,8 @@ pub fn tree_ui(
                     let rgba = |c: [u8; 4]| egui::Color32::from_rgba_unmultiplied(c[0], c[1], c[2], c[3]);
                     crate::theme::row_icon(ui, icon, rgba(p.color), p.fill.map(rgba));
                     let name = if p.name.is_empty() { "-" } else { p.name.as_str() };
-                    row_name(ui, name, path, (p.tour.is_some(), RowKind::Place), &w, state, actions);
+                    let kind = if p.kind == Kind::Line { RowKind::Path } else { RowKind::Place };
+                    row_name(ui, name, path, (p.tour.is_some(), kind), &w, state, actions);
                     if p.tour.is_some() && crate::timeline::icon_button(ui, crate::timeline::Icon::Play).clicked() {
                         actions.push(Action::Tour(path.clone()));
                     }

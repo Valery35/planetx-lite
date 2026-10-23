@@ -57,11 +57,15 @@ The web page needs no installation: https://valery35.github.io/planetx-lite/
 | Demo | The menu of demo scenes |
 | New placemark | Draws a new placemark, path, polygon or circle on the globe |
 | Ruler | Measures length, ground length, heading, perimeter and area |
+| Record a tour | Records the camera path while the globe moves. A second click ends the recording, the tour goes to My Places |
+| Snapshot of the view | Saves the view to a PNG file. Windows stay out of the snapshot, the source credits stay in |
 | Share | Copies a link to this view: the camera and the scenes opened by address or from the Demo menu. On a phone the system Share window opens. Files opened from the disk are not in the link |
 | Settings | The Settings window |
 | Full screen | Full screen on and off |
 | About | Version, the user guide, links |
 
+- **Navigation controls** in the top right corner of the globe, see
+  Moving around the globe.
 - **Source credits** in the bottom right corner. A click opens the Data
   sources window with full credits and links.
 
@@ -82,12 +86,29 @@ The controls follow Google Earth.
 On a phone: one finger turns the globe, a pinch zooms to the middle of
 the pinch, turning two fingers rotates, two fingers up and down tilt.
 
+**Navigation controls** stand in the top right corner, as in Google
+Earth. While the cursor is far away they show as a faint outline.
+
+- Dragging the ring rotates the view. A click on the letter N puts north
+  up.
+- The stick inside the ring turns the gaze, the dot in its middle
+  returns a straight down view.
+- The lower stick moves the view, faster further from the middle.
+- The slider sets the height, plus and minus zoom while held.
+
 ## Finding a place
 
 Type a name or coordinates in the search field at the top of the panel
 and press Enter or Search. The camera flies to the place, a red mark
 shows it. With several results the list appears under the field. The
 search uses Nominatim OpenStreetMap.
+
+While typing, suggestions appear under the field: placemarks from My
+Places, program actions and earlier queries. Actions are tools, windows,
+sun, grid, theme, demo scenes and basemaps. Other words find them too:
+"measure" finds the ruler, "screenshot" the snapshot. A click on a
+suggestion runs it. Enter with the exact name of a suggestion runs it,
+otherwise searches for a place. Ctrl+K puts the cursor into the field.
 
 ## Opening files
 
@@ -113,6 +134,10 @@ its content between runs.
 
 - A checkbox shows or hides a row and everything in it.
 - A double click flies to the row.
+- A click on a placemark on the globe opens its card: description,
+  links and fields. The card buttons fly to it and open Properties.
+- Ctrl+C copies the selected row as KML, Ctrl+V pastes KML from the
+  clipboard into the selected folder.
 - A click selects the row. Delete removes it, F2 renames it.
 - Drag a row onto a folder to put it inside, onto another row to put it
   before that row, onto My Places to put it at the end.
@@ -120,8 +145,8 @@ its content between runs.
 
 | Row | Menu |
 |---|---|
-| Placemark, overlay | Fly to, Play tour (for a recorded tour), Save as KML, Save scene, Rename, Delete |
-| Folder | Fly to, Play tour, Save as KML, Save scene, Rename, Delete |
+| Placemark, overlay | Fly to, Play tour (for a recorded tour), Elevation profile (for a path), Properties, Copy as KML, Save as KML, Save scene, Rename, Delete |
+| Folder | Fly to, Play tour, Save view, New folder, Copy as KML, Save as KML, Save scene, Rename, Delete |
 | My Places | Open, Play tour, Save as KML, Save scene, Clear My Places |
 
 **Saving.** "Save as KML" writes the row to KML, or to KMZ when it
@@ -164,6 +189,15 @@ follows the terrain, "≈" means terrain tiles are still loading. Units
 are chosen next to each value. Save puts the shape into My Places with
 the measurement in its description.
 
+**Elevation profile.** The Elevation profile button of the ruler for a
+line or a path, and the path menu item, open a window with a height
+chart. It shows the map and ground length, the lowest and highest
+height, gain, loss and slope. The cursor over the chart puts a red dot
+on the globe. For the ruler the profile follows its points.
+
+**Save view.** The folder menu item puts a placemark with the current
+camera view into the folder. A double click on it returns to this view.
+
 ## Tours and the time slider
 
 The play button next to a recorded tour starts it, "Play tour" in a
@@ -177,6 +211,10 @@ speed is a multiple of real time from ×1 to ×86400, or the whole slider
 in 20 s. 3D models on a `gx:Track` drive along it at the moment of the
 right handle, with the slider closed they stand at the end of the path.
 Animated glTF and Collada models play on their own.
+
+**Recording a tour.** The record button on the toolbar starts recording,
+the camera moves as usual meanwhile. A second click ends it. The tour
+goes to My Places as a path with a tour, the play button replays it.
 
 ## Demo scenes
 
@@ -196,6 +234,8 @@ cache.
 | Label language | Language of place names on the globe: as the interface, local names or a chosen language |
 | Appearance | Dark or Light |
 | Vertical exaggeration | Terrain height multiplier from 0.5 to 10 |
+| Sun | Terrain lit by the sun at the moment of the time slider or now, night is dark |
+| Coordinate grid | Parallels and meridians with labels, the equator, the tropics and the polar circles |
 
 Settings are kept between runs. `PLANETX_LANGUAGE=de` sets the language
 for one run of the program.

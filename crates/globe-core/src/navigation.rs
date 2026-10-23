@@ -50,6 +50,11 @@ pub const STILL_BEFORE_RELEASE: f64 = 0.06;
 /// Остаток пути, после которого инерция стоит.
 pub const INERTIA_STOP: f64 = 0.002;
 pub const ZOOM_TAU: f64 = 0.1;
+/// Глаз при приближении в f раз уходит не дальше ZOOM_REACH·|1 - f|
+/// расстояния до точки под курсором, но не меньше ZOOM_SLACK его: точка
+/// взгляда садится на рельеф, и глаз сдвигается сверх доли.
+pub const ZOOM_REACH: f64 = 2.0;
+pub const ZOOM_SLACK: f64 = 0.5;
 /// Точность подбора позы, пикселей.
 pub const PIN_TOLERANCE: f64 = 1e-3;
 pub const PIN_FAIL: f64 = 0.5;
@@ -62,6 +67,14 @@ pub const M_PER_DEGREE: f64 = 111320.0;
 pub const FAR_CLEARANCE: f64 = 4.0 * MAX_TERRAIN;
 
 pub const TERRAIN_STEPS: u32 = 8;
+/// Шаг вдоль луча к рельефу - доля высоты над ним. Половина не
+/// перешагивает склон круче 60°.
+pub const MARCH_SHARE: f64 = 0.5;
+/// Шаг не короче этой доли пройденного пути: у самой земли шаги не
+/// мельчают без конца.
+pub const MARCH_MIN: f64 = 1e-3;
+/// Наибольшее количество шагов вдоль луча.
+pub const MARCH_STEPS: u32 = 400;
 /// Точность точки рельефа под пикселем, метры.
 pub const TERRAIN_TOLERANCE: f64 = 0.1;
 
@@ -230,26 +243,95 @@ pub fn pixel_at(camera: &Camera, eye: DVec3, rot: &DMat3, point: DVec3) -> Optio
 
 /// Точка поверхности под пикселем или None.
 ///
-/// Без рельефа - точка эллипсоида. С рельефом ищется корень функции
-/// «высота точки луча минус высота рельефа под ней» методом секущих.
-/// Первые два приближения - эллипсоид и эллипсоид, раздутый на высоту
-/// рельефа в первой точке. У горизонта над горами точка может лечь
-/// на соседний склон, для захвата и приближения этого хватает.
+/// Без рельефа - точка эллипсоида. С рельефом ищется первое пересечение
+/// луча с рельефом: шаги от глаза вдоль луча, каждый - доля
+/// [`MARCH_SHARE`] высоты над рельефом, до смены знака, затем уточнение
+/// делением отрезка. Прежде корень искался методом секущих от эллипсоида
+/// и над горой ложился за неё, приближение к склону уносило камеру
+/// к этой дальней точке (замечание автора 23 октября 2026 года).
+/// Если шагов не хватило, остаётся метод секущих.
 pub fn ground_under(camera: &Camera, px: f64, py: f64, terrain: Option<&Terrain>) -> Option<DVec3> {
     let e = &camera.ellipsoid;
     let (origin, d) = camera.ray(px, py);
-    let mut t0 = e.ray_intersect(origin, d, 0.0)?;
+    let t_surface = e.ray_intersect(origin, d, 0.0);
     let Some(terrain) = terrain else {
-        return Some(origin + d * t0);
+        return t_surface.map(|t| origin + d * t);
     };
     let gap = |t: f64| {
         let (lat, lon, h) = e.ecef_to_geodetic(origin + d * t);
         h - terrain(lat, lon)
     };
+    // Луч выше горизонта эллипсоида тоже встречает горы.
+    if let Some(t) = first_crossing(e, origin, d, &gap) {
+        return Some(origin + d * t);
+    }
+    let t_surface = t_surface?;
+    Some(origin + d * secant_crossing(e, origin, d, t_surface, terrain, &gap))
+}
+
+/// Первая смена знака gap вдоль луча и её уточнение. None - глаз под
+/// рельефом, луч ушёл из слоя рельефа или шагов не хватило.
+fn first_crossing(e: &Ellipsoid, origin: DVec3, d: DVec3, gap: &dyn Fn(f64) -> f64) -> Option<f64> {
+    // Рельеф не выше MAX_TERRAIN: из космоса шаги идут от этой высоты.
+    let mut ta = if altitude(e, origin) > MAX_TERRAIN { e.ray_intersect(origin, d, MAX_TERRAIN)? } else { 0.0 };
+    // Конец - глубже самого глубокого дна или выход из слоя рельефа.
+    let t_end = match e.ray_intersect(origin, d, -2.0 * MAX_TERRAIN) {
+        Some(t) => t,
+        None => {
+            let inside = origin + d * (ta + MARCH_MIN * ta.max(1.0));
+            ta + MARCH_MIN * ta.max(1.0) + e.ray_intersect(inside, d, MAX_TERRAIN)?
+        }
+    };
+    let mut fa = gap(ta);
+    if fa.is_nan() || fa <= 0.0 {
+        return None;
+    }
+    for _ in 0..MARCH_STEPS {
+        let tb = ta + (MARCH_SHARE * fa).max(MARCH_MIN * ta.max(1.0));
+        let fb = gap(tb);
+        if !fb.is_finite() {
+            return None;
+        }
+        if fb <= 0.0 {
+            return Some(refine(gap, (ta, fa), (tb, fb)));
+        }
+        if tb > t_end {
+            return None;
+        }
+        (ta, fa) = (tb, fb);
+    }
+    None
+}
+
+/// Корень gap между a (над рельефом) и b (под ним): ложное положение
+/// через шаг с делением пополам, корень не уходит из отрезка.
+fn refine(gap: &dyn Fn(f64) -> f64, a: (f64, f64), b: (f64, f64)) -> f64 {
+    let ((mut ta, mut fa), (mut tb, mut fb)) = (a, b);
+    for i in 0..60 {
+        let tm = if i % 2 == 0 && fa != fb { ta - fa * (tb - ta) / (fb - fa) } else { 0.5 * (ta + tb) };
+        let tm = if tm > ta && tm < tb { tm } else { 0.5 * (ta + tb) };
+        let fm = gap(tm);
+        if fm.abs() < TERRAIN_TOLERANCE || !fm.is_finite() {
+            return tm;
+        }
+        if fm > 0.0 {
+            (ta, fa) = (tm, fm);
+        } else {
+            (tb, fb) = (tm, fm);
+        }
+    }
+    0.5 * (ta + tb)
+}
+
+/// Корень методом секущих от эллипсоида и эллипсоида, раздутого на
+/// высоту рельефа в первой точке. У горизонта над горами точка может
+/// лечь на соседний склон.
+fn secant_crossing(e: &Ellipsoid, origin: DVec3, d: DVec3, t_surface: f64, terrain: &Terrain, gap: &dyn Fn(f64) -> f64) -> f64 {
+    let mut t0 = t_surface;
     let mut f0 = gap(t0);
     let (lat, lon, _) = e.ecef_to_geodetic(origin + d * t0);
     let Some(mut t1) = e.ray_intersect(origin, d, terrain(lat, lon)) else {
-        return Some(origin + d * t0);
+        return t0;
     };
     let mut f1 = gap(t1);
     for _ in 0..TERRAIN_STEPS {
@@ -260,7 +342,7 @@ pub fn ground_under(camera: &Camera, px: f64, py: f64, terrain: Option<&Terrain>
         (t0, f0, t1) = (t1, f1, next);
         f1 = gap(t1);
     }
-    Some(origin + d * t1)
+    t1
 }
 
 /// Начальная поза для подбора.
@@ -416,10 +498,22 @@ pub fn lifted(e: &Ellipsoid, pose: Pose) -> Pose {
 /// factor меньше 1 приближает. Возвращает новую позу или None, если
 /// под курсором нет тела.
 pub fn zoom(camera: &Camera, pose: &Pose, px: f64, py: f64, factor: f64) -> Option<Pose> {
+    let e = &camera.ellipsoid;
     let point = ground_under(camera, px, py, pose.terrain.as_ref())?;
     let mut scaled = pose.clone();
-    scaled.distance = clamp_distance(&camera.ellipsoid, pose, pose.distance * factor);
-    solve_pin(camera, &scaled, point, px, py)
+    scaled.distance = clamp_distance(e, pose, pose.distance * factor);
+    let out = solve_pin(camera, &scaled, point, px, py)?;
+    // Приближение к точке сдвигает глаз к ней на долю |1 - f| пути.
+    // Подбор, ушедший дальше, нашёл чужую позу, где точка тоже стоит под
+    // курсором, - такой скачок не принимается.
+    let (eye, _) = pose.eye_rotation(e);
+    let (moved_eye, _) = out.eye_rotation(e);
+    let f = scaled.distance / pose.distance;
+    let reach = (point - eye).length();
+    if (moved_eye - eye).length() > (ZOOM_REACH * (1.0 - f).abs()).max(ZOOM_SLACK) * reach {
+        return None;
+    }
+    Some(out)
 }
 
 /// Повернуть на d_heading и наклонить на d_tilt градусов.

@@ -101,6 +101,8 @@ pub struct Models {
     places: Vec<ModelPlace>,
     /// Матрицы дорожек анимации по моделям, в осях вершин части.
     deltas: Vec<HashMap<usize, DMat4>>,
+    /// Настоящее солнце для всех моделей, None - солнце каждой модели.
+    pub sun: Option<[f32; 3]>,
     textures: Vec<wgpu::BindGroup>,
     parts: Vec<GpuPart>,
 }
@@ -212,6 +214,7 @@ impl Models {
             bind,
             places: Vec::new(),
             deltas: Vec::new(),
+            sun: None,
             textures: Vec::new(),
             parts: Vec::new(),
         }
@@ -303,7 +306,8 @@ impl Models {
             let turn = DMat4::from_mat3(place.orient) * delta;
             // Нормали вершин - в осях до поворота, солнце поворачивается
             // к ним обратным поворотом.
-            let sun = DVec3::new(f64::from(place.sun[0]), f64::from(place.sun[1]), f64::from(place.sun[2]));
+            let s = self.sun.unwrap_or(place.sun);
+            let sun = DVec3::new(f64::from(s[0]), f64::from(s[1]), f64::from(s[2]));
             let sun = (DMat3::from_mat4(turn).transpose() * sun).normalize_or_zero();
             let u = ModelUniform {
                 mv: (camera.tile_model_view(place.center, 1.0) * turn).as_mat4().to_cols_array(),

@@ -30,6 +30,14 @@ impl Basemap {
         }
     }
 
+    /// Ключ основы для действий строки «Поиск».
+    pub fn key(self) -> &'static str {
+        match self {
+            Basemap::Esri => "esri",
+            Basemap::Osm => "osm",
+        }
+    }
+
     /// Название в выборе основы.
     pub fn name(self, lang: Lang) -> &'static str {
         match self {

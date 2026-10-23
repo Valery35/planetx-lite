@@ -151,3 +151,44 @@ m²	m²
 ha	ha
 km²	km²
 sq mi	mi²
+{angle} E	{angle} E
+{angle} N	{angle} N
+{angle} S	{angle} S
+{angle} W	{angle} O
+{distance}, height {height}, slope {slope}	{distance}, altura {height}, declive {slope}
+Antarctic Circle	Círculo Polar Antártico
+Arctic Circle	Círculo Polar Ártico
+Coordinate grid	Grelha de coordenadas
+Copied as KML.	Copiado como KML.
+Copy as KML	Copiar como KML
+Elevation profile	Perfil de elevação
+Elevation profile: {name}	Perfil de elevação: {name}
+Equator	Equador
+Heights are still loading, the numbers will be refined.	As alturas ainda estão a carregar, os valores serão refinados.
+Length, area, ground length	Comprimento, área, comprimento sobre o relevo
+Link to this view	Ligação para esta vista
+Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.	Comprimento no mapa {flat}, sobre o relevo {ground}. Altura mínima {low}, máxima {high}. Subida {gain}, descida {loss}. Declive médio {mean}, máximo {max}.
+Mark at least two points on the globe.	São necessários pelo menos dois pontos no globo.
+Not pasted: {e}	Não colado: {e}
+Parallels and meridians with labels, the equator, the tropics and the polar circles.	Paralelos e meridianos com etiquetas, o equador, os trópicos e os círculos polares.
+Pasted from the clipboard.	Colado da área de transferência.
+Placemark, path, polygon or circle	Marcador, trajeto, polígono ou círculo
+PNG file	Ficheiro PNG
+Record a tour	Gravar um passeio
+Record a tour: the camera path while you move the globe	Gravar um passeio: o percurso da câmara enquanto o globo se move
+Recording a tour {clock}. Another click on the record button ends it.	A gravar o passeio {clock}. Outro clique no botão de gravação termina a gravação.
+Save view	Guardar vista
+Share	Partilhar
+Snapshot of the view	Instantâneo da vista
+Snapshot of the view to a PNG file	Instantâneo da vista num ficheiro PNG
+Stop recording and save the tour	Parar a gravação e guardar o passeio
+Sun	Sol
+Terrain lit by the sun at the moment of the time bar or now. Night is dark.	Relevo iluminado pelo sol no momento da barra de tempo ou agora. A noite é escura.
+The ring turns the view, the letter N puts north up. The stick inside the ring turns the gaze, the dot in its middle returns a straight down view. The lower stick moves the view. The slider sets the height, plus and minus zoom in and out.	O anel roda a vista, a letra N põe o norte em cima. O joystick dentro do anel roda o olhar, o ponto no seu centro repõe a vista vertical para baixo. O joystick inferior desloca a vista. O cursor define a altura, mais e menos aproximam e afastam.
+The tour is not recorded, the camera did not move.	O passeio não foi gravado, a câmara não se moveu.
+Tour	Passeio
+Tropic of Cancer	Trópico de Câncer
+Tropic of Capricorn	Trópico de Capricórnio
+Turn off	Desligar
+Turn on	Ligar
+View	Vista

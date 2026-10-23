@@ -151,3 +151,44 @@ m²	m²
 ha	ha
 km²	km²
 sq mi	kv. mil
+{angle} E	{angle} ş. u.
+{angle} N	{angle} şm. e.
+{angle} S	{angle} c. e.
+{angle} W	{angle} q. u.
+{distance}, height {height}, slope {slope}	{distance}, hündürlük {height}, meyil {slope}
+Antarctic Circle	Cənub qütb dairəsi
+Arctic Circle	Şimal qütb dairəsi
+Coordinate grid	Koordinat şəbəkəsi
+Copied as KML.	KML kimi kopyalandı.
+Copy as KML	KML kimi kopyala
+Elevation profile	Hündürlük profili
+Elevation profile: {name}	Hündürlük profili: {name}
+Equator	Ekvator
+Heights are still loading, the numbers will be refined.	Hündürlüklər hələ yüklənir, rəqəmlər dəqiqləşəcək.
+Length, area, ground length	Uzunluq, sahə, relyef üzrə uzunluq
+Link to this view	Bu görünüşə keçid
+Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.	Xəritədə uzunluq {flat}, relyef üzrə {ground}. Ən aşağı hündürlük {low}, ən yuxarı {high}. Qalxma {gain}, enmə {loss}. Orta meyil {mean}, ən dik {max}.
+Mark at least two points on the globe.	Qlobusda ən azı iki nöqtə lazımdır.
+Not pasted: {e}	Yapışdırılmadı: {e}
+Parallels and meridians with labels, the equator, the tropics and the polar circles.	Yazıları ilə paralellər və meridianlar, ekvator, tropiklər və qütb dairələri.
+Pasted from the clipboard.	Mübadilə buferindən yapışdırıldı.
+Placemark, path, polygon or circle	Nişan, yol, çoxbucaqlı və ya dairə
+PNG file	PNG faylı
+Record a tour	Tur yaz
+Record a tour: the camera path while you move the globe	Tur yaz: qlobus hərəkət edərkən kameranın yolu
+Recording a tour {clock}. Another click on the record button ends it.	Tur yazılır {clock}. Yazı düyməsinə təkrar klik onu bitirir.
+Save view	Görünüşü saxla
+Share	Paylaş
+Snapshot of the view	Görünüşün şəkli
+Snapshot of the view to a PNG file	Görünüşün şəklini PNG faylına saxla
+Stop recording and save the tour	Yazını dayandır və turu saxla
+Sun	Günəş
+Terrain lit by the sun at the moment of the time bar or now. Night is dark.	Relyef zaman zolağının anına və ya indiki ana görə günəşlə işıqlandırılır. Gecə qaranlıqdır.
+The ring turns the view, the letter N puts north up. The stick inside the ring turns the gaze, the dot in its middle returns a straight down view. The lower stick moves the view. The slider sets the height, plus and minus zoom in and out.	Halqa görünüşü fırladır, N hərfi şimalı yuxarı qoyur. Halqadakı coystik baxışı fırladır, onun ortasındakı nöqtə şaquli aşağı baxışı qaytarır. Aşağıdakı coystik görünüşü sürüşdürür. Sürgü hündürlüyü təyin edir, plyus və minus yaxınlaşdırır və uzaqlaşdırır.
+The tour is not recorded, the camera did not move.	Tur yazılmadı, kamera hərəkət etmədi.
+Tour	Tur
+Tropic of Cancer	Xərçəng tropiki
+Tropic of Capricorn	Oğlaq tropiki
+Turn off	Söndür
+Turn on	Yandır
+View	Görünüş

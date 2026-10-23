@@ -151,3 +151,44 @@ m²	m²
 ha	ha
 km²	km²
 sq mi	mi²
+{angle} E	{angle} BT
+{angle} N	{angle} LU
+{angle} S	{angle} LS
+{angle} W	{angle} BB
+{distance}, height {height}, slope {slope}	{distance}, ketinggian {height}, kemiringan {slope}
+Antarctic Circle	Lingkaran Antarktik
+Arctic Circle	Lingkaran Arktik
+Coordinate grid	Grid koordinat
+Copied as KML.	Disalin sebagai KML.
+Copy as KML	Salin sebagai KML
+Elevation profile	Profil ketinggian
+Elevation profile: {name}	Profil ketinggian: {name}
+Equator	Khatulistiwa
+Heights are still loading, the numbers will be refined.	Ketinggian masih dimuat, angka akan diperbarui.
+Length, area, ground length	Panjang, luas, panjang di atas relief
+Link to this view	Tautan ke tampilan ini
+Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.	Panjang di peta {flat}, di atas relief {ground}. Ketinggian terendah {low}, tertinggi {high}. Naik {gain}, turun {loss}. Kemiringan rata-rata {mean}, tercuram {max}.
+Mark at least two points on the globe.	Diperlukan setidaknya dua titik di globe.
+Not pasted: {e}	Tidak ditempel: {e}
+Parallels and meridians with labels, the equator, the tropics and the polar circles.	Paralel dan meridian berlabel, khatulistiwa, garis balik, dan lingkaran kutub.
+Pasted from the clipboard.	Ditempel dari papan klip.
+Placemark, path, polygon or circle	Penanda, jalur, poligon, atau lingkaran
+PNG file	Berkas PNG
+Record a tour	Rekam tur
+Record a tour: the camera path while you move the globe	Rekam tur: jalur kamera selama globe digerakkan
+Recording a tour {clock}. Another click on the record button ends it.	Merekam tur {clock}. Klik lagi tombol rekam untuk mengakhirinya.
+Save view	Simpan tampilan
+Share	Bagikan
+Snapshot of the view	Cuplikan tampilan
+Snapshot of the view to a PNG file	Cuplikan tampilan ke berkas PNG
+Stop recording and save the tour	Hentikan perekaman dan simpan tur
+Sun	Matahari
+Terrain lit by the sun at the moment of the time bar or now. Night is dark.	Relief disinari matahari pada saat di bilah waktu atau saat ini. Malam gelap.
+The ring turns the view, the letter N puts north up. The stick inside the ring turns the gaze, the dot in its middle returns a straight down view. The lower stick moves the view. The slider sets the height, plus and minus zoom in and out.	Cincin memutar tampilan, huruf N mengarahkan utara ke atas. Tuas di dalam cincin memutar arah pandang, titik di tengahnya mengembalikan pandangan tegak lurus ke bawah. Tuas bawah menggeser tampilan. Penggeser mengatur ketinggian, plus dan minus memperbesar dan memperkecil.
+The tour is not recorded, the camera did not move.	Tur tidak terekam, kamera tidak bergerak.
+Tour	Tur
+Tropic of Cancer	Garis Balik Utara
+Tropic of Capricorn	Garis Balik Selatan
+Turn off	Matikan
+Turn on	Nyalakan
+View	Tampilan

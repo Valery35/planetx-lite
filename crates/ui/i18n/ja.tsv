@@ -152,3 +152,44 @@ m²	m²
 ha	ha
 km²	km²
 sq mi	平方マイル
+{angle} E	東経 {angle}
+{angle} N	北緯 {angle}
+{angle} S	南緯 {angle}
+{angle} W	西経 {angle}
+{distance}, height {height}, slope {slope}	{distance}、高さ {height}、勾配 {slope}
+Antarctic Circle	南極圏
+Arctic Circle	北極圏
+Coordinate grid	座標グリッド
+Copied as KML.	KML としてコピーしました。
+Copy as KML	KML としてコピー
+Elevation profile	標高断面図
+Elevation profile: {name}	標高断面図：{name}
+Equator	赤道
+Heights are still loading, the numbers will be refined.	標高はまだ読み込み中です。数値は今後より正確になります。
+Length, area, ground length	長さ、面積、地表の長さ
+Link to this view	この表示へのリンク
+Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.	地図上の長さ {flat}、地表の長さ {ground}。最低標高 {low}、最高 {high}。上り {gain}、下り {loss}。平均勾配 {mean}、最大 {max}。
+Mark at least two points on the globe.	地球儀上に 2 点以上が必要です。
+Not pasted: {e}	貼り付けできませんでした：{e}
+Parallels and meridians with labels, the equator, the tropics and the polar circles.	ラベル付きの緯線と経線、赤道、回帰線、極圏。
+Pasted from the clipboard.	クリップボードから貼り付けました。
+Placemark, path, polygon or circle	目印、パス、ポリゴン、円
+PNG file	PNG ファイル
+Record a tour	ツアーを記録
+Record a tour: the camera path while you move the globe	ツアーを記録：地球儀を動かす間のカメラの軌跡
+Recording a tour {clock}. Another click on the record button ends it.	ツアーを記録中 {clock}。記録ボタンをもう一度クリックすると終了します。
+Save view	表示を保存
+Share	共有
+Snapshot of the view	表示のスナップショット
+Snapshot of the view to a PNG file	表示のスナップショットを PNG ファイルに保存
+Stop recording and save the tour	記録を停止してツアーを保存
+Sun	太陽
+Terrain lit by the sun at the moment of the time bar or now. Night is dark.	タイムバーの時刻または現在時刻の太陽で地形を照らします。夜は暗くなります。
+The ring turns the view, the letter N puts north up. The stick inside the ring turns the gaze, the dot in its middle returns a straight down view. The lower stick moves the view. The slider sets the height, plus and minus zoom in and out.	リングで表示を回転し、N の文字で北を上にします。リング内のスティックで視線を回転し、その中央の点で真下向きの視線に戻ります。下のスティックで表示を移動します。スライダーで高度を設定し、プラスとマイナスで拡大・縮小します。
+The tour is not recorded, the camera did not move.	ツアーは記録されていません。カメラが動きませんでした。
+Tour	ツアー
+Tropic of Cancer	北回帰線
+Tropic of Capricorn	南回帰線
+Turn off	オフにする
+Turn on	オンにする
+View	表示

@@ -152,3 +152,44 @@ m²	m²
 ha	ha
 km²	km²
 sq mi	제곱마일
+{angle} E	동경 {angle}
+{angle} N	북위 {angle}
+{angle} S	남위 {angle}
+{angle} W	서경 {angle}
+{distance}, height {height}, slope {slope}	{distance}, 높이 {height}, 경사 {slope}
+Antarctic Circle	남극권
+Arctic Circle	북극권
+Coordinate grid	좌표 격자
+Copied as KML.	KML로 복사했습니다.
+Copy as KML	KML로 복사
+Elevation profile	고도 단면도
+Elevation profile: {name}	고도 단면도: {name}
+Equator	적도
+Heights are still loading, the numbers will be refined.	높이를 아직 불러오는 중입니다. 수치는 더 정확해집니다.
+Length, area, ground length	길이, 면적, 지형 위 길이
+Link to this view	이 화면의 링크
+Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.	지도상 길이 {flat}, 지형 위 길이 {ground}. 최저 높이 {low}, 최고 {high}. 오르막 {gain}, 내리막 {loss}. 평균 경사 {mean}, 최대 {max}.
+Mark at least two points on the globe.	지구본에 점이 두 개 이상 필요합니다.
+Not pasted: {e}	붙여 넣지 않음: {e}
+Parallels and meridians with labels, the equator, the tropics and the polar circles.	레이블이 있는 위선과 경선, 적도, 회귀선, 극권.
+Pasted from the clipboard.	클립보드에서 붙여 넣었습니다.
+Placemark, path, polygon or circle	장소 표시, 경로, 다각형 또는 원
+PNG file	PNG 파일
+Record a tour	투어 녹화
+Record a tour: the camera path while you move the globe	투어 녹화: 지구본을 움직이는 동안의 카메라 경로
+Recording a tour {clock}. Another click on the record button ends it.	투어 녹화 중 {clock}. 녹화 버튼을 다시 클릭하면 끝납니다.
+Save view	화면 저장
+Share	공유
+Snapshot of the view	화면 스냅샷
+Snapshot of the view to a PNG file	화면 스냅샷을 PNG 파일로 저장
+Stop recording and save the tour	녹화를 멈추고 투어 저장
+Sun	태양
+Terrain lit by the sun at the moment of the time bar or now. Night is dark.	시간 막대의 시각 또는 현재 시각의 태양이 지형을 비춥니다. 밤은 어둡습니다.
+The ring turns the view, the letter N puts north up. The stick inside the ring turns the gaze, the dot in its middle returns a straight down view. The lower stick moves the view. The slider sets the height, plus and minus zoom in and out.	링은 화면을 회전하고, 글자 N은 북쪽을 위로 맞춥니다. 링 안의 스틱은 시선을 돌리고, 가운데 점은 수직으로 내려다보는 시선으로 되돌립니다. 아래쪽 스틱은 화면을 이동합니다. 슬라이더는 높이를 정하고, 플러스와 마이너스는 확대와 축소를 합니다.
+The tour is not recorded, the camera did not move.	투어가 녹화되지 않았습니다. 카메라가 움직이지 않았습니다.
+Tour	투어
+Tropic of Cancer	북회귀선
+Tropic of Capricorn	남회귀선
+Turn off	끄기
+Turn on	켜기
+View	화면

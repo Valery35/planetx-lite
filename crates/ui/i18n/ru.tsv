@@ -157,3 +157,44 @@ m²	м²
 ha	га
 km²	км²
 sq mi	кв. мили
+{angle} E	{angle} в. д.
+{angle} N	{angle} с. ш.
+{angle} S	{angle} ю. ш.
+{angle} W	{angle} з. д.
+{distance}, height {height}, slope {slope}	{distance}, высота {height}, уклон {slope}
+Antarctic Circle	Южный полярный круг
+Arctic Circle	Северный полярный круг
+Coordinate grid	Координатная сетка
+Copied as KML.	Скопировано как KML.
+Copy as KML	Копировать как KML
+Elevation profile	Профиль высот
+Elevation profile: {name}	Профиль высот: {name}
+Equator	Экватор
+Heights are still loading, the numbers will be refined.	Высоты ещё загружаются, числа уточнятся.
+Length, area, ground length	Длина, площадь, длина по рельефу
+Link to this view	Ссылка на этот вид
+Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.	Длина по карте {flat}, по рельефу {ground}. Высота от {low} до {high}. Подъём {gain}, спуск {loss}. Средний уклон {mean}, наибольший {max}.
+Mark at least two points on the globe.	На глобусе нужны хотя бы две точки.
+Not pasted: {e}	Не вставлено: {e}
+Parallels and meridians with labels, the equator, the tropics and the polar circles.	Параллели и меридианы с подписями, экватор, тропики и полярные круги.
+Pasted from the clipboard.	Вставлено из буфера обмена.
+Placemark, path, polygon or circle	Метка, путь, многоугольник или круг
+PNG file	Файл PNG
+Record a tour	Записать облёт
+Record a tour: the camera path while you move the globe	Записать облёт - путь камеры, пока глобус движется
+Recording a tour {clock}. Another click on the record button ends it.	Запись облёта {clock}. Повторное нажатие кнопки записи её заканчивает.
+Save view	Сохранить вид
+Share	Поделиться
+Snapshot of the view	Снимок вида
+Snapshot of the view to a PNG file	Снимок вида в файл PNG
+Stop recording and save the tour	Закончить запись и сохранить облёт
+Sun	Солнце
+Terrain lit by the sun at the moment of the time bar or now. Night is dark.	Рельеф освещён солнцем на момент шкалы времени или на текущий момент. Ночь тёмная.
+The ring turns the view, the letter N puts north up. The stick inside the ring turns the gaze, the dot in its middle returns a straight down view. The lower stick moves the view. The slider sets the height, plus and minus zoom in and out.	Кольцо поворачивает вид, буква N ставит север вверху. Джойстик в кольце поворачивает взгляд, точка в его середине возвращает отвесный взгляд. Нижний джойстик сдвигает вид. Ползунок задаёт высоту, плюс и минус приближают и отдаляют.
+The tour is not recorded, the camera did not move.	Облёт не записан, камера не двигалась.
+Tour	Облёт
+Tropic of Cancer	Северный тропик
+Tropic of Capricorn	Южный тропик
+Turn off	Выключить
+Turn on	Включить
+View	Вид

@@ -30,11 +30,17 @@ pub struct Settings {
     pub dark: bool,
     /// Вертикальный масштаб рельефа.
     pub scale: f64,
+    /// Свет солнца вместо отмывки, как «Солнце» модуля.
+    pub sun: bool,
+    /// Координатная сетка, как «Сетка» модуля.
+    pub grid: bool,
+    /// Прежние запросы строки «Поиск», от новых к старым, как у модуля.
+    pub history: Vec<String>,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { language: None, labels: String::new(), dark: true, scale: 1.0 }
+        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, history: Vec::new() }
     }
 }
 
@@ -46,12 +52,14 @@ impl Settings {
 
     pub fn to_text(&self) -> String {
         format!(
-            "language={}\nlabels={}\ntheme={}\nscale={}\n",
+            "language={}\nlabels={}\ntheme={}\nscale={}\nsun={}\ngrid={}\n",
             self.language.as_deref().unwrap_or(""),
             self.labels,
             if self.dark { "dark" } else { "light" },
-            self.scale
-        )
+            self.scale,
+            self.sun,
+            self.grid
+        ) + &self.history.iter().map(|h| format!("history={h}\n")).collect::<String>()
     }
 
     /// Настройки из строки хранилища. Строка считается враждебной:
@@ -68,6 +76,9 @@ impl Settings {
                     }
                 }
                 "theme" => s.dark = value != "light",
+                "sun" => s.sun = value == "true",
+                "grid" => s.grid = value == "true",
+                "history" if !value.is_empty() && s.history.len() < scene::searchbar::HISTORY => s.history.push(value.to_string()),
                 "scale" => {
                     if let Ok(v) = value.parse::<f64>()
                         && v.is_finite()
@@ -141,6 +152,15 @@ pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut S
                     .suffix(" ×"),
             );
             ui.end_row();
+
+            ui.label(tr(lang, "View"));
+            ui.vertical(|ui| {
+                ui.checkbox(&mut settings.sun, tr(lang, "Sun"))
+                    .on_hover_text(tr(lang, "Terrain lit by the sun at the moment of the time bar or now. Night is dark."));
+                ui.checkbox(&mut settings.grid, tr(lang, "Coordinate grid"))
+                    .on_hover_text(tr(lang, "Parallels and meridians with labels, the equator, the tropics and the polar circles."));
+            });
+            ui.end_row();
         });
     });
     *settings != before
@@ -152,7 +172,7 @@ mod tests {
 
     #[test]
     fn settings_round_trip_and_hostile_text() {
-        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5 };
+        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, history: vec!["Вологда".into(), "Paris".into()] };
         assert_eq!(Settings::from_text(&s.to_text()), s);
         let bad = Settings::from_text("language=xx\nlabels=../x\ntheme=dark\nscale=1e9\nscale=NaN\nfoo=bar\nno equals");
         assert_eq!(bad.language, None);

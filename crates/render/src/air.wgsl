@@ -29,6 +29,8 @@ struct Air {
     back: vec4<f32>,
     // x - 1 атмосфера включена, 0 выключена.
     flags: vec4<f32>,
+    // Направление на солнце в ECEF, w - 1, когда свет солнца включён.
+    sun: vec4<f32>,
 };
 
 @group(2) @binding(0) var<uniform> air_frame: Air;

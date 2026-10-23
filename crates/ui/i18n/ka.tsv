@@ -151,3 +151,44 @@ m²	მ²
 ha	ჰა
 km²	კმ²
 sq mi	კვ. მილი
+{angle} E	{angle} აღმ. გრძ.
+{angle} N	{angle} ჩ. გ.
+{angle} S	{angle} ს. გ.
+{angle} W	{angle} დას. გრძ.
+{distance}, height {height}, slope {slope}	{distance}, სიმაღლე {height}, დახრილობა {slope}
+Antarctic Circle	სამხრეთ პოლარული წრე
+Arctic Circle	ჩრდილოეთ პოლარული წრე
+Coordinate grid	კოორდინატთა ბადე
+Copied as KML.	დაკოპირდა KML-ად.
+Copy as KML	კოპირება KML-ად
+Elevation profile	სიმაღლეების პროფილი
+Elevation profile: {name}	სიმაღლეების პროფილი: {name}
+Equator	ეკვატორი
+Heights are still loading, the numbers will be refined.	სიმაღლეები ჯერ კიდევ იტვირთება, რიცხვები დაზუსტდება.
+Length, area, ground length	სიგრძე, ფართობი, სიგრძე რელიეფზე
+Link to this view	ამ ხედის ბმული
+Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.	სიგრძე რუკაზე {flat}, რელიეფზე {ground}. უმცირესი სიმაღლე {low}, უდიდესი {high}. აღმართი {gain}, დაღმართი {loss}. საშუალო დახრილობა {mean}, უდიდესი {max}.
+Mark at least two points on the globe.	გლობუსზე საჭიროა მინიმუმ ორი წერტილი.
+Not pasted: {e}	არ ჩაისვა: {e}
+Parallels and meridians with labels, the equator, the tropics and the polar circles.	პარალელები და მერიდიანები წარწერებით, ეკვატორი, ტროპიკები და პოლარული წრეები.
+Pasted from the clipboard.	ჩაისვა გაცვლის ბუფერიდან.
+Placemark, path, polygon or circle	ნიშანი, გზა, მრავალკუთხედი ან წრე
+PNG file	PNG ფაილი
+Record a tour	ტურის ჩაწერა
+Record a tour: the camera path while you move the globe	ტურის ჩაწერა: კამერის გზა, სანამ გლობუსი მოძრაობს
+Recording a tour {clock}. Another click on the record button ends it.	ტური იწერება {clock}. ჩაწერის ღილაკზე ხელახალი დაწკაპუნება ასრულებს ჩაწერას.
+Save view	ხედის შენახვა
+Share	გაზიარება
+Snapshot of the view	ხედის სურათი
+Snapshot of the view to a PNG file	ხედის სურათი PNG ფაილში
+Stop recording and save the tour	ჩაწერის დასრულება და ტურის შენახვა
+Sun	მზე
+Terrain lit by the sun at the moment of the time bar or now. Night is dark.	რელიეფი განათებულია მზით დროის ზოლის მომენტისთვის ან ახლა. ღამე ბნელია.
+The ring turns the view, the letter N puts north up. The stick inside the ring turns the gaze, the dot in its middle returns a straight down view. The lower stick moves the view. The slider sets the height, plus and minus zoom in and out.	რგოლი აბრუნებს ხედს, ასო N ჩრდილოეთს ზემოთ აყენებს. ჯოისტიკი რგოლში აბრუნებს მზერას, წერტილი მის შუაში აბრუნებს ვერტიკალურად ქვემოთ მზერას. ქვედა ჯოისტიკი ანაცვლებს ხედს. სლაიდერი აყენებს სიმაღლეს, პლუსი და მინუსი აახლოებს და აშორებს.
+The tour is not recorded, the camera did not move.	ტური არ ჩაიწერა, კამერა არ მოძრაობდა.
+Tour	ტური
+Tropic of Cancer	კირჩხიბის ტროპიკი
+Tropic of Capricorn	თხის რქის ტროპიკი
+Turn off	გამორთვა
+Turn on	ჩართვა
+View	ხედი

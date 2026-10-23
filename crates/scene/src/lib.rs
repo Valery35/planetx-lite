@@ -17,7 +17,11 @@
 //! - [`collada`], [`gltf`], [`obj`] - сетки Collada, glTF и OBJ, перенос `core/collada.py`,
 //!   `core/gltf.py` и `core/obj.py`;
 //! - [`animation`] - анимация узлов моделей, перенос `core/animation.py`;
+//! - [`balloon`] - шаблон окна метки BalloonStyle, перенос `core/balloon.py`;
 //! - [`editing`] - правка вершин на экране, перенос `core/editing.py`;
+//! - [`graticule`] - координатная сетка, перенос `core/graticule.py`;
+//! - [`sun`] - положение солнца и свет, перенос `core/sun.py`;
+//! - [`searchbar`] - подсказки строки «Поиск», перенос `core/searchbar.py`;
 //! - [`features`] - свои объекты глобуса, сгущение и заливка, перенос `core/features.py`;
 //! - [`tour`] - тур по остановкам и записанный тур, перенос `core/tour.py`;
 //! - [`track`] - поза модели на gx:Track, перенос `model_pose` из `core/track.py`;
@@ -26,12 +30,14 @@
 //! - [`scene`] - файл сцены `.planetx`, перенос `core/scene.py`.
 
 pub mod animation;
+pub mod balloon;
 pub mod clock;
 pub mod collada;
 pub mod editing;
 pub mod features;
 pub mod geodesic;
 pub mod gltf;
+pub mod graticule;
 pub mod icons;
 pub mod kml;
 pub mod lookat;
@@ -42,6 +48,8 @@ pub mod overlays;
 pub mod placetree;
 pub mod region;
 pub mod scene;
+pub mod searchbar;
+pub mod sun;
 pub mod tour;
 pub mod track;
 pub mod when;

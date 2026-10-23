@@ -84,6 +84,8 @@ struct Vertex {
     offset: [f32; 3],
     uv: [f32; 2],
     shade: f32,
+    /// Нормаль рельефа в ECEF для света солнца.
+    normal: [f32; 3],
 }
 
 /// Сеток, пересобираемых за кадр, когда пришли более точные высоты.
@@ -153,6 +155,8 @@ pub struct FrameOptions {
     /// Пикселей кадра на логический пиксель, толщина линий объектов
     /// умножается на него. Ноль и меньше - 1.
     pub ratio: f32,
+    /// Свет солнца: направление на солнце в ECEF, None - отмывка.
+    pub sun: Option<[f64; 3]>,
 }
 
 /// Воздух кадра, см. air.wgsl.
@@ -165,6 +169,8 @@ struct AirUniform {
     up: [f32; 4],
     back: [f32; 4],
     flags: [f32; 4],
+    /// Направление на солнце в ECEF, w - 1, когда свет солнца включён.
+    sun: [f32; 4],
 }
 
 /// Снятый кадр глобуса, RGBA по 8 бит, строки сверху вниз.
@@ -492,7 +498,7 @@ impl Globe {
         let vertex_layout = wgpu::VertexBufferLayout {
             array_stride: std::mem::size_of::<Vertex>() as u64,
             step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2, 2 => Float32],
+            attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2, 2 => Float32, 3 => Float32x3],
         };
         let tile_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("tile"),
@@ -939,13 +945,20 @@ impl Globe {
             MeshId::PolarCap { north } => polar_cap(e, north, CAP_SEGMENTS, heights),
         };
         let shade = &mesh.shade;
+        let normals = &mesh.normals;
         let mesh: TileMesh = mesh.mesh.clone();
         let vertices: Vec<Vertex> = mesh
             .positions
             .iter()
             .zip(&mesh.uv)
             .zip(shade.iter().chain(std::iter::repeat(&1.0)))
-            .map(|((p, uv), s)| Vertex { offset: p.to_array(), uv: uv.to_array(), shade: *s })
+            .enumerate()
+            .map(|(i, ((p, uv), s))| Vertex {
+                offset: p.to_array(),
+                uv: uv.to_array(),
+                shade: *s,
+                normal: normals.get(i).map_or([0.0, 0.0, 0.0], |n| n.to_array()),
+            })
             .collect();
         let vertices = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("mesh vertices"),
@@ -1078,7 +1091,7 @@ impl Globe {
 
     /// Воздух кадра: глаз в долях полуосей, оси камеры в ECEF. Разности
     /// квадратов считаются в f64.
-    fn air_uniform(camera: &Camera, width: u32, height: u32, on: bool) -> AirUniform {
+    fn air_uniform(camera: &Camera, width: u32, height: u32, on: bool, sun: Option<[f64; 3]>) -> AirUniform {
         let e = &camera.ellipsoid;
         let axes = DVec3::new(1.0 / e.a, 1.0 / e.a, 1.0 / e.b);
         let eye = camera.eye * axes;
@@ -1094,6 +1107,7 @@ impl Globe {
             up: v4(r.y_axis * t, f64::from(height)),
             back: v4(r.z_axis, squared - 1.0),
             flags: [if on { 1.0 } else { 0.0 }, 0.0, 0.0, 0.0],
+            sun: sun.map_or([0.0, 0.0, 1.0, 0.0], |s| [s[0] as f32, s[1] as f32, s[2] as f32, 1.0]),
         }
     }
 
@@ -1111,6 +1125,11 @@ impl Globe {
     /// едет по пути.
     pub fn place_model(&mut self, index: usize, place: ModelPlace) {
         self.models.place(index, place);
+    }
+
+    /// Солнце для моделей: направление в ECEF, None - свет модели свой.
+    pub fn set_model_sun(&mut self, sun: Option<[f32; 3]>) {
+        self.models.sun = sun;
     }
 
     /// Матрицы дорожек анимации модели номер index на кадр.
@@ -1245,7 +1264,7 @@ impl Globe {
         }
         // Пурпурные дыры видны только без воздуха, как в модуле.
         let air_on = options.air && !options.show_holes;
-        let air = Self::air_uniform(camera, target.width, target.height, air_on);
+        let air = Self::air_uniform(camera, target.width, target.height, air_on, options.sun);
         self.queue.write_buffer(&self.air, 0, bytemuck::bytes_of(&air));
         let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("globe") });
         let mut draws = 0;

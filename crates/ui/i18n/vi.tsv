@@ -151,3 +151,44 @@ m²	m²
 ha	ha
 km²	km²
 sq mi	dặm²
+{angle} E	{angle} Đ
+{angle} N	{angle} B
+{angle} S	{angle} N
+{angle} W	{angle} T
+{distance}, height {height}, slope {slope}	{distance}, độ cao {height}, độ dốc {slope}
+Antarctic Circle	Vòng Nam Cực
+Arctic Circle	Vòng Bắc Cực
+Coordinate grid	Lưới tọa độ
+Copied as KML.	Đã sao chép dạng KML.
+Copy as KML	Sao chép dạng KML
+Elevation profile	Mặt cắt độ cao
+Elevation profile: {name}	Mặt cắt độ cao: {name}
+Equator	Xích đạo
+Heights are still loading, the numbers will be refined.	Độ cao vẫn đang tải, các số liệu sẽ được chính xác hóa.
+Length, area, ground length	Chiều dài, diện tích, chiều dài theo địa hình
+Link to this view	Liên kết tới khung nhìn này
+Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.	Chiều dài trên bản đồ {flat}, theo địa hình {ground}. Độ cao thấp nhất {low}, cao nhất {high}. Lên dốc {gain}, xuống dốc {loss}. Độ dốc trung bình {mean}, lớn nhất {max}.
+Mark at least two points on the globe.	Cần ít nhất hai điểm trên quả địa cầu.
+Not pasted: {e}	Chưa dán: {e}
+Parallels and meridians with labels, the equator, the tropics and the polar circles.	Vĩ tuyến và kinh tuyến có nhãn, xích đạo, chí tuyến và vòng cực.
+Pasted from the clipboard.	Đã dán từ bộ nhớ tạm.
+Placemark, path, polygon or circle	Dấu vị trí, đường đi, đa giác hoặc hình tròn
+PNG file	Tệp PNG
+Record a tour	Ghi chuyến tham quan
+Record a tour: the camera path while you move the globe	Ghi chuyến tham quan: đường đi của camera trong khi quả địa cầu di chuyển
+Recording a tour {clock}. Another click on the record button ends it.	Đang ghi chuyến tham quan {clock}. Nhấp lại nút ghi để kết thúc.
+Save view	Lưu khung nhìn
+Share	Chia sẻ
+Snapshot of the view	Ảnh chụp khung nhìn
+Snapshot of the view to a PNG file	Ảnh chụp khung nhìn ra tệp PNG
+Stop recording and save the tour	Dừng ghi và lưu chuyến tham quan
+Sun	Mặt Trời
+Terrain lit by the sun at the moment of the time bar or now. Night is dark.	Địa hình được Mặt Trời chiếu sáng tại thời điểm trên thanh thời gian hoặc hiện tại. Ban đêm tối.
+The ring turns the view, the letter N puts north up. The stick inside the ring turns the gaze, the dot in its middle returns a straight down view. The lower stick moves the view. The slider sets the height, plus and minus zoom in and out.	Vòng tròn xoay khung nhìn, chữ N đặt hướng bắc lên trên. Cần điều khiển trong vòng xoay hướng nhìn, chấm ở giữa đưa về hướng nhìn thẳng xuống. Cần điều khiển phía dưới dịch chuyển khung nhìn. Thanh trượt đặt độ cao, cộng và trừ phóng to và thu nhỏ.
+The tour is not recorded, the camera did not move.	Chuyến tham quan chưa được ghi, camera không di chuyển.
+Tour	Chuyến tham quan
+Tropic of Cancer	Chí tuyến Bắc
+Tropic of Capricorn	Chí tuyến Nam
+Turn off	Tắt
+Turn on	Bật
+View	Khung nhìn

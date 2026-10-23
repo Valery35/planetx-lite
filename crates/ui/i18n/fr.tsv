@@ -150,3 +150,44 @@ m²	m²
 ha	ha
 km²	km²
 sq mi	mi²
+{angle} E	{angle} E
+{angle} N	{angle} N
+{angle} S	{angle} S
+{angle} W	{angle} O
+{distance}, height {height}, slope {slope}	{distance}, altitude {height}, pente {slope}
+Antarctic Circle	Cercle polaire antarctique
+Arctic Circle	Cercle polaire arctique
+Coordinate grid	Grille de coordonnées
+Copied as KML.	Copié en KML.
+Copy as KML	Copier en KML
+Elevation profile	Profil d’altitude
+Elevation profile: {name}	Profil d’altitude : {name}
+Equator	Équateur
+Heights are still loading, the numbers will be refined.	Les altitudes sont encore en chargement, les valeurs seront affinées.
+Length, area, ground length	Longueur, surface, longueur sur le relief
+Link to this view	Lien vers cette vue
+Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.	Longueur sur la carte {flat}, sur le relief {ground}. Altitude la plus basse {low}, la plus haute {high}. Montée {gain}, descente {loss}. Pente moyenne {mean}, la plus forte {max}.
+Mark at least two points on the globe.	Au moins deux points sont nécessaires sur le globe.
+Not pasted: {e}	Non collé : {e}
+Parallels and meridians with labels, the equator, the tropics and the polar circles.	Parallèles et méridiens avec étiquettes, l’équateur, les tropiques et les cercles polaires.
+Pasted from the clipboard.	Collé depuis le presse-papiers.
+Placemark, path, polygon or circle	Repère, trajet, polygone ou cercle
+PNG file	Fichier PNG
+Record a tour	Enregistrer une visite
+Record a tour: the camera path while you move the globe	Enregistrer une visite : le trajet de la caméra pendant que le globe bouge
+Recording a tour {clock}. Another click on the record button ends it.	Enregistrement de la visite {clock}. Un nouveau clic sur le bouton d’enregistrement l’arrête.
+Save view	Enregistrer la vue
+Share	Partager
+Snapshot of the view	Capture de la vue
+Snapshot of the view to a PNG file	Capture de la vue dans un fichier PNG
+Stop recording and save the tour	Arrêter l’enregistrement et enregistrer la visite
+Sun	Soleil
+Terrain lit by the sun at the moment of the time bar or now. Night is dark.	Relief éclairé par le soleil au moment de la barre de temps ou maintenant. La nuit est sombre.
+The ring turns the view, the letter N puts north up. The stick inside the ring turns the gaze, the dot in its middle returns a straight down view. The lower stick moves the view. The slider sets the height, plus and minus zoom in and out.	L’anneau tourne la vue, la lettre N met le nord en haut. Le joystick dans l’anneau tourne le regard, le point en son centre rétablit la vue verticale vers le bas. Le joystick inférieur déplace la vue. Le curseur règle l’altitude, plus et moins rapprochent et éloignent.
+The tour is not recorded, the camera did not move.	La visite n’est pas enregistrée, la caméra n’a pas bougé.
+Tour	Visite
+Tropic of Cancer	Tropique du Cancer
+Tropic of Capricorn	Tropique du Capricorne
+Turn off	Désactiver
+Turn on	Activer
+View	Vue

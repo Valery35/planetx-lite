@@ -151,3 +151,44 @@ m²	m²
 ha	ha
 km²	km²
 sq mi	mi²
+{angle} E	{angle} D
+{angle} N	{angle} K
+{angle} S	{angle} G
+{angle} W	{angle} B
+{distance}, height {height}, slope {slope}	{distance}, yükseklik {height}, eğim {slope}
+Antarctic Circle	Güney Kutup Dairesi
+Arctic Circle	Kuzey Kutup Dairesi
+Coordinate grid	Koordinat ızgarası
+Copied as KML.	KML olarak kopyalandı.
+Copy as KML	KML olarak kopyala
+Elevation profile	Yükseklik profili
+Elevation profile: {name}	Yükseklik profili: {name}
+Equator	Ekvator
+Heights are still loading, the numbers will be refined.	Yükseklikler hâlâ yükleniyor, değerler kesinleşecek.
+Length, area, ground length	Uzunluk, alan, arazi üzerindeki uzunluk
+Link to this view	Bu görünümün bağlantısı
+Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.	Haritadaki uzunluk {flat}, arazi üzerindeki uzunluk {ground}. En düşük yükseklik {low}, en yüksek {high}. Çıkış {gain}, iniş {loss}. Ortalama eğim {mean}, en dik {max}.
+Mark at least two points on the globe.	Küre üzerinde en az iki nokta gerekir.
+Not pasted: {e}	Yapıştırılmadı: {e}
+Parallels and meridians with labels, the equator, the tropics and the polar circles.	Etiketli paraleller ve meridyenler, ekvator, dönenceler ve kutup daireleri.
+Pasted from the clipboard.	Panodan yapıştırıldı.
+Placemark, path, polygon or circle	Yer işareti, yol, çokgen veya daire
+PNG file	PNG dosyası
+Record a tour	Tur kaydet
+Record a tour: the camera path while you move the globe	Tur kaydet: küre hareket ederken kameranın yolu
+Recording a tour {clock}. Another click on the record button ends it.	Tur kaydediliyor {clock}. Kayıt düğmesine bir kez daha tıklamak kaydı bitirir.
+Save view	Görünümü kaydet
+Share	Paylaş
+Snapshot of the view	Görünümün anlık görüntüsü
+Snapshot of the view to a PNG file	Görünümün anlık görüntüsünü PNG dosyasına kaydet
+Stop recording and save the tour	Kaydı durdur ve turu kaydet
+Sun	Güneş
+Terrain lit by the sun at the moment of the time bar or now. Night is dark.	Arazi, zaman çubuğundaki ana veya şimdiki ana göre güneşle aydınlatılır. Gece karanlıktır.
+The ring turns the view, the letter N puts north up. The stick inside the ring turns the gaze, the dot in its middle returns a straight down view. The lower stick moves the view. The slider sets the height, plus and minus zoom in and out.	Halka görünümü döndürür, N harfi kuzeyi yukarı alır. Halkanın içindeki çubuk bakışı döndürür, ortasındaki nokta dik aşağı bakışa geri döndürür. Alttaki çubuk görünümü kaydırır. Kaydırıcı yüksekliği ayarlar, artı ve eksi yakınlaştırır ve uzaklaştırır.
+The tour is not recorded, the camera did not move.	Tur kaydedilmedi, kamera hareket etmedi.
+Tour	Tur
+Tropic of Cancer	Yengeç Dönencesi
+Tropic of Capricorn	Oğlak Dönencesi
+Turn off	Kapat
+Turn on	Aç
+View	Görünüm

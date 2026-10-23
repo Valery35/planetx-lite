@@ -599,3 +599,43 @@ fn limits_grow_with_large_bodies() {
     let jupiter = Ellipsoid::new(el::JUPITER);
     assert!(nav::max_altitude(&jupiter) > 5.0 * jupiter.a);
 }
+
+
+/// Гора 4 км с подошвой около 2 км.
+fn mountain_height(lat: f64, lon: f64) -> f64 {
+    let (dy, dx) = ((lat - 46.0) / 0.02, (lon - 7.0) / 0.03);
+    4000.0 * (-(dx * dx + dy * dy)).exp()
+}
+
+#[test]
+fn zoom_into_mountain_does_not_jump() {
+    // Замечание автора 23 октября 2026 года, то же в модуле: приближение
+    // колесом к склону горы переносило камеру далеко. Начало подбора
+    // строилось лучом из придвинутой камеры, её глаз бывал внутри горы.
+    let e = wgs84();
+    let relief = terrain(mountain_height);
+    for (tilt, distance) in [(70.0, 9000.0), (80.0, 6000.0), (60.0, 12000.0), (85.0, 4000.0)] {
+        let mut n = navigator_at(distance, 0.0, tilt, (45.93, 7.0));
+        n.set_terrain(Some(relief.clone()));
+        // Пиксель на склоне в средней колонке экрана.
+        let Some(py) = (1..134).map(|i| HF - f64::from(i) * 8.0).find(|&py| {
+            nav::ground_under(&n.camera, WF / 2.0, py, Some(&relief))
+                .is_some_and(|p| e.ecef_to_geodetic(p).2 > 1500.0)
+        }) else {
+            panic!("склона нет на экране, наклон {tilt}");
+        };
+        let point = nav::ground_under(&n.camera, WF / 2.0, py, Some(&relief)).unwrap();
+        for step in 0..60 {
+            let eye = n.camera.eye;
+            let Some(pose) = nav::zoom(&n.camera, &n.pose, WF / 2.0, py, 0.85) else {
+                break;
+            };
+            n.set_pose(pose);
+            let moved = (n.camera.eye - eye).length();
+            let reach = (point - eye).length();
+            assert!(moved <= reach, "наклон {tilt}, шаг {step}: глаз ушёл на {moved:.0} м, до точки {reach:.0} м");
+            let err = pixel_error(&n.camera, point, WF / 2.0, py);
+            assert!(err < 1.0, "наклон {tilt}, шаг {step}: невязка {err}, глаз ушёл на {moved:.0} м, до точки {reach:.0} м, поза {:?}", n.pose);
+        }
+    }
+}

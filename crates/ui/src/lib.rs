@@ -9,19 +9,24 @@
 
 pub mod app;
 pub mod basemap;
+pub mod card;
 pub mod check;
+pub mod commands;
 pub mod credits;
 pub mod demos;
 pub mod export;
 pub mod fonts;
 pub mod gpkg;
+pub mod grid;
 pub mod i18n;
 pub mod input;
 pub mod labels;
 pub mod marks;
 pub mod models;
+pub mod navpad;
 pub mod pictures;
 pub mod places;
+pub mod profile;
 pub mod relief;
 pub mod ruler;
 pub mod search;

@@ -103,6 +103,26 @@ pub fn save(kind: Kind, tree: &Folder, pose: &Pose) -> Result<Option<String>, St
     }
 }
 
+/// Сохранить байты файлом: в программе - окном выбора файла с именем
+/// name и фильтром (название, расширение), на странице - скачиванием.
+/// Возвращает, куда сохранено, None - окно закрыли без выбора.
+pub fn save_bytes(name: &str, filter: (&str, &str), bytes: &[u8]) -> Result<Option<String>, String> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let Some(path) = rfd::FileDialog::new().set_file_name(name).add_filter(filter.0, &[filter.1]).save_file() else {
+            return Ok(None);
+        };
+        std::fs::write(&path, bytes).map_err(|e| format!("{}: {e}", path.display()))?;
+        Ok(Some(path.display().to_string()))
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = filter;
+        download(name, bytes)?;
+        Ok(Some(name.to_string()))
+    }
+}
+
 /// Скачать байты файлом name: ссылка на Blob, щелчок по ней.
 #[cfg(target_arch = "wasm32")]
 fn download(name: &str, bytes: &[u8]) -> Result<(), String> {

@@ -345,6 +345,10 @@ pub enum Tool {
     Placemark,
     /// Линейка: планка с делениями наискось.
     Ruler,
+    /// Снимок вида: фотоаппарат.
+    Camera,
+    /// Запись тура: красный круг, во время записи - квадрат.
+    Record,
     /// Настройки.
     Settings,
     /// Во весь экран.
@@ -409,6 +413,20 @@ pub fn tool_button(ui: &mut egui::Ui, tool: Tool, on: bool, tip: &str) -> egui::
                 let (x, y) = (3.0 + t, 16.0 - t);
                 painter.line_segment([q(x, y), q(x + long * 0.7, y + long * 0.7)], s);
             }
+        }
+        Tool::Record => {
+            let red = Color32::from_rgb(220, 50, 40);
+            if on {
+                painter.rect_filled(egui::Rect::from_center_size(q(12.0, 12.0), egui::vec2(11.0, 11.0)), 1.5, red);
+            } else {
+                painter.circle_filled(q(12.0, 12.0), 6.0, red);
+                painter.circle_stroke(q(12.0, 12.0), 8.5, s);
+            }
+        }
+        Tool::Camera => {
+            painter.rect_stroke(egui::Rect::from_min_max(q(3.0, 7.5), q(21.0, 19.0)), 2.0, s, egui::StrokeKind::Middle);
+            painter.line(vec![q(8.0, 7.5), q(9.5, 5.0), q(14.5, 5.0), q(16.0, 7.5)], s);
+            painter.circle_stroke(q(12.0, 13.2), 3.4, s);
         }
         Tool::Settings => {
             painter.circle_stroke(q(12.0, 12.0), 3.0, s);

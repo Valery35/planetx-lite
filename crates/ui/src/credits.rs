@@ -106,7 +106,8 @@ pub struct Credits {
     icon: Option<egui::TextureHandle>,
     /// Место знака и подписи на экране прошлого кадра.
     pub rect: Option<egui::Rect>,
-    sources_open: bool,
+    /// Окно «Источники данных» открыто, его открывает и строка «Поиск».
+    pub sources_open: bool,
     about_open: bool,
     /// Окно «О программе» попросила открыть панель инструментов.
     pub about_request: bool,

@@ -150,3 +150,44 @@ m²	m²
 ha	ha
 km²	km²
 sq mi	mi²
+{angle} E	{angle} O
+{angle} N	{angle} N
+{angle} S	{angle} S
+{angle} W	{angle} W
+{distance}, height {height}, slope {slope}	{distance}, Höhe {height}, Neigung {slope}
+Antarctic Circle	Südlicher Polarkreis
+Arctic Circle	Nördlicher Polarkreis
+Coordinate grid	Koordinatennetz
+Copied as KML.	Als KML kopiert.
+Copy as KML	Als KML kopieren
+Elevation profile	Höhenprofil
+Elevation profile: {name}	Höhenprofil: {name}
+Equator	Äquator
+Heights are still loading, the numbers will be refined.	Die Höhen werden noch geladen, die Werte werden präzisiert.
+Length, area, ground length	Länge, Fläche, Länge über Gelände
+Link to this view	Link zu dieser Ansicht
+Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.	Kartenlänge {flat}, Länge über Gelände {ground}. Niedrigste Höhe {low}, höchste {high}. Anstieg {gain}, Abstieg {loss}. Mittlere Neigung {mean}, steilste {max}.
+Mark at least two points on the globe.	Auf dem Globus sind mindestens zwei Punkte nötig.
+Not pasted: {e}	Nicht eingefügt: {e}
+Parallels and meridians with labels, the equator, the tropics and the polar circles.	Breiten- und Längenkreise mit Beschriftung, der Äquator, die Wendekreise und die Polarkreise.
+Pasted from the clipboard.	Aus der Zwischenablage eingefügt.
+Placemark, path, polygon or circle	Ortsmarke, Pfad, Polygon oder Kreis
+PNG file	PNG-Datei
+Record a tour	Tour aufzeichnen
+Record a tour: the camera path while you move the globe	Tour aufzeichnen: der Kameraweg, während der Globus bewegt wird
+Recording a tour {clock}. Another click on the record button ends it.	Tour wird aufgezeichnet {clock}. Ein weiterer Klick auf die Aufnahmetaste beendet sie.
+Save view	Ansicht speichern
+Share	Teilen
+Snapshot of the view	Bild der Ansicht
+Snapshot of the view to a PNG file	Bild der Ansicht als PNG-Datei
+Stop recording and save the tour	Aufzeichnung beenden und Tour speichern
+Sun	Sonne
+Terrain lit by the sun at the moment of the time bar or now. Night is dark.	Gelände im Sonnenlicht zum Zeitpunkt der Zeitleiste oder jetzt. Die Nacht ist dunkel.
+The ring turns the view, the letter N puts north up. The stick inside the ring turns the gaze, the dot in its middle returns a straight down view. The lower stick moves the view. The slider sets the height, plus and minus zoom in and out.	Der Ring dreht die Ansicht, der Buchstabe N richtet Norden nach oben. Der Stick im Ring dreht den Blick, der Punkt in seiner Mitte stellt den senkrechten Blick nach unten wieder her. Der untere Stick verschiebt die Ansicht. Der Schieberegler stellt die Höhe ein, Plus und Minus zoomen hinein und heraus.
+The tour is not recorded, the camera did not move.	Die Tour ist nicht aufgezeichnet, die Kamera hat sich nicht bewegt.
+Tour	Tour
+Tropic of Cancer	Wendekreis des Krebses
+Tropic of Capricorn	Wendekreis des Steinbocks
+Turn off	Ausschalten
+Turn on	Einschalten
+View	Ansicht

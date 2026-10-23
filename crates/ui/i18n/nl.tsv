@@ -151,3 +151,44 @@ m²	m²
 ha	ha
 km²	km²
 sq mi	mi²
+{angle} E	{angle} OL
+{angle} N	{angle} NB
+{angle} S	{angle} ZB
+{angle} W	{angle} WL
+{distance}, height {height}, slope {slope}	{distance}, hoogte {height}, helling {slope}
+Antarctic Circle	Zuidpoolcirkel
+Arctic Circle	Noordpoolcirkel
+Coordinate grid	Coördinatenraster
+Copied as KML.	Gekopieerd als KML.
+Copy as KML	Kopiëren als KML
+Elevation profile	Hoogteprofiel
+Elevation profile: {name}	Hoogteprofiel: {name}
+Equator	Evenaar
+Heights are still loading, the numbers will be refined.	De hoogten worden nog geladen, de getallen worden verfijnd.
+Length, area, ground length	Lengte, oppervlakte, lengte over het reliëf
+Link to this view	Link naar deze weergave
+Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.	Lengte op de kaart {flat}, over het reliëf {ground}. Laagste hoogte {low}, hoogste {high}. Stijging {gain}, daling {loss}. Gemiddelde helling {mean}, steilste {max}.
+Mark at least two points on the globe.	Er zijn minstens twee punten op de globe nodig.
+Not pasted: {e}	Niet geplakt: {e}
+Parallels and meridians with labels, the equator, the tropics and the polar circles.	Parallellen en meridianen met labels, de evenaar, de keerkringen en de poolcirkels.
+Pasted from the clipboard.	Geplakt vanaf het klembord.
+Placemark, path, polygon or circle	Plaatsmarkering, pad, polygoon of cirkel
+PNG file	PNG-bestand
+Record a tour	Een rondleiding opnemen
+Record a tour: the camera path while you move the globe	Een rondleiding opnemen: het pad van de camera terwijl de globe beweegt
+Recording a tour {clock}. Another click on the record button ends it.	Rondleiding wordt opgenomen {clock}. Nog een klik op de opnameknop beëindigt de opname.
+Save view	Weergave opslaan
+Share	Delen
+Snapshot of the view	Momentopname van de weergave
+Snapshot of the view to a PNG file	Momentopname van de weergave naar een PNG-bestand
+Stop recording and save the tour	Opname stoppen en de rondleiding opslaan
+Sun	Zon
+Terrain lit by the sun at the moment of the time bar or now. Night is dark.	Reliëf belicht door de zon op het moment van de tijdbalk of nu. De nacht is donker.
+The ring turns the view, the letter N puts north up. The stick inside the ring turns the gaze, the dot in its middle returns a straight down view. The lower stick moves the view. The slider sets the height, plus and minus zoom in and out.	De ring draait de weergave, de letter N zet het noorden boven. De stick in de ring draait de blik, de stip in het midden herstelt de loodrechte blik omlaag. De onderste stick verschuift de weergave. De schuifregelaar stelt de hoogte in, plus en min zoomen in en uit.
+The tour is not recorded, the camera did not move.	De rondleiding is niet opgenomen, de camera heeft niet bewogen.
+Tour	Rondleiding
+Tropic of Cancer	Kreeftskeerkring
+Tropic of Capricorn	Steenbokskeerkring
+Turn off	Uitschakelen
+Turn on	Inschakelen
+View	Weergave

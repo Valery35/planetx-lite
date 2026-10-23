@@ -155,3 +155,44 @@ m²	m²
 ha	公顷
 km²	km²
 sq mi	平方英里
+{angle} E	东经 {angle}
+{angle} N	北纬 {angle}
+{angle} S	南纬 {angle}
+{angle} W	西经 {angle}
+{distance}, height {height}, slope {slope}	{distance}，高度 {height}，坡度 {slope}
+Antarctic Circle	南极圈
+Arctic Circle	北极圈
+Coordinate grid	坐标网格
+Copied as KML.	已复制为 KML。
+Copy as KML	复制为 KML
+Elevation profile	高程剖面
+Elevation profile: {name}	高程剖面：{name}
+Equator	赤道
+Heights are still loading, the numbers will be refined.	高度仍在加载，数值将进一步精确。
+Length, area, ground length	长度、面积、地表长度
+Link to this view	此视图的链接
+Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.	地图长度 {flat}，地表长度 {ground}。最低高度 {low}，最高 {high}。上升 {gain}，下降 {loss}。平均坡度 {mean}，最陡 {max}。
+Mark at least two points on the globe.	地球上至少需要两个点。
+Not pasted: {e}	未粘贴：{e}
+Parallels and meridians with labels, the equator, the tropics and the polar circles.	带标注的纬线和经线、赤道、回归线和极圈。
+Pasted from the clipboard.	已从剪贴板粘贴。
+Placemark, path, polygon or circle	地标、路径、多边形或圆
+PNG file	PNG 文件
+Record a tour	录制游览
+Record a tour: the camera path while you move the globe	录制游览：移动地球时的相机路径
+Recording a tour {clock}. Another click on the record button ends it.	正在录制游览 {clock}。再次点击录制按钮即可结束。
+Save view	保存视图
+Share	分享
+Snapshot of the view	视图快照
+Snapshot of the view to a PNG file	将视图快照保存为 PNG 文件
+Stop recording and save the tour	停止录制并保存游览
+Sun	太阳
+Terrain lit by the sun at the moment of the time bar or now. Night is dark.	地形按时间条所示时刻或当前时刻的太阳光照。夜晚为暗色。
+The ring turns the view, the letter N puts north up. The stick inside the ring turns the gaze, the dot in its middle returns a straight down view. The lower stick moves the view. The slider sets the height, plus and minus zoom in and out.	圆环旋转视图，字母 N 使北方朝上。圆环内的摇杆转动视线，其中心的点恢复垂直向下的视线。下方的摇杆平移视图。滑块设置高度，加号和减号用于放大和缩小。
+The tour is not recorded, the camera did not move.	游览未录制，相机没有移动。
+Tour	游览
+Tropic of Cancer	北回归线
+Tropic of Capricorn	南回归线
+Turn off	关闭
+Turn on	开启
+View	视图
