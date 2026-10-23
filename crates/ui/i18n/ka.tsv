@@ -73,3 +73,12 @@ As the interface	როგორც ინტერფეისი
 Local names	ადგილობრივი სახელები
 Language of place names on the globe. Without a name in this language the Latin or local name is shown.	გლობუსზე ადგილების სახელების ენა. ამ ენაზე სახელის არარსებობისას ნაჩვენებია ლათინური ან ადგილობრივი სახელი.
 Loading the font for this language…	ამ ენის შრიფტის ჩატვირთვა…
+Version {v}	ვერსია {v}
+A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	3D გლობუსი Windows-ის, Linux-ის, macOS-ისა და ვებისთვის: რელიეფი, სურათები, სცენები, KML და საკუთარი მონაცემები.
+Controls	მართვა
+Drag to turn the globe, scroll to zoom, Shift or the middle button to tilt, double-click to fly closer.	გადათრევა ატრიალებს გლობუსს, ბორბალი ადიდებს, Shift ან შუა ღილაკი ახრის, ორმაგი დაწკაპუნება აახლოებს.
+Developed with the support of	შემუშავებულია მხარდაჭერით
+User guide	მომხმარებლის სახელმძღვანელო
+Report a problem	პრობლემის შეტყობინება
+Source code	წყაროს კოდი
+Close	დახურვა

@@ -74,3 +74,12 @@ As the interface	인터페이스와 같게
 Local names	현지 이름
 Language of place names on the globe. Without a name in this language the Latin or local name is shown.	지구본 지명의 언어. 이 언어로 된 이름이 없으면 라틴 문자 또는 현지 이름이 표시됩니다.
 Loading the font for this language…	이 언어의 글꼴을 불러오는 중…
+Version {v}	버전 {v}
+A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Windows, Linux, macOS와 웹용 3D 지구본: 지형, 영상, 장면, KML, 자체 데이터.
+Controls	조작
+Drag to turn the globe, scroll to zoom, Shift or the middle button to tilt, double-click to fly closer.	드래그로 지구본 회전, 휠로 확대, Shift 또는 가운데 버튼으로 기울이기, 더블 클릭으로 가까이 이동.
+Developed with the support of	개발 지원
+User guide	사용자 가이드
+Report a problem	문제 신고
+Source code	소스 코드
+Close	닫기

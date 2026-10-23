@@ -74,3 +74,12 @@ As the interface	表示言語と同じ
 Local names	現地名
 Language of place names on the globe. Without a name in this language the Latin or local name is shown.	地球儀上の地名の言語。この言語の名前がない場合はラテン文字または現地の名前を表示します。
 Loading the font for this language…	この言語のフォントを読み込み中…
+Version {v}	バージョン {v}
+A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Windows、Linux、macOS とウェブ向けの 3D 地球儀：地形、画像、シーン、KML、独自データ。
+Controls	操作
+Drag to turn the globe, scroll to zoom, Shift or the middle button to tilt, double-click to fly closer.	ドラッグで地球儀を回転、ホイールで拡大縮小、Shift または中ボタンで傾斜、ダブルクリックで近づく。
+Developed with the support of	開発協力
+User guide	ユーザーガイド
+Report a problem	問題を報告
+Source code	ソースコード
+Close	閉じる

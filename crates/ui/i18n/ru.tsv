@@ -78,3 +78,13 @@ As the interface	Как интерфейс
 Local names	Местные названия
 Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Язык названий пунктов на глобусе. Если названия на этом языке нет, ставится название латиницей или местное.
 Loading the font for this language…	Загрузка шрифта для этого языка…
+Version {v}	Версия {v}
+A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Трёхмерный глобус для Windows, Linux, macOS и браузера: рельеф, снимки, сцены, KML и свои данные.
+Controls	Управление
+Drag to turn the globe, scroll to zoom, Shift or the middle button to tilt, double-click to fly closer.	Перетаскивание вращает глобус, колесо приближает, Shift или средняя кнопка наклоняют, двойной щелчок - перелёт ближе.
+Developed with the support of	Разработка при поддержке
+Inform++ LLC	ООО «Информ++»
+User guide	Руководство
+Report a problem	Сообщить об ошибке
+Source code	Исходный код
+Close	Закрыть

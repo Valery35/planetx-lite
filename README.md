@@ -10,6 +10,8 @@ a web page, on phones too.
 
 **Downloads:** [releases](https://github.com/Valery35/planetx-lite/releases)
 
+**User guide:** [doc/manual/MANUAL.en.md](doc/manual/MANUAL.en.md)
+
 | System | File |
 |---|---|
 | Windows x86_64 | `PlanetX-Lite-<version>-windows-x86_64-setup.exe` - installer, `...-portable.zip` - no installation |
@@ -94,6 +96,8 @@ window.
 **Страница:** https://valery35.github.io/planetx-lite/
 
 **Загрузки:** [выпуски](https://github.com/Valery35/planetx-lite/releases)
+
+**Руководство:** [doc/manual/MANUAL.ru.md](doc/manual/MANUAL.ru.md)
 
 | Система | Файл |
 |---|---|

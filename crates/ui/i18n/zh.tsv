@@ -77,3 +77,12 @@ As the interface	与界面相同
 Local names	当地名称
 Language of place names on the globe. Without a name in this language the Latin or local name is shown.	地球上地名的语言。没有该语言的名称时显示拉丁或当地名称。
 Loading the font for this language…	正在加载此语言的字体…
+Version {v}	版本 {v}
+A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	适用于 Windows、Linux、macOS 和网页的三维地球：地形、影像、场景、KML 和自有数据。
+Controls	操作
+Drag to turn the globe, scroll to zoom, Shift or the middle button to tilt, double-click to fly closer.	拖动旋转地球，滚轮缩放，Shift 或中键倾斜，双击飞近。
+Developed with the support of	开发支持
+User guide	用户指南
+Report a problem	报告问题
+Source code	源代码
+Close	关闭

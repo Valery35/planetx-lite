@@ -73,3 +73,12 @@ As the interface	Như giao diện
 Local names	Tên địa phương
 Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Ngôn ngữ tên địa danh trên quả địa cầu. Nếu không có tên bằng ngôn ngữ này, hiển thị tên Latinh hoặc tên địa phương.
 Loading the font for this language…	Đang tải phông chữ cho ngôn ngữ này…
+Version {v}	Phiên bản {v}
+A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Quả địa cầu 3D cho Windows, Linux, macOS và web: địa hình, ảnh, cảnh, KML và dữ liệu riêng.
+Controls	Điều khiển
+Drag to turn the globe, scroll to zoom, Shift or the middle button to tilt, double-click to fly closer.	Kéo để xoay quả địa cầu, cuộn để phóng to, Shift hoặc nút giữa để nghiêng, nhấp đúp để bay lại gần.
+Developed with the support of	Phát triển với sự hỗ trợ của
+User guide	Hướng dẫn sử dụng
+Report a problem	Báo lỗi
+Source code	Mã nguồn
+Close	Đóng

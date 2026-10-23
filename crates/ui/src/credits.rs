@@ -218,19 +218,101 @@ impl Credits {
                 }
             }
         });
+        let icon = self.icon(ctx);
+        let mut about_open = self.about_open;
+        let mut close = false;
+        let mut sources_request = false;
         egui::Window::new(about)
-            .open(&mut self.about_open)
+            .open(&mut about_open)
             .collapsible(false)
             .resizable(false)
             .pivot(egui::Align2::CENTER_CENTER)
             .default_pos(center)
             .show(ctx, |ui| {
-            ui.heading(format!("PlanetX Lite {}", env!("CARGO_PKG_VERSION")));
-            ui.label(tr(lang, "The PlanetX globe without QGIS."));
-            ui.label(tr(lang, "© 2026 Inform++ LLC. Apache 2.0."));
-            ui.hyperlink("https://github.com/Valery35/planetx-lite");
-        });
+                about_body(ui, lang, icon);
+                ui.add_space(10.0);
+                ui.separator();
+                ui.horizontal(|ui| {
+                    let open = |url: &str| ctx.open_url(egui::OpenUrl::new_tab(url));
+                    if ui.button(tr(lang, "User guide")).clicked() {
+                        open(&manual_url(lang));
+                    }
+                    if ui.button(tr(lang, "Data sources")).clicked() {
+                        sources_request = true;
+                    }
+                    if ui.button(tr(lang, "Report a problem")).clicked() {
+                        open(ISSUES);
+                    }
+                    if ui.button(tr(lang, "Source code")).clicked() {
+                        open(REPOSITORY);
+                    }
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.button(tr(lang, "Close")).clicked() {
+                            close = true;
+                        }
+                    });
+                });
+            });
+        self.about_open = about_open && !close;
+        self.sources_open |= sources_request;
     }
+}
+
+/// Хранилище Lite, список сообщений об ошибках.
+pub const REPOSITORY: &str = "https://github.com/Valery35/planetx-lite";
+pub const ISSUES: &str = "https://github.com/Valery35/planetx-lite/issues";
+/// Сайт ООО «Информ++», как в окне «О модуле» модуля.
+pub const INFORM: &str = "https://www.informpp.ru/";
+
+/// Руководство на языке интерфейса: русское для русского, иначе
+/// английское, файлы `doc/manual` хранилища.
+pub fn manual_url(lang: Lang) -> String {
+    let code = if lang == Lang::RU { "ru" } else { "en" };
+    format!("{REPOSITORY}/blob/main/doc/manual/MANUAL.{code}.md")
+}
+
+/// Текст окна «О программе», как окно «О модуле» модуля: слева знак,
+/// справа название с версией, описание, управление, разработчик
+/// и лицензия.
+fn about_body(ui: &mut egui::Ui, lang: Lang, icon: Option<egui::TextureId>) {
+    let p = crate::theme::pal();
+    ui.horizontal_top(|ui| {
+        if let Some(id) = icon {
+            ui.add(egui::Image::new((id, egui::vec2(96.0, 96.0))));
+        }
+        ui.add_space(12.0);
+        ui.vertical(|ui| {
+            ui.set_max_width(420.0);
+            ui.label(
+                egui::RichText::new("PlanetX Lite")
+                    .size(26.0)
+                    .family(egui::FontFamily::Name(crate::fonts::SEMIBOLD.into()))
+                    .color(p.text),
+            );
+            ui.label(
+                egui::RichText::new(crate::i18n::trf(lang, "Version {v}", &[("v", env!("CARGO_PKG_VERSION"))])).color(p.muted),
+            );
+            ui.add_space(8.0);
+            ui.label(tr(lang, "The PlanetX globe without QGIS."));
+            ui.label(tr(
+                lang,
+                "A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.",
+            ));
+            ui.add_space(8.0);
+            ui.label(egui::RichText::new(tr(lang, "Controls")).strong());
+            ui.label(tr(
+                lang,
+                "Drag to turn the globe, scroll to zoom, Shift or the middle button to tilt, double-click to fly closer.",
+            ));
+            ui.add_space(8.0);
+            ui.horizontal_wrapped(|ui| {
+                ui.spacing_mut().item_spacing.x = 4.0;
+                ui.label(tr(lang, "Developed with the support of"));
+                ui.hyperlink_to(tr(lang, "Inform++ LLC"), INFORM);
+            });
+            ui.label(egui::RichText::new(tr(lang, "© 2026 Inform++ LLC. Apache 2.0.")).color(p.muted));
+        });
+    });
 }
 
 #[cfg(test)]
