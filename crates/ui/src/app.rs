@@ -347,6 +347,17 @@ pub struct LiteApp {
     confirm: Option<(String, String, Confirmed)>,
     /// Окно «Свойства папки».
     folder_props: Option<crate::folderprops::FolderProps>,
+    /// Окно свойств наложения и окно сетевой ссылки.
+    overlay_props: Option<crate::overlayprops::OverlayProps>,
+    /// Итоги окон панели свойств этого кадра, их разбирают окна.
+    side: SideResults,
+    /// Последний показ правки метки на глобусе.
+    last_preview: Option<scene::kml::Place>,
+    link_dialog: Option<crate::netlinks::LinkDialog>,
+    netlinks: crate::netlinks::NetLinks,
+    picked_box: PickedBox,
+    /// Модели по ссылке на файл, в программе: путь - пакет.
+    linked_models: HashMap<String, LinkedModel>,
     /// Окно названия: что сохраняется и название.
     name_dialog: Option<(NameFor, String)>,
     /// Подсказки строки «Поиск» открыты: строка была в фокусе.
@@ -375,6 +386,67 @@ pub struct LiteApp {
 
 /// Ящик прочитанных брошенных файлов.
 type DroppedBox = Arc<std::sync::Mutex<Vec<(Result<Vec<u8>, String>, String)>>>;
+
+/// Итоги окон панели свойств кадра: окно глобуса разбирает их после
+/// панели.
+#[derive(Default)]
+struct SideResults {
+    tool: Option<crate::tool::Action>,
+    folder: Option<crate::folderprops::Outcome>,
+    overlay: Option<crate::overlayprops::Outcome>,
+    bathy: Option<crate::bathymetry::Answer>,
+}
+
+/// Для чего выбран файл картинки или модели.
+#[derive(Debug, Clone, PartialEq)]
+enum Pick {
+    /// Новое наложение вида kind в папке по пути, как «Добавить» модуля.
+    New(scene::overlays::Kind, Vec<usize>),
+    /// «Обзор…» открытого окна свойств наложения.
+    Browse,
+}
+
+/// Выбранный файл: имя, путь на диске (в программе) и байты.
+struct PickedFile {
+    name: String,
+    path: Option<String>,
+    bytes: Vec<u8>,
+}
+
+/// Ящик выбранных файлов картинок и моделей: на странице браузер читает
+/// их асинхронно.
+type PickedBox = Arc<std::sync::Mutex<Vec<(Pick, Vec<PickedFile>)>>>;
+
+/// Модель по ссылке на файл: время правки файла, время проверки и пакет.
+type LinkedModel = (Option<f64>, f64, Option<Arc<Vec<u8>>>);
+
+/// Время правки файла на диске, секунды, или None. На странице файлов
+/// на диске нет.
+fn file_stamp_of(path: &str) -> Option<f64> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let modified = std::fs::metadata(path).ok()?.modified().ok()?;
+        Some(modified.duration_since(std::time::UNIX_EPOCH).ok()?.as_secs_f64())
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = path;
+        None
+    }
+}
+
+/// Байты файла на диске или None. На странице файлов на диске нет.
+fn read_local(path: &str) -> Option<Vec<u8>> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        std::fs::read(path).ok()
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = path;
+        None
+    }
+}
 
 /// Целое с пробелом между тысячами: 20 000.
 pub(crate) fn group_thousands(n: i64) -> String {
@@ -664,6 +736,13 @@ impl LiteApp {
             geo_meshes: Vec::new(),
             confirm: None,
             folder_props: None,
+            overlay_props: None,
+            side: SideResults::default(),
+            last_preview: None,
+            link_dialog: None,
+            netlinks: crate::netlinks::NetLinks::default(),
+            picked_box: PickedBox::default(),
+            linked_models: HashMap::new(),
             recording: None,
             snapshot: None,
             card: None,
@@ -843,7 +922,9 @@ impl LiteApp {
             self.name_dialog = Some((NameFor::View, name));
         }
         if let Some(tool) = new_tool {
-            // Повторное нажатие «Линейки» закрывает её.
+            // Повторное нажатие «Линейки» закрывает её. Открытая правка
+            // метки закрывается «Отменой».
+            self.close_side();
             self.tool = tool.open.then_some(tool);
         }
         match scene {
@@ -1081,7 +1162,7 @@ impl LiteApp {
                 };
                 let mut tool = if choice == Choice::AddPlacemark { crate::tool::Tool::place(crate::ruler::Mode::Point) } else { crate::tool::Tool::ruler() };
                 tool.ruler.points.push(p);
-                self.tool = Some(tool);
+                self.set_tool(tool);
             }
             Choice::FlyHere => {
                 if let Some((lat, lon)) = point {
@@ -1228,7 +1309,7 @@ impl LiteApp {
         }
         // Окно «Батиметрия водоёма».
         if let Some(dialog) = &mut self.bathy
-            && let Some(answer) = dialog.show(ctx, lang)
+            && let Some(answer) = self.side.bathy.take()
         {
             let name = dialog.name.clone();
             self.bathy = None;
@@ -1284,7 +1365,8 @@ impl LiteApp {
         let p = &self.nav.pose;
         let current = [p.lat, p.lon, p.distance, p.heading, p.tilt];
         if let Some(props) = &mut self.folder_props {
-            match props.window(ctx, lang, current) {
+            let _ = current;
+            match self.side.folder.take().unwrap_or(crate::folderprops::Outcome::Open) {
                 crate::folderprops::Outcome::Open => {}
                 crate::folderprops::Outcome::Cancel => self.folder_props = None,
                 crate::folderprops::Outcome::Ok => {
@@ -1433,9 +1515,34 @@ impl LiteApp {
             return;
         };
         tool.current_view = current;
-        let action = tool.window(ctx, self.lang, &names, Some((&heights_at, ready)));
+        let edit = match &tool.purpose {
+            crate::tool::Purpose::Edit(path) => Some(path.clone()),
+            _ => None,
+        };
+        // Окно свойств метки - в панели свойств, его итог пришёл оттуда.
+        let action = if edit.is_some() { self.side.tool.take() } else { tool.window(ctx, self.lang, &names, Some((&heights_at, ready))) };
+        // Правка метки видна на глобусе сразу, как предпросмотр модуля:
+        // метка заменяется меткой с правками, «Отмена» возвращает прежнюю.
+        let mut show = None;
+        if let Some(path) = &edit {
+            if tool.open {
+                let preview = tool.preview();
+                if preview.is_some() && preview != self.last_preview {
+                    self.last_preview = preview.clone();
+                    show = preview.map(|p| (path.clone(), p));
+                }
+            } else if !matches!(action, Some(crate::tool::Action::Update(..))) {
+                show = tool.original().cloned().map(|p| (path.clone(), p));
+            }
+        }
         if !tool.open {
             self.tool = None;
+            self.last_preview = None;
+        }
+        if let Some((path, place)) = show
+            && self.marks.set_place(&path, place)
+        {
+            self.marks_changed();
         }
         let root = marks::root_name(self.lang);
         match action {
@@ -1529,6 +1636,7 @@ impl LiteApp {
                 Action::Sources => self.credits.sources_open = true,
                 Action::Catalog => self.catalog.open = !self.catalog.open,
                 Action::Bathymetry(name) => {
+                    self.close_side();
                     let level = self.shore_level(&name);
                     self.bathy = Some(crate::bathymetry::Dialog::new(&name, self.relief.lake(&name), level));
                 }
@@ -2622,16 +2730,30 @@ impl LiteApp {
                     self.tree_state.selected = Some(folder.clone());
                     match what {
                         AddWhat::Folder => self.queued.push(crate::marks::Action::NewFolder(folder)),
-                        AddWhat::Point => self.tool = Some(crate::tool::Tool::place(crate::ruler::Mode::Point)),
-                        AddWhat::Line => self.tool = Some(crate::tool::Tool::place(crate::ruler::Mode::Path)),
-                        AddWhat::Polygon => self.tool = Some(crate::tool::Tool::place(crate::ruler::Mode::Polygon)),
+                        AddWhat::Point => self.set_tool(crate::tool::Tool::place(crate::ruler::Mode::Point)),
+                        AddWhat::Line => self.set_tool(crate::tool::Tool::place(crate::ruler::Mode::Path)),
+                        AddWhat::Polygon => self.set_tool(crate::tool::Tool::place(crate::ruler::Mode::Polygon)),
                         AddWhat::RecordedTour => {
                             if self.recording.is_none() {
                                 self.toggle_record(now);
                             }
                         }
+                        AddWhat::Ground => self.pick_for(ui.ctx(), Pick::New(scene::overlays::Kind::Ground, folder)),
+                        AddWhat::Photo => self.pick_for(ui.ctx(), Pick::New(scene::overlays::Kind::Photo, folder)),
+                        AddWhat::Screen => self.pick_for(ui.ctx(), Pick::New(scene::overlays::Kind::Screen, folder)),
+                        AddWhat::Model => self.pick_for(ui.ctx(), Pick::New(scene::overlays::Kind::Model, folder)),
+                        AddWhat::Link => {
+                            self.link_dialog = Some(crate::netlinks::LinkDialog { path: None, parent: folder, name: tr(self.lang, "Network link").to_string(), link: String::new(), refresh: 0.0 });
+                        }
                     }
                 }
+                crate::marks::Action::OverlayProperties(path) => self.open_overlay_props(path, now),
+                crate::marks::Action::LinkProperties(path) => {
+                    if let Some(f) = self.marks.folder(&path) {
+                        self.link_dialog = Some(crate::netlinks::LinkDialog { path: Some(path.clone()), parent: Vec::new(), name: f.name.clone(), link: f.link.clone(), refresh: f.refresh });
+                    }
+                }
+                crate::marks::Action::ReloadLink(path) => self.netlinks.reload(&path),
                 crate::marks::Action::NewFolderAfter(path) => {
                     let parent = path[..path.len().saturating_sub(1)].to_vec();
                     let index = path.last().map_or(0, |i| i + 1);
@@ -2642,6 +2764,7 @@ impl LiteApp {
                     self.marks_changed();
                 }
                 crate::marks::Action::FolderProperties(path) => {
+                    self.close_side();
                     if let Some(scene::kml::Item::Folder(f)) = self.marks.tree.as_ref().and_then(|t| marks::item_at(t, &path)) {
                         self.folder_props = Some(crate::folderprops::FolderProps::new(path, f));
                     }
@@ -2656,6 +2779,7 @@ impl LiteApp {
                 }
                 crate::marks::Action::Open => self.pick_file(ui.ctx(), now),
                 crate::marks::Action::Properties(path) => {
+                    self.close_side();
                     if let Some(place) = self.marks.place(&path) {
                         self.tool = Some(crate::tool::Tool::edit(path, place));
                     }
@@ -2752,6 +2876,398 @@ impl LiteApp {
                 }
                 ctx.request_repaint();
             });
+        }
+    }
+
+    /// Выбор картинки или модели для наложения, как окна выбора файла
+    /// `add_overlay`, `add_model` и «Обзор…» модуля. У модели в программе
+    /// пакет собирается из файла и файлов рядом с ним, на странице -
+    /// из всех выбранных файлов.
+    fn pick_for(&mut self, ctx: &egui::Context, pick: Pick) {
+        let model = match &pick {
+            Pick::New(kind, _) => *kind == scene::overlays::Kind::Model,
+            Pick::Browse => self.overlay_props.as_ref().is_some_and(|p| p.edit.kind() == scene::overlays::Kind::Model),
+        };
+        let lang = self.lang;
+        let (title, kinds): (&str, &[&str]) = if model {
+            (tr(lang, "3D models (*.dae *.gltf *.glb *.obj *.kmz)"), &["dae", "gltf", "glb", "obj", "kmz"])
+        } else {
+            (tr(lang, "Images (*.png *.jpg *.jpeg *.gif)"), &["png", "jpg", "jpeg", "gif"])
+        };
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let _ = ctx;
+            let Some(path) = rfd::FileDialog::new().add_filter(title, kinds).pick_file() else {
+                return;
+            };
+            let name = path.file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
+            match std::fs::read(&path) {
+                Ok(bytes) => {
+                    let file = PickedFile { name, path: Some(path.to_string_lossy().into_owned()), bytes };
+                    if let Ok(mut s) = self.picked_box.lock() {
+                        s.push((pick, vec![file]));
+                    }
+                }
+                Err(e) => self.open_message = Some(format!("{name}: {e}")),
+            }
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            let (slot, ctx) = (self.picked_box.clone(), ctx.clone());
+            let title = title.to_string();
+            let kinds: Vec<String> = kinds.iter().map(|k| k.to_string()).collect();
+            wasm_bindgen_futures::spawn_local(async move {
+                let dialog = rfd::AsyncFileDialog::new().add_filter(&title, &kinds);
+                // У модели - файл модели и его картинки сразу.
+                let files = if model { dialog.pick_files().await.unwrap_or_default() } else { dialog.pick_file().await.into_iter().collect() };
+                let mut read = Vec::new();
+                for file in files {
+                    read.push(PickedFile { name: file.file_name(), path: None, bytes: file.read().await });
+                }
+                if !read.is_empty()
+                    && let Ok(mut s) = slot.lock()
+                {
+                    s.push((pick, read));
+                }
+                ctx.request_repaint();
+            });
+        }
+    }
+
+    /// Пакет модели из выбранных файлов: главный - первый файл модели,
+    /// остальные - по ссылкам из него. В программе файлы рядом читаются
+    /// с диска. Отдаёт имя главного файла, путь на диске и пакет.
+    fn model_package(files: &[PickedFile]) -> Option<(String, Option<String>, Vec<u8>)> {
+        let main = files.iter().find(|f| scene::models::EXTENSIONS.iter().any(|e| f.name.to_lowercase().ends_with(e)))?;
+        let folder = main.path.as_deref().and_then(|p| std::path::Path::new(p).parent().map(std::path::Path::to_path_buf));
+        let fetch = |reference: &str| -> Option<Vec<u8>> {
+            let short = reference.rsplit(['/', '\\']).next().unwrap_or(reference);
+            if let Some(f) = files.iter().find(|f| f.name == reference || f.name == short) {
+                return Some(f.bytes.clone());
+            }
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(dir) = &folder {
+                return std::fs::read(dir.join(reference.replace('\\', "/"))).ok();
+            }
+            let _ = &folder;
+            None
+        };
+        let package = scene::models::collect(&main.name, &main.bytes, &fetch, &std::collections::BTreeMap::new()).ok()?;
+        Some((main.name.clone(), main.path.clone(), package))
+    }
+
+    /// Выбранные файлы: новое наложение и его окно свойств или новая
+    /// картинка открытого окна.
+    fn picked(&mut self, now: f64) {
+        let arrived: Vec<(Pick, Vec<PickedFile>)> = self.picked_box.lock().map(|mut s| s.drain(..).collect()).unwrap_or_default();
+        for (pick, files) in arrived {
+            let Some(first) = files.first() else {
+                continue;
+            };
+            let (first_name, first_bytes, first_path) = (first.name.clone(), first.bytes.clone(), first.path.clone());
+            let model = files.iter().any(|f| scene::models::EXTENSIONS.iter().any(|e| f.name.to_lowercase().ends_with(e)));
+            // KMZ модели открывается как файл меток: модель в нём уже стоит.
+            if first_name.to_lowercase().ends_with(".kmz") {
+                let _ = self.open_file(&first_bytes, &first_name, Some(now));
+                continue;
+            }
+            let stem = first_name.rsplit_once('.').map_or(first_name.as_str(), |(s, _)| s).to_string();
+            match pick {
+                Pick::New(kind, folder) => {
+                    let overlay = if model || kind == scene::overlays::Kind::Model {
+                        let Some((name, path, package)) = Self::model_package(&files) else {
+                            self.open_message = Some(trf(self.lang, "The model cannot be read: {name}", &[("name", &first_name)]));
+                            continue;
+                        };
+                        let mut o = crate::overlayprops::new_overlay(scene::overlays::Kind::Model, &stem, &self.nav, 1.0);
+                        // Модель - ссылкой на файл, как Link у Google Earth:
+                        // правка файла видна на глобусе. На странице пути нет,
+                        // модель - в файле меток.
+                        match path {
+                            Some(p) => {
+                                self.linked_models.insert(p.clone(), (file_stamp_of(&p), now, Some(Arc::new(package))));
+                                o.href = p;
+                            }
+                            None => {
+                                o.href = name;
+                                o.image = Some(package);
+                            }
+                        }
+                        o
+                    } else {
+                        let dims = image::ImageReader::new(std::io::Cursor::new(&first_bytes)).with_guessed_format().ok().and_then(|r| r.into_dimensions().ok());
+                        let Some((w, h)) = dims else {
+                            self.open_message = Some(trf(self.lang, "The image cannot be read: {name}", &[("name", &first_name)]));
+                            continue;
+                        };
+                        let mut o = crate::overlayprops::new_overlay(kind, &stem, &self.nav, f64::from(w) / f64::from(h.max(1)));
+                        o.href = first_name.clone();
+                        o.image = Some(first_bytes.clone());
+                        o
+                    };
+                    let at = self.marks.insert(&folder, scene::kml::Item::Overlay(overlay), marks::root_name(self.lang));
+                    self.tree_state.selected = Some(at.clone());
+                    self.marks_changed();
+                    self.open_overlay_props(at, now);
+                }
+                Pick::Browse => {
+                    let package = if model { Self::model_package(&files) } else { Some((first_name.clone(), first_path, first_bytes)) };
+                    match (package, &mut self.overlay_props) {
+                        (Some((name, path, bytes)), Some(props)) => props.set_file(bytes, &name, path),
+                        (None, _) => self.open_message = Some(trf(self.lang, "The model cannot be read: {name}", &[("name", &first_name)])),
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+
+    /// Окно свойств наложения по пути. У модели по ссылке пакет читается
+    /// для рамки на глобусе.
+    fn open_overlay_props(&mut self, path: Vec<usize>, now: f64) {
+        self.close_side();
+        let Some(overlay) = self.marks.overlay(&path) else {
+            return;
+        };
+        let mut props = crate::overlayprops::OverlayProps::new(path, overlay);
+        if props.bytes.is_none()
+            && let Some(package) = self.linked_package(&props.edit.href.clone(), now)
+        {
+            props.set_model_bytes(package.to_vec());
+        }
+        self.overlay_props = Some(props);
+    }
+
+    /// Пакет модели по ссылке на файл в программе или None. Пакет
+    /// помнится до смены времени правки файла.
+    fn linked_package(&mut self, href: &str, now: f64) -> Option<Arc<Vec<u8>>> {
+        if href.is_empty() || crate::pictures::is_remote(href) || cfg!(target_arch = "wasm32") {
+            return None;
+        }
+        let path = crate::netlinks::local_path(href)?;
+        if let Some((_, _, Some(p))) = self.linked_models.get(href) {
+            return Some(p.clone());
+        }
+        let bytes = read_local(&path)?;
+        let name = std::path::Path::new(&path).file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
+        let file = PickedFile { name, path: Some(path.clone()), bytes };
+        let package = Self::model_package(std::slice::from_ref(&file)).map(|(_, _, p)| Arc::new(p));
+        self.linked_models.insert(href.to_string(), (file_stamp_of(&path), now, package.clone()));
+        package
+    }
+
+    /// Наложения кадра для моделей: у модели по ссылке на файл пакет
+    /// читается с диска, через промежуток обновления файл проверяется
+    /// и читается заново, если изменился, как у модуля.
+    fn model_overlays(&mut self, now: f64) -> Vec<scene::kml::Overlay> {
+        let mut list: Vec<scene::kml::Overlay> = self.marks.overlays().to_vec();
+        for o in list.iter_mut().filter(|o| o.kind() == scene::overlays::Kind::Model && o.image.as_ref().is_none_or(Vec::is_empty)) {
+            if let Some(p) = self.linked_package(&o.href, now) {
+                o.image = Some(p.to_vec());
+            }
+        }
+        list
+    }
+
+    /// Модели по ссылке с обновлением: через промежуток файл
+    /// проверяется, изменённый читается заново и модели собираются
+    /// заново.
+    fn check_linked_models(&mut self, now: f64) {
+        let mut stale = Vec::new();
+        for o in self.marks.overlays().iter().filter(|o| o.kind() == scene::overlays::Kind::Model && o.overlay.refresh > 0.0) {
+            let step = crate::netlinks::interval(o.overlay.refresh);
+            if let Some(entry) = self.linked_models.get_mut(&o.href)
+                && now - entry.1 >= step
+            {
+                entry.1 = now;
+                if crate::netlinks::local_path(&o.href).and_then(|p| file_stamp_of(&p)) != entry.0 {
+                    stale.push(o.href.clone());
+                }
+            }
+        }
+        if !stale.is_empty() {
+            for href in stale {
+                self.linked_models.remove(&href);
+            }
+            self.models.clear();
+            self.marks.refresh();
+        }
+    }
+
+    /// Новый инструмент: открытая правка метки закрывается «Отменой».
+    fn set_tool(&mut self, tool: crate::tool::Tool) {
+        self.close_side();
+        self.tool = Some(tool);
+    }
+
+    /// Закрыть окно панели свойств «Отменой»: в панели одно окно, новое
+    /// закрывает прежнее, как `SidePanel.host` модуля.
+    fn close_side(&mut self) {
+        if let Some(tool) = self.tool.take() {
+            if let (crate::tool::Purpose::Edit(path), Some(original)) = (&tool.purpose, tool.original()) {
+                if self.marks.set_place(path, original.clone()) {
+                    self.marks_changed();
+                }
+            } else {
+                self.tool = Some(tool);
+            }
+        }
+        self.last_preview = None;
+        self.folder_props = None;
+        self.bathy = None;
+        if let Some(props) = self.overlay_props.take() {
+            self.marks.set_overlay(&props.path, props.original);
+            self.marks_changed();
+        }
+    }
+
+    /// Панель свойств справа от глобуса, как `SidePanel` модуля:
+    /// заголовок, ✕ - «Отмена», тело окна с прокруткой во всю высоту.
+    /// Ширину задаёт разделитель.
+    fn side_panel(&mut self, ui: &mut egui::Ui) {
+        let lang = self.lang;
+        let editing = self.tool.as_ref().is_some_and(|t| matches!(t.purpose, crate::tool::Purpose::Edit(_)));
+        let title = if editing {
+            self.tool.as_ref().map(|t| t.edit_title(lang)).unwrap_or_default()
+        } else if let Some(p) = &self.overlay_props {
+            p.title(lang).to_string()
+        } else if self.folder_props.is_some() {
+            tr(lang, "Folder properties").to_string()
+        } else if self.bathy.is_some() {
+            tr(lang, "Water body bathymetry").to_string()
+        } else {
+            return;
+        };
+        let names = self.marks.names();
+        let p = &self.nav.pose;
+        let current = [p.lat, p.lon, p.distance, p.heading, p.tilt];
+        let mut close = false;
+        egui::Panel::right("planetx-properties").resizable(true).default_size(360.0).min_size(260.0).show(ui, |ui| {
+            ui.add_space(4.0);
+            ui.horizontal(|ui| {
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    if ui.button("✕").on_hover_text(tr(lang, "Close the properties without saving the edits, like the Cancel button.")).clicked() {
+                        close = true;
+                    }
+                    ui.add(egui::Label::new(egui::RichText::new(&title).strong()).wrap());
+                });
+            });
+            ui.separator();
+            egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
+                if editing {
+                    if let Some(tool) = &mut self.tool {
+                        self.side.tool = tool.edit_body(ui, lang, &names);
+                    }
+                } else if let Some(props) = &mut self.overlay_props {
+                    self.side.overlay = Some(props.body(ui, lang));
+                } else if let Some(props) = &mut self.folder_props {
+                    self.side.folder = Some(props.body(ui, lang, current));
+                } else if let Some(dialog) = &mut self.bathy {
+                    self.side.bathy = dialog.body(ui, lang);
+                }
+            });
+        });
+        if close {
+            self.close_side();
+        }
+    }
+
+    /// Окна наложения и сетевой ссылки, как `_open_overlay_properties`
+    /// и `add_link` модуля.
+    fn overlay_windows(&mut self, ctx: &egui::Context) {
+        let lang = self.lang;
+        if let Some(props) = &mut self.overlay_props {
+            let outcome = self.side.overlay.take().unwrap_or(crate::overlayprops::Outcome::Open);
+            // Правки видны на глобусе сразу.
+            if std::mem::take(&mut props.changed) {
+                let (path, edit) = (props.path.clone(), props.edit.clone());
+                self.marks.set_overlay(&path, edit);
+                self.marks_changed();
+            }
+            match outcome {
+                crate::overlayprops::Outcome::Open => {}
+                crate::overlayprops::Outcome::Browse => self.pick_for(ctx, Pick::Browse),
+                crate::overlayprops::Outcome::Ok => {
+                    if let Some(props) = self.overlay_props.take() {
+                        self.marks.set_overlay(&props.path, props.edit);
+                        self.marks_changed();
+                    }
+                }
+                crate::overlayprops::Outcome::Cancel => {
+                    if let Some(props) = self.overlay_props.take() {
+                        self.marks.set_overlay(&props.path, props.original);
+                        self.marks_changed();
+                    }
+                }
+            }
+        }
+        if let Some(dialog) = &mut self.link_dialog {
+            match dialog.window(ctx, lang) {
+                None => {}
+                Some(false) => self.link_dialog = None,
+                Some(true) => {
+                    let Some(d) = self.link_dialog.take() else {
+                        return;
+                    };
+                    let (name, link) = (d.name.trim().to_string(), d.link.trim().to_string());
+                    match d.path {
+                        Some(path) => {
+                            let refresh = d.refresh;
+                            if self.marks.edit_folder(&path, |f| {
+                                if !name.is_empty() {
+                                    f.name = name;
+                                }
+                                f.link = link;
+                                f.refresh = refresh;
+                            }) {
+                                self.netlinks.reload(&path);
+                                self.marks_changed();
+                            }
+                        }
+                        None if !link.is_empty() => {
+                            let mut folder = scene::kml::Folder::new(if name.is_empty() { &link } else { &name });
+                            folder.link = link;
+                            folder.refresh = d.refresh;
+                            let at = self.marks.insert(&d.parent, scene::kml::Item::Folder(folder), marks::root_name(lang));
+                            self.tree_state.selected = Some(at);
+                            self.marks_changed();
+                        }
+                        None => {}
+                    }
+                }
+            }
+        }
+    }
+
+    /// Шаг сетевых ссылок: пришедший документ заменяет содержимое папки,
+    /// как `NetLinks._arrived` модуля.
+    fn step_links(&mut self, now: f64) {
+        let loaders = &self.loaders;
+        let request = || (loaders.request)(crate::netlinks::MAX_BYTES);
+        let read = |path: &str| -> Result<Vec<u8>, String> { read_local(path).ok_or_else(|| format!("{path}?")) };
+        let arrived = self.netlinks.step(self.marks.tree.as_ref(), now, &request, &read, &file_stamp_of);
+        let mut changed = false;
+        for (path, link, got) in arrived {
+            let Some(folder) = self.marks.folder(&path) else {
+                continue;
+            };
+            if folder.link.trim() != link {
+                continue;
+            }
+            let name = folder.name.clone();
+            match got {
+                Ok(tree) => {
+                    self.netlinks.errors.remove(&path);
+                    changed |= self.marks.edit_folder(&path, |f| f.children = tree.children);
+                }
+                Err(e) => {
+                    self.open_message = Some(crate::netlinks::error_text(self.lang, &name, &e));
+                    self.netlinks.errors.insert(path, e);
+                }
+            }
+        }
+        if changed {
+            self.marks_changed();
         }
     }
 
@@ -3307,8 +3823,8 @@ impl LiteApp {
                 self.set_extra(e, !on);
             }
             Command::Catalog => self.catalog.open = true,
-            Command::Ruler => self.tool = Some(crate::tool::Tool::ruler()),
-            Command::Place => self.tool = Some(crate::tool::Tool::place(crate::ruler::Mode::Point)),
+            Command::Ruler => self.set_tool(crate::tool::Tool::ruler()),
+            Command::Place => self.set_tool(crate::tool::Tool::place(crate::ruler::Mode::Point)),
             Command::SaveView => self.name_dialog = Some((NameFor::View, scene::placetree::numbered_name(tr(self.lang, "View"), &self.marks.names()))),
             Command::Snapshot => self.snapshot = Some(Snapshot::Hide(SnapshotTo::File)),
             Command::CopyView => self.snapshot = Some(Snapshot::Hide(SnapshotTo::Clipboard)),
@@ -3415,6 +3931,7 @@ impl eframe::App for LiteApp {
         }
         if self.check.is_none() && (self.shot.is_none() || self.shot_ui) {
             self.marks_panel(ui, now);
+            self.side_panel(ui);
         }
 
         let rect = ui.available_rect_before_wrap();
@@ -3474,7 +3991,9 @@ impl eframe::App for LiteApp {
             // Органы навигации и вершина инструмента держат мышь - Землю
             // она не двигает.
             let padded = self.shows_ui() && self.navpad.input(&ctx, rect, globe_response.layer_id, &mut self.nav, now);
-            let busy = padded || self.tool.as_mut().is_some_and(|t| t.input(&ctx, &globe_response, rect, ppp, &self.nav));
+            let busy = padded
+                || self.tool.as_mut().is_some_and(|t| t.input(&ctx, &globe_response, rect, ppp, &self.nav))
+                || self.overlay_props.as_mut().is_some_and(|p| p.input(&ctx, &globe_response, rect, ppp, &self.nav));
             if !busy {
                 self.input.handle(&ctx, rect, globe_response.layer_id, &mut self.nav, now, ppp);
             }
@@ -3541,6 +4060,10 @@ impl eframe::App for LiteApp {
             self.fly_to_found(&place, now);
         }
         self.pictures.step(self.loaders.pictures.as_ref());
+        self.pictures.due(now);
+        self.picked(now);
+        self.step_links(now);
+        self.check_linked_models(now);
         for (bytes, name) in std::mem::take(&mut self.pending_open) {
             let _ = self.open_file(&bytes, &name, None);
         }
@@ -3563,6 +4086,9 @@ impl eframe::App for LiteApp {
         let eye = self.nav.camera.eye;
         self.nav.camera.nearest =
             Some(nearest_terrain(&self.nav.camera.ellipsoid, eye, self.nav.pose.terrain.as_ref()));
+        // Наложения для моделей, с пакетами моделей по ссылке, - только
+        // когда набор сменился.
+        let model_list = if self.overlays_built != Some(self.marks.overlays_version()) { self.model_overlays(now) } else { Vec::new() };
 
         let Some(globe) = &mut self.globe else {
             ui.centered_and_justified(|ui| ui.label(tr(self.lang, "The graphics card does not support wgpu, the globe cannot be drawn.")));
@@ -3665,7 +4191,7 @@ impl eframe::App for LiteApp {
         if fresh.is_some() && self.overlays_built != Some(self.marks.overlays_version()) {
             self.overlays_built = Some(self.marks.overlays_version());
             globe.set_pictures(&self.marks.picture_meshes(&store));
-            let built = self.models.meshes(self.marks.overlays(), &store, now);
+            let built = self.models.meshes(&model_list, &store, now);
             globe.set_models(&built.meshes);
             self.movers = built.movers;
             self.animated = built.animated;
@@ -3719,6 +4245,9 @@ impl eframe::App for LiteApp {
         }
         if let Some(tool) = &self.tool {
             tool.paint(&painter, rect, ppp, &self.nav, self.lang);
+        }
+        if let Some(props) = &self.overlay_props {
+            props.paint(&painter, rect, ppp, &self.nav, self.lang);
         }
         // Точка пути под курсором графика профиля, как у модуля.
         if let Some((lat, lon)) = self.profile.as_ref().and_then(|p| p.hovered) {
@@ -3800,6 +4329,7 @@ impl eframe::App for LiteApp {
             self.profile_window(&ctx);
             self.name_window(&ctx);
             self.dialogs(&ctx, now);
+            self.overlay_windows(&ctx);
             let mut out = Vec::new();
             let mut catalog = std::mem::take(&mut self.catalog);
             catalog.window(&ctx, self.lang, &self.layers_state(), &mut out);

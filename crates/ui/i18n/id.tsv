@@ -840,3 +840,87 @@ Tour pause	Jeda tur
 Tram	Trem
 What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	Dari mana ketinggian diukur. Menempel di tanah - penanda terletak di tanah, di atas laut di air. Menempel di dasar laut - di dasar. Relatif terhadap tanah dan dasar laut - kenaikan di atasnya. Absolut - ketinggian di atas permukaan laut. Mode disimpan di KML.
 Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	Dari mana kamera melihat saat terbang ke penanda atau berhenti di sana dalam tur. Tanpa tampilan sendiri kamera membingkai seluruh penanda.
+{w} × {h} pixels	{w} × {h} piksel
+1890 or 1890/1910	1890 atau 1890/1910
+3D model	Model 3D
+3D model…	Model 3D…
+3D models (*.dae *.gltf *.glb *.obj *.kmz)	Model 3D (*.dae *.gltf *.glb *.obj *.kmz)
+A linked image is read again after this interval while it is shown. The globe then keeps a fresh image or map that a server or a program updates by itself. Zero - the image is read when shown. An interval shorter than {low} s is raised to {low} s.	Gambar bertaut dibaca ulang setelah selang ini selama gambar terlihat. Dengan begitu globe menampilkan gambar atau peta terbaru yang diperbarui sendiri oleh server atau program. Nol - gambar dibaca saat ditampilkan. Selang yang lebih pendek dari {low} dtk dinaikkan menjadi {low} dtk.
+A linked model file is checked at this interval while the model is visible. A changed file is read again. Zero means the file is read when shown. An interval shorter than {low} s is raised to {low} s.	Berkas model bertaut diperiksa dengan selang ini selama model terlihat. Berkas yang berubah dibaca ulang. Nol - berkas dibaca saat ditampilkan. Selang yang lebih pendek dari {low} dtk dinaikkan menjadi {low} dtk.
+A My Places folder with the contents of a KML or KMZ document at an address. The contents are loaded again after the refresh interval, edits inside the folder are lost then.	Folder "Tempat Saya" berisi isi dokumen KML atau KMZ di suatu alamat. Isinya dimuat ulang setelah selang penyegaran, suntingan di dalam folder akan hilang.
+Above sea level	Di atas permukaan laut
+Above terrain	Di atas relief
+After how many seconds the document is loaded again. Zero is once per session. The interval is never shorter than 10 s.	Setelah berapa detik dokumen dimuat ulang. Nol - sekali per sesi. Selangnya tidak pernah lebih pendek dari 10 dtk.
+An edge of the image box in degrees. The box is set by the cardinal sides and the rotation, as LatLonBox in KML.	Tepi bingkai gambar dalam derajat. Bingkai ditentukan oleh arah mata angin dan rotasi, seperti LatLonBox di KML.
+Bottom left	Kiri bawah
+Bottom right	Kanan bawah
+Browse…	Telusuri…
+by link {link}	melalui tautan {link}
+Choose a model file. In the places file the model is replaced by a copy, a link gets a new path. The place and the scale stay.	Pilih berkas model. Di berkas penanda model diganti dengan salinan, tautan mendapat jalur baru. Tempat dan skala tetap.
+Choose an image file. In the places file the image is replaced with a copy, a link gets the new path. The corners and position stay.	Pilih berkas gambar. Di berkas penanda gambar diganti dengan salinan, tautan mendapat jalur baru. Sudut dan posisi tetap.
+Clockwise turn of the model as seen from above. At zero the Y axis of the model points north.	Putaran model searah jarum jam jika dilihat dari atas. Pada nol sumbu Y model mengarah ke utara.
+Close the properties without saving the edits, like the Cancel button.	Tutup properti tanpa menyimpan suntingan, seperti tombol "Batal".
+Convert to four corners	Ubah menjadi empat sudut
+Each corner of the image is dragged with the mouse on its own, the image can become an irregular quadrilateral, as gx:LatLonQuad in KML. It does not convert back to a box.	Setiap sudut gambar digeser dengan tetikus secara terpisah, gambar dapat menjadi segi empat tak beraturan, seperti gx:LatLonQuad di KML. Gambar tidak dapat diubah kembali menjadi bingkai.
+File path or http(s) address	Jalur berkas atau alamat http(s)
+Ground overlay	Gambar di permukaan
+Ground overlay|add	Gambar di permukaan
+Height of the model point. Above terrain is the rise above the ground, above sea level is the height from sea level. On terrain the height has no effect.	Ketinggian titik model. Di atas relief - kenaikan di atas tanah, di atas permukaan laut - ketinggian dari permukaan laut. Pada relief ketinggian tidak berpengaruh.
+Images (*.png *.jpg *.jpeg *.gif)	Gambar (*.png *.jpg *.jpeg *.gif)
+In the places file	di berkas penanda
+Latitude of the model point. The point is the origin of the model file coordinates.	Lintang titik model. Titik ini adalah titik asal koordinat berkas model.
+Link to a file or address	Tautan ke berkas atau alamat
+Link to a file	Tautan ke berkas
+Longitude of the model point.	Bujur titik model.
+Model file	Berkas model
+Network link	Tautan jaringan
+Network link…	Tautan jaringan…
+no image	tidak ada gambar
+no link	tidak ada tautan
+no model files	tidak ada berkas model
+no refresh	tidak diperbarui
+On terrain	Pada relief
+Opacity of the image. At zero the imagery shows through it.	Opasitas gambar. Pada nol citra terlihat menembusnya.
+own size	ukuran asli
+Path to a .dae, .gltf, .glb or .obj model file. The model images are read from the files next to it.	Jalur ke berkas model .dae, .gltf, .glb atau .obj. Gambar model dibaca dari berkas di sebelahnya.
+Path to the model file	Jalur ke berkas model
+Reload	Muat ulang
+Roll of the model around its Y axis.	Guling model di sekitar sumbu Y-nya.
+Rotation of the image about its centre counterclockwise.	Rotasi gambar di sekitar titik tengahnya berlawanan arah jarum jam.
+Scale of the model. One means the sizes from the model file. The field changes the scale of all axes at once, different axis scales from KML keep their ratio.	Skala model. Satu - ukuran dari berkas model. Kolom ini mengubah skala semua sumbu sekaligus, skala sumbu yang berbeda dari KML mempertahankan perbandingannya.
+Screen overlay	Gambar di layar
+Screen overlay|add	Gambar di layar
+The address of a KML or KMZ document on the web (http, https) or a file path on disk. The file is read again when another program changes it.	Alamat dokumen KML atau KMZ di jaringan (http, https) atau jalur berkas di disk. Berkas dibaca ulang ketika program lain mengubahnya.
+The corner of the view the image is pinned to.	Sudut tampilan tempat gambar ditempelkan.
+The corners of the image are dragged with the mouse on the globe while the window is open.	Sudut gambar digeser dengan tetikus di globe selama jendela terbuka.
+The cross in the middle moves the image, the diamond rotates it, the corners and the middles of the sides stretch it, with Shift from the centre.	Silang di tengah menggeser gambar, belah ketupat memutarnya, sudut dan titik tengah sisi meregangkannya, dengan Shift dari tengah.
+The description of the overlay. It goes into KML with the image.	Deskripsi hamparan. Deskripsi ini masuk ke KML bersama gambar.
+The folder name in My Places.	Nama folder di "Tempat Saya".
+The image cannot be read: {name}	Gambar tidak dapat dibaca: {name}
+The model cannot be read.	Model tidak dapat dibaca.
+The model cannot be read: {name}	Model tidak dapat dibaca: {name}
+The name of the overlay in My Places.	Nama hamparan di "Tempat Saya".
+The network link {name} was not loaded, {error}	Tautan jaringan "{name}" tidak dimuat: {error}
+The path to the image file or its web address. The image is read again at each showing.	Jalur ke berkas gambar atau alamatnya di jaringan. Gambar dibaca ulang setiap kali ditampilkan.
+The time of the image, as in KML. A year or a date is a moment, for a historical map it is the map year. Moment maps of one folder replace each other on the time slider - the last map not later than the slider moment is shown. Two values with a slash are a span, the image is shown within it. An empty field shows the image always.	Waktu gambar, seperti di KML. Tahun atau tanggal adalah saat, untuk peta sejarah ini adalah tahun peta. Peta-saat dalam satu folder saling menggantikan pada bilah waktu - yang terlihat adalah peta terakhir yang tidak lebih lambat dari saat bilah waktu. Dua nilai dengan garis miring adalah rentang, gambar terlihat di dalamnya. Kolom kosong membuat gambar selalu terlihat.
+Tilt of the model around its X axis.	Kemiringan model di sekitar sumbu X-nya.
+Top left	Kiri atas
+Top right	Kanan atas
+Triangles {count}, materials {parts}, images {images}. Size {x} × {y} × {z} m.	Segitiga {count}, material {parts}, gambar {images}. Ukuran {x} × {y} × {z} m.
+What the model height is measured from, as altitudeMode in KML.	Dari mana ketinggian model diukur, seperti altitudeMode di KML.
+Where the image lies. In the places file - a copy inside My Places, it is shown without the source file. Link - a file path or a web address, the image is read when shown, an edit of the file shows on the globe.	Di mana gambar disimpan. Di berkas penanda - salinan di dalam "Tempat Saya", terlihat juga tanpa berkas sumber. Tautan - jalur berkas atau alamat web, gambar dibaca saat ditampilkan, suntingan berkas terlihat di globe.
+Where the model files are. A link is a path to a .dae, .gltf, .glb or .obj file, the model is read from it and the files next to it, an edit in SketchUp or Blender shows on the globe. In the places file is a copy of all model files, it shows without the source file too.	Di mana berkas model disimpan. Tautan adalah jalur ke berkas .dae, .gltf, .glb atau .obj, model dibaca darinya dan dari berkas di sebelahnya, suntingan di SketchUp atau Blender terlihat di globe. Di berkas penanda - salinan semua berkas model, terlihat juga tanpa berkas sumber.
+Width of the image as a share of the view width. Zero - the image at its own size in pixels.	Lebar gambar sebagai bagian dari lebar tampilan. Nol - gambar dalam ukuran aslinya dalam piksel.
+Photo	Foto
+Centre	Tengah
+Once	Sekali
+Storage	Penyimpanan
+Opacity	Opasitas
+Refresh	Segarkan
+Roll	Guling
+Scale	Skala
+North	Utara
+South	Selatan
+East	Timur
+West	Barat
+Rotation	Rotasi

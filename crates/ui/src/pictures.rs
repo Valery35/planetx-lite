@@ -38,10 +38,38 @@ pub const GRID: usize = 32;
 /// Ключ картинки наложения: картинка из файла и картинка по ссылке
 /// не путаются.
 pub fn key_of(overlay: &Overlay) -> String {
-    if overlay.image.as_ref().is_some_and(|i| !i.is_empty()) {
-        format!("file:{}", overlay.href)
-    } else {
-        overlay.href.clone()
+    match overlay.image.as_ref().filter(|i| !i.is_empty()) {
+        // Две картинки из файла с одним адресом не путаются, новая
+        // картинка с «Обзор…» - новый ключ.
+        Some(bytes) => format!("file:{}#{:016x}", overlay.href, fingerprint(bytes)),
+        None => overlay.href.clone(),
+    }
+}
+
+/// Отпечаток байтов картинки: длина и байты начала и конца.
+fn fingerprint(bytes: &[u8]) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    bytes.len().hash(&mut h);
+    bytes[..bytes.len().min(4096)].hash(&mut h);
+    bytes[bytes.len().saturating_sub(4096)..].hash(&mut h);
+    h.finish()
+}
+
+/// Байты файла картинки на диске, в программе, или None.
+fn local_bytes(path: &str) -> Option<Vec<u8>> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let meta = std::fs::metadata(path).ok()?;
+        if meta.len() > MAX_BYTES {
+            return None;
+        }
+        std::fs::read(path).ok()
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = path;
+        None
     }
 }
 
@@ -191,6 +219,9 @@ pub struct Pictures {
     pub fresh: Vec<String>,
     /// Количество начатых запросов, для самопроверки.
     pub sent: usize,
+    /// Картинки по ссылке с обновлением: ключ - промежуток и время
+    /// последнего запроса.
+    refresh: HashMap<String, (f64, f64)>,
 }
 
 impl Pictures {
@@ -207,6 +238,10 @@ impl Pictures {
         self.states.retain(|k, _| keys.contains(k));
         self.queue.retain(|k| keys.contains(k));
         self.fresh.retain(|k| keys.contains(k));
+        self.refresh.clear();
+        for o in overlays.iter().filter(|o| o.overlay.refresh > 0.0 && o.image.as_ref().is_none_or(Vec::is_empty)) {
+            self.refresh.insert(key_of(o), (overlays::refresh_interval(Some(o.overlay.refresh)), self.refresh_at(&key_of(o))));
+        }
         for o in overlays {
             if !matches!(o.kind(), Kind::Ground | Kind::Photo | Kind::Screen) {
                 continue;
@@ -227,6 +262,14 @@ impl Pictures {
                     self.queue.push_back(key.clone());
                     State::Waiting
                 }
+                // Ссылка на файл на диске - в программе.
+                _ if let Some(bytes) = crate::netlinks::local_path(&o.href).and_then(|p| local_bytes(&p)) => match decode(&bytes) {
+                    Ok(image) => {
+                        self.fresh.push(key.clone());
+                        State::Ready(Arc::new(image))
+                    }
+                    Err(e) => State::Failed(e),
+                },
                 _ => State::Failed(format!("картинки нет: {}", o.href)),
             };
             self.states.insert(key, state);
@@ -261,6 +304,32 @@ impl Pictures {
             self.in_flight = Some(key);
         }
         arrived
+    }
+
+    /// Время последнего запроса картинки с обновлением, 0 - не было.
+    fn refresh_at(&self, key: &str) -> f64 {
+        self.refresh.get(key).map_or(0.0, |r| r.1)
+    }
+
+    /// Картинки по ссылке с обновлением, чей срок вышел, встают в очередь
+    /// заново, как refreshMode onInterval KML. Прежняя картинка видна до
+    /// прихода новой. now - секунды.
+    pub fn due(&mut self, now: f64) {
+        for (key, (step, at)) in &mut self.refresh {
+            if *at == 0.0 {
+                *at = now;
+                continue;
+            }
+            if now - *at >= *step && self.in_flight.as_deref() != Some(key.as_str()) && !self.queue.contains(key) {
+                *at = now;
+                if is_remote(key) {
+                    self.queue.push_back(key.clone());
+                } else if let Some(Ok(image)) = crate::netlinks::local_path(key).and_then(|p| local_bytes(&p)).map(|b| decode(&b)) {
+                    self.states.insert(key.clone(), State::Ready(Arc::new(image)));
+                    self.fresh.push(key.clone());
+                }
+            }
+        }
     }
 
     /// Загрузка идёт или ждёт.
@@ -353,7 +422,12 @@ mod tests {
         let mut o = ground("a", "files/a.png");
         assert_eq!(key_of(&o), "files/a.png");
         o.image = Some(png(2, 2));
-        assert_eq!(key_of(&o), "file:files/a.png");
+        let first = key_of(&o);
+        assert!(first.starts_with("file:files/a.png#"), "{first}");
+        // Новая картинка с тем же адресом - новый ключ: «Обзор…» окна
+        // свойств сменил картинку, а глобус показывал прежнюю.
+        o.image = Some(png(3, 2));
+        assert_ne!(key_of(&o), first);
         assert!(is_remote("HTTPS://x/y") && !is_remote("file:///c:/a.png") && !is_remote("a.png"));
     }
 

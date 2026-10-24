@@ -840,3 +840,87 @@ Tour pause	Tạm dừng trong chuyến tham quan
 Tram	Xe điện
 What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	Độ cao được tính từ đâu. Bám mặt đất - dấu vị trí nằm trên mặt đất, trên biển nằm trên mặt nước. Bám đáy biển - nằm ở đáy. Tương đối với mặt đất và đáy biển - độ nâng phía trên chúng. Tuyệt đối - độ cao trên mực nước biển. Chế độ được lưu trong KML.
 Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	Máy quay nhìn từ đâu khi bay tới dấu vị trí hoặc dừng ở đó trong chuyến tham quan. Không có khung nhìn riêng thì máy quay đưa toàn bộ dấu vị trí vào khung hình.
+{w} × {h} pixels	{w} × {h} điểm ảnh
+1890 or 1890/1910	1890 hoặc 1890/1910
+3D model	Mô hình 3D
+3D model…	Mô hình 3D…
+3D models (*.dae *.gltf *.glb *.obj *.kmz)	Mô hình 3D (*.dae *.gltf *.glb *.obj *.kmz)
+A linked image is read again after this interval while it is shown. The globe then keeps a fresh image or map that a server or a program updates by itself. Zero - the image is read when shown. An interval shorter than {low} s is raised to {low} s.	Hình ảnh theo liên kết được đọc lại sau khoảng thời gian này khi đang hiển thị. Nhờ vậy quả địa cầu có ảnh hoặc bản đồ mới mà máy chủ hoặc chương trình tự cập nhật. Không - hình ảnh được đọc khi hiển thị. Khoảng ngắn hơn {low} giây được nâng lên {low} giây.
+A linked model file is checked at this interval while the model is visible. A changed file is read again. Zero means the file is read when shown. An interval shorter than {low} s is raised to {low} s.	Tệp mô hình theo liên kết được kiểm tra theo khoảng thời gian này khi mô hình đang hiển thị. Tệp đã thay đổi được đọc lại. Không - tệp được đọc khi hiển thị. Khoảng ngắn hơn {low} giây được nâng lên {low} giây.
+A My Places folder with the contents of a KML or KMZ document at an address. The contents are loaded again after the refresh interval, edits inside the folder are lost then.	Thư mục "Địa điểm của tôi" chứa nội dung của tài liệu KML hoặc KMZ tại một địa chỉ. Nội dung được tải lại sau khoảng làm mới, khi đó các chỉnh sửa trong thư mục bị mất.
+Above sea level	Trên mực nước biển
+Above terrain	Trên địa hình
+After how many seconds the document is loaded again. Zero is once per session. The interval is never shorter than 10 s.	Sau bao nhiêu giây tài liệu được tải lại. Không - một lần mỗi phiên. Khoảng thời gian không bao giờ ngắn hơn 10 giây.
+An edge of the image box in degrees. The box is set by the cardinal sides and the rotation, as LatLonBox in KML.	Một cạnh của khung hình ảnh tính bằng độ. Khung được xác định bởi các phương hướng và góc xoay, như LatLonBox trong KML.
+Bottom left	Dưới trái
+Bottom right	Dưới phải
+Browse…	Duyệt…
+by link {link}	theo liên kết {link}
+Choose a model file. In the places file the model is replaced by a copy, a link gets a new path. The place and the scale stay.	Chọn tệp mô hình. Trong tệp dấu vị trí mô hình được thay bằng bản sao, liên kết nhận đường dẫn mới. Vị trí và tỷ lệ giữ nguyên.
+Choose an image file. In the places file the image is replaced with a copy, a link gets the new path. The corners and position stay.	Chọn tệp hình ảnh. Trong tệp dấu vị trí hình ảnh được thay bằng bản sao, liên kết nhận đường dẫn mới. Các góc và vị trí giữ nguyên.
+Clockwise turn of the model as seen from above. At zero the Y axis of the model points north.	Góc xoay mô hình theo chiều kim đồng hồ khi nhìn từ trên xuống. Ở không trục Y của mô hình hướng về bắc.
+Close the properties without saving the edits, like the Cancel button.	Đóng thuộc tính mà không lưu chỉnh sửa, như nút "Hủy".
+Convert to four corners	Chuyển thành bốn góc
+Each corner of the image is dragged with the mouse on its own, the image can become an irregular quadrilateral, as gx:LatLonQuad in KML. It does not convert back to a box.	Mỗi góc của hình ảnh được kéo riêng bằng chuột, hình ảnh có thể thành tứ giác không đều, như gx:LatLonQuad trong KML. Không chuyển ngược lại thành khung.
+File path or http(s) address	Đường dẫn tệp hoặc địa chỉ http(s)
+Ground overlay	Hình ảnh trên bề mặt
+Ground overlay|add	Hình ảnh trên bề mặt
+Height of the model point. Above terrain is the rise above the ground, above sea level is the height from sea level. On terrain the height has no effect.	Độ cao của điểm mô hình. Trên địa hình - độ nâng so với mặt đất, trên mực nước biển - độ cao từ mực nước biển. Ở chế độ trên mặt địa hình độ cao không có tác dụng.
+Images (*.png *.jpg *.jpeg *.gif)	Hình ảnh (*.png *.jpg *.jpeg *.gif)
+In the places file	trong tệp dấu vị trí
+Latitude of the model point. The point is the origin of the model file coordinates.	Vĩ độ của điểm mô hình. Điểm này là gốc tọa độ của tệp mô hình.
+Link to a file or address	Liên kết tới tệp hoặc địa chỉ
+Link to a file	Liên kết tới tệp
+Longitude of the model point.	Kinh độ của điểm mô hình.
+Model file	Tệp mô hình
+Network link	Liên kết mạng
+Network link…	Liên kết mạng…
+no image	không có hình ảnh
+no link	không có liên kết
+no model files	không có tệp mô hình
+no refresh	không làm mới
+On terrain	Trên mặt địa hình
+Opacity of the image. At zero the imagery shows through it.	Độ mờ đục của hình ảnh. Ở không có thể thấy ảnh vệ tinh xuyên qua.
+own size	kích thước riêng
+Path to a .dae, .gltf, .glb or .obj model file. The model images are read from the files next to it.	Đường dẫn tới tệp mô hình .dae, .gltf, .glb hoặc .obj. Hình ảnh của mô hình được đọc từ các tệp bên cạnh.
+Path to the model file	Đường dẫn tới tệp mô hình
+Reload	Tải lại
+Roll of the model around its Y axis.	Độ lăn của mô hình quanh trục Y.
+Rotation of the image about its centre counterclockwise.	Góc xoay hình ảnh quanh tâm ngược chiều kim đồng hồ.
+Scale of the model. One means the sizes from the model file. The field changes the scale of all axes at once, different axis scales from KML keep their ratio.	Tỷ lệ của mô hình. Một - kích thước từ tệp mô hình. Trường này đổi tỷ lệ của mọi trục cùng lúc, tỷ lệ trục khác nhau từ KML giữ nguyên tương quan.
+Screen overlay	Hình ảnh trên màn hình
+Screen overlay|add	Hình ảnh trên màn hình
+The address of a KML or KMZ document on the web (http, https) or a file path on disk. The file is read again when another program changes it.	Địa chỉ của tài liệu KML hoặc KMZ trên mạng (http, https) hoặc đường dẫn tệp trên đĩa. Tệp được đọc lại khi chương trình khác thay đổi nó.
+The corner of the view the image is pinned to.	Góc của khung nhìn mà hình ảnh được ghim vào.
+The corners of the image are dragged with the mouse on the globe while the window is open.	Các góc của hình ảnh được kéo bằng chuột trên quả địa cầu khi cửa sổ đang mở.
+The cross in the middle moves the image, the diamond rotates it, the corners and the middles of the sides stretch it, with Shift from the centre.	Dấu cộng ở giữa di chuyển hình ảnh, hình thoi xoay nó, các góc và điểm giữa các cạnh kéo giãn nó, với Shift - từ tâm.
+The description of the overlay. It goes into KML with the image.	Mô tả của lớp phủ. Mô tả đi vào KML cùng hình ảnh.
+The folder name in My Places.	Tên thư mục trong "Địa điểm của tôi".
+The image cannot be read: {name}	Không đọc được hình ảnh: {name}
+The model cannot be read.	Không đọc được mô hình.
+The model cannot be read: {name}	Không đọc được mô hình: {name}
+The name of the overlay in My Places.	Tên lớp phủ trong "Địa điểm của tôi".
+The network link {name} was not loaded, {error}	Liên kết mạng "{name}" chưa được tải: {error}
+The path to the image file or its web address. The image is read again at each showing.	Đường dẫn tới tệp hình ảnh hoặc địa chỉ của nó trên mạng. Hình ảnh được đọc lại mỗi lần hiển thị.
+The time of the image, as in KML. A year or a date is a moment, for a historical map it is the map year. Moment maps of one folder replace each other on the time slider - the last map not later than the slider moment is shown. Two values with a slash are a span, the image is shown within it. An empty field shows the image always.	Thời gian của hình ảnh, như trong KML. Một năm hoặc một ngày là thời điểm, với bản đồ lịch sử là năm của bản đồ. Các bản đồ thời điểm trong một thư mục thay thế nhau trên thanh thời gian - hiển thị bản đồ cuối cùng không muộn hơn thời điểm của thanh. Hai giá trị cách nhau bằng dấu gạch chéo là một khoảng, hình ảnh hiển thị trong khoảng đó. Trường trống thì hình ảnh luôn hiển thị.
+Tilt of the model around its X axis.	Độ nghiêng của mô hình quanh trục X.
+Top left	Trên trái
+Top right	Trên phải
+Triangles {count}, materials {parts}, images {images}. Size {x} × {y} × {z} m.	Tam giác {count}, vật liệu {parts}, hình ảnh {images}. Kích thước {x} × {y} × {z} m.
+What the model height is measured from, as altitudeMode in KML.	Độ cao của mô hình được tính từ đâu, như altitudeMode trong KML.
+Where the image lies. In the places file - a copy inside My Places, it is shown without the source file. Link - a file path or a web address, the image is read when shown, an edit of the file shows on the globe.	Hình ảnh nằm ở đâu. Trong tệp dấu vị trí - bản sao bên trong "Địa điểm của tôi", hiển thị cả khi không có tệp gốc. Liên kết - đường dẫn tệp hoặc địa chỉ web, hình ảnh được đọc khi hiển thị, chỉnh sửa tệp hiện trên quả địa cầu.
+Where the model files are. A link is a path to a .dae, .gltf, .glb or .obj file, the model is read from it and the files next to it, an edit in SketchUp or Blender shows on the globe. In the places file is a copy of all model files, it shows without the source file too.	Các tệp mô hình nằm ở đâu. Liên kết là đường dẫn tới tệp .dae, .gltf, .glb hoặc .obj, mô hình được đọc từ tệp đó và các tệp bên cạnh, chỉnh sửa trong SketchUp hoặc Blender hiện trên quả địa cầu. Trong tệp dấu vị trí - bản sao mọi tệp mô hình, hiển thị cả khi không có tệp gốc.
+Width of the image as a share of the view width. Zero - the image at its own size in pixels.	Chiều rộng hình ảnh theo tỷ lệ chiều rộng khung nhìn. Không - hình ảnh theo kích thước riêng tính bằng điểm ảnh.
+Photo	Ảnh chụp
+Centre	Giữa
+Once	Một lần
+Storage	Lưu trữ
+Opacity	Độ mờ đục
+Refresh	Làm mới
+Roll	Độ lăn
+Scale	Tỷ lệ
+North	Bắc
+South	Nam
+East	Đông
+West	Tây
+Rotation	Góc xoay

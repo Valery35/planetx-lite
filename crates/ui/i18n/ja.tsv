@@ -840,3 +840,87 @@ Tour pause	ツアーの一時停止
 Tram	路面電車
 What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	高度の基準。地表に固定 - 目印は地面に置かれ、海上では水面に置かれます。海底に固定 - 海底に置かれます。地表からの相対と海底からの相対 - それらからの高さ。絶対 - 海面からの高度。このモードは KML に保存されます。
 Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	目印へ移動するとき、またはツアーで目印に止まるときのカメラの視点。独自の表示がない場合、カメラは目印全体を画面に収めます。
+{w} × {h} pixels	{w} × {h} ピクセル
+1890 or 1890/1910	1890 または 1890/1910
+3D model	3D モデル
+3D model…	3D モデル…
+3D models (*.dae *.gltf *.glb *.obj *.kmz)	3D モデル (*.dae *.gltf *.glb *.obj *.kmz)
+A linked image is read again after this interval while it is shown. The globe then keeps a fresh image or map that a server or a program updates by itself. Zero - the image is read when shown. An interval shorter than {low} s is raised to {low} s.	リンク先の画像は、表示中この間隔ごとに読み直されます。こうしてサーバーやプログラムが自動で更新する最新の画像や地図を地球儀に表示できます。ゼロでは表示時に画像を読み込みます。{low} 秒より短い間隔は {low} 秒に引き上げられます。
+A linked model file is checked at this interval while the model is visible. A changed file is read again. Zero means the file is read when shown. An interval shorter than {low} s is raised to {low} s.	リンク先のモデルファイルは、モデルの表示中この間隔ごとに確認されます。変更されたファイルは読み直されます。ゼロでは表示時にファイルを読み込みます。{low} 秒より短い間隔は {low} 秒に引き上げられます。
+A My Places folder with the contents of a KML or KMZ document at an address. The contents are loaded again after the refresh interval, edits inside the folder are lost then.	アドレスにある KML または KMZ ドキュメントの内容を持つ「マイプレイス」のフォルダー。内容は更新間隔ごとに読み直され、その際フォルダー内の編集は失われます。
+Above sea level	海面から
+Above terrain	地形から
+After how many seconds the document is loaded again. Zero is once per session. The interval is never shorter than 10 s.	ドキュメントを何秒ごとに読み直すか。ゼロはセッションごとに 1 回です。間隔が 10 秒より短くなることはありません。
+An edge of the image box in degrees. The box is set by the cardinal sides and the rotation, as LatLonBox in KML.	画像の枠の 1 辺の度数。枠は東西南北の辺と回転で決まり、KML の LatLonBox に相当します。
+Bottom left	左下
+Bottom right	右下
+Browse…	参照…
+by link {link}	リンク {link}
+Choose a model file. In the places file the model is replaced by a copy, a link gets a new path. The place and the scale stay.	モデルファイルを選びます。目印ファイル内ではモデルがコピーに置き換わり、リンクではパスが変わります。位置と縮尺はそのままです。
+Choose an image file. In the places file the image is replaced with a copy, a link gets the new path. The corners and position stay.	画像ファイルを選びます。目印ファイル内では画像がコピーに置き換わり、リンクではパスが変わります。角と位置はそのままです。
+Clockwise turn of the model as seen from above. At zero the Y axis of the model points north.	上から見たときのモデルの時計回りの回転。ゼロではモデルの Y 軸が北を向きます。
+Close the properties without saving the edits, like the Cancel button.	編集を保存せずにプロパティを閉じます。「キャンセル」ボタンと同じです。
+Convert to four corners	四隅に変換
+Each corner of the image is dragged with the mouse on its own, the image can become an irregular quadrilateral, as gx:LatLonQuad in KML. It does not convert back to a box.	画像の各角をマウスで個別にドラッグでき、画像は不規則な四角形にもなります。KML の gx:LatLonQuad に相当します。枠には戻せません。
+File path or http(s) address	ファイルパスまたは http(s) アドレス
+Ground overlay	地表の画像
+Ground overlay|add	地表の画像
+Height of the model point. Above terrain is the rise above the ground, above sea level is the height from sea level. On terrain the height has no effect.	モデルの点の高さ。地形から - 地面からの高さ、海面から - 海面からの高さ。地形に沿う場合、高さは効きません。
+Images (*.png *.jpg *.jpeg *.gif)	画像 (*.png *.jpg *.jpeg *.gif)
+In the places file	目印ファイル内
+Latitude of the model point. The point is the origin of the model file coordinates.	モデルの点の緯度。この点がモデルファイルの座標の原点です。
+Link to a file or address	ファイルまたはアドレスへのリンク
+Link to a file	ファイルへのリンク
+Longitude of the model point.	モデルの点の経度。
+Model file	モデルファイル
+Network link	ネットワークリンク
+Network link…	ネットワークリンク…
+no image	画像なし
+no link	リンクなし
+no model files	モデルファイルなし
+no refresh	更新しない
+On terrain	地形に沿う
+Opacity of the image. At zero the imagery shows through it.	画像の不透明度。ゼロでは画像を通して衛星画像が見えます。
+own size	元のサイズ
+Path to a .dae, .gltf, .glb or .obj model file. The model images are read from the files next to it.	.dae、.gltf、.glb、.obj のモデルファイルへのパス。モデルの画像は隣のファイルから読み込まれます。
+Path to the model file	モデルファイルへのパス
+Reload	再読み込み
+Roll of the model around its Y axis.	モデルの Y 軸まわりのロール。
+Rotation of the image about its centre counterclockwise.	画像の中心まわりの反時計回りの回転。
+Scale of the model. One means the sizes from the model file. The field changes the scale of all axes at once, different axis scales from KML keep their ratio.	モデルの縮尺。1 はモデルファイルの寸法です。この欄はすべての軸の縮尺を一度に変え、KML の軸ごとに異なる縮尺はその比を保ちます。
+Screen overlay	画面上の画像
+Screen overlay|add	画面上の画像
+The address of a KML or KMZ document on the web (http, https) or a file path on disk. The file is read again when another program changes it.	ネット上の KML または KMZ ドキュメントのアドレス (http, https)、またはディスク上のファイルパス。他のプログラムがファイルを変更すると読み直されます。
+The corner of the view the image is pinned to.	画像を固定する表示の隅。
+The corners of the image are dragged with the mouse on the globe while the window is open.	ウィンドウを開いている間、画像の角を地球儀上でマウスでドラッグできます。
+The cross in the middle moves the image, the diamond rotates it, the corners and the middles of the sides stretch it, with Shift from the centre.	中央の十字で画像を移動し、ひし形で回転し、角と辺の中点で伸縮します。Shift を押すと中心から伸縮します。
+The description of the overlay. It goes into KML with the image.	オーバーレイの説明。画像とともに KML に保存されます。
+The folder name in My Places.	「マイプレイス」でのフォルダー名。
+The image cannot be read: {name}	画像を読み込めません：{name}
+The model cannot be read.	モデルを読み込めません。
+The model cannot be read: {name}	モデルを読み込めません：{name}
+The name of the overlay in My Places.	「マイプレイス」でのオーバーレイの名前。
+The network link {name} was not loaded, {error}	ネットワークリンク「{name}」を読み込めませんでした：{error}
+The path to the image file or its web address. The image is read again at each showing.	画像ファイルへのパスまたはネット上のアドレス。画像は表示のたびに読み直されます。
+The time of the image, as in KML. A year or a date is a moment, for a historical map it is the map year. Moment maps of one folder replace each other on the time slider - the last map not later than the slider moment is shown. Two values with a slash are a span, the image is shown within it. An empty field shows the image always.	画像の時刻で、KML と同じです。年または日付は時点で、歴史地図では地図の年です。同じフォルダーの時点の地図はタイムバー上で入れ替わり、タイムバーの時点より後でない最後の地図が表示されます。スラッシュで区切った 2 つの値は期間で、その間だけ画像が表示されます。空欄では画像は常に表示されます。
+Tilt of the model around its X axis.	モデルの X 軸まわりの傾き。
+Top left	左上
+Top right	右上
+Triangles {count}, materials {parts}, images {images}. Size {x} × {y} × {z} m.	三角形 {count}、マテリアル {parts}、画像 {images}。サイズ {x} × {y} × {z} m。
+What the model height is measured from, as altitudeMode in KML.	モデルの高さの基準で、KML の altitudeMode に相当します。
+Where the image lies. In the places file - a copy inside My Places, it is shown without the source file. Link - a file path or a web address, the image is read when shown, an edit of the file shows on the globe.	画像の保存場所。目印ファイル内 - 「マイプレイス」内のコピーで、元のファイルがなくても表示されます。リンク - ファイルパスまたはウェブアドレスで、表示時に画像を読み込み、ファイルの編集は地球儀に反映されます。
+Where the model files are. A link is a path to a .dae, .gltf, .glb or .obj file, the model is read from it and the files next to it, an edit in SketchUp or Blender shows on the globe. In the places file is a copy of all model files, it shows without the source file too.	モデルファイルの保存場所。リンクは .dae、.gltf、.glb、.obj ファイルへのパスで、モデルはそのファイルと隣のファイルから読み込まれ、SketchUp や Blender での編集は地球儀に反映されます。目印ファイル内 - モデルの全ファイルのコピーで、元のファイルがなくても表示されます。
+Width of the image as a share of the view width. Zero - the image at its own size in pixels.	表示の幅に対する割合で表す画像の幅。ゼロではピクセル単位の元のサイズで表示します。
+Photo	写真
+Centre	中央
+Once	1 回
+Storage	保存方法
+Opacity	不透明度
+Refresh	更新
+Roll	ロール
+Scale	縮尺
+North	北
+South	南
+East	東
+West	西
+Rotation	回転

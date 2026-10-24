@@ -243,8 +243,32 @@ impl Tool {
         Some(place)
     }
 
+    /// Название окна свойств метки в панели свойств.
+    pub fn edit_title(&self, lang: Lang) -> String {
+        let name = self.original.as_ref().map(|p| p.name.as_str()).filter(|n| !n.is_empty()).unwrap_or(tr(lang, "Untitled"));
+        trf(lang, "Properties: {name}", &[("name", name)])
+    }
+
+    /// Метка правки до правки.
+    pub fn original(&self) -> Option<&Place> {
+        self.original.as_ref()
+    }
+
+    /// Метка с правками окна для показа на глобусе, как `preview`
+    /// окна свойств модуля.
+    pub fn preview(&self) -> Option<Place> {
+        self.place_of(self.description.clone())
+    }
+
+    /// Тело окна свойств метки в панели свойств, как встроенное окно
+    /// `PlaceProperties` модуля.
+    pub fn edit_body(&mut self, ui: &mut egui::Ui, lang: Lang, names: &[String]) -> Option<Action> {
+        self.place_body(ui, lang, names)
+    }
+
     /// Окно инструмента. names - названия «Моих меток» для номера,
     /// heights - высоты точек для длины по рельефу и готовы ли они.
+    /// Окно свойств метки стоит в панели свойств, здесь его нет.
     pub fn window(
         &mut self,
         ctx: &egui::Context,
@@ -252,16 +276,15 @@ impl Tool {
         names: &[String],
         heights: Option<(&measure::HeightsAt<'_>, bool)>,
     ) -> Option<Action> {
+        if matches!(self.purpose, Purpose::Edit(_)) {
+            return None;
+        }
         if self.purpose == Purpose::Place && self.auto_name.is_empty() && self.name.is_empty() {
             self.reset_name(lang, names);
         }
         let title = match self.purpose {
             Purpose::Ruler => tr(lang, "Ruler").to_string(),
-            Purpose::Place => tr(lang, "New placemark").to_string(),
-            Purpose::Edit(_) => {
-                let name = self.original.as_ref().map(|p| p.name.as_str()).filter(|n| !n.is_empty()).unwrap_or(tr(lang, "Untitled"));
-                trf(lang, "Properties: {name}", &[("name", name)])
-            }
+            _ => tr(lang, "New placemark").to_string(),
         };
         let mut open = self.open;
         let mut action = None;
@@ -273,14 +296,10 @@ impl Tool {
             .pivot(egui::Align2::RIGHT_TOP)
             .default_pos(ctx.content_rect().right_top() + egui::vec2(-crate::navpad::WIDTH - 2.0 * crate::navpad::MARGIN - 8.0, 60.0))
             .show(ctx, |ui| {
-                ui.set_max_width(if self.props.is_some() { 420.0 } else { 300.0 });
+                ui.set_max_width(300.0);
                 match self.purpose {
                     Purpose::Ruler => action = self.ruler_body(ui, lang, names, heights),
-                    // Окно свойств высокое - с прокруткой.
-                    Purpose::Edit(_) => {
-                        egui::ScrollArea::vertical().max_height((ctx.content_rect().height() - 140.0).max(200.0)).show(ui, |ui| action = self.place_body(ui, lang, names));
-                    }
-                    Purpose::Place => action = self.place_body(ui, lang, names),
+                    _ => action = self.place_body(ui, lang, names),
                 }
             });
         // Окно закрывают крестик и кнопки OK и «Отмена».

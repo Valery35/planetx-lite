@@ -840,3 +840,87 @@ Tour pause	투어 일시 정지
 Tram	노면전차
 What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	고도를 무엇에서 재는지. 지면에 고정 - 장소 표시가 지면에, 바다 위에서는 수면에 놓입니다. 해저에 고정 - 해저에 놓입니다. 지면 기준 상대와 해저 기준 상대 - 그 위로의 높이. 절대 - 해수면 기준 고도. 이 모드는 KML에 저장됩니다.
 Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	카메라가 장소 표시로 이동하거나 투어에서 그곳에 머물 때 보는 위치. 자체 화면이 없으면 카메라가 장소 표시 전체를 화면에 담습니다.
+{w} × {h} pixels	{w} × {h} 픽셀
+1890 or 1890/1910	1890 또는 1890/1910
+3D model	3D 모델
+3D model…	3D 모델…
+3D models (*.dae *.gltf *.glb *.obj *.kmz)	3D 모델 (*.dae *.gltf *.glb *.obj *.kmz)
+A linked image is read again after this interval while it is shown. The globe then keeps a fresh image or map that a server or a program updates by itself. Zero - the image is read when shown. An interval shorter than {low} s is raised to {low} s.	링크된 이미지는 보이는 동안 이 간격마다 다시 읽습니다. 그래서 지구본에 서버나 프로그램이 스스로 갱신하는 최신 영상이나 지도가 표시됩니다. 0 - 표시할 때 이미지를 읽습니다. {low}초보다 짧은 간격은 {low}초로 올립니다.
+A linked model file is checked at this interval while the model is visible. A changed file is read again. Zero means the file is read when shown. An interval shorter than {low} s is raised to {low} s.	링크된 모델 파일은 모델이 보이는 동안 이 간격마다 확인합니다. 바뀐 파일은 다시 읽습니다. 0 - 표시할 때 파일을 읽습니다. {low}초보다 짧은 간격은 {low}초로 올립니다.
+A My Places folder with the contents of a KML or KMZ document at an address. The contents are loaded again after the refresh interval, edits inside the folder are lost then.	주소에 있는 KML 또는 KMZ 문서의 내용을 담은 ‘내 장소’ 폴더. 내용은 새로 고침 간격마다 다시 불러오며 이때 폴더 안의 편집은 사라집니다.
+Above sea level	해수면 기준
+Above terrain	지형 기준
+After how many seconds the document is loaded again. Zero is once per session. The interval is never shorter than 10 s.	문서를 몇 초마다 다시 불러올지. 0은 세션당 한 번입니다. 간격은 10초보다 짧아지지 않습니다.
+An edge of the image box in degrees. The box is set by the cardinal sides and the rotation, as LatLonBox in KML.	이미지 틀의 한 변을 도 단위로 나타냅니다. 틀은 동서남북의 변과 회전으로 정해지며 KML의 LatLonBox와 같습니다.
+Bottom left	왼쪽 아래
+Bottom right	오른쪽 아래
+Browse…	찾아보기…
+by link {link}	링크 {link}
+Choose a model file. In the places file the model is replaced by a copy, a link gets a new path. The place and the scale stay.	모델 파일을 선택합니다. 장소 표시 파일 안에서는 모델이 사본으로 바뀌고 링크는 경로가 바뀝니다. 위치와 축척은 그대로입니다.
+Choose an image file. In the places file the image is replaced with a copy, a link gets the new path. The corners and position stay.	이미지 파일을 선택합니다. 장소 표시 파일 안에서는 이미지가 사본으로 바뀌고 링크는 경로가 바뀝니다. 모서리와 위치는 그대로입니다.
+Clockwise turn of the model as seen from above. At zero the Y axis of the model points north.	위에서 볼 때 모델의 시계 방향 회전. 0이면 모델의 Y축이 북쪽을 향합니다.
+Close the properties without saving the edits, like the Cancel button.	편집을 저장하지 않고 속성을 닫습니다. ‘취소’ 버튼과 같습니다.
+Convert to four corners	네 모서리로 변환
+Each corner of the image is dragged with the mouse on its own, the image can become an irregular quadrilateral, as gx:LatLonQuad in KML. It does not convert back to a box.	이미지의 각 모서리를 마우스로 따로 끌 수 있으며 이미지는 불규칙한 사각형이 될 수 있습니다. KML의 gx:LatLonQuad와 같습니다. 다시 틀로 되돌릴 수 없습니다.
+File path or http(s) address	파일 경로 또는 http(s) 주소
+Ground overlay	지표면 이미지
+Ground overlay|add	지표면 이미지
+Height of the model point. Above terrain is the rise above the ground, above sea level is the height from sea level. On terrain the height has no effect.	모델 점의 높이. 지형 기준 - 지면 위로의 높이, 해수면 기준 - 해수면에서의 높이. 지형에 붙임에서는 높이가 적용되지 않습니다.
+Images (*.png *.jpg *.jpeg *.gif)	이미지 (*.png *.jpg *.jpeg *.gif)
+In the places file	장소 표시 파일 안
+Latitude of the model point. The point is the origin of the model file coordinates.	모델 점의 위도. 이 점이 모델 파일 좌표의 원점입니다.
+Link to a file or address	파일 또는 주소 링크
+Link to a file	파일 링크
+Longitude of the model point.	모델 점의 경도.
+Model file	모델 파일
+Network link	네트워크 링크
+Network link…	네트워크 링크…
+no image	이미지 없음
+no link	링크 없음
+no model files	모델 파일 없음
+no refresh	새로 고치지 않음
+On terrain	지형에 붙임
+Opacity of the image. At zero the imagery shows through it.	이미지의 불투명도. 0이면 이미지를 통해 영상이 보입니다.
+own size	원래 크기
+Path to a .dae, .gltf, .glb or .obj model file. The model images are read from the files next to it.	.dae, .gltf, .glb 또는 .obj 모델 파일의 경로. 모델의 이미지는 옆에 있는 파일에서 읽습니다.
+Path to the model file	모델 파일 경로
+Reload	다시 불러오기
+Roll of the model around its Y axis.	모델의 Y축 기준 롤.
+Rotation of the image about its centre counterclockwise.	이미지 중심을 기준으로 한 시계 반대 방향 회전.
+Scale of the model. One means the sizes from the model file. The field changes the scale of all axes at once, different axis scales from KML keep their ratio.	모델의 축척. 1은 모델 파일의 크기입니다. 이 필드는 모든 축의 축척을 한꺼번에 바꾸며 KML의 축별로 다른 축척은 그 비율을 유지합니다.
+Screen overlay	화면 이미지
+Screen overlay|add	화면 이미지
+The address of a KML or KMZ document on the web (http, https) or a file path on disk. The file is read again when another program changes it.	네트워크(http, https)의 KML 또는 KMZ 문서 주소 또는 디스크의 파일 경로. 다른 프로그램이 파일을 바꾸면 다시 읽습니다.
+The corner of the view the image is pinned to.	이미지가 고정되는 화면 모서리.
+The corners of the image are dragged with the mouse on the globe while the window is open.	창이 열려 있는 동안 이미지의 모서리를 지구본에서 마우스로 끌 수 있습니다.
+The cross in the middle moves the image, the diamond rotates it, the corners and the middles of the sides stretch it, with Shift from the centre.	가운데 십자는 이미지를 옮기고 마름모는 회전하며 모서리와 변의 중점은 늘립니다. Shift를 누르면 중심에서 늘립니다.
+The description of the overlay. It goes into KML with the image.	오버레이 설명. 이미지와 함께 KML에 저장됩니다.
+The folder name in My Places.	‘내 장소’의 폴더 이름.
+The image cannot be read: {name}	이미지를 읽을 수 없습니다: {name}
+The model cannot be read.	모델을 읽을 수 없습니다.
+The model cannot be read: {name}	모델을 읽을 수 없습니다: {name}
+The name of the overlay in My Places.	‘내 장소’의 오버레이 이름.
+The network link {name} was not loaded, {error}	네트워크 링크 ‘{name}’을(를) 불러오지 못했습니다: {error}
+The path to the image file or its web address. The image is read again at each showing.	이미지 파일 경로 또는 네트워크 주소. 이미지는 표시할 때마다 다시 읽습니다.
+The time of the image, as in KML. A year or a date is a moment, for a historical map it is the map year. Moment maps of one folder replace each other on the time slider - the last map not later than the slider moment is shown. Two values with a slash are a span, the image is shown within it. An empty field shows the image always.	이미지의 시간으로, KML과 같습니다. 연도나 날짜는 시점이며 역사 지도에서는 지도의 연도입니다. 한 폴더의 시점 지도는 시간 막대에서 서로 바뀌며, 막대의 시점보다 늦지 않은 마지막 지도가 보입니다. 빗금으로 나눈 두 값은 기간이며 그 안에서 이미지가 보입니다. 빈 필드면 이미지가 항상 보입니다.
+Tilt of the model around its X axis.	모델의 X축 기준 기울기.
+Top left	왼쪽 위
+Top right	오른쪽 위
+Triangles {count}, materials {parts}, images {images}. Size {x} × {y} × {z} m.	삼각형 {count}, 재질 {parts}, 이미지 {images}. 크기 {x} × {y} × {z} m.
+What the model height is measured from, as altitudeMode in KML.	모델 높이를 무엇에서 재는지, KML의 altitudeMode와 같습니다.
+Where the image lies. In the places file - a copy inside My Places, it is shown without the source file. Link - a file path or a web address, the image is read when shown, an edit of the file shows on the globe.	이미지가 있는 곳. 장소 표시 파일 안 - ‘내 장소’ 안의 사본으로, 원본 파일 없이도 보입니다. 링크 - 파일 경로 또는 웹 주소로, 표시할 때 이미지를 읽고 파일 편집이 지구본에 보입니다.
+Where the model files are. A link is a path to a .dae, .gltf, .glb or .obj file, the model is read from it and the files next to it, an edit in SketchUp or Blender shows on the globe. In the places file is a copy of all model files, it shows without the source file too.	모델 파일이 있는 곳. 링크는 .dae, .gltf, .glb 또는 .obj 파일의 경로이며 모델은 그 파일과 옆의 파일에서 읽고 SketchUp이나 Blender에서 한 편집이 지구본에 보입니다. 장소 표시 파일 안 - 모든 모델 파일의 사본으로, 원본 파일 없이도 보입니다.
+Width of the image as a share of the view width. Zero - the image at its own size in pixels.	화면 너비에 대한 비율로 나타낸 이미지 너비. 0 - 픽셀 단위의 원래 크기 이미지.
+Photo	사진
+Centre	가운데
+Once	한 번
+Storage	저장 방식
+Opacity	불투명도
+Refresh	새로 고침
+Roll	롤
+Scale	축척
+North	북
+South	남
+East	동
+West	서
+Rotation	회전

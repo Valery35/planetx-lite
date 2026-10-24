@@ -840,3 +840,87 @@ Tour pause	Пауза в туре
 Tram	Трамвай
 What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	От чего отсчитывается высота. На поверхности - метка лежит на земле, над морем на воде. Вдоль морского дна - на дне. Относительно поверхности и дна - подъём над ними. Абсолютная - высота над уровнем моря. Режим сохраняется в KML.
 Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	Откуда смотрит камера, когда летит к метке или стоит на ней в туре. Без своего вида камера берёт метку в кадр целиком.
+{w} × {h} pixels	{w} × {h} пикселей
+1890 or 1890/1910	1890 или 1890/1910
+3D model	3D-модель
+3D model…	3D-модель…
+3D models (*.dae *.gltf *.glb *.obj *.kmz)	3D-модели (*.dae *.gltf *.glb *.obj *.kmz)
+A linked image is read again after this interval while it is shown. The globe then keeps a fresh image or map that a server or a program updates by itself. Zero - the image is read when shown. An interval shorter than {low} s is raised to {low} s.	Картинка по ссылке читается заново через этот промежуток, пока она видна. Так на глобусе стоит свежий снимок или карта, которую сервер или программа обновляет сама. Ноль - картинка читается при показе. Промежуток короче {low} с поднимается до {low} с.
+A linked model file is checked at this interval while the model is visible. A changed file is read again. Zero means the file is read when shown. An interval shorter than {low} s is raised to {low} s.	Файл модели по ссылке проверяется через этот промежуток, пока модель видна. Изменённый файл читается заново. Ноль - файл читается при показе. Промежуток короче {low} с поднимается до {low} с.
+A My Places folder with the contents of a KML or KMZ document at an address. The contents are loaded again after the refresh interval, edits inside the folder are lost then.	Папка «Моих меток» с содержимым документа KML или KMZ по адресу. Содержимое загружается заново через промежуток обновления, правки внутри папки при этом теряются.
+Above sea level	Над уровнем моря
+Above terrain	Над рельефом
+After how many seconds the document is loaded again. Zero is once per session. The interval is never shorter than 10 s.	Через сколько секунд документ загружается заново. Ноль - один раз за сеанс. Короче 10 с промежуток не бывает.
+An edge of the image box in degrees. The box is set by the cardinal sides and the rotation, as LatLonBox in KML.	Край рамки картинки в градусах. Рамка задана сторонами света и поворотом, как LatLonBox в KML.
+Bottom left	Левый нижний
+Bottom right	Правый нижний
+Browse…	Обзор…
+by link {link}	по ссылке {link}
+Choose a model file. In the places file the model is replaced by a copy, a link gets a new path. The place and the scale stay.	Выбрать файл модели. В файле меток модель заменяется копией, у ссылки меняется путь. Место и масштаб остаются.
+Choose an image file. In the places file the image is replaced with a copy, a link gets the new path. The corners and position stay.	Выбрать файл картинки. В файле меток картинка заменяется копией, у ссылки меняется путь. Углы и положение остаются.
+Clockwise turn of the model as seen from above. At zero the Y axis of the model points north.	Поворот модели по часовой стрелке, если смотреть сверху. Ноль - ось Y модели смотрит на север.
+Close the properties without saving the edits, like the Cancel button.	Закрыть свойства без записи правок, как кнопка «Отмена».
+Convert to four corners	Перевести в четыре угла
+Each corner of the image is dragged with the mouse on its own, the image can become an irregular quadrilateral, as gx:LatLonQuad in KML. It does not convert back to a box.	Каждый угол картинки тянется мышью отдельно, картинка может стать неправильным четырёхугольником, как gx:LatLonQuad в KML. Обратно в рамку она не переводится.
+File path or http(s) address	Путь к файлу или адрес http(s)
+Ground overlay	Картинку на поверхности
+Ground overlay|add	Картинку на поверхности
+Height of the model point. Above terrain is the rise above the ground, above sea level is the height from sea level. On terrain the height has no effect.	Высота точки модели. Над рельефом - подъём над землёй, над уровнем моря - высота от уровня моря. На рельефе высота не действует.
+Images (*.png *.jpg *.jpeg *.gif)	Картинки (*.png *.jpg *.jpeg *.gif)
+In the places file	в файле меток
+Latitude of the model point. The point is the origin of the model file coordinates.	Широта точки модели. Точка - начало координат файла модели.
+Link to a file or address	Ссылка на файл или адрес
+Link to a file	Ссылка на файл
+Longitude of the model point.	Долгота точки модели.
+Model file	Файл модели
+Network link	Сетевая ссылка
+Network link…	Сетевую ссылку…
+no image	картинки нет
+no link	ссылки нет
+no model files	файлов модели нет
+no refresh	не обновлять
+On terrain	На рельефе
+Opacity of the image. At zero the imagery shows through it.	Непрозрачность картинки. У нуля сквозь неё виден снимок.
+own size	свой размер
+Path to a .dae, .gltf, .glb or .obj model file. The model images are read from the files next to it.	Путь к файлу модели .dae, .gltf, .glb или .obj. Картинки модели читаются из файлов рядом с ним.
+Path to the model file	Путь к файлу модели
+Reload	Загрузить заново
+Roll of the model around its Y axis.	Крен модели вокруг её оси Y.
+Rotation of the image about its centre counterclockwise.	Поворот картинки вокруг середины против часовой стрелки.
+Scale of the model. One means the sizes from the model file. The field changes the scale of all axes at once, different axis scales from KML keep their ratio.	Масштаб модели. Единица - размеры из файла модели. Поле меняет масштаб по всем осям сразу, разный масштаб осей из KML сохраняется в их отношении.
+Screen overlay	Картинку на экране
+Screen overlay|add	Картинку на экране
+The address of a KML or KMZ document on the web (http, https) or a file path on disk. The file is read again when another program changes it.	Адрес документа KML или KMZ в сети (http, https) или путь файла на диске. Файл перечитывается, когда его меняет другая программа.
+The corner of the view the image is pinned to.	Угол вида, к которому прижата картинка.
+The corners of the image are dragged with the mouse on the globe while the window is open.	Углы картинки тянутся мышью на глобусе, пока окно открыто.
+The cross in the middle moves the image, the diamond rotates it, the corners and the middles of the sides stretch it, with Shift from the centre.	Крест в середине сдвигает картинку, ромб поворачивает, углы и середины сторон растягивают, с Shift - от середины.
+The description of the overlay. It goes into KML with the image.	Описание наложения. Оно уходит в KML вместе с картинкой.
+The folder name in My Places.	Название папки в «Моих метках».
+The image cannot be read: {name}	Картинка не читается: {name}
+The model cannot be read.	Модель не читается.
+The model cannot be read: {name}	Модель не читается: {name}
+The name of the overlay in My Places.	Название наложения в «Моих метках».
+The network link {name} was not loaded, {error}	Сетевая ссылка «{name}» не загружена: {error}
+The path to the image file or its web address. The image is read again at each showing.	Путь к файлу картинки или её адрес в сети. Картинка читается заново при каждом показе.
+The time of the image, as in KML. A year or a date is a moment, for a historical map it is the map year. Moment maps of one folder replace each other on the time slider - the last map not later than the slider moment is shown. Two values with a slash are a span, the image is shown within it. An empty field shows the image always.	Время картинки, как в KML. Год или дата - момент, у исторической карты это год карты. Карты-моменты одной папки сменяют друг друга на шкале времени - видна последняя карта не позже момента шкалы. Два значения через косую черту - промежуток, картинка видна в нём. Пустое поле - картинка видна всегда.
+Tilt of the model around its X axis.	Наклон модели вокруг её оси X.
+Top left	Левый верхний
+Top right	Правый верхний
+Triangles {count}, materials {parts}, images {images}. Size {x} × {y} × {z} m.	Треугольников {count}, материалов {parts}, картинок {images}. Размер {x} × {y} × {z} м.
+What the model height is measured from, as altitudeMode in KML.	От чего отсчитывается высота модели, как altitudeMode в KML.
+Where the image lies. In the places file - a copy inside My Places, it is shown without the source file. Link - a file path or a web address, the image is read when shown, an edit of the file shows on the globe.	Где лежит картинка. В файле меток - копия внутри «Моих меток», она видна и без исходного файла. Ссылка - путь к файлу или адрес в сети, картинка читается при показе, правка файла видна на глобусе.
+Where the model files are. A link is a path to a .dae, .gltf, .glb or .obj file, the model is read from it and the files next to it, an edit in SketchUp or Blender shows on the globe. In the places file is a copy of all model files, it shows without the source file too.	Где лежат файлы модели. Ссылка - путь к файлу .dae, .gltf, .glb или .obj, модель читается из него и файлов рядом, правка в SketchUp или Blender видна на глобусе. В файле меток - копия всех файлов модели, она видна и без исходного файла.
+Width of the image as a share of the view width. Zero - the image at its own size in pixels.	Ширина картинки в долях ширины вида. Ноль - картинка своего размера в пикселях.
+Photo	Фото
+Centre	Середина
+Once	Один раз
+Storage	Хранение
+Opacity	Непрозрачность
+Refresh	Обновлять
+Roll	Крен
+Scale	Масштаб
+North	Север
+South	Юг
+East	Восток
+West	Запад
+Rotation	Поворот

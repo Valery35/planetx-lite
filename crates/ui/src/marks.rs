@@ -338,10 +338,15 @@ pub enum Action {
     NewFolderAfter(Vec<usize>),
     /// Окно свойств папки.
     FolderProperties(Vec<usize>),
+    /// Окно свойств наложения: картинки, фото, картинки на экране, модели.
+    OverlayProperties(Vec<usize>),
+    /// Окно «Сетевая ссылка» папки-ссылки.
+    LinkProperties(Vec<usize>),
+    /// «Загрузить заново» папки-ссылки.
+    ReloadLink(Vec<usize>),
 }
 
-/// Пункт подменю «Добавить», `_add_menu` модуля без картинок, фото,
-/// моделей и сетевых ссылок: их Lite не добавляет.
+/// Пункт подменю «Добавить», `_add_menu` модуля.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AddWhat {
     Folder,
@@ -349,6 +354,11 @@ pub enum AddWhat {
     Line,
     Polygon,
     RecordedTour,
+    Ground,
+    Photo,
+    Screen,
+    Model,
+    Link,
 }
 
 /// Вид строки для меню.
@@ -359,6 +369,8 @@ enum RowKind {
     /// Путь: у него и профиль высот.
     Path,
     Overlay,
+    /// Папка - сетевая ссылка: в меню «Загрузить заново».
+    LinkFolder,
 }
 
 /// Название корня «Мои метки».
@@ -384,6 +396,11 @@ fn add_menu(ui: &mut eframe::egui::Ui, lang: crate::i18n::Lang, path: &[usize], 
             (AddWhat::Line, "Path|add"),
             (AddWhat::Polygon, "Polygon|add"),
             (AddWhat::RecordedTour, "Recorded tour"),
+            (AddWhat::Ground, "Ground overlay|add"),
+            (AddWhat::Photo, "Photo"),
+            (AddWhat::Screen, "Screen overlay|add"),
+            (AddWhat::Model, "3D model…"),
+            (AddWhat::Link, "Network link…"),
         ] {
             item(ui, tr(lang, text), Action::Add(path.to_vec(), what), actions);
         }
@@ -397,8 +414,11 @@ fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[
     use crate::i18n::tr;
     response.context_menu(|ui| {
         let p = || path.to_vec();
+        if kind == RowKind::LinkFolder {
+            item(ui, tr(lang, "Reload"), Action::ReloadLink(p()), actions);
+        }
         item(ui, tr(lang, "Fly to"), Action::Fly(p()), actions);
-        if kind == RowKind::Folder {
+        if matches!(kind, RowKind::Folder | RowKind::LinkFolder) {
             add_menu(ui, lang, path, actions);
             ui.separator();
             item(ui, tr(lang, "Cut"), Action::Cut(p()), actions);
@@ -413,7 +433,8 @@ fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[
             item(ui, tr(lang, "Sort A-Z"), Action::Sort(p()), actions);
             ui.separator();
             item(ui, tr(lang, "Play tour"), Action::Tour(p()), actions);
-            item(ui, tr(lang, "Properties…"), Action::FolderProperties(p()), actions);
+            let props = if kind == RowKind::LinkFolder { Action::LinkProperties(p()) } else { Action::FolderProperties(p()) };
+            item(ui, tr(lang, "Properties…"), props, actions);
             return;
         }
         if tour {
@@ -423,10 +444,9 @@ fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[
             item(ui, tr(lang, "Elevation profile"), Action::Profile(p()), actions);
         }
         item(ui, tr(lang, "Snapshot view"), Action::ViewSnapshot(p()), actions);
-        if kind != RowKind::Overlay {
-            item(ui, tr(lang, "Properties…"), Action::Properties(p()), actions);
-        }
-        item(ui, tr(lang, "New Folder"), Action::NewFolderAfter(p()), actions);
+        let props = if kind == RowKind::Overlay { Action::OverlayProperties(p()) } else { Action::Properties(p()) };
+        item(ui, tr(lang, "Properties…"), props, actions);
+        item(ui, tr(lang, "New folder"), Action::NewFolderAfter(p()), actions);
         item(ui, tr(lang, "Cut"), Action::Cut(p()), actions);
         item(ui, tr(lang, "Copy"), Action::Copy(p()), actions);
         item(ui, tr(lang, "Paste"), Action::Paste(path[..path.len().saturating_sub(1)].to_vec()), actions);
@@ -599,7 +619,8 @@ pub fn tree_ui(
                             actions.push(Action::Toggled(path.clone()));
                         }
                         crate::theme::folder_icon(ui);
-                        row_name(ui, &f.name, path, (true, RowKind::Folder), lang, state, actions);
+                        let kind = if f.link.trim().is_empty() { RowKind::Folder } else { RowKind::LinkFolder };
+            row_name(ui, &f.name, path, (true, kind), lang, state, actions);
                     })
                     .body(|ui| tree_ui(ui, f, path, lang, state, actions));
                 drop_target(ui, &head.response, path, true, actions);
@@ -749,6 +770,32 @@ impl Marks {
         *slot = place;
         self.refresh();
         true
+    }
+
+    /// Наложение по пути или None.
+    pub fn overlay(&self, path: &[usize]) -> Option<&kml::Overlay> {
+        match item_at(self.tree.as_ref()?, path)? {
+            Item::Overlay(o) => Some(o),
+            _ => None,
+        }
+    }
+
+    /// Заменить наложение по пути. false - наложения там нет.
+    pub fn set_overlay(&mut self, path: &[usize], overlay: kml::Overlay) -> bool {
+        let Some(Item::Overlay(slot)) = self.tree.as_mut().and_then(|t| item_at_mut(t, path)) else {
+            return false;
+        };
+        *slot = overlay;
+        self.refresh();
+        true
+    }
+
+    /// Папка по пути или None.
+    pub fn folder(&self, path: &[usize]) -> Option<&Folder> {
+        match item_at(self.tree.as_ref()?, path)? {
+            Item::Folder(f) => Some(f),
+            _ => None,
+        }
     }
 
     /// Изменить папку по пути: f правит её, потом объекты собираются

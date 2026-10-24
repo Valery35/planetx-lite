@@ -840,3 +840,87 @@ Tour pause	Tur duraklaması
 Tram	Tramvay
 What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	Yüksekliğin neye göre ölçüldüğü. Zemine sabit - yer işareti zeminde, denizin üzerinde suda durur. Deniz tabanına sabit - tabanda. Zemine ve deniz tabanına göre - bunların üzerindeki yükselme. Mutlak - deniz seviyesinden yükseklik. Kip KML'de kaydedilir.
 Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	Kamera yer işaretine uçarken veya turda onda dururken nereden bakar. Kendi görünümü yoksa kamera yer işaretinin tamamını kadraja alır.
+{w} × {h} pixels	{w} × {h} piksel
+1890 or 1890/1910	1890 veya 1890/1910
+3D model	3B model
+3D model…	3B model…
+3D models (*.dae *.gltf *.glb *.obj *.kmz)	3B modeller (*.dae *.gltf *.glb *.obj *.kmz)
+A linked image is read again after this interval while it is shown. The globe then keeps a fresh image or map that a server or a program updates by itself. Zero - the image is read when shown. An interval shorter than {low} s is raised to {low} s.	Bağlantılı bir resim görünür olduğu sürece bu aralıktan sonra yeniden okunur. Böylece kürede bir sunucunun veya programın kendisi güncellediği güncel bir resim veya harita durur. Sıfır - resim gösterilirken okunur. {low} sn'den kısa bir aralık {low} sn'ye yükseltilir.
+A linked model file is checked at this interval while the model is visible. A changed file is read again. Zero means the file is read when shown. An interval shorter than {low} s is raised to {low} s.	Bağlantılı bir model dosyası, model görünür olduğu sürece bu aralıkla denetlenir. Değişen bir dosya yeniden okunur. Sıfır - dosya gösterilirken okunur. {low} sn'den kısa bir aralık {low} sn'ye yükseltilir.
+A My Places folder with the contents of a KML or KMZ document at an address. The contents are loaded again after the refresh interval, edits inside the folder are lost then.	Bir adresteki KML veya KMZ belgesinin içeriğini taşıyan bir "Yerlerim" klasörü. İçerik yenileme aralığından sonra yeniden yüklenir, klasördeki düzenlemeler bu sırada kaybolur.
+Above sea level	Deniz seviyesinin üzerinde
+Above terrain	Arazinin üzerinde
+After how many seconds the document is loaded again. Zero is once per session. The interval is never shorter than 10 s.	Belgenin kaç saniye sonra yeniden yükleneceği. Sıfır - oturum başına bir kez. Aralık hiçbir zaman 10 sn'den kısa olmaz.
+An edge of the image box in degrees. The box is set by the cardinal sides and the rotation, as LatLonBox in KML.	Resim çerçevesinin derece cinsinden bir kenarı. Çerçeve ana yönler ve dönüşle belirlenir, KML'deki LatLonBox gibi.
+Bottom left	Sol alt
+Bottom right	Sağ alt
+Browse…	Gözat…
+by link {link}	bağlantıyla {link}
+Choose a model file. In the places file the model is replaced by a copy, a link gets a new path. The place and the scale stay.	Bir model dosyası seç. Yer işaretleri dosyasında model bir kopyayla değiştirilir, bağlantı yeni bir yol alır. Yer ve ölçek kalır.
+Choose an image file. In the places file the image is replaced with a copy, a link gets the new path. The corners and position stay.	Bir resim dosyası seç. Yer işaretleri dosyasında resim bir kopyayla değiştirilir, bağlantı yeni yolu alır. Köşeler ve konum kalır.
+Clockwise turn of the model as seen from above. At zero the Y axis of the model points north.	Modelin yukarıdan bakıldığında saat yönünde dönüşü. Sıfırda modelin Y ekseni kuzeyi gösterir.
+Close the properties without saving the edits, like the Cancel button.	Özellikleri düzenlemeleri kaydetmeden kapat, "İptal" düğmesi gibi.
+Convert to four corners	Dört köşeye dönüştür
+Each corner of the image is dragged with the mouse on its own, the image can become an irregular quadrilateral, as gx:LatLonQuad in KML. It does not convert back to a box.	Resmin her köşesi fareyle ayrı ayrı sürüklenir, resim düzensiz bir dörtgen olabilir, KML'deki gx:LatLonQuad gibi. Geri çerçeveye dönüştürülmez.
+File path or http(s) address	Dosya yolu veya http(s) adresi
+Ground overlay	Yüzeydeki resim
+Ground overlay|add	Yüzeydeki resim
+Height of the model point. Above terrain is the rise above the ground, above sea level is the height from sea level. On terrain the height has no effect.	Model noktasının yüksekliği. Arazinin üzerinde - zeminden yükselme, deniz seviyesinin üzerinde - deniz seviyesinden yükseklik. Arazide yükseklik etki etmez.
+Images (*.png *.jpg *.jpeg *.gif)	Resimler (*.png *.jpg *.jpeg *.gif)
+In the places file	yer işaretleri dosyasında
+Latitude of the model point. The point is the origin of the model file coordinates.	Model noktasının enlemi. Nokta, model dosyası koordinatlarının başlangıcıdır.
+Link to a file or address	Bir dosyaya veya adrese bağlantı
+Link to a file	Bir dosyaya bağlantı
+Longitude of the model point.	Model noktasının boylamı.
+Model file	Model dosyası
+Network link	Ağ bağlantısı
+Network link…	Ağ bağlantısı…
+no image	resim yok
+no link	bağlantı yok
+no model files	model dosyası yok
+no refresh	yenileme
+On terrain	Arazide
+Opacity of the image. At zero the imagery shows through it.	Resmin opaklığı. Sıfırda içinden uydu görüntüsü görünür.
+own size	kendi boyutu
+Path to a .dae, .gltf, .glb or .obj model file. The model images are read from the files next to it.	.dae, .gltf, .glb veya .obj model dosyasının yolu. Modelin resimleri yanındaki dosyalardan okunur.
+Path to the model file	Model dosyasının yolu
+Reload	Yeniden yükle
+Roll of the model around its Y axis.	Modelin Y ekseni etrafında yatışı.
+Rotation of the image about its centre counterclockwise.	Resmin ortası etrafında saat yönünün tersine dönüşü.
+Scale of the model. One means the sizes from the model file. The field changes the scale of all axes at once, different axis scales from KML keep their ratio.	Modelin ölçeği. Bir - model dosyasındaki boyutlar. Alan tüm eksenlerin ölçeğini aynı anda değiştirir, KML'den gelen farklı eksen ölçekleri oranlarını korur.
+Screen overlay	Ekrandaki resim
+Screen overlay|add	Ekrandaki resim
+The address of a KML or KMZ document on the web (http, https) or a file path on disk. The file is read again when another program changes it.	Ağdaki bir KML veya KMZ belgesinin adresi (http, https) veya diskteki bir dosya yolu. Başka bir program dosyayı değiştirdiğinde dosya yeniden okunur.
+The corner of the view the image is pinned to.	Resmin sabitlendiği görünüm köşesi.
+The corners of the image are dragged with the mouse on the globe while the window is open.	Pencere açıkken resmin köşeleri kürede fareyle sürüklenir.
+The cross in the middle moves the image, the diamond rotates it, the corners and the middles of the sides stretch it, with Shift from the centre.	Ortadaki artı resmi kaydırır, eşkenar dörtgen döndürür, köşeler ve kenar ortaları uzatır, Shift ile ortadan.
+The description of the overlay. It goes into KML with the image.	Bindirmenin açıklaması. Resimle birlikte KML'ye gider.
+The folder name in My Places.	"Yerlerim" içindeki klasör adı.
+The image cannot be read: {name}	Resim okunamıyor: {name}
+The model cannot be read.	Model okunamıyor.
+The model cannot be read: {name}	Model okunamıyor: {name}
+The name of the overlay in My Places.	Bindirmenin "Yerlerim" içindeki adı.
+The network link {name} was not loaded, {error}	"{name}" ağ bağlantısı yüklenmedi: {error}
+The path to the image file or its web address. The image is read again at each showing.	Resim dosyasının yolu veya ağdaki adresi. Resim her gösterimde yeniden okunur.
+The time of the image, as in KML. A year or a date is a moment, for a historical map it is the map year. Moment maps of one folder replace each other on the time slider - the last map not later than the slider moment is shown. Two values with a slash are a span, the image is shown within it. An empty field shows the image always.	Resmin zamanı, KML'deki gibi. Bir yıl veya tarih bir andır, tarihî bir haritada haritanın yılıdır. Bir klasördeki an haritaları zaman çubuğunda birbirinin yerini alır - çubuktaki andan geç olmayan son harita görünür. Eğik çizgiyle ayrılmış iki değer bir aralıktır, resim bu aralıkta görünür. Boş alan resmi her zaman gösterir.
+Tilt of the model around its X axis.	Modelin X ekseni etrafında eğimi.
+Top left	Sol üst
+Top right	Sağ üst
+Triangles {count}, materials {parts}, images {images}. Size {x} × {y} × {z} m.	Üçgen {count}, malzeme {parts}, resim {images}. Boyut {x} × {y} × {z} m.
+What the model height is measured from, as altitudeMode in KML.	Model yüksekliğinin neye göre ölçüldüğü, KML'deki altitudeMode gibi.
+Where the image lies. In the places file - a copy inside My Places, it is shown without the source file. Link - a file path or a web address, the image is read when shown, an edit of the file shows on the globe.	Resmin nerede durduğu. Yer işaretleri dosyasında - "Yerlerim" içinde bir kopya, kaynak dosya olmadan da görünür. Bağlantı - bir dosya yolu veya web adresi, resim gösterilirken okunur, dosyadaki bir düzenleme kürede görünür.
+Where the model files are. A link is a path to a .dae, .gltf, .glb or .obj file, the model is read from it and the files next to it, an edit in SketchUp or Blender shows on the globe. In the places file is a copy of all model files, it shows without the source file too.	Model dosyalarının nerede durduğu. Bağlantı, .dae, .gltf, .glb veya .obj dosyasının yoludur, model ondan ve yanındaki dosyalardan okunur, SketchUp veya Blender'daki bir düzenleme kürede görünür. Yer işaretleri dosyasında - tüm model dosyalarının bir kopyası, kaynak dosya olmadan da görünür.
+Width of the image as a share of the view width. Zero - the image at its own size in pixels.	Görünüm genişliğinin oranı olarak resmin genişliği. Sıfır - resim piksel cinsinden kendi boyutunda.
+Photo	Fotoğraf
+Centre	Orta
+Once	Bir kez
+Storage	Saklama
+Opacity	Opaklık
+Refresh	Yenile
+Roll	Yatış
+Scale	Ölçek
+North	Kuzey
+South	Güney
+East	Doğu
+West	Batı
+Rotation	Dönüş

@@ -840,3 +840,87 @@ Tour pause	Pause dans la visite
 Tram	Tramway
 What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	À partir de quoi l’altitude est mesurée. Au sol - le repère repose sur le sol, au-dessus de la mer sur l’eau. Au fond marin - sur le fond. Relative au sol et au fond marin - l’élévation au-dessus d’eux. Absolue - l’altitude au-dessus du niveau de la mer. Le mode est enregistré en KML.
 Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	D’où regarde la caméra quand elle vole vers le repère ou s’y arrête dans une visite. Sans vue propre, la caméra cadre le repère en entier.
+{w} × {h} pixels	{w} × {h} pixels
+1890 or 1890/1910	1890 ou 1890/1910
+3D model	Modèle 3D
+3D model…	Modèle 3D…
+3D models (*.dae *.gltf *.glb *.obj *.kmz)	Modèles 3D (*.dae *.gltf *.glb *.obj *.kmz)
+A linked image is read again after this interval while it is shown. The globe then keeps a fresh image or map that a server or a program updates by itself. Zero - the image is read when shown. An interval shorter than {low} s is raised to {low} s.	Une image liée est relue après cet intervalle tant qu’elle est visible. Le globe montre ainsi une image ou une carte récente qu’un serveur ou un programme met à jour lui-même. Zéro - l’image est lue à l’affichage. Un intervalle inférieur à {low} s est porté à {low} s.
+A linked model file is checked at this interval while the model is visible. A changed file is read again. Zero means the file is read when shown. An interval shorter than {low} s is raised to {low} s.	Un fichier de modèle lié est vérifié à cet intervalle tant que le modèle est visible. Un fichier modifié est relu. Zéro - le fichier est lu à l’affichage. Un intervalle inférieur à {low} s est porté à {low} s.
+A My Places folder with the contents of a KML or KMZ document at an address. The contents are loaded again after the refresh interval, edits inside the folder are lost then.	Un dossier de « Mes lieux » avec le contenu d’un document KML ou KMZ à une adresse. Le contenu est rechargé après l’intervalle d’actualisation, les modifications dans le dossier sont alors perdues.
+Above sea level	Au-dessus du niveau de la mer
+Above terrain	Au-dessus du relief
+After how many seconds the document is loaded again. Zero is once per session. The interval is never shorter than 10 s.	Après combien de secondes le document est rechargé. Zéro - une fois par session. L’intervalle n’est jamais inférieur à 10 s.
+An edge of the image box in degrees. The box is set by the cardinal sides and the rotation, as LatLonBox in KML.	Un bord du cadre de l’image en degrés. Le cadre est défini par les points cardinaux et la rotation, comme LatLonBox en KML.
+Bottom left	En bas à gauche
+Bottom right	En bas à droite
+Browse…	Parcourir…
+by link {link}	par lien {link}
+Choose a model file. In the places file the model is replaced by a copy, a link gets a new path. The place and the scale stay.	Choisir un fichier de modèle. Dans le fichier des repères, le modèle est remplacé par une copie, un lien reçoit un nouveau chemin. Le lieu et l’échelle restent.
+Choose an image file. In the places file the image is replaced with a copy, a link gets the new path. The corners and position stay.	Choisir un fichier image. Dans le fichier des repères, l’image est remplacée par une copie, un lien reçoit le nouveau chemin. Les coins et la position restent.
+Clockwise turn of the model as seen from above. At zero the Y axis of the model points north.	Rotation du modèle dans le sens horaire vue d’en haut. À zéro, l’axe Y du modèle pointe vers le nord.
+Close the properties without saving the edits, like the Cancel button.	Fermer les propriétés sans enregistrer les modifications, comme le bouton « Annuler ».
+Convert to four corners	Convertir en quatre coins
+Each corner of the image is dragged with the mouse on its own, the image can become an irregular quadrilateral, as gx:LatLonQuad in KML. It does not convert back to a box.	Chaque coin de l’image se déplace séparément à la souris, l’image peut devenir un quadrilatère irrégulier, comme gx:LatLonQuad en KML. Elle ne se reconvertit pas en cadre.
+File path or http(s) address	Chemin du fichier ou adresse http(s)
+Ground overlay	Image sur la surface
+Ground overlay|add	Image sur la surface
+Height of the model point. Above terrain is the rise above the ground, above sea level is the height from sea level. On terrain the height has no effect.	Hauteur du point du modèle. Au-dessus du relief - l’élévation au-dessus du sol, au-dessus du niveau de la mer - la hauteur depuis le niveau de la mer. Sur le relief, la hauteur n’agit pas.
+Images (*.png *.jpg *.jpeg *.gif)	Images (*.png *.jpg *.jpeg *.gif)
+In the places file	dans le fichier des repères
+Latitude of the model point. The point is the origin of the model file coordinates.	Latitude du point du modèle. Le point est l’origine des coordonnées du fichier du modèle.
+Link to a file or address	Lien vers un fichier ou une adresse
+Link to a file	Lien vers un fichier
+Longitude of the model point.	Longitude du point du modèle.
+Model file	Fichier du modèle
+Network link	Lien réseau
+Network link…	Lien réseau…
+no image	pas d’image
+no link	pas de lien
+no model files	pas de fichiers de modèle
+no refresh	ne pas actualiser
+On terrain	Sur le relief
+Opacity of the image. At zero the imagery shows through it.	Opacité de l’image. À zéro, l’imagerie se voit à travers.
+own size	taille propre
+Path to a .dae, .gltf, .glb or .obj model file. The model images are read from the files next to it.	Chemin d’un fichier de modèle .dae, .gltf, .glb ou .obj. Les images du modèle sont lues dans les fichiers voisins.
+Path to the model file	Chemin du fichier du modèle
+Reload	Recharger
+Roll of the model around its Y axis.	Roulis du modèle autour de son axe Y.
+Rotation of the image about its centre counterclockwise.	Rotation de l’image autour de son centre dans le sens antihoraire.
+Scale of the model. One means the sizes from the model file. The field changes the scale of all axes at once, different axis scales from KML keep their ratio.	Échelle du modèle. Un - les dimensions du fichier du modèle. Le champ change l’échelle de tous les axes à la fois, les échelles différentes des axes venant de KML gardent leur rapport.
+Screen overlay	Image à l’écran
+Screen overlay|add	Image à l’écran
+The address of a KML or KMZ document on the web (http, https) or a file path on disk. The file is read again when another program changes it.	L’adresse d’un document KML ou KMZ sur le réseau (http, https) ou un chemin de fichier sur le disque. Le fichier est relu quand un autre programme le modifie.
+The corner of the view the image is pinned to.	Le coin de la vue auquel l’image est attachée.
+The corners of the image are dragged with the mouse on the globe while the window is open.	Les coins de l’image se déplacent à la souris sur le globe tant que la fenêtre est ouverte.
+The cross in the middle moves the image, the diamond rotates it, the corners and the middles of the sides stretch it, with Shift from the centre.	La croix au milieu déplace l’image, le losange la tourne, les coins et les milieux des côtés l’étirent, avec Maj depuis le centre.
+The description of the overlay. It goes into KML with the image.	La description de la superposition. Elle part dans le KML avec l’image.
+The folder name in My Places.	Le nom du dossier dans « Mes lieux ».
+The image cannot be read: {name}	L’image est illisible : {name}
+The model cannot be read.	Le modèle est illisible.
+The model cannot be read: {name}	Le modèle est illisible : {name}
+The name of the overlay in My Places.	Le nom de la superposition dans « Mes lieux ».
+The network link {name} was not loaded, {error}	Le lien réseau « {name} » n’a pas été chargé : {error}
+The path to the image file or its web address. The image is read again at each showing.	Le chemin du fichier image ou son adresse sur le réseau. L’image est relue à chaque affichage.
+The time of the image, as in KML. A year or a date is a moment, for a historical map it is the map year. Moment maps of one folder replace each other on the time slider - the last map not later than the slider moment is shown. Two values with a slash are a span, the image is shown within it. An empty field shows the image always.	L’heure de l’image, comme en KML. Une année ou une date est un instant, pour une carte historique c’est l’année de la carte. Les cartes-instants d’un même dossier se succèdent sur la barre de temps - la dernière carte non postérieure à l’instant de la barre est visible. Deux valeurs séparées par une barre oblique forment un intervalle, l’image est visible dans celui-ci. Un champ vide affiche l’image toujours.
+Tilt of the model around its X axis.	Tangage du modèle autour de son axe X.
+Top left	En haut à gauche
+Top right	En haut à droite
+Triangles {count}, materials {parts}, images {images}. Size {x} × {y} × {z} m.	Triangles {count}, matériaux {parts}, images {images}. Taille {x} × {y} × {z} m.
+What the model height is measured from, as altitudeMode in KML.	À partir de quoi la hauteur du modèle est mesurée, comme altitudeMode en KML.
+Where the image lies. In the places file - a copy inside My Places, it is shown without the source file. Link - a file path or a web address, the image is read when shown, an edit of the file shows on the globe.	Où se trouve l’image. Dans le fichier des repères - une copie dans « Mes lieux », visible même sans le fichier source. Lien - un chemin de fichier ou une adresse web, l’image est lue à l’affichage, une modification du fichier se voit sur le globe.
+Where the model files are. A link is a path to a .dae, .gltf, .glb or .obj file, the model is read from it and the files next to it, an edit in SketchUp or Blender shows on the globe. In the places file is a copy of all model files, it shows without the source file too.	Où se trouvent les fichiers du modèle. Un lien est un chemin vers un fichier .dae, .gltf, .glb ou .obj, le modèle est lu depuis celui-ci et les fichiers voisins, une modification dans SketchUp ou Blender se voit sur le globe. Dans le fichier des repères - une copie de tous les fichiers du modèle, visible même sans le fichier source.
+Width of the image as a share of the view width. Zero - the image at its own size in pixels.	Largeur de l’image en fraction de la largeur de la vue. Zéro - l’image à sa taille propre en pixels.
+Photo	Photo
+Centre	Centre
+Once	Une fois
+Storage	Stockage
+Opacity	Opacité
+Refresh	Actualiser
+Roll	Roulis
+Scale	Échelle
+North	Nord
+South	Sud
+East	Est
+West	Ouest
+Rotation	Rotation

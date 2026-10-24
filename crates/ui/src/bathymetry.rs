@@ -42,11 +42,10 @@ impl Dialog {
         Dialog { name: name.to_string(), kind, level, set: setting.is_some() }
     }
 
-    /// Окно. Возвращает итог, когда окно закрыли.
-    pub fn show(&mut self, ctx: &egui::Context, lang: Lang) -> Option<Answer> {
+    /// Тело окна в панели свойств. Возвращает итог, когда окно закрыли.
+    pub fn body(&mut self, ui: &mut egui::Ui, lang: Lang) -> Option<Answer> {
         let mut answer = None;
-        let mut open = true;
-        egui::Window::new(tr(lang, "Water body bathymetry")).open(&mut open).collapsible(false).resizable(false).default_width(420.0).show(ctx, |ui| {
+        {
             ui.label(trf(
                 lang,
                 "The raster \"{name}\" goes into the globe terrain as the bed of the water body, water is drawn above it at the water body level. The default level is the terrain height at the edge of the raster, for a lake it is usually the water surface.",
@@ -78,9 +77,6 @@ impl Dialog {
                     answer = Some(Answer::Remove);
                 }
             });
-        });
-        if !open {
-            answer = Some(Answer::Cancel);
         }
         answer
     }

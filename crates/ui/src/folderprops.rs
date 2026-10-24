@@ -72,14 +72,14 @@ impl FolderProps {
         self.old_region.filter(|r| r.max_lod >= 0.0).map(|r| scene::region::Region { min_lod: 0.0, ..r })
     }
 
-    /// Окно. current - вид глобуса сейчас для «Снимок текущего вида».
-    pub fn window(&mut self, ctx: &egui::Context, lang: Lang, current: [f64; 5]) -> Outcome {
+    /// Тело окна в панели свойств. current - вид глобуса сейчас для
+    /// «Снимок текущего вида».
+    pub fn body(&mut self, ui: &mut egui::Ui, lang: Lang, current: [f64; 5]) -> Outcome {
         let mut outcome = Outcome::Open;
-        let mut open = true;
-        egui::Window::new(tr(lang, "Folder properties")).open(&mut open).collapsible(false).min_width(460.0).show(ctx, |ui| {
+        {
             egui::Grid::new("folder-props").num_columns(2).spacing([12.0, 6.0]).show(ui, |ui| {
                 ui.label(tr(lang, "Name"));
-                ui.add(egui::TextEdit::singleline(&mut self.name).desired_width(300.0));
+                ui.add(egui::TextEdit::singleline(&mut self.name).desired_width(f32::INFINITY));
                 ui.end_row();
                 ui.label("");
                 ui.vertical(|ui| {
@@ -104,7 +104,7 @@ impl FolderProps {
                 ui.selectable_value(&mut self.tab, 1, tr(lang, "View"));
             });
             egui::Frame::group(ui.style()).show(ui, |ui| {
-                ui.set_min_width(440.0);
+                ui.set_min_width(ui.available_width());
                 if self.tab == 0 {
                     ui.add(egui::TextEdit::multiline(&mut self.description).desired_width(f32::INFINITY).desired_rows(6))
                         .on_hover_text(tr(lang, "Description of the folder. It is kept in My Places and in KML."));
@@ -138,9 +138,6 @@ impl FolderProps {
                     outcome = Outcome::Cancel;
                 }
             });
-        });
-        if !open {
-            outcome = Outcome::Cancel;
         }
         outcome
     }

@@ -22,6 +22,8 @@ pub mod folderprops;
 pub mod fonts;
 pub mod gpkg;
 pub mod geophysics;
+pub mod netlinks;
+pub mod overlayprops;
 pub mod placeprops;
 pub mod glyphs;
 pub mod grid;
