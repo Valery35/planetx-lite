@@ -700,3 +700,59 @@ Continental collision	大陆碰撞
 About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	根据由区域目录汇编的 GEM Global Active Faults 数据库，世界约 1.37 万条活动断层。颜色表示位移类型。类型为正断层、逆断层或逆冲断层、走滑断层、扩张脊和褶皱。单击线条可显示名称、位移类型、以毫米/年为单位的速率、倾角和来源目录。首次打开下载约 11 MB。
 Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. Plate names show as labels. The Features window shows the boundary type and the plate speed.	根据 PB2002 模型的岩石圈板块边界。红色 - 洋脊和裂谷处的板块分离，绿色 - 沿转换断层的错动，蓝色 - 俯冲带和碰撞带的汇聚。板块名称以标注显示。边界类型和板块速度显示在“对象”窗口中。
 Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	来自 OpenStreetMap 的海底通信线路（青绿色）和电力电缆（紫色），在任何高度均可见。OSM 收录了世界部分电缆，大多位于大西洋和欧洲附近。单击线条可显示名称、所有者和 OpenStreetMap 对象的链接。
+Power plants	发电厂
+Mineral deposits	矿床
+About 35 thousand power plants of the world from the WRI Global Power Plant Database, data as of 2021. Colour is the fuel, size is the capacity. A click on a dot shows the name, capacity, commissioning year and owner. Some plants are placed wrongly in the database. The first use downloads about 4 MB.	来自 WRI Global Power Plant Database 的世界约 3.5 万座发电厂，数据截至 2021 年。颜色表示燃料，大小表示装机容量。单击点可显示名称、装机容量、投运年份和所有者。部分电厂在数据库中的位置有误。首次打开下载约 4 MB。
+Mineral deposits, mines and occurrences of USGS - the MRDS database, about 300 thousand points, most of them in the USA, 3 thousand major deposits of the world and 6.5 thousand mines and plants of the world with the operator and capacity. The colour is the commodity group, a large point is a major deposit, mine or plant. A click on a point shows the name, commodities, type and a link to the USGS record. The first switch-on downloads about 25 MB.	USGS 的矿床、矿山和矿点 - MRDS 数据库，约 30 万个点，大多位于美国，另有世界 3000 个大型矿床和 6500 个附有运营方和产能的世界矿山与工厂。颜色表示矿种组，大点表示大型矿床、矿山或工厂。单击点可显示名称、矿种、类型和 USGS 记录的链接。首次打开下载约 25 MB。
+Coal	煤
+Gas	天然气
+Oil	燃料油
+Nuclear	核能
+Hydro	水电
+Wind	风能
+Biomass, waste, geothermal	生物质、废弃物、地热
+Other	其他
+Precious metals	贵金属
+Base metals	贱金属
+Iron and alloy metals	铁和合金金属
+Rare metals, lithium, aluminum	稀有金属、锂、铝
+Coal, uranium, geothermal	煤、铀、地热
+Diamonds and gems	金刚石和宝石
+Industrial and construction	非金属和建筑材料
+WRI power plants	WRI 发电厂
+Dot size - capacity	点大小 - 装机容量
+USGS mineral deposits	USGS 矿床
+Capacity	装机容量
+Fuel	燃料
+Commissioning year	投运年份
+Commodities	矿种
+Group	组
+Status or model	阶段或模型
+Operator	运营方
+Capacity (year of data)	产能（数据年份）
+approximate, by district	大致位置，按地区
+Major mineral deposits of the world, USGS OFR 2005-1294	世界大型矿床，USGS OFR 2005-1294
+World mines and plants, USGS mineral operations	世界矿山和工厂，USGS mineral operations
+USGS record	USGS 记录
+Magnetic poles	磁极
+Declination lines	磁偏角线
+Plate motion	板块运动
+The north and south magnetic poles - the points where a compass needle stands vertical - for the year of the time slider and their path since 1590 after NOAA NCEI. The slider opens by itself, its handle moves the poles over the years. A click on the globe in the Identify features mode shows the declination, inclination and field intensity at the point for the same year after the gufm1 and IGRF-14 models, from 1590 to 2030.	北磁极和南磁极 - 罗盘指针竖直的点 - 按时间条所示年份显示，并根据 NOAA NCEI 数据显示其自 1590 年以来的移动路径。时间条自动打开，拖动滑块使磁极随年份移动。在“识别对象”模式下单击地球，可根据 gufm1 和 IGRF-14 模型显示同一年该点的磁偏角、磁倾角和总场强，范围为 1590 年至 2030 年。
+Lines of equal magnetic declination, the angle between the compass needle and the north, every 10° for the year of the time scale after the IGRF-14 model from 1900 and the gufm1 model from 1590, gufm1 is downloaded on first display. Red lines are east declination, blue lines west, the green line zero. The lines meet at the magnetic poles.	磁偏角相等的线，磁偏角即罗盘指针与北方向之间的夹角，按时间条所示年份每隔 10° 绘制。1900 年起采用 IGRF-14 模型，1590 年起采用 gufm1 模型，gufm1 在首次显示时下载。红线为东偏，蓝线为西偏，绿线为零。各线在磁极处汇聚。
+Arrows of lithospheric plate motion after the NNR-MORVEL56 model, the speed relative to the mean motion of all plates. The arrow grows with the speed, the number at its start is mm/yr. The Pacific plate moves north-west at about 70 mm/yr, the Eurasian plate at about 25. The Features window shows the plate, speed and direction at the point.	根据 NNR-MORVEL56 模型的岩石圈板块运动箭头 - 相对于所有板块平均运动的速度。箭头随速度增长，起点处的数字单位为毫米/年。太平洋板块以约 70 毫米/年向西北移动，欧亚板块约为 25。“对象”窗口显示该点的板块、速度和方向。
+North magnetic pole, {year}	北磁极，{year}
+South magnetic pole, {year}	南磁极，{year}
+The field before 1900 is not loaded: {error}	1900 年以前的磁场未加载：{error}
+Year	年份
+Model	模型
+gufm1 from 1590, IGRF-14 from 1900 to 2030	gufm1 自 1590 年，IGRF-14 自 1900 年至 2030 年
+Declination	磁偏角
+Inclination	磁倾角
+Total intensity	总场强
+{value} nT	{value} nT
+Horizontal component	水平分量
+Magnetic field	磁场
+Field at the point	该点磁场
+Plate	板块
+Plate speed	板块速度
+Direction	方向

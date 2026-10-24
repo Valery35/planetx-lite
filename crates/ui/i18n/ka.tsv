@@ -700,3 +700,59 @@ Continental collision	კონტინენტური კოლიზია
 About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	მსოფლიოს დაახლოებით 13.7 ათასი აქტიური რღვევა GEM Global Active Faults-ის ბაზის მიხედვით, შედგენილი რეგიონული კატალოგებიდან. ფერი აჩვენებს გადაადგილების სახეს. ეს არის ნორმალური რღვევა, შებრუნებული რღვევა ან შეცოცება, გადანაცვლება, შუა ქედი და ნაოჭი. ხაზზე დაწკაპუნება აჩვენებს სახელს, გადაადგილების სახეს, სიჩქარეს მმ/წელში, დაქანებას და წყარო კატალოგს. პირველი ჩართვა ჩამოტვირთავს დაახლოებით 11 მბ-ს.
 Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. Plate names show as labels. The Features window shows the boundary type and the plate speed.	ლითოსფერული ფილების საზღვრები PB2002 მოდელის მიხედვით. წითელი - ფილების დაშორება ქედებსა და რიფტებზე, მწვანე - გასრიალება ტრანსფორმული რღვევების გასწვრივ, ლურჯი - დაახლოება სუბდუქციისა და კოლიზიის ზონებში. ფილების სახელები წარწერებად დგას. საზღვრის ტიპს და ფილების სიჩქარეს აჩვენებს ფანჯარა „ობიექტები“.
 Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	წყალქვეშა კავშირგაბმულობის ხაზები (ფირუზისფერი) და ძალოვანი კაბელები (იისფერი) OpenStreetMap-იდან, ჩანს ნებისმიერი სიმაღლიდან. OSM-ში შეტანილია მსოფლიოს კაბელების ნაწილი, ყველაზე მეტი ატლანტიკაში და ევროპასთან. ხაზზე დაწკაპუნება აჩვენებს სახელს, მფლობელს და ბმულს OpenStreetMap-ის ობიექტზე.
+Power plants	ელექტროსადგურები
+Mineral deposits	საბადოები
+About 35 thousand power plants of the world from the WRI Global Power Plant Database, data as of 2021. Colour is the fuel, size is the capacity. A click on a dot shows the name, capacity, commissioning year and owner. Some plants are placed wrongly in the database. The first use downloads about 4 MB.	მსოფლიოს დაახლოებით 35 ათასი ელექტროსადგური WRI Global Power Plant Database-ის ბაზიდან, მონაცემები 2021 წლისთვის. ფერი - საწვავის სახე, ზომა - სიმძლავრე. წერტილზე დაწკაპუნება აჩვენებს სახელს, სიმძლავრეს, ექსპლუატაციაში შესვლის წელს და მფლობელს. სადგურების ნაწილის ადგილი ბაზაში არასწორადაა მითითებული. პირველი ჩართვა ჩამოტვირთავს დაახლოებით 4 მბ-ს.
+Mineral deposits, mines and occurrences of USGS - the MRDS database, about 300 thousand points, most of them in the USA, 3 thousand major deposits of the world and 6.5 thousand mines and plants of the world with the operator and capacity. The colour is the commodity group, a large point is a major deposit, mine or plant. A click on a point shows the name, commodities, type and a link to the USGS record. The first switch-on downloads about 25 MB.	USGS-ის სასარგებლო წიაღისეულის საბადოები, მაღაროები და გამოვლინებები - MRDS ბაზა, დაახლოებით 300 ათასი წერტილი, ყველაზე მეტი აშშ-ში, მსოფლიოს 3 ათასი მსხვილი საბადო და მსოფლიოს 6.5 ათასი მაღარო და ქარხანა ოპერატორითა და სიმძლავრით. ფერი - წიაღისეულის ჯგუფი, დიდი წერტილი - მსხვილი საბადო, მაღარო ან ქარხანა. წერტილზე დაწკაპუნება აჩვენებს სახელს, წიაღისეულს, ტიპს და ბმულს USGS-ის ჩანაწერზე. პირველი ჩართვა ჩამოტვირთავს დაახლოებით 25 მბ-ს.
+Coal	ქვანახშირი
+Gas	აირი
+Oil	მაზუთი
+Nuclear	ატომური
+Hydro	ჰესი
+Wind	ქარი
+Biomass, waste, geothermal	ბიოსაწვავი, ნარჩენები, გეოთერმული
+Other	სხვა
+Precious metals	კეთილშობილი ლითონები
+Base metals	ფერადი ლითონები
+Iron and alloy metals	შავი და მალეგირებელი ლითონები
+Rare metals, lithium, aluminum	იშვიათი ლითონები, ლითიუმი, ალუმინი
+Coal, uranium, geothermal	ქვანახშირი, ურანი, გეოთერმული
+Diamonds and gems	ალმასები და ძვირფასი ქვები
+Industrial and construction	არამადნეული და სამშენებლო
+WRI power plants	WRI-ის ელექტროსადგურები
+Dot size - capacity	წერტილის ზომა - სიმძლავრე
+USGS mineral deposits	USGS-ის საბადოები
+Capacity	სიმძლავრე
+Fuel	საწვავი
+Commissioning year	ექსპლუატაციაში შესვლის წელი
+Commodities	სასარგებლო წიაღისეული
+Group	ჯგუფი
+Status or model	სტადია ან მოდელი
+Operator	ოპერატორი
+Capacity (year of data)	სიმძლავრე (მონაცემების წელი)
+approximate, by district	მიახლოებითი, რაიონის მიხედვით
+Major mineral deposits of the world, USGS OFR 2005-1294	მსოფლიოს მსხვილი საბადოები, USGS OFR 2005-1294
+World mines and plants, USGS mineral operations	მსოფლიოს მაღაროები და ქარხნები, USGS mineral operations
+USGS record	USGS-ის ჩანაწერი
+Magnetic poles	მაგნიტური პოლუსები
+Declination lines	მიხრის ხაზები
+Plate motion	ფილების მოძრაობა
+The north and south magnetic poles - the points where a compass needle stands vertical - for the year of the time slider and their path since 1590 after NOAA NCEI. The slider opens by itself, its handle moves the poles over the years. A click on the globe in the Identify features mode shows the declination, inclination and field intensity at the point for the same year after the gufm1 and IGRF-14 models, from 1590 to 2030.	ჩრდილოეთ და სამხრეთ მაგნიტური პოლუსები - წერტილები, სადაც კომპასის ისარი ვერტიკალურად დგას - დროის ზოლის წლისთვის და მათი გზა 1590 წლიდან NOAA NCEI-ის მონაცემებით. დროის ზოლი თავად იხსნება, მისი სახელური პოლუსებს წლების მიხედვით გადაადგილებს. გლობუსზე დაწკაპუნება რეჟიმში „ობიექტების განსაზღვრა“ აჩვენებს მიხრას, დახრას და ველის დაძაბულობას წერტილში იმავე წლისთვის gufm1 და IGRF-14 მოდელებით, 1590 წლიდან 2030 წლამდე.
+Lines of equal magnetic declination, the angle between the compass needle and the north, every 10° for the year of the time scale after the IGRF-14 model from 1900 and the gufm1 model from 1590, gufm1 is downloaded on first display. Red lines are east declination, blue lines west, the green line zero. The lines meet at the magnetic poles.	თანაბარი მაგნიტური მიხრის ხაზები - კომპასის ისარსა და ჩრდილოეთის მიმართულებას შორის კუთხე - ყოველ 10°-ზე დროის ზოლის წლისთვის IGRF-14 მოდელით 1900 წლიდან და gufm1 მოდელით 1590 წლიდან. gufm1 ჩამოიტვირთება პირველი ჩვენებისას. წითელი ხაზები - აღმოსავლეთის მიხრა, ლურჯი - დასავლეთის, მწვანე - ნულოვანი. მაგნიტურ პოლუსებთან ხაზები იყრება.
+Arrows of lithospheric plate motion after the NNR-MORVEL56 model, the speed relative to the mean motion of all plates. The arrow grows with the speed, the number at its start is mm/yr. The Pacific plate moves north-west at about 70 mm/yr, the Eurasian plate at about 25. The Features window shows the plate, speed and direction at the point.	ლითოსფერული ფილების მოძრაობის ისრები NNR-MORVEL56 მოდელით - სიჩქარე ყველა ფილის საშუალო მოძრაობის მიმართ. ისრის სიგრძე სიჩქარესთან ერთად იზრდება, რიცხვი მის დასაწყისთან - მმ/წელი. წყნარი ოკეანის ფილა ჩრდილო-დასავლეთით მიდის დაახლოებით 70 მმ/წელში, ევრაზიის ფილა - დაახლოებით 25-ით. ფანჯარა „ობიექტები“ აჩვენებს ფილას, სიჩქარეს და მიმართულებას წერტილში.
+North magnetic pole, {year}	ჩრდილოეთ მაგნიტური პოლუსი, {year}
+South magnetic pole, {year}	სამხრეთ მაგნიტური პოლუსი, {year}
+The field before 1900 is not loaded: {error}	1900 წლამდე ველი არ ჩაიტვირთა: {error}
+Year	წელი
+Model	მოდელი
+gufm1 from 1590, IGRF-14 from 1900 to 2030	gufm1 1590 წლიდან, IGRF-14 1900 წლიდან 2030 წლამდე
+Declination	მიხრა
+Inclination	დახრა
+Total intensity	სრული დაძაბულობა
+{value} nT	{value} ნტ
+Horizontal component	ჰორიზონტალური მდგენელი
+Magnetic field	მაგნიტური ველი
+Field at the point	ველი წერტილში
+Plate	ფილა
+Plate speed	ფილის სიჩქარე
+Direction	მიმართულება

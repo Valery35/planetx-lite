@@ -97,7 +97,7 @@ impl Extra {
                 _ => Category::Depths,
             },
             Extra::Dots(crate::dots::Layer::Fires) => Category::Fire,
-            Extra::Dots(crate::dots::Layer::Cables) => Category::Infra,
+            Extra::Dots(crate::dots::Layer::Cables | crate::dots::Layer::Plants) => Category::Infra,
             Extra::Dots(_) => Category::Depths,
         }
     }
@@ -511,7 +511,10 @@ fn items() -> Vec<Item> {
     out.push(Item::Extra(Extra::Dots(crate::dots::Layer::Fires)));
     out.extend((0..crate::maps::ALL.len()).map(|n| Item::Extra(Extra::Map(n))));
     use crate::dots::Layer;
-    out.extend([Layer::Quakes, Layer::Plates, Layer::Faults, Layer::Volcanoes, Layer::Cables].map(|l| Item::Extra(Extra::Dots(l))));
+    out.extend(
+        [Layer::Quakes, Layer::Plates, Layer::Faults, Layer::PlateMotion, Layer::Volcanoes, Layer::MagPoles, Layer::MagDecl, Layer::Deposits, Layer::Plants, Layer::Cables]
+            .map(|l| Item::Extra(Extra::Dots(l))),
+    );
     out
 }
 

@@ -700,3 +700,59 @@ Continental collision	大陸衝突
 About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	地域カタログから編集された GEM Global Active Faults データベースによる、世界の約 1万3700 の活断層。色は変位の種類を示します。正断層、逆断層または衝上断層、横ずれ断層、拡大軸、褶曲です。線をクリックすると、名前、変位の種類、mm/年単位の速度、傾斜、出典のカタログが表示されます。最初にオンにすると約 11 MB をダウンロードします。
 Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. Plate names show as labels. The Features window shows the boundary type and the plate speed.	PB2002 モデルによるリソスフェアのプレート境界。赤 - 海嶺とリフトでのプレートの発散、緑 - トランスフォーム断層に沿ったずれ、青 - 沈み込み帯と衝突帯での収束。プレート名はラベルで表示されます。境界の種類とプレートの速度は「オブジェクト」ウィンドウに表示されます。
 Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	OpenStreetMap の海底通信回線(ターコイズ)と電力ケーブル(紫)で、どの高度からも見えます。OSM には世界のケーブルの一部が登録されており、大西洋とヨーロッパ近海に最も多くあります。線をクリックすると、名前、所有者、OpenStreetMap オブジェクトへのリンクが表示されます。
+Power plants	発電所
+Mineral deposits	鉱床
+About 35 thousand power plants of the world from the WRI Global Power Plant Database, data as of 2021. Colour is the fuel, size is the capacity. A click on a dot shows the name, capacity, commissioning year and owner. Some plants are placed wrongly in the database. The first use downloads about 4 MB.	WRI Global Power Plant Database による世界の約 3万5000 の発電所、2021 年時点のデータ。色は燃料、大きさは出力を示します。点をクリックすると、名前、出力、運転開始年、所有者が表示されます。一部の発電所はデータベース上の位置が誤っています。最初にオンにすると約 4 MB をダウンロードします。
+Mineral deposits, mines and occurrences of USGS - the MRDS database, about 300 thousand points, most of them in the USA, 3 thousand major deposits of the world and 6.5 thousand mines and plants of the world with the operator and capacity. The colour is the commodity group, a large point is a major deposit, mine or plant. A click on a point shows the name, commodities, type and a link to the USGS record. The first switch-on downloads about 25 MB.	USGS の鉱床、鉱山、鉱徴地 - MRDS データベース、約 30万点で大半は米国、世界の大鉱床 3000、運営者と生産能力付きの世界の鉱山と工場 6500。色は鉱種グループ、大きな点は大鉱床、鉱山、工場です。点をクリックすると、名前、鉱種、種類、USGS の記録へのリンクが表示されます。最初にオンにすると約 25 MB をダウンロードします。
+Coal	石炭
+Gas	ガス
+Oil	重油
+Nuclear	原子力
+Hydro	水力
+Wind	風力
+Biomass, waste, geothermal	バイオマス、廃棄物、地熱
+Other	その他
+Precious metals	貴金属
+Base metals	ベースメタル
+Iron and alloy metals	鉄と合金用金属
+Rare metals, lithium, aluminum	レアメタル、リチウム、アルミニウム
+Coal, uranium, geothermal	石炭、ウラン、地熱
+Diamonds and gems	ダイヤモンドと宝石
+Industrial and construction	工業用・建設用鉱物
+WRI power plants	WRI の発電所
+Dot size - capacity	点の大きさ - 出力
+USGS mineral deposits	USGS の鉱床
+Capacity	出力
+Fuel	燃料
+Commissioning year	運転開始年
+Commodities	鉱種
+Group	グループ
+Status or model	段階またはモデル
+Operator	運営者
+Capacity (year of data)	生産能力(データの年)
+approximate, by district	おおよそ、地区単位
+Major mineral deposits of the world, USGS OFR 2005-1294	世界の大鉱床、USGS OFR 2005-1294
+World mines and plants, USGS mineral operations	世界の鉱山と工場、USGS mineral operations
+USGS record	USGS の記録
+Magnetic poles	磁極
+Declination lines	偏角線
+Plate motion	プレート運動
+The north and south magnetic poles - the points where a compass needle stands vertical - for the year of the time slider and their path since 1590 after NOAA NCEI. The slider opens by itself, its handle moves the poles over the years. A click on the globe in the Identify features mode shows the declination, inclination and field intensity at the point for the same year after the gufm1 and IGRF-14 models, from 1590 to 2030.	北磁極と南磁極 - 方位磁針が鉛直に立つ点 - をタイムバーの年について示し、NOAA NCEI による 1590 年以降の移動経路も示します。タイムバーは自動で開き、つまみで磁極を年ごとに動かします。「オブジェクトを識別」モードで地球儀をクリックすると、gufm1 と IGRF-14 モデルによる同じ年のその地点の偏角、伏角、全磁力が表示されます。期間は 1590 年から 2030 年です。
+Lines of equal magnetic declination, the angle between the compass needle and the north, every 10° for the year of the time scale after the IGRF-14 model from 1900 and the gufm1 model from 1590, gufm1 is downloaded on first display. Red lines are east declination, blue lines west, the green line zero. The lines meet at the magnetic poles.	磁気偏角、つまり方位磁針と北の間の角度が等しい線を、タイムバーの年について 10° ごとに示します。モデルは 1900 年以降が IGRF-14、1590 年以降が gufm1 で、gufm1 は初回表示時にダウンロードされます。赤い線は東偏、青い線は西偏、緑の線はゼロです。線は磁極に集まります。
+Arrows of lithospheric plate motion after the NNR-MORVEL56 model, the speed relative to the mean motion of all plates. The arrow grows with the speed, the number at its start is mm/yr. The Pacific plate moves north-west at about 70 mm/yr, the Eurasian plate at about 25. The Features window shows the plate, speed and direction at the point.	NNR-MORVEL56 モデルによるリソスフェアのプレート運動の矢印 - 全プレートの平均運動に対する速度。矢印は速度とともに長くなり、始点の数値は mm/年 です。太平洋プレートは北西へ約 70 mm/年、ユーラシアプレートは約 25 で動きます。その地点のプレート、速度、方向は「オブジェクト」ウィンドウに表示されます。
+North magnetic pole, {year}	北磁極、{year}
+South magnetic pole, {year}	南磁極、{year}
+The field before 1900 is not loaded: {error}	1900 年以前の磁場は読み込まれていません：{error}
+Year	年
+Model	モデル
+gufm1 from 1590, IGRF-14 from 1900 to 2030	gufm1 は 1590 年から、IGRF-14 は 1900 年から 2030 年まで
+Declination	偏角
+Inclination	伏角
+Total intensity	全磁力
+{value} nT	{value} nT
+Horizontal component	水平分力
+Magnetic field	磁場
+Field at the point	地点の磁場
+Plate	プレート
+Plate speed	プレートの速度
+Direction	方向

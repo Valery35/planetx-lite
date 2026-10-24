@@ -23,6 +23,7 @@
 //!   и кабели линиями наложения;
 //! - [`csv`] - таблица CSV;
 //! - [`volcanoes`] и [`fires`] - вулканы GVP и пожары FIRMS;
+//! - [`plants`] и [`deposits`] - электростанции WRI и месторождения USGS;
 //! - [`slope`] - уклон и экспозиция, перенос `core/slope.py`;
 //! - [`rastermaps`] - карты картинками тайлов поверх снимка, перенос
 //!   `core/fields.py` и `core/tilemaps.py` модуля.
@@ -32,10 +33,12 @@ pub mod cloud;
 pub mod contours;
 pub mod csv;
 pub mod dem;
+pub mod deposits;
 pub mod faults;
 pub mod fires;
 pub mod geocode;
 pub mod geology;
+pub mod geomag;
 pub mod gibs;
 pub mod grid;
 pub mod layers;
@@ -43,6 +46,8 @@ pub mod linesets;
 pub mod lines;
 pub mod mvt;
 pub mod places;
+pub mod plants;
+pub mod platemotion;
 pub mod plates;
 pub mod quakes;
 pub mod rastermaps;

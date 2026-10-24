@@ -101,7 +101,20 @@ fn dots_scale(layer: Layer) -> Option<Scale> {
             footer: "A click on a line - details",
             lines: true,
         },
-        Layer::Plates | Layer::Cables => return None,
+        Layer::Plants => Scale::Rows {
+            title: "WRI power plants",
+            rows: data::plants::FUELS.iter().enumerate().map(|(n, f)| (f.2, crate::dots::fuel_name(n))).collect(),
+            footer: "Dot size - capacity",
+            lines: false,
+        },
+        // Размеры точек у модуля - строками ниже групп, у Lite их нет.
+        Layer::Deposits => Scale::Rows {
+            title: "USGS mineral deposits",
+            rows: (0..=data::deposits::OTHER).map(|n| (data::deposits::color(n), crate::dots::deposit_group(n))).collect(),
+            footer: "",
+            lines: false,
+        },
+        Layer::Plates | Layer::Cables | Layer::MagPoles | Layer::MagDecl | Layer::PlateMotion => return None,
     })
 }
 

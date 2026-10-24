@@ -700,3 +700,59 @@ Continental collision	Collisione continentale
 About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	Circa 13.7 mila faglie attive del mondo secondo la banca dati GEM Global Active Faults, composta da cataloghi regionali. Il colore mostra il tipo di movimento. Si tratta di una faglia diretta, una faglia inversa o un sovrascorrimento, una faglia trascorrente, una dorsale e una piega. Un clic su una linea mostra il nome, il tipo di movimento, la velocità in mm/anno, l’immersione e il catalogo di origine. La prima attivazione scarica circa 11 MB.
 Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. Plate names show as labels. The Features window shows the boundary type and the plate speed.	Limiti delle placche litosferiche secondo il modello PB2002. Rosso - divergenza delle placche su dorsali e rift, verde - scorrimento lungo le faglie trasformi, blu - convergenza nelle zone di subduzione e di collisione. I nomi delle placche compaiono come etichette. Il tipo di limite e la velocità delle placche si vedono nella finestra «Oggetti».
 Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	Linee di comunicazione sottomarine (turchese) e cavi elettrici (viola) da OpenStreetMap, visibili da qualsiasi altezza. OSM contiene una parte dei cavi del mondo, la maggior parte nell’Atlantico e vicino all’Europa. Un clic su una linea mostra il nome, il proprietario e un link all’oggetto OpenStreetMap.
+Power plants	Centrali elettriche
+Mineral deposits	Giacimenti
+About 35 thousand power plants of the world from the WRI Global Power Plant Database, data as of 2021. Colour is the fuel, size is the capacity. A click on a dot shows the name, capacity, commissioning year and owner. Some plants are placed wrongly in the database. The first use downloads about 4 MB.	Circa 35 mila centrali elettriche del mondo dalla WRI Global Power Plant Database, dati al 2021. Il colore è il combustibile, la dimensione è la potenza. Un clic su un punto mostra il nome, la potenza, l’anno di entrata in servizio e il proprietario. Per una parte delle centrali la posizione nella banca dati è errata. La prima attivazione scarica circa 4 MB.
+Mineral deposits, mines and occurrences of USGS - the MRDS database, about 300 thousand points, most of them in the USA, 3 thousand major deposits of the world and 6.5 thousand mines and plants of the world with the operator and capacity. The colour is the commodity group, a large point is a major deposit, mine or plant. A click on a point shows the name, commodities, type and a link to the USGS record. The first switch-on downloads about 25 MB.	Giacimenti, miniere e indizi minerari dell’USGS - la banca dati MRDS, circa 300 mila punti, la maggior parte negli USA, 3 mila grandi giacimenti del mondo e 6.5 mila miniere e impianti del mondo con operatore e capacità. Il colore è il gruppo di sostanze, un punto grande è un grande giacimento, miniera o impianto. Un clic su un punto mostra il nome, le sostanze, il tipo e un link alla scheda USGS. La prima attivazione scarica circa 25 MB.
+Coal	Carbone
+Gas	Gas
+Oil	Olio combustibile
+Nuclear	Nucleare
+Hydro	Idroelettrico
+Wind	Eolico
+Biomass, waste, geothermal	Biomassa, rifiuti, geotermico
+Other	Altro
+Precious metals	Metalli preziosi
+Base metals	Metalli di base
+Iron and alloy metals	Ferro e metalli da lega
+Rare metals, lithium, aluminum	Metalli rari, litio, alluminio
+Coal, uranium, geothermal	Carbone, uranio, geotermico
+Diamonds and gems	Diamanti e gemme
+Industrial and construction	Minerali industriali e da costruzione
+WRI power plants	Centrali WRI
+Dot size - capacity	Dimensione del punto - potenza
+USGS mineral deposits	Giacimenti USGS
+Capacity	Potenza
+Fuel	Combustibile
+Commissioning year	Anno di entrata in servizio
+Commodities	Sostanze
+Group	Gruppo
+Status or model	Fase o modello
+Operator	Operatore
+Capacity (year of data)	Capacità (anno dei dati)
+approximate, by district	approssimativa, per distretto
+Major mineral deposits of the world, USGS OFR 2005-1294	Grandi giacimenti del mondo, USGS OFR 2005-1294
+World mines and plants, USGS mineral operations	Miniere e impianti del mondo, USGS mineral operations
+USGS record	Scheda USGS
+Magnetic poles	Poli magnetici
+Declination lines	Linee di declinazione
+Plate motion	Moto delle placche
+The north and south magnetic poles - the points where a compass needle stands vertical - for the year of the time slider and their path since 1590 after NOAA NCEI. The slider opens by itself, its handle moves the poles over the years. A click on the globe in the Identify features mode shows the declination, inclination and field intensity at the point for the same year after the gufm1 and IGRF-14 models, from 1590 to 2030.	I poli magnetici nord e sud - i punti dove l’ago della bussola sta verticale - per l’anno della barra del tempo e il loro percorso dal 1590 secondo NOAA NCEI. La barra si apre da sola, il suo cursore sposta i poli negli anni. Un clic sul globo in modalità «Identifica oggetti» mostra la declinazione, l’inclinazione e l’intensità del campo nel punto per lo stesso anno secondo i modelli gufm1 e IGRF-14, dal 1590 al 2030.
+Lines of equal magnetic declination, the angle between the compass needle and the north, every 10° for the year of the time scale after the IGRF-14 model from 1900 and the gufm1 model from 1590, gufm1 is downloaded on first display. Red lines are east declination, blue lines west, the green line zero. The lines meet at the magnetic poles.	Linee di uguale declinazione magnetica, l’angolo tra l’ago della bussola e il nord, ogni 10° per l’anno della barra del tempo secondo il modello IGRF-14 dal 1900 e il modello gufm1 dal 1590. gufm1 viene scaricato alla prima visualizzazione. Le linee rosse sono declinazione est, le blu ovest, la verde è zero. Le linee convergono ai poli magnetici.
+Arrows of lithospheric plate motion after the NNR-MORVEL56 model, the speed relative to the mean motion of all plates. The arrow grows with the speed, the number at its start is mm/yr. The Pacific plate moves north-west at about 70 mm/yr, the Eurasian plate at about 25. The Features window shows the plate, speed and direction at the point.	Frecce del moto delle placche litosferiche secondo il modello NNR-MORVEL56 - la velocità rispetto al moto medio di tutte le placche. La freccia cresce con la velocità, il numero al suo inizio è in mm/anno. La placca pacifica si muove verso nord-ovest a circa 70 mm/anno, quella euroasiatica a circa 25. La finestra «Oggetti» mostra la placca, la velocità e la direzione nel punto.
+North magnetic pole, {year}	Polo nord magnetico, {year}
+South magnetic pole, {year}	Polo sud magnetico, {year}
+The field before 1900 is not loaded: {error}	Il campo prima del 1900 non è caricato: {error}
+Year	Anno
+Model	Modello
+gufm1 from 1590, IGRF-14 from 1900 to 2030	gufm1 dal 1590, IGRF-14 dal 1900 al 2030
+Declination	Declinazione
+Inclination	Inclinazione
+Total intensity	Intensità totale
+{value} nT	{value} nT
+Horizontal component	Componente orizzontale
+Magnetic field	Campo magnetico
+Field at the point	Campo nel punto
+Plate	Placca
+Plate speed	Velocità della placca
+Direction	Direzione

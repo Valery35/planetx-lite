@@ -700,3 +700,59 @@ Continental collision	Tumbukan benua
 About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	Sekitar 13.7 ribu sesar aktif dunia dari basis data GEM Global Active Faults yang disusun dari katalog regional. Warna menunjukkan jenis pergeseran. Jenisnya sesar normal, sesar naik atau sesar sungkup, sesar geser, punggungan pemekaran dan lipatan. Klik pada garis menampilkan nama, jenis pergeseran, laju dalam mm/tahun, kemiringan bidang sesar dan katalog sumber. Penyalaan pertama mengunduh sekitar 11 MB.
 Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. Plate names show as labels. The Features window shows the boundary type and the plate speed.	Batas lempeng litosfer menurut model PB2002. Merah - lempeng saling menjauh di punggungan dan rift, hijau - lempeng bergeser di sepanjang sesar transform, biru - lempeng saling mendekat di zona subduksi dan tumbukan. Nama lempeng ditampilkan sebagai label. Jenis batas dan kecepatan lempeng ditampilkan di jendela "Objek".
 Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	Jalur komunikasi bawah laut (pirus) dan kabel listrik (ungu) dari OpenStreetMap, terlihat dari ketinggian berapa pun. OSM memuat sebagian kabel dunia, paling banyak di Atlantik dan dekat Eropa. Klik pada garis menampilkan nama, pemilik dan tautan ke objek OpenStreetMap.
+Power plants	Pembangkit listrik
+Mineral deposits	Endapan mineral
+About 35 thousand power plants of the world from the WRI Global Power Plant Database, data as of 2021. Colour is the fuel, size is the capacity. A click on a dot shows the name, capacity, commissioning year and owner. Some plants are placed wrongly in the database. The first use downloads about 4 MB.	Sekitar 35 ribu pembangkit listrik dunia dari WRI Global Power Plant Database, data tahun 2021. Warna menunjukkan bahan bakar, ukuran menunjukkan kapasitas. Klik pada titik menampilkan nama, kapasitas, tahun mulai beroperasi dan pemilik. Sebagian pembangkit lokasinya salah tercatat di basis data. Penyalaan pertama mengunduh sekitar 4 MB.
+Mineral deposits, mines and occurrences of USGS - the MRDS database, about 300 thousand points, most of them in the USA, 3 thousand major deposits of the world and 6.5 thousand mines and plants of the world with the operator and capacity. The colour is the commodity group, a large point is a major deposit, mine or plant. A click on a point shows the name, commodities, type and a link to the USGS record. The first switch-on downloads about 25 MB.	Endapan mineral, tambang dan keterdapatan mineral USGS - basis data MRDS, sekitar 300 ribu titik, paling banyak di AS, 3 ribu endapan besar dunia dan 6.5 ribu tambang dan pabrik dunia dengan operator dan kapasitas. Warna menunjukkan kelompok komoditas, titik besar adalah endapan besar, tambang atau pabrik. Klik pada titik menampilkan nama, komoditas, jenis dan tautan ke catatan USGS. Penyalaan pertama mengunduh sekitar 25 MB.
+Coal	Batu bara
+Gas	Gas
+Oil	Minyak bakar
+Nuclear	Nuklir
+Hydro	PLTA
+Wind	Angin
+Biomass, waste, geothermal	Biomassa, limbah, panas bumi
+Other	Lainnya
+Precious metals	Logam mulia
+Base metals	Logam dasar
+Iron and alloy metals	Besi dan logam paduan
+Rare metals, lithium, aluminum	Logam langka, litium, aluminium
+Coal, uranium, geothermal	Batu bara, uranium, panas bumi
+Diamonds and gems	Intan dan batu permata
+Industrial and construction	Mineral industri dan bahan bangunan
+WRI power plants	Pembangkit listrik WRI
+Dot size - capacity	Ukuran titik - kapasitas
+USGS mineral deposits	Endapan mineral USGS
+Capacity	Kapasitas
+Fuel	Bahan bakar
+Commissioning year	Tahun mulai beroperasi
+Commodities	Komoditas
+Group	Kelompok
+Status or model	Tahap atau model
+Operator	Operator
+Capacity (year of data)	Kapasitas (tahun data)
+approximate, by district	perkiraan, menurut distrik
+Major mineral deposits of the world, USGS OFR 2005-1294	Endapan mineral besar dunia, USGS OFR 2005-1294
+World mines and plants, USGS mineral operations	Tambang dan pabrik dunia, USGS mineral operations
+USGS record	Catatan USGS
+Magnetic poles	Kutub magnet
+Declination lines	Garis deklinasi
+Plate motion	Gerak lempeng
+The north and south magnetic poles - the points where a compass needle stands vertical - for the year of the time slider and their path since 1590 after NOAA NCEI. The slider opens by itself, its handle moves the poles over the years. A click on the globe in the Identify features mode shows the declination, inclination and field intensity at the point for the same year after the gufm1 and IGRF-14 models, from 1590 to 2030.	Kutub magnet utara dan selatan - titik tempat jarum kompas berdiri tegak - untuk tahun pada bilah waktu dan lintasannya sejak 1590 menurut NOAA NCEI. Bilah waktu terbuka sendiri, penggesernya menggerakkan kutub dari tahun ke tahun. Klik pada globe dalam mode “Identifikasi objek” menampilkan deklinasi, inklinasi dan intensitas medan di titik itu untuk tahun yang sama menurut model gufm1 dan IGRF-14, dari 1590 hingga 2030.
+Lines of equal magnetic declination, the angle between the compass needle and the north, every 10° for the year of the time scale after the IGRF-14 model from 1900 and the gufm1 model from 1590, gufm1 is downloaded on first display. Red lines are east declination, blue lines west, the green line zero. The lines meet at the magnetic poles.	Garis deklinasi magnetik yang sama, yaitu sudut antara jarum kompas dan arah utara, setiap 10° untuk tahun pada bilah waktu menurut model IGRF-14 sejak 1900 dan model gufm1 sejak 1590. gufm1 diunduh saat pertama kali ditampilkan. Garis merah adalah deklinasi timur, biru barat, garis hijau nol. Garis-garis bertemu di kutub magnet.
+Arrows of lithospheric plate motion after the NNR-MORVEL56 model, the speed relative to the mean motion of all plates. The arrow grows with the speed, the number at its start is mm/yr. The Pacific plate moves north-west at about 70 mm/yr, the Eurasian plate at about 25. The Features window shows the plate, speed and direction at the point.	Panah gerak lempeng litosfer menurut model NNR-MORVEL56 - kecepatan relatif terhadap gerak rata-rata semua lempeng. Panjang panah bertambah dengan kecepatan, angka di pangkalnya dalam mm/tahun. Lempeng Pasifik bergerak ke barat laut sekitar 70 mm/tahun, lempeng Eurasia sekitar 25. Jendela "Objek" menampilkan lempeng, kecepatan dan arah di titik itu.
+North magnetic pole, {year}	Kutub magnet utara, {year}
+South magnetic pole, {year}	Kutub magnet selatan, {year}
+The field before 1900 is not loaded: {error}	Medan sebelum 1900 tidak dimuat: {error}
+Year	Tahun
+Model	Model
+gufm1 from 1590, IGRF-14 from 1900 to 2030	gufm1 sejak 1590, IGRF-14 dari 1900 hingga 2030
+Declination	Deklinasi
+Inclination	Inklinasi
+Total intensity	Intensitas total
+{value} nT	{value} nT
+Horizontal component	Komponen horizontal
+Magnetic field	Medan magnet
+Field at the point	Medan di titik
+Plate	Lempeng
+Plate speed	Kecepatan lempeng
+Direction	Arah

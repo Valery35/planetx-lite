@@ -127,10 +127,11 @@ pub fn style(kind: Kind, big: bool) -> Style {
         // Название литосферной плиты. У модуля надпись жирная, у Lite
         // жирного начертания нет.
         Kind::Plate => s(13.0, false, rgba(255, 200, 140, 240), 0.0, Marker::None),
+        // Подпись линии сетки и геофизики, без значка.
+        Kind::Grid => s(11.0, false, rgba(255, 255, 255, 235), 0.0, Marker::None),
         | Kind::Ruler
         | Kind::Layer
         | Kind::Circle
-        | Kind::Grid
         | Kind::Value
         | Kind::Wiki => s(12.0, false, rgba(255, 255, 255, 245), 0.0, Marker::None),
     };
@@ -206,6 +207,9 @@ pub struct Labels {
     marks: Vec<Place>,
     /// Названия литосферных плит, строка «Границы плит».
     plates: Vec<Place>,
+    /// Подписи геофизики: склонение, скорости плит, полюса, как
+    /// `geo_marks` модуля.
+    geo: Vec<Place>,
     /// Цвет значка метки по номеру пункта.
     mark_colors: HashMap<u64, egui::Color32>,
     /// Классы подписей по включённым строкам векторной основы, как
@@ -233,6 +237,7 @@ impl Labels {
             search: None,
             marks: Vec::new(),
             plates: Vec::new(),
+            geo: Vec::new(),
             mark_colors: HashMap::new(),
             kinds: crate::vector::VectorBase::default().label_kinds(),
             queue: std::collections::VecDeque::new(),
@@ -259,6 +264,11 @@ impl Labels {
     /// модуля. Пустой список - строка «Границы плит» снята.
     pub fn set_plates(&mut self, plates: &[(String, f64, f64)]) {
         self.plates = plates.iter().enumerate().map(|(n, (name, lat, lon))| Place::new(u64::MAX - 1_000_000 - n as u64, name, Kind::Plate, 1, *lat, *lon)).collect();
+    }
+
+    /// Подписи геофизики: текст, широта, долгота.
+    pub fn set_geo(&mut self, labels: &[(String, f64, f64)]) {
+        self.geo = labels.iter().enumerate().map(|(n, (text, lat, lon))| Place::new(u64::MAX - 2_000_000 - n as u64, text, Kind::Grid, 1, *lat, *lon)).collect();
     }
 
     /// Метка найденного места, одна на окно. None - метки нет.
@@ -325,7 +335,8 @@ impl Labels {
         let search = self.search.clone();
         let marks = self.marks.clone();
         let plates = self.plates.clone();
-        let all: Vec<&Place> = search.iter().chain(marks.iter()).chain(plates.iter()).chain(collected.iter()).collect();
+        let geo = self.geo.clone();
+        let all: Vec<&Place> = search.iter().chain(marks.iter()).chain(plates.iter()).chain(geo.iter()).chain(collected.iter()).collect();
         if all.is_empty() {
             self.shown.clear();
             return;

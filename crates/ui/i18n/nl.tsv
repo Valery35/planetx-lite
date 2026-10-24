@@ -700,3 +700,59 @@ Continental collision	Continentale botsing
 About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	Ongeveer 13.7 duizend actieve breuken van de wereld volgens de databank GEM Global Active Faults, samengesteld uit regionale catalogi. De kleur toont de soort verschuiving. Dat is een afschuiving, een opschuiving of overschuiving, een horizontale verschuiving, een spreidingsrug en een plooi. Een klik op een lijn toont de naam, de soort verschuiving, de snelheid in mm/jaar, de helling van het breukvlak en de broncatalogus. Het eerste aanzetten downloadt ongeveer 11 MB.
 Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. Plate names show as labels. The Features window shows the boundary type and the plate speed.	Grenzen van de lithosfeerplaten volgens het model PB2002. Rood - uiteenwijken van platen bij ruggen en slenken, groen - langs elkaar schuiven bij transformbreuken, blauw - convergentie in subductie- en botsingszones. De namen van de platen staan als labels. Het venster ‘Objecten’ toont het type grens en de snelheid van de platen.
 Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	Onderzeese communicatiekabels (turquoise) en stroomkabels (paars) uit OpenStreetMap, zichtbaar vanaf elke hoogte. OSM bevat een deel van de kabels van de wereld, de meeste in de Atlantische Oceaan en bij Europa. Een klik op een lijn toont de naam, de eigenaar en een link naar het OpenStreetMap-object.
+Power plants	Energiecentrales
+Mineral deposits	Ertsafzettingen
+About 35 thousand power plants of the world from the WRI Global Power Plant Database, data as of 2021. Colour is the fuel, size is the capacity. A click on a dot shows the name, capacity, commissioning year and owner. Some plants are placed wrongly in the database. The first use downloads about 4 MB.	Ongeveer 35 duizend energiecentrales van de wereld uit de WRI Global Power Plant Database, gegevens van 2021. De kleur is de brandstof, de grootte is het vermogen. Een klik op een punt toont de naam, het vermogen, het jaar van ingebruikname en de eigenaar. Bij een deel van de centrales staat de plaats in de databank verkeerd. Het eerste aanzetten downloadt ongeveer 4 MB.
+Mineral deposits, mines and occurrences of USGS - the MRDS database, about 300 thousand points, most of them in the USA, 3 thousand major deposits of the world and 6.5 thousand mines and plants of the world with the operator and capacity. The colour is the commodity group, a large point is a major deposit, mine or plant. A click on a point shows the name, commodities, type and a link to the USGS record. The first switch-on downloads about 25 MB.	Ertsafzettingen, mijnen en mineraalvoorkomens van de USGS - de databank MRDS, ongeveer 300 duizend punten, de meeste in de VS, 3 duizend grote afzettingen van de wereld en 6.5 duizend mijnen en fabrieken van de wereld met exploitant en capaciteit. De kleur is de grondstofgroep, een groot punt is een grote afzetting, mijn of fabriek. Een klik op een punt toont de naam, de grondstoffen, het type en een link naar het USGS-record. Het eerste aanzetten downloadt ongeveer 25 MB.
+Coal	Steenkool
+Gas	Gas
+Oil	Stookolie
+Nuclear	Kernenergie
+Hydro	Waterkracht
+Wind	Wind
+Biomass, waste, geothermal	Biomassa, afval, geothermie
+Other	Overige
+Precious metals	Edelmetalen
+Base metals	Basismetalen
+Iron and alloy metals	IJzer en legeringsmetalen
+Rare metals, lithium, aluminum	Zeldzame metalen, lithium, aluminium
+Coal, uranium, geothermal	Steenkool, uranium, geothermie
+Diamonds and gems	Diamanten en edelstenen
+Industrial and construction	Industriële en bouwgrondstoffen
+WRI power plants	WRI-energiecentrales
+Dot size - capacity	Puntgrootte - vermogen
+USGS mineral deposits	USGS-ertsafzettingen
+Capacity	Vermogen
+Fuel	Brandstof
+Commissioning year	Jaar van ingebruikname
+Commodities	Grondstoffen
+Group	Groep
+Status or model	Stadium of model
+Operator	Exploitant
+Capacity (year of data)	Capaciteit (jaar van de gegevens)
+approximate, by district	bij benadering, per district
+Major mineral deposits of the world, USGS OFR 2005-1294	Grote ertsafzettingen van de wereld, USGS OFR 2005-1294
+World mines and plants, USGS mineral operations	Mijnen en fabrieken van de wereld, USGS mineral operations
+USGS record	USGS-record
+Magnetic poles	Magnetische polen
+Declination lines	Declinatielijnen
+Plate motion	Plaatbeweging
+The north and south magnetic poles - the points where a compass needle stands vertical - for the year of the time slider and their path since 1590 after NOAA NCEI. The slider opens by itself, its handle moves the poles over the years. A click on the globe in the Identify features mode shows the declination, inclination and field intensity at the point for the same year after the gufm1 and IGRF-14 models, from 1590 to 2030.	De magnetische noord- en zuidpool - de punten waar een kompasnaald verticaal staat - voor het jaar van de tijdbalk en hun pad sinds 1590 volgens NOAA NCEI. De tijdbalk opent vanzelf, de schuif verplaatst de polen door de jaren. Een klik op de globe in de modus ‘Objecten identificeren’ toont de declinatie, de inclinatie en de veldsterkte op het punt voor hetzelfde jaar volgens de modellen gufm1 en IGRF-14, van 1590 tot 2030.
+Lines of equal magnetic declination, the angle between the compass needle and the north, every 10° for the year of the time scale after the IGRF-14 model from 1900 and the gufm1 model from 1590, gufm1 is downloaded on first display. Red lines are east declination, blue lines west, the green line zero. The lines meet at the magnetic poles.	Lijnen van gelijke magnetische declinatie, de hoek tussen de kompasnaald en het noorden, elke 10° voor het jaar van de tijdbalk volgens het model IGRF-14 vanaf 1900 en het model gufm1 vanaf 1590. gufm1 wordt bij de eerste weergave gedownload. Rode lijnen zijn oostelijke declinatie, blauwe westelijke, de groene lijn is nul. De lijnen komen samen bij de magnetische polen.
+Arrows of lithospheric plate motion after the NNR-MORVEL56 model, the speed relative to the mean motion of all plates. The arrow grows with the speed, the number at its start is mm/yr. The Pacific plate moves north-west at about 70 mm/yr, the Eurasian plate at about 25. The Features window shows the plate, speed and direction at the point.	Pijlen van de beweging van de lithosfeerplaten volgens het model NNR-MORVEL56 - de snelheid ten opzichte van de gemiddelde beweging van alle platen. De pijl groeit met de snelheid, het getal bij het begin is mm/jaar. De Pacifische plaat beweegt met ongeveer 70 mm/jaar naar het noordwesten, de Euraziatische met ongeveer 25. Het venster ‘Objecten’ toont de plaat, de snelheid en de richting op het punt.
+North magnetic pole, {year}	Magnetische noordpool, {year}
+South magnetic pole, {year}	Magnetische zuidpool, {year}
+The field before 1900 is not loaded: {error}	Het veld vóór 1900 is niet geladen: {error}
+Year	Jaar
+Model	Model
+gufm1 from 1590, IGRF-14 from 1900 to 2030	gufm1 vanaf 1590, IGRF-14 van 1900 tot 2030
+Declination	Declinatie
+Inclination	Inclinatie
+Total intensity	Totale intensiteit
+{value} nT	{value} nT
+Horizontal component	Horizontale component
+Magnetic field	Magnetisch veld
+Field at the point	Veld op het punt
+Plate	Plaat
+Plate speed	Plaatsnelheid
+Direction	Richting

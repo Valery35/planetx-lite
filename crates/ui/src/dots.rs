@@ -17,9 +17,11 @@
 
 use std::sync::Arc;
 
+use data::deposits::{self as deposit, Deposit};
 use data::faults::{self, Fault};
 use data::fires::{self, Fire};
 use data::linesets::Line;
+use data::plants::{self, Plant};
 use data::plates::{self, Boundary, Cable, Plate};
 use data::quakes::{self, Quake};
 use data::volcanoes::{self, Volcano};
@@ -38,6 +40,13 @@ pub enum Layer {
     Faults,
     Plates,
     Cables,
+    Plants,
+    Deposits,
+    /// Магнитные полюса, линии склонения, скорости плит: рисует
+    /// [`crate::geophysics`], здесь - только сводки.
+    MagPoles,
+    MagDecl,
+    PlateMotion,
 }
 
 /// Непрозрачность кругов, выбор помощника.
@@ -45,14 +54,14 @@ const ALPHA: f32 = 0.9;
 /// Сдвиг глубины точек к глазу в долях глубины кадра. При 3e-4 горы
 /// Тибета с высоты 9000 км срезали низ кругов. Обратная сторона Земли
 /// дальше на доли в сотые, она остаётся закрытой. Выбор помощника.
-const LIFT: f32 = 2e-3;
+pub const LIFT: f32 = 2e-3;
 /// Подсказка пожаров, карты витрины модуля.
 const FIRES_TIP: &str = "Fire spots of the last 24 hours from VIIRS images of the NOAA-20 satellite, the NASA FIRMS feed. The color and size of a dot show the radiative power.";
 /// Ближайших точек в окне «Объекты», `QUAKES_NEAR` модуля.
 const NEAR: usize = 20;
 
 impl Layer {
-    pub const ALL: [Layer; 6] = [Layer::Quakes, Layer::Volcanoes, Layer::Fires, Layer::Faults, Layer::Plates, Layer::Cables];
+    pub const ALL: [Layer; 11] = [Layer::Quakes, Layer::Volcanoes, Layer::Fires, Layer::Faults, Layer::Plates, Layer::Cables, Layer::Plants, Layer::Deposits, Layer::MagPoles, Layer::MagDecl, Layer::PlateMotion];
 
     pub fn key(self) -> &'static str {
         match self {
@@ -62,6 +71,11 @@ impl Layer {
             Layer::Faults => "faults",
             Layer::Plates => "plates",
             Layer::Cables => "cables",
+            Layer::Plants => "plants",
+            Layer::Deposits => "deposits",
+            Layer::MagPoles => "magpoles",
+            Layer::MagDecl => "magdecl",
+            Layer::PlateMotion => "platemotion",
         }
     }
 
@@ -69,22 +83,27 @@ impl Layer {
         Self::ALL.into_iter().find(|l| l.key() == key)
     }
 
-    /// Адрес сводки.
-    pub fn url(self) -> &'static str {
+    /// Адреса сводок слоя: у месторождений их три.
+    pub fn urls(self) -> &'static [&'static str] {
         match self {
-            Layer::Quakes => quakes::FEED,
-            Layer::Volcanoes => volcanoes::URL,
-            Layer::Fires => fires::FEED,
-            Layer::Faults => faults::URL,
-            Layer::Plates => plates::PLATES_URL,
-            Layer::Cables => plates::CABLES_URL,
+            Layer::Quakes => &[quakes::FEED],
+            Layer::Volcanoes => &[volcanoes::URL],
+            Layer::Fires => &[fires::FEED],
+            Layer::Faults => &[faults::URL],
+            Layer::Plates => &[plates::PLATES_URL],
+            Layer::Cables => &[plates::CABLES_URL],
+            Layer::Plants => &[plants::URL],
+            Layer::Deposits => &[deposit::MRDS_URL, deposit::MAJOR_URL, deposit::MINFAC_URL],
+            Layer::MagPoles => &[data::geomag::IGRF_URL, data::geomag::POLES_URL],
+            Layer::MagDecl => &[data::geomag::IGRF_URL],
+            Layer::PlateMotion => &[data::platemotion::URL],
         }
     }
 
-    /// Предел ответа сводки, байты: файл разломов около 11 МБ, вулканов -
-    /// около 2 МБ.
+    /// Предел ответа сводки, байты: файл разломов около 11 МБ, архив
+    /// MRDS - 25 МБ, вулканов - около 2 МБ.
     pub fn bytes(self) -> u64 {
-        if self == Layer::Faults { 32 << 20 } else { 8 << 20 }
+        if matches!(self, Layer::Faults | Layer::Deposits) { 32 << 20 } else { 8 << 20 }
     }
 
     pub fn attribution(self) -> (&'static str, &'static str) {
@@ -95,6 +114,11 @@ impl Layer {
             Layer::Faults => faults::ATTRIBUTION,
             Layer::Plates => plates::PLATES_ATTRIBUTION,
             Layer::Cables => plates::CABLES_ATTRIBUTION,
+            Layer::Plants => plants::ATTRIBUTION,
+            Layer::Deposits => deposit::ATTRIBUTION,
+            Layer::MagPoles => ("Magnetic poles: NOAA NCEI, IGRF-14", "https://www.ncei.noaa.gov/products/wandering-geomagnetic-poles"),
+            Layer::MagDecl => ("Declination: IGRF-14, IAGA", "https://www.ncei.noaa.gov/products/international-geomagnetic-reference-field"),
+            Layer::PlateMotion => data::platemotion::ATTRIBUTION,
         }
     }
 
@@ -117,6 +141,21 @@ impl Layer {
             Layer::Cables => {
                 "Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object."
             }
+            Layer::Plants => {
+                "About 35 thousand power plants of the world from the WRI Global Power Plant Database, data as of 2021. Colour is the fuel, size is the capacity. A click on a dot shows the name, capacity, commissioning year and owner. Some plants are placed wrongly in the database. The first use downloads about 4 MB."
+            }
+            Layer::Deposits => {
+                "Mineral deposits, mines and occurrences of USGS - the MRDS database, about 300 thousand points, most of them in the USA, 3 thousand major deposits of the world and 6.5 thousand mines and plants of the world with the operator and capacity. The colour is the commodity group, a large point is a major deposit, mine or plant. A click on a point shows the name, commodities, type and a link to the USGS record. The first switch-on downloads about 25 MB."
+            }
+            Layer::MagPoles => {
+                "The north and south magnetic poles - the points where a compass needle stands vertical - for the year of the time slider and their path since 1590 after NOAA NCEI. The slider opens by itself, its handle moves the poles over the years. A click on the globe in the Identify features mode shows the declination, inclination and field intensity at the point for the same year after the gufm1 and IGRF-14 models, from 1590 to 2030."
+            }
+            Layer::MagDecl => {
+                "Lines of equal magnetic declination, the angle between the compass needle and the north, every 10° for the year of the time scale after the IGRF-14 model from 1900 and the gufm1 model from 1590, gufm1 is downloaded on first display. Red lines are east declination, blue lines west, the green line zero. The lines meet at the magnetic poles."
+            }
+            Layer::PlateMotion => {
+                "Arrows of lithospheric plate motion after the NNR-MORVEL56 model, the speed relative to the mean motion of all plates. The arrow grows with the speed, the number at its start is mm/yr. The Pacific plate moves north-west at about 70 mm/yr, the Eurasian plate at about 25. The Features window shows the plate, speed and direction at the point."
+            }
         }
     }
 
@@ -129,6 +168,11 @@ impl Layer {
             Layer::Faults => "GEM Global Active Faults",
             Layer::Plates => "PB2002",
             Layer::Cables => "OpenStreetMap",
+            Layer::Plants => "WRI",
+            Layer::Deposits => "USGS",
+            Layer::MagPoles => "NOAA NCEI, IGRF-14",
+            Layer::MagDecl => "IGRF-14",
+            Layer::PlateMotion => "NNR-MORVEL56",
         }
     }
 
@@ -141,6 +185,11 @@ impl Layer {
             Layer::Faults => "Active faults",
             Layer::Plates => "Plate boundaries",
             Layer::Cables => "Submarine cables",
+            Layer::Plants => "Power plants",
+            Layer::Deposits => "Mineral deposits",
+            Layer::MagPoles => "Magnetic poles",
+            Layer::MagDecl => "Declination lines",
+            Layer::PlateMotion => "Plate motion",
         }
     }
 
@@ -163,6 +212,27 @@ pub fn fault_name(kind: &str) -> &'static str {
         "fold" => "Folds",
         _ => "Kind of slip not given",
     }
+}
+
+/// Названия видов топлива электростанций, `fuel_names` модуля.
+pub fn fuel_name(n: usize) -> &'static str {
+    ["Coal", "Gas", "Oil", "Nuclear", "Hydro", "Wind", "Sun", "Biomass, waste, geothermal", "Other"].get(n).copied().unwrap_or("Other")
+}
+
+/// Названия групп полезных ископаемых, `deposit_group_names` модуля.
+pub fn deposit_group(n: usize) -> &'static str {
+    [
+        "Precious metals",
+        "Base metals",
+        "Iron and alloy metals",
+        "Rare metals, lithium, aluminum",
+        "Coal, uranium, geothermal",
+        "Diamonds and gems",
+        "Industrial and construction",
+    ]
+    .get(n)
+    .copied()
+    .unwrap_or("Other")
 }
 
 /// Названия групп и классов границ плит, `_plate_names` модуля.
@@ -196,11 +266,26 @@ pub enum Data {
     Faults(Vec<Fault>, Arc<Vec<Line>>),
     Plates(Vec<Boundary>, Arc<Vec<Line>>, Vec<Plate>),
     Cables(Vec<Cable>, Arc<Vec<Line>>),
+    Plants(Vec<Plant>),
+    Deposits(Vec<Deposit>),
+    /// Модель IGRF и таблицы полюсов (у строки линий склонения их нет).
+    Magnetic(Arc<data::geomag::Model>, Option<Arc<data::geomag::Poles>>),
+    Motion(Arc<data::platemotion::Motion>),
 }
 
-/// Состояние слоя: сводка идёт, пришла или не пришла.
+/// Итог разбора сводок.
+type Parsed = Result<Data, String>;
+/// Запрос сводки и пришедший ответ.
+type Ask = (Box<dyn net::Request>, Option<Vec<u8>>);
+
+/// Состояние слоя: сводки идут (запросы и пришедшие ответы по порядку
+/// адресов), разбираются, разобраны или не пришли.
 pub enum State {
-    Asking(Box<dyn net::Request>),
+    Asking(Vec<Ask>),
+    /// Разбор в рабочем потоке программы: месторождения разбираются
+    /// около 2 с.
+    #[cfg(not(target_arch = "wasm32"))]
+    Parsing(std::sync::mpsc::Receiver<Parsed>),
     Ready(Data),
     Failed(String),
 }
@@ -216,7 +301,8 @@ struct Dot {
 }
 
 impl Data {
-    fn parse(layer: Layer, bytes: &[u8]) -> Result<Data, String> {
+    fn parse(layer: Layer, all: &[Vec<u8>]) -> Parsed {
+        let bytes: &[u8] = all.first().map_or(&[], |b| b.as_slice());
         Ok(match layer {
             Layer::Quakes => Data::Quakes(quakes::parse(bytes)),
             Layer::Volcanoes => Data::Volcanoes(volcanoes::parse(bytes)?),
@@ -233,6 +319,17 @@ impl Data {
                 let (c, l, _) = plates::parse_cables(bytes)?;
                 Data::Cables(c, Arc::new(l))
             }
+            Layer::Plants => Data::Plants(plants::parse(bytes)?),
+            Layer::Deposits => Data::Deposits(deposit::parse(all.first().map(Vec::as_slice), all.get(1).map(Vec::as_slice), all.get(2).map(Vec::as_slice))?),
+            Layer::MagPoles | Layer::MagDecl => {
+                let model = data::geomag::parse_igrf(&String::from_utf8_lossy(bytes))?;
+                let poles = match all.get(1) {
+                    Some(b) => Some(Arc::new(data::geomag::parse_poles(&String::from_utf8_lossy(b))?)),
+                    None => None,
+                };
+                Data::Magnetic(Arc::new(model), poles)
+            }
+            Layer::PlateMotion => Data::Motion(Arc::new(data::platemotion::read(&String::from_utf8_lossy(bytes))?)),
         })
     }
 
@@ -252,7 +349,9 @@ impl Data {
                 .map(|e| Dot { lat: e.lat, lon: e.lon, color: volcanoes::PERIODS[volcanoes::period_of(e.last)].2, size: volcanoes::size(e.elevation) as f32, time: None })
                 .collect(),
             Data::Fires(f) => f.iter().map(|e| Dot { lat: e.lat, lon: e.lon, color: fires::color(e.frp), size: fires::size(e.frp) as f32, time: e.time }).collect(),
-            Data::Faults(..) | Data::Plates(..) | Data::Cables(..) => Vec::new(),
+            Data::Plants(p) => p.iter().map(|e| Dot { lat: e.lat, lon: e.lon, color: plants::FUELS[e.fuel.min(plants::FUELS.len() - 1)].2, size: plants::size(e.capacity) as f32, time: None }).collect(),
+            Data::Deposits(d) => d.iter().map(|e| Dot { lat: e.lat, lon: e.lon, color: deposit::color(e.group), size: e.size() as f32, time: None }).collect(),
+            Data::Faults(..) | Data::Plates(..) | Data::Cables(..) | Data::Magnetic(..) | Data::Motion(_) => Vec::new(),
         }
     }
 
@@ -355,6 +454,51 @@ impl Data {
                 values.push(row("OSM object", format!("https://www.openstreetmap.org/{}", e.osm)));
                 (if e.name.is_empty() { tr(lang, "Untitled").to_string() } else { e.name.clone() }, values)
             }
+            Data::Plants(p) => {
+                let e = p.get(n)?;
+                let mut values = vec![
+                    row("Capacity", trf(lang, "{value} MW", &[("value", &short((e.capacity * 10.0).round_ties_even() / 10.0))])),
+                    row("Fuel", format!("{} ({})", tr(lang, fuel_name(e.fuel)), e.fuel_name)),
+                ];
+                for (name, value) in [("Commissioning year", &e.year), ("Owner", &e.owner), ("Country", &e.country)] {
+                    if !value.is_empty() {
+                        values.push(row(name, value.clone()));
+                    }
+                }
+                values.push(row("Dataset", "WRI Global Power Plant Database".into()));
+                if !e.url.is_empty() {
+                    values.push(row("Source", e.url.clone()));
+                }
+                (e.name.clone(), values)
+            }
+            Data::Deposits(d) => {
+                let e = d.get(n)?;
+                let f = e.fields();
+                let field = |k: usize| f.get(k).copied().unwrap_or("");
+                let mut values = vec![row("Commodities", field(2).to_string()), row("Group", tr(lang, deposit_group(e.group)).to_string())];
+                for (k, name) in [(3, "Type"), (4, "Status or model"), (6, "Operator"), (7, "Capacity (year of data)"), (1, "Country")] {
+                    if !field(k).is_empty() {
+                        values.push(row(name, field(k).to_string()));
+                    }
+                }
+                if field(8) == "A" {
+                    values.push(row("Site", tr(lang, "approximate, by district").to_string()));
+                }
+                let source = if e.major {
+                    tr(lang, "Major mineral deposits of the world, USGS OFR 2005-1294").to_string()
+                } else if e.facility {
+                    tr(lang, "World mines and plants, USGS mineral operations").to_string()
+                } else {
+                    "USGS MRDS".to_string()
+                };
+                values.push(row("Dataset", source));
+                if !field(5).is_empty() {
+                    values.push(row("USGS record", format!("{}{}", deposit::MRDS_PAGE, field(5))));
+                }
+                (if field(0).is_empty() { format!("{:.4}, {:.4}", e.lat, e.lon) } else { field(0).to_string() }, values)
+            }
+            // Поле и скорость плиты в точке - у crate::geophysics.
+            Data::Magnetic(..) | Data::Motion(_) => return None,
         })
     }
 }
@@ -367,14 +511,23 @@ pub struct Dots {
 }
 
 impl Dots {
-    /// Включить слой: запрос сводки, если её ещё нет.
-    pub fn enable(&mut self, layer: Layer, request: Box<dyn net::Request>) {
+    /// Включить слой: запросы сводок новыми запросами request, если
+    /// сводок ещё нет.
+    pub fn enable(&mut self, layer: Layer, request: &dyn Fn() -> Box<dyn net::Request>) {
         if self.layers.iter().any(|(l, s)| *l == layer && !matches!(s, State::Failed(_))) {
             return;
         }
         self.layers.retain(|(l, _)| *l != layer);
-        request.start(layer.url());
-        self.layers.push((layer, State::Asking(request)));
+        let asks = layer
+            .urls()
+            .iter()
+            .map(|url| {
+                let r = request();
+                r.start(url);
+                (r, None)
+            })
+            .collect();
+        self.layers.push((layer, State::Asking(asks)));
     }
 
     /// Убрать слой с глобуса.
@@ -389,9 +542,14 @@ impl Dots {
         self.layers.iter().map(|(l, _)| *l).collect()
     }
 
-    /// Сводка идёт.
+    /// Сводка идёт или разбирается.
     pub fn busy(&self) -> bool {
-        self.layers.iter().any(|(_, s)| matches!(s, State::Asking(_)))
+        self.layers.iter().any(|(_, s)| match s {
+            State::Asking(_) => true,
+            #[cfg(not(target_arch = "wasm32"))]
+            State::Parsing(_) => true,
+            _ => false,
+        })
     }
 
     /// Принять пришедшие сводки. Возвращает текст ошибки слоя, если
@@ -399,10 +557,55 @@ impl Dots {
     pub fn poll(&mut self, lang: Lang) -> Option<String> {
         let mut error = None;
         for (layer, state) in &mut self.layers {
-            if let State::Asking(request) = state
-                && let Some(answer) = request.take()
-            {
-                *state = match answer.and_then(|b| Data::parse(*layer, &b)) {
+            let parsed: Option<Parsed> = match state {
+                State::Asking(asks) => {
+                    let mut failed = None;
+                    for (request, got) in asks.iter_mut() {
+                        if got.is_none()
+                            && let Some(answer) = request.take()
+                        {
+                            match answer {
+                                Ok(b) => *got = Some(b),
+                                Err(e) => failed = Some(e),
+                            }
+                        }
+                    }
+                    match failed {
+                        Some(e) => Some(Err(e)),
+                        None if asks.iter().all(|(_, g)| g.is_some()) => {
+                            let all: Vec<Vec<u8>> = asks.iter_mut().filter_map(|(_, g)| g.take()).collect();
+                            let layer = *layer;
+                            #[cfg(not(target_arch = "wasm32"))]
+                            {
+                                // Разбор - в рабочем потоке, итог - в следующих кадрах.
+                                let (tx, rx) = std::sync::mpsc::channel();
+                                let spawned = std::thread::Builder::new().name("planetx-dots".into()).spawn(move || {
+                                    let _ = tx.send(Data::parse(layer, &all));
+                                });
+                                match spawned {
+                                    Ok(_) => {
+                                        *state = State::Parsing(rx);
+                                        None
+                                    }
+                                    Err(e) => Some(Err(e.to_string())),
+                                }
+                            }
+                            #[cfg(target_arch = "wasm32")]
+                            Some(Data::parse(layer, &all))
+                        }
+                        None => None,
+                    }
+                }
+                #[cfg(not(target_arch = "wasm32"))]
+                State::Parsing(rx) => match rx.try_recv() {
+                    Ok(p) => Some(p),
+                    Err(std::sync::mpsc::TryRecvError::Empty) => None,
+                    Err(std::sync::mpsc::TryRecvError::Disconnected) => Some(Err("parse stopped".into())),
+                },
+                _ => None,
+            };
+            if let Some(parsed) = parsed {
+                *state = match parsed {
                     Ok(d) => State::Ready(d),
                     Err(e) => {
                         error = Some(trf(lang, "{layer}: not received: {error}", &[("layer", tr(lang, layer.name())), ("error", &e)]));
@@ -425,6 +628,34 @@ impl Dots {
                 _ => None,
             })
             .collect()
+    }
+
+    /// Модель поля и таблицы полюсов включённых строк полюсов и линий
+    /// склонения: модель, полюса, если строка полюсов включена, и включены
+    /// ли линии склонения.
+    pub fn magnetic(&self) -> Option<(Arc<data::geomag::Model>, Option<Arc<data::geomag::Poles>>, bool)> {
+        let mut model = None;
+        let mut poles = None;
+        let mut decl = false;
+        for (layer, state) in &self.layers {
+            if let State::Ready(Data::Magnetic(m, p)) = state {
+                model = Some(m.clone());
+                if *layer == Layer::MagDecl {
+                    decl = true;
+                } else {
+                    poles = p.clone();
+                }
+            }
+        }
+        model.map(|m| (m, poles, decl))
+    }
+
+    /// Скорости плит включённой строки.
+    pub fn motion(&self) -> Option<Arc<data::platemotion::Motion>> {
+        self.layers.iter().find_map(|(_, s)| match s {
+            State::Ready(Data::Motion(m)) => Some(m.clone()),
+            _ => None,
+        })
     }
 
     /// Названия плит включённой строки «Границы плит»: название,

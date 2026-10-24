@@ -29,6 +29,11 @@ use crate::{
 pub const WORKERS: usize = 4;
 /// Предел ожидания ответа сервера.
 pub const TIMEOUT: Duration = Duration::from_secs(20);
+/// Предел времени ответа больше [`LARGE_ANSWER`] байт: архив MRDS -
+/// 25 МБ, за 20 с он приходит не на всякой связи.
+pub const LONG_TIMEOUT: Duration = Duration::from_secs(300);
+/// Ответ с пределом больше этого считается большим.
+pub const LARGE_ANSWER: u64 = 4 << 20;
 
 /// Папка кэша тайлов по умолчанию: на Windows
 /// `%LOCALAPPDATA%\PlanetX-Lite\tiles`, на других системах - стандартная
@@ -308,7 +313,7 @@ impl Requests {
     pub fn with_limit(on_ready: Arc<dyn Fn() + Send + Sync>, limit: u64) -> Self {
         let agent: ureq::Agent = ureq::Agent::config_builder()
             .user_agent(user_agent())
-            .timeout_global(Some(TIMEOUT))
+            .timeout_global(Some(if limit > LARGE_ANSWER { LONG_TIMEOUT } else { TIMEOUT }))
             .http_status_as_error(true)
             .build()
             .into();

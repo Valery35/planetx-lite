@@ -700,3 +700,59 @@ Continental collision	대륙 충돌
 About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	지역 목록을 모아 편집한 GEM Global Active Faults 데이터베이스에 따른 세계의 활성 단층 약 1만 3700개. 색은 변위 유형을 나타냅니다. 정단층, 역단층 또는 충상단층, 주향이동단층, 확장 해령, 습곡입니다. 선을 클릭하면 이름, 변위 유형, mm/년 단위의 속도, 경사, 원본 목록이 표시됩니다. 처음 켤 때 약 11 MB를 내려받습니다.
 Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. Plate names show as labels. The Features window shows the boundary type and the plate speed.	PB2002 모델에 따른 암석권 판의 경계. 빨간색 - 해령과 열곡에서 판의 발산, 초록색 - 변환 단층을 따른 미끄러짐, 파란색 - 섭입대와 충돌대에서의 수렴. 판 이름은 레이블로 표시됩니다. 경계 유형과 판 속도는 ‘객체’ 창에 표시됩니다.
 Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	OpenStreetMap의 해저 통신 회선(청록색)과 전력 케이블(보라색)로, 어느 고도에서나 보입니다. OSM에는 세계 케이블의 일부가 있으며 대서양과 유럽 근처에 가장 많습니다. 선을 클릭하면 이름, 소유자, OpenStreetMap 객체 링크가 표시됩니다.
+Power plants	발전소
+Mineral deposits	광상
+About 35 thousand power plants of the world from the WRI Global Power Plant Database, data as of 2021. Colour is the fuel, size is the capacity. A click on a dot shows the name, capacity, commissioning year and owner. Some plants are placed wrongly in the database. The first use downloads about 4 MB.	WRI Global Power Plant Database에 따른 세계 발전소 약 3만 5천 곳, 2021년 기준 데이터. 색은 연료, 크기는 설비 용량입니다. 점을 클릭하면 이름, 설비 용량, 가동 연도, 소유자가 표시됩니다. 일부 발전소는 데이터베이스상 위치가 잘못되어 있습니다. 처음 켤 때 약 4 MB를 내려받습니다.
+Mineral deposits, mines and occurrences of USGS - the MRDS database, about 300 thousand points, most of them in the USA, 3 thousand major deposits of the world and 6.5 thousand mines and plants of the world with the operator and capacity. The colour is the commodity group, a large point is a major deposit, mine or plant. A click on a point shows the name, commodities, type and a link to the USGS record. The first switch-on downloads about 25 MB.	USGS의 광상, 광산, 광화 지점 - MRDS 데이터베이스, 약 30만 개 지점으로 대부분 미국에 있으며, 세계 주요 광상 3천 곳과 운영자 및 생산 능력이 포함된 세계 광산과 공장 6천 5백 곳. 색은 광종 그룹, 큰 점은 주요 광상, 광산 또는 공장입니다. 점을 클릭하면 이름, 광종, 유형, USGS 기록 링크가 표시됩니다. 처음 켤 때 약 25 MB를 내려받습니다.
+Coal	석탄
+Gas	가스
+Oil	중유
+Nuclear	원자력
+Hydro	수력
+Wind	풍력
+Biomass, waste, geothermal	바이오매스, 폐기물, 지열
+Other	기타
+Precious metals	귀금속
+Base metals	비철 금속
+Iron and alloy metals	철 및 합금 금속
+Rare metals, lithium, aluminum	희유 금속, 리튬, 알루미늄
+Coal, uranium, geothermal	석탄, 우라늄, 지열
+Diamonds and gems	다이아몬드 및 보석
+Industrial and construction	산업용 및 건설용 광물
+WRI power plants	WRI 발전소
+Dot size - capacity	점 크기 - 설비 용량
+USGS mineral deposits	USGS 광상
+Capacity	설비 용량
+Fuel	연료
+Commissioning year	가동 연도
+Commodities	광종
+Group	그룹
+Status or model	단계 또는 모델
+Operator	운영자
+Capacity (year of data)	생산 능력(자료 연도)
+approximate, by district	대략, 지구 단위
+Major mineral deposits of the world, USGS OFR 2005-1294	세계 주요 광상, USGS OFR 2005-1294
+World mines and plants, USGS mineral operations	세계 광산 및 공장, USGS mineral operations
+USGS record	USGS 기록
+Magnetic poles	자극
+Declination lines	편각선
+Plate motion	판 운동
+The north and south magnetic poles - the points where a compass needle stands vertical - for the year of the time slider and their path since 1590 after NOAA NCEI. The slider opens by itself, its handle moves the poles over the years. A click on the globe in the Identify features mode shows the declination, inclination and field intensity at the point for the same year after the gufm1 and IGRF-14 models, from 1590 to 2030.	북자극과 남자극 - 나침반 바늘이 수직으로 서는 지점 - 을 시간 막대의 연도에 맞춰 표시하고 NOAA NCEI에 따른 1590년 이후의 이동 경로도 표시합니다. 시간 막대는 저절로 열리며 손잡이로 자극을 연도별로 움직입니다. ‘객체 식별’ 모드에서 지구본을 클릭하면 gufm1 및 IGRF-14 모델에 따른 같은 연도의 해당 지점 편각, 복각, 전자기력이 표시되며 기간은 1590년부터 2030년까지입니다.
+Lines of equal magnetic declination, the angle between the compass needle and the north, every 10° for the year of the time scale after the IGRF-14 model from 1900 and the gufm1 model from 1590, gufm1 is downloaded on first display. Red lines are east declination, blue lines west, the green line zero. The lines meet at the magnetic poles.	나침반 바늘과 북쪽 사이의 각도인 자기 편각이 같은 선을 시간 막대의 연도에 맞춰 10°마다 표시합니다. 1900년부터는 IGRF-14 모델, 1590년부터는 gufm1 모델을 쓰며 gufm1은 처음 표시할 때 내려받습니다. 빨간 선은 동편각, 파란 선은 서편각, 초록 선은 0입니다. 선들은 자극에서 모입니다.
+Arrows of lithospheric plate motion after the NNR-MORVEL56 model, the speed relative to the mean motion of all plates. The arrow grows with the speed, the number at its start is mm/yr. The Pacific plate moves north-west at about 70 mm/yr, the Eurasian plate at about 25. The Features window shows the plate, speed and direction at the point.	NNR-MORVEL56 모델에 따른 암석권 판 운동 화살표 - 모든 판의 평균 운동에 대한 상대 속도. 화살표는 속도에 따라 길어지고 시작점의 숫자는 mm/년입니다. 태평양판은 약 70 mm/년으로 북서쪽으로, 유라시아판은 약 25로 움직입니다. 해당 지점의 판, 속도, 방향은 ‘객체’ 창에 표시됩니다.
+North magnetic pole, {year}	북자극, {year}
+South magnetic pole, {year}	남자극, {year}
+The field before 1900 is not loaded: {error}	1900년 이전의 자기장을 불러오지 못했습니다: {error}
+Year	연도
+Model	모델
+gufm1 from 1590, IGRF-14 from 1900 to 2030	gufm1은 1590년부터, IGRF-14는 1900년부터 2030년까지
+Declination	편각
+Inclination	복각
+Total intensity	전자기력
+{value} nT	{value} nT
+Horizontal component	수평 성분
+Magnetic field	자기장
+Field at the point	지점의 자기장
+Plate	판
+Plate speed	판 속도
+Direction	방향

@@ -338,6 +338,9 @@ pub struct LiteApp {
     water: Option<(Vec<render::FeatureMesh>, f64)>,
     /// Сетки «Моих меток» прошлой сборки: к ним добавляется вода.
     marks_meshes: Vec<render::FeatureMesh>,
+    /// Магнитные полюса, линии склонения, скорости плит и сетки их линий.
+    geo: crate::geophysics::Geo,
+    geo_meshes: Vec<render::FeatureMesh>,
     /// Копия строк KML для пункта «Вставить».
     clip_kml: Option<String>,
     /// Вопрос перед удалением: заголовок, текст, что удалить.
@@ -657,6 +660,8 @@ impl LiteApp {
             bathy: None,
             water: None,
             marks_meshes: Vec::new(),
+            geo: crate::geophysics::Geo::default(),
+            geo_meshes: Vec::new(),
             confirm: None,
             folder_props: None,
             recording: None,
@@ -685,7 +690,8 @@ impl LiteApp {
         app.sync_maps();
         for layer in crate::dots::Layer::ALL {
             if app.extras_on.contains(&crate::layers::Extra::Dots(layer)) {
-                app.dots.enable(layer, (app.loaders.request)(layer.bytes()));
+                let loaders = &app.loaders;
+                app.dots.enable(layer, &|| (loaders.request)(layer.bytes()));
             }
         }
         // Основа прошлого запуска. Самопроверка ставит свою.
@@ -1113,6 +1119,7 @@ impl LiteApp {
         if let Some((px, py, ppp)) = pixel {
             groups.extend(self.dots.identify(self.lang, &self.nav, (lat, lon), (px, py), crate::card::PICK_PIXELS * ppp * 2.0, self.timebar.window()));
         }
+        groups.extend(self.geo.identify(&self.dots, self.lang, lat, lon, self.magnetic_year().0));
         groups.push(crate::identify::place_group(self.lang, height.filter(|_| self.settings.relief), address));
         if let Some((ask, answer)) = &self.map_ask
             && ask.at == (lat, lon)
@@ -1120,6 +1127,22 @@ impl LiteApp {
             groups.extend(crate::mapvalue::group(self.lang, ask.key, answer, ask.at));
         }
         crate::identify::Objects { point: self.point_text(lat, lon, height, 6), groups, at: (lat, lon) }
+    }
+
+    /// Год с дробью для геофизики: правый бегунок открытой шкалы времени,
+    /// без неё - часы компьютера, и год левого бегунка - начало следа
+    /// полюсов, как `magnetic_year` и `_magnetic_start` модуля.
+    fn magnetic_year(&self) -> (f64, Option<f64>) {
+        let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64());
+        match self.timebar.window() {
+            Some((lo, hi)) if hi.is_finite() => (data::geomag::year_of(hi), (lo.is_finite() && lo < hi).then(|| data::geomag::year_of(lo))),
+            _ => (data::geomag::year_of(now), None),
+        }
+    }
+
+    /// Ширина вида в метрах у точки взгляда.
+    fn view_width(&self) -> f64 {
+        2.0 * self.nav.pose.distance * (self.nav.camera.fov_y.to_radians() / 2.0).tan() * self.nav.camera.aspect()
     }
 
     /// Значение карты значений или готовой карты под точкой, как
@@ -1519,7 +1542,8 @@ impl LiteApp {
             Extra::Map(_) => {}
             Extra::Dots(layer) => {
                 if on {
-                    self.dots.enable(layer, (self.loaders.request)(layer.bytes()));
+                    let loaders = &self.loaders;
+                    self.dots.enable(layer, &|| (loaders.request)(layer.bytes()));
                 } else {
                     self.dots.disable(layer);
                 }
@@ -2929,11 +2953,26 @@ impl LiteApp {
         if let Some(message) = self.dots.poll(self.lang) {
             self.open_message = Some(message);
         }
-        // Линии слоёв линий - в картинки наложения, названия плит -
-        // в надписи.
-        if self.dots.dirty {
+        // Геофизика на год шкалы времени и у вида.
+        let (year, start) = self.magnetic_year();
+        let view = crate::geophysics::View { lat: self.nav.pose.lat, lon: self.nav.pose.lon, width: self.view_width() };
+        let loaders = &self.loaders;
+        if let Some(message) = self.geo.update(&self.dots, self.lang, year, start, &view, &|| (loaders.request)(1 << 20)) {
+            self.open_message = Some(message);
+        }
+        if self.geo.shapes_dirty || self.geo.lines_dirty {
+            self.labels.set_geo(&self.geo.labels());
+            // Точки полюсов - вместе с точками слоёв.
+            self.dots.dirty |= self.geo.shapes_dirty;
+        }
+        // Линии слоёв линий и линии склонения - в картинки наложения,
+        // названия плит - в надписи.
+        if self.dots.dirty || self.geo.lines_dirty {
+            self.geo.lines_dirty = false;
             self.labels.set_plates(&self.dots.plate_names());
-            if self.vector.set_line_sets(self.dots.line_sets())
+            let mut sets = self.dots.line_sets();
+            sets.extend(self.geo.line_set());
+            if self.vector.set_line_sets(sets)
                 && let Some(globe) = &mut self.globe
             {
                 globe.clear_overlays();
@@ -2949,6 +2988,19 @@ impl LiteApp {
             let height = move |lat: f64, lon: f64| terrain.as_ref().map_or(0.0, |t| t(lat, lon));
             let mut all = self.clouds.clone();
             all.extend(self.dots.meshes(&self.nav.camera.ellipsoid, &height, window));
+            let poles = self.geo.points();
+            if !poles.is_empty() {
+                let points: Vec<globe_core::DVec3> = poles.iter().map(|(lat, lon, _)| self.nav.camera.ellipsoid.geodetic_to_ecef(*lat, *lon, height(*lat, *lon))).collect();
+                let center = points.iter().fold(globe_core::DVec3::ZERO, |a, p| a + *p) / points.len() as f64;
+                all.push(render::PointsMesh {
+                    center,
+                    offsets: points.iter().map(|p| (*p - center).as_vec3().to_array()).collect(),
+                    colors: poles.iter().map(|p| p.2).collect(),
+                    size: crate::geophysics::POLE_DOT,
+                    sizes: Vec::new(),
+                    dot: Some(render::Dot { alpha: 1.0, lift: crate::dots::LIFT }),
+                });
+            }
             globe.set_points(&all);
         }
         // Тайлы карт картинками.
@@ -3588,12 +3640,18 @@ impl eframe::App for LiteApp {
             self.water = Some((water, scale));
         }
         let fresh = self.marks.meshes(&store, now);
-        if fresh.is_some() || water_stale {
+        let geo_stale = self.geo.shapes_dirty;
+        if fresh.is_some() || water_stale || geo_stale {
             if let Some(meshes) = &fresh {
                 self.marks_meshes = meshes.clone();
             }
+            // Линии геофизики лежат на рельефе: строятся заново и с новыми
+            // высотами.
+            self.geo.shapes_dirty = false;
+            self.geo_meshes = self.geo.shapes().iter().filter_map(|s| crate::marks::mesh(s, &store)).collect();
             let mut all = self.marks_meshes.clone();
             all.extend(self.water.iter().flat_map(|(w, _)| w.iter().cloned()));
+            all.extend(self.geo_meshes.iter().cloned());
             globe.set_features(&all);
         }
         if fresh.is_some() && self.overlays_built != Some(self.marks.overlays_version()) {

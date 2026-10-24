@@ -700,3 +700,59 @@ Continental collision	Континентальная коллизия
 About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	Около 13.7 тысячи активных разломов мира по базе GEM Global Active Faults, сведённой из региональных каталогов. Цвет показывает вид смещения. Это сброс, взброс или надвиг, сдвиг, срединный хребет и складка. Щелчок по линии показывает название, вид смещения, скорость в мм/год, падение и каталог-источник. Первое включение скачивает около 11 МБ.
 Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. Plate names show as labels. The Features window shows the boundary type and the plate speed.	Границы литосферных плит по модели PB2002. Красные - раздвиг плит на хребтах и рифтах, зелёные - сдвиг по трансформным разломам, синие - схождение в зонах субдукции и коллизии. Названия плит стоят надписями. Тип границы и скорость плит показывает окно «Объекты».
 Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	Подводные линии связи (бирюзовые) и силовые кабели (лиловые) из OpenStreetMap, видны с любой высоты. В OSM нанесена часть кабелей мира, больше всего в Атлантике и у Европы. Щелчок по линии показывает название, владельца и ссылку на объект OpenStreetMap.
+Power plants	Электростанции
+Mineral deposits	Месторождения
+About 35 thousand power plants of the world from the WRI Global Power Plant Database, data as of 2021. Colour is the fuel, size is the capacity. A click on a dot shows the name, capacity, commissioning year and owner. Some plants are placed wrongly in the database. The first use downloads about 4 MB.	Около 35 тысяч электростанций мира из базы WRI Global Power Plant Database, данные на 2021 год. Цвет - вид топлива, размер - мощность. Щелчок по точке показывает название, мощность, год ввода и владельца. У части станций место в базе указано неверно. Первое включение скачивает около 4 МБ.
+Mineral deposits, mines and occurrences of USGS - the MRDS database, about 300 thousand points, most of them in the USA, 3 thousand major deposits of the world and 6.5 thousand mines and plants of the world with the operator and capacity. The colour is the commodity group, a large point is a major deposit, mine or plant. A click on a point shows the name, commodities, type and a link to the USGS record. The first switch-on downloads about 25 MB.	Месторождения, рудники и проявления полезных ископаемых USGS - база MRDS, около 300 тысяч точек, больше всего в США, 3 тысячи крупных месторождений мира и 6.5 тысячи рудников и заводов мира с оператором и мощностью. Цвет - группа полезного ископаемого, большая точка - крупное месторождение, рудник или завод. Щелчок по точке показывает название, ископаемые, тип и ссылку на запись USGS. Первое включение скачивает около 25 МБ.
+Coal	Уголь
+Gas	Газ
+Oil	Мазут
+Nuclear	Атомные
+Hydro	ГЭС
+Wind	Ветер
+Biomass, waste, geothermal	Биотопливо, отходы, геотермальные
+Other	Прочие
+Precious metals	Благородные металлы
+Base metals	Цветные металлы
+Iron and alloy metals	Чёрные и легирующие металлы
+Rare metals, lithium, aluminum	Редкие металлы, литий, алюминий
+Coal, uranium, geothermal	Уголь, уран, геотермальные
+Diamonds and gems	Алмазы и самоцветы
+Industrial and construction	Нерудные и строительные
+WRI power plants	Электростанции WRI
+Dot size - capacity	Размер точки - мощность
+USGS mineral deposits	Месторождения USGS
+Capacity	Мощность
+Fuel	Топливо
+Commissioning year	Год ввода
+Commodities	Полезные ископаемые
+Group	Группа
+Status or model	Стадия или модель
+Operator	Оператор
+Capacity (year of data)	Мощность (год сведений)
+approximate, by district	примерное, по району
+Major mineral deposits of the world, USGS OFR 2005-1294	Крупные месторождения мира, USGS OFR 2005-1294
+World mines and plants, USGS mineral operations	Рудники и заводы мира, USGS mineral operations
+USGS record	Запись USGS
+Magnetic poles	Магнитные полюса
+Declination lines	Линии склонения
+Plate motion	Скорости плит
+The north and south magnetic poles - the points where a compass needle stands vertical - for the year of the time slider and their path since 1590 after NOAA NCEI. The slider opens by itself, its handle moves the poles over the years. A click on the globe in the Identify features mode shows the declination, inclination and field intensity at the point for the same year after the gufm1 and IGRF-14 models, from 1590 to 2030.	Северный и южный магнитные полюса - точки, где стрелка компаса стоит отвесно, - на год шкалы времени и их путь с 1590 года по данным NOAA NCEI. Шкала открывается сама, бегунок ведёт полюса по годам. Щелчок по глобусу в режиме «Определить объекты» показывает склонение, наклонение и напряжённость поля в точке на тот же год по моделям gufm1 и IGRF-14, с 1590 по 2030 год.
+Lines of equal magnetic declination, the angle between the compass needle and the north, every 10° for the year of the time scale after the IGRF-14 model from 1900 and the gufm1 model from 1590, gufm1 is downloaded on first display. Red lines are east declination, blue lines west, the green line zero. The lines meet at the magnetic poles.	Линии равного магнитного склонения - угла между стрелкой компаса и направлением на север - через 10° на год шкалы времени по моделям IGRF-14 с 1900 года и gufm1 с 1590 года, gufm1 скачивается при первом показе. Красные - склонение восточное, синие - западное, зелёная - нулевое. У магнитных полюсов линии сходятся.
+Arrows of lithospheric plate motion after the NNR-MORVEL56 model, the speed relative to the mean motion of all plates. The arrow grows with the speed, the number at its start is mm/yr. The Pacific plate moves north-west at about 70 mm/yr, the Eurasian plate at about 25. The Features window shows the plate, speed and direction at the point.	Стрелки движения литосферных плит по модели NNR-MORVEL56 - скорость относительно среднего движения всех плит. Длина стрелки растёт со скоростью, число у её начала - мм/год. Тихоокеанская плита идёт на северо-запад около 70 мм/год, Евразийская - около 25. Окно «Объекты» показывает плиту, скорость и направление в точке.
+North magnetic pole, {year}	Северный магнитный полюс, {year}
+South magnetic pole, {year}	Южный магнитный полюс, {year}
+The field before 1900 is not loaded: {error}	Поле до 1900 года не загружено: {error}
+Year	Год
+Model	Модель
+gufm1 from 1590, IGRF-14 from 1900 to 2030	gufm1 с 1590 года, IGRF-14 с 1900 по 2030 год
+Declination	Склонение
+Inclination	Наклонение
+Total intensity	Полная напряжённость
+{value} nT	{value} нТл
+Horizontal component	Горизонтальная составляющая
+Magnetic field	Магнитное поле
+Field at the point	Поле в точке
+Plate	Плита
+Plate speed	Скорость плиты
+Direction	Направление

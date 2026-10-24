@@ -700,3 +700,59 @@ Continental collision	Kontinental toqquşma
 About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	Regional kataloqlardan tərtib edilmiş GEM Global Active Faults bazasına görə dünyanın təxminən 13.7 min aktiv qırılması. Rəng yerdəyişmənin növünü göstərir. Bu normal qırılma, əks qırılma və ya şaryaj, üfüqi sürüşmə qırılması, orta silsilə və qırışıqdır. Xəttə klik adı, yerdəyişmənin növünü, mm/il ilə sürəti, düşmə bucağını və mənbə kataloqu göstərir. İlk yandırma təxminən 11 MB yükləyir.
 Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. Plate names show as labels. The Features window shows the boundary type and the plate speed.	PB2002 modelinə görə litosfer lövhələrinin sərhədləri. Qırmızı - silsilələrdə və riftlərdə lövhələrin aralanması, yaşıl - transform qırılmalar boyunca sürüşmə, mavi - subduksiya və toqquşma zonalarında yaxınlaşma. Lövhələrin adları yazı kimi göstərilir. Sərhədin tipini və lövhələrin sürətini “Obyektlər” pəncərəsi göstərir.
 Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	OpenStreetMap-dən sualtı rabitə xətləri (firuzəyi) və güc kabelləri (bənövşəyi), istənilən hündürlükdən görünür. OSM-də dünya kabellərinin bir hissəsi var, ən çoxu Atlantikdə və Avropa yaxınlığındadır. Xəttə klik adı, sahibini və OpenStreetMap obyektinə keçidi göstərir.
+Power plants	Elektrik stansiyaları
+Mineral deposits	Yataqlar
+About 35 thousand power plants of the world from the WRI Global Power Plant Database, data as of 2021. Colour is the fuel, size is the capacity. A click on a dot shows the name, capacity, commissioning year and owner. Some plants are placed wrongly in the database. The first use downloads about 4 MB.	WRI Global Power Plant Database bazasından dünyanın təxminən 35 min elektrik stansiyası, 2021-ci il məlumatları. Rəng yanacaq növüdür, ölçü gücdür. Nöqtəyə klik adı, gücü, istismara verilmə ilini və sahibini göstərir. Stansiyaların bir hissəsinin yeri bazada səhv göstərilib. İlk yandırma təxminən 4 MB yükləyir.
+Mineral deposits, mines and occurrences of USGS - the MRDS database, about 300 thousand points, most of them in the USA, 3 thousand major deposits of the world and 6.5 thousand mines and plants of the world with the operator and capacity. The colour is the commodity group, a large point is a major deposit, mine or plant. A click on a point shows the name, commodities, type and a link to the USGS record. The first switch-on downloads about 25 MB.	USGS-in faydalı qazıntı yataqları, mədənləri və təzahürləri - MRDS bazası, təxminən 300 min nöqtə, ən çoxu ABŞ-da, dünyanın 3 min iri yatağı və operator və güc məlumatı ilə dünyanın 6.5 min mədəni və zavodu. Rəng faydalı qazıntı qrupudur, böyük nöqtə iri yataq, mədən və ya zavoddur. Nöqtəyə klik adı, faydalı qazıntıları, tipi və USGS qeydinə keçidi göstərir. İlk yandırma təxminən 25 MB yükləyir.
+Coal	Kömür
+Gas	Qaz
+Oil	Mazut
+Nuclear	Atom
+Hydro	SES
+Wind	Külək
+Biomass, waste, geothermal	Biyokütlə, tullantılar, geotermal
+Other	Digər
+Precious metals	Nəcib metallar
+Base metals	Əlvan metallar
+Iron and alloy metals	Qara və leqirləyici metallar
+Rare metals, lithium, aluminum	Nadir metallar, litium, alüminium
+Coal, uranium, geothermal	Kömür, uran, geotermal
+Diamonds and gems	Almaz və qiymətli daşlar
+Industrial and construction	Qeyri-filiz və tikinti materialları
+WRI power plants	WRI elektrik stansiyaları
+Dot size - capacity	Nöqtənin ölçüsü - güc
+USGS mineral deposits	USGS yataqları
+Capacity	Güc
+Fuel	Yanacaq
+Commissioning year	İstismara verilmə ili
+Commodities	Faydalı qazıntılar
+Group	Qrup
+Status or model	Mərhələ və ya model
+Operator	Operator
+Capacity (year of data)	Güc (məlumat ili)
+approximate, by district	təxmini, rayon üzrə
+Major mineral deposits of the world, USGS OFR 2005-1294	Dünyanın iri yataqları, USGS OFR 2005-1294
+World mines and plants, USGS mineral operations	Dünyanın mədənləri və zavodları, USGS mineral operations
+USGS record	USGS qeydi
+Magnetic poles	Maqnit qütbləri
+Declination lines	Meyl xətləri
+Plate motion	Lövhələrin hərəkəti
+The north and south magnetic poles - the points where a compass needle stands vertical - for the year of the time slider and their path since 1590 after NOAA NCEI. The slider opens by itself, its handle moves the poles over the years. A click on the globe in the Identify features mode shows the declination, inclination and field intensity at the point for the same year after the gufm1 and IGRF-14 models, from 1590 to 2030.	Şimal və cənub maqnit qütbləri - kompas əqrəbinin şaquli durduğu nöqtələr - zaman şkalasının ili üçün və NOAA NCEI məlumatlarına görə 1590-cı ildən bəri yolları. Şkala özü açılır, sürgüsü qütbləri illər üzrə aparır. "Obyektləri müəyyən et" rejimində qlobusa klik gufm1 və IGRF-14 modellərinə görə həmin il üçün nöqtədə meyli, enişi və sahənin intensivliyini göstərir, 1590-cı ildən 2030-cu ilə qədər.
+Lines of equal magnetic declination, the angle between the compass needle and the north, every 10° for the year of the time scale after the IGRF-14 model from 1900 and the gufm1 model from 1590, gufm1 is downloaded on first display. Red lines are east declination, blue lines west, the green line zero. The lines meet at the magnetic poles.	Kompas əqrəbi ilə şimal istiqaməti arasındakı bucaq olan bərabər maqnit meyli xətləri, zaman şkalasının ili üçün 1900-cü ildən IGRF-14 və 1590-cı ildən gufm1 modellərinə görə hər 10°-dən bir. gufm1 ilk göstərilmədə yüklənir. Qırmızı xətlər şərq meylidir, mavilər qərb, yaşıl xətt sıfırdır. Xətlər maqnit qütblərində birləşir.
+Arrows of lithospheric plate motion after the NNR-MORVEL56 model, the speed relative to the mean motion of all plates. The arrow grows with the speed, the number at its start is mm/yr. The Pacific plate moves north-west at about 70 mm/yr, the Eurasian plate at about 25. The Features window shows the plate, speed and direction at the point.	NNR-MORVEL56 modelinə görə litosfer lövhələrinin hərəkət oxları - bütün lövhələrin orta hərəkətinə nisbətən sürət. Ox sürətlə birlikdə uzanır, başlanğıcındakı rəqəm mm/il ilədir. Sakit okean lövhəsi təxminən 70 mm/il sürətlə şimal-qərbə, Avrasiya lövhəsi təxminən 25 ilə hərəkət edir. Nöqtədəki lövhəni, sürəti və istiqaməti "Obyektlər" pəncərəsi göstərir.
+North magnetic pole, {year}	Şimal maqnit qütbü, {year}
+South magnetic pole, {year}	Cənub maqnit qütbü, {year}
+The field before 1900 is not loaded: {error}	1900-cü ilə qədərki sahə yüklənməyib: {error}
+Year	İl
+Model	Model
+gufm1 from 1590, IGRF-14 from 1900 to 2030	1590-cı ildən gufm1, 1900-cü ildən 2030-cu ilə qədər IGRF-14
+Declination	Meyl
+Inclination	Eniş
+Total intensity	Tam intensivlik
+{value} nT	{value} nT
+Horizontal component	Üfüqi toplanan
+Magnetic field	Maqnit sahəsi
+Field at the point	Nöqtədə sahə
+Plate	Lövhə
+Plate speed	Lövhənin sürəti
+Direction	İstiqamət

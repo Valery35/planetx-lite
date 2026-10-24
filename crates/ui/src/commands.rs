@@ -139,6 +139,11 @@ fn key_words(key: &str) -> &'static [&'static str] {
         "plates" => &["тектоника", "плиты", "plates", "tectonics"],
         "faults" => &["разломы", "активные разломы", "сбросы", "надвиги", "сдвиги", "gem", "faults", "active faults"],
         "cables" => &["подводные кабели", "кабели", "submarine cables"],
+        "deposits" => &["полезные ископаемые", "руды", "рудники", "usgs", "mrds", "minerals", "deposits"],
+        "magpoles" => &["магнитный полюс", "магнитные полюса", "компас", "геомагнетизм", "igrf", "magnetic pole", "compass"],
+        "magdecl" => &["склонение", "изогоны", "линии склонения", "агона", "магнитное склонение", "declination", "isogonic"],
+        "platemotion" => &["скорости плит", "движение плит", "дрейф", "дрейф континентов", "morvel", "plate motion"],
+        "plants" => &["электростанции", "энергетика", "тэц", "гэс", "аэс", "power plants"],
         _ => &[],
     }
 }

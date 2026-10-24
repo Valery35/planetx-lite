@@ -700,3 +700,59 @@ Continental collision	Va chạm lục địa
 About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	Khoảng 13.7 nghìn đứt gãy hoạt động trên thế giới theo cơ sở dữ liệu GEM Global Active Faults, tổng hợp từ các danh mục khu vực. Màu thể hiện kiểu dịch chuyển. Đó là đứt gãy thuận, đứt gãy nghịch hoặc chờm nghịch, đứt gãy trượt bằng, sống núi giãn tách và nếp uốn. Nhấp vào đường để xem tên, kiểu dịch chuyển, tốc độ theo mm/năm, góc cắm và danh mục nguồn. Lần bật đầu tiên tải về khoảng 11 MB.
 Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. Plate names show as labels. The Features window shows the boundary type and the plate speed.	Ranh giới các mảng thạch quyển theo mô hình PB2002. Đỏ - các mảng tách xa nhau ở sống núi và rift, xanh lục - trượt ngang dọc đứt gãy chuyển dạng, xanh lam - hội tụ ở đới hút chìm và va chạm. Tên các mảng hiển thị dưới dạng nhãn. Cửa sổ "Các đối tượng" hiển thị kiểu ranh giới và tốc độ mảng.
 Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	Đường truyền thông tin dưới biển (màu ngọc lam) và cáp điện lực (màu tím) từ OpenStreetMap, nhìn thấy từ mọi độ cao. OSM có một phần cáp của thế giới, nhiều nhất ở Đại Tây Dương và gần châu Âu. Nhấp vào đường để xem tên, chủ sở hữu và liên kết đến đối tượng OpenStreetMap.
+Power plants	Nhà máy điện
+Mineral deposits	Mỏ khoáng sản
+About 35 thousand power plants of the world from the WRI Global Power Plant Database, data as of 2021. Colour is the fuel, size is the capacity. A click on a dot shows the name, capacity, commissioning year and owner. Some plants are placed wrongly in the database. The first use downloads about 4 MB.	Khoảng 35 nghìn nhà máy điện trên thế giới từ WRI Global Power Plant Database, dữ liệu năm 2021. Màu là loại nhiên liệu, kích thước là công suất. Nhấp vào một điểm để xem tên, công suất, năm đưa vào vận hành và chủ sở hữu. Một phần nhà máy có vị trí ghi sai trong cơ sở dữ liệu. Lần bật đầu tiên tải về khoảng 4 MB.
+Mineral deposits, mines and occurrences of USGS - the MRDS database, about 300 thousand points, most of them in the USA, 3 thousand major deposits of the world and 6.5 thousand mines and plants of the world with the operator and capacity. The colour is the commodity group, a large point is a major deposit, mine or plant. A click on a point shows the name, commodities, type and a link to the USGS record. The first switch-on downloads about 25 MB.	Mỏ, hầm mỏ và điểm khoáng hóa của USGS - cơ sở dữ liệu MRDS, khoảng 300 nghìn điểm, nhiều nhất ở Hoa Kỳ, 3 nghìn mỏ lớn trên thế giới và 6.5 nghìn hầm mỏ và nhà máy trên thế giới kèm đơn vị vận hành và công suất. Màu là nhóm khoáng sản, điểm lớn là mỏ lớn, hầm mỏ hoặc nhà máy. Nhấp vào một điểm để xem tên, các khoáng sản, loại và liên kết đến bản ghi USGS. Lần bật đầu tiên tải về khoảng 25 MB.
+Coal	Than
+Gas	Khí
+Oil	Dầu FO
+Nuclear	Hạt nhân
+Hydro	Thủy điện
+Wind	Gió
+Biomass, waste, geothermal	Sinh khối, chất thải, địa nhiệt
+Other	Khác
+Precious metals	Kim loại quý
+Base metals	Kim loại cơ bản
+Iron and alloy metals	Sắt và kim loại hợp kim
+Rare metals, lithium, aluminum	Kim loại hiếm, liti, nhôm
+Coal, uranium, geothermal	Than, urani, địa nhiệt
+Diamonds and gems	Kim cương và đá quý
+Industrial and construction	Khoáng sản công nghiệp và vật liệu xây dựng
+WRI power plants	Nhà máy điện WRI
+Dot size - capacity	Kích thước điểm - công suất
+USGS mineral deposits	Mỏ khoáng sản USGS
+Capacity	Công suất
+Fuel	Nhiên liệu
+Commissioning year	Năm đưa vào vận hành
+Commodities	Khoáng sản
+Group	Nhóm
+Status or model	Giai đoạn hoặc mô hình
+Operator	Đơn vị vận hành
+Capacity (year of data)	Công suất (năm số liệu)
+approximate, by district	ước tính, theo quận
+Major mineral deposits of the world, USGS OFR 2005-1294	Các mỏ lớn trên thế giới, USGS OFR 2005-1294
+World mines and plants, USGS mineral operations	Hầm mỏ và nhà máy trên thế giới, USGS mineral operations
+USGS record	Bản ghi USGS
+Magnetic poles	Cực từ
+Declination lines	Đường độ từ thiên
+Plate motion	Chuyển động mảng
+The north and south magnetic poles - the points where a compass needle stands vertical - for the year of the time slider and their path since 1590 after NOAA NCEI. The slider opens by itself, its handle moves the poles over the years. A click on the globe in the Identify features mode shows the declination, inclination and field intensity at the point for the same year after the gufm1 and IGRF-14 models, from 1590 to 2030.	Cực từ bắc và nam - các điểm kim la bàn đứng thẳng - cho năm trên thanh thời gian và đường đi của chúng từ năm 1590 theo NOAA NCEI. Thanh thời gian tự mở, con trượt đưa các cực qua từng năm. Nhấp vào quả địa cầu ở chế độ "Nhận dạng đối tượng" hiển thị độ từ thiên, độ từ khuynh và cường độ trường tại điểm cho cùng năm theo các mô hình gufm1 và IGRF-14, từ 1590 đến 2030.
+Lines of equal magnetic declination, the angle between the compass needle and the north, every 10° for the year of the time scale after the IGRF-14 model from 1900 and the gufm1 model from 1590, gufm1 is downloaded on first display. Red lines are east declination, blue lines west, the green line zero. The lines meet at the magnetic poles.	Các đường cùng độ từ thiên, tức góc giữa kim la bàn và hướng bắc, cách nhau 10° cho năm trên thanh thời gian theo mô hình IGRF-14 từ năm 1900 và mô hình gufm1 từ năm 1590. gufm1 được tải về khi hiển thị lần đầu. Đường đỏ là độ từ thiên đông, đường xanh lam là tây, đường xanh lục là không. Các đường hội tụ tại các cực từ.
+Arrows of lithospheric plate motion after the NNR-MORVEL56 model, the speed relative to the mean motion of all plates. The arrow grows with the speed, the number at its start is mm/yr. The Pacific plate moves north-west at about 70 mm/yr, the Eurasian plate at about 25. The Features window shows the plate, speed and direction at the point.	Mũi tên chuyển động của các mảng thạch quyển theo mô hình NNR-MORVEL56 - tốc độ so với chuyển động trung bình của mọi mảng. Mũi tên dài ra theo tốc độ, con số ở gốc là mm/năm. Mảng Thái Bình Dương di chuyển về tây bắc khoảng 70 mm/năm, mảng Á-Âu khoảng 25. Cửa sổ "Các đối tượng" hiển thị mảng, tốc độ và hướng tại điểm.
+North magnetic pole, {year}	Cực từ bắc, {year}
+South magnetic pole, {year}	Cực từ nam, {year}
+The field before 1900 is not loaded: {error}	Chưa tải được trường trước năm 1900: {error}
+Year	Năm
+Model	Mô hình
+gufm1 from 1590, IGRF-14 from 1900 to 2030	gufm1 từ năm 1590, IGRF-14 từ 1900 đến 2030
+Declination	Độ từ thiên
+Inclination	Độ từ khuynh
+Total intensity	Cường độ toàn phần
+{value} nT	{value} nT
+Horizontal component	Thành phần nằm ngang
+Magnetic field	Từ trường
+Field at the point	Trường tại điểm
+Plate	Mảng
+Plate speed	Tốc độ mảng
+Direction	Hướng
