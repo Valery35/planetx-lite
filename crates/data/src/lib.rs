@@ -32,12 +32,22 @@
 //! - [`drillholes`] - скважины из таблиц устьев, интервалов
 //!   и инклинометрии, перенос `core/drillholes.py` модуля;
 //! - [`subsurface`] - сетки подземного режима, стволы, горизонты
-//!   и разрезы, перенос `core/subsurface.py` модуля.
+//!   и разрезы, перенос `core/subsurface.py` модуля;
+//! - [`crust`] - кора CRUST1.0 из архива модели, перенос `core/crust.py`
+//!   модуля;
+//! - [`tomography`] - томография мантии SEISGLOB2, перенос
+//!   `core/tomography.py` модуля;
+//! - [`slabs`] - погружающиеся плиты Slab2 на разрезах, перенос
+//!   `core/slabs.py` модуля;
+//! - [`cutaway`] - разрез Земли, сектор и оболочки PREM на гранях, перенос
+//!   `core/cutaway.py` модуля.
 
 pub mod bathymetry;
 pub mod cloud;
 pub mod contours;
+pub mod crust;
 pub mod csv;
+pub mod cutaway;
 pub mod dem;
 pub mod deposits;
 pub mod drillholes;
@@ -52,6 +62,7 @@ pub mod layers;
 pub mod linesets;
 pub mod lines;
 pub mod mvt;
+mod npz;
 pub mod places;
 pub mod plants;
 pub mod platemotion;
@@ -59,7 +70,9 @@ pub mod plates;
 pub mod quakes;
 pub mod rastermaps;
 pub mod routing;
+pub mod slabs;
 pub mod slope;
 pub mod stars;
 pub mod subsurface;
+pub mod tomography;
 pub mod volcanoes;

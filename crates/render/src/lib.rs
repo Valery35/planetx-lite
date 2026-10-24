@@ -124,6 +124,11 @@ struct DrawUniform {
     cut: [f32; 4],
     /// x - непрозрачность поверхности в рамке модели, y - признак маски.
     glass: [f32; 4],
+    /// Разрез Земли: направление средней долготы x, y, косинус половины
+    /// ширины, признак.
+    wedge: [f32; 4],
+    /// Разрез Земли: синусы южной и северной широты.
+    wedge_lat: [f32; 4],
 }
 
 /// Окно всего снимка.
@@ -317,6 +322,8 @@ pub struct Globe {
     cut: Option<([f64; 4], wgpu::TextureView)>,
     /// Непрозрачность поверхности над подземной моделью.
     opacity: f32,
+    /// Разрез Земли, `cutaway.uniform` модуля, None - разреза нет.
+    wedge: Option<[f32; 5]>,
     subsurface: subsurface::Subsurface,
     /// Снять следующий кадр.
     grab_next: bool,
@@ -789,6 +796,7 @@ impl Globe {
             air_layout,
             cut: None,
             opacity: 1.0,
+            wedge: None,
             subsurface: subsurface::Subsurface::new(device),
             grab_next: false,
             grabbed: Arc::new(Mutex::new(None)),
@@ -994,6 +1002,13 @@ impl Globe {
         });
         let view = self.cut.as_ref().map_or(&self.clear, |(_, v)| v);
         self.air_bind = Self::air_bind(&self.device, &self.air_layout, &self.air, view, &self.sampler);
+    }
+
+    /// Разрез Земли: числа `data::cutaway::uniform` - направление средней
+    /// долготы, косинус половины ширины, синусы южной и северной широты.
+    /// None - поверхность целиком.
+    pub fn set_wedge(&mut self, wedge: Option<[f64; 5]>) {
+        self.wedge = wedge.filter(|w| w.iter().all(|v| v.is_finite())).map(|w| w.map(|v| v as f32));
     }
 
     /// Непрозрачность поверхности в рамке модели подземного режима.
@@ -1369,7 +1384,7 @@ impl Globe {
                     _ => ((None, [0.0; 4]), (None, [0.0; 4])),
                 };
                 me.ensure_over((overlay, lights));
-                out.push(Item { kind, mesh, texture, overlay, lights, cap: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow, water: [0.0; 4], sea: [0.0; 4], cut: [0.0; 4], glass: [1.0, 0.0, 0.0, 0.0] } });
+                out.push(Item { kind, mesh, texture, overlay, lights, cap: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow, water: [0.0; 4], sea: [0.0; 4], cut: [0.0; 4], glass: [1.0, 0.0, 0.0, 0.0], wedge: [0.0; 4], wedge_lat: [0.0; 4] } });
             }
         };
         let flat = |rgb: [f32; 3]| [rgb[0], rgb[1], rgb[2], 1.0];
@@ -1408,6 +1423,13 @@ impl Globe {
                     item.cap = Some(i);
                     item.uniform.color[3] = 0.0;
                 }
+            }
+        }
+        // Разрез Земли: поверхность внутри сектора не рисуется.
+        if let Some(w) = self.wedge {
+            for item in out.iter_mut() {
+                item.uniform.wedge = [w[0], w[1], w[2], 1.0];
+                item.uniform.wedge_lat = [w[3], w[4], 0.0, 0.0];
             }
         }
         // Маска подземного режима: окно тайла в картинке маски.

@@ -112,6 +112,7 @@ fn layer_words(extra: Extra) -> &'static [&'static str] {
         Extra::Air => &["атмосфера", "воздух", "дымка", "гало", "atmosphere", "haze", "air"],
         Extra::Sun => &["ночь", "день", "освещение", "тень", "огни городов", "sun", "night", "city lights"],
         Extra::Grid => &["сетка", "градусы", "экватор", "graticule", "grid"],
+        Extra::Cutaway => &["разрез земли", "разрез", "ядро", "мантия", "кора", "cutaway", "core", "mantle", "crust"],
         Extra::Map(_) | Extra::Dots(_) => key_words(extra.key()),
     }
 }

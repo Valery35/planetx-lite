@@ -43,6 +43,9 @@ pub struct SubMesh {
     pub vertices: Vec<SubVertex>,
     pub indices: Vec<u32>,
     pub cull_front: bool,
+    /// Сетка поверх других в той же плоскости: смещение глубины к глазу,
+    /// как `offset` модуля у полос плит на гранях разреза.
+    pub bias: bool,
 }
 
 #[repr(C)]
@@ -58,12 +61,14 @@ struct GpuSub {
     indices: wgpu::Buffer,
     count: u32,
     cull_front: bool,
+    bias: bool,
 }
 
 /// Подземные сетки и их конвейеры.
 pub struct Subsurface {
     both: wgpu::RenderPipeline,
     front_culled: wgpu::RenderPipeline,
+    biased: wgpu::RenderPipeline,
     layout: wgpu::BindGroupLayout,
     stride: u64,
     uniform: wgpu::Buffer,
@@ -105,7 +110,7 @@ impl Subsurface {
             bind_group_layouts: &[Some(&layout)],
             immediate_size: 0,
         });
-        let make = |cull: Option<wgpu::Face>| {
+        let make = |cull: Option<wgpu::Face>, bias: wgpu::DepthBiasState| {
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("subsurface"),
                 layout: Some(&pipeline_layout),
@@ -125,7 +130,7 @@ impl Subsurface {
                     depth_write_enabled: Some(true),
                     depth_compare: Some(wgpu::CompareFunction::LessEqual),
                     stencil: wgpu::StencilState::default(),
-                    bias: wgpu::DepthBiasState::default(),
+                    bias,
                 }),
                 multisample: wgpu::MultisampleState::default(),
                 fragment: Some(wgpu::FragmentState {
@@ -145,13 +150,15 @@ impl Subsurface {
                 cache: None,
             })
         };
-        let both = make(None);
-        let front_culled = make(Some(wgpu::Face::Front));
+        let both = make(None, wgpu::DepthBiasState::default());
+        let front_culled = make(Some(wgpu::Face::Front), wgpu::DepthBiasState::default());
+        // Смещение к глазу, `OFFSET` модуля (-2, -4).
+        let biased = make(None, wgpu::DepthBiasState { constant: -4, slope_scale: -2.0, clamp: 0.0 });
         let align = u64::from(device.limits().min_uniform_buffer_offset_alignment.max(1));
         let stride = size.div_ceil(align) * align;
         let capacity = 8;
         let (uniform, bind) = uniform_buffer(device, &layout, stride, capacity);
-        Self { both, front_culled, layout, stride, uniform, capacity, bind, meshes: BTreeMap::new() }
+        Self { both, front_culled, biased, layout, stride, uniform, capacity, bind, meshes: BTreeMap::new() }
     }
 
     /// Новая сетка name, None или пустая - убрать.
@@ -167,7 +174,7 @@ impl Subsurface {
         };
         let vertices = device.create_buffer_init(&wgpu::util::BufferInitDescriptor { label: Some("subsurface vertices"), contents: bytemuck::cast_slice(&mesh.vertices), usage: wgpu::BufferUsages::VERTEX });
         let indices = device.create_buffer_init(&wgpu::util::BufferInitDescriptor { label: Some("subsurface indices"), contents: bytemuck::cast_slice(&indices), usage: wgpu::BufferUsages::INDEX });
-        self.meshes.insert(name.to_string(), GpuSub { center: mesh.center, vertices, indices, count, cull_front: mesh.cull_front });
+        self.meshes.insert(name.to_string(), GpuSub { center: mesh.center, vertices, indices, count, cull_front: mesh.cull_front, bias: mesh.bias });
     }
 
     /// Убрать все сетки.
@@ -204,7 +211,13 @@ impl Subsurface {
             let Ok(offset) = u32::try_from(slot as u64 * self.stride) else {
                 continue;
             };
-            pass.set_pipeline(if mesh.cull_front { &self.front_culled } else { &self.both });
+            pass.set_pipeline(if mesh.bias {
+                &self.biased
+            } else if mesh.cull_front {
+                &self.front_culled
+            } else {
+                &self.both
+            });
             pass.set_bind_group(0, &self.bind, &[offset]);
             pass.set_vertex_buffer(0, mesh.vertices.slice(..));
             pass.set_index_buffer(mesh.indices.slice(..), wgpu::IndexFormat::Uint32);

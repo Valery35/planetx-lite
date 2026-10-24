@@ -981,3 +981,8 @@ The sea and ocean floor below zero and water above it. Without the check the sea
 Ground above the grids	网格上方的地面
 Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.	地下模型（高程网格、地层顶面、钻孔）上方地面的不透明度。向右地面不透明，向左更透明，在最左端则不可见。数据范围外的地面不变。
 The Subsurface mode window - the block cut and the camera under the ground.	“地下模式”窗口 - 块体切割和地下相机。
+Opacity of the layer. To the right the layer is opaque, to the left more transparent.	图层的不透明度。向右图层不透明，向左更透明。
+Earth cutaway	地球剖面
+Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on.	从注视点下方的地球中移除一个扇区 - 经度宽 90° 的四分之一半球。其剖面按 PREM 模型的半径显示地壳、地幔和地核，按 CRUST1.0 模型显示地壳。剖面穿过俯冲带的地方可见俯冲板块。每次开启该行时扇区都会重新放置。
+Stretch the crust	拉伸地壳
+Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.	相机越远，对 400 公里以内深度的拉伸越强，从远处也能看到地壳和上地幔。不勾选时所有深度均为真实比例。

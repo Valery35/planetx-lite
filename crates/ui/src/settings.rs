@@ -64,11 +64,15 @@ pub struct Settings {
     pub dots: Vec<String>,
     /// Способ маршрута, `data::routing::Mode::name`, `route_mode` модуля.
     pub route: String,
+    /// Непрозрачность карт картинками: ключ карты и доля.
+    pub opacity: Vec<(String, f32)>,
+    /// «Растягивать кору» разреза Земли, у модуля включено.
+    pub stretch: bool,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, stars: true, sea: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new(), route: "car".into() }
+        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, stars: true, sea: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new(), route: "car".into(), opacity: Vec::new(), stretch: true }
     }
 }
 
@@ -80,7 +84,7 @@ impl Settings {
 
     pub fn to_text(&self) -> String {
         format!(
-            "language={}\nlabels={}\ntheme={}\nscale={}\nsun={}\ngrid={}\nair={}\nstars={}\nsea={}\nrelief={}\nvector={}\ncoords={}\nplaces_height={}\nmaps={}\nbasemap={}\ndots={}\nroute={}\n",
+            "language={}\nlabels={}\ntheme={}\nscale={}\nsun={}\ngrid={}\nair={}\nstars={}\nsea={}\nrelief={}\nvector={}\ncoords={}\nplaces_height={}\nmaps={}\nbasemap={}\ndots={}\nroute={}\nopacity={}\nstretch={}\n",
             self.language.as_deref().unwrap_or(""),
             self.labels,
             if self.dark { "dark" } else { "light" },
@@ -97,7 +101,9 @@ impl Settings {
             self.maps.join(","),
             self.basemap,
             self.dots.join(","),
-            self.route
+            self.route,
+            self.opacity.iter().map(|(k, v)| format!("{k}:{v}")).collect::<Vec<_>>().join(","),
+            self.stretch
         ) + &self.history.iter().map(|h| format!("history={h}\n")).collect::<String>()
     }
 
@@ -120,11 +126,20 @@ impl Settings {
                 "air" => s.air = value != "false",
                 "stars" => s.stars = value != "false",
                 "sea" => s.sea = value != "false",
+                "stretch" => s.stretch = value != "false",
                 "relief" => s.relief = value != "false",
                 "coords" if COORD_FORMATS.contains(&value) => s.coords = value.to_string(),
                 "vector" => s.vector = crate::vector::VectorBase::from_text(value).to_text(),
                 "history" if !value.is_empty() && s.history.len() < scene::searchbar::HISTORY => s.history.push(value.to_string()),
                 "basemap" if Basemap::from_key(value).is_some() => s.basemap = value.to_string(),
+                "opacity" => {
+                    s.opacity = value
+                        .split(',')
+                        .filter_map(|p| p.split_once(':'))
+                        .filter(|(k, _)| crate::maps::index(k).is_some())
+                        .filter_map(|(k, v)| v.parse::<f32>().ok().filter(|v| v.is_finite()).map(|v| (k.to_string(), v.clamp(0.0, 1.0))))
+                        .collect();
+                }
                 "route" if data::routing::Mode::from_name(value).is_some() => s.route = value.to_string(),
                 "dots" => {
                     s.dots = value.split(',').filter(|k| crate::dots::Layer::from_key(k).is_some()).map(str::to_string).collect();
@@ -317,7 +332,7 @@ mod tests {
 
     #[test]
     fn settings_round_trip_and_hostile_text() {
-        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, stars: false, sea: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()], route: "foot".into() };
+        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, stars: false, sea: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()], route: "foot".into(), opacity: vec![("emag".into(), 0.5)], stretch: false };
         assert_eq!(Settings::from_text(&s.to_text()), s);
         let bad = Settings::from_text("language=xx\nlabels=../x\ntheme=dark\nscale=1e9\nscale=NaN\nfoo=bar\nno equals\nplaces_height=-5\nplaces_height=NaN\nmaps=emag,../x");
         assert_eq!(bad.maps, ["emag"]);

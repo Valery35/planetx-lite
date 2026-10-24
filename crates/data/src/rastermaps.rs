@@ -648,6 +648,8 @@ pub struct Piece<'a> {
     pub rgba: &'a [u8],
     pub depth: u32,
     pub cell: (u32, u32),
+    /// Непрозрачность слоя от 0 до 1, меню «⋯» строки слоя.
+    pub opacity: f32,
 }
 
 /// Сложить слои снизу вверх в одну картинку тайла 256 × 256 с
@@ -671,7 +673,8 @@ pub fn compose(pieces: &[Piece<'_>]) -> Option<Vec<u8>> {
         let side = SIZE as f32;
         let transform = tiny_skia::Transform::from_row(scale, 0.0, 0.0, scale, -(piece.cell.0 as f32) * side, -(piece.cell.1 as f32) * side);
         let quality = if depth == 0 { tiny_skia::FilterQuality::Nearest } else { tiny_skia::FilterQuality::Bilinear };
-        let paint = tiny_skia::PixmapPaint { quality, ..tiny_skia::PixmapPaint::default() };
+        let opacity = if piece.opacity.is_finite() { piece.opacity.clamp(0.0, 1.0) } else { 1.0 };
+        let paint = tiny_skia::PixmapPaint { quality, opacity, ..tiny_skia::PixmapPaint::default() };
         canvas.draw_pixmap(0, 0, source, &paint, transform, None);
         any = true;
     }

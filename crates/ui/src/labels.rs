@@ -188,6 +188,8 @@ pub struct Shown {
 
 /// Надписи пунктов: тайлы пунктов, высоты, проверки видимости.
 pub struct Labels {
+    /// Разрез Земли: пункты внутри сектора не подписываются.
+    pub wedge: Option<data::cutaway::Wedge>,
     lang: Lang,
     languages: Vec<String>,
     store: PlaceStore,
@@ -225,6 +227,7 @@ impl Labels {
     /// [`places::AS_INTERFACE`], [`places::LOCAL`] или код языка.
     pub fn new(lang: Lang, choice: &str) -> Self {
         Self {
+            wedge: None,
             lang,
             languages: places::name_languages(choice, lang.code()),
             store: PlaceStore::default(),
@@ -348,6 +351,11 @@ impl Labels {
         // в кадре с полем 50 пикселей.
         let mut candidates = Vec::new();
         for &place in &all {
+            // Пункты вынутого сектора висели бы над его гранями, как
+            // у модуля.
+            if self.wedge.as_ref().is_some_and(|w| data::cutaway::inside(w, place.lat, place.lon)) {
+                continue;
+            }
             let id = places::identity(place);
             let Some(&(_, point, normal)) = self.points.get(&id) else {
                 continue;

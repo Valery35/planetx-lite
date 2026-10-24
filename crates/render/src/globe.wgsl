@@ -34,6 +34,11 @@ struct Draw {
     cut: vec4<f32>,
     // x - непрозрачность поверхности в рамке модели, y - признак маски.
     glass: vec4<f32>,
+    // Разрез Земли: направление средней долготы xy, косинус половины
+    // ширины z, признак w.
+    wedge: vec4<f32>,
+    // Разрез Земли: синусы южной и северной широты.
+    wedge_lat: vec4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> draw: Draw;
@@ -63,6 +68,8 @@ struct VertexOut {
     @location(4) normal: vec3<f32>,
     // Высота вершины на экране, для прохода воды.
     @location(5) height: f32,
+    // Вверх по нормали эллипсоида, для разреза Земли.
+    @location(6) up: vec3<f32>,
 };
 
 // Свет солнца, перенос `brightness` из `core/sun.py` модуля: ламбертов
@@ -94,6 +101,7 @@ fn tile_vs(@location(0) offset: vec3<f32>, @location(1) uv: vec2<f32>, @location
     }
     out.position = draw.mvp * vec4<f32>(p, 1.0);
     out.height = sea.w;
+    out.up = sea.xyz;
     out.uv = uv;
     out.shade = shade;
     out.normal = normal;
@@ -128,6 +136,17 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     }
     var photo = mix(to_srgb(picture.rgb), draw.color.rgb, draw.color.a);
     var base = photo * (1.0 - lines.a) + lines.rgb;
+    // Разрез Земли: сектор по широте и долготе вынут, как у модуля.
+    if draw.wedge.w > 0.5 {
+        let up = length(in.up);
+        var sin_lat = 0.0;
+        if up > 0.0 {
+            sin_lat = in.up.z / up;
+        }
+        if sin_lat > draw.wedge_lat.x && sin_lat < draw.wedge_lat.y && dot(in.up.xy, draw.wedge.xy) >= draw.wedge.z * length(in.up.xy) {
+            discard;
+        }
+    }
     var shade = in.shade;
     var alpha = 1.0;
     if draw.glass.y > 0.5 {

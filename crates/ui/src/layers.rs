@@ -33,6 +33,8 @@ pub enum Extra {
     /// Слой точек или линий: землетрясения, вулканы, пожары, разломы,
     /// границы плит, кабели.
     Dots(crate::dots::Layer),
+    /// Разрез Земли: сектор под точкой взгляда.
+    Cutaway,
 }
 
 impl Extra {
@@ -44,6 +46,7 @@ impl Extra {
         let mut out = Self::ALL.to_vec();
         out.extend((0..crate::maps::ALL.len()).map(Extra::Map));
         out.extend(crate::dots::Layer::ALL.map(Extra::Dots));
+        out.push(Extra::Cutaway);
         out
     }
 
@@ -63,6 +66,7 @@ impl Extra {
             Extra::Grid => "Grid",
             Extra::Map(_) => self.map().map_or("", |e| e.name),
             Extra::Dots(l) => l.name(),
+            Extra::Cutaway => "Earth cutaway",
         }
     }
 
@@ -82,6 +86,9 @@ impl Extra {
             }
             Extra::Map(_) => self.map().map_or("", |e| e.tip),
             Extra::Dots(l) => l.tip(),
+            Extra::Cutaway => {
+                "Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on."
+            }
         }
     }
 
@@ -103,7 +110,7 @@ impl Extra {
             },
             Extra::Dots(crate::dots::Layer::Fires) => Category::Fire,
             Extra::Dots(crate::dots::Layer::Cables | crate::dots::Layer::Plants) => Category::Infra,
-            Extra::Dots(_) => Category::Depths,
+            Extra::Dots(_) | Extra::Cutaway => Category::Depths,
         }
     }
 
@@ -116,6 +123,7 @@ impl Extra {
             Extra::Grid => "grid",
             Extra::Map(_) => self.map().map_or("", |e| e.key),
             Extra::Dots(l) => l.key(),
+            Extra::Cutaway => "cutaway",
         }
     }
 
@@ -140,6 +148,10 @@ pub struct State<'a> {
     pub sea: bool,
     /// Непрозрачность земли над подземной моделью, None - модели нет.
     pub ground: Option<f32>,
+    /// Непрозрачность карт картинками по ключу, без записи - 1.
+    pub opacity: &'a std::collections::HashMap<String, f32>,
+    /// Пункт «Растягивать кору» меню строки разреза Земли.
+    pub stretch: bool,
 }
 
 /// Что попросили строки раздела или каталог.
@@ -168,6 +180,10 @@ pub enum Action {
     Ground(f32),
     /// Открыть окно «Подземный режим».
     Subsurface,
+    /// Непрозрачность карты картинками: ключ строки и доля.
+    Opacity(&'static str, f32),
+    /// «Растягивать кору» разреза Земли.
+    Stretch(bool),
 }
 
 /// Название основы в строке и меню, как в списке подложек модуля: Esri
@@ -357,6 +373,24 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
             *menu_open = Some(key.clone());
         }
         popup(ui, menu_open, &key, hit.rect, |ui| {
+            // Непрозрачность карты, меню «⋯» строки включённого модуля.
+            if let Some(entry) = extra.map() {
+                let mut value = state.opacity.get(entry.key).copied().unwrap_or(1.0) * 100.0;
+                ui.horizontal(|ui| {
+                    ui.label(tr(lang, "Opacity"));
+                    let slider = ui.add(egui::Slider::new(&mut value, 0.0..=100.0).fixed_decimals(0).suffix(" %"));
+                    if slider.on_hover_text(tr(lang, "Opacity of the layer. To the right the layer is opaque, to the left more transparent.")).changed() {
+                        out.push(Action::Opacity(entry.key, value / 100.0));
+                    }
+                });
+            }
+            if extra == Extra::Cutaway {
+                let mut stretch = state.stretch;
+                if ui.checkbox(&mut stretch, tr(lang, "Stretch the crust")).on_hover_text(tr(lang, "Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.")).changed() {
+                    out.push(Action::Stretch(stretch));
+                    return true;
+                }
+            }
             if ui.button(tr(lang, "Remove from the globe")).clicked() {
                 out.push(Action::RemoveExtra(extra));
                 return true;

@@ -212,14 +212,25 @@ fn compose_scales_ancestor_and_keeps_top() {
         }
     }
     // Правая верхняя четверть предка - прозрачная: итог пуст по цвету.
-    let right = rastermaps::compose(&[rastermaps::Piece { rgba: &low, depth: 1, cell: (1, 0) }]).unwrap_or_default();
+    let right = rastermaps::compose(&[rastermaps::Piece { rgba: &low, depth: 1, cell: (1, 0), opacity: 1.0 }]).unwrap_or_default();
     assert_eq!(right[128 * 1024 + 512 + 3], 0);
     // Левая верхняя - целиком красная.
-    let left = rastermaps::compose(&[rastermaps::Piece { rgba: &low, depth: 1, cell: (0, 0) }]).unwrap_or_default();
+    let left = rastermaps::compose(&[rastermaps::Piece { rgba: &low, depth: 1, cell: (0, 0), opacity: 1.0 }]).unwrap_or_default();
     assert_eq!(&left[(200 * 256 + 250) * 4..(200 * 256 + 250) * 4 + 4], &[255, 0, 0, 255]);
     // Слой сверху закрывает нижний.
     let top = [0u8, 0, 255, 255].repeat(256 * 256);
-    let both = rastermaps::compose(&[rastermaps::Piece { rgba: &low, depth: 0, cell: (0, 0) }, rastermaps::Piece { rgba: &top, depth: 0, cell: (0, 0) }]).unwrap_or_default();
+    let both = rastermaps::compose(&[rastermaps::Piece { rgba: &low, depth: 0, cell: (0, 0), opacity: 1.0 }, rastermaps::Piece { rgba: &top, depth: 0, cell: (0, 0), opacity: 1.0 }]).unwrap_or_default();
     assert_eq!(&both[..4], &[0, 0, 255, 255]);
     assert_eq!(rastermaps::compose(&[]), None);
+}
+
+#[test]
+fn opacity_scales_the_layer() {
+    // Непрозрачность слоя меню «⋯» делит альфу картинки.
+    let full = vec![255u8; 256 * 256 * 4];
+    let half = rastermaps::compose(&[rastermaps::Piece { rgba: &full, depth: 0, cell: (0, 0), opacity: 0.5 }]).unwrap_or_default();
+    let a = half.get(3).copied().unwrap_or(0);
+    assert!((126..=129).contains(&a), "{a}");
+    let none = rastermaps::compose(&[rastermaps::Piece { rgba: &full, depth: 0, cell: (0, 0), opacity: f32::NAN }]).unwrap_or_default();
+    assert_eq!(none.get(3), Some(&255));
 }

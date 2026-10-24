@@ -447,9 +447,32 @@ fn cut_opens_the_surface_and_glass_does_not() {
     let base = globe.render(&cam, &sel, None, FrameOptions::default()).draws;
     let center = Ellipsoid::wgs84().geodetic_to_ecef(PERM.0, PERM.1, -50.0);
     let v = |x: f32, y: f32| render::SubVertex { offset: [x, y, 0.0], normal: [0.0, 0.0, 1.0], color: [200, 100, 50, 255] };
-    let mesh = render::SubMesh { center, vertices: vec![v(0.0, 0.0), v(30.0, 0.0), v(0.0, 30.0)], indices: vec![0, 1, 2], cull_front: false };
+    let mesh = render::SubMesh { center, vertices: vec![v(0.0, 0.0), v(30.0, 0.0), v(0.0, 30.0)], indices: vec![0, 1, 2], cull_front: false, bias: false };
     globe.set_subsurface("wells", Some(&mesh));
     assert_eq!(globe.render(&cam, &sel, None, FrameOptions::default()).draws, base + 1);
     globe.set_subsurface("wells", None);
     assert_eq!(globe.render(&cam, &sel, None, FrameOptions::default()).draws, base);
+}
+#[test]
+fn wedge_removes_the_surface() {
+    // Разрез Земли: внутри сектора поверхности нет, под ней видна
+    // подстилка, вне сектора всё как было.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 2.0e7, 0.0, 0.0);
+    let sel = lod::select(&cam, &|k: TileKey| k.0 <= 3, Options::default());
+    let (_, before) = holes(&mut globe, &cam, &sel);
+    // Сектор 90° по долготе у Перми, от экватора до 80° северной широты.
+    let lon = PERM.1.to_radians();
+    globe.set_wedge(Some([lon.cos(), lon.sin(), 45f64.to_radians().cos(), 0.0, 80f64.to_radians().sin()]));
+    let (_, open) = holes(&mut globe, &cam, &sel);
+    assert!(open > before, "{open} > {before}");
+    // Сектор по ту сторону Земли не виден.
+    let far = (PERM.1 + 180.0).to_radians();
+    globe.set_wedge(Some([far.cos(), far.sin(), 45f64.to_radians().cos(), 0.0, 80f64.to_radians().sin()]));
+    let (_, back) = holes(&mut globe, &cam, &sel);
+    assert_eq!(back, before);
 }

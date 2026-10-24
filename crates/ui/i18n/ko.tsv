@@ -981,3 +981,8 @@ The sea and ocean floor below zero and water above it. Without the check the sea
 Ground above the grids	그리드 위 지면
 Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.	지하 모델(표고 그리드, 지층 상면, 시추공) 위 지면의 불투명도. 오른쪽으로 갈수록 지면이 불투명하고 왼쪽으로 갈수록 투명해지며 왼쪽 끝에서는 보이지 않습니다. 데이터 윤곽 밖에서는 지면이 바뀌지 않습니다.
 The Subsurface mode window - the block cut and the camera under the ground.	‘지하 모드’ 창 - 블록 절단과 지하 카메라.
+Opacity of the layer. To the right the layer is opaque, to the left more transparent.	레이어의 불투명도. 오른쪽으로 갈수록 불투명하고 왼쪽으로 갈수록 투명합니다.
+Earth cutaway	지구 단면
+Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on.	바라보는 점 아래에서 지구의 한 부채꼴 부분을 떼어 냅니다. 경도로 폭 90°인 반구의 4분의 1입니다. 그 단면에는 PREM 모델의 반지름에 따른 지각, 맨틀, 핵과 CRUST1.0 모델에 따른 지각이 보입니다. 단면이 섭입대를 지나는 곳에서는 가라앉는 판이 보입니다. 부채꼴 부분은 행을 켤 때마다 새로 놓입니다.
+Stretch the crust	지각 늘이기
+Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.	깊이 400 km까지를 카메라가 멀수록 더 많이 늘여 멀리서도 지각과 상부 맨틀이 보이게 합니다. 확인란을 끄면 모든 깊이가 실제 축척입니다.

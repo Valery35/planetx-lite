@@ -233,6 +233,10 @@ pub struct LiteApp {
     open_message: Option<String>,
     /// Маршруты по дорогам, `RouteManager` модуля.
     route: crate::route::Router,
+    /// Непрозрачность карт картинками по ключу, меню «⋯» строки.
+    map_opacity: HashMap<String, f32>,
+    /// Разрез Земли, строка каталога.
+    cutaway: Option<crate::cutaway::Cutaway>,
     /// Подземный режим, `SubsurfaceManager` модуля.
     subsurface: Option<crate::subsurface::Subsurface>,
     /// Пол камеры под землёй для рельефа навигации.
@@ -733,7 +737,9 @@ impl LiteApp {
             marks: Marks::default(),
             pending_open: Vec::new(),
             open_message: None,
+            map_opacity: settings.opacity.iter().cloned().collect(),
             subsurface: None,
+            cutaway: None,
             floor,
             open_dir: None,
             route_keys: HashSet::new(),
@@ -1723,6 +1729,23 @@ impl LiteApp {
                     self.settings_dirty = true;
                     self.sea_changed();
                 }
+                Action::Stretch(on) => {
+                    self.settings.stretch = on;
+                    self.settings_dirty = true;
+                    if let Some(c) = &mut self.cutaway {
+                        c.set_stretch(on);
+                    }
+                }
+                Action::Opacity(key, alpha) => {
+                    self.map_opacity.insert(key.to_string(), alpha);
+                    self.settings.opacity = self.map_opacity.iter().map(|(k, v)| (k.clone(), *v)).collect();
+                    self.settings_dirty = true;
+                    if self.vector.set_opacity(key, alpha)
+                        && let Some(globe) = &mut self.globe
+                    {
+                        globe.clear_overlays();
+                    }
+                }
                 Action::Ground(alpha) => {
                     if let Some(sub) = &mut self.subsurface {
                         sub.options.opacity = alpha;
@@ -1772,6 +1795,22 @@ impl LiteApp {
             Extra::Sun => self.settings.sun = on,
             Extra::Grid => self.settings.grid = on,
             Extra::Map(_) => {}
+            Extra::Cutaway => {
+                // Сектор под точкой взгляда в момент включения, как
+                // `_set_cutaway` модуля.
+                self.cutaway = on.then(|| crate::cutaway::Cutaway::new(self.nav.pose.lat, self.nav.pose.lon, self.settings.stretch, self.crust_cache().as_deref()));
+                self.nav.camera.deep = on;
+                if !on {
+                    self.labels.wedge = None;
+                }
+                if let Some(globe) = &mut self.globe
+                    && !on
+                {
+                    globe.set_wedge(None);
+                    globe.set_subsurface("cutaway", None);
+                    globe.set_subsurface("slabs", None);
+                }
+            }
             Extra::Dots(layer) => {
                 if on {
                     let loaders = &self.loaders;
@@ -1862,6 +1901,12 @@ impl LiteApp {
                 self.map_loaders.insert(id, loaders);
             }
         }
+        // Непрозрачность карт из настроек.
+        for (key, alpha) in &self.map_opacity {
+            if let Some(entry) = crate::maps::index(key).and_then(|i| crate::maps::ALL.get(i)) {
+                self.vector.set_opacity(entry.key, *alpha);
+            }
+        }
         if self.vector.set_maps(on)
             && let Some(globe) = &mut self.globe
         {
@@ -1893,6 +1938,8 @@ impl LiteApp {
             own: self.relief.names().into_iter().map(str::to_string).collect(),
             sea: self.settings.sea,
             ground: self.subsurface.as_ref().map(|s| s.options.opacity),
+            opacity: &self.map_opacity,
+            stretch: self.settings.stretch,
         }
     }
 
@@ -2395,6 +2442,51 @@ impl LiteApp {
         self.open_message = None;
         pose
     }
+
+    /// Шаг разреза Земли: загрузки, грани и полосы плит, сектор
+    /// в шейдере тайла.
+    fn step_cutaway(&mut self) {
+        let Some(c) = &mut self.cutaway else {
+            return;
+        };
+        let loaders = &self.loaders;
+        let (meshes, saved) = c.step(self.nav.pose.distance, &|limit| (loaders.request)(limit));
+        let wedge = c.uniform();
+        self.labels.wedge = Some(c.wedge);
+        if let Some(globe) = &mut self.globe {
+            globe.set_wedge(Some(wedge));
+            if let Some(m) = meshes {
+                globe.set_subsurface("cutaway", m.faces.as_ref());
+                globe.set_subsurface("slabs", m.slabs.as_ref());
+            }
+        }
+        if let Some(bytes) = saved {
+            self.store_crust(&bytes);
+        }
+    }
+
+    /// Архив CRUST1.0 из кэша программы, как `_crust_path` модуля.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn crust_cache(&self) -> Option<Vec<u8>> {
+        std::fs::read(self.demo_cache.as_ref()?.parent()?.join(data::crust::FILE)).ok()
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    fn crust_cache(&self) -> Option<Vec<u8>> {
+        None
+    }
+
+    /// Пришедший архив CRUST1.0 - в кэш программы.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn store_crust(&self, bytes: &[u8]) {
+        if let Some(dir) = self.demo_cache.as_ref().and_then(|d| d.parent()) {
+            let _ = std::fs::create_dir_all(dir);
+            let _ = std::fs::write(dir.join(data::crust::FILE), bytes);
+        }
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    fn store_crust(&self, _bytes: &[u8]) {}
 
     /// Шаг подземного режима: сетки заново, маска, прозрачность, пол
     /// камеры, окно.
@@ -3899,6 +3991,10 @@ impl LiteApp {
         if self.settings.stars && self.nav.camera.altitude() > data::stars::FADE_LOW {
             parts.push(data::stars::ATTRIBUTION);
         }
+        if self.cutaway.is_some() {
+            parts.push(data::crust::CITATION);
+            parts.push(data::slabs::ATTRIBUTION);
+        }
         self.credits.show(ctx, view, self.lang, &parts, 2);
     }
 
@@ -4385,6 +4481,7 @@ impl eframe::App for LiteApp {
         self.step_links(now);
         self.step_route(now);
         self.step_subsurface(&ctx, now);
+        self.step_cutaway();
         self.check_linked_models(now);
         for (bytes, name) in std::mem::take(&mut self.pending_open) {
             let _ = self.open_file(&bytes, &name, None);

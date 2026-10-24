@@ -175,6 +175,8 @@ pub struct VectorBase {
     generation: u64,
     /// Карты под линиями снизу вверх: ключ строки и вид.
     maps: Vec<(&'static str, MapKind)>,
+    /// Непрозрачность карт по ключу, без записи - 1.
+    opacity: HashMap<&'static str, f32>,
     /// Тайлы карт: пришедшие и уже раскрашенные.
     rasters: HashMap<(&'static str, TileKey), Raster>,
     /// Картинки горизонталей по тайлам уровней до `contours::LEVEL`.
@@ -241,6 +243,8 @@ struct MapPart {
     raster: Raster,
     /// Горизонтали: тайл картинки и соседи тайла высот.
     contour: Option<ContourPart>,
+    /// Непрозрачность карты.
+    opacity: f32,
 }
 
 /// Задание горизонталей: тайл картинки, тайл высот, пришедшие соседи
@@ -290,8 +294,8 @@ fn work(job: Job) -> Done {
     }
     let mut painted = Vec::new();
     let mut drawn_contours = Vec::new();
-    let mut layers: Vec<(Picture, u32, Cell)> = Vec::new();
-    for MapPart { id, kind, source, depth, cell, raster, contour } in job.maps {
+    let mut layers: Vec<(Picture, u32, Cell, f32)> = Vec::new();
+    for MapPart { id, kind, source, depth, cell, raster, contour, opacity } in job.maps {
         let ready = match (raster, contour) {
             (Raster::Ready(r), _) => r,
             (Raster::Raw(rgba), Some(c)) => {
@@ -306,12 +310,12 @@ fn work(job: Job) -> Done {
             }
         };
         if let Some(r) = ready {
-            layers.push((r, depth, cell));
+            layers.push((r, depth, cell, opacity));
         }
     }
-    let mut pieces: Vec<rastermaps::Piece<'_>> = layers.iter().map(|(r, depth, cell)| rastermaps::Piece { rgba: r, depth: *depth, cell: *cell }).collect();
+    let mut pieces: Vec<rastermaps::Piece<'_>> = layers.iter().map(|(r, depth, cell, opacity)| rastermaps::Piece { rgba: r, depth: *depth, cell: *cell, opacity: *opacity }).collect();
     for t in [&middle, &top].into_iter().flatten() {
-        pieces.push(rastermaps::Piece { rgba: t, depth: 0, cell: (0, 0) });
+        pieces.push(rastermaps::Piece { rgba: t, depth: 0, cell: (0, 0), opacity: 1.0 });
     }
     let picture = rastermaps::compose(&pieces);
     Done { generation: job.generation, key: job.key, decoded, painted, contours: drawn_contours, picture }
@@ -393,6 +397,7 @@ impl VectorBase {
             ready: Vec::new(),
             generation: 0,
             maps: Vec::new(),
+            opacity: HashMap::new(),
             rasters: HashMap::new(),
             contour_pics: HashMap::new(),
             contour_levels: HashMap::new(),
@@ -502,6 +507,24 @@ impl VectorBase {
     /// Карты под линиями с видом, как они на глобусе.
     pub fn map_list(&self) -> &[(&'static str, MapKind)] {
         &self.maps
+    }
+
+    /// Непрозрачность карты id, `active_opacity` модуля. Сменилась -
+    /// картинки тайлов собираются заново.
+    pub fn set_opacity(&mut self, id: &'static str, opacity: f32) -> bool {
+        let value = if opacity.is_finite() { opacity.clamp(0.0, 1.0) } else { 1.0 };
+        if (self.opacity_of(id) - value).abs() < 1e-3 {
+            return false;
+        }
+        self.opacity.insert(id, value);
+        self.drawn.clear();
+        self.generation += 1;
+        true
+    }
+
+    /// Непрозрачность карты id.
+    pub fn opacity_of(&self, id: &str) -> f32 {
+        self.opacity.get(id).copied().unwrap_or(1.0)
     }
 
     /// Ключи карт под линиями.
@@ -646,7 +669,7 @@ impl VectorBase {
                     let (pkey, depth, cell) = raster_of(*key, contours::LEVEL);
                     let source = self.contour_source(pkey);
                     if let Some(pic) = self.contour_pics.get(&pkey) {
-                        maps.push(MapPart { id, kind: *kind, source, depth, cell, raster: Raster::Ready(pic.clone()), contour: None });
+                        maps.push(MapPart { id, kind: *kind, source, depth, cell, raster: Raster::Ready(pic.clone()), contour: None, opacity: self.opacity_of(id) });
                     } else if let Some(r) = self.rasters.get(&(*id, source)) {
                         let around = neighbours(source)
                             .filter_map(|k| match self.rasters.get(&(*id, k)) {
@@ -655,13 +678,13 @@ impl VectorBase {
                             })
                             .collect();
                         let contour = Some(ContourPart { key: pkey, around, glyphs: self.glyphs.clone(), palette: *palette });
-                        maps.push(MapPart { id, kind: *kind, source, depth, cell, raster: r.clone(), contour });
+                        maps.push(MapPart { id, kind: *kind, source, depth, cell, raster: r.clone(), contour, opacity: self.opacity_of(id) });
                     }
                     continue;
                 }
                 let (source, depth, cell) = raster_of(*key, kind.max_level());
                 if let Some(r) = self.rasters.get(&(*id, source)) {
-                    maps.push(MapPart { id, kind: *kind, source, depth, cell, raster: r.clone(), contour: None });
+                    maps.push(MapPart { id, kind: *kind, source, depth, cell, raster: r.clone(), contour: None, opacity: self.opacity_of(id) });
                 }
             }
             if maps.len() < self.maps.len() {
