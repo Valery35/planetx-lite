@@ -191,3 +191,216 @@ Tropic of Capricorn	Tropique du Capricorne
 Turn off	Désactiver
 Turn on	Activer
 View	Vue
+ km	 km
+ m	 m
+{coords}, depth {d} m	{coords}, profondeur {d} m
+{coords}, height {h} m	{coords}, altitude {h} m
+{name} - {what}	{name} - {what}
+{name} - earlier query	{name} - recherche précédente
+{name} - placemark	{name} - repère
+{name}, {ele} m	{name}, {ele} m
+{name}. The check turns the layer off, the row stays. The «⋯» menu removes it from the globe.	{name}. La case éteint la couche, la ligne reste. Le menu « ⋯ » la retire du globe.
+© 2026 Inform++ LLC. Apache 2.0.	© 2026 Inform++ LLC. Apache 2.0.
+A double click on a row copies the value to the clipboard, a link opens in the browser.	Un double clic sur une ligne copie la valeur dans le presse-papiers, un lien s’ouvre dans le navigateur.
+A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	Ligne claire à tirets sombres. Elles disparaissent avec les autoroutes en dézoomant. Les voies de gare et de desserte ne sont pas tracées.
+Add	Ajouter
+Add data	Ajouter des données
+Add placemark here	Ajouter un repère ici
+Address	Adresse
+Airports	Aéroports
+All	Tout
+All maps and layers of the catalog.	Toutes les cartes et couches du catalogue.
+Allow the folder to expand	Autoriser le dépliage du dossier
+Atmosphere	Atmosphère
+Base map	Fond de carte
+Base map on the globe	Fond de carte sur le globe
+Base map on the globe - one	Fond de carte sur le globe - un seul
+Base maps	Fonds de carte
+Basemaps of the globe - imagery and maps. There is one base on the globe, under the layers.	Fonds de carte du globe - images et cartes. Le globe a un seul fond de carte, sous les cartes et les couches.
+Borders	Frontières
+Borders and names	Frontières et noms
+Borders of countries and regions and labels on the globe.	Frontières des pays et des régions et étiquettes sur le globe.
+Borders of countries bright yellow, borders of regions thin white. Sea borders are not drawn.	Frontières des pays en jaune vif, limites des régions en blanc fin. Les frontières maritimes ne sont pas tracées.
+Catalog of layers - vector base, coordinate grid, atmosphere and sun. The catalog opens in its own window, it can stay open next to the globe.	Catalogue des couches - fond vectoriel, grille de coordonnées, atmosphère et soleil. Le catalogue s’ouvre dans sa propre fenêtre et peut rester ouvert à côté du globe.
+Clear My Places…	Vider « Mes lieux »…
+close	fermer
+Continue drawing	Continuer le tracé
+Coordinates	Coordonnées
+Copied: {number}	Copié : {number}
+Copy	Copier
+Copy of the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider.	Copie de la vue dans le presse-papiers - le globe avec les étiquettes, sans la barre d’icônes, les commandes de navigation et la barre de temps. L’image se colle directement dans un courriel, une messagerie ou un document.
+Copy the coordinates to the clipboard.	Copier les coordonnées dans le presse-papiers.
+Copy the view to the clipboard	Copier la vue dans le presse-papiers
+Cut	Couper
+Data sources…	Sources des données…
+Decimal degrees	Degrés décimaux
+Degrees, minutes, seconds	Degrés, minutes, secondes
+Delete "{name}" from My Places?	Supprimer « {name} » de « Mes lieux » ?
+Delete all placemarks and folders of My Places, placemarks in all {count}? Deletion cannot be undone.	Supprimer tous les repères et dossiers de « Mes lieux », {count} repères au total ? La suppression ne peut pas être annulée.
+Delete folder	Supprimer le dossier
+Delete folder “{name}” with all its contents?	Supprimer le dossier « {name} » avec tout son contenu ?
+Delete placemark	Supprimer le repère
+Delete vertex	Supprimer le sommet
+Demo: prepared scenes with placemarks and tours. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour.	Démo : scènes préparées avec repères et visites. Les repères arrivent dans un nouveau dossier de « Mes lieux », le bouton ▶ sous la liste lance la visite.
+Depth	Profondeur
+Description of the folder. It is kept in My Places and in KML.	Description du dossier. Elle est conservée dans « Mes lieux » et dans le KML.
+Distance	Distance
+Distance from the camera to the point of view. More - a wider view.	Distance de la caméra au point de visée. Plus - vue plus large.
+do not hide	ne pas masquer
+E	E
+Esri World Imagery	Esri World Imagery
+Esri World Imagery - example	Esri World Imagery - exemple
+Feature	Objet
+Features	Objets
+Find what is typed in the line. A place - a flight to it, several found places - a list below.	Chercher le texte saisi dans la ligne. Un lieu - vol vers lui, plusieurs lieux trouvés - liste en dessous.
+Finish drawing	Terminer le tracé
+Fly here	Voler ici
+Folder properties	Propriétés du dossier
+Folder view	Vue du dossier
+Folder|add	Dossier
+Format	Format
+Full screen (F11) - the globe view for a show. Esc or F11 returns the window.	Plein écran (F11) - vue du globe pour une présentation. Les panneaux se masquent, les commandes de navigation, la barre de temps et la visite restent. Esc ou F11 rend la fenêtre.
+Full screen. Exit - Esc or F11.	Plein écran. Sortie - Esc ou F11.
+Grid	Grille de coordonnées
+Height	Altitude
+Heights raise the surface and shade the slopes. The check turns the terrain on, a click on the name chooses the heights. Heights of the Earth - Mapzen Terrain Tiles. The vertical scale is in the view properties.	Les altitudes soulèvent la surface et ombrent les pentes. La case active le relief, un clic sur le nom choisit les altitudes. Altitudes de la Terre - Mapzen Terrain Tiles. L’exagération verticale se trouve dans les propriétés de la vue.
+Hide beyond	Masquer au-delà de
+Hide sidebar	Masquer le panneau latéral
+Identify features	Identifier des objets
+Identify. A click on the globe shows the coordinates, the height or depth of the point and the placemarks there.	Identifier des objets. Un clic sur le globe montre les coordonnées, l’altitude ou la profondeur du point et les repères.
+Imagery of the whole Earth, the example basemap. Its terms are set by Esri.	Images de toute la Terre, un fond de carte d’exemple. Ses conditions d’utilisation sont fixées par Esri.
+Imagery or map on the surface. A click on the row chooses the basemap. Esri World Imagery is an example basemap, its terms are set by Esri.	Images ou carte en surface. Un clic sur la ligne choisit le fond de carte. Esri World Imagery est un fond de carte d’exemple, ses conditions d’utilisation sont fixées par Esri.
+Inform++ LLC	Inform++ LLC
+km	km
+Labels	Étiquettes
+Lakes and reservoirs	Plans d’eau
+Language	Langue
+Latitude	Latitude
+Latitude of the point the camera looks at.	Latitude du point visé par la caméra.
+Layers - switched on together	Couches - s’activent ensemble
+Light of the terrain and the air by the position of the sun. The night side of the Earth is dark. The time of the sun is the end of the period of the open time slider, without it the computer clock. Without the check the light falls from the north-west, as on a relief map.	Lumière du relief et de l’air selon la position du soleil. Le côté nuit de la Terre est sombre. L’heure du soleil est la fin de l’intervalle de la barre de temps ouverte, sans elle l’horloge de l’ordinateur. Sans la case la lumière vient du nord-ouest, comme sur une carte du relief.
+loading	chargement
+loading {count}	chargement {count}
+Longitude	Longitude
+Longitude of the point the camera looks at.	Longitude du point visé par la caméra.
+m	m
+Map	Carte
+Measure distance	Mesurer une distance
+Moscow, historical maps	Moscou, cartes historiques
+Motorways yellow, main roads light yellow, the rest thin white. Over a city the roads cover the basemap with a dense mesh.	Autoroutes en jaune, routes principales en jaune clair, les autres en blanc fin. Au-dessus d’une ville, les routes couvrent le fond de carte d’un maillage dense.
+N	N
+Names of airports with a square icon, runways when zooming in. They are labelled from a height below 1000 km.	Noms des aéroports avec une icône carrée, les pistes en zoomant. Étiquetés à partir d’une altitude inférieure à 1000 km.
+Names of countries, regions, cities, towns and villages. Smaller places appear when zooming in.	Noms des pays, régions, villes, bourgs et villages. En zoomant, des lieux de plus en plus petits apparaissent.
+Names of seas, lakes and reservoirs, in light blue italics.	Noms des mers, lacs et réservoirs, en italique bleu clair.
+Narrow rivers as blue lines. They appear from about 600 m per pixel.	Rivières étroites en lignes bleues. Elles apparaissent à partir d’environ 600 m par pixel.
+Nature	Nature
+Nature reserves, national parks and wildlife refuges, a green outline and a name. Names are seen below 3000 km, the outline together with motorways.	Réserves naturelles, parcs nationaux et refuges de faune, un contour vert et un nom. Les noms sont visibles sous 3000 km, le contour avec les autoroutes.
+New placemark, path, polygon or circle in My Places.	Nouveau repère, trajet, polygone ou cercle dans « Mes lieux ».
+No	Non
+No - height tiles only	Non - tuiles d’altitude seulement
+No features at the point	Aucun objet au point
+none	aucun
+not received: {error}	non reçu : {error}
+Only one placemark or folder of this folder is seen on the globe. The check of one row clears the checks of the others.	Sur le globe, un seul repère ou dossier de ce dossier est visible. La case d’une ligne décoche les autres.
+Opacity of the selected placemarks, paths, polygons, pictures and folder contents. To the left - more transparent. The value is kept in My Places and in KML.	Opacité des repères, trajets, polygones, images et contenus de dossiers sélectionnés. Vers la gauche - plus transparent. La valeur est conservée dans « Mes lieux » et dans le KML.
+open	ouvrir
+Open KML or KMZ…	Ouvrir un KML ou un KMZ…
+Open Scene	Ouvrir une scène
+Open Scene…	Ouvrir une scène…
+open the catalogue	ouvrir le catalogue
+open the demo	ouvrir la démo
+open the window	ouvrir la fenêtre
+Orbit around	Tourner autour
+Parallels and meridians with degree labels, the equator, the tropics and the polar circles. The step of the grid changes with the camera height.	Parallèles et méridiens avec étiquettes en degrés, l’équateur, les tropiques et les cercles polaires. Le pas de la grille change avec l’altitude de la caméra.
+Paste	Coller
+Path|add	Trajet
+Peaks	Sommets
+Peaks and volcanoes with their height in metres, a triangle icon. They are labelled from a height below 400 km.	Sommets et volcans avec leur altitude en mètres, une icône triangulaire. Étiquetés à partir d’une altitude inférieure à 400 km.
+Place, coordinates or action. A place name or coordinates, for example Perm or 58.0105, 56.2294, give a flight. A layer or a window, for example «ruler» or «grid», is found by its name and turned on from the hint. Ctrl+K from anywhere in the window puts the cursor into this line.	Lieu, coordonnées ou action. Un nom de lieu ou des coordonnées, par exemple Perm ou 58.0105, 56.2294, donnent un vol. Une couche ou une fenêtre, par exemple « règle » ou « grille », se trouve par son nom et s’active depuis la suggestion. Ctrl+K depuis n’importe quel endroit de la fenêtre place le curseur dans cette ligne.
+Placemark|add	Repère
+Plates with numbers of motorways and main roads. They are labelled from a height below 1000 km.	Panneaux avec les numéros des autoroutes et des routes principales. Étiquetés à partir d’une altitude inférieure à 1000 km.
+Polygon|add	Polygone
+Railways	Voies ferrées
+Record a flight	Enregistrer une visite
+Record a tour. Camera motion by mouse, keys or flights becomes a tour in My Places, a second click stops the recording.	Enregistrer une visite. Le mouvement de la caméra à la souris, au clavier ou par des vols devient une visite dans « Mes lieux », un second clic arrête l’enregistrement.
+Recorded tour	Visite enregistrée
+Remove from the globe	Retirer du globe
+Reserves and national parks	Réserves et parcs nationaux
+Reset	Réinitialiser
+Return the view the folder had when the window opened.	Rendre la vue qu’avait le dossier à l’ouverture de la fenêtre.
+Rivers	Rivières
+Rivers, peaks and protected areas.	Rivières, sommets et espaces protégés.
+Road numbers	Numéros des routes
+Roads	Routes
+Roads, their numbers, railways and airports.	Routes, leurs numéros, voies ferrées et aéroports.
+Ruler. Length, perimeter and area on the ellipsoid, the measurement can be saved to My Places.	Règle. Longueur, périmètre et surface sur l’ellipsoïde, la mesure peut être enregistrée dans « Mes lieux ».
+run	exécuter
+S	S
+Save measurement	Enregistrer la mesure
+Save Scene	Enregistrer la scène
+Save tour	Enregistrer la visite
+Save view. The point of view becomes a placemark in My Places, flying to it returns the height, heading and tilt.	Enregistrer la vue. Le point de visée devient un repère dans « Mes lieux », le vol vers lui rend l’altitude, le cap et l’inclinaison.
+Scene - the camera and the selected folder of My Places with its tour. It is saved to a file and opens on another computer.	Scène - la caméra et le dossier sélectionné de « Mes lieux » avec sa visite. Elle s’enregistre dans un fichier et s’ouvre sur un autre ordinateur.
+Set as base map	Définir comme fond de carte
+Settlements	Localités
+Share view	Partager la vue
+Share View…	Partager la vue…
+Shores of lakes, reservoirs and wide rivers outlined in blue. Reservoirs are cut into pieces in the data, and the outline runs along the cuts too.	Rives des lacs, réservoirs et rivières larges cernées de bleu. Les réservoirs sont découpés en morceaux dans les données, et le contour suit aussi les découpes.
+Show contents as a group of radio buttons	Afficher le contenu comme un groupe de boutons radio
+Show on the globe	Afficher sur le globe
+Show sidebar	Afficher le panneau latéral
+Site	Lieu
+Sky and light	Ciel et lumière
+Snapshot folder view	Prendre la vue actuelle pour le dossier
+Snapshot of the current view	Prendre la vue actuelle
+Snapshot of the view to a PNG file.	Capture de la vue dans un fichier PNG.
+Snapshot view	Prendre la vue actuelle pour le repère
+snow, mines, wind	neige, mines, vent
+Sort A-Z	Trier de A à Z
+start	démarrer
+stop	arrêter
+Take the view of the globe now: the point of view, distance, heading and tilt.	Prendre la vue actuelle du globe : le point de visée, la distance, le cap et l’inclinaison.
+The blue glow of the air around the planet, the sky over the horizon and the haze over the distant surface. Without the check the background of the view is black space, the surface is seen without haze.	La lueur bleue de l’air autour de la planète, le ciel au-dessus de l’horizon et la brume sur la surface lointaine. Sans la case le fond de la vue est l’espace noir, la surface se voit sans brume.
+The check shows a layer on the globe. A row - its description. Layers are turned on together.	La case affiche une couche sur le globe. La ligne - sa description. Les couches s’activent ensemble.
+The OpenFreeMap vector base and the coordinate grid.	Le fond vectoriel OpenFreeMap et la grille de coordonnées.
+The OpenStreetMap map.	La carte OpenStreetMap.
+The placemark is seen only while the eye is closer than this distance, as Region in KML. For a folder - all its placemarks. 0 - always seen.	Le repère n’est visible que tant que l’œil est plus proche que cette distance, comme Region dans KML. Pour un dossier - tous ses repères. 0 - toujours visible.
+The sun and the night side, the atmosphere.	Le soleil et le côté nuit, l’atmosphère.
+The view is copied to the clipboard.	La vue est copiée dans le presse-papiers.
+Tilt	Inclinaison
+Tilt of the camera. 0 - looking straight down, more - towards the horizon.	Inclinaison de la caméra. 0 - regard vertical vers le bas, plus - vers l’horizon.
+Time slider	Barre de temps
+Time slider. While it is open, data outside its period is hidden. The closed slider shows all placemarks.	Barre de temps. Tant qu’elle est ouverte, les données hors de son intervalle sont masquées. La barre fermée montre tous les repères.
+Tour along the path	Visite le long du trajet
+Tour along the selected path	Visite le long du trajet sélectionné
+Tour over the checked places	Visite des lieux cochés
+Tour over the checked places of the folder	Visite des repères cochés du dossier
+Tour: select the My Places folder or a path in it	Visite : sélectionner un dossier de « Mes lieux » ou un trajet dedans
+Transport	Transport
+Type	Type
+Under the point	Sous le point
+Value	Valeur
+Version {v}	Version {v}
+View from {height}	Vue depuis {height}
+View properties	Propriétés de la vue
+View properties: relief scale, language of labels, appearance.	Propriétés de la vue : fond de carte et sources des données, exagération verticale, langue des étiquettes, format des coordonnées, apparence.
+View snapshot	Capture de la vue
+Voyages of Columbus	Voyages de Christophe Colomb
+W	O
+Water names	Noms des plans d’eau
+What's here?	Qu’y a-t-il ici ?
+Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	D’où regarde la caméra quand elle vole vers le dossier. La vue se règle par des nombres ou en prenant la vue actuelle. Sans vue propre, le vol cadre tous les repères du dossier.
+Where the camera looks. 0 - north at the top of the frame.	Où regarde la caméra. 0 - le nord en haut du cadre.
+Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	Sans la case le dossier ne se déplie pas dans la liste, ses repères s’affichent et se masquent par la case du dossier lui-même.
+Yes	Oui
+ s	 s
+Continue	Continuer
+End tour	Terminer la visite
+How many seconds the camera stands at each stop. A new pause acts from a jump by the buttons or from a new start of the tour.	Combien de secondes la caméra reste à chaque arrêt. Une nouvelle pause s’applique à partir d’un saut par les boutons ou d’un nouveau lancement de la visite.
+How much of the tour has passed. The slider rewinds the tour. The camera stands at this point at once, the tour goes on from it.	Quelle part de la visite est écoulée. Le curseur rembobine la visite. La caméra se place aussitôt à ce point, la visite continue à partir de là.
+Next stop	Arrêt suivant
+Pause	Pause
+Previous stop	Arrêt précédent
+Stop {n} of {count}: {name}	Arrêt {n} sur {count} : {name}
+Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	Légendes des arrêts dans le cadre. À un arrêt, le nom et la description du repère s’affichent en grand en bas du cadre, en vol il n’y a pas de légende.
+Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	Visite en boucle. Après le dernier arrêt, la visite reprend au premier. La pause ou la croix l’arrête.

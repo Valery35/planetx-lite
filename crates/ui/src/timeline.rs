@@ -290,6 +290,7 @@ pub enum Icon {
     ToStart,
     ToEnd,
     Loop,
+    Captions,
 }
 
 /// Кнопка со значком.
@@ -299,56 +300,18 @@ pub fn icon_button(ui: &mut egui::Ui, icon: Icon) -> egui::Response {
 
 /// Кнопка со значком, on - нажата, подсвечена.
 pub fn icon_toggle(ui: &mut egui::Ui, icon: Icon, on: bool) -> egui::Response {
-    let side = ui.spacing().interact_size.y;
-    let (rect, response) = ui.allocate_exact_size(egui::vec2(side, side), egui::Sense::click());
-    let visuals = ui.style().interact_selectable(&response, on);
-    let painter = ui.painter();
-    painter.rect(rect, visuals.corner_radius, visuals.weak_bg_fill, visuals.bg_stroke, egui::StrokeKind::Inside);
-    let color = visuals.fg_stroke.color;
-    let c = rect.center();
-    let r = side * 0.25;
-    let triangle = |tip: f32, base: f32| {
-        egui::Shape::convex_polygon(vec![c + egui::vec2(base, -r), c + egui::vec2(base, r), c + egui::vec2(tip, 0.0)], color, egui::Stroke::NONE)
+    // Значки набора модуля (`ui/style.py`), как у панели значков.
+    use crate::theme::Tool;
+    let tool = match icon {
+        Icon::Play => Tool::Play,
+        Icon::Pause => Tool::Pause,
+        Icon::Stop => Tool::Stop,
+        Icon::ToStart => Tool::Prev,
+        Icon::ToEnd => Tool::Next,
+        Icon::Loop => Tool::Loop,
+        Icon::Captions => Tool::Captions,
     };
-    match icon {
-        Icon::Play => {
-            painter.add(triangle(r, -0.8 * r));
-        }
-        Icon::Pause => {
-            for dx in [-0.55 * r, 0.55 * r] {
-                painter.rect_filled(egui::Rect::from_center_size(c + egui::vec2(dx, 0.0), egui::vec2(0.6 * r, 2.0 * r)), 0.0, color);
-            }
-        }
-        Icon::Stop => {
-            painter.rect_filled(egui::Rect::from_center_size(c, egui::vec2(1.8 * r, 1.8 * r)), 0.0, color);
-        }
-        Icon::ToStart => {
-            painter.add(triangle(-0.6 * r, r));
-            painter.rect_filled(egui::Rect::from_center_size(c + egui::vec2(-0.85 * r, 0.0), egui::vec2(0.35 * r, 2.0 * r)), 0.0, color);
-        }
-        Icon::ToEnd => {
-            painter.add(triangle(0.6 * r, -r));
-            painter.rect_filled(egui::Rect::from_center_size(c + egui::vec2(0.85 * r, 0.0), egui::vec2(0.35 * r, 2.0 * r)), 0.0, color);
-        }
-        Icon::Loop => {
-            // Кольцо со стрелкой.
-            let stroke = egui::Stroke::new(1.5, color);
-            let points: Vec<egui::Pos2> = (0..=20)
-                .map(|k| {
-                    let angle = (30.0 + 300.0 * k as f32 / 20.0).to_radians();
-                    c + egui::vec2(angle.cos(), -angle.sin()) * r
-                })
-                .collect();
-            let end = points[0];
-            painter.add(egui::Shape::line(points, stroke));
-            painter.add(egui::Shape::convex_polygon(
-                vec![end + egui::vec2(-0.55 * r, -0.35 * r), end + egui::vec2(0.45 * r, -0.45 * r), end + egui::vec2(0.0, 0.5 * r)],
-                color,
-                egui::Stroke::NONE,
-            ));
-        }
-    }
-    response
+    crate::theme::tool_button(ui, tool, on, false, true, "")
 }
 
 /// Дата для подписи: время суток - если охват шкалы короче двух суток.

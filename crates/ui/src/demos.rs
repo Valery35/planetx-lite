@@ -42,6 +42,7 @@ pub const MENU: [Section; 6] = [
         demos: &[
             Demo { en: "Aral Sea", files: &["aral.planetx"] },
             Demo { en: "Super-overlay, Mountain View", files: &["superoverlay.planetx"] },
+            Demo { en: "Moscow, historical maps", files: &["moscow.planetx"] },
         ],
     },
     Section {

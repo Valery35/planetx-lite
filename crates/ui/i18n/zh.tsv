@@ -196,3 +196,211 @@ Tropic of Capricorn	南回归线
 Turn off	关闭
 Turn on	开启
 View	视图
+ km	 公里
+ m	 米
+{coords}, depth {d} m	{coords}，深度 {d} 米
+{coords}, height {h} m	{coords}，高度 {h} 米
+{name} - {what}	{name} - {what}
+{name} - earlier query	{name} - 先前的查询
+{name} - placemark	{name} - 地标
+{name}. The check turns the layer off, the row stays. The «⋯» menu removes it from the globe.	{name}。复选框关闭图层，行保留。“⋯”菜单将其从地球上移除。
+© 2026 Inform++ LLC. Apache 2.0.	© 2026 Inform++ LLC. Apache 2.0.
+A double click on a row copies the value to the clipboard, a link opens in the browser.	双击某行将值复制到剪贴板，链接在浏览器中打开。
+A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	浅色线条带深色虚线。缩小时与高速公路一起消失。站线和专用线不绘制。
+Add	添加
+Add data	添加数据
+Add placemark here	在此添加地标
+Address	地址
+Airports	机场
+All	全部
+All maps and layers of the catalog.	目录中的所有地图和图层。
+Allow the folder to expand	允许展开文件夹
+Atmosphere	大气
+Base map	底图
+Base map on the globe	地球上的底图
+Base map on the globe - one	地球上的底图 - 只有一个
+Base maps	底图
+Basemaps of the globe - imagery and maps. There is one base on the globe, under the layers.	地球的底图 - 影像和地图。地球上只有一个底图，位于地图和图层之下。
+Borders	边界
+Borders and names	边界和名称
+Borders of countries and regions and labels on the globe.	国家和地区的边界以及地球上的标注。
+Borders of countries bright yellow, borders of regions thin white. Sea borders are not drawn.	国界为亮黄色，地区边界为细白色。海上边界不绘制。
+Catalog of layers - vector base, coordinate grid, atmosphere and sun. The catalog opens in its own window, it can stay open next to the globe.	图层目录 - 矢量底图、坐标网格、大气和太阳。目录在单独的窗口中打开，可以在地球旁边保持打开。
+Clear My Places…	清空“我的地点”…
+close	关闭
+Continue drawing	继续绘制
+Coordinates	坐标
+Copied: {number}	已复制：{number}
+Copy	复制
+Copy of the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider.	将视图复制到剪贴板 - 带标注的地球，不含图标栏、导航控件和时间条。图片可以直接粘贴到邮件、聊天或文档中。
+Copy the coordinates to the clipboard.	将坐标复制到剪贴板。
+Copy the view to the clipboard	将视图复制到剪贴板
+Cut	剪切
+Data sources…	数据来源…
+Decimal degrees	十进制度
+Degrees, minutes, seconds	度、分、秒
+Delete "{name}" from My Places?	从“我的地点”中删除“{name}”？
+Delete all placemarks and folders of My Places, placemarks in all {count}? Deletion cannot be undone.	删除“我的地点”中的所有地标和文件夹，共 {count} 个地标？删除后无法撤销。
+Delete folder	删除文件夹
+Delete folder “{name}” with all its contents?	删除文件夹“{name}”及其全部内容？
+Delete placemark	删除地标
+Delete vertex	删除顶点
+Demo: prepared scenes with placemarks and tours. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour.	演示：带有地标和游览的预制场景。地标作为新文件夹放入“我的地点”，列表下方的 ▶ 按钮播放游览。
+Depth	深度
+Description of the folder. It is kept in My Places and in KML.	文件夹的说明。保存在“我的地点”和 KML 中。
+Distance	距离
+Distance from the camera to the point of view. More - a wider view.	相机到视点的距离。越大 - 视野越广。
+do not hide	不隐藏
+E	E
+Esri World Imagery - example	Esri World Imagery - 示例
+Feature	对象
+Features	对象
+Find what is typed in the line. A place - a flight to it, several found places - a list below.	查找输入行中的内容。一个地点 - 飞往该处，找到多个地点 - 下方列表。
+Finish drawing	完成绘制
+Fly here	飞到这里
+Folder properties	文件夹属性
+Folder view	文件夹视图
+Folder|add	文件夹
+Format	格式
+Full screen (F11) - the globe view for a show. Esc or F11 returns the window.	全屏 (F11) - 用于展示的地球视图。面板隐藏，导航控件、时间条和游览保留。Esc 或 F11 恢复窗口。
+Full screen. Exit - Esc or F11.	全屏。退出 - Esc 或 F11。
+Grid	坐标网格
+Height	高度
+Heights raise the surface and shade the slopes. The check turns the terrain on, a click on the name chooses the heights. Heights of the Earth - Mapzen Terrain Tiles. The vertical scale is in the view properties.	高程抬升地表并为坡面加阴影。复选框开启地形，单击名称选择高程。地球高程 - Mapzen Terrain Tiles。垂直夸张在视图属性中。
+Hide beyond	超出此距离隐藏
+Hide sidebar	隐藏侧栏
+Identify features	识别对象
+Identify. A click on the globe shows the coordinates, the height or depth of the point and the placemarks there.	识别对象。单击地球显示该点的坐标、高度或深度以及地标。
+Imagery of the whole Earth, the example basemap. Its terms are set by Esri.	整个地球的影像，示例底图。其使用条件由 Esri 规定。
+Imagery or map on the surface. A click on the row chooses the basemap. Esri World Imagery is an example basemap, its terms are set by Esri.	地表的影像或地图。单击该行选择底图。Esri World Imagery 是示例底图，其使用条件由 Esri 规定。
+Inform++ LLC	Inform++ LLC
+Labels	标注
+Lakes and reservoirs	水体
+Language	语言
+Latitude	纬度
+Latitude of the point the camera looks at.	相机所看点的纬度。
+Layers - switched on together	图层 - 可同时开启
+Light of the terrain and the air by the position of the sun. The night side of the Earth is dark. The time of the sun is the end of the period of the open time slider, without it the computer clock. Without the check the light falls from the north-west, as on a relief map.	根据太阳位置的地形和空气光照。地球的夜半球是暗的。太阳时间为打开的时间条区间的终点，没有时间条时为计算机时钟。不勾选时光线从西北方照来，如同地势图。
+loading	正在加载
+loading {count}	正在加载 {count}
+Longitude	经度
+Longitude of the point the camera looks at.	相机所看点的经度。
+Map	地图
+Measure distance	测量距离
+Moscow, historical maps	莫斯科，历史地图
+Motorways yellow, main roads light yellow, the rest thin white. Over a city the roads cover the basemap with a dense mesh.	高速公路为黄色，主要道路为浅黄色，其余为细白色。在城市上空，道路以密集的网覆盖底图。
+N	N
+Names of airports with a square icon, runways when zooming in. They are labelled from a height below 1000 km.	带方形图标的机场名称，放大时显示跑道。从低于 1000 公里的高度开始标注。
+Names of countries, regions, cities, towns and villages. Smaller places appear when zooming in.	国家、地区、城市、城镇和村庄的名称。放大时出现越来越小的地点。
+Names of seas, lakes and reservoirs, in light blue italics.	海洋、湖泊和水库的名称，浅蓝色斜体。
+Narrow rivers as blue lines. They appear from about 600 m per pixel.	狭窄河流显示为蓝线。约从每像素 600 米开始出现。
+Nature	自然
+Nature reserves, national parks and wildlife refuges, a green outline and a name. Names are seen below 3000 km, the outline together with motorways.	自然保护区、国家公园和野生动物保护区，绿色轮廓和名称。名称在 3000 公里以下可见，轮廓与高速公路一起出现。
+New placemark, path, polygon or circle in My Places.	在“我的地点”中新建地标、路径、多边形或圆。
+No	否
+No - height tiles only	否 - 仅高程瓦片
+No features at the point	该点没有对象
+none	无
+not received: {error}	未收到：{error}
+Only one placemark or folder of this folder is seen on the globe. The check of one row clears the checks of the others.	地球上只显示此文件夹中的一个地标或文件夹。勾选一行会取消其他行的勾选。
+Opacity of the selected placemarks, paths, polygons, pictures and folder contents. To the left - more transparent. The value is kept in My Places and in KML.	所选地标、路径、多边形、图片和文件夹内容的不透明度。向左 - 更透明。该值保存在“我的地点”和 KML 中。
+open	打开
+Open KML or KMZ…	打开 KML 或 KMZ…
+Open Scene	打开场景
+Open Scene…	打开场景…
+open the catalogue	打开目录
+open the demo	打开演示
+open the window	打开窗口
+Orbit around	环绕飞行
+Parallels and meridians with degree labels, the equator, the tropics and the polar circles. The step of the grid changes with the camera height.	带度数标注的纬线和经线、赤道、回归线和极圈。网格间距随相机高度变化。
+Paste	粘贴
+Path|add	路径
+Peaks	山峰
+Peaks and volcanoes with their height in metres, a triangle icon. They are labelled from a height below 400 km.	山峰和火山，以米为单位标注高度，三角形图标。从低于 400 公里的高度开始标注。
+Place, coordinates or action. A place name or coordinates, for example Perm or 58.0105, 56.2294, give a flight. A layer or a window, for example «ruler» or «grid», is found by its name and turned on from the hint. Ctrl+K from anywhere in the window puts the cursor into this line.	地点、坐标或操作。地名或坐标，例如 Perm 或 58.0105, 56.2294，将飞往该处。图层或窗口，例如“标尺”或“网格”，按名称查找并从提示中开启。在窗口任意位置按 Ctrl+K 可将光标置于此行。
+Placemark|add	地标
+Plates with numbers of motorways and main roads. They are labelled from a height below 1000 km.	高速公路和主要道路的编号牌。从低于 1000 公里的高度开始标注。
+Polygon|add	多边形
+Railways	铁路
+Record a flight	录制游览
+Record a tour. Camera motion by mouse, keys or flights becomes a tour in My Places, a second click stops the recording.	录制游览。用鼠标、按键或飞行移动相机的过程会成为“我的地点”中的游览，再次单击停止录制。
+Recorded tour	录制的游览
+Remove from the globe	从地球上移除
+Reserves and national parks	保护区和国家公园
+Reset	重置
+Return the view the folder had when the window opened.	恢复打开窗口时文件夹的视图。
+Rivers	河流
+Rivers, peaks and protected areas.	河流、山峰和保护区。
+Road numbers	道路编号
+Roads	道路
+Roads, their numbers, railways and airports.	道路、道路编号、铁路和机场。
+Ruler. Length, perimeter and area on the ellipsoid, the measurement can be saved to My Places.	标尺。椭球面上的长度、周长和面积，测量结果可保存到“我的地点”。
+run	执行
+S	S
+Save measurement	保存测量
+Save Scene	保存场景
+Save tour	保存游览
+Save view. The point of view becomes a placemark in My Places, flying to it returns the height, heading and tilt.	保存视图。视点成为“我的地点”中的地标，飞往该地标会恢复高度、方向和倾斜。
+Scene - the camera and the selected folder of My Places with its tour. It is saved to a file and opens on another computer.	场景 - 相机以及“我的地点”中所选文件夹及其游览。保存为文件，可在另一台计算机上打开。
+Set as base map	设为底图
+Settlements	居民点
+Share view	分享视图
+Share View…	分享视图…
+Shores of lakes, reservoirs and wide rivers outlined in blue. Reservoirs are cut into pieces in the data, and the outline runs along the cuts too.	湖泊、水库和宽阔河流的岸线以蓝色勾勒。数据中的水库被切成若干块，轮廓也沿切口延伸。
+Show contents as a group of radio buttons	将内容显示为一组单选按钮
+Show on the globe	在地球上显示
+Show sidebar	显示侧栏
+Site	位置
+Sky and light	天空和光照
+Snapshot folder view	为文件夹采用当前视图
+Snapshot of the current view	采用当前视图
+Snapshot of the view to a PNG file.	将视图快照保存为 PNG 文件。
+Snapshot view	为地标采用当前视图
+snow, mines, wind	雪、矿山、风
+Sort A-Z	按 A-Z 排序
+start	开始
+stop	停止
+Take the view of the globe now: the point of view, distance, heading and tilt.	采用地球的当前视图：视点、距离、方向和倾斜。
+The blue glow of the air around the planet, the sky over the horizon and the haze over the distant surface. Without the check the background of the view is black space, the surface is seen without haze.	地球周围空气的蓝色辉光、地平线上方的天空以及远处地表上的薄雾。不勾选时视图背景为黑色太空，地表无薄雾。
+The check shows a layer on the globe. A row - its description. Layers are turned on together.	复选框在地球上显示图层。行 - 图层说明。图层可同时开启。
+The OpenFreeMap vector base and the coordinate grid.	OpenFreeMap 矢量底图和坐标网格。
+The OpenStreetMap map.	OpenStreetMap 地图。
+The placemark is seen only while the eye is closer than this distance, as Region in KML. For a folder - all its placemarks. 0 - always seen.	仅当视点比此距离更近时地标才可见，如同 KML 中的 Region。对于文件夹 - 其所有地标。0 - 始终可见。
+The sun and the night side, the atmosphere.	太阳和夜半球，大气。
+The view is copied to the clipboard.	视图已复制到剪贴板。
+Tilt	倾斜
+Tilt of the camera. 0 - looking straight down, more - towards the horizon.	相机的倾斜。0 - 垂直向下看，越大 - 越接近地平线。
+Time slider	时间条
+Time slider. While it is open, data outside its period is hidden. The closed slider shows all placemarks.	时间条。打开时，其区间以外的数据被隐藏。关闭的时间条显示所有地标。
+Tour along the path	沿路径游览
+Tour along the selected path	沿所选路径游览
+Tour over the checked places	游览已勾选的地点
+Tour over the checked places of the folder	游览文件夹中已勾选的地标
+Tour: select the My Places folder or a path in it	游览：请选择“我的地点”中的文件夹或其中的路径
+Transport	交通
+Type	类型
+Under the point	点下方
+Value	值
+View from {height}	从 {height} 高度俯瞰
+View properties	视图属性
+View properties: relief scale, language of labels, appearance.	视图属性：底图和数据来源、垂直夸张、标注语言、坐标格式、外观。
+View snapshot	视图快照
+Voyages of Columbus	哥伦布航海
+W	W
+Water names	水体名称
+What's here?	这里有什么？
+Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	相机飞往文件夹时从何处观看。视图通过数字或采用当前视图来设置。没有自己的视图时，飞行会将文件夹中的所有地标纳入画面。
+Where the camera looks. 0 - north at the top of the frame.	相机的朝向。0 - 北方在画面上方。
+Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	不勾选时文件夹在列表中不展开，其地标由文件夹本身的复选框显示和隐藏。
+Yes	是
+ s	 秒
+Continue	继续
+End tour	结束游览
+How many seconds the camera stands at each stop. A new pause acts from a jump by the buttons or from a new start of the tour.	相机在每个停靠点停留的秒数。新的停留时间从按钮跳转或重新开始游览时生效。
+How much of the tour has passed. The slider rewinds the tour. The camera stands at this point at once, the tour goes on from it.	游览已进行的部分。滑块可快进或倒退游览。相机立即移到该点，游览从该点继续。
+Next stop	下一个停靠点
+Pause	暂停
+Previous stop	上一个停靠点
+Stop {n} of {count}: {name}	停靠点 {n}/{count}：{name}
+Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	画面上的停靠点说明。在停靠点，地标的名称和说明以大字显示在画面底部，飞行途中没有说明。
+Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	循环游览。最后一个停靠点之后，游览从第一个重新开始。暂停或叉号可停止游览。

@@ -192,3 +192,215 @@ Tropic of Capricorn	Garis Balik Selatan
 Turn off	Matikan
 Turn on	Nyalakan
 View	Tampilan
+ km	 km
+ m	 m
+{coords}, depth {d} m	{coords}, kedalaman {d} m
+{coords}, height {h} m	{coords}, ketinggian {h} m
+{name} - {what}	{name} - {what}
+{name} - earlier query	{name} - pencarian sebelumnya
+{name} - placemark	{name} - penanda
+{name}, {ele} m	{name}, {ele} m
+{name}. The check turns the layer off, the row stays. The «⋯» menu removes it from the globe.	{name}. Kotak centang mematikan lapisan, barisnya tetap ada. Menu "⋯" menghapusnya dari globe.
+© 2026 Inform++ LLC. Apache 2.0.	© 2026 Inform++ LLC. Apache 2.0.
+A double click on a row copies the value to the clipboard, a link opens in the browser.	Klik ganda pada baris menyalin nilai ke papan klip, tautan dibuka di peramban.
+A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	Garis terang dengan putus-putus gelap. Hilang bersama jalan tol saat diperkecil. Jalur stasiun dan jalur akses tidak digambar.
+Add	Tambah
+Add data	Tambah data
+Add placemark here	Tambah penanda di sini
+Address	Alamat
+Airports	Bandara
+All	Semua
+All maps and layers of the catalog.	Semua peta dan lapisan katalog.
+Allow the folder to expand	Izinkan folder dibuka
+Atmosphere	Atmosfer
+Base map	Peta dasar
+Base map on the globe	Peta dasar di globe
+Base map on the globe - one	Peta dasar di globe - hanya satu
+Base maps	Peta dasar
+Basemaps of the globe - imagery and maps. There is one base on the globe, under the layers.	Peta dasar globe - citra dan peta. Di globe ada satu peta dasar, di bawah peta dan lapisan.
+Borders	Batas
+Borders and names	Batas dan nama
+Borders of countries and regions and labels on the globe.	Batas negara dan wilayah serta label di globe.
+Borders of countries bright yellow, borders of regions thin white. Sea borders are not drawn.	Batas negara kuning terang, batas wilayah putih tipis. Batas laut tidak digambar.
+Catalog of layers - vector base, coordinate grid, atmosphere and sun. The catalog opens in its own window, it can stay open next to the globe.	Katalog lapisan - dasar vektor, grid koordinat, atmosfer dan matahari. Katalog dibuka di jendela tersendiri dan dapat tetap terbuka di samping globe.
+Clear My Places…	Kosongkan "Tempat Saya"…
+close	tutup
+Continue drawing	Lanjutkan menggambar
+Coordinates	Koordinat
+Copied: {number}	Disalin: {number}
+Copy	Salin
+Copy of the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider.	Salinan tampilan ke papan klip - globe dengan label, tanpa bilah ikon, kontrol navigasi, dan bilah waktu. Gambar dapat langsung ditempel ke surel, obrolan, atau dokumen.
+Copy the coordinates to the clipboard.	Salin koordinat ke papan klip.
+Copy the view to the clipboard	Salin tampilan ke papan klip
+Cut	Potong
+Data sources…	Sumber data…
+Decimal degrees	Derajat desimal
+Degrees, minutes, seconds	Derajat, menit, detik
+Delete "{name}" from My Places?	Hapus "{name}" dari "Tempat Saya"?
+Delete all placemarks and folders of My Places, placemarks in all {count}? Deletion cannot be undone.	Hapus semua penanda dan folder "Tempat Saya", seluruhnya {count} penanda? Penghapusan tidak dapat dibatalkan.
+Delete folder	Hapus folder
+Delete folder “{name}” with all its contents?	Hapus folder "{name}" beserta seluruh isinya?
+Delete placemark	Hapus penanda
+Delete vertex	Hapus titik sudut
+Demo: prepared scenes with placemarks and tours. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour.	Demo: adegan siap pakai dengan penanda dan tur. Penanda masuk sebagai folder baru di "Tempat Saya", tombol ▶ di bawah daftar memutar tur.
+Depth	Kedalaman
+Description of the folder. It is kept in My Places and in KML.	Deskripsi folder. Disimpan di "Tempat Saya" dan di KML.
+Distance	Jarak
+Distance from the camera to the point of view. More - a wider view.	Jarak dari kamera ke titik pandang. Lebih besar - tampilan lebih luas.
+do not hide	jangan sembunyikan
+E	BT
+Esri World Imagery	Esri World Imagery
+Esri World Imagery - example	Esri World Imagery - contoh
+Feature	Objek
+Features	Objek
+Find what is typed in the line. A place - a flight to it, several found places - a list below.	Cari teks yang diketik di baris. Satu tempat - terbang ke sana, beberapa tempat ditemukan - daftar di bawah.
+Finish drawing	Selesai menggambar
+Fly here	Terbang ke sini
+Folder properties	Properti folder
+Folder view	Tampilan folder
+Folder|add	Folder
+Format	Format
+Full screen (F11) - the globe view for a show. Esc or F11 returns the window.	Layar penuh (F11) - tampilan globe untuk presentasi. Panel disembunyikan, kontrol navigasi, bilah waktu, dan tur tetap ada. Esc atau F11 mengembalikan jendela.
+Full screen. Exit - Esc or F11.	Layar penuh. Keluar - Esc atau F11.
+Grid	Grid koordinat
+Height	Ketinggian
+Heights raise the surface and shade the slopes. The check turns the terrain on, a click on the name chooses the heights. Heights of the Earth - Mapzen Terrain Tiles. The vertical scale is in the view properties.	Ketinggian mengangkat permukaan dan memberi bayangan pada lereng. Kotak centang menyalakan relief, klik pada nama memilih ketinggian. Ketinggian Bumi - Mapzen Terrain Tiles. Pembesaran vertikal ada di properti tampilan.
+Hide beyond	Sembunyikan lebih jauh dari
+Hide sidebar	Sembunyikan panel samping
+Identify features	Identifikasi objek
+Identify. A click on the globe shows the coordinates, the height or depth of the point and the placemarks there.	Identifikasi objek. Klik pada globe menampilkan koordinat, ketinggian atau kedalaman titik, dan penanda.
+Imagery of the whole Earth, the example basemap. Its terms are set by Esri.	Citra seluruh Bumi, contoh peta dasar. Syarat penggunaannya ditetapkan oleh Esri.
+Imagery or map on the surface. A click on the row chooses the basemap. Esri World Imagery is an example basemap, its terms are set by Esri.	Citra atau peta di permukaan. Klik pada baris memilih peta dasar. Esri World Imagery adalah contoh peta dasar, syarat penggunaannya ditetapkan oleh Esri.
+Inform++ LLC	Inform++ LLC
+km	km
+Labels	Label
+Lakes and reservoirs	Perairan
+Language	Bahasa
+Latitude	Lintang
+Latitude of the point the camera looks at.	Lintang titik yang dilihat kamera.
+Layers - switched on together	Lapisan - dinyalakan bersama
+Light of the terrain and the air by the position of the sun. The night side of the Earth is dark. The time of the sun is the end of the period of the open time slider, without it the computer clock. Without the check the light falls from the north-west, as on a relief map.	Cahaya relief dan udara menurut posisi matahari. Sisi malam Bumi gelap. Waktu matahari adalah akhir rentang bilah waktu yang terbuka, tanpa bilah itu jam komputer. Tanpa centang, cahaya datang dari barat laut, seperti pada peta relief.
+loading	memuat
+loading {count}	memuat {count}
+Longitude	Bujur
+Longitude of the point the camera looks at.	Bujur titik yang dilihat kamera.
+m	m
+Map	Peta
+Measure distance	Ukur jarak
+Moscow, historical maps	Moskow, peta bersejarah
+Motorways yellow, main roads light yellow, the rest thin white. Over a city the roads cover the basemap with a dense mesh.	Jalan tol kuning, jalan utama kuning muda, sisanya putih tipis. Di atas kota, jalan menutupi peta dasar dengan jaring yang rapat.
+N	LU
+Names of airports with a square icon, runways when zooming in. They are labelled from a height below 1000 km.	Nama bandara dengan ikon persegi, saat diperbesar landasan pacu. Diberi label dari ketinggian di bawah 1000 km.
+Names of countries, regions, cities, towns and villages. Smaller places appear when zooming in.	Nama negara, wilayah, kota, kota kecil, dan desa. Saat diperbesar muncul tempat yang makin kecil.
+Names of seas, lakes and reservoirs, in light blue italics.	Nama laut, danau, dan waduk, dengan huruf miring biru muda.
+Narrow rivers as blue lines. They appear from about 600 m per pixel.	Sungai sempit sebagai garis biru. Muncul mulai sekitar 600 m per piksel.
+Nature	Alam
+Nature reserves, national parks and wildlife refuges, a green outline and a name. Names are seen below 3000 km, the outline together with motorways.	Cagar alam, taman nasional, dan suaka margasatwa, garis tepi hijau dan nama. Nama terlihat di bawah 3000 km, garis tepi bersama jalan tol.
+New placemark, path, polygon or circle in My Places.	Penanda, jalur, poligon, atau lingkaran baru di "Tempat Saya".
+No	Tidak
+No - height tiles only	Tidak - hanya ubin ketinggian
+No features at the point	Tidak ada objek di titik ini
+none	tidak ada
+not received: {error}	tidak diterima: {error}
+Only one placemark or folder of this folder is seen on the globe. The check of one row clears the checks of the others.	Di globe hanya terlihat satu penanda atau folder dari folder ini. Centang pada satu baris menghapus centang baris lainnya.
+Opacity of the selected placemarks, paths, polygons, pictures and folder contents. To the left - more transparent. The value is kept in My Places and in KML.	Opasitas penanda, jalur, poligon, gambar, dan isi folder yang dipilih. Ke kiri - lebih transparan. Nilainya disimpan di "Tempat Saya" dan di KML.
+open	buka
+Open KML or KMZ…	Buka KML atau KMZ…
+Open Scene	Buka adegan
+Open Scene…	Buka adegan…
+open the catalogue	buka katalog
+open the demo	buka demo
+open the window	buka jendela
+Orbit around	Terbang mengitari
+Parallels and meridians with degree labels, the equator, the tropics and the polar circles. The step of the grid changes with the camera height.	Paralel dan meridian dengan label derajat, khatulistiwa, garis balik, dan lingkar kutub. Jarak grid berubah sesuai ketinggian kamera.
+Paste	Tempel
+Path|add	Jalur
+Peaks	Puncak
+Peaks and volcanoes with their height in metres, a triangle icon. They are labelled from a height below 400 km.	Puncak dan gunung api dengan ketinggiannya dalam meter, ikon segitiga. Diberi label dari ketinggian di bawah 400 km.
+Place, coordinates or action. A place name or coordinates, for example Perm or 58.0105, 56.2294, give a flight. A layer or a window, for example «ruler» or «grid», is found by its name and turned on from the hint. Ctrl+K from anywhere in the window puts the cursor into this line.	Tempat, koordinat, atau tindakan. Nama tempat atau koordinat, misalnya Perm atau 58.0105, 56.2294, memberi penerbangan. Lapisan atau jendela, misalnya "penggaris" atau "grid", ditemukan menurut namanya dan dinyalakan dari petunjuk. Ctrl+K dari mana saja di jendela menaruh kursor di baris ini.
+Placemark|add	Penanda
+Plates with numbers of motorways and main roads. They are labelled from a height below 1000 km.	Papan dengan nomor jalan tol dan jalan utama. Diberi label dari ketinggian di bawah 1000 km.
+Polygon|add	Poligon
+Railways	Jalur kereta api
+Record a flight	Rekam tur
+Record a tour. Camera motion by mouse, keys or flights becomes a tour in My Places, a second click stops the recording.	Rekam tur. Gerakan kamera dengan tetikus, tombol, atau penerbangan menjadi tur di "Tempat Saya", klik kedua menghentikan perekaman.
+Recorded tour	Tur terekam
+Remove from the globe	Hapus dari globe
+Reserves and national parks	Cagar alam dan taman nasional
+Reset	Atur ulang
+Return the view the folder had when the window opened.	Kembalikan tampilan yang dimiliki folder saat jendela dibuka.
+Rivers	Sungai
+Rivers, peaks and protected areas.	Sungai, puncak, dan kawasan lindung.
+Road numbers	Nomor jalan
+Roads	Jalan
+Roads, their numbers, railways and airports.	Jalan, nomornya, jalur kereta api, dan bandara.
+Ruler. Length, perimeter and area on the ellipsoid, the measurement can be saved to My Places.	Penggaris. Panjang, keliling, dan luas pada elipsoid, pengukuran dapat disimpan ke "Tempat Saya".
+run	jalankan
+S	LS
+Save measurement	Simpan pengukuran
+Save Scene	Simpan adegan
+Save tour	Simpan tur
+Save view. The point of view becomes a placemark in My Places, flying to it returns the height, heading and tilt.	Simpan tampilan. Titik pandang menjadi penanda di "Tempat Saya", terbang ke sana mengembalikan ketinggian, arah, dan kemiringan.
+Scene - the camera and the selected folder of My Places with its tour. It is saved to a file and opens on another computer.	Adegan - kamera dan folder "Tempat Saya" yang dipilih beserta turnya. Disimpan ke berkas dan dibuka di komputer lain.
+Set as base map	Jadikan peta dasar
+Settlements	Permukiman
+Share view	Bagikan tampilan
+Share View…	Bagikan tampilan…
+Shores of lakes, reservoirs and wide rivers outlined in blue. Reservoirs are cut into pieces in the data, and the outline runs along the cuts too.	Tepi danau, waduk, dan sungai lebar diberi garis biru. Waduk dalam data dipotong menjadi beberapa bagian, dan garis tepi juga melewati potongan itu.
+Show contents as a group of radio buttons	Tampilkan isi sebagai grup tombol pilihan
+Show on the globe	Tampilkan di globe
+Show sidebar	Tampilkan panel samping
+Site	Lokasi
+Sky and light	Langit dan cahaya
+Snapshot folder view	Ambil tampilan saat ini untuk folder
+Snapshot of the current view	Ambil tampilan saat ini
+Snapshot of the view to a PNG file.	Cuplikan tampilan ke berkas PNG.
+Snapshot view	Ambil tampilan saat ini untuk penanda
+snow, mines, wind	salju, tambang, angin
+Sort A-Z	Urutkan A-Z
+start	mulai
+stop	hentikan
+Take the view of the globe now: the point of view, distance, heading and tilt.	Ambil tampilan globe saat ini: titik pandang, jarak, arah, dan kemiringan.
+The blue glow of the air around the planet, the sky over the horizon and the haze over the distant surface. Without the check the background of the view is black space, the surface is seen without haze.	Cahaya biru udara di sekitar planet, langit di atas cakrawala, dan kabut di atas permukaan yang jauh. Tanpa centang, latar tampilan adalah antariksa hitam, permukaan terlihat tanpa kabut.
+The check shows a layer on the globe. A row - its description. Layers are turned on together.	Kotak centang menampilkan lapisan di globe. Baris - deskripsinya. Lapisan dinyalakan bersama.
+The OpenFreeMap vector base and the coordinate grid.	Dasar vektor OpenFreeMap dan grid koordinat.
+The OpenStreetMap map.	Peta OpenStreetMap.
+The placemark is seen only while the eye is closer than this distance, as Region in KML. For a folder - all its placemarks. 0 - always seen.	Penanda hanya terlihat selama mata lebih dekat dari jarak ini, seperti Region di KML. Untuk folder - semua penandanya. 0 - selalu terlihat.
+The sun and the night side, the atmosphere.	Matahari dan sisi malam, atmosfer.
+The view is copied to the clipboard.	Tampilan disalin ke papan klip.
+Tilt	Kemiringan
+Tilt of the camera. 0 - looking straight down, more - towards the horizon.	Kemiringan kamera. 0 - pandangan tegak lurus ke bawah, lebih besar - ke arah cakrawala.
+Time slider	Bilah waktu
+Time slider. While it is open, data outside its period is hidden. The closed slider shows all placemarks.	Bilah waktu. Selama terbuka, data di luar rentangnya disembunyikan. Bilah yang tertutup menampilkan semua penanda.
+Tour along the path	Tur di sepanjang jalur
+Tour along the selected path	Tur di sepanjang jalur yang dipilih
+Tour over the checked places	Tur melalui tempat yang dicentang
+Tour over the checked places of the folder	Tur melalui penanda yang dicentang di folder
+Tour: select the My Places folder or a path in it	Tur: pilih folder "Tempat Saya" atau jalur di dalamnya
+Transport	Transportasi
+Type	Jenis
+Under the point	Di bawah titik
+Value	Nilai
+View from {height}	Pandangan dari ketinggian {height}
+View properties	Properti tampilan
+View properties: relief scale, language of labels, appearance.	Properti tampilan: peta dasar dan sumber data, pembesaran vertikal, bahasa label, format koordinat, penampilan.
+View snapshot	Cuplikan tampilan
+Voyages of Columbus	Pelayaran Columbus
+W	BB
+Water names	Nama perairan
+What's here?	Apa yang ada di sini?
+Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	Dari mana kamera melihat saat terbang ke folder. Tampilan diatur dengan angka atau dengan mengambil tampilan saat ini. Tanpa tampilan sendiri, penerbangan membingkai semua penanda folder.
+Where the camera looks. 0 - north at the top of the frame.	Ke mana kamera melihat. 0 - utara di atas bingkai.
+Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	Tanpa centang, folder tidak dibuka di daftar, penandanya ditampilkan dan disembunyikan oleh centang folder itu sendiri.
+Yes	Ya
+ s	 dtk
+Continue	Lanjutkan
+End tour	Akhiri tur
+How many seconds the camera stands at each stop. A new pause acts from a jump by the buttons or from a new start of the tour.	Berapa detik kamera berhenti di setiap perhentian. Jeda baru berlaku sejak lompatan dengan tombol atau sejak tur dimulai ulang.
+How much of the tour has passed. The slider rewinds the tour. The camera stands at this point at once, the tour goes on from it.	Seberapa jauh tur telah berjalan. Penggeser memutar tur maju atau mundur. Kamera langsung berada di titik ini, tur berlanjut dari sana.
+Next stop	Perhentian berikutnya
+Pause	Jeda
+Previous stop	Perhentian sebelumnya
+Stop {n} of {count}: {name}	Perhentian {n} dari {count}: {name}
+Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	Keterangan perhentian di bingkai. Di perhentian, nama dan deskripsi penanda tampil besar di bagian bawah bingkai, saat terbang tidak ada keterangan.
+Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	Tur berulang. Setelah perhentian terakhir, tur dimulai dari yang pertama. Jeda atau tanda silang menghentikannya.

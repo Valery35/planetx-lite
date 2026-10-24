@@ -50,6 +50,10 @@ pub const COLOR_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba8Unorm;
 /// Формат снимков тайлов - sRGB: выборка и фильтрация идут в линейном
 /// цвете.
 pub const TEXTURE_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba8UnormSrgb;
+/// Формат наложения линий: значения экрана без перевода sRGB, альфа
+/// умножена на цвет. Смешение с подложкой - как у картинки наложения
+/// модуля поверх снимка.
+pub const OVERLAY_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba8Unorm;
 pub const DEPTH_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 /// Фон - космос.
 pub const SPACE: wgpu::Color = wgpu::Color::BLACK;
@@ -99,6 +103,8 @@ struct DrawUniform {
     hole: [f32; 4],
     color: [f32; 4],
     window: [f32; 4],
+    /// Окно наложения линий: u0, v0, сторона, признак (1 - есть).
+    over: [f32; 4],
 }
 
 /// Окно всего снимка.
@@ -211,6 +217,8 @@ struct Item {
     kind: Kind,
     mesh: MeshId,
     texture: Option<TileKey>,
+    /// Наложение линий векторной основы: ключ тайла с картинкой.
+    overlay: Option<TileKey>,
     /// Снимок шапки: 0 - северной, 1 - южной.
     cap: Option<usize>,
     uniform: DrawUniform,
@@ -268,6 +276,10 @@ pub struct Globe {
     rays: wgpu::Buffer,
     rays_bind: wgpu::BindGroup,
     blank: wgpu::BindGroup,
+    /// Пустое прозрачное наложение.
+    clear: wgpu::BindGroup,
+    /// Наложения линий векторной основы по тайлам, overlay.py модуля.
+    overlays: HashMap<TileKey, GpuTexture>,
     meshes: HashMap<MeshId, GpuMesh>,
     textures: HashMap<TileKey, GpuTexture>,
     /// Тайлы, которых нет у источника.
@@ -487,7 +499,7 @@ impl Globe {
         // в группе 2 у обоих.
         let tile_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("tile"),
-            bind_group_layouts: &[Some(&draw_layout), Some(&texture_layout), Some(&air_layout)],
+            bind_group_layouts: &[Some(&draw_layout), Some(&texture_layout), Some(&air_layout), Some(&texture_layout)],
             immediate_size: 0,
         });
         let hole_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -615,6 +627,7 @@ impl Globe {
             entries: &[wgpu::BindGroupEntry { binding: 0, resource: rays.as_entire_binding() }],
         });
         let blank = Self::texture_bind(device, queue, &texture_layout, &sampler, 1, 1, &[255, 255, 255, 255]);
+        let clear = Self::texture_bind_as(device, queue, &texture_layout, &sampler, 1, 1, &[0, 0, 0, 0], OVERLAY_FORMAT);
         let query_set = device.create_query_set(&wgpu::QuerySetDescriptor {
             label: Some("holes"),
             ty: wgpu::QueryType::Occlusion,
@@ -657,6 +670,8 @@ impl Globe {
             rays,
             rays_bind,
             blank,
+            clear,
+            overlays: HashMap::new(),
             meshes: HashMap::new(),
             textures: HashMap::new(),
             missing: HashSet::new(),
@@ -711,6 +726,21 @@ impl Globe {
         height: u32,
         rgba: &[u8],
     ) -> wgpu::BindGroup {
+        Self::texture_bind_as(device, queue, layout, sampler, width, height, rgba, TEXTURE_FORMAT)
+    }
+
+    /// Текстура RGBA в формате format и её группа привязки.
+    #[allow(clippy::too_many_arguments)]
+    fn texture_bind_as(
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+        layout: &wgpu::BindGroupLayout,
+        sampler: &wgpu::Sampler,
+        width: u32,
+        height: u32,
+        rgba: &[u8],
+        format: wgpu::TextureFormat,
+    ) -> wgpu::BindGroup {
         let size = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
         let texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("tile"),
@@ -718,7 +748,7 @@ impl Globe {
             mip_level_count: 1,
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
-            format: TEXTURE_FORMAT,
+            format,
             usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
             view_formats: &[],
         });
@@ -762,6 +792,41 @@ impl Globe {
                 (parent, [(x % cells) as f32 * side, (y % cells) as f32 * side, side, 0.0])
             })
         })
+    }
+
+    /// Наложение линий для тайла: своё или доля наложения предка, пока
+    /// своё не готово.
+    fn overlay_of(&self, key: TileKey) -> Option<(TileKey, [f32; 4])> {
+        let (z, x, y) = key;
+        (0..=MAX_FILL_DEPTH.min(z)).find_map(|depth| {
+            let parent = (z - depth, x >> depth, y >> depth);
+            self.overlays.contains_key(&parent).then(|| {
+                let cells = 1u32 << depth;
+                let side = 1.0 / cells as f32;
+                (parent, [(x % cells) as f32 * side, (y % cells) as f32 * side, side, 1.0])
+            })
+        })
+    }
+
+    /// Положить наложение линий тайла: RGBA с альфой, умноженной на цвет,
+    /// в значениях экрана. Картинка не того размера отбрасывается.
+    pub fn set_overlay(&mut self, key: TileKey, width: u32, height: u32, rgba: &[u8]) {
+        let expected = u64::from(width) * u64::from(height) * 4;
+        if width == 0 || height == 0 || rgba.len() as u64 != expected {
+            return;
+        }
+        let bind_group = Self::texture_bind_as(&self.device, &self.queue, &self.texture_layout, &self.sampler, width, height, rgba, OVERLAY_FORMAT);
+        self.overlays.insert(key, GpuTexture { bind_group, last_used: self.frame });
+    }
+
+    /// Есть ли своё наложение у тайла.
+    pub fn has_overlay(&self, key: TileKey) -> bool {
+        self.overlays.contains_key(&key)
+    }
+
+    /// Забыть все наложения: сменились группы векторной основы.
+    pub fn clear_overlays(&mut self) {
+        self.overlays.clear();
     }
 
     /// Тайл готов к рисованию: свой снимок или доля снимка предка.
@@ -835,6 +900,7 @@ impl Globe {
                 self.textures.remove(&key);
             }
             let textures = &self.textures;
+            self.overlays.retain(|k, _| keep.contains(k) || textures.contains_key(k) || k.0 <= UNDERLAY_LEVEL);
             for edges in &mut self.edges {
                 edges.retain(|k, _| textures.contains_key(k));
             }
@@ -1029,7 +1095,11 @@ impl Globe {
             if let Some(center) = me.mesh_for(mesh, camera, heights, &mut rebuilds) {
                 let mvp = camera.tile_mvp(center, Some(projection), scale).to_cols_array();
                 let (texture, window) = picture.map_or((None, WHOLE), |(k, w)| (Some(k), w));
-                out.push(Item { kind, mesh, texture, cap: None, uniform: DrawUniform { mvp, hole, color, window } });
+                let (overlay, over) = match (kind, mesh) {
+                    (Kind::Tile, MeshId::Tile { z, x, y }) => me.overlay_of((z, x, y)).map_or((None, [0.0; 4]), |(k, w)| (Some(k), w)),
+                    _ => (None, [0.0; 4]),
+                };
+                out.push(Item { kind, mesh, texture, overlay, cap: None, uniform: DrawUniform { mvp, hole, color, window, over } });
             }
         };
         let flat = |rgb: [f32; 3]| [rgb[0], rgb[1], rgb[2], 1.0];
@@ -1312,6 +1382,8 @@ impl Globe {
                 };
                 pass.set_bind_group(0, &self.uniform_bind, &[offset]);
                 pass.set_bind_group(1, texture, &[]);
+                let overlay = item.overlay.and_then(|k| self.overlays.get(&k)).map_or(&self.clear, |t| &t.bind_group);
+                pass.set_bind_group(3, overlay, &[]);
                 pass.set_vertex_buffer(0, mesh.vertices.slice(..));
                 pass.set_index_buffer(mesh.indices.slice(..), wgpu::IndexFormat::Uint16);
                 pass.draw_indexed(0..mesh.index_count, 0, 0..1);
@@ -1327,6 +1399,7 @@ impl Globe {
                 pass.set_bind_group(0, &self.uniform_bind, &[0]);
                 pass.set_bind_group(1, &self.blank, &[]);
                 pass.set_bind_group(2, &self.air_bind, &[]);
+                pass.set_bind_group(3, &self.clear, &[]);
                 pass.draw(0..3, 0..1);
             }
             // Свои объекты - после неба: небо глубину не пишет и закрыло

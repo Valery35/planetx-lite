@@ -119,10 +119,14 @@ fn catalog(lang: Lang) -> &'static HashMap<&'static str, String> {
 }
 
 /// Текст en на языке lang.
+///
+/// Ключ может нести уточнение после «|»: «Placemark|add» - пункт «Метку»
+/// подменю «Добавить», а не название «Метка». Без перевода уточнение
+/// отбрасывается.
 pub fn tr(lang: Lang, en: &'static str) -> &'static str {
     match catalog(lang).get(en) {
         Some(t) => t.as_str(),
-        None => en,
+        None => en.split('|').next().unwrap_or(en),
     }
 }
 

@@ -329,127 +329,302 @@ pub fn checkbox(ui: &mut egui::Ui, checked: &mut bool) -> egui::Response {
     response
 }
 
-/// Значок панели инструментов, набор модуля (`ui/style.py`, `_draw`):
-/// светлые линии на плашке, у светлого оформления - тёмные.
+/// Значок панели значков, набор модуля (`ui/style.py`, `_draw`): светлые
+/// линии на плашке, у светлого оформления - тёмные. Порядок вариантов -
+/// порядок кнопок панели модуля (`ui/toolbar.py`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Tool {
-    /// Левая панель.
+    /// Скрыть или показать боковую панель.
     Sidebar,
-    /// Открыть файл.
-    Open,
-    /// Демо, академическая шапочка.
-    Demo,
-    /// Поделиться ссылкой на вид: три узла, связанные линиями.
-    Share,
-    /// Новая метка: булавка.
-    Placemark,
+    /// Определить объекты: прицел.
+    Identify,
     /// Линейка: планка с делениями наискось.
     Ruler,
+    /// Новая метка: булавка, у кнопки меню.
+    Place,
+    /// Сохранить вид: закладка.
+    Bookmark,
+    /// Записать облёт: круг с красной точкой.
+    Record,
+    /// Шкала времени: часы.
+    Time,
     /// Снимок вида: фотоаппарат.
     Camera,
-    /// Запись тура: красный круг, во время записи - квадрат.
-    Record,
-    /// Настройки.
+    /// Копия вида в буфер обмена: два листа.
+    Copy,
+    /// Сцена: коробка с треугольником, у кнопки меню.
+    Scene,
+    /// Демо: академическая шапочка, у кнопки меню.
+    Demo,
+    /// Свойства вида: шестерня.
     Settings,
     /// Во весь экран.
     Fullscreen,
     /// О программе.
     Info,
+    /// Значки шкалы времени и панели тура: к началу, к концу,
+    /// проигрывание, пауза, остановка, по кругу, подписи.
+    Prev,
+    Next,
+    Play,
+    Pause,
+    Stop,
+    Loop,
+    Captions,
 }
 
-/// Кнопка панели инструментов 28 × 28 со значком tool. on - кнопка
-/// включена, подсвечена синим.
-pub fn tool_button(ui: &mut egui::Ui, tool: Tool, on: bool, tip: &str) -> egui::Response {
-    let side = 28.0;
-    let (rect, response) = ui.allocate_exact_size(egui::vec2(side, side), egui::Sense::click());
-    let p = pal();
-    let painter = ui.painter();
-    if on {
-        painter.rect_filled(rect, 4.0, p.accent.gamma_multiply(0.45));
-    } else if response.hovered() {
-        painter.rect_filled(rect, 4.0, if p.dark { Color32::from_white_alpha(30) } else { Color32::from_black_alpha(24) });
+/// Сторона значка, логических пикселей, как `ICON_SIDE` модуля.
+pub const ICON_SIDE: f32 = 20.0;
+/// Толщина линии значка в долях клетки 24, как `STROKE` модуля.
+pub const STROKE: f32 = 1.7;
+/// Красная точка значка записи, `RECORD` модуля.
+pub const RECORD: Color32 = Color32::from_rgb(240, 86, 72);
+
+/// Перо значка: клетка 24 модуля, сжатая до стороны значка.
+struct Pen<'a> {
+    painter: &'a egui::Painter,
+    origin: egui::Pos2,
+    k: f32,
+    color: Color32,
+    /// Поворот вокруг точки (cx, cy) клетки, градусы по часовой.
+    turn: Option<(f32, f32, f32)>,
+}
+
+impl Pen<'_> {
+    fn at(&self, x: f32, y: f32) -> egui::Pos2 {
+        let (x, y) = match self.turn {
+            Some((cx, cy, deg)) => {
+                let (s, c) = deg.to_radians().sin_cos();
+                (cx + x * c - y * s, cy + x * s + y * c)
+            }
+            None => (x, y),
+        };
+        self.origin + egui::vec2(x * self.k, y * self.k)
     }
-    // Клетка значка 24 × 24 с отступом 2 пикселя, как в модуле.
-    let o = rect.left_top() + egui::vec2(2.0, 2.0);
-    let q = |x: f32, y: f32| o + egui::vec2(x, y);
-    let s = Stroke::new(1.7, p.plate_text);
+
+    fn stroke(&self) -> Stroke {
+        Stroke::new(STROKE * self.k, self.color)
+    }
+
+    fn line(&self, points: &[(f32, f32)]) {
+        let pts = points.iter().map(|(x, y)| self.at(*x, *y)).collect();
+        self.painter.add(egui::Shape::line(pts, self.stroke()));
+    }
+
+    /// Многоугольник с заливкой цветом линии, кисть fill модуля.
+    fn filled(&self, points: &[(f32, f32)]) {
+        let pts = points.iter().map(|(x, y)| self.at(*x, *y)).collect();
+        self.painter.add(egui::Shape::convex_polygon(pts, self.color, self.stroke()));
+    }
+
+    /// Скруглённый прямоугольник с заливкой.
+    fn bar(&self, x: f32, y: f32, w: f32, h: f32, r: f32) {
+        let rect = egui::Rect::from_min_max(self.at(x, y), self.at(x + w, y + h));
+        self.painter.rect_filled(rect.expand(STROKE * self.k / 2.0), r * self.k, self.color);
+    }
+
+    /// Наконечник стрелки в точке (x, y), направление angle по часовой
+    /// от оси x, `_arrow` модуля.
+    fn arrow(&self, x: f32, y: f32, angle: f32, size: f32) {
+        for side in [-1.0f32, 1.0] {
+            let b = (angle + side * 150.0).to_radians();
+            self.line(&[(x, y), (x + size * b.cos(), y + size * b.sin())]);
+        }
+    }
+
+    fn closed(&self, points: &[(f32, f32)]) {
+        let pts = points.iter().map(|(x, y)| self.at(*x, *y)).collect();
+        self.painter.add(egui::Shape::closed_line(pts, self.stroke()));
+    }
+
+    fn circle(&self, x: f32, y: f32, r: f32) {
+        self.painter.circle_stroke(self.at(x, y), r * self.k, self.stroke());
+    }
+
+    /// Круг с заливкой цветом линии и обводкой, как кисть fill модуля:
+    /// обводка Qt наполовину снаружи круга.
+    fn dot(&self, x: f32, y: f32, r: f32) {
+        self.painter.circle_filled(self.at(x, y), (r + STROKE / 2.0) * self.k, self.color);
+    }
+
+    /// Дуга эллипса в прямоугольнике (x, y, w, h), углы Qt: от трёх
+    /// часов против часовой стрелки, градусы.
+    fn arc(&self, x: f32, y: f32, w: f32, h: f32, start: f32, span: f32) {
+        let (cx, cy, rx, ry) = (x + w / 2.0, y + h / 2.0, w / 2.0, h / 2.0);
+        let n = ((span.abs() / 10.0).ceil() as usize).max(2);
+        let pts: Vec<(f32, f32)> = (0..=n)
+            .map(|i| {
+                let a = (start + span * i as f32 / n as f32).to_radians();
+                (cx + rx * a.cos(), cy - ry * a.sin())
+            })
+            .collect();
+        self.line(&pts);
+    }
+
+    /// Скруглённый прямоугольник (x, y, w, h) с радиусом r.
+    fn rounded(&self, x: f32, y: f32, w: f32, h: f32, r: f32) {
+        let mut pts = Vec::new();
+        for (cx, cy, from) in [(x + w - r, y + r, 0.0), (x + r, y + r, 90.0), (x + r, y + h - r, 180.0), (x + w - r, y + h - r, 270.0)] {
+            for i in 0..=4 {
+                let a = (from + 22.5 * i as f32).to_radians();
+                pts.push((cx + r * a.cos(), cy - r * a.sin()));
+            }
+        }
+        self.closed(&pts);
+    }
+
+    /// Кубическая кривая Безье из точки a в d.
+    fn cubic(a: (f32, f32), b: (f32, f32), c: (f32, f32), d: (f32, f32)) -> Vec<(f32, f32)> {
+        (0..=12)
+            .map(|i| {
+                let t = i as f32 / 12.0;
+                let u = 1.0 - t;
+                let w = [u * u * u, 3.0 * u * u * t, 3.0 * u * t * t, t * t * t];
+                (w[0] * a.0 + w[1] * b.0 + w[2] * c.0 + w[3] * d.0, w[0] * a.1 + w[1] * b.1 + w[2] * c.1 + w[3] * d.1)
+            })
+            .collect()
+    }
+}
+
+/// Значок tool в квадрате rect стороны значка, как `_draw` модуля.
+/// menu - треугольник меню в правом нижнем углу.
+pub fn paint_tool(painter: &egui::Painter, rect: egui::Rect, tool: Tool, menu: bool, color: Color32) {
+    let k = rect.width() / 24.0;
+    let mut pen = Pen { painter, origin: rect.left_top(), k, color, turn: None };
     match tool {
         Tool::Sidebar => {
-            painter.rect_stroke(egui::Rect::from_min_max(q(3.0, 5.0), q(21.0, 19.0)), 2.0, s, egui::StrokeKind::Middle);
-            painter.line_segment([q(9.0, 5.0), q(9.0, 19.0)], s);
+            pen.rounded(3.0, 5.0, 18.0, 14.0, 2.0);
+            pen.line(&[(9.0, 5.0), (9.0, 19.0)]);
         }
-        Tool::Open => {
-            // Папка с открытой крышкой.
-            painter.line(vec![q(3.0, 18.0), q(3.0, 6.0), q(9.0, 6.0), q(11.0, 8.0), q(18.0, 8.0), q(18.0, 11.0)], s);
-            painter.line(vec![q(3.0, 18.0), q(6.5, 11.0), q(21.5, 11.0), q(18.0, 18.0), q(3.0, 18.0)], s);
-        }
-        Tool::Demo => {
-            painter.line(vec![q(2.5, 9.5), q(12.0, 5.0), q(21.5, 9.5), q(12.0, 14.0), q(2.5, 9.5)], s);
-            painter.line_segment([q(6.5, 11.5), q(6.5, 16.0)], s);
-            painter.line_segment([q(17.5, 11.5), q(17.5, 15.5)], s);
-            painter.line(vec![q(6.5, 16.0), q(9.0, 18.0), q(12.0, 18.6), q(15.0, 18.0), q(17.5, 15.5)], s);
-            painter.line_segment([q(21.5, 9.5), q(21.5, 15.0)], s);
-        }
-        Tool::Share => {
-            let (a, b, c) = (q(17.5, 5.5), q(6.5, 12.0), q(17.5, 18.5));
-            painter.line_segment([q(15.2, 6.9), q(8.8, 10.6)], s);
-            painter.line_segment([q(8.8, 13.4), q(15.2, 17.1)], s);
-            for center in [a, b, c] {
-                painter.circle_stroke(center, 2.7, s);
+        Tool::Identify => {
+            pen.circle(12.0, 12.0, 6.5);
+            for seg in [[(12.0, 2.5), (12.0, 7.5)], [(12.0, 16.5), (12.0, 21.5)], [(2.5, 12.0), (7.5, 12.0)], [(16.5, 12.0), (21.5, 12.0)]] {
+                pen.line(&seg);
             }
-        }
-        Tool::Placemark => {
-            // Булавка: кружок головки и остриё вниз.
-            painter.circle_stroke(q(12.0, 9.0), 5.5, s);
-            painter.circle_filled(q(12.0, 9.0), 1.8, p.plate_text);
-            painter.line(vec![q(7.6, 12.3), q(12.0, 21.0), q(16.4, 12.3)], s);
+            pen.dot(12.0, 12.0, 1.3);
         }
         Tool::Ruler => {
-            let corners = vec![q(3.0, 16.0), q(16.0, 3.0), q(21.0, 8.0), q(8.0, 21.0), q(3.0, 16.0)];
-            painter.line(corners, s);
-            for k in 1..5 {
-                let t = k as f32 * 2.6;
-                let long = if k % 2 == 0 { 3.2 } else { 2.0 };
-                let (x, y) = (3.0 + t, 16.0 - t);
-                painter.line_segment([q(x, y), q(x + long * 0.7, y + long * 0.7)], s);
+            pen.turn = Some((12.0, 12.0, -30.0));
+            pen.rounded(-9.5, -3.5, 19.0, 7.0, 1.5);
+            for (x, tall) in [(-6.0, 3.0), (-3.0, 2.0), (0.0, 3.0), (3.0, 2.0), (6.0, 3.0)] {
+                pen.line(&[(x, -3.5), (x, -3.5 + tall)]);
             }
+            pen.turn = None;
         }
+        Tool::Place => {
+            let mut pts = Pen::cubic((12.0, 21.0), (7.0, 15.0), (5.0, 12.0), (5.0, 9.5));
+            // Дуга от левой точки через верх к правой, как arcTo модуля.
+            pts.extend((1..=18).map(|i| {
+                let a = (180.0 - 10.0 * i as f32).to_radians();
+                (12.0 + 7.0 * a.cos(), 9.5 - 7.0 * a.sin())
+            }));
+            pts.extend(Pen::cubic((19.0, 9.5), (19.0, 12.0), (17.0, 15.0), (12.0, 21.0)).into_iter().skip(1));
+            pen.line(&pts);
+            pen.circle(12.0, 9.5, 2.6);
+        }
+        Tool::Bookmark => pen.closed(&[(6.0, 3.5), (18.0, 3.5), (18.0, 20.5), (12.0, 15.5), (6.0, 20.5)]),
         Tool::Record => {
-            let red = Color32::from_rgb(220, 50, 40);
-            if on {
-                painter.rect_filled(egui::Rect::from_center_size(q(12.0, 12.0), egui::vec2(11.0, 11.0)), 1.5, red);
-            } else {
-                painter.circle_filled(q(12.0, 12.0), 6.0, red);
-                painter.circle_stroke(q(12.0, 12.0), 8.5, s);
-            }
+            pen.circle(12.0, 12.0, 8.0);
+            painter.circle_filled(pen.at(12.0, 12.0), 4.0 * k, RECORD);
+        }
+        Tool::Time => {
+            pen.circle(12.0, 12.0, 8.5);
+            pen.line(&[(12.0, 12.0), (12.0, 7.0)]);
+            pen.line(&[(12.0, 12.0), (15.5, 14.0)]);
         }
         Tool::Camera => {
-            painter.rect_stroke(egui::Rect::from_min_max(q(3.0, 7.5), q(21.0, 19.0)), 2.0, s, egui::StrokeKind::Middle);
-            painter.line(vec![q(8.0, 7.5), q(9.5, 5.0), q(14.5, 5.0), q(16.0, 7.5)], s);
-            painter.circle_stroke(q(12.0, 13.2), 3.4, s);
+            pen.rounded(3.0, 7.0, 18.0, 12.0, 2.0);
+            pen.line(&[(8.5, 7.0), (10.0, 4.5), (14.0, 4.5), (15.5, 7.0)]);
+            pen.circle(12.0, 13.0, 3.6);
+        }
+        Tool::Copy => {
+            pen.rounded(4.0, 3.0, 12.0, 14.0, 1.5);
+            pen.rounded(8.0, 7.0, 12.0, 14.0, 1.5);
+        }
+        Tool::Scene => {
+            pen.rounded(3.0, 7.0, 18.0, 13.0, 2.0);
+            pen.line(&[(3.0, 10.5), (21.0, 10.5)]);
+            pen.line(&[(3.0, 7.0), (5.0, 4.0), (19.0, 4.0), (21.0, 7.0)]);
+            pen.closed(&[(10.0, 13.0), (10.0, 18.0), (14.5, 15.5)]);
+        }
+        Tool::Demo => {
+            pen.closed(&[(2.5, 9.5), (12.0, 5.0), (21.5, 9.5), (12.0, 14.0)]);
+            pen.line(&[(6.5, 11.5), (6.5, 16.0)]);
+            pen.arc(6.5, 12.0, 11.0, 7.0, 180.0, 180.0);
+            pen.line(&[(17.5, 11.5), (17.5, 15.5)]);
+            pen.line(&[(21.5, 9.5), (21.5, 15.0)]);
         }
         Tool::Settings => {
-            painter.circle_stroke(q(12.0, 12.0), 3.0, s);
-            painter.circle_stroke(q(12.0, 12.0), 6.5, s);
-            for k in 0..8 {
-                let a = (45.0 * k as f32).to_radians();
-                painter.line_segment([q(12.0 + 6.5 * a.cos(), 12.0 + 6.5 * a.sin()), q(12.0 + 9.0 * a.cos(), 12.0 + 9.0 * a.sin())], s);
+            pen.circle(12.0, 12.0, 3.0);
+            pen.circle(12.0, 12.0, 6.5);
+            for i in 0..8 {
+                let (s, c) = (45.0 * i as f32).to_radians().sin_cos();
+                pen.line(&[(12.0 + 6.5 * c, 12.0 + 6.5 * s), (12.0 + 9.0 * c, 12.0 + 9.0 * s)]);
             }
         }
         Tool::Fullscreen => {
             for (x, y, dx, dy) in [(4.0, 4.0, 1.0, 1.0), (20.0, 4.0, -1.0, 1.0), (4.0, 20.0, 1.0, -1.0), (20.0, 20.0, -1.0, -1.0)] {
-                painter.line_segment([q(x, y), q(x + 5.0 * dx, y)], s);
-                painter.line_segment([q(x, y), q(x, y + 5.0 * dy)], s);
+                pen.line(&[(x + 5.0 * dx, y), (x, y), (x, y + 5.0 * dy)]);
             }
         }
         Tool::Info => {
-            painter.circle_stroke(q(12.0, 12.0), 8.5, s);
-            painter.line_segment([q(12.0, 10.5), q(12.0, 16.5)], s);
-            painter.circle_filled(q(12.0, 7.6), 1.1, p.plate_text);
+            pen.circle(12.0, 12.0, 8.5);
+            pen.line(&[(12.0, 10.5), (12.0, 16.5)]);
+            pen.dot(12.0, 7.6, 0.9);
+        }
+        Tool::Prev => {
+            pen.line(&[(6.5, 6.0), (6.5, 18.0)]);
+            pen.filled(&[(18.0, 6.0), (18.0, 18.0), (9.0, 12.0)]);
+        }
+        Tool::Next => {
+            pen.line(&[(17.5, 6.0), (17.5, 18.0)]);
+            pen.filled(&[(6.0, 6.0), (6.0, 18.0), (15.0, 12.0)]);
+        }
+        Tool::Play => pen.filled(&[(7.5, 5.0), (7.5, 19.0), (19.0, 12.0)]),
+        Tool::Pause => {
+            pen.bar(6.5, 5.5, 3.5, 13.0, 1.0);
+            pen.bar(14.0, 5.5, 3.5, 13.0, 1.0);
+        }
+        Tool::Stop => pen.bar(6.5, 6.5, 11.0, 11.0, 1.5),
+        Tool::Loop => {
+            pen.arc(5.0, 5.0, 14.0, 14.0, 40.0, 260.0);
+            pen.arrow(17.4, 7.6, 50.0, 3.5);
+            pen.arc(5.0, 5.0, 14.0, 14.0, 220.0, 40.0);
+            pen.arrow(6.6, 16.4, 230.0, 3.5);
+        }
+        Tool::Captions => {
+            pen.rounded(3.0, 6.0, 18.0, 12.0, 2.0);
+            pen.line(&[(6.5, 11.0), (17.5, 11.0)]);
+            pen.line(&[(6.5, 14.5), (13.5, 14.5)]);
         }
     }
+    if menu {
+        let pts = vec![pen.at(17.5, 19.0), pen.at(23.5, 19.0), pen.at(20.5, 23.0)];
+        painter.add(egui::Shape::convex_polygon(pts, color, Stroke::NONE));
+    }
+}
+
+/// Кнопка панели значков, как QToolButton плашки модуля: значок
+/// [`ICON_SIDE`] с полем 2 пикселя, под курсором - светлая подложка,
+/// включённая - синяя (`HOVER`, `CHECKED` модуля), скругление 4.
+pub fn tool_button(ui: &mut egui::Ui, tool: Tool, on: bool, menu: bool, enabled: bool, tip: &str) -> egui::Response {
+    // Шаг кнопок модуля на снимке - 26 логических пикселей: значок 20,
+    // поле 2 и рамка кнопки Qt по пикселю.
+    let side = ICON_SIDE + 6.0;
+    let sense = if enabled { egui::Sense::click() } else { egui::Sense::hover() };
+    let (rect, response) = ui.allocate_exact_size(egui::vec2(side, side), sense);
+    let p = pal();
+    let painter = ui.painter();
+    if on {
+        let checked = if p.dark { Color32::from_rgba_unmultiplied(74, 163, 255, 110) } else { Color32::from_rgba_unmultiplied(26, 104, 204, 70) };
+        painter.rect_filled(rect, 4.0, checked);
+    } else if response.hovered() && enabled {
+        painter.rect_filled(rect, 4.0, if p.dark { Color32::from_white_alpha(30) } else { Color32::from_black_alpha(24) });
+    }
+    let color = if enabled { p.plate_text } else { p.muted };
+    paint_tool(painter, rect.shrink(3.0), tool, menu, color);
     if response.hovered() {
         ui.ctx().set_cursor_icon(egui::CursorIcon::Default);
     }
-    response.on_hover_text(tip)
+    if tip.is_empty() { response } else { response.on_hover_text(tip) }
 }

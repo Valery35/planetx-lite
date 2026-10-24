@@ -21,7 +21,6 @@ use globe_core::DVec3;
 use globe_core::camera::Camera;
 use globe_core::ellipsoid::Ellipsoid;
 use globe_core::lod::TileKey;
-use net::{Content, Loaded};
 use terrain::HeightStore;
 
 use crate::i18n::Lang;
@@ -205,6 +204,12 @@ pub struct Labels {
     marks: Vec<Place>,
     /// Цвет значка метки по номеру пункта.
     mark_colors: HashMap<u64, egui::Color32>,
+    /// Классы подписей по включённым строкам векторной основы, как
+    /// `label_kinds` модуля.
+    pub kinds: HashSet<Kind>,
+    /// Пришедшие тайлы, ещё не разобранные, и их ключи.
+    queue: std::collections::VecDeque<(TileKey, Option<std::sync::Arc<Vec<u8>>>)>,
+    queued_keys: HashSet<TileKey>,
 }
 
 impl Labels {
@@ -224,6 +229,9 @@ impl Labels {
             search: None,
             marks: Vec::new(),
             mark_colors: HashMap::new(),
+            kinds: crate::vector::VectorBase::default().label_kinds(),
+            queue: std::collections::VecDeque::new(),
+            queued_keys: HashSet::new(),
         }
     }
 
@@ -253,23 +261,34 @@ impl Labels {
             .store
             .wanted(draw)
             .into_iter()
-            .filter(|k| !self.store.has(*k))
+            .filter(|k| !self.store.has(*k) && !self.queued_keys.contains(k))
             .map(|k| (k, 100.0 - f64::from(k.0)))
             .collect();
         out.sort_by(|a, b| b.1.total_cmp(&a.1).then(a.0.cmp(&b.0)));
         out
     }
 
-    /// Пришедший тайл пунктов. Тайл, которого нет, и тайл, который
-    /// не разбирается, дают пустой список: снова они не просятся.
-    pub fn add(&mut self, loaded: Loaded) {
-        let found = match loaded.content {
-            Ok(Content::Bytes(bytes)) => places::decode_places(loaded.key, &bytes, &self.languages).unwrap_or_default(),
-            Ok(Content::Image(_)) => Vec::new(),
-            Err(_) if loaded.missing => Vec::new(),
-            Err(_) => return,
-        };
-        self.store.add(loaded.key, found);
+    /// Пришедший тайл пунктов встаёт в очередь разбора: за кадр их
+    /// приходило до сотни, разбор сразу занимал до 60 мс главного потока.
+    /// bytes - байты тайла, общие с линиями, None - тайла нет.
+    pub fn add(&mut self, key: TileKey, bytes: Option<std::sync::Arc<Vec<u8>>>) {
+        self.queued_keys.insert(key);
+        self.queue.push_back((key, bytes));
+    }
+
+    /// Разобрать тайлы очереди, пока не вышло время budget в секундах.
+    /// Возвращает, осталась ли очередь.
+    pub fn decode_queued(&mut self, budget: f64) -> bool {
+        let start = web_time::Instant::now();
+        while let Some((key, bytes)) = self.queue.pop_front() {
+            self.queued_keys.remove(&key);
+            let found = bytes.map_or_else(Vec::new, |b| places::decode_places(key, &b, &self.languages).unwrap_or_default());
+            self.store.add(key, found);
+            if start.elapsed().as_secs_f64() > budget {
+                break;
+            }
+        }
+        !self.queue.is_empty()
     }
 
     /// Выбрать и нарисовать надписи кадра. rect - место кадра в окне,
@@ -287,9 +306,10 @@ impl Labels {
         heights: &HeightStore,
     ) {
         self.drawn.clear();
-        self.pending = false;
+        // Неразобранные тайлы - кадр не окончательный.
+        self.pending = !self.queue.is_empty();
         let altitude = camera.altitude();
-        let kinds = places::kinds_at(&PLACE_KINDS.into_iter().collect(), altitude);
+        let kinds = places::kinds_at(&self.kinds, altitude);
         let collected = self.store.collect(draw, Some(&kinds));
         let search = self.search.clone();
         let marks = self.marks.clone();

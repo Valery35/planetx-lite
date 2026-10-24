@@ -21,11 +21,17 @@ struct Draw {
     // Окно снимка: u0, v0, сторона. Тайла нет у источника - рисуется
     // его доля в снимке предка.
     window: vec4<f32>,
+    // Окно наложения линий векторной основы: u0, v0, сторона, признак.
+    over: vec4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> draw: Draw;
 @group(1) @binding(0) var tile_texture: texture_2d<f32>;
 @group(1) @binding(1) var tile_sampler: sampler;
+// Наложение линий векторной основы, как картинка overlay.py модуля
+// поверх снимка: значения экрана, альфа умножена на цвет.
+@group(3) @binding(0) var over_texture: texture_2d<f32>;
+@group(3) @binding(1) var over_sampler: sampler;
 
 struct VertexOut {
     @builtin(position) position: vec4<f32>,
@@ -85,6 +91,7 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     // Выборка до ветвления: производные для фильтрации нужны во всех
     // пикселях четвёрки.
     let picture = textureSample(tile_texture, tile_sampler, draw.window.xy + in.uv * draw.window.z);
+    let lines = textureSample(over_texture, over_sampler, draw.over.xy + in.uv * draw.over.z) * draw.over.w;
     if draw.hole.w > 0.5 {
         let low = draw.hole.xy;
         let high = draw.hole.xy + vec2<f32>(draw.hole.z, draw.hole.z);
@@ -92,7 +99,8 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
             discard;
         }
     }
-    let base = mix(to_srgb(picture.rgb), draw.color.rgb, draw.color.a);
+    let photo = mix(to_srgb(picture.rgb), draw.color.rgb, draw.color.a);
+    let base = photo * (1.0 - lines.a) + lines.rgb;
     // Со светом солнца отмывка не нужна: тени даёт само солнце.
     var shade = in.shade;
     let n = in.normal;

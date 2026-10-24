@@ -193,3 +193,214 @@ Tropic of Capricorn	南回帰線
 Turn off	オフにする
 Turn on	オンにする
 View	表示
+ km	 km
+ m	 m
+{coords}, depth {d} m	{coords}、深さ {d} m
+{coords}, height {h} m	{coords}、高さ {h} m
+{name} - {what}	{name} - {what}
+{name} - earlier query	{name} - 以前の検索
+{name} - placemark	{name} - 目印
+{name}, {ele} m	{name}、{ele} m
+{name}. The check turns the layer off, the row stays. The «⋯» menu removes it from the globe.	{name}。チェックでレイヤーをオフにし、行は残ります。「⋯」メニューで地球儀から取り除きます。
+© 2026 Inform++ LLC. Apache 2.0.	© 2026 Inform++ LLC. Apache 2.0.
+A double click on a row copies the value to the clipboard, a link opens in the browser.	行をダブルクリックすると値をクリップボードにコピーし、リンクはブラウザーで開きます。
+A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	明るい線に暗い破線。縮小すると高速道路とともに消えます。駅構内の線路と引込線は描画しません。
+Add	追加
+Add data	データを追加
+Add placemark here	ここに目印を追加
+Address	住所
+Airports	空港
+All	すべて
+All maps and layers of the catalog.	カタログのすべての地図とレイヤー。
+Allow the folder to expand	フォルダーの展開を許可
+Atmosphere	大気
+Base map	背景地図
+Base map on the globe	地球儀の背景地図
+Base map on the globe - one	地球儀の背景地図 - 1 つだけ
+Base maps	背景地図
+Basemaps of the globe - imagery and maps. There is one base on the globe, under the layers.	地球儀の背景地図 - 画像と地図。地球儀の背景地図は 1 つで、地図とレイヤーの下にあります。
+Borders	境界
+Borders and names	境界と名称
+Borders of countries and regions and labels on the globe.	国と地域の境界と地球儀上のラベル。
+Borders of countries bright yellow, borders of regions thin white. Sea borders are not drawn.	国境は明るい黄色、地域の境界は細い白。海上の境界は描画しません。
+Catalog of layers - vector base, coordinate grid, atmosphere and sun. The catalog opens in its own window, it can stay open next to the globe.	レイヤーのカタログ - ベクトル基図、座標グリッド、大気と太陽。カタログは別のウィンドウで開き、地球儀の横に開いたままにできます。
+Clear My Places…	「マイプレイス」を空にする…
+close	閉じる
+Continue drawing	描画を続ける
+Coordinates	座標
+Copied: {number}	コピーしました：{number}
+Copy	コピー
+Copy of the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider.	表示をクリップボードにコピー - ラベル付きの地球儀、アイコンバー、ナビゲーション操作部、タイムバーは含みません。画像はそのままメール、チャット、文書に貼り付けられます。
+Copy the coordinates to the clipboard.	座標をクリップボードにコピーします。
+Copy the view to the clipboard	表示をクリップボードにコピー
+Cut	切り取り
+Data sources…	データソース…
+Decimal degrees	10 進数の度
+Degrees, minutes, seconds	度、分、秒
+Delete "{name}" from My Places?	「{name}」を「マイプレイス」から削除しますか？
+Delete all placemarks and folders of My Places, placemarks in all {count}? Deletion cannot be undone.	「マイプレイス」のすべての目印とフォルダー、合計 {count} 個の目印を削除しますか？削除は元に戻せません。
+Delete folder	フォルダーを削除
+Delete folder “{name}” with all its contents?	フォルダー「{name}」を中身ごと削除しますか？
+Delete placemark	目印を削除
+Delete vertex	頂点を削除
+Demo: prepared scenes with placemarks and tours. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour.	デモ：目印とツアーを含む用意されたシーン。目印は「マイプレイス」の新しいフォルダーに入り、リストの下の ▶ ボタンでツアーを再生します。
+Depth	深さ
+Description of the folder. It is kept in My Places and in KML.	フォルダーの説明。「マイプレイス」と KML に保存されます。
+Distance	距離
+Distance from the camera to the point of view. More - a wider view.	カメラから視点までの距離。大きいほど広い表示。
+do not hide	隠さない
+E	E
+Esri World Imagery - example	Esri World Imagery - 例
+Feature	オブジェクト
+Features	オブジェクト
+Find what is typed in the line. A place - a flight to it, several found places - a list below.	入力欄の内容を検索します。場所が 1 つならそこへ移動し、複数見つかれば下に一覧を表示します。
+Finish drawing	描画を終了
+Fly here	ここへ移動
+Folder properties	フォルダーのプロパティ
+Folder view	フォルダーの表示
+Folder|add	フォルダー
+Format	形式
+Full screen (F11) - the globe view for a show. Esc or F11 returns the window.	全画面 (F11) - 上映用の地球儀表示。パネルは隠れ、ナビゲーション操作部、タイムバー、ツアーは残ります。Esc または F11 でウィンドウに戻ります。
+Full screen. Exit - Esc or F11.	全画面。終了 - Esc または F11。
+Grid	座標グリッド
+Height	高さ
+Heights raise the surface and shade the slopes. The check turns the terrain on, a click on the name chooses the heights. Heights of the Earth - Mapzen Terrain Tiles. The vertical scale is in the view properties.	標高で地表を持ち上げ、斜面に陰影を付けます。チェックで地形をオンにし、名前をクリックで標高を選びます。地球の標高 - Mapzen Terrain Tiles。高さの強調は表示のプロパティにあります。
+Hide beyond	この距離より遠いと隠す
+Hide sidebar	サイドバーを隠す
+Identify features	オブジェクトを識別
+Identify. A click on the globe shows the coordinates, the height or depth of the point and the placemarks there.	オブジェクトを識別。地球儀をクリックすると、その点の座標、高さまたは深さ、目印を表示します。
+Imagery of the whole Earth, the example basemap. Its terms are set by Esri.	地球全体の画像、背景地図の例。利用条件は Esri が定めます。
+Imagery or map on the surface. A click on the row chooses the basemap. Esri World Imagery is an example basemap, its terms are set by Esri.	地表の画像または地図。行をクリックで背景地図を選びます。Esri World Imagery は背景地図の例で、利用条件は Esri が定めます。
+Inform++ LLC	Inform++ LLC
+km	km
+Labels	ラベル
+Lakes and reservoirs	水域
+Language	言語
+Latitude	緯度
+Latitude of the point the camera looks at.	カメラが見ている点の緯度。
+Layers - switched on together	レイヤー - 同時にオンにできます
+Light of the terrain and the air by the position of the sun. The night side of the Earth is dark. The time of the sun is the end of the period of the open time slider, without it the computer clock. Without the check the light falls from the north-west, as on a relief map.	太陽の位置による地形と大気の光。地球の夜の側は暗くなります。太陽の時刻は開いたタイムバーの範囲の終わり、タイムバーがなければコンピューターの時計です。チェックなしでは、陰影図のように北西から光が当たります。
+loading	読み込み中
+loading {count}	読み込み中 {count}
+Longitude	経度
+Longitude of the point the camera looks at.	カメラが見ている点の経度。
+m	m
+Map	地図
+Measure distance	距離を測る
+Moscow, historical maps	モスクワ、歴史地図
+Motorways yellow, main roads light yellow, the rest thin white. Over a city the roads cover the basemap with a dense mesh.	高速道路は黄色、主要道路は薄い黄色、その他は細い白。都市の上では道路が密な網で背景地図を覆います。
+N	N
+Names of airports with a square icon, runways when zooming in. They are labelled from a height below 1000 km.	正方形のアイコン付きの空港名、拡大すると滑走路。高度 1000 km 未満からラベルを表示します。
+Names of countries, regions, cities, towns and villages. Smaller places appear when zooming in.	国、地域、都市、町、村の名称。拡大するにつれて小さな地名が現れます。
+Names of seas, lakes and reservoirs, in light blue italics.	海、湖、貯水池の名称、水色の斜体。
+Narrow rivers as blue lines. They appear from about 600 m per pixel.	細い川を青い線で表示。1 ピクセルあたり約 600 m から現れます。
+Nature	自然
+Nature reserves, national parks and wildlife refuges, a green outline and a name. Names are seen below 3000 km, the outline together with motorways.	自然保護区、国立公園、野生生物保護区、緑の輪郭と名称。名称は 3000 km 未満で、輪郭は高速道路とともに表示されます。
+New placemark, path, polygon or circle in My Places.	「マイプレイス」に新しい目印、パス、ポリゴン、円を作成します。
+No	いいえ
+No - height tiles only	いいえ - 標高タイルのみ
+No features at the point	この点にオブジェクトはありません
+none	なし
+not received: {error}	受信できません：{error}
+Only one placemark or folder of this folder is seen on the globe. The check of one row clears the checks of the others.	地球儀にはこのフォルダーの目印またはフォルダーが 1 つだけ表示されます。1 行のチェックで他の行のチェックが外れます。
+Opacity of the selected placemarks, paths, polygons, pictures and folder contents. To the left - more transparent. The value is kept in My Places and in KML.	選択した目印、パス、ポリゴン、画像、フォルダー内容の不透明度。左ほど透明。値は「マイプレイス」と KML に保存されます。
+open	開く
+Open KML or KMZ…	KML または KMZ を開く…
+Open Scene	シーンを開く
+Open Scene…	シーンを開く…
+open the catalogue	カタログを開く
+open the demo	デモを開く
+open the window	ウィンドウを開く
+Orbit around	周回する
+Parallels and meridians with degree labels, the equator, the tropics and the polar circles. The step of the grid changes with the camera height.	度のラベル付きの緯線と経線、赤道、回帰線、極圏。グリッドの間隔はカメラの高度で変わります。
+Paste	貼り付け
+Path|add	パス
+Peaks	山頂
+Peaks and volcanoes with their height in metres, a triangle icon. They are labelled from a height below 400 km.	山頂と火山、メートル単位の高さ、三角形のアイコン。高度 400 km 未満からラベルを表示します。
+Place, coordinates or action. A place name or coordinates, for example Perm or 58.0105, 56.2294, give a flight. A layer or a window, for example «ruler» or «grid», is found by its name and turned on from the hint. Ctrl+K from anywhere in the window puts the cursor into this line.	場所、座標、または操作。地名や座標、たとえば Perm や 58.0105, 56.2294 でそこへ移動します。レイヤーやウィンドウ、たとえば「定規」や「グリッド」は名前で見つかり、候補からオンにできます。ウィンドウのどこからでも Ctrl+K でこの欄にカーソルが移ります。
+Placemark|add	目印
+Plates with numbers of motorways and main roads. They are labelled from a height below 1000 km.	高速道路と主要道路の番号標識。高度 1000 km 未満からラベルを表示します。
+Polygon|add	ポリゴン
+Railways	鉄道
+Record a flight	ツアーを記録
+Record a tour. Camera motion by mouse, keys or flights becomes a tour in My Places, a second click stops the recording.	ツアーを記録。マウス、キー、移動によるカメラの動きが「マイプレイス」のツアーになり、もう一度クリックすると記録を停止します。
+Recorded tour	記録したツアー
+Remove from the globe	地球儀から取り除く
+Reserves and national parks	保護区と国立公園
+Reset	リセット
+Return the view the folder had when the window opened.	ウィンドウを開いたときのフォルダーの表示に戻します。
+Rivers	河川
+Rivers, peaks and protected areas.	河川、山頂、保護地域。
+Road numbers	道路番号
+Roads	道路
+Roads, their numbers, railways and airports.	道路とその番号、鉄道、空港。
+Ruler. Length, perimeter and area on the ellipsoid, the measurement can be saved to My Places.	定規。楕円体上の長さ、周長、面積。測定結果は「マイプレイス」に保存できます。
+run	実行
+S	S
+Save measurement	測定を保存
+Save Scene	シーンを保存
+Save tour	ツアーを保存
+Save view. The point of view becomes a placemark in My Places, flying to it returns the height, heading and tilt.	表示を保存。視点が「マイプレイス」の目印になり、そこへ移動すると高さ、方位、傾きが戻ります。
+Scene - the camera and the selected folder of My Places with its tour. It is saved to a file and opens on another computer.	シーン - カメラと「マイプレイス」の選択したフォルダー、そのツアー。ファイルに保存され、別のコンピューターで開けます。
+Set as base map	背景地図にする
+Settlements	集落
+Share view	表示を共有
+Share View…	表示を共有…
+Shores of lakes, reservoirs and wide rivers outlined in blue. Reservoirs are cut into pieces in the data, and the outline runs along the cuts too.	湖、貯水池、幅の広い川の岸を青い線で縁取ります。データ上の貯水池は複数に分割されており、輪郭は分割線にも沿います。
+Show contents as a group of radio buttons	内容をラジオボタンのグループとして表示
+Show on the globe	地球儀に表示
+Show sidebar	サイドバーを表示
+Site	場所
+Sky and light	空と光
+Snapshot folder view	現在の表示をフォルダーに設定
+Snapshot of the current view	現在の表示を取得
+Snapshot of the view to a PNG file.	表示のスナップショットを PNG ファイルに保存します。
+Snapshot view	現在の表示を目印に設定
+snow, mines, wind	雪、鉱山、風
+Sort A-Z	A-Z で並べ替え
+start	開始
+stop	停止
+Take the view of the globe now: the point of view, distance, heading and tilt.	現在の地球儀の表示を取得します：視点、距離、方位、傾き。
+The blue glow of the air around the planet, the sky over the horizon and the haze over the distant surface. Without the check the background of the view is black space, the surface is seen without haze.	惑星を包む大気の青い輝き、地平線上の空、遠くの地表にかかるかすみ。チェックなしでは背景は黒い宇宙で、地表はかすみなしで表示されます。
+The check shows a layer on the globe. A row - its description. Layers are turned on together.	チェックで地球儀にレイヤーを表示します。行 - その説明。レイヤーは同時にオンにできます。
+The OpenFreeMap vector base and the coordinate grid.	OpenFreeMap のベクトル基図と座標グリッド。
+The OpenStreetMap map.	OpenStreetMap の地図。
+The placemark is seen only while the eye is closer than this distance, as Region in KML. For a folder - all its placemarks. 0 - always seen.	目印は、視点がこの距離より近いときだけ表示されます。KML の Region と同じです。フォルダーではそのすべての目印。0 - 常に表示。
+The sun and the night side, the atmosphere.	太陽と夜の側、大気。
+The view is copied to the clipboard.	表示をクリップボードにコピーしました。
+Tilt	傾き
+Tilt of the camera. 0 - looking straight down, more - towards the horizon.	カメラの傾き。0 - 真下を見る、大きいほど地平線寄り。
+Time slider	タイムバー
+Time slider. While it is open, data outside its period is hidden. The closed slider shows all placemarks.	タイムバー。開いている間は範囲外のデータが隠れます。閉じたタイムバーはすべての目印を表示します。
+Tour along the path	パスに沿ったツアー
+Tour along the selected path	選択したパスに沿ったツアー
+Tour over the checked places	チェックした場所を巡るツアー
+Tour over the checked places of the folder	フォルダー内のチェックした目印を巡るツアー
+Tour: select the My Places folder or a path in it	ツアー：「マイプレイス」のフォルダーかその中のパスを選択してください
+Transport	交通
+Type	種類
+Under the point	点の下
+Value	値
+View from {height}	高度 {height} からの眺め
+View properties	表示のプロパティ
+View properties: relief scale, language of labels, appearance.	表示のプロパティ：背景地図とデータソース、高さの強調、ラベルの言語、座標の形式、外観。
+View snapshot	表示のスナップショット
+Voyages of Columbus	コロンブスの航海
+W	W
+Water names	水域名
+What's here?	ここは何？
+Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	フォルダーへ移動するときにカメラがどこから見るか。表示は数値か、現在の表示の取得で設定します。独自の表示がなければ、フォルダーのすべての目印が画面に収まるように移動します。
+Where the camera looks. 0 - north at the top of the frame.	カメラの向き。0 - 画面上が北。
+Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	チェックなしではフォルダーはリストで展開されず、その目印はフォルダー自体のチェックで表示・非表示になります。
+Yes	はい
+ s	 秒
+Continue	続行
+End tour	ツアーを終了
+How many seconds the camera stands at each stop. A new pause acts from a jump by the buttons or from a new start of the tour.	各停止地点でカメラが止まる秒数。新しい停止時間は、ボタンでの移動またはツアーの再開始から有効になります。
+How much of the tour has passed. The slider rewinds the tour. The camera stands at this point at once, the tour goes on from it.	ツアーの進み具合。スライダーでツアーを早送り・巻き戻しします。カメラはすぐにこの位置に移り、ツアーはそこから続きます。
+Next stop	次の停止地点
+Pause	一時停止
+Previous stop	前の停止地点
+Stop {n} of {count}: {name}	停止地点 {n}/{count}：{name}
+Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	画面上の停止地点の字幕。停止地点では目印の名前と説明が画面下部に大きく表示され、移動中は字幕がありません。
+Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	ツアーを繰り返し再生。最後の停止地点の後、ツアーは最初から始まります。一時停止または × で止まります。

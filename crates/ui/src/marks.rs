@@ -258,6 +258,15 @@ fn item_at_mut<'a>(folder: &'a mut Folder, path: &[usize]) -> Option<&'a mut Ite
 }
 
 /// Флажок строки: видимость метки, папки или наложения.
+/// Название строки дерева.
+fn item_name(item: &Item) -> &str {
+    match item {
+        Item::Folder(f) => &f.name,
+        Item::Place(p) => &p.name,
+        Item::Overlay(o) => &o.name,
+    }
+}
+
 fn visible_mut(item: &mut Item) -> &mut bool {
     match item {
         Item::Folder(f) => &mut f.visible,
@@ -315,6 +324,31 @@ pub enum Action {
     SaveView(Vec<usize>),
     /// Копировать строку текстом KML в буфер обмена.
     Copy(Vec<usize>),
+    /// Вырезать строку: копия и удаление.
+    Cut(Vec<usize>),
+    /// Вставить скопированное в папку по пути.
+    Paste(Vec<usize>),
+    /// Сортировать папку от А до Я.
+    Sort(Vec<usize>),
+    /// Вид строки - текущая камера: «Снимок вида метки» и «папки».
+    ViewSnapshot(Vec<usize>),
+    /// Подменю «Добавить» папки по пути.
+    Add(Vec<usize>, AddWhat),
+    /// Новая папка сразу после строки.
+    NewFolderAfter(Vec<usize>),
+    /// Окно свойств папки.
+    FolderProperties(Vec<usize>),
+}
+
+/// Пункт подменю «Добавить», `_add_menu` модуля без картинок, фото,
+/// моделей и сетевых ссылок: их Lite не добавляет.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AddWhat {
+    Folder,
+    Point,
+    Line,
+    Polygon,
+    RecordedTour,
 }
 
 /// Вид строки для меню.
@@ -327,100 +361,78 @@ enum RowKind {
     Overlay,
 }
 
-/// Тексты меню строк дерева.
-struct Words {
-    fly: &'static str,
-    tour: &'static str,
-    rename: &'static str,
-    remove: &'static str,
-    save_kml: &'static str,
-    save_scene: &'static str,
-    open: &'static str,
-    clear: &'static str,
-    properties: &'static str,
-    new_folder: &'static str,
-    profile: &'static str,
-    save_view: &'static str,
-    copy: &'static str,
-}
-
-fn words(lang: crate::i18n::Lang) -> Words {
-    use crate::i18n::tr;
-    Words {
-        fly: tr(lang, "Fly to"),
-        tour: tr(lang, "Play tour"),
-        rename: tr(lang, "Rename"),
-        remove: tr(lang, "Delete"),
-        save_kml: tr(lang, "Save as KML…"),
-        save_scene: tr(lang, "Save scene…"),
-        open: tr(lang, "Open…"),
-        clear: tr(lang, "Clear My Places"),
-        properties: tr(lang, "Properties…"),
-        new_folder: tr(lang, "New folder"),
-        profile: tr(lang, "Elevation profile"),
-        save_view: tr(lang, "Save view"),
-        copy: tr(lang, "Copy as KML"),
-    }
-}
-
 /// Название корня «Мои метки».
 pub fn root_name(lang: crate::i18n::Lang) -> &'static str {
     crate::i18n::tr(lang, "My Places")
 }
 
-/// Меню правой кнопки строки, как у модуля в минимуме: перелёт, тур,
-/// удаление.
-fn row_menu(response: &eframe::egui::Response, w: &Words, path: &[usize], tour: bool, kind: RowKind, actions: &mut Vec<Action>) {
-    response.context_menu(|ui| {
-        if matches!(kind, RowKind::Place | RowKind::Path) && ui.button(w.properties).clicked() {
-            actions.push(Action::Properties(path.to_vec()));
-            ui.close();
-        }
-        if kind == RowKind::Path && ui.button(w.profile).clicked() {
-            actions.push(Action::Profile(path.to_vec()));
-            ui.close();
-        }
-        if kind == RowKind::Folder && ui.button(w.new_folder).clicked() {
-            actions.push(Action::NewFolder(path.to_vec()));
-            ui.close();
-        }
-        if kind == RowKind::Folder && ui.button(w.save_view).clicked() {
-            actions.push(Action::SaveView(path.to_vec()));
-            ui.close();
-        }
-        if ui.button(w.fly).clicked() {
-            actions.push(Action::Fly(path.to_vec()));
-            ui.close();
-        }
-        if tour && ui.button(w.tour).clicked() {
-            actions.push(Action::Tour(path.to_vec()));
-            ui.close();
-        }
-        ui.separator();
-        if ui.button(w.save_kml).clicked() {
-            actions.push(Action::SaveKml(path.to_vec()));
-            ui.close();
-        }
-        if ui.button(w.save_scene).clicked() {
-            actions.push(Action::SaveScene(path.to_vec()));
-            ui.close();
-        }
-        if ui.button(w.copy).on_hover_text("Ctrl+C").clicked() {
-            actions.push(Action::Copy(path.to_vec()));
-            ui.close();
-        }
-        ui.separator();
-        if ui.button(w.rename).clicked() {
-            actions.push(Action::StartRename(path.to_vec()));
-            ui.close();
-        }
-        if ui.button(w.remove).clicked() {
-            actions.push(Action::Remove(path.to_vec()));
-            ui.close();
+/// Пункт меню: нажат - действие и меню закрывается.
+fn item(ui: &mut eframe::egui::Ui, text: &str, action: Action, actions: &mut Vec<Action>) {
+    if ui.button(text).clicked() {
+        actions.push(action);
+        ui.close();
+    }
+}
+
+/// Подменю «Добавить» папки по пути, как `_add_menu` модуля.
+fn add_menu(ui: &mut eframe::egui::Ui, lang: crate::i18n::Lang, path: &[usize], actions: &mut Vec<Action>) {
+    use crate::i18n::tr;
+    ui.menu_button(tr(lang, "Add"), |ui| {
+        for (what, text) in [
+            (AddWhat::Folder, "Folder|add"),
+            (AddWhat::Point, "Placemark|add"),
+            (AddWhat::Line, "Path|add"),
+            (AddWhat::Polygon, "Polygon|add"),
+            (AddWhat::RecordedTour, "Recorded tour"),
+        ] {
+            item(ui, tr(lang, text), Action::Add(path.to_vec(), what), actions);
         }
     });
 }
 
+/// Меню правой кнопки строки, как `_menu` модуля: порядок меню папки
+/// Google Earth, у метки сверху «Подлететь». Пунктов QGIS, разрезов,
+/// космоснимков и вырезов модели у Lite нет.
+fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[usize], tour: bool, kind: RowKind, actions: &mut Vec<Action>) {
+    use crate::i18n::tr;
+    response.context_menu(|ui| {
+        let p = || path.to_vec();
+        item(ui, tr(lang, "Fly to"), Action::Fly(p()), actions);
+        if kind == RowKind::Folder {
+            add_menu(ui, lang, path, actions);
+            ui.separator();
+            item(ui, tr(lang, "Cut"), Action::Cut(p()), actions);
+            item(ui, tr(lang, "Copy"), Action::Copy(p()), actions);
+            item(ui, tr(lang, "Paste"), Action::Paste(p()), actions);
+            item(ui, tr(lang, "Delete"), Action::Remove(p()), actions);
+            ui.separator();
+            item(ui, tr(lang, "Open KML or KMZ…"), Action::Open, actions);
+            item(ui, tr(lang, "Save as KML…"), Action::SaveKml(p()), actions);
+            ui.separator();
+            item(ui, tr(lang, "Snapshot folder view"), Action::ViewSnapshot(p()), actions);
+            item(ui, tr(lang, "Sort A-Z"), Action::Sort(p()), actions);
+            ui.separator();
+            item(ui, tr(lang, "Play tour"), Action::Tour(p()), actions);
+            item(ui, tr(lang, "Properties…"), Action::FolderProperties(p()), actions);
+            return;
+        }
+        if tour {
+            item(ui, tr(lang, "Play tour"), Action::Tour(p()), actions);
+        } else if kind == RowKind::Path {
+            item(ui, tr(lang, "Tour along the path"), Action::Tour(p()), actions);
+            item(ui, tr(lang, "Elevation profile"), Action::Profile(p()), actions);
+        }
+        item(ui, tr(lang, "Snapshot view"), Action::ViewSnapshot(p()), actions);
+        if kind != RowKind::Overlay {
+            item(ui, tr(lang, "Properties…"), Action::Properties(p()), actions);
+        }
+        item(ui, tr(lang, "New Folder"), Action::NewFolderAfter(p()), actions);
+        item(ui, tr(lang, "Cut"), Action::Cut(p()), actions);
+        item(ui, tr(lang, "Copy"), Action::Copy(p()), actions);
+        item(ui, tr(lang, "Paste"), Action::Paste(path[..path.len().saturating_sub(1)].to_vec()), actions);
+        item(ui, tr(lang, "Delete"), Action::Remove(p()), actions);
+    });
+}
 /// Состояние дерева в панели: выделенная строка и переименование.
 #[derive(Debug, Default)]
 pub struct TreeState {
@@ -440,7 +452,7 @@ fn row_name(
     text: &str,
     path: &[usize],
     (tour, kind): (bool, RowKind),
-    w: &Words,
+    lang: crate::i18n::Lang,
     state: &mut TreeState,
     actions: &mut Vec<Action>,
 ) {
@@ -487,7 +499,7 @@ fn row_name(
     if label.double_clicked() {
         actions.push(Action::Fly(path.to_vec()));
     }
-    row_menu(&label, w, path, tour, kind, actions);
+    row_menu(&label, lang, path, tour, kind, actions);
 }
 
 /// Строка принимает перетащенную: линия над строкой - перед ней,
@@ -521,7 +533,6 @@ pub fn root_ui(
     actions: &mut Vec<Action>,
 ) {
     use eframe::egui;
-    let w = words(lang);
     let id = ui.make_persistent_id("marks-root");
     let header = egui::collapsing_header::CollapsingState::load_with_default_open(ui.ctx(), id, true);
     let (_, head, _) = header
@@ -537,39 +548,26 @@ pub fn root_ui(
             if label.hovered() {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::Default);
             }
+            // Корень выделяется, как строка: его тур, меню, вставка.
+            if label.clicked() || label.secondary_clicked() {
+                state.selected = Some(Vec::new());
+            }
+            if state.selected.as_deref() == Some(&[][..]) {
+                ui.painter().rect_stroke(label.rect.expand(2.0), 2.0, egui::Stroke::new(1.0, crate::theme::pal().select), egui::StrokeKind::Outside);
+            }
+            // Меню корня, как у модуля.
             label.context_menu(|ui| {
-                if ui.button(w.open).clicked() {
-                    actions.push(Action::Open);
-                    ui.close();
-                }
-                if ui.button(w.new_folder).clicked() {
-                    actions.push(Action::NewFolder(Vec::new()));
-                    ui.close();
-                }
-                if ui.button(w.save_view).clicked() {
-                    actions.push(Action::SaveView(Vec::new()));
-                    ui.close();
-                }
-                if !root.children.is_empty() {
-                    if ui.button(w.tour).clicked() {
-                        actions.push(Action::Tour(Vec::new()));
-                        ui.close();
-                    }
-                    ui.separator();
-                    if ui.button(w.save_kml).clicked() {
-                        actions.push(Action::SaveKml(Vec::new()));
-                        ui.close();
-                    }
-                    if ui.button(w.save_scene).clicked() {
-                        actions.push(Action::SaveScene(Vec::new()));
-                        ui.close();
-                    }
-                    ui.separator();
-                    if ui.button(w.clear).clicked() {
-                        actions.push(Action::Clear);
-                        ui.close();
-                    }
-                }
+                use crate::i18n::tr;
+                add_menu(ui, lang, &[], actions);
+                ui.separator();
+                item(ui, tr(lang, "Play tour"), Action::Tour(Vec::new()), actions);
+                item(ui, tr(lang, "Sort A-Z"), Action::Sort(Vec::new()), actions);
+                item(ui, tr(lang, "Open KML or KMZ…"), Action::Open, actions);
+                item(ui, tr(lang, "Save as KML…"), Action::SaveKml(Vec::new()), actions);
+                item(ui, tr(lang, "Copy"), Action::Copy(Vec::new()), actions);
+                item(ui, tr(lang, "Paste"), Action::Paste(Vec::new()), actions);
+                ui.separator();
+                item(ui, tr(lang, "Clear My Places…"), Action::Clear, actions);
             });
         })
         .body(|ui| tree_ui(ui, root, &mut Vec::new(), lang, state, actions));
@@ -588,7 +586,6 @@ pub fn tree_ui(
     actions: &mut Vec<Action>,
 ) {
     use eframe::egui;
-    let w = words(lang);
     for (i, item) in folder.children.iter_mut().enumerate() {
         path.push(i);
         match item {
@@ -602,7 +599,7 @@ pub fn tree_ui(
                             actions.push(Action::Toggled(path.clone()));
                         }
                         crate::theme::folder_icon(ui);
-                        row_name(ui, &f.name, path, (true, RowKind::Folder), &w, state, actions);
+                        row_name(ui, &f.name, path, (true, RowKind::Folder), lang, state, actions);
                     })
                     .body(|ui| tree_ui(ui, f, path, lang, state, actions));
                 drop_target(ui, &head.response, path, true, actions);
@@ -625,7 +622,7 @@ pub fn tree_ui(
                     crate::theme::row_icon(ui, icon, rgba(p.color), p.fill.map(rgba));
                     let name = if p.name.is_empty() { "-" } else { p.name.as_str() };
                     let kind = if p.kind == Kind::Line { RowKind::Path } else { RowKind::Place };
-                    row_name(ui, name, path, (p.tour.is_some(), kind), &w, state, actions);
+                    row_name(ui, name, path, (p.tour.is_some(), kind), lang, state, actions);
                     if p.tour.is_some() && crate::timeline::icon_button(ui, crate::timeline::Icon::Play).clicked() {
                         actions.push(Action::Tour(path.clone()));
                     }
@@ -645,7 +642,7 @@ pub fn tree_ui(
                     };
                     crate::theme::row_icon(ui, icon, crate::theme::pal().text, None);
                     let name = if o.name.is_empty() { "-" } else { o.name.as_str() };
-                    row_name(ui, name, path, (false, RowKind::Overlay), &w, state, actions);
+                    row_name(ui, name, path, (false, RowKind::Overlay), lang, state, actions);
                 });
                 drop_target(ui, &row.response, path, false, actions);
             }
@@ -752,6 +749,138 @@ impl Marks {
         *slot = place;
         self.refresh();
         true
+    }
+
+    /// Изменить папку по пути: f правит её, потом объекты собираются
+    /// заново. false - папки там нет.
+    pub fn edit_folder(&mut self, path: &[usize], f: impl FnOnce(&mut Folder)) -> bool {
+        let Some(Item::Folder(folder)) = self.tree.as_mut().and_then(|t| item_at_mut(t, path)) else {
+            return false;
+        };
+        f(folder);
+        self.refresh();
+        true
+    }
+
+    /// Точки всех меток папки по пути - рамка Region «Скрывать дальше».
+    pub fn folder_points(&self, path: &[usize]) -> Vec<(f64, f64)> {
+        fn walk(folder: &Folder, out: &mut Vec<(f64, f64)>) {
+            for child in &folder.children {
+                match child {
+                    Item::Folder(f) => walk(f, out),
+                    Item::Place(p) => out.extend(p.points.iter().copied()),
+                    Item::Overlay(o) => out.extend(o.overlay.corners.iter().copied()),
+                }
+            }
+        }
+        let mut out = Vec::new();
+        if let Some(Item::Folder(f)) = self.tree.as_ref().and_then(|t| item_at(t, path)) {
+            walk(f, &mut out);
+        }
+        out
+    }
+
+    /// Сортировать папку по пути от А до Я, как `sort_plan` модуля:
+    /// папки и метки вместе, без учёта регистра.
+    pub fn sort(&mut self, path: &[usize]) -> bool {
+        let Some(tree) = self.tree.as_mut() else {
+            return false;
+        };
+        let folder = if path.is_empty() {
+            tree
+        } else {
+            match item_at_mut(tree, path) {
+                Some(Item::Folder(f)) => f,
+                _ => return false,
+            }
+        };
+        folder.children.sort_by_cached_key(|c| item_name(c).to_lowercase());
+        self.refresh();
+        true
+    }
+
+    /// Вид строки - поза камеры, «Снимок вида метки» и «папки» модуля.
+    pub fn set_view(&mut self, path: &[usize], view: Option<scene::lookat::View>) -> bool {
+        let Some(item) = self.tree.as_mut().and_then(|t| item_at_mut(t, path)) else {
+            return false;
+        };
+        match item {
+            Item::Folder(f) => f.view = view,
+            Item::Place(p) => p.view = view,
+            Item::Overlay(o) => o.view = view,
+        }
+        self.refresh();
+        true
+    }
+
+    /// Вставить строку в папку folder на место index. Возвращает её путь.
+    pub fn insert_at(&mut self, folder: &[usize], index: usize, item: Item, root: &str) -> Vec<usize> {
+        let at = self.insert(folder, item, root);
+        // Новая строка встала в конец папки: переносится на index.
+        let last = at.last().copied().unwrap_or(0);
+        if index < last {
+            let mut to = folder.to_vec();
+            to.push(index);
+            if self.move_to(&at, &to, false) {
+                return to;
+            }
+        }
+        at
+    }
+
+    /// Цвета для ползунка непрозрачности, как `_item_colors` модуля:
+    /// у метки линия или значок и заливка, у картинки её цвет. Строка
+    /// по пути и всё содержимое папки, папки без цветов пропускаются.
+    pub fn colors_of(&self, path: &[usize]) -> Vec<(Vec<usize>, Vec<Option<scene::Rgba>>)> {
+        fn walk(item: &Item, path: &mut Vec<usize>, out: &mut Vec<(Vec<usize>, Vec<Option<scene::Rgba>>)>) {
+            match item {
+                Item::Place(p) => out.push((path.clone(), vec![Some(p.color), p.fill])),
+                Item::Overlay(o) => out.push((path.clone(), vec![Some(o.overlay.color), None])),
+                Item::Folder(f) => {
+                    for (i, child) in f.children.iter().enumerate() {
+                        path.push(i);
+                        walk(child, path, out);
+                        path.pop();
+                    }
+                }
+            }
+        }
+        let mut out = Vec::new();
+        let Some(tree) = self.tree.as_ref() else {
+            return out;
+        };
+        if path.is_empty() {
+            for (i, child) in tree.children.iter().enumerate() {
+                walk(child, &mut vec![i], &mut out);
+            }
+        } else if let Some(item) = item_at(tree, path) {
+            walk(item, &mut path.to_vec(), &mut out);
+        }
+        out
+    }
+
+    /// Новые цвета объектов из [`Marks::colors_of`].
+    pub fn set_colors(&mut self, colors: &[(Vec<usize>, Vec<Option<scene::Rgba>>)]) {
+        let Some(tree) = self.tree.as_mut() else {
+            return;
+        };
+        for (path, c) in colors {
+            match item_at_mut(tree, path) {
+                Some(Item::Place(p)) => {
+                    if let Some(Some(line)) = c.first() {
+                        p.color = *line;
+                    }
+                    p.fill = c.get(1).copied().flatten();
+                }
+                Some(Item::Overlay(o)) => {
+                    if let Some(Some(color)) = c.first() {
+                        o.overlay.color = *color;
+                    }
+                }
+                _ => {}
+            }
+        }
+        self.refresh();
     }
 
     /// Названия всех меток и папок дерева, для номера новой метки.
@@ -992,7 +1121,12 @@ impl Marks {
         }
         match item_at(tree, path)? {
             Item::Folder(f) => Some((f.name.clone(), crate::tours::folder_stops(f, fov_y, aspect))),
-            Item::Place(p) => Some((p.name.clone(), vec![crate::tours::recorded_stop(p)?])),
+            // Путь без записанного тура - тур вдоль пути, как «Тур по
+            // пути» модуля.
+            Item::Place(p) => {
+                let stop = crate::tours::recorded_stop(p).or_else(|| crate::tours::place_stop(p, true, fov_y, aspect))?;
+                Some((p.name.clone(), vec![stop]))
+            }
             Item::Overlay(_) => None,
         }
     }

@@ -4,6 +4,8 @@
 
 //! Данные PlanetX Lite, слой L1.
 //!
+//! - [`lines`] - линии векторной основы в картинку тайла, стиль
+//!   `net/overlay.py` модуля;
 //! - [`mvt`] - разбор векторного тайла Mapbox Vector Tile 2;
 //! - [`places`] - пункты для надписей на глобусе, перенос
 //!   `core/places.py` модуля;
@@ -18,5 +20,6 @@ pub mod dem;
 pub mod geocode;
 pub mod grid;
 pub mod layers;
+pub mod lines;
 pub mod mvt;
 pub mod places;

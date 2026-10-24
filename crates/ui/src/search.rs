@@ -49,6 +49,11 @@ pub struct Search {
     pub status: Status,
     /// Время отправки каждого запроса к Nominatim, для самопроверки.
     pub sent: Vec<f64>,
+    /// Адрес точки для «Что здесь?»: ждёт очереди, отправлен.
+    reverse_waiting: Option<(f64, f64)>,
+    reverse_in_flight: Option<(f64, f64)>,
+    /// Адрес последней точки «Что здесь?»: точка и адрес или ошибка.
+    pub address: Option<((f64, f64), Result<String, String>)>,
 }
 
 impl Search {
@@ -64,6 +69,9 @@ impl Search {
             found: Vec::new(),
             status: Status::None,
             sent: Vec::new(),
+            reverse_waiting: None,
+            reverse_in_flight: None,
+            address: None,
         }
     }
 
@@ -83,11 +91,29 @@ impl Search {
         None
     }
 
+    /// Адрес точки для «Что здесь?», как `what_here` модуля: запрос
+    /// ждёт той же очереди Nominatim.
+    pub fn reverse(&mut self, lat: f64, lon: f64) {
+        self.reverse_waiting = Some((lat, lon));
+        self.address = None;
+    }
+
     /// Шаг кадра: отправить ждущий запрос, когда подошла его очередь,
     /// и разобрать пришедший ответ. Возвращает место для перелёта.
     pub fn step(&mut self, now: f64, request: &dyn net::Request) -> Option<Place> {
         let mut fly = None;
         if let Some(answer) = request.take() {
+            // Ответ на адрес точки.
+            if let Some(point) = self.reverse_in_flight.take() {
+                self.address = Some((
+                    point,
+                    answer.map(|bytes| {
+                        let data: serde_json::Value = serde_json::from_slice(&bytes).unwrap_or(serde_json::Value::Null);
+                        geocode::parse_reverse(&data)
+                    }),
+                ));
+                return None;
+            }
             let key = self.in_flight.take();
             match answer {
                 Ok(bytes) => {
@@ -105,6 +131,18 @@ impl Search {
         }
         let ready = self.last_sent.is_none_or(|t| now - t >= SEARCH_INTERVAL);
         if self.in_flight.is_none()
+            && self.reverse_in_flight.is_none()
+            && ready
+            && let Some((lat, lon)) = self.reverse_waiting.take()
+        {
+            request.start(&geocode::reverse_url(lat, lon, self.language.as_deref(), geocode::REVERSE_ZOOM));
+            self.last_sent = Some(now);
+            self.sent.push(now);
+            self.reverse_in_flight = Some((lat, lon));
+            return fly;
+        }
+        if self.in_flight.is_none()
+            && self.reverse_in_flight.is_none()
             && ready
             && let Some(key) = self.waiting.take()
         {
@@ -121,7 +159,7 @@ impl Search {
 
     /// Запрос ждёт очереди или ответа.
     pub fn busy(&self) -> bool {
-        self.waiting.is_some() || self.in_flight.is_some()
+        self.waiting.is_some() || self.in_flight.is_some() || self.reverse_waiting.is_some() || self.reverse_in_flight.is_some()
     }
 
     fn show(&mut self, key: &Key, places: Vec<Place>) -> Option<Place> {

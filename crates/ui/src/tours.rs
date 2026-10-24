@@ -117,7 +117,8 @@ pub fn counts(folder: &Folder) -> [usize; 4] {
     out
 }
 
-/// Проигрыватель тура: часы тура, пауза, продолжение.
+/// Проигрыватель тура: часы тура, пауза, продолжение, переход
+/// к остановке, как `TourPlayer` модуля (`ui/tour.py`).
 pub struct Player {
     pub tour: Tour,
     pub name: String,
@@ -128,6 +129,17 @@ pub struct Player {
     /// Секунд тура за секунду часов окна. Самопроверка ускоряет
     /// длинные туры, обычный показ идёт с 1.
     pub rate: f64,
+    /// Все остановки тура: тур от кнопок ⏮ и ⏭ идёт с одной из них.
+    pub stops: Vec<Stop>,
+    /// Номер первой остановки текущего тура в [`Player::stops`].
+    pub offset: usize,
+    /// Пауза на остановке, секунды, поле «Пауза» панели тура.
+    pub pause: f64,
+    /// Тур по кругу, кнопка 🔁.
+    pub looped: bool,
+    /// Подписи остановок на кадре, кнопка 🔤, у модуля включена.
+    pub captions: bool,
+    fov_y: f64,
 }
 
 impl Player {
@@ -136,8 +148,47 @@ impl Player {
         if stops.is_empty() {
             return None;
         }
-        let tour = Tour::with_fov(start_pose, stops, PAUSE, fov_y);
-        Some(Self { tour, name: name.to_string(), start: now, paused: None, rate: 1.0 })
+        let tour = Tour::with_fov(start_pose, stops.clone(), PAUSE, fov_y);
+        Some(Self {
+            tour,
+            name: name.to_string(),
+            start: now,
+            paused: None,
+            rate: 1.0,
+            stops,
+            offset: 0,
+            pause: PAUSE,
+            looped: false,
+            captions: true,
+            fov_y,
+        })
+    }
+
+    /// Лететь от позы pose к остановке k и дальше по списку, `play_from`
+    /// модуля. Новая пауза действует отсюда.
+    pub fn play_from(&mut self, k: usize, pose: &Pose, now: f64) {
+        let Some(last) = self.stops.len().checked_sub(1) else {
+            return;
+        };
+        let k = k.min(last);
+        self.offset = k;
+        self.tour = Tour::with_fov(pose, self.stops[k..].to_vec(), self.pause, self.fov_y);
+        self.start = now;
+        self.paused = None;
+    }
+
+    /// Перемотать на долю share тура: камера встаёт в позу этого времени.
+    pub fn seek(&mut self, share: f64, now: f64) {
+        let t = share.clamp(0.0, 1.0) * self.tour.duration;
+        match &mut self.paused {
+            Some(p) => *p = t,
+            None => self.start = now - t / self.rate,
+        }
+    }
+
+    /// Номер остановки во всём туре и их количество.
+    pub fn stop_number(&self, now: f64) -> Option<(usize, usize)> {
+        Some((self.offset + self.index(now)?, self.stops.len()))
     }
 
     /// Время тура.

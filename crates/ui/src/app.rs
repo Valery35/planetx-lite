@@ -59,6 +59,19 @@ pub const SHOT_IDLE_FRAMES: u32 = 30;
 pub const PAGE_PLACES_LIMIT: usize = 4 << 20;
 /// Секунд между позами записи тура, `RECORD_PERIOD` модуля.
 pub const RECORD_PERIOD: f64 = 0.1;
+/// Время на картинки линий векторной основы за кадр, секунды. Выбор
+/// помощника: кадр в 60 в секунду длится 16 мс, у «Бриенца» с 6 мс было 49 кадров.
+pub const VECTOR_BUDGET: f64 = 0.003;
+/// Время на разбор тайлов подписей за кадр, секунды. Выбор помощника.
+pub const LABEL_BUDGET: f64 = 0.003;
+/// Снимков основы в видеокарту за кадр, как `UPLOADS_PER_FRAME`
+/// в `render/view.py` модуля. Пока камера движется - один.
+pub const UPLOADS_PER_FRAME: usize = 3;
+/// Время на загрузку снимков за кадр, секунды, `UPLOAD_TIME` модуля.
+/// Первый снимок кадра грузится всегда.
+pub const UPLOAD_TIME: f64 = 0.002;
+/// Значок загрузки виден через столько секунд, как у модуля.
+pub const SPINNER_DELAY: f64 = 0.4;
 /// Скорость шкалы в демо самосвалов, `HAUL_RATE` модуля.
 pub const HAUL_RATE: f64 = 10.0;
 /// За столько секунд до конца рейса момент возвращается к началу,
@@ -232,6 +245,49 @@ pub struct LiteApp {
     tool: Option<crate::tool::Tool>,
     /// Экранные органы навигации, как у модуля.
     navpad: crate::navpad::NavPad,
+    /// «Определить объекты» включено: щелчок по глобусу - сведения
+    /// о точке, как кнопка `identify` модуля.
+    identify: bool,
+    /// Векторная основа: строки раздела «Слои» и линии поверх снимка.
+    vector: crate::vector::VectorBase,
+    /// Строки слоёв каталога в разделе «Слои» и включённые из них.
+    extras: std::collections::BTreeSet<crate::layers::Extra>,
+    extras_on: std::collections::BTreeSet<crate::layers::Extra>,
+    /// Открытое меню строки раздела «Слои».
+    layers_menu: Option<String>,
+    /// Каталог «Добавить данные».
+    catalog: crate::layers::Catalog,
+    /// Ползунок непрозрачности: выделенный путь, цвета при выделении,
+    /// непрозрачность при выделении и сейчас.
+    opacity: Option<OpacityState>,
+    /// Высота раздела «Слои» в прошлом кадре.
+    layers_height: f32,
+    /// Сообщение строки состояния и момент, с которого оно видно.
+    message_seen: Option<(String, f64)>,
+    /// Точка поверхности под курсором: широта, долгота, высота.
+    cursor_point: Option<(f64, f64, f64)>,
+    /// Тайлы, которые просили подписи в прошлом кадре.
+    label_keys: std::collections::HashSet<globe_core::lod::TileKey>,
+    /// Пришедшие снимки основы, ждущие загрузки в видеокарту.
+    pending: HashMap<TileKey, net::Image>,
+    /// Тайлы, нарисованные прошлым кадром, - их снимки грузятся первыми.
+    drawn: std::collections::HashSet<TileKey>,
+    /// Камера двигалась в прошлом кадре.
+    was_moving: bool,
+    /// С какого момента идёт загрузка, для значка загрузки.
+    loading_since: Option<f64>,
+    /// Меню правой кнопки на глобусе.
+    globe_menu: Option<crate::globemenu::GlobeMenu>,
+    /// Окно «Объекты».
+    objects: Option<crate::identify::Objects>,
+    /// Копия строк KML для пункта «Вставить».
+    clip_kml: Option<String>,
+    /// Вопрос перед удалением: заголовок, текст, что удалить.
+    confirm: Option<(String, String, Confirmed)>,
+    /// Окно «Свойства папки».
+    folder_props: Option<crate::folderprops::FolderProps>,
+    /// Окно названия: что сохраняется и название.
+    name_dialog: Option<(NameFor, String)>,
     /// Подсказки строки «Поиск» открыты: строка была в фокусе.
     suggesting: bool,
     /// Запись тура: начало, позы (время, широта, долгота, расстояние,
@@ -260,7 +316,7 @@ pub struct LiteApp {
 type DroppedBox = Arc<std::sync::Mutex<Vec<(Result<Vec<u8>, String>, String)>>>;
 
 /// Целое с пробелом между тысячами: 20 000.
-fn group_thousands(n: i64) -> String {
+pub(crate) fn group_thousands(n: i64) -> String {
     let digits = n.unsigned_abs().to_string();
     let mut out = String::new();
     for (i, ch) in digits.chars().enumerate() {
@@ -292,28 +348,114 @@ fn demo_items(ui: &mut egui::Ui, lang: Lang, clicked: &mut Option<&'static crate
 /// источников. PNG ждёт сохранения в ячейке.
 enum Snapshot {
     /// Окна скрыты, в этом кадре просится снимок.
-    Hide,
-    /// Снимок просили, ждётся PNG.
-    Wait(PngCell),
+    Hide(SnapshotTo),
+    /// Снимок просили, ждётся картинка.
+    Wait(SnapshotTo, ShotCell),
 }
 
-/// Ячейка PNG снимка или ошибки, её заполняет egui после кадра.
-type PngCell = Arc<std::sync::Mutex<Option<Result<Vec<u8>, String>>>>;
+/// Куда идёт снимок: файл PNG («Снимок вида») или буфер обмена
+/// («Копия вида», `copy_view` модуля).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SnapshotTo {
+    File,
+    Clipboard,
+}
 
-/// PNG из снимка окна: часть rect в точках, ppp - пикселей на точку.
-fn crop_png(image: &egui::ColorImage, rect: egui::Rect, ppp: f32) -> Result<Vec<u8>, String> {
+/// Ползунок непрозрачности: путь, цвета объектов при выделении,
+/// непрозрачность при выделении и сейчас.
+type OpacityState = (Vec<usize>, Vec<(Vec<usize>, Vec<Option<scene::Rgba>>)>, f64, f64);
+
+/// Сообщение строки состояния видно столько секунд, `MESSAGE_TIME` модуля.
+pub const MESSAGE_TIME: f64 = 5.0;
+
+/// Наибольшая высота списков подсказок и найденных мест, `FOUND_HEIGHT`
+/// модуля.
+const FOUND_HEIGHT: f32 = 160.0;
+
+/// Строка подсказки поиска, `hint_text` модуля: название и приписка вида -
+/// метка, действие или прежний запрос.
+fn hint_text(lang: Lang, item: &scene::searchbar::Suggestion) -> String {
+    match item.kind {
+        scene::searchbar::Kind::Place => trf(lang, "{name} - placemark", &[("name", &item.text)]),
+        scene::searchbar::Kind::Action => trf(lang, "{name} - {what}", &[("name", &item.text), ("what", &item.note)]),
+        scene::searchbar::Kind::History => trf(lang, "{name} - earlier query", &[("name", &item.text)]),
+    }
+}
+
+/// Кнопка или клавиша панели тура.
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum TourAct {
+    Toggle,
+    Stop,
+    Prev,
+    Next,
+    Seek(f64),
+    Loop,
+    Captions,
+    SetPause(f64),
+}
+
+/// Описание остановки текстом для подписи: без разметки, не длиннее
+/// 400 знаков, как `StopCaption` модуля.
+fn caption_text(description: &str) -> String {
+    let text: String = scene::balloon::pieces(description)
+        .into_iter()
+        .map(|p| match p {
+            scene::balloon::Piece::Text(t) => t,
+            scene::balloon::Piece::Link(t, _) => t,
+        })
+        .collect();
+    let text = text.trim();
+    if text.chars().count() > 400 { format!("{}…", text.chars().take(400).collect::<String>().trim_end()) } else { text.to_string() }
+}
+
+/// Что называет окно названия.
+enum NameFor {
+    View,
+    Tour(Box<scene::kml::Place>),
+    Measure(Box<scene::kml::Place>),
+}
+
+/// Что удалить после «Да».
+#[derive(Debug, Clone)]
+enum Confirmed {
+    Remove(Vec<usize>),
+    Clear,
+}
+
+/// Пункт меню «Сцена» панели значков.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SceneAction {
+    Save,
+    Open,
+    Share,
+}
+
+/// Ячейка снимка: часть кадра или ошибка, её заполняет egui после кадра.
+type ShotCell = Arc<std::sync::Mutex<Option<Result<egui::ColorImage, String>>>>;
+
+/// Часть rect снимка окна в точках, ppp - пикселей на точку.
+fn crop(image: &egui::ColorImage, rect: egui::Rect, ppp: f32) -> Result<egui::ColorImage, String> {
     let [w, h] = image.size;
     let x0 = ((rect.min.x * ppp).round().max(0.0) as usize).min(w);
     let y0 = ((rect.min.y * ppp).round().max(0.0) as usize).min(h);
     let x1 = ((rect.max.x * ppp).round().max(0.0) as usize).clamp(x0, w);
     let y1 = ((rect.max.y * ppp).round().max(0.0) as usize).clamp(y0, h);
-    let mut rgba = Vec::with_capacity((x1 - x0) * (y1 - y0) * 4);
-    for y in y0..y1 {
-        for p in image.pixels.get(y * w + x0..y * w + x1).unwrap_or_default() {
-            rgba.extend(p.to_srgba_unmultiplied());
-        }
+    if x1 == x0 || y1 == y0 {
+        return Err("пустой снимок".into());
     }
-    let img = image::RgbaImage::from_raw((x1 - x0) as u32, (y1 - y0) as u32, rgba).ok_or("пустой снимок")?;
+    let mut pixels = Vec::with_capacity((x1 - x0) * (y1 - y0));
+    for y in y0..y1 {
+        pixels.extend_from_slice(image.pixels.get(y * w + x0..y * w + x1).unwrap_or_default());
+    }
+    Ok(egui::ColorImage::new([x1 - x0, y1 - y0], pixels))
+}
+
+/// PNG картинки снимка.
+fn to_png(image: &egui::ColorImage) -> Result<Vec<u8>, String> {
+    let rgba: Vec<u8> = image.pixels.iter().flat_map(|p| p.to_srgba_unmultiplied()).collect();
+    let [w, h] = image.size;
+    let img = image::RgbaImage::from_raw(w as u32, h as u32, rgba).ok_or("пустой снимок")?;
     let mut out = std::io::Cursor::new(Vec::new());
     img.write_to(&mut out, image::ImageFormat::Png).map_err(|e| e.to_string())?;
     Ok(out.into_inner())
@@ -331,7 +473,6 @@ fn sun_moment(window: Option<(f64, f64)>) -> f64 {
 /// Что нажали на панели инструментов.
 #[derive(Default)]
 struct ToolClicks {
-    open: bool,
     demo: Option<&'static crate::demos::Demo>,
 }
 
@@ -346,6 +487,11 @@ impl LiteApp {
             Settings::default()
         };
         let lang = settings.lang();
+        let vector_text = settings.vector.clone();
+        let extras_on: std::collections::BTreeSet<crate::layers::Extra> = [(crate::layers::Extra::Air, settings.air), (crate::layers::Extra::Sun, settings.sun), (crate::layers::Extra::Grid, settings.grid)]
+            .into_iter()
+            .filter_map(|(e, on)| on.then_some(e))
+            .collect();
         // Тёмная тема в цветах модуля по умолчанию, решения автора
         // от 23 октября 2026 года.
         crate::theme::apply(&cc.egui_ctx, settings.dark);
@@ -357,8 +503,10 @@ impl LiteApp {
             None => Pose::new(START.0, START.1, START.2, 0.0, 0.0),
         };
         let heights = Heights::default();
-        if (settings.scale - 1.0).abs() > f64::EPSILON {
-            heights.write().set_scale(settings.scale);
+        // Снятый флажок «Рельефа» - Земля гладкая, как у модуля.
+        let scale = if settings.relief { settings.scale } else { 0.0 };
+        if (scale - 1.0).abs() > f64::EPSILON {
+            heights.write().set_scale(scale);
         }
         let mut nav = Navigator::new(camera, pose);
         let source = heights.clone();
@@ -419,6 +567,27 @@ impl LiteApp {
             tool: None,
             suggesting: false,
             navpad: crate::navpad::NavPad::default(),
+            identify: false,
+            vector: crate::vector::VectorBase::from_text(&vector_text),
+            extras: extras_on.clone(),
+            extras_on,
+            layers_menu: None,
+            catalog: crate::layers::Catalog::default(),
+            opacity: None,
+            layers_height: 120.0,
+            message_seen: None,
+            cursor_point: None,
+            name_dialog: None,
+            clip_kml: None,
+            globe_menu: None,
+            loading_since: None,
+            label_keys: std::collections::HashSet::new(),
+            pending: HashMap::new(),
+            drawn: std::collections::HashSet::new(),
+            was_moving: false,
+            objects: None,
+            confirm: None,
+            folder_props: None,
             recording: None,
             snapshot: None,
             card: None,
@@ -442,21 +611,40 @@ impl LiteApp {
         app
     }
 
-    /// Панель инструментов в левом верхнем углу глобуса, как у модуля:
-    /// панель, «Открыть», «Демо», «Поделиться», «Настройки», во весь
-    /// экран, «О программе».
+    /// Панель значков в левом верхнем углу глобуса, `ui/toolbar.py`
+    /// модуля. Кнопки и их порядок - как у модуля, решение автора
+    /// от 24 октября 2026 года «порядок кнопок возьми тем же». Без
+    /// кнопок QGIS: синхронизации с картой и вида в макет, и без
+    /// «Тела»: другие тела Lite не показывает.
     fn toolbar(&mut self, ctx: &egui::Context, view: egui::Rect, now: f64) {
         use crate::theme::{Tool, tool_button};
         let lang = self.lang;
+        // F11 - во весь экран и обратно, Esc - выход из него, как у модуля.
+        let on = ctx.input(|i| i.viewport().fullscreen.unwrap_or(false));
+        let (f11, esc) = ctx.input(|i| (i.key_pressed(egui::Key::F11), i.key_pressed(egui::Key::Escape)));
+        let typing = ctx.memory(|m| m.focused().is_some());
+        if f11 || (esc && on && !typing) {
+            self.set_fullscreen(ctx, !on);
+        }
+        // Во весь экран панель значков прячется, органы навигации, шкала
+        // времени и тур остаются.
+        if on {
+            self.toolbar_rect = None;
+            return;
+        }
         let mut clicks = ToolClicks::default();
         let mut panel = self.panel_open;
         let mut settings = self.settings_open;
+        let mut identify = self.identify;
+        let mut time = self.timebar.open;
+        let time_ready = self.timebar.extent.is_some();
+        let mut new_tool: Option<crate::tool::Tool> = None;
         let mut about = false;
         let mut full = false;
-        let mut share = false;
-        let mut new_tool: Option<crate::tool::Tool> = None;
-        let mut snapshot = false;
         let mut record = false;
+        let mut save_view = false;
+        let mut snapshot: Option<SnapshotTo> = None;
+        let mut scene: Option<SceneAction> = None;
         // Уровень панели - как у окон: открытое окно встаёт поверх неё.
         // На уровне Foreground панель закрывала окно «Источники данных»,
         // замечание автора от 23 октября 2026 года.
@@ -467,73 +655,214 @@ impl LiteApp {
                 crate::theme::plate().inner_margin(egui::Margin::same(3)).show(ui, |ui| {
                     ui.spacing_mut().item_spacing = egui::vec2(2.0, 0.0);
                     ui.horizontal(|ui| {
-                        if tool_button(ui, Tool::Sidebar, panel, tr(lang, "Show or hide the panel")).clicked() {
+                        let tip = if panel { tr(lang, "Hide sidebar") } else { tr(lang, "Show sidebar") };
+                        if tool_button(ui, Tool::Sidebar, false, false, true, tip).clicked() {
                             panel = !panel;
                         }
-                        if tool_button(ui, Tool::Open, false, tr(lang, "Open a scene, KML, KMZ or a data file")).clicked() {
-                            clicks.open = true;
-                        }
-                        let demo = tool_button(ui, Tool::Demo, false, tr(lang, "Demo scenes"));
-                        egui::Popup::menu(&demo).show(|ui| demo_items(ui, lang, &mut clicks.demo));
-                        if tool_button(ui, Tool::Share, false, tr(lang, "Share a link to this view")).clicked() {
-                            share = true;
-                        }
-                        let placing = matches!(self.tool.as_ref().map(|t| &t.purpose), Some(crate::tool::Purpose::Place));
-                        // Вид объекта - вкладки окна «Новая метка», как у модуля.
-                        if tool_button(ui, Tool::Placemark, placing, tr(lang, "New placemark, path, polygon or circle")).clicked() {
-                            new_tool = Some(if placing { crate::tool::Tool::closed() } else { crate::tool::Tool::place(crate::ruler::Mode::Point) });
+                        if tool_button(ui, Tool::Identify, identify, false, true, tr(lang, "Identify. A click on the globe shows the coordinates, the height or depth of the point and the placemarks there.")).clicked() {
+                            identify = !identify;
                         }
                         let measuring = matches!(self.tool.as_ref().map(|t| &t.purpose), Some(crate::tool::Purpose::Ruler));
-                        if tool_button(ui, Tool::Ruler, measuring, tr(lang, "Ruler: distance, area, ground length")).clicked() {
-                            new_tool = if measuring { Some(crate::tool::Tool::closed()) } else { Some(crate::tool::Tool::ruler()) };
+                        if tool_button(ui, Tool::Ruler, false, false, true, tr(lang, "Ruler. Length, perimeter and area on the ellipsoid, the measurement can be saved to My Places.")).clicked() {
+                            new_tool = Some(if measuring { crate::tool::Tool::closed() } else { crate::tool::Tool::ruler() });
+                        }
+                        // Новая метка - меню вида объекта, пункт открывает
+                        // окно «Новая метка» на своей вкладке, как у модуля.
+                        let place = tool_button(ui, Tool::Place, false, true, true, tr(lang, "New placemark, path, polygon or circle in My Places."));
+                        egui::Popup::menu(&place).show(|ui| {
+                            for (mode, title) in [
+                                (crate::ruler::Mode::Point, "Placemark"),
+                                (crate::ruler::Mode::Path, "Path"),
+                                (crate::ruler::Mode::Polygon, "Polygon"),
+                                (crate::ruler::Mode::Circle, "Circle"),
+                            ] {
+                                if ui.button(tr(lang, title)).clicked() {
+                                    new_tool = Some(crate::tool::Tool::place(mode));
+                                    ui.close();
+                                }
+                            }
+                        });
+                        if tool_button(ui, Tool::Bookmark, false, false, true, tr(lang, "Save view. The point of view becomes a placemark in My Places, flying to it returns the height, heading and tilt.")).clicked() {
+                            save_view = true;
                         }
                         let recording = self.recording.is_some();
-                        let tip = if recording { tr(lang, "Stop recording and save the tour") } else { tr(lang, "Record a tour: the camera path while you move the globe") };
-                        if tool_button(ui, Tool::Record, recording, tip).clicked() {
+                        if tool_button(ui, Tool::Record, recording, false, true, tr(lang, "Record a tour. Camera motion by mouse, keys or flights becomes a tour in My Places, a second click stops the recording.")).clicked() {
                             record = true;
                         }
-                        if tool_button(ui, Tool::Camera, false, tr(lang, "Snapshot of the view to a PNG file")).clicked() {
-                            snapshot = true;
+                        // Шкала времени доступна, когда у видимых меток есть
+                        // время, как `set_time_available` модуля.
+                        if tool_button(ui, Tool::Time, time && time_ready, false, time_ready, tr(lang, "Time slider. While it is open, data outside its period is hidden. The closed slider shows all placemarks.")).clicked() {
+                            time = !time;
                         }
-                        if tool_button(ui, Tool::Settings, settings, tr(lang, "Settings")).clicked() {
+                        if tool_button(ui, Tool::Camera, false, false, true, tr(lang, "Snapshot of the view to a PNG file.")).clicked() {
+                            snapshot = Some(SnapshotTo::File);
+                        }
+                        if tool_button(ui, Tool::Copy, false, false, true, tr(lang, "Copy of the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider.")).clicked() {
+                            snapshot = Some(SnapshotTo::Clipboard);
+                        }
+                        let scene_button = tool_button(ui, Tool::Scene, false, true, true, tr(lang, "Scene - the camera and the selected folder of My Places with its tour. It is saved to a file and opens on another computer."));
+                        egui::Popup::menu(&scene_button).show(|ui| {
+                            if ui.button(tr(lang, "Save Scene…")).clicked() {
+                                scene = Some(SceneAction::Save);
+                                ui.close();
+                            }
+                            if ui.button(tr(lang, "Open Scene…")).clicked() {
+                                scene = Some(SceneAction::Open);
+                                ui.close();
+                            }
+                            ui.separator();
+                            if ui.button(tr(lang, "Share View…")).on_hover_text(tr(lang, "Link to this view")).clicked() {
+                                scene = Some(SceneAction::Share);
+                                ui.close();
+                            }
+                        });
+                        let demo = tool_button(ui, Tool::Demo, false, true, true, tr(lang, "Demo: prepared scenes with placemarks and tours. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour."));
+                        egui::Popup::menu(&demo).show(|ui| demo_items(ui, lang, &mut clicks.demo));
+                        if tool_button(ui, Tool::Settings, settings, false, true, tr(lang, "View properties: relief scale, language of labels, appearance.")).clicked() {
                             settings = !settings;
                         }
-                        if tool_button(ui, Tool::Fullscreen, false, tr(lang, "Full screen")).clicked() {
+                        if tool_button(ui, Tool::Fullscreen, false, false, true, tr(lang, "Full screen (F11) - the globe view for a show. Esc or F11 returns the window.")).clicked() {
                             full = true;
                         }
-                        if tool_button(ui, Tool::Info, false, tr(lang, "About")).clicked() {
+                        if tool_button(ui, Tool::Info, false, false, true, tr(lang, "About")).clicked() {
                             about = true;
                         }
                     });
                 });
             });
         self.toolbar_rect = Some(area.response.rect);
+        self.spinner(ctx, area.response.rect, now);
         self.panel_open = panel;
         self.settings_open = settings;
+        self.identify = identify;
+        self.timebar.open = time && time_ready;
         self.credits.about_request |= about;
         if full {
-            let on = ctx.input(|i| i.viewport().fullscreen.unwrap_or(false));
-            ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(!on));
+            self.set_fullscreen(ctx, true);
         }
-        if share {
-            self.share(ctx);
-        }
-        if snapshot {
-            self.snapshot = Some(Snapshot::Hide);
+        if let Some(to) = snapshot {
+            self.snapshot = Some(Snapshot::Hide(to));
         }
         if record {
             self.toggle_record(now);
+        }
+        if save_view {
+            let name = scene::placetree::numbered_name(tr(lang, "View"), &self.marks.names());
+            self.name_dialog = Some((NameFor::View, name));
         }
         if let Some(tool) = new_tool {
             // Повторное нажатие «Линейки» закрывает её.
             self.tool = tool.open.then_some(tool);
         }
-        if clicks.open {
-            self.pick_file(ctx, now);
+        match scene {
+            Some(SceneAction::Save) => {
+                let folder = self.tree_state.selected.clone().unwrap_or_default();
+                self.save_marks(&folder, crate::export::Kind::Scene);
+            }
+            Some(SceneAction::Open) => self.pick_file(ctx, now),
+            Some(SceneAction::Share) => self.share(ctx),
+            None => {}
         }
         if let Some(demo) = clicks.demo {
             self.open_demo(demo, now);
         }
+    }
+
+    /// Значок загрузки справа от панели значков, как `BusySpinner`
+    /// модуля: дуга цвета выделения, видна через 0.4 с после начала
+    /// загрузки.
+    fn spinner(&self, ctx: &egui::Context, bar: egui::Rect, now: f64) {
+        let Some(since) = self.loading_since.filter(|s| now - s >= SPINNER_DELAY) else {
+            return;
+        };
+        let side = 26.0;
+        let center = egui::pos2(bar.right() + 8.0 + side / 2.0, bar.center().y);
+        let painter = ctx.layer_painter(egui::LayerId::new(egui::Order::Middle, egui::Id::unique("planetx-spinner")));
+        let start = ((now - since) * std::f64::consts::TAU) as f32;
+        let points: Vec<egui::Pos2> = (0..=24).map(|i| {
+            let a = start + i as f32 / 24.0 * 4.4;
+            center + egui::vec2(a.cos(), a.sin()) * (side / 2.0 - 3.0)
+        }).collect();
+        painter.add(egui::Shape::line(points, egui::Stroke::new(3.0, crate::theme::pal().accent)));
+        ctx.request_repaint();
+    }
+
+    /// Во весь экран или обратно, с сообщением, как `toggle_fullscreen`
+    /// модуля.
+    fn set_fullscreen(&mut self, ctx: &egui::Context, on: bool) {
+        ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(on));
+        if on {
+            self.open_message = Some(tr(self.lang, "Full screen. Exit - Esc or F11.").to_string());
+        }
+    }
+
+    /// Окно названия: «Сохранить вид», «Сохранить тур», «Сохранить
+    /// измерение» модуля. Название по умолчанию с номером, объект ложится
+    /// в выделенную папку или в папку выделенной метки.
+    fn name_window(&mut self, ctx: &egui::Context) {
+        let Some((what, name)) = &mut self.name_dialog else {
+            return;
+        };
+        let lang = self.lang;
+        let title = match what {
+            NameFor::View => tr(lang, "Save view"),
+            NameFor::Tour(_) => tr(lang, "Save tour"),
+            NameFor::Measure(_) => tr(lang, "Save measurement"),
+        };
+        let mut open = true;
+        let mut done: Option<bool> = None;
+        egui::Window::new(title).open(&mut open).collapsible(false).resizable(false).pivot(egui::Align2::CENTER_CENTER).default_pos(ctx.content_rect().center()).show(ctx, |ui| {
+            ui.label(tr(lang, "Name"));
+            let edit = ui.text_edit_singleline(name);
+            if edit.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                done = Some(true);
+            }
+            ui.horizontal(|ui| {
+                if ui.button(tr(lang, "OK")).clicked() {
+                    done = Some(true);
+                }
+                if ui.button(tr(lang, "Cancel")).clicked() {
+                    done = Some(false);
+                }
+            });
+        });
+        if !open {
+            done = Some(false);
+        }
+        match done {
+            Some(true) => {
+                let Some((what, name)) = self.name_dialog.take() else {
+                    return;
+                };
+                let folder = self.tree_state.selected.clone().unwrap_or_default();
+                let name = name.trim().to_string();
+                match what {
+                    NameFor::View => {
+                        let name = if name.is_empty() { scene::placetree::numbered_name(tr(lang, "View"), &self.marks.names()) } else { name };
+                        self.add_view_place(&folder, &name);
+                    }
+                    NameFor::Tour(mut place) | NameFor::Measure(mut place) => {
+                        if !name.is_empty() {
+                            place.name = name;
+                        }
+                        let at = self.marks.insert(&folder, scene::kml::Item::Place(*place), marks::root_name(lang));
+                        self.tree_state.selected = Some(at);
+                        self.marks_changed();
+                    }
+                }
+            }
+            Some(false) => self.name_dialog = None,
+            None => {}
+        }
+    }
+    /// Метка вида камеры в папке по пути folder.
+    fn add_view_place(&mut self, folder: &[usize], name: &str) {
+        let pose = &self.nav.pose;
+        let mut place = scene::kml::Place::new(name, scene::features::Kind::Point, vec![(pose.lat, pose.lon)]);
+        place.view = scene::lookat::make(pose.lat, pose.lon, pose.distance, pose.heading, pose.tilt);
+        let at = self.marks.insert(folder, scene::kml::Item::Place(place), marks::root_name(self.lang));
+        self.tree_state.selected = Some(at);
+        self.marks_changed();
     }
 
     /// Кнопка записи тура, как `_record_toggled` модуля: начать или
@@ -550,14 +879,12 @@ impl LiteApp {
             self.open_message = Some(tr(self.lang, "The tour is not recorded, the camera did not move.").to_string());
             return;
         }
+        // Название тура спрашивает окно «Сохранить тур», как у модуля.
         let name = scene::placetree::numbered_name(tr(self.lang, "Tour"), &self.marks.names());
         let points = samples.iter().map(|s| (s[1], s[2])).collect();
         let mut place = scene::kml::Place::new(&name, scene::features::Kind::Line, points);
         place.tour = Some(samples);
-        let folder = self.tree_state.selected.clone().unwrap_or_default();
-        let at = self.marks.insert(&folder, scene::kml::Item::Place(place), marks::root_name(self.lang));
-        self.tree_state.selected = Some(at);
-        self.marks_changed();
+        self.name_dialog = Some((NameFor::Tour(Box::new(place)), name));
         self.open_message = None;
     }
 
@@ -579,19 +906,245 @@ impl LiteApp {
         ));
     }
 
+    /// Строка текстом KML в буфер обмена, как `copy_places` модуля: её
+    /// вставляют в «Мои метки» или в Google Earth. Копия остаётся и для
+    /// пункта меню «Вставить».
+    fn copy_marks(&mut self, ctx: &egui::Context, path: &[usize]) {
+        let text = self.marks.export_tree(path).and_then(|tree| crate::export::tree_bytes(&tree, false).ok());
+        if let Some(text) = text.and_then(|b| String::from_utf8(b).ok()) {
+            ctx.copy_text(text.clone());
+            self.clip_kml = Some(text);
+            self.open_message = Some(tr(self.lang, "Copied as KML.").to_string());
+        }
+    }
+
+    /// Меню на глобусе в точке pos окна.
+    fn make_globe_menu(&self, pos: egui::Pos2, rect: egui::Rect, ppp: f64) -> crate::globemenu::GlobeMenu {
+        let (px, py) = (f64::from(pos.x - rect.min.x) * ppp, f64::from(pos.y - rect.min.y) * ppp);
+        let point = globe_core::navigation::ground_under(&self.nav.camera, px, py, self.nav.pose.terrain.as_ref()).map(|p| {
+            let (lat, lon, _) = self.nav.camera.ellipsoid.ecef_to_geodetic(p);
+            (lat, lon)
+        });
+        let coords = point.map_or(String::new(), |(lat, lon)| self.point_text(lat, lon, None, 6));
+        let place = self.marks.tree.as_ref().and_then(|t| crate::card::pick(t, &self.nav, px, py, crate::card::PICK_PIXELS * ppp)).and_then(|path| {
+            let name = self.marks.place(&path).map(|p| p.name.clone())?;
+            Some((path, name))
+        });
+        let drawing = self.tool.as_ref().filter(|t| t.open && !t.ruler.points.is_empty()).map(|t| {
+            let radius = crate::card::PICK_PIXELS * ppp;
+            let vertex = t.ruler.points.iter().position(|(lat, lon)| {
+                let h = self.nav.pose.terrain.as_ref().map_or(0.0, |f| f(*lat, *lon));
+                let (q, front) = self.nav.camera.project(self.nav.camera.ellipsoid.geodetic_to_ecef(*lat, *lon, h));
+                front && (q.x - px).hypot(q.y - py) <= radius
+            });
+            crate::globemenu::Drawing {
+                vertex,
+                finished: t.ruler.finished,
+                can_save: t.ruler.figure(false).is_some(),
+                point: t.ruler.mode == crate::ruler::Mode::Point,
+            }
+        });
+        crate::globemenu::GlobeMenu { at: pos, point, coords, place, drawing }
+    }
+
+    /// Выбор в меню на глобусе.
+    fn globe_menu_choice(&mut self, ctx: &egui::Context, choice: crate::globemenu::Choice, point: Option<(f64, f64)>, now: f64) {
+        use crate::globemenu::Choice;
+        match choice {
+            Choice::CopyCoords(text) => {
+                ctx.copy_text(text.clone());
+                self.open_message = Some(trf(self.lang, "Copied: {number}", &[("number", &text)]));
+            }
+            Choice::RemoveVertex(i) => {
+                if let Some(t) = &mut self.tool
+                    && i < t.ruler.points.len()
+                {
+                    t.ruler.points.remove(i);
+                }
+            }
+            Choice::Finish => {
+                if let Some(t) = &mut self.tool {
+                    t.ruler.finished = true;
+                }
+            }
+            Choice::Continue => {
+                if let Some(t) = &mut self.tool {
+                    t.ruler.finished = false;
+                }
+            }
+            Choice::Save => {
+                if let Some(t) = &mut self.tool {
+                    t.save_request = true;
+                }
+            }
+            Choice::Clear => {
+                if let Some(t) = &mut self.tool {
+                    t.ruler.clear();
+                }
+            }
+            Choice::Properties(path) => self.queued.push(crate::marks::Action::Properties(path)),
+            Choice::AddPlacemark | Choice::Measure => {
+                let Some(p) = point else {
+                    return;
+                };
+                let mut tool = if choice == Choice::AddPlacemark { crate::tool::Tool::place(crate::ruler::Mode::Point) } else { crate::tool::Tool::ruler() };
+                tool.ruler.points.push(p);
+                self.tool = Some(tool);
+            }
+            Choice::FlyHere => {
+                if let Some((lat, lon)) = point {
+                    let (distance, heading, tilt) = (self.nav.pose.distance, self.nav.pose.heading, self.nav.pose.tilt);
+                    crate::input::fly(&mut self.nav, Pose::new(lat, lon, distance, heading, tilt), now);
+                }
+            }
+            Choice::Spin => {
+                if let Some((lat, lon)) = point {
+                    let spin = globe_core::flight::Spin::new(&self.nav.camera.ellipsoid, &self.nav.pose, lat, lon, self.nav.camera.fov_y);
+                    self.nav.start_flight(globe_core::flight::Motion::Spin(spin), now);
+                }
+            }
+            Choice::WhatHere => {
+                if let Some((lat, lon)) = point {
+                    self.search.reverse(lat, lon);
+                    self.objects = Some(self.make_objects(lat, lon, None, Some(tr(self.lang, "loading").to_string())));
+                }
+            }
+        }
+    }
+
+    /// Окно «Объекты» для точки: метки под пикселем, если он дан, и место
+    /// с адресом.
+    fn make_objects(&self, lat: f64, lon: f64, pixel: Option<(f64, f64, f64)>, address: Option<String>) -> crate::identify::Objects {
+        let height = (self.true_heights())(&[(lat, lon)]).first().copied();
+        let mut groups = Vec::new();
+        let paths = match (pixel, self.marks.tree.as_ref()) {
+            (Some((px, py, ppp)), Some(tree)) => crate::card::pick_all(tree, &self.nav, px, py, crate::card::PICK_PIXELS * ppp),
+            _ => Vec::new(),
+        };
+        let places: Vec<&scene::kml::Place> = paths.iter().filter_map(|p| self.marks.place(p)).collect();
+        groups.extend(crate::identify::places_group(self.lang, &places));
+        groups.push(crate::identify::place_group(self.lang, height.filter(|_| self.settings.relief), address));
+        crate::identify::Objects { point: self.point_text(lat, lon, height, 6), groups, at: (lat, lon) }
+    }
+
+    /// Удалить всё из «Моих меток» после вопроса.
+    fn clear_marks(&mut self) {
+        self.tree_state.selected = None;
+        self.marks.clear();
+        self.shared.clear();
+        self.player = None;
+        self.open_message = None;
+        self.marks_changed();
+    }
+
+    /// Окно вопроса перед удалением и окно свойств папки.
+    fn dialogs(&mut self, ctx: &egui::Context, now: f64) {
+        let lang = self.lang;
+        if let Some(menu) = &self.globe_menu {
+            let (choice, open) = menu.show(ctx, lang);
+            let point = menu.point;
+            if !open {
+                self.globe_menu = None;
+            }
+            if let Some(c) = choice {
+                self.globe_menu_choice(ctx, c, point, now);
+            }
+        }
+        // Пришёл адрес «Что здесь?» - строка «Адрес» в группе «Место».
+        if let Some(objects) = &self.objects
+            && let Some((at, answer)) = self.search.address.clone()
+            && at == objects.at
+        {
+            let (lat, lon) = at;
+            let text = match answer {
+                Ok(a) if !a.is_empty() => a,
+                Ok(_) => tr(lang, "none").to_string(),
+                Err(e) => trf(lang, "not received: {error}", &[("error", &e)]),
+            };
+            self.search.address = None;
+            self.objects = Some(self.make_objects(lat, lon, None, Some(text)));
+        }
+        if let Some(objects) = &mut self.objects
+            && !objects.window(ctx, lang)
+        {
+            self.objects = None;
+        }
+        if let Some((title, text, _)) = &self.confirm {
+            let mut answer = None;
+            egui::Window::new(title.as_str()).collapsible(false).resizable(false).pivot(egui::Align2::CENTER_CENTER).default_pos(ctx.content_rect().center()).show(ctx, |ui| {
+                ui.label(text.as_str());
+                ui.horizontal(|ui| {
+                    if ui.button(tr(lang, "Yes")).clicked() {
+                        answer = Some(true);
+                    }
+                    if ui.button(tr(lang, "No")).clicked() {
+                        answer = Some(false);
+                    }
+                });
+            });
+            if let Some(yes) = answer
+                && let Some((_, _, what)) = self.confirm.take()
+                && yes
+            {
+                match what {
+                    Confirmed::Remove(path) => {
+                        if self.marks.remove(&path) {
+                            self.tree_state.selected = None;
+                            self.player = None;
+                            self.marks_changed();
+                        }
+                    }
+                    Confirmed::Clear => self.clear_marks(),
+                }
+            }
+        }
+        let p = &self.nav.pose;
+        let current = [p.lat, p.lon, p.distance, p.heading, p.tilt];
+        if let Some(props) = &mut self.folder_props {
+            match props.window(ctx, lang, current) {
+                crate::folderprops::Outcome::Open => {}
+                crate::folderprops::Outcome::Cancel => self.folder_props = None,
+                crate::folderprops::Outcome::Ok => {
+                    let region = props.region(&self.marks.folder_points(&props.path));
+                    let view = if props.has_view { scene::lookat::make(props.view[0], props.view[1], props.view[2], props.view[3], props.view[4]) } else { None };
+                    let (name, description, expandable, radio) = (props.name.trim().to_string(), props.description.trim().to_string(), props.expandable, props.radio && props.expandable);
+                    let path = props.path.clone();
+                    self.folder_props = None;
+                    if self.marks.edit_folder(&path, |f| {
+                        if !name.is_empty() {
+                            f.name = name;
+                        }
+                        f.description = description;
+                        f.expandable = expandable;
+                        f.radio = radio;
+                        f.view = view;
+                        f.region = region;
+                    }) {
+                        self.marks_changed();
+                    }
+                }
+            }
+        }
+    }
+
     /// Вставить метки из текста KML в выделенную папку или корень.
     /// Не KML - сообщение, «Мои метки» не меняются.
     fn paste_kml(&mut self, text: &str) {
+        let folder = self.tree_state.selected.clone().unwrap_or_default();
+        self.paste_kml_into(&folder, text);
+    }
+
+    /// Вставить метки из текста KML в папку folder.
+    fn paste_kml_into(&mut self, folder: &[usize], text: &str) {
         let looks_kml = text.contains("<kml") || text.contains("<Placemark") || text.contains("<Folder") || text.contains("<Document");
         if !looks_kml {
             return;
         }
         match marks::open(text.as_bytes(), "clipboard.kml") {
             Ok(opened) => {
-                let folder = self.tree_state.selected.clone().unwrap_or_default();
                 let root = marks::root_name(self.lang);
                 for item in opened.tree.children {
-                    self.marks.insert(&folder, item, root);
+                    self.marks.insert(folder, item, root);
                 }
                 self.marks_changed();
                 self.open_message = Some(tr(self.lang, "Pasted from the clipboard.").to_string());
@@ -600,19 +1153,27 @@ impl LiteApp {
         }
     }
 
-    /// Пришёл PNG снимка вида - сохранить его файлом.
-    fn save_snapshot(&mut self) {
-        let Some(Snapshot::Wait(cell)) = &self.snapshot else {
+    /// Пришёл снимок вида - файлом PNG или в буфер обмена.
+    fn save_snapshot(&mut self, ctx: &egui::Context) {
+        let Some(Snapshot::Wait(to, cell)) = &self.snapshot else {
             return;
         };
+        let to = *to;
         let Some(result) = cell.lock().ok().and_then(|mut slot| slot.take()) else {
             return;
         };
         self.snapshot = None;
-        self.open_message = match result.and_then(|png| crate::export::save_bytes("planetx.png", ("PNG", "png"), &png)) {
-            Ok(Some(to)) => Some(trf(self.lang, "Saved: {to}", &[("to", &to)])),
-            Ok(None) => None,
-            Err(e) => Some(trf(self.lang, "Not saved: {e}", &[("e", &e)])),
+        self.open_message = match (to, result) {
+            (SnapshotTo::Clipboard, Ok(image)) => {
+                ctx.copy_image(image);
+                Some(tr(self.lang, "The view is copied to the clipboard.").to_string())
+            }
+            (SnapshotTo::File, Ok(image)) => match to_png(&image).and_then(|png| crate::export::save_bytes("planetx.png", ("PNG", "png"), &png)) {
+                Ok(Some(path)) => Some(trf(self.lang, "Saved: {to}", &[("to", &path)])),
+                Ok(None) => None,
+                Err(e) => Some(trf(self.lang, "Not saved: {e}", &[("e", &e)])),
+            },
+            (_, Err(e)) => Some(trf(self.lang, "Not saved: {e}", &[("e", &e)])),
         };
     }
 
@@ -691,6 +1252,10 @@ impl LiteApp {
         }
         let root = marks::root_name(self.lang);
         match action {
+            Some(crate::tool::Action::Measure(place)) => {
+                let name = place.name.clone();
+                self.name_dialog = Some((NameFor::Measure(Box::new(place)), name));
+            }
             Some(crate::tool::Action::Add(place)) => {
                 let folder = self.tree_state.selected.clone().unwrap_or_default();
                 self.marks.insert(&folder, scene::kml::Item::Place(place), root);
@@ -716,23 +1281,27 @@ impl LiteApp {
         }
         let before = self.settings.clone();
         let mut open = self.settings_open;
-        if !crate::settings::window(ctx, self.lang, &mut open, &mut self.settings) {
-            self.settings_open = open;
+        let mut basemap = self.basemap;
+        let (changed, sources) = crate::settings::window(ctx, self.lang, &mut open, &mut self.settings, &mut basemap);
+        self.settings_open = open;
+        self.credits.sources_open |= sources;
+        self.set_basemap(basemap);
+        if !changed {
             return;
         }
-        self.settings_open = open;
         self.settings_dirty = true;
         let s = self.settings.clone();
         if s.dark != before.dark {
             crate::theme::apply(ctx, s.dark);
         }
         if (s.scale - before.scale).abs() > f64::EPSILON {
-            self.heights.write().set_scale(s.scale);
+            self.heights.write().set_scale(if s.relief { s.scale } else { 0.0 });
         }
         if s.language != before.language || s.labels != before.labels {
             let old_root = marks::root_name(self.lang).to_string();
             self.lang = s.lang();
             self.labels = Labels::new(self.lang, &s.labels);
+            self.labels.kinds = self.vector.label_kinds();
             self.search = Search::new(Some(self.lang.code()));
             // Корень «Мои метки» - на новом языке, если его не переименовали.
             let new_root = marks::root_name(self.lang);
@@ -742,6 +1311,72 @@ impl LiteApp {
             self.marks_to_labels();
             self.fonts_dirty = true;
         }
+    }
+
+    /// Действия раздела «Слои» и каталога «Добавить данные».
+    fn apply_layers(&mut self, actions: Vec<crate::layers::Action>) {
+        use crate::layers::Action;
+        for action in actions {
+            match action {
+                Action::Basemap(b) => self.set_basemap(b),
+                Action::Relief(on) => {
+                    self.settings.relief = on;
+                    self.heights.write().set_scale(if on { self.settings.scale } else { 0.0 });
+                }
+                Action::Extra(e, on) => {
+                    self.extras.insert(e);
+                    self.set_extra(e, on);
+                }
+                Action::RemoveExtra(e) => {
+                    self.extras.remove(&e);
+                    self.set_extra(e, false);
+                }
+                Action::Rows(rows) => self.set_vector_rows(rows),
+                Action::RemoveGroup(n) => {
+                    let mut rows = self.vector.rows.clone();
+                    rows.retain(|r| !crate::vector::TREE[n].2.iter().any(|(k, _, _)| k == r));
+                    self.vector.seen.remove(&n);
+                    self.set_vector_rows(rows);
+                }
+                Action::Sources => self.credits.sources_open = true,
+                Action::Catalog => self.catalog.open = !self.catalog.open,
+            }
+        }
+    }
+
+    /// Слой каталога включить или выключить.
+    fn set_extra(&mut self, extra: crate::layers::Extra, on: bool) {
+        use crate::layers::Extra;
+        match extra {
+            Extra::Air => self.settings.air = on,
+            Extra::Sun => self.settings.sun = on,
+            Extra::Grid => self.settings.grid = on,
+        }
+        if on {
+            self.extras_on.insert(extra);
+            self.extras.insert(extra);
+        } else {
+            self.extras_on.remove(&extra);
+        }
+        self.settings_dirty = true;
+    }
+
+    /// Новые строки векторной основы: линии рисуются заново, подписи - по
+    /// новым классам.
+    fn set_vector_rows(&mut self, rows: std::collections::BTreeSet<crate::vector::Row>) {
+        if self.vector.set_rows(rows)
+            && let Some(globe) = &mut self.globe
+        {
+            globe.clear_overlays();
+        }
+        self.labels.kinds = self.vector.label_kinds();
+        self.settings.vector = self.vector.to_text();
+        self.settings_dirty = true;
+    }
+
+    /// Состояние для раздела «Слои» и каталога.
+    fn layers_state(&self) -> crate::layers::State<'_> {
+        crate::layers::State { basemap: self.basemap, relief: self.settings.relief, extras: &self.extras, on: &self.extras_on, vector: &self.vector }
     }
 
     /// Язык, которому нужны иероглифы: интерфейса, иначе подписей.
@@ -1229,6 +1864,15 @@ impl LiteApp {
             return;
         };
         if player.done(now) {
+            // Тур по кругу начинается с первой остановки.
+            if player.looped {
+                let pose = self.nav.pose.clone();
+                if let Some(p) = &mut self.player {
+                    p.play_from(0, &pose, now);
+                }
+                self.tour_index = None;
+                return;
+            }
             self.nav.show(player.pose(now));
             self.player = None;
             return;
@@ -1251,56 +1895,158 @@ impl LiteApp {
         if !show_bar && self.player.is_none() {
             return;
         }
-        let mut stop = false;
-        let mut toggle = false;
-        egui::Area::new(egui::Id::unique("planetx-top"))
-            .order(egui::Order::Foreground)
-            // Под панелью инструментов, как у модуля: поверх неё шкала
-            // закрывала кнопки.
-            .pivot(egui::Align2::CENTER_TOP)
-            .fixed_pos(egui::pos2(rect.center().x, self.toolbar_rect.map_or(rect.top() + 12.0, |r| r.bottom() + 6.0)))
-            .show(ctx, |ui| {
-                crate::theme::plate()
-                    .show(ui, |ui| {
-                        ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
-                        if let Some(player) = &self.player {
-                            ui.horizontal(|ui| {
-                                use crate::timeline::{Icon, icon_button};
-                                if icon_button(ui, if player.paused() { Icon::Play } else { Icon::Pause }).clicked() {
-                                    toggle = true;
-                                }
-                                if icon_button(ui, Icon::Stop).clicked() {
-                                    stop = true;
-                                }
-                                ui.label(format!(
-                                    "{}  {} / {}",
-                                    player.name,
-                                    scene::tour::clock(player.time(now)),
-                                    scene::tour::clock(player.tour.duration)
-                                ));
-                            });
+        let lang = self.lang;
+        let mut act: Option<TourAct> = None;
+        // Шкала времени под панелью значков от её левого края, панель тура
+        // под шкалой, как у модуля (`layers.py`, `tour.py`).
+        let left = self.toolbar_rect.map_or(rect.left() + 8.0, |r| r.left());
+        let top = self.toolbar_rect.map_or(rect.top() + 8.0, |r| r.bottom() + 8.0);
+        egui::Area::new(egui::Id::unique("planetx-top")).order(egui::Order::Foreground).pivot(egui::Align2::LEFT_TOP).fixed_pos(egui::pos2(left, top)).show(ctx, |ui| {
+            ui.spacing_mut().item_spacing.y = 0.0;
+            if show_bar {
+                crate::theme::plate().show(ui, |ui| {
+                    ui.visuals_mut().override_text_color = Some(crate::theme::pal().plate_text);
+                    self.timebar.ui(ui, lang, now);
+                });
+            }
+            if let Some(player) = &self.player {
+                crate::theme::plate().show(ui, |ui| {
+                    ui.visuals_mut().override_text_color = Some(crate::theme::pal().plate_text);
+                    ui.horizontal(|ui| {
+                        use crate::timeline::{Icon, icon_button, icon_toggle};
+                        ui.spacing_mut().item_spacing.x = 3.0;
+                        let duration = player.tour.duration.max(1e-9);
+                        let mut share = (player.time(now) / duration) as f32;
+                        ui.spacing_mut().slider_width = 220.0;
+                        if ui
+                            .add(egui::Slider::new(&mut share, 0.0..=1.0).show_value(false))
+                            .on_hover_text(tr(lang, "How much of the tour has passed. The slider rewinds the tour. The camera stands at this point at once, the tour goes on from it."))
+                            .changed()
+                        {
+                            act = Some(TourAct::Seek(f64::from(share)));
                         }
-                        if show_bar {
-                            self.timebar.ui(ui, self.lang, now);
+                        ui.label(format!("{} / {}", scene::tour::clock(player.time(now)), scene::tour::clock(player.tour.duration)));
+                        if icon_button(ui, Icon::ToStart).on_hover_text(tr(lang, "Previous stop")).clicked() {
+                            act = Some(TourAct::Prev);
+                        }
+                        let (icon, tip) = if player.paused() { (Icon::Play, tr(lang, "Continue")) } else { (Icon::Pause, tr(lang, "Pause")) };
+                        if icon_button(ui, icon).on_hover_text(tip).clicked() {
+                            act = Some(TourAct::Toggle);
+                        }
+                        if icon_button(ui, Icon::ToEnd).on_hover_text(tr(lang, "Next stop")).clicked() {
+                            act = Some(TourAct::Next);
+                        }
+                        if icon_toggle(ui, Icon::Loop, player.looped).on_hover_text(tr(lang, "Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.")).clicked() {
+                            act = Some(TourAct::Loop);
+                        }
+                        if icon_toggle(ui, Icon::Captions, player.captions).on_hover_text(tr(lang, "Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.")).clicked() {
+                            act = Some(TourAct::Captions);
+                        }
+                        if let Some((n, count)) = player.stop_number(now) {
+                            let name = player.stops.get(n).map(|s| s.name.as_str()).filter(|s| !s.is_empty()).unwrap_or(tr(lang, "Untitled"));
+                            ui.label(trf(lang, "Stop {n} of {count}: {name}", &[("n", &(n + 1).to_string()), ("count", &count.to_string()), ("name", name)]));
+                        }
+                        ui.add_space(12.0);
+                        ui.label(tr(lang, "Pause"));
+                        let mut pause = player.pause;
+                        if ui
+                            .add(egui::DragValue::new(&mut pause).range(0.0..=60.0).fixed_decimals(1).speed(0.1).suffix(tr(lang, " s")))
+                            .on_hover_text(tr(lang, "How many seconds the camera stands at each stop. A new pause acts from a jump by the buttons or from a new start of the tour."))
+                            .changed()
+                        {
+                            act = Some(TourAct::SetPause(pause));
+                        }
+                        if icon_button(ui, Icon::Stop).on_hover_text(tr(lang, "End tour")).clicked() {
+                            act = Some(TourAct::Stop);
                         }
                     });
+                    // Описание остановки под кнопками, когда подписей на
+                    // кадре нет.
+                    if !player.captions
+                        && let Some((n, _)) = player.stop_number(now)
+                        && let Some(stop) = player.stops.get(n)
+                        && !stop.description.trim().is_empty()
+                    {
+                        ui.set_max_width(480.0f32.max(ui.min_rect().width()));
+                        ui.add(egui::Label::new(caption_text(&stop.description)).wrap());
+                    }
+                });
+            }
+        });
+        // Клавиши тура, как у модуля: вправо и влево - остановки, пробел -
+        // пауза, Esc - конец. С Ctrl, Shift и Alt клавиши не для тура.
+        if self.player.is_some() && !ctx.memory(|m| m.focused().is_some()) {
+            ctx.input(|i| {
+                if i.modifiers.any() {
+                    return;
+                }
+                if i.key_pressed(egui::Key::ArrowRight) {
+                    act = Some(TourAct::Next);
+                } else if i.key_pressed(egui::Key::ArrowLeft) {
+                    act = Some(TourAct::Prev);
+                } else if i.key_pressed(egui::Key::Space) {
+                    act = Some(TourAct::Toggle);
+                } else if i.key_pressed(egui::Key::Escape) {
+                    act = Some(TourAct::Stop);
+                }
             });
-        if toggle && let Some(p) = &mut self.player {
-            p.toggle(now);
         }
-        if stop {
-            self.player = None;
+        if let (Some(a), Some(p)) = (act, &mut self.player) {
+            match a {
+                TourAct::Toggle => p.toggle(now),
+                TourAct::Stop => self.player = None,
+                TourAct::Prev | TourAct::Next => {
+                    if let Some((n, _)) = p.stop_number(now) {
+                        let k = if a == TourAct::Prev { n.saturating_sub(1) } else { n + 1 };
+                        let pose = self.nav.pose.clone();
+                        p.play_from(k, &pose, now);
+                        self.tour_index = None;
+                    }
+                }
+                TourAct::Seek(share) => p.seek(share, now),
+                TourAct::Loop => p.looped = !p.looped,
+                TourAct::Captions => p.captions = !p.captions,
+                TourAct::SetPause(v) => p.pause = v,
+            }
         }
-        if let Some((name, alpha)) = self.player.as_ref().and_then(|p| p.caption(now)) {
-            let painter = ctx.layer_painter(egui::LayerId::new(egui::Order::Foreground, egui::Id::unique("planetx-caption")));
-            let color = egui::Color32::WHITE.gamma_multiply(alpha as f32);
-            let galley = painter.layout_no_wrap(name.to_string(), crate::fonts::globe(22.0), color);
-            let at = egui::pos2(rect.center().x - galley.size().x / 2.0, rect.bottom() - 90.0);
-            painter.galley_with_override_text_color(at + egui::vec2(1.0, 1.0), galley.clone(), egui::Color32::BLACK.gamma_multiply(alpha as f32));
-            painter.galley_with_override_text_color(at, galley, color);
-        }
+        self.stop_caption(ctx, rect, now);
     }
 
+    /// Подпись остановки внизу кадра, как `StopCaption` модуля: плашка
+    /// с названием крупно и описанием под ним, по середине, 44 пикселя
+    /// над нижним краем.
+    fn stop_caption(&self, ctx: &egui::Context, rect: egui::Rect, now: f64) {
+        let Some(player) = self.player.as_ref().filter(|p| p.captions) else {
+            return;
+        };
+        let Some((i, alpha)) = player.tour.caption_at(player.time(now)) else {
+            return;
+        };
+        let Some(stop) = player.tour.stops.get(i) else {
+            return;
+        };
+        let a = alpha as f32;
+        let painter = ctx.layer_painter(egui::LayerId::new(egui::Order::Foreground, egui::Id::unique("planetx-caption")));
+        let width = (rect.width() * 0.6).max(360.0).min(rect.width() - 16.0);
+        let pad = 14.0;
+        let title = painter.layout(
+            stop.name.clone(),
+            egui::FontId::new(28.0, egui::FontFamily::Name(crate::fonts::SEMIBOLD.into())),
+            egui::Color32::WHITE.gamma_multiply(a),
+            width - 2.0 * pad,
+        );
+        let text = caption_text(&stop.description);
+        let mut job = egui::text::LayoutJob::simple(text, egui::FontId::proportional(17.0), egui::Color32::from_rgb(225, 232, 240).gamma_multiply(a), width - 2.0 * pad);
+        job.halign = egui::Align::Center;
+        let desc = painter.layout_job(job);
+        let gap = if desc.size().y > 0.0 { 6.0 } else { 0.0 };
+        let height = title.size().y + gap + desc.size().y + 2.0 * pad;
+        let box_rect = egui::Rect::from_min_size(egui::pos2(rect.center().x - width / 2.0, rect.bottom() - 44.0 - height), egui::vec2(width, height));
+        painter.rect_filled(box_rect, 8.0, egui::Color32::from_rgba_unmultiplied(15, 25, 40, (175.0 * a) as u8));
+        painter.galley(egui::pos2(box_rect.center().x - title.size().x / 2.0, box_rect.top() + pad), title.clone(), egui::Color32::WHITE);
+        // У текста с выравниванием по середине опорная точка - середина строк.
+        painter.galley(egui::pos2(box_rect.center().x, box_rect.top() + pad + title.size().y + gap), desc, egui::Color32::WHITE);
+    }
     /// Точки меток - в надписи.
     fn marks_to_labels(&mut self) {
         let points: Vec<(String, f64, f64, [u8; 4])> =
@@ -1319,29 +2065,39 @@ impl LiteApp {
             lang,
             "Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.",
         );
-        let time_label = tr(lang, "Time");
         let layers_title = tr(lang, "Layers");
-        let status = self.status_text();
-        if !self.panel_open {
+        // Во весь экран панель прячется, как у модуля.
+        let full = ui.ctx().input(|i| i.viewport().fullscreen.unwrap_or(false));
+        if !self.panel_open || full {
             self.tree_actions(ui, actions, now);
             return;
         }
+        // Сообщение видно MESSAGE_TIME секунд.
+        let now_message = self.open_message.clone();
+        match (&now_message, &self.message_seen) {
+            (Some(text), Some((seen, at))) if text == seen => {
+                if now - at > MESSAGE_TIME {
+                    self.open_message = None;
+                    self.message_seen = None;
+                } else {
+                    ui.ctx().request_repaint_after(std::time::Duration::from_secs_f64(0.5));
+                }
+            }
+            (Some(text), _) => self.message_seen = Some((text.clone(), now)),
+            (None, _) => self.message_seen = None,
+        }
+        let status = self.status_text();
         egui::Panel::left("marks").resizable(true).default_size(300.0).show(ui, |ui| {
             ui.add_space(6.0);
             self.search_row(ui, now);
             ui.add_space(6.0);
-            // Строка состояния внизу панели, как у модуля.
-            let status_height = 22.0;
-            // Под раздел «Слои»: заголовок и строка основы.
-            let layers_height = 64.0;
+            // Строка состояния внизу панели на две строки, как у модуля:
+            // камера и точка под курсором.
+            let status_height = 40.0;
+            // Под раздел «Слои» - его высота в прошлом кадре.
+            let layers_height = self.layers_height;
             if crate::theme::section(ui, "marks", title) {
-                if self.timebar.extent.is_some() {
-                    ui.toggle_value(&mut self.timebar.open, time_label);
-                }
-                if let Some(message) = &self.open_message {
-                    ui.label(message);
-                }
-                let room = (ui.available_height() - layers_height - status_height).max(60.0);
+                let room = (ui.available_height() - layers_height - status_height - 34.0).max(60.0);
                 let root = self.marks.root(marks::root_name(lang));
                 let empty = root.children.is_empty();
                 egui::ScrollArea::vertical().max_height(room).auto_shrink([false, true]).show(ui, |ui| {
@@ -1350,17 +2106,87 @@ impl LiteApp {
                 if empty {
                     ui.label(egui::RichText::new(hint).color(crate::theme::pal().muted));
                 }
+                self.tour_row(ui, &mut actions);
                 ui.add_space(6.0);
             }
+            let top = ui.cursor().top();
             if crate::theme::section(ui, "layers", layers_title) {
-                self.basemap_choice(ui);
+                let mut out = Vec::new();
+                let mut menu = self.layers_menu.take();
+                crate::layers::panel(ui, lang, &self.layers_state(), &mut menu, &mut out);
+                self.layers_menu = menu;
+                self.apply_layers(out);
             }
+            self.layers_height = ui.cursor().top() - top;
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Min), |ui| {
                 ui.add_space(4.0);
                 ui.label(egui::RichText::new(status).color(crate::theme::pal().muted));
             });
         });
         self.tree_actions(ui, actions, now);
+    }
+
+    /// Строка под деревом «Моих меток», как у модуля: ползунок
+    /// непрозрачности выделенного и кнопка ▶ тура.
+    fn tour_row(&mut self, ui: &mut egui::Ui, actions: &mut Vec<crate::marks::Action>) {
+        let lang = self.lang;
+        let selected = self.tree_state.selected.clone();
+        // Выделение сменилось: цвета выделенного и содержимого папок
+        // снимаются, ползунок встаёт на их непрозрачность.
+        if self.opacity.as_ref().map(|o| &o.0) != selected.as_ref() {
+            self.opacity = selected.as_ref().map(|path| {
+                let items = self.marks.colors_of(path);
+                let base = scene::opacity::selection_opacity(&items.iter().map(|(_, c)| c.clone()).collect::<Vec<_>>());
+                (path.clone(), items, base, base)
+            });
+        }
+        let tour = self.tour_key(selected.as_deref());
+        ui.horizontal(|ui| {
+            let usable = self.opacity.as_ref().is_some_and(|o| !o.1.is_empty());
+            let mut value = self.opacity.as_ref().filter(|_| usable).map_or(100.0, |o| (o.3 * 100.0).round());
+            ui.spacing_mut().slider_width = (ui.available_width() - 40.0).max(40.0);
+            let slider = ui
+                .add_enabled(usable, egui::Slider::new(&mut value, 0.0..=100.0).show_value(false))
+                .on_hover_text(tr(lang, "Opacity of the selected placemarks, paths, polygons, pictures and folder contents. To the left - more transparent. The value is kept in My Places and in KML."));
+            if slider.changed()
+                && let Some((_, items, base, current)) = &mut self.opacity
+            {
+                *current = value / 100.0;
+                let colors: Vec<(Vec<usize>, Vec<Option<scene::Rgba>>)> =
+                    items.iter().map(|(path, c)| (path.clone(), scene::opacity::scaled(c, *base, *current))).collect();
+                self.marks.set_colors(&colors);
+                self.marks_changed();
+            }
+            let tip = match &tour {
+                Some(p) if p.is_empty() => tr(lang, "Tour over the checked places"),
+                Some(p) if matches!(self.marks.tree.as_ref().and_then(|t| marks::item_at(t, p)), Some(scene::kml::Item::Folder(_))) => {
+                    tr(lang, "Tour over the checked places of the folder")
+                }
+                Some(_) => tr(lang, "Tour along the selected path"),
+                None => tr(lang, "Tour: select the My Places folder or a path in it"),
+            };
+            if ui.add_enabled(tour.is_some(), egui::Button::new("▶")).on_hover_text(tip).on_disabled_hover_text(tip).clicked()
+                && let Some(path) = tour
+            {
+                actions.push(crate::marks::Action::Tour(path));
+            }
+        });
+    }
+
+    /// Что облетит кнопка тура, `_tour_key` модуля: [] - все «Мои метки»,
+    /// путь папки - её метки, путь линии - вдоль неё. У метки тур идёт по
+    /// её папке. None - выделения нет.
+    fn tour_key(&self, selected: Option<&[usize]>) -> Option<Vec<usize>> {
+        let path = selected?;
+        if path.is_empty() {
+            return Some(Vec::new());
+        }
+        let tree = self.marks.tree.as_ref()?;
+        match marks::item_at(tree, path)? {
+            scene::kml::Item::Folder(_) => Some(path.to_vec()),
+            scene::kml::Item::Place(p) if p.kind == scene::features::Kind::Line => Some(path.to_vec()),
+            _ => self.tour_key(Some(&path[..path.len() - 1])),
+        }
     }
 
     /// Клавиши и действия дерева «Моих меток».
@@ -1421,20 +2247,84 @@ impl LiteApp {
                         self.nav.stop();
                     }
                 }
+                // Удаление - после вопроса, как `_confirm_remove` модуля.
                 crate::marks::Action::Remove(path) => {
+                    let item = self.marks.tree.as_ref().and_then(|t| marks::item_at(t, &path));
+                    self.confirm = match item {
+                        Some(scene::kml::Item::Folder(f)) => Some((
+                            tr(self.lang, "Delete folder").to_string(),
+                            trf(self.lang, "Delete folder “{name}” with all its contents?", &[("name", &f.name)]),
+                            Confirmed::Remove(path),
+                        )),
+                        Some(scene::kml::Item::Place(scene::kml::Place { name, .. }) | scene::kml::Item::Overlay(scene::kml::Overlay { name, .. })) => Some((
+                            tr(self.lang, "Delete placemark").to_string(),
+                            trf(self.lang, "Delete \"{name}\" from My Places?", &[("name", name)]),
+                            Confirmed::Remove(path),
+                        )),
+                        None => None,
+                    };
+                }
+                crate::marks::Action::Cut(path) => {
+                    self.copy_marks(ui.ctx(), &path);
                     if self.marks.remove(&path) {
                         self.tree_state.selected = None;
                         self.player = None;
                         self.marks_changed();
                     }
                 }
-                crate::marks::Action::Clear => {
-                    self.tree_state.selected = None;
-                    self.marks.clear();
-                    self.shared.clear();
-                    self.player = None;
-                    self.open_message = None;
+                crate::marks::Action::Paste(folder) => {
+                    if let Some(text) = self.clip_kml.clone() {
+                        self.paste_kml_into(&folder, &text);
+                    }
+                }
+                crate::marks::Action::Sort(path) => {
+                    if self.marks.sort(&path) {
+                        self.tree_state.selected = None;
+                        self.marks_changed();
+                    }
+                }
+                crate::marks::Action::ViewSnapshot(path) => {
+                    let p = &self.nav.pose;
+                    if self.marks.set_view(&path, scene::lookat::make(p.lat, p.lon, p.distance, p.heading, p.tilt)) {
+                        self.marks_changed();
+                    }
+                }
+                crate::marks::Action::Add(folder, what) => {
+                    use crate::marks::AddWhat;
+                    self.tree_state.selected = Some(folder.clone());
+                    match what {
+                        AddWhat::Folder => self.queued.push(crate::marks::Action::NewFolder(folder)),
+                        AddWhat::Point => self.tool = Some(crate::tool::Tool::place(crate::ruler::Mode::Point)),
+                        AddWhat::Line => self.tool = Some(crate::tool::Tool::place(crate::ruler::Mode::Path)),
+                        AddWhat::Polygon => self.tool = Some(crate::tool::Tool::place(crate::ruler::Mode::Polygon)),
+                        AddWhat::RecordedTour => {
+                            if self.recording.is_none() {
+                                self.toggle_record(now);
+                            }
+                        }
+                    }
+                }
+                crate::marks::Action::NewFolderAfter(path) => {
+                    let parent = path[..path.len().saturating_sub(1)].to_vec();
+                    let index = path.last().map_or(0, |i| i + 1);
+                    let name = scene::placetree::numbered_name(tr(self.lang, "New folder"), &self.marks.names());
+                    let at = self.marks.insert_at(&parent, index, scene::kml::Item::Folder(scene::kml::Folder::new(&name)), marks::root_name(self.lang));
+                    self.tree_state.selected = Some(at.clone());
+                    self.tree_state.renaming = Some((at, name));
                     self.marks_changed();
+                }
+                crate::marks::Action::FolderProperties(path) => {
+                    if let Some(scene::kml::Item::Folder(f)) = self.marks.tree.as_ref().and_then(|t| marks::item_at(t, &path)) {
+                        self.folder_props = Some(crate::folderprops::FolderProps::new(path, f));
+                    }
+                }
+                crate::marks::Action::Clear => {
+                    let count = self.marks.names().len();
+                    self.confirm = Some((
+                        tr(self.lang, "Clear My Places…").trim_end_matches('…').to_string(),
+                        trf(self.lang, "Delete all placemarks and folders of My Places, placemarks in all {count}? Deletion cannot be undone.", &[("count", &count.to_string())]),
+                        Confirmed::Clear,
+                    ));
                 }
                 crate::marks::Action::Open => self.pick_file(ui.ctx(), now),
                 crate::marks::Action::Properties(path) => {
@@ -1448,24 +2338,11 @@ impl LiteApp {
                     }
                 }
                 crate::marks::Action::Copy(path) => {
-                    // Строка текстом KML в буфер обмена, как `copy_places`
-                    // модуля: её вставляют в «Мои метки» или в Google Earth.
-                    let text = self.marks.export_tree(&path).and_then(|tree| crate::export::tree_bytes(&tree, false).ok());
-                    if let Some(text) = text.and_then(|b| String::from_utf8(b).ok()) {
-                        ui.ctx().copy_text(text);
-                        self.open_message = Some(tr(self.lang, "Copied as KML.").to_string());
-                    }
+                    self.copy_marks(ui.ctx(), &path);
                 }
                 crate::marks::Action::SaveView(path) => {
-                    // Метка в точке взгляда, вид - в её поле view, как
-                    // `save_view` модуля.
-                    let pose = &self.nav.pose;
                     let name = scene::placetree::numbered_name(tr(self.lang, "View"), &self.marks.names());
-                    let mut place = scene::kml::Place::new(&name, scene::features::Kind::Point, vec![(pose.lat, pose.lon)]);
-                    place.view = scene::lookat::make(pose.lat, pose.lon, pose.distance, pose.heading, pose.tilt);
-                    let at = self.marks.insert(&path, scene::kml::Item::Place(place), marks::root_name(self.lang));
-                    self.tree_state.selected = Some(at);
-                    self.marks_changed();
+                    self.add_view_place(&path, &name);
                 }
                 crate::marks::Action::NewFolder(path) => {
                     // «Новая папка 2», сразу на переименование, как у модуля.
@@ -1637,8 +2514,42 @@ impl LiteApp {
             return;
         }
         self.basemap = basemap;
+        self.pending.clear();
         if let Some(globe) = &mut self.globe {
             globe.clear_textures();
+        }
+    }
+
+    /// Загрузить в видеокарту часть ожидающих снимков, как `_upload`
+    /// в `render/view.py` модуля. Первыми идут уровни 0-2, за ними тайлы
+    /// прошлого кадра, потом мелкие уровни. Стартовые уровни грузятся
+    /// все сразу. Снимок окна ждёт всё и грузит всё.
+    fn upload_pending(&mut self) {
+        let Some(globe) = &mut self.globe else {
+            return;
+        };
+        if self.pending.is_empty() {
+            return;
+        }
+        let start_missing = start_keys().into_iter().any(|k| !globe.has_texture(k));
+        let all = start_missing || self.shot.is_some();
+        let (budget, time_limit) = if all {
+            (self.pending.len(), f64::INFINITY)
+        } else if self.was_moving {
+            (1, 0.0)
+        } else {
+            (UPLOADS_PER_FRAME, UPLOAD_TIME)
+        };
+        let mut order: Vec<TileKey> = self.pending.keys().copied().collect();
+        order.sort_by_key(|k| (k.0 > 2, !self.drawn.contains(k), k.0));
+        let started = web_time::Instant::now();
+        for (count, key) in order.into_iter().take(budget).enumerate() {
+            if count > 0 && key.0 > 2 && started.elapsed().as_secs_f64() > time_limit {
+                break;
+            }
+            if let Some(image) = self.pending.remove(&key) {
+                globe.upload(key, image.width, image.height, &image.rgba);
+            }
         }
     }
 
@@ -1660,12 +2571,28 @@ impl LiteApp {
                         check.note_missing();
                     }
                 } else if let Ok(net::Content::Image(image)) = loaded.content {
-                    globe.upload(loaded.key, image.width, image.height, &image.rgba);
+                    self.pending.insert(loaded.key, image);
                 }
             }
         }
+        self.upload_pending();
+        // Векторный тайл нужен и подписям, и линиям векторной основы.
         for loaded in self.loaders.places.take() {
-            self.labels.add(loaded);
+            // Байты общие: копия для линий стоила кадру на крупных тайлах.
+            let bytes = match loaded.content {
+                Ok(net::Content::Bytes(b)) => Some(Arc::new(b)),
+                Ok(net::Content::Image(_)) => None,
+                Err(_) if loaded.missing => None,
+                Err(_) => continue,
+            };
+            if self.label_keys.contains(&loaded.key) {
+                self.labels.add(loaded.key, bytes.clone());
+            }
+            self.vector.add(loaded.key, bytes);
+        }
+        // Разбор подписей - в бюджете кадра.
+        if self.labels.decode_queued(LABEL_BUDGET) {
+            self.labels.pending = true;
         }
         let arrived = self.loaders.terrain.take();
         if arrived.is_empty() && !self.relief.busy() {
@@ -1739,9 +2666,36 @@ impl LiteApp {
         } else {
             format!("{} {m}", group_thousands(height.round() as i64))
         };
-        match loading {
-            0 => trf(self.lang, "Altitude {height}", &[("height", &height)]),
-            n => trf(self.lang, "Altitude {height} · loading {n}", &[("height", &height), ("n", &n.to_string())]),
+        // Первая строка, как `_show_state` модуля: сообщение пять секунд,
+        // иначе высота обзора и хвост загрузки.
+        let first = match &self.message_seen {
+            Some((text, _)) => text.clone(),
+            None => {
+                let mut line = trf(self.lang, "View from {height}", &[("height", &height)]);
+                if loading > 0 {
+                    line += &format!(" · {}", trf(self.lang, "loading {count}", &[("count", &loading.to_string())]));
+                }
+                line
+            }
+        };
+        match self.cursor_point {
+            Some((lat, lon, h)) => format!("{first}\n{}", self.point_text(lat, lon, Some(h), 5)),
+            None => first,
+        }
+    }
+
+    /// Точка словами, `point_text` модуля: координаты в формате свойств
+    /// вида и высота или глубина. С выключенным рельефом - координаты.
+    fn point_text(&self, lat: f64, lon: f64, height: Option<f64>, digits: usize) -> String {
+        let coords = match self.settings.coords.as_str() {
+            "dms" | "utm" | "mgrs" => crate::coords_text::format(self.lang, lat, lon, &self.settings.coords, digits),
+            _ => format!("{lat:.digits$}, {lon:.digits$}"),
+        };
+        match height.filter(|_| self.settings.relief) {
+            // Ниже -0.5 м - глубина, выше - высота не меньше нуля.
+            Some(h) if h < -0.5 => trf(self.lang, "{coords}, depth {d} m", &[("coords", &coords), ("d", &(-h).round().to_string())]),
+            Some(h) => trf(self.lang, "{coords}, height {h} m", &[("coords", &coords), ("h", &h.max(0.0).round().to_string())]),
+            None => coords,
         }
     }
 
@@ -1756,10 +2710,11 @@ impl LiteApp {
                 let edit = ui.add(
                     egui::TextEdit::singleline(&mut self.search_text)
                         .id(egui::Id::unique("planetx-search"))
-                        .hint_text(tr(self.lang, "Find a place, Enter"))
+                        .hint_text(tr(self.lang, "Voyages of Columbus"))
                         .desired_width(width.max(60.0)),
-                );
-                if ui.button(button).clicked() {
+                )
+                .on_hover_text(tr(self.lang, "Place, coordinates or action. A place name or coordinates, for example Perm or 58.0105, 56.2294, give a flight. A layer or a window, for example «ruler» or «grid», is found by its name and turned on from the hint. Ctrl+K from anywhere in the window puts the cursor into this line."));
+                if ui.button(button).on_hover_text(tr(self.lang, "Find what is typed in the line. A place - a flight to it, several found places - a list below.")).clicked() {
                     clicked = true;
                 }
                 edit
@@ -1777,23 +2732,22 @@ impl LiteApp {
             &self.place_entries(),
             &self.settings.history,
             scene::searchbar::LIMIT,
-            &crate::commands::actions(self.lang, self.settings.sun, self.settings.grid),
+            &crate::commands::actions(self.lang, &self.command_state()),
         ));
         let mut chosen: Option<scene::searchbar::Suggestion> = None;
+        // Список подсказок встроен в панель под строкой, как у модуля:
+        // виден, пока в нём есть строки и строка поиска в фокусе.
         if self.suggesting && !items.is_empty() {
-            egui::Frame::popup(ui.style()).show(ui, |ui| {
-                for item in &items {
-                    let mark = match item.kind {
-                        scene::searchbar::Kind::Place => "◆ ",
-                        scene::searchbar::Kind::Action => "▸ ",
-                        scene::searchbar::Kind::History => "↺ ",
-                    };
-                    let response = ui.selectable_label(false, format!("{mark}{}", item.text));
-                    let response = if item.note.is_empty() { response } else { response.on_hover_text(&item.note) };
-                    if response.clicked() {
-                        chosen = Some(item.clone());
+            let lang = self.lang;
+            egui::Frame::new().fill(crate::theme::pal().field).stroke(egui::Stroke::new(1.0, crate::theme::pal().border)).inner_margin(egui::Margin::same(2)).show(ui, |ui| {
+                egui::ScrollArea::vertical().max_height(FOUND_HEIGHT).id_salt("hints").show(ui, |ui| {
+                    ui.set_width(ui.available_width());
+                    for item in &items {
+                        if ui.selectable_label(false, hint_text(lang, item)).clicked() {
+                            chosen = Some(item.clone());
+                        }
                     }
-                }
+                });
             });
         }
         self.suggesting = edit.has_focus();
@@ -1812,16 +2766,26 @@ impl LiteApp {
             self.settings.history = scene::searchbar::remember(&self.settings.history, &self.search_text, scene::searchbar::HISTORY);
             self.settings_dirty = true;
         }
-        if let Some(message) = search_status(self.lang, &self.search.status) {
-            ui.label(message);
+        // Сообщения поиска - в строку состояния, как у модуля.
+        if let Some(message) = search_status(self.lang, &self.search.status)
+            && self.open_message.as_deref() != Some(message.as_str())
+            && self.message_seen.as_ref().is_none_or(|(m, _)| *m != message)
+        {
+            self.open_message = Some(message);
         }
+        // Найденные места - список под строкой, когда их больше одного.
         let mut picked = None;
         if self.search.found.len() > 1 {
-            for (n, place) in self.search.found.iter().enumerate() {
-                if ui.link(data::geocode::place_text(place)).clicked() {
-                    picked = Some(n);
-                }
-            }
+            egui::Frame::new().fill(crate::theme::pal().field).stroke(egui::Stroke::new(1.0, crate::theme::pal().border)).inner_margin(egui::Margin::same(2)).show(ui, |ui| {
+                egui::ScrollArea::vertical().max_height(FOUND_HEIGHT).id_salt("found").show(ui, |ui| {
+                    ui.set_width(ui.available_width());
+                    for (n, place) in self.search.found.iter().enumerate() {
+                        if ui.selectable_label(false, data::geocode::place_text(place)).clicked() {
+                            picked = Some(n);
+                        }
+                    }
+                });
+            });
         }
         if submitted && let Some(place) = self.search.submit(&self.search_text) {
             self.fly_to_found(&place, now);
@@ -1854,6 +2818,16 @@ impl LiteApp {
             walk(tree, &mut Vec::new(), &mut out);
         }
         out
+    }
+
+    /// Что включено - для приписок действий строки «Поиск».
+    fn command_state(&self) -> crate::commands::Now {
+        crate::commands::Now {
+            extras: self.extras_on.clone(),
+            recording: self.recording.is_some(),
+            time: self.timebar.extent.is_some().then_some(self.timebar.open),
+            identify: self.identify,
+        }
     }
 
     /// Окна и органы управления на экране: не самопроверка и не снимок
@@ -1892,30 +2866,37 @@ impl LiteApp {
         use crate::commands::Command;
         let before = self.settings.clone();
         match command {
+            Command::Layer(e) => {
+                let on = self.extras_on.contains(&e);
+                self.set_extra(e, !on);
+            }
+            Command::Catalog => self.catalog.open = true,
             Command::Ruler => self.tool = Some(crate::tool::Tool::ruler()),
-            Command::Placemark => self.tool = Some(crate::tool::Tool::place(crate::ruler::Mode::Point)),
-            Command::Sun => self.settings.sun = !self.settings.sun,
-            Command::Grid => self.settings.grid = !self.settings.grid,
-            Command::Snapshot => self.snapshot = Some(Snapshot::Hide),
+            Command::Place => self.tool = Some(crate::tool::Tool::place(crate::ruler::Mode::Point)),
+            Command::SaveView => self.name_dialog = Some((NameFor::View, scene::placetree::numbered_name(tr(self.lang, "View"), &self.marks.names()))),
+            Command::Snapshot => self.snapshot = Some(Snapshot::Hide(SnapshotTo::File)),
+            Command::CopyView => self.snapshot = Some(Snapshot::Hide(SnapshotTo::Clipboard)),
             Command::Record => self.toggle_record(now),
-            Command::Share => self.share(ctx),
-            Command::Settings => self.settings_open = true,
-            Command::Dark => self.settings.dark = true,
-            Command::Light => self.settings.dark = false,
-            Command::Open => self.pick_file(ctx, now),
-            Command::About => self.credits.about_request = true,
-            Command::Manual => ctx.open_url(egui::OpenUrl::new_tab(crate::credits::manual_url(self.lang))),
+            Command::Time => self.timebar.open = !self.timebar.open && self.timebar.extent.is_some(),
+            Command::Identify => self.identify = !self.identify,
+            Command::Properties => self.settings_open = true,
             Command::Sources => self.credits.sources_open = true,
+            Command::About => self.credits.about_request = true,
+            Command::SceneSave => {
+                let folder = self.tree_state.selected.clone().unwrap_or_default();
+                self.save_marks(&folder, crate::export::Kind::Scene);
+            }
+            Command::SceneOpen => self.pick_file(ctx, now),
+            Command::Share => self.share(ctx),
             Command::Fullscreen => {
                 let on = ctx.input(|i| i.viewport().fullscreen.unwrap_or(false));
-                ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(!on));
+                self.set_fullscreen(ctx, !on);
             }
             Command::Demo(s, d) => {
                 if let Some(demo) = crate::demos::MENU.get(s).and_then(|sec| sec.demos.get(d)) {
                     self.open_demo(demo, now);
                 }
             }
-            Command::Basemap(b) => self.set_basemap(b),
         }
         if self.settings != before {
             self.settings_dirty = true;
@@ -1925,19 +2906,6 @@ impl LiteApp {
         }
     }
 
-    /// Выбор основы - раздел «Слои» панели.
-    fn basemap_choice(&mut self, ui: &mut egui::Ui) {
-        let mut chosen = self.basemap;
-        ui.horizontal(|ui| {
-            ui.label(tr(self.lang, "Basemap"));
-            egui::ComboBox::from_id_salt("basemap").selected_text(chosen.name(self.lang)).show_ui(ui, |ui| {
-                for b in Basemap::ALL {
-                    ui.selectable_value(&mut chosen, b, b.name(self.lang));
-                }
-            });
-        });
-        self.set_basemap(chosen);
-    }
     fn finish_check(&mut self, ctx: &egui::Context) {
         let Some(check) = &self.check else {
             return;
@@ -2033,6 +3001,7 @@ impl eframe::App for LiteApp {
         self.nav.camera.height = height;
 
         let loading = self.loaders.basemap(self.basemap).busy()
+            || !self.pending.is_empty()
             || self.loaders.terrain.busy()
             || self.loaders.places.busy()
             || self.labels.pending
@@ -2040,6 +3009,7 @@ impl eframe::App for LiteApp {
             || self.pictures.busy()
             || self.fetching.is_some()
             || self.relief.busy();
+        self.loading_since = if loading { self.loading_since.or(Some(now)) } else { None };
         if let Some(check) = &mut self.check {
             let parts = [
                 ("basemap", self.loaders.basemap(self.basemap).busy()),
@@ -2068,8 +3038,37 @@ impl eframe::App for LiteApp {
             if !busy {
                 self.input.handle(&ctx, rect, &mut self.nav, now, ppp);
             }
+            // Точка под курсором - вторая строка состояния, как у модуля.
+            let heights_at = self.true_heights();
+            self.cursor_point = globe_response.hover_pos().and_then(|pos| {
+                let (px, py) = (f64::from(pos.x - rect.min.x) * ppp, f64::from(pos.y - rect.min.y) * ppp);
+                let p = globe_core::navigation::ground_under(&self.nav.camera, px, py, self.nav.pose.terrain.as_ref())?;
+                let (lat, lon, _) = self.nav.camera.ellipsoid.ecef_to_geodetic(p);
+                Some((lat, lon, heights_at(&[(lat, lon)]).first().copied().unwrap_or(0.0)))
+            });
+            // Правая кнопка без протяжки - меню на глобусе, как у модуля.
+            if !padded
+                && globe_response.secondary_clicked()
+                && let Some(pos) = globe_response.interact_pointer_pos()
+            {
+                self.globe_menu = Some(self.make_globe_menu(pos, rect, ppp));
+            }
+            // «Определить объекты» включено: щелчок - окно «Объекты».
+            if self.identify
+                && self.tool.is_none()
+                && !padded
+                && globe_response.clicked()
+                && let Some(pos) = globe_response.interact_pointer_pos()
+            {
+                let (px, py) = (f64::from(pos.x - rect.min.x) * ppp, f64::from(pos.y - rect.min.y) * ppp);
+                if let Some(p) = globe_core::navigation::ground_under(&self.nav.camera, px, py, self.nav.pose.terrain.as_ref()) {
+                    let (lat, lon, _) = self.nav.camera.ellipsoid.ecef_to_geodetic(p);
+                    self.objects = Some(self.make_objects(lat, lon, Some((px, py, ppp)), None));
+                }
+            }
             // Щелчок по метке без инструмента - её карточка, как у модуля.
             if self.tool.is_none()
+                && !self.identify
                 && !padded
                 && globe_response.clicked()
                 && let (Some(pos), Some(tree)) = (globe_response.interact_pointer_pos(), self.marks.tree.as_ref())
@@ -2145,7 +3144,10 @@ impl eframe::App for LiteApp {
             .filter(|k| !globe.has_texture(*k))
             .map(|k| (k, lod::INFINITE_PRIORITY + 10.0 - f64::from(k.0)))
             .collect();
-        wanted.extend(selection.want.iter().copied());
+        // Пришедший, но не загруженный снимок второй раз не просится.
+        wanted.extend(selection.want.iter().copied().filter(|(k, _)| !self.pending.contains_key(k)));
+        self.was_moving = moving;
+        self.drawn = selection.draw.iter().copied().collect();
         for basemap in Basemap::ALL {
             let loader = self.loaders.basemap(basemap);
             loader.want(if basemap == self.basemap { &wanted } else { &[] });
@@ -2153,7 +3155,16 @@ impl eframe::App for LiteApp {
         // Высоты глубже уровня 15 у своего рельефа собираются здесь.
         let needs = self.relief.route(height_needs(&store, &selection), &store);
         self.loaders.terrain.want(&needs);
-        self.loaders.places.want(&self.labels.wanted(&selection.draw));
+        let mut vector_tiles = self.labels.wanted(&selection.draw);
+        // Подписям - только их тайлы: разбор пунктов всех тайлов линий
+        // стоил главному потоку до 40 кадров в секунду.
+        self.label_keys = vector_tiles.iter().map(|(k, _)| *k).collect();
+        let asked = self.label_keys.clone();
+        vector_tiles.extend(self.vector.wanted(&selection.draw).into_iter().filter(|(k, _)| !asked.contains(k)));
+        self.loaders.places.want(&vector_tiles);
+        // Линии векторной основы - не дольше VECTOR_BUDGET за кадр.
+        self.vector.step(&selection.draw, VECTOR_BUDGET, globe);
+        let lines_pending = !self.vector.ready(&selection.draw);
 
         for key in std::mem::take(&mut self.pictures.fresh) {
             if let Some(image) = self.pictures.image(&key) {
@@ -2187,7 +3198,7 @@ impl eframe::App for LiteApp {
             globe.grab();
         }
         let stats =
-            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: true, ratio: ppp as f32, sun });
+            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air, ratio: ppp as f32, sun });
         drop(store);
         if let Some(check) = &mut self.check
             && check.waits_frame()
@@ -2209,7 +3220,7 @@ impl eframe::App for LiteApp {
         let mut blocked = self.screen_overlays(&ctx, &painter, rect);
         blocked.extend(self.credits.rect);
         blocked.extend(self.toolbar_rect);
-        let hiding = matches!(self.snapshot, Some(Snapshot::Hide));
+        let hiding = matches!(self.snapshot, Some(Snapshot::Hide(_)));
         let pad = self.shows_ui() && !hiding;
         if pad {
             blocked.push(crate::navpad::rect(rect));
@@ -2235,7 +3246,7 @@ impl eframe::App for LiteApp {
             self.navpad.tooltip(ui, rect, self.lang);
         }
         self.attribution(&ctx, rect);
-        if hiding {
+        if let Some(Snapshot::Hide(to)) = self.snapshot {
             // Окна скрыты в этом кадре: снимок - глобус с подписью
             // источников.
             let cell = Arc::new(std::sync::Mutex::new(None));
@@ -2243,12 +3254,12 @@ impl eframe::App for LiteApp {
             let ppp_points = ctx.pixels_per_point();
             ctx.request_screenshot(move |image| {
                 if let Ok(mut slot) = sink.lock() {
-                    *slot = Some(crop_png(&image, rect, ppp_points));
+                    *slot = Some(crop(&image, rect, ppp_points));
                 }
             });
-            self.snapshot = Some(Snapshot::Wait(cell));
+            self.snapshot = Some(Snapshot::Wait(to, cell));
         } else {
-            self.save_snapshot();
+            self.save_snapshot(&ctx);
         }
         if !hiding {
             self.overlays(&ctx, rect, now);
@@ -2259,6 +3270,13 @@ impl eframe::App for LiteApp {
             self.tool_window(&ctx);
             self.card_window(&ctx);
             self.profile_window(&ctx);
+            self.name_window(&ctx);
+            self.dialogs(&ctx, now);
+            let mut out = Vec::new();
+            let mut catalog = std::mem::take(&mut self.catalog);
+            catalog.window(&ctx, self.lang, &self.layers_state(), &mut out);
+            self.catalog = catalog;
+            self.apply_layers(out);
         }
 
         if let Some(check) = &mut self.check {
@@ -2267,7 +3285,7 @@ impl eframe::App for LiteApp {
         }
         self.finish_check(&ctx);
         self.step_shot(&ctx, moving || loading);
-        if moving || animating || loading || self.labels.pending || self.check.is_some() {
+        if moving || animating || loading || lines_pending || self.labels.pending || self.check.is_some() {
             ctx.request_repaint();
         }
     }

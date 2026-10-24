@@ -12,6 +12,7 @@
 //! - [`region`] - Region KML, скрытие дальше расстояния, перенос `core/region.py`;
 //! - [`measure`] - единицы, профиль высот, длина по рельефу, перенос `core/measure.py`;
 //! - [`geodesic`] - длина, курс, площадь на эллипсоиде, как QgsDistanceArea модуля;
+//! - [`opacity`] - непрозрачность выделенных меток, перенос `core/opacity.py`;
 //! - [`overlays`] - наложения картинок и рамка 3D-модели, перенос `core/overlays.py`;
 //! - [`models`] - место 3D-модели, пакет её файлов и чтение сеток, перенос `core/models.py`;
 //! - [`collada`], [`gltf`], [`obj`] - сетки Collada, glTF и OBJ, перенос `core/collada.py`,
@@ -22,6 +23,7 @@
 //! - [`graticule`] - координатная сетка, перенос `core/graticule.py`;
 //! - [`sun`] - положение солнца и свет, перенос `core/sun.py`;
 //! - [`searchbar`] - подсказки строки «Поиск», перенос `core/searchbar.py`;
+//! - [`coords`] - форматы координат, перенос `core/coords.py`;
 //! - [`features`] - свои объекты глобуса, сгущение и заливка, перенос `core/features.py`;
 //! - [`tour`] - тур по остановкам и записанный тур, перенос `core/tour.py`;
 //! - [`track`] - поза модели на gx:Track, перенос `model_pose` из `core/track.py`;
@@ -33,6 +35,7 @@ pub mod animation;
 pub mod balloon;
 pub mod clock;
 pub mod collada;
+pub mod coords;
 pub mod editing;
 pub mod features;
 pub mod geodesic;
@@ -44,6 +47,7 @@ pub mod lookat;
 pub mod measure;
 pub mod models;
 pub mod obj;
+pub mod opacity;
 pub mod overlays;
 pub mod placetree;
 pub mod region;

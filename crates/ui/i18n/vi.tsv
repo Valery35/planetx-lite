@@ -192,3 +192,215 @@ Tropic of Capricorn	Chí tuyến Nam
 Turn off	Tắt
 Turn on	Bật
 View	Khung nhìn
+ km	 km
+ m	 m
+{coords}, depth {d} m	{coords}, độ sâu {d} m
+{coords}, height {h} m	{coords}, độ cao {h} m
+{name} - {what}	{name} - {what}
+{name} - earlier query	{name} - truy vấn trước
+{name} - placemark	{name} - dấu vị trí
+{name}, {ele} m	{name}, {ele} m
+{name}. The check turns the layer off, the row stays. The «⋯» menu removes it from the globe.	{name}. Ô đánh dấu tắt lớp, dòng vẫn giữ lại. Menu "⋯" gỡ lớp khỏi quả địa cầu.
+© 2026 Inform++ LLC. Apache 2.0.	© 2026 Inform++ LLC. Apache 2.0.
+A double click on a row copies the value to the clipboard, a link opens in the browser.	Nhấp đúp vào một dòng sẽ sao chép giá trị vào bộ nhớ tạm, liên kết mở trong trình duyệt.
+A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	Đường sáng màu với nét đứt tối. Biến mất cùng đường cao tốc khi thu nhỏ. Đường ga và đường nhánh không được vẽ.
+Add	Thêm
+Add data	Thêm dữ liệu
+Add placemark here	Thêm dấu vị trí tại đây
+Address	Địa chỉ
+Airports	Sân bay
+All	Tất cả
+All maps and layers of the catalog.	Tất cả bản đồ và lớp của danh mục.
+Allow the folder to expand	Cho phép mở rộng thư mục
+Atmosphere	Khí quyển
+Base map	Bản đồ nền
+Base map on the globe	Bản đồ nền trên quả địa cầu
+Base map on the globe - one	Bản đồ nền trên quả địa cầu - chỉ một
+Base maps	Các bản đồ nền
+Basemaps of the globe - imagery and maps. There is one base on the globe, under the layers.	Bản đồ nền của quả địa cầu - ảnh và bản đồ. Trên quả địa cầu có một bản đồ nền, nằm dưới các bản đồ và lớp.
+Borders	Biên giới
+Borders and names	Biên giới và tên
+Borders of countries and regions and labels on the globe.	Biên giới quốc gia, ranh giới vùng và nhãn trên quả địa cầu.
+Borders of countries bright yellow, borders of regions thin white. Sea borders are not drawn.	Biên giới quốc gia màu vàng tươi, ranh giới vùng màu trắng mảnh. Biên giới biển không được vẽ.
+Catalog of layers - vector base, coordinate grid, atmosphere and sun. The catalog opens in its own window, it can stay open next to the globe.	Danh mục lớp - nền vector, lưới tọa độ, khí quyển và Mặt Trời. Danh mục mở trong cửa sổ riêng, có thể để mở bên cạnh quả địa cầu.
+Clear My Places…	Xóa sạch "Địa điểm của tôi"…
+close	đóng
+Continue drawing	Tiếp tục vẽ
+Coordinates	Tọa độ
+Copied: {number}	Đã sao chép: {number}
+Copy	Sao chép
+Copy of the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider.	Bản sao khung nhìn vào bộ nhớ tạm - quả địa cầu với nhãn, không có thanh biểu tượng, các nút điều hướng và thanh thời gian. Có thể dán ảnh ngay vào thư, cuộc trò chuyện hoặc tài liệu.
+Copy the coordinates to the clipboard.	Sao chép tọa độ vào bộ nhớ tạm.
+Copy the view to the clipboard	Sao chép khung nhìn vào bộ nhớ tạm
+Cut	Cắt
+Data sources…	Nguồn dữ liệu…
+Decimal degrees	Độ thập phân
+Degrees, minutes, seconds	Độ, phút, giây
+Delete "{name}" from My Places?	Xóa "{name}" khỏi "Địa điểm của tôi"?
+Delete all placemarks and folders of My Places, placemarks in all {count}? Deletion cannot be undone.	Xóa tất cả dấu vị trí và thư mục của "Địa điểm của tôi", tổng cộng {count} dấu vị trí? Không thể hoàn tác việc xóa.
+Delete folder	Xóa thư mục
+Delete folder “{name}” with all its contents?	Xóa thư mục "{name}" cùng toàn bộ nội dung?
+Delete placemark	Xóa dấu vị trí
+Delete vertex	Xóa đỉnh
+Demo: prepared scenes with placemarks and tours. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour.	Demo: các cảnh soạn sẵn với dấu vị trí và chuyến tham quan. Dấu vị trí được thêm thành thư mục mới trong "Địa điểm của tôi", nút ▶ dưới danh sách phát chuyến tham quan.
+Depth	Độ sâu
+Description of the folder. It is kept in My Places and in KML.	Mô tả thư mục. Được lưu trong "Địa điểm của tôi" và trong KML.
+Distance	Khoảng cách
+Distance from the camera to the point of view. More - a wider view.	Khoảng cách từ camera đến điểm nhìn. Lớn hơn - khung nhìn rộng hơn.
+do not hide	không ẩn
+E	Đ
+Esri World Imagery	Esri World Imagery
+Esri World Imagery - example	Esri World Imagery - ví dụ
+Feature	Đối tượng
+Features	Các đối tượng
+Find what is typed in the line. A place - a flight to it, several found places - a list below.	Tìm nội dung đã nhập trong dòng. Một địa điểm - bay đến đó, nhiều địa điểm tìm thấy - danh sách bên dưới.
+Finish drawing	Kết thúc vẽ
+Fly here	Bay đến đây
+Folder properties	Thuộc tính thư mục
+Folder view	Khung nhìn thư mục
+Folder|add	Thư mục
+Format	Định dạng
+Full screen (F11) - the globe view for a show. Esc or F11 returns the window.	Toàn màn hình (F11) - khung nhìn quả địa cầu để trình chiếu. Các bảng được ẩn, nút điều hướng, thanh thời gian và chuyến tham quan vẫn giữ lại. Esc hoặc F11 trả lại cửa sổ.
+Full screen. Exit - Esc or F11.	Toàn màn hình. Thoát - Esc hoặc F11.
+Grid	Lưới tọa độ
+Height	Độ cao
+Heights raise the surface and shade the slopes. The check turns the terrain on, a click on the name chooses the heights. Heights of the Earth - Mapzen Terrain Tiles. The vertical scale is in the view properties.	Độ cao nâng bề mặt lên và tạo bóng cho sườn dốc. Ô đánh dấu bật địa hình, nhấp vào tên để chọn độ cao. Độ cao của Trái Đất - Mapzen Terrain Tiles. Hệ số phóng đại theo chiều dọc nằm trong thuộc tính khung nhìn.
+Hide beyond	Ẩn khi xa hơn
+Hide sidebar	Ẩn thanh bên
+Identify features	Nhận dạng đối tượng
+Identify. A click on the globe shows the coordinates, the height or depth of the point and the placemarks there.	Nhận dạng đối tượng. Nhấp vào quả địa cầu để xem tọa độ, độ cao hoặc độ sâu của điểm và các dấu vị trí.
+Imagery of the whole Earth, the example basemap. Its terms are set by Esri.	Ảnh của toàn bộ Trái Đất, bản đồ nền ví dụ. Điều kiện sử dụng do Esri quy định.
+Imagery or map on the surface. A click on the row chooses the basemap. Esri World Imagery is an example basemap, its terms are set by Esri.	Ảnh hoặc bản đồ trên bề mặt. Nhấp vào dòng để chọn bản đồ nền. Esri World Imagery là bản đồ nền ví dụ, điều kiện sử dụng do Esri quy định.
+Inform++ LLC	Inform++ LLC
+km	km
+Labels	Nhãn
+Lakes and reservoirs	Mặt nước
+Language	Ngôn ngữ
+Latitude	Vĩ độ
+Latitude of the point the camera looks at.	Vĩ độ của điểm mà camera nhìn vào.
+Layers - switched on together	Lớp - bật cùng nhau
+Light of the terrain and the air by the position of the sun. The night side of the Earth is dark. The time of the sun is the end of the period of the open time slider, without it the computer clock. Without the check the light falls from the north-west, as on a relief map.	Ánh sáng của địa hình và không khí theo vị trí Mặt Trời. Phía đêm của Trái Đất tối. Thời gian của Mặt Trời là cuối khoảng của thanh thời gian đang mở, nếu không có thanh thì là đồng hồ máy tính. Khi bỏ đánh dấu, ánh sáng chiếu từ tây bắc, như trên bản đồ địa hình.
+loading	đang tải
+loading {count}	đang tải {count}
+Longitude	Kinh độ
+Longitude of the point the camera looks at.	Kinh độ của điểm mà camera nhìn vào.
+m	m
+Map	Bản đồ
+Measure distance	Đo khoảng cách
+Moscow, historical maps	Moskva, bản đồ lịch sử
+Motorways yellow, main roads light yellow, the rest thin white. Over a city the roads cover the basemap with a dense mesh.	Đường cao tốc màu vàng, đường chính màu vàng nhạt, còn lại màu trắng mảnh. Trên thành phố, đường phủ bản đồ nền bằng một lưới dày.
+N	B
+Names of airports with a square icon, runways when zooming in. They are labelled from a height below 1000 km.	Tên sân bay với biểu tượng hình vuông, khi phóng to có đường băng. Hiện nhãn từ độ cao dưới 1000 km.
+Names of countries, regions, cities, towns and villages. Smaller places appear when zooming in.	Tên quốc gia, vùng, thành phố, thị trấn và làng. Khi phóng to xuất hiện các địa điểm ngày càng nhỏ.
+Names of seas, lakes and reservoirs, in light blue italics.	Tên biển, hồ và hồ chứa, chữ nghiêng màu xanh nhạt.
+Narrow rivers as blue lines. They appear from about 600 m per pixel.	Sông hẹp dưới dạng đường màu xanh. Xuất hiện từ khoảng 600 m mỗi điểm ảnh.
+Nature	Thiên nhiên
+Nature reserves, national parks and wildlife refuges, a green outline and a name. Names are seen below 3000 km, the outline together with motorways.	Khu bảo tồn thiên nhiên, vườn quốc gia và khu bảo tồn động vật hoang dã, viền xanh lá và tên. Tên hiện dưới 3000 km, viền cùng với đường cao tốc.
+New placemark, path, polygon or circle in My Places.	Dấu vị trí, đường đi, đa giác hoặc hình tròn mới trong "Địa điểm của tôi".
+No	Không
+No - height tiles only	Không - chỉ ô độ cao
+No features at the point	Không có đối tượng tại điểm
+none	không có
+not received: {error}	không nhận được: {error}
+Only one placemark or folder of this folder is seen on the globe. The check of one row clears the checks of the others.	Trên quả địa cầu chỉ hiện một dấu vị trí hoặc thư mục từ thư mục này. Đánh dấu một dòng sẽ bỏ đánh dấu các dòng còn lại.
+Opacity of the selected placemarks, paths, polygons, pictures and folder contents. To the left - more transparent. The value is kept in My Places and in KML.	Độ mờ đục của các dấu vị trí, đường đi, đa giác, hình ảnh và nội dung thư mục đã chọn. Sang trái - trong suốt hơn. Giá trị được lưu trong "Địa điểm của tôi" và trong KML.
+open	mở
+Open KML or KMZ…	Mở KML hoặc KMZ…
+Open Scene	Mở cảnh
+Open Scene…	Mở cảnh…
+open the catalogue	mở danh mục
+open the demo	mở demo
+open the window	mở cửa sổ
+Orbit around	Bay vòng quanh
+Parallels and meridians with degree labels, the equator, the tropics and the polar circles. The step of the grid changes with the camera height.	Vĩ tuyến và kinh tuyến có nhãn độ, xích đạo, chí tuyến và vòng cực. Bước lưới thay đổi theo độ cao của camera.
+Paste	Dán
+Path|add	Đường đi
+Peaks	Đỉnh núi
+Peaks and volcanoes with their height in metres, a triangle icon. They are labelled from a height below 400 km.	Đỉnh núi và núi lửa với độ cao tính bằng mét, biểu tượng hình tam giác. Hiện nhãn từ độ cao dưới 400 km.
+Place, coordinates or action. A place name or coordinates, for example Perm or 58.0105, 56.2294, give a flight. A layer or a window, for example «ruler» or «grid», is found by its name and turned on from the hint. Ctrl+K from anywhere in the window puts the cursor into this line.	Địa điểm, tọa độ hoặc thao tác. Tên địa điểm hoặc tọa độ, ví dụ Perm hoặc 58.0105, 56.2294, cho một chuyến bay. Lớp hoặc cửa sổ, ví dụ "thước đo" hoặc "lưới", được tìm theo tên và bật từ gợi ý. Ctrl+K từ bất kỳ đâu trong cửa sổ đưa con trỏ vào dòng này.
+Placemark|add	Dấu vị trí
+Plates with numbers of motorways and main roads. They are labelled from a height below 1000 km.	Biển số của đường cao tốc và đường chính. Hiện nhãn từ độ cao dưới 1000 km.
+Polygon|add	Đa giác
+Railways	Đường sắt
+Record a flight	Ghi chuyến tham quan
+Record a tour. Camera motion by mouse, keys or flights becomes a tour in My Places, a second click stops the recording.	Ghi chuyến tham quan. Chuyển động camera bằng chuột, phím hoặc chuyến bay trở thành chuyến tham quan trong "Địa điểm của tôi", nhấp lần thứ hai sẽ dừng ghi.
+Recorded tour	Chuyến tham quan đã ghi
+Remove from the globe	Gỡ khỏi quả địa cầu
+Reserves and national parks	Khu bảo tồn và vườn quốc gia
+Reset	Đặt lại
+Return the view the folder had when the window opened.	Trả lại khung nhìn mà thư mục có khi mở cửa sổ.
+Rivers	Sông
+Rivers, peaks and protected areas.	Sông, đỉnh núi và khu bảo tồn.
+Road numbers	Số hiệu đường
+Roads	Đường
+Roads, their numbers, railways and airports.	Đường, số hiệu đường, đường sắt và sân bay.
+Ruler. Length, perimeter and area on the ellipsoid, the measurement can be saved to My Places.	Thước đo. Chiều dài, chu vi và diện tích trên elipsoid, có thể lưu phép đo vào "Địa điểm của tôi".
+run	thực hiện
+S	N
+Save measurement	Lưu phép đo
+Save Scene	Lưu cảnh
+Save tour	Lưu chuyến tham quan
+Save view. The point of view becomes a placemark in My Places, flying to it returns the height, heading and tilt.	Lưu khung nhìn. Điểm nhìn trở thành dấu vị trí trong "Địa điểm của tôi", bay đến đó trả lại độ cao, hướng và độ nghiêng.
+Scene - the camera and the selected folder of My Places with its tour. It is saved to a file and opens on another computer.	Cảnh - camera và thư mục đã chọn của "Địa điểm của tôi" cùng chuyến tham quan của nó. Được lưu vào tệp và mở trên máy tính khác.
+Set as base map	Đặt làm bản đồ nền
+Settlements	Khu dân cư
+Share view	Chia sẻ khung nhìn
+Share View…	Chia sẻ khung nhìn…
+Shores of lakes, reservoirs and wide rivers outlined in blue. Reservoirs are cut into pieces in the data, and the outline runs along the cuts too.	Bờ hồ, hồ chứa và sông rộng được viền màu xanh. Trong dữ liệu, hồ chứa bị cắt thành nhiều mảnh, và đường viền cũng chạy theo các đường cắt.
+Show contents as a group of radio buttons	Hiện nội dung dưới dạng nhóm nút chọn
+Show on the globe	Hiện trên quả địa cầu
+Show sidebar	Hiện thanh bên
+Site	Địa điểm
+Sky and light	Bầu trời và ánh sáng
+Snapshot folder view	Lấy khung nhìn hiện tại cho thư mục
+Snapshot of the current view	Lấy khung nhìn hiện tại
+Snapshot of the view to a PNG file.	Ảnh chụp khung nhìn vào tệp PNG.
+Snapshot view	Lấy khung nhìn hiện tại cho dấu vị trí
+snow, mines, wind	tuyết, mỏ, gió
+Sort A-Z	Sắp xếp từ A đến Z
+start	bắt đầu
+stop	dừng
+Take the view of the globe now: the point of view, distance, heading and tilt.	Lấy khung nhìn hiện tại của quả địa cầu: điểm nhìn, khoảng cách, hướng và độ nghiêng.
+The blue glow of the air around the planet, the sky over the horizon and the haze over the distant surface. Without the check the background of the view is black space, the surface is seen without haze.	Ánh sáng xanh của không khí quanh hành tinh, bầu trời trên đường chân trời và lớp sương mờ trên bề mặt xa. Khi bỏ đánh dấu, nền khung nhìn là không gian đen, bề mặt hiện không có sương mờ.
+The check shows a layer on the globe. A row - its description. Layers are turned on together.	Ô đánh dấu hiện một lớp trên quả địa cầu. Dòng - mô tả của lớp. Các lớp được bật cùng nhau.
+The OpenFreeMap vector base and the coordinate grid.	Nền vector OpenFreeMap và lưới tọa độ.
+The OpenStreetMap map.	Bản đồ OpenStreetMap.
+The placemark is seen only while the eye is closer than this distance, as Region in KML. For a folder - all its placemarks. 0 - always seen.	Dấu vị trí chỉ hiện khi mắt ở gần hơn khoảng cách này, như Region trong KML. Với thư mục - tất cả dấu vị trí của nó. 0 - luôn hiện.
+The sun and the night side, the atmosphere.	Mặt Trời và phía đêm, khí quyển.
+The view is copied to the clipboard.	Đã sao chép khung nhìn vào bộ nhớ tạm.
+Tilt	Độ nghiêng
+Tilt of the camera. 0 - looking straight down, more - towards the horizon.	Độ nghiêng của camera. 0 - nhìn thẳng xuống, lớn hơn - hướng về đường chân trời.
+Time slider	Thanh thời gian
+Time slider. While it is open, data outside its period is hidden. The closed slider shows all placemarks.	Thanh thời gian. Khi thanh mở, dữ liệu ngoài khoảng của thanh bị ẩn. Thanh đã đóng hiện tất cả dấu vị trí.
+Tour along the path	Chuyến tham quan theo đường đi
+Tour along the selected path	Chuyến tham quan theo đường đi đã chọn
+Tour over the checked places	Chuyến tham quan qua các địa điểm đã đánh dấu
+Tour over the checked places of the folder	Chuyến tham quan qua các dấu vị trí đã đánh dấu của thư mục
+Tour: select the My Places folder or a path in it	Chuyến tham quan: chọn thư mục "Địa điểm của tôi" hoặc một đường đi trong đó
+Transport	Giao thông
+Type	Loại
+Under the point	Dưới điểm
+Value	Giá trị
+View from {height}	Nhìn từ độ cao {height}
+View properties	Thuộc tính khung nhìn
+View properties: relief scale, language of labels, appearance.	Thuộc tính khung nhìn: bản đồ nền và nguồn dữ liệu, hệ số phóng đại theo chiều dọc, ngôn ngữ nhãn, định dạng tọa độ, giao diện.
+View snapshot	Ảnh chụp khung nhìn
+Voyages of Columbus	Các chuyến đi của Columbus
+W	T
+Water names	Tên mặt nước
+What's here?	Ở đây có gì?
+Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	Camera nhìn từ đâu khi bay đến thư mục. Khung nhìn được đặt bằng số hoặc bằng cách lấy khung nhìn hiện tại. Không có khung nhìn riêng, chuyến bay sẽ đưa tất cả dấu vị trí của thư mục vào khung hình.
+Where the camera looks. 0 - north at the top of the frame.	Hướng camera nhìn. 0 - phía bắc ở trên cùng khung hình.
+Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	Khi bỏ đánh dấu, thư mục không mở rộng trong danh sách, các dấu vị trí của nó được hiện và ẩn bằng ô đánh dấu của chính thư mục.
+Yes	Có
+ s	 giây
+Continue	Tiếp tục
+End tour	Kết thúc chuyến tham quan
+How many seconds the camera stands at each stop. A new pause acts from a jump by the buttons or from a new start of the tour.	Số giây camera dừng ở mỗi điểm dừng. Thời gian dừng mới có hiệu lực từ lần chuyển bằng nút hoặc từ lần chạy lại chuyến tham quan.
+How much of the tour has passed. The slider rewinds the tour. The camera stands at this point at once, the tour goes on from it.	Phần chuyến tham quan đã qua. Thanh trượt tua chuyến tham quan. Camera lập tức đứng tại điểm này, chuyến tham quan tiếp tục từ đó.
+Next stop	Điểm dừng tiếp theo
+Pause	Tạm dừng
+Previous stop	Điểm dừng trước
+Stop {n} of {count}: {name}	Điểm dừng {n}/{count}: {name}
+Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	Chú thích điểm dừng trên khung hình. Tại điểm dừng, tên và mô tả của dấu vị trí hiện chữ lớn ở cuối khung hình, khi bay không có chú thích.
+Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	Chuyến tham quan lặp vòng. Sau điểm dừng cuối, chuyến tham quan bắt đầu lại từ điểm đầu. Tạm dừng hoặc dấu chéo sẽ dừng chuyến tham quan.

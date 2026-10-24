@@ -192,3 +192,215 @@ Tropic of Capricorn	Steenbokskeerkring
 Turn off	Uitschakelen
 Turn on	Inschakelen
 View	Weergave
+ km	 km
+ m	 m
+{coords}, depth {d} m	{coords}, diepte {d} m
+{coords}, height {h} m	{coords}, hoogte {h} m
+{name} - {what}	{name} - {what}
+{name} - earlier query	{name} - eerdere zoekopdracht
+{name} - placemark	{name} - plaatsmarkering
+{name}, {ele} m	{name}, {ele} m
+{name}. The check turns the layer off, the row stays. The «⋯» menu removes it from the globe.	{name}. Het vinkje zet de laag uit, de regel blijft. Het menu ‘⋯’ haalt de laag van de globe.
+© 2026 Inform++ LLC. Apache 2.0.	© 2026 Inform++ LLC. Apache 2.0.
+A double click on a row copies the value to the clipboard, a link opens in the browser.	Een dubbelklik op een regel kopieert de waarde naar het klembord, een link opent in de browser.
+A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	Lichte lijn met donkere streepjes. Ze verdwijnen samen met de snelwegen bij uitzoomen. Stations- en aansluitsporen worden niet getekend.
+Add	Toevoegen
+Add data	Gegevens toevoegen
+Add placemark here	Plaatsmarkering hier toevoegen
+Address	Adres
+Airports	Luchthavens
+All	Alles
+All maps and layers of the catalog.	Alle kaarten en lagen van de catalogus.
+Allow the folder to expand	Uitklappen van de map toestaan
+Atmosphere	Atmosfeer
+Base map	Basiskaart
+Base map on the globe	Basiskaart op de globe
+Base map on the globe - one	Basiskaart op de globe - één
+Base maps	Basiskaarten
+Basemaps of the globe - imagery and maps. There is one base on the globe, under the layers.	Basiskaarten van de globe - beelden en kaarten. Op de globe ligt één basiskaart, onder de kaarten en lagen.
+Borders	Grenzen
+Borders and names	Grenzen en namen
+Borders of countries and regions and labels on the globe.	Grenzen van landen en regio’s en labels op de globe.
+Borders of countries bright yellow, borders of regions thin white. Sea borders are not drawn.	Landsgrenzen fel geel, regiogrenzen dun wit. Zeegrenzen worden niet getekend.
+Catalog of layers - vector base, coordinate grid, atmosphere and sun. The catalog opens in its own window, it can stay open next to the globe.	Catalogus van lagen - vectorbasis, coördinatenraster, atmosfeer en zon. De catalogus opent in een eigen venster en kan naast de globe open blijven.
+Clear My Places…	‘Mijn plaatsen’ leegmaken…
+close	sluiten
+Continue drawing	Tekenen voortzetten
+Coordinates	Coördinaten
+Copied: {number}	Gekopieerd: {number}
+Copy	Kopiëren
+Copy of the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider.	Kopie van de weergave naar het klembord - de globe met labels, zonder de knoppenbalk, de navigatieknoppen en de tijdbalk. De afbeelding kan direct in een e-mail, chat of document worden geplakt.
+Copy the coordinates to the clipboard.	De coördinaten naar het klembord kopiëren.
+Copy the view to the clipboard	Weergave naar het klembord kopiëren
+Cut	Knippen
+Data sources…	Gegevensbronnen…
+Decimal degrees	Decimale graden
+Degrees, minutes, seconds	Graden, minuten, seconden
+Delete "{name}" from My Places?	‘{name}’ uit ‘Mijn plaatsen’ verwijderen?
+Delete all placemarks and folders of My Places, placemarks in all {count}? Deletion cannot be undone.	Alle plaatsmarkeringen en mappen van ‘Mijn plaatsen’ verwijderen, in totaal {count} plaatsmarkeringen? Verwijderen kan niet ongedaan worden gemaakt.
+Delete folder	Map verwijderen
+Delete folder “{name}” with all its contents?	Map ‘{name}’ met alle inhoud verwijderen?
+Delete placemark	Plaatsmarkering verwijderen
+Delete vertex	Hoekpunt verwijderen
+Demo: prepared scenes with placemarks and tours. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour.	Demo: voorbereide scènes met plaatsmarkeringen en rondleidingen. De plaatsmarkeringen komen in een nieuwe map van ‘Mijn plaatsen’, de knop ▶ onder de lijst speelt de rondleiding af.
+Depth	Diepte
+Description of the folder. It is kept in My Places and in KML.	Beschrijving van de map. Die wordt bewaard in ‘Mijn plaatsen’ en in KML.
+Distance	Afstand
+Distance from the camera to the point of view. More - a wider view.	Afstand van de camera tot het kijkpunt. Meer - een ruimer beeld.
+do not hide	niet verbergen
+E	OL
+Esri World Imagery	Esri World Imagery
+Esri World Imagery - example	Esri World Imagery - voorbeeld
+Feature	Object
+Features	Objecten
+Find what is typed in the line. A place - a flight to it, several found places - a list below.	Zoeken naar wat in de regel is getypt. Eén plaats - vlucht ernaartoe, meerdere gevonden plaatsen - lijst eronder.
+Finish drawing	Tekenen beëindigen
+Fly here	Hierheen vliegen
+Folder properties	Eigenschappen van de map
+Folder view	Weergave van de map
+Folder|add	Map
+Format	Formaat
+Full screen (F11) - the globe view for a show. Esc or F11 returns the window.	Volledig scherm (F11) - weergave van de globe voor een presentatie. De panelen verdwijnen, de navigatieknoppen, de tijdbalk en de rondleiding blijven. Esc of F11 zet het venster terug.
+Full screen. Exit - Esc or F11.	Volledig scherm. Afsluiten - Esc of F11.
+Grid	Coördinatenraster
+Height	Hoogte
+Heights raise the surface and shade the slopes. The check turns the terrain on, a click on the name chooses the heights. Heights of the Earth - Mapzen Terrain Tiles. The vertical scale is in the view properties.	Hoogten tillen het oppervlak op en schaduwen de hellingen. Het vinkje zet het reliëf aan, een klik op de naam kiest de hoogten. Hoogten van de aarde - Mapzen Terrain Tiles. De verticale overdrijving staat in de eigenschappen van de weergave.
+Hide beyond	Verbergen vanaf
+Hide sidebar	Zijpaneel verbergen
+Identify features	Objecten identificeren
+Identify. A click on the globe shows the coordinates, the height or depth of the point and the placemarks there.	Objecten identificeren. Een klik op de globe toont de coördinaten, de hoogte of diepte van het punt en de plaatsmarkeringen.
+Imagery of the whole Earth, the example basemap. Its terms are set by Esri.	Beelden van de hele aarde, een voorbeeldbasiskaart. De gebruiksvoorwaarden worden bepaald door Esri.
+Imagery or map on the surface. A click on the row chooses the basemap. Esri World Imagery is an example basemap, its terms are set by Esri.	Beelden of kaart op het oppervlak. Een klik op de regel kiest de basiskaart. Esri World Imagery is een voorbeeldbasiskaart, de gebruiksvoorwaarden worden bepaald door Esri.
+Inform++ LLC	Inform++ LLC
+km	km
+Labels	Labels
+Lakes and reservoirs	Wateren
+Language	Taal
+Latitude	Breedtegraad
+Latitude of the point the camera looks at.	Breedtegraad van het punt waar de camera naar kijkt.
+Layers - switched on together	Lagen - gaan samen aan
+Light of the terrain and the air by the position of the sun. The night side of the Earth is dark. The time of the sun is the end of the period of the open time slider, without it the computer clock. Without the check the light falls from the north-west, as on a relief map.	Licht op reliëf en lucht volgens de stand van de zon. De nachtzijde van de aarde is donker. De tijd van de zon is het einde van het bereik van de open tijdbalk, zonder tijdbalk de klok van de computer. Zonder vinkje valt het licht uit het noordwesten, zoals op een reliëfkaart.
+loading	laden
+loading {count}	laden {count}
+Longitude	Lengtegraad
+Longitude of the point the camera looks at.	Lengtegraad van het punt waar de camera naar kijkt.
+m	m
+Map	Kaart
+Measure distance	Afstand meten
+Moscow, historical maps	Moskou, historische kaarten
+Motorways yellow, main roads light yellow, the rest thin white. Over a city the roads cover the basemap with a dense mesh.	Snelwegen geel, hoofdwegen lichtgeel, de rest dun wit. Boven een stad bedekken de wegen de basiskaart met een dicht netwerk.
+N	NB
+Names of airports with a square icon, runways when zooming in. They are labelled from a height below 1000 km.	Namen van luchthavens met een vierkant pictogram, bij inzoomen de start- en landingsbanen. Gelabeld vanaf een hoogte onder 1000 km.
+Names of countries, regions, cities, towns and villages. Smaller places appear when zooming in.	Namen van landen, regio’s, steden, dorpen en gehuchten. Bij inzoomen verschijnen steeds kleinere plaatsen.
+Names of seas, lakes and reservoirs, in light blue italics.	Namen van zeeën, meren en stuwmeren, in lichtblauwe cursief.
+Narrow rivers as blue lines. They appear from about 600 m per pixel.	Smalle rivieren als blauwe lijnen. Ze verschijnen vanaf ongeveer 600 m per pixel.
+Nature	Natuur
+Nature reserves, national parks and wildlife refuges, a green outline and a name. Names are seen below 3000 km, the outline together with motorways.	Natuurreservaten, nationale parken en wildreservaten, een groene omtrek en een naam. Namen zijn zichtbaar onder 3000 km, de omtrek samen met de snelwegen.
+New placemark, path, polygon or circle in My Places.	Nieuwe plaatsmarkering, pad, polygoon of cirkel in ‘Mijn plaatsen’.
+No	Nee
+No - height tiles only	Nee - alleen hoogtetegels
+No features at the point	Geen objecten op het punt
+none	geen
+not received: {error}	niet ontvangen: {error}
+Only one placemark or folder of this folder is seen on the globe. The check of one row clears the checks of the others.	Op de globe is maar één plaatsmarkering of map uit deze map zichtbaar. Het vinkje van een regel haalt de vinkjes van de andere weg.
+Opacity of the selected placemarks, paths, polygons, pictures and folder contents. To the left - more transparent. The value is kept in My Places and in KML.	Dekking van de geselecteerde plaatsmarkeringen, paden, polygonen, afbeeldingen en mapinhoud. Naar links - transparanter. De waarde wordt bewaard in ‘Mijn plaatsen’ en in KML.
+open	openen
+Open KML or KMZ…	KML of KMZ openen…
+Open Scene	Scène openen
+Open Scene…	Scène openen…
+open the catalogue	catalogus openen
+open the demo	demo openen
+open the window	venster openen
+Orbit around	Rondvliegen
+Parallels and meridians with degree labels, the equator, the tropics and the polar circles. The step of the grid changes with the camera height.	Breedte- en lengtecirkels met graadlabels, de evenaar, de keerkringen en de poolcirkels. De stap van het raster verandert met de hoogte van de camera.
+Paste	Plakken
+Path|add	Pad
+Peaks	Toppen
+Peaks and volcanoes with their height in metres, a triangle icon. They are labelled from a height below 400 km.	Toppen en vulkanen met hun hoogte in meters, een driehoekig pictogram. Gelabeld vanaf een hoogte onder 400 km.
+Place, coordinates or action. A place name or coordinates, for example Perm or 58.0105, 56.2294, give a flight. A layer or a window, for example «ruler» or «grid», is found by its name and turned on from the hint. Ctrl+K from anywhere in the window puts the cursor into this line.	Plaats, coördinaten of actie. Een plaatsnaam of coördinaten, bijvoorbeeld Perm of 58.0105, 56.2294, geven een vlucht. Een laag of een venster, bijvoorbeeld ‘liniaal’ of ‘raster’, wordt op naam gevonden en vanuit de suggestie aangezet. Ctrl+K vanaf elke plek in het venster zet de cursor in deze regel.
+Placemark|add	Plaatsmarkering
+Plates with numbers of motorways and main roads. They are labelled from a height below 1000 km.	Bordjes met nummers van snelwegen en hoofdwegen. Gelabeld vanaf een hoogte onder 1000 km.
+Polygon|add	Polygoon
+Railways	Spoorwegen
+Record a flight	Een rondleiding opnemen
+Record a tour. Camera motion by mouse, keys or flights becomes a tour in My Places, a second click stops the recording.	Een rondleiding opnemen. Camerabeweging met muis, toetsen of vluchten wordt een rondleiding in ‘Mijn plaatsen’, een tweede klik stopt de opname.
+Recorded tour	Opgenomen rondleiding
+Remove from the globe	Van de globe halen
+Reserves and national parks	Reservaten en nationale parken
+Reset	Herstellen
+Return the view the folder had when the window opened.	De weergave terugzetten die de map had toen het venster openging.
+Rivers	Rivieren
+Rivers, peaks and protected areas.	Rivieren, toppen en beschermde gebieden.
+Road numbers	Wegnummers
+Roads	Wegen
+Roads, their numbers, railways and airports.	Wegen, hun nummers, spoorwegen en luchthavens.
+Ruler. Length, perimeter and area on the ellipsoid, the measurement can be saved to My Places.	Liniaal. Lengte, omtrek en oppervlakte op de ellipsoïde, de meting kan in ‘Mijn plaatsen’ worden bewaard.
+run	uitvoeren
+S	ZB
+Save measurement	Meting opslaan
+Save Scene	Scène opslaan
+Save tour	Rondleiding opslaan
+Save view. The point of view becomes a placemark in My Places, flying to it returns the height, heading and tilt.	Weergave opslaan. Het kijkpunt wordt een plaatsmarkering in ‘Mijn plaatsen’, de vlucht ernaartoe herstelt hoogte, koers en kanteling.
+Scene - the camera and the selected folder of My Places with its tour. It is saved to a file and opens on another computer.	Scène - de camera en de geselecteerde map van ‘Mijn plaatsen’ met de rondleiding. Wordt opgeslagen in een bestand en opent op een andere computer.
+Set as base map	Als basiskaart instellen
+Settlements	Woonplaatsen
+Share view	Weergave delen
+Share View…	Weergave delen…
+Shores of lakes, reservoirs and wide rivers outlined in blue. Reservoirs are cut into pieces in the data, and the outline runs along the cuts too.	Oevers van meren, stuwmeren en brede rivieren blauw omlijnd. Stuwmeren zijn in de gegevens in stukken gesneden, en de omtrek loopt ook langs de sneden.
+Show contents as a group of radio buttons	Inhoud als groep keuzerondjes tonen
+Show on the globe	Op de globe tonen
+Show sidebar	Zijpaneel tonen
+Site	Plek
+Sky and light	Lucht en licht
+Snapshot folder view	Huidige weergave voor de map nemen
+Snapshot of the current view	Huidige weergave nemen
+Snapshot of the view to a PNG file.	Momentopname van de weergave naar een PNG-bestand.
+Snapshot view	Huidige weergave voor de plaatsmarkering nemen
+snow, mines, wind	sneeuw, mijnen, wind
+Sort A-Z	Sorteren van A tot Z
+start	starten
+stop	stoppen
+Take the view of the globe now: the point of view, distance, heading and tilt.	De huidige weergave van de globe nemen: het kijkpunt, de afstand, de koers en de kanteling.
+The blue glow of the air around the planet, the sky over the horizon and the haze over the distant surface. Without the check the background of the view is black space, the surface is seen without haze.	De blauwe gloed van de lucht rond de planeet, de hemel boven de horizon en de nevel boven het verre oppervlak. Zonder vinkje is de achtergrond zwarte ruimte, het oppervlak is zonder nevel te zien.
+The check shows a layer on the globe. A row - its description. Layers are turned on together.	Het vinkje toont een laag op de globe. De regel - de beschrijving. Lagen gaan samen aan.
+The OpenFreeMap vector base and the coordinate grid.	De vectorbasis OpenFreeMap en het coördinatenraster.
+The OpenStreetMap map.	De kaart OpenStreetMap.
+The placemark is seen only while the eye is closer than this distance, as Region in KML. For a folder - all its placemarks. 0 - always seen.	De plaatsmarkering is alleen zichtbaar zolang het oog dichterbij is dan deze afstand, zoals Region in KML. Bij een map - al haar plaatsmarkeringen. 0 - altijd zichtbaar.
+The sun and the night side, the atmosphere.	De zon en de nachtzijde, de atmosfeer.
+The view is copied to the clipboard.	De weergave is naar het klembord gekopieerd.
+Tilt	Kanteling
+Tilt of the camera. 0 - looking straight down, more - towards the horizon.	Kanteling van de camera. 0 - recht naar beneden kijken, meer - naar de horizon.
+Time slider	Tijdbalk
+Time slider. While it is open, data outside its period is hidden. The closed slider shows all placemarks.	Tijdbalk. Zolang de balk open is, zijn gegevens buiten het bereik verborgen. De gesloten balk toont alle plaatsmarkeringen.
+Tour along the path	Rondleiding langs het pad
+Tour along the selected path	Rondleiding langs het geselecteerde pad
+Tour over the checked places	Rondleiding langs de aangevinkte plaatsen
+Tour over the checked places of the folder	Rondleiding langs de aangevinkte plaatsmarkeringen van de map
+Tour: select the My Places folder or a path in it	Rondleiding: selecteer een map van ‘Mijn plaatsen’ of een pad daarin
+Transport	Vervoer
+Type	Type
+Under the point	Onder het punt
+Value	Waarde
+View from {height}	Zicht vanaf {height}
+View properties	Eigenschappen van de weergave
+View properties: relief scale, language of labels, appearance.	Eigenschappen van de weergave: basiskaart en gegevensbronnen, verticale overdrijving, taal van de labels, coördinatenformaat, uiterlijk.
+View snapshot	Momentopname van de weergave
+Voyages of Columbus	Reizen van Columbus
+W	WL
+Water names	Namen van wateren
+What's here?	Wat is hier?
+Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	Vanwaar de camera kijkt als hij naar de map vliegt. De weergave wordt met getallen ingesteld of door de huidige weergave te nemen. Zonder eigen weergave brengt de vlucht alle plaatsmarkeringen van de map in beeld.
+Where the camera looks. 0 - north at the top of the frame.	Waar de camera naar kijkt. 0 - noorden boven in beeld.
+Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	Zonder vinkje klapt de map in de lijst niet uit, haar plaatsmarkeringen worden getoond en verborgen met het vinkje van de map zelf.
+Yes	Ja
+ s	 s
+Continue	Doorgaan
+End tour	Rondleiding beëindigen
+How many seconds the camera stands at each stop. A new pause acts from a jump by the buttons or from a new start of the tour.	Hoeveel seconden de camera bij elke stop stilstaat. Een nieuwe pauze geldt vanaf een sprong met de knoppen of vanaf een nieuwe start van de rondleiding.
+How much of the tour has passed. The slider rewinds the tour. The camera stands at this point at once, the tour goes on from it.	Hoeveel van de rondleiding voorbij is. De schuifregelaar spoelt de rondleiding door. De camera staat meteen op dit punt, de rondleiding gaat vanaf daar verder.
+Next stop	Volgende stop
+Pause	Pauze
+Previous stop	Vorige stop
+Stop {n} of {count}: {name}	Stop {n} van {count}: {name}
+Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	Bijschriften van de stops in beeld. Bij een stop staan de naam en de beschrijving van de plaatsmarkering groot onder in beeld, tijdens de vlucht is er geen bijschrift.
+Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	Rondleiding in een lus. Na de laatste stop begint de rondleiding weer bij de eerste. De pauze of het kruisje stopt haar.

@@ -192,3 +192,215 @@ Tropic of Capricorn	თხის რქის ტროპიკი
 Turn off	გამორთვა
 Turn on	ჩართვა
 View	ხედი
+ km	 კმ
+ m	 მ
+{coords}, depth {d} m	{coords}, სიღრმე {d} მ
+{coords}, height {h} m	{coords}, სიმაღლე {h} მ
+{name} - {what}	{name} - {what}
+{name} - earlier query	{name} - წინა მოთხოვნა
+{name} - placemark	{name} - ნიშანი
+{name}, {ele} m	{name}, {ele} მ
+{name}. The check turns the layer off, the row stays. The «⋯» menu removes it from the globe.	{name}. ალამი რთავს ფენას, სტრიქონი რჩება. მენიუ „⋯“ აშორებს მას გლობუსიდან.
+© 2026 Inform++ LLC. Apache 2.0.	© 2026 Inform++ LLC. Apache 2.0.
+A double click on a row copies the value to the clipboard, a link opens in the browser.	სტრიქონზე ორმაგი დაწკაპუნება მნიშვნელობას აკოპირებს გაცვლის ბუფერში, ბმული იხსნება ბრაუზერში.
+A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	ღია ფერის ხაზი მუქი წყვეტილით. დაშორებისას ქრება მაგისტრალებთან ერთად. სადგურის და მისასვლელი ლიანდაგები არ იხაზება.
+Add	დამატება
+Add data	მონაცემების დამატება
+Add placemark here	აქ ნიშნის დამატება
+Address	მისამართი
+Airports	აეროპორტები
+All	ყველა
+All maps and layers of the catalog.	კატალოგის ყველა რუკა და ფენა.
+Allow the folder to expand	საქაღალდის გაშლის დაშვება
+Atmosphere	ატმოსფერო
+Base map	საბაზისო რუკა
+Base map on the globe	საბაზისო რუკა გლობუსზე
+Base map on the globe - one	საბაზისო რუკა გლობუსზე - ერთი
+Base maps	საბაზისო რუკები
+Basemaps of the globe - imagery and maps. There is one base on the globe, under the layers.	გლობუსის საბაზისო რუკები - სურათები და რუკები. გლობუსზე ერთი საბაზისო რუკაა, რუკებისა და ფენების ქვეშ.
+Borders	საზღვრები
+Borders and names	საზღვრები და სახელები
+Borders of countries and regions and labels on the globe.	ქვეყნებისა და რეგიონების საზღვრები და წარწერები გლობუსზე.
+Borders of countries bright yellow, borders of regions thin white. Sea borders are not drawn.	ქვეყნების საზღვრები კაშკაშა ყვითელია, რეგიონების საზღვრები - თხელი თეთრი. საზღვაო საზღვრები არ იხაზება.
+Catalog of layers - vector base, coordinate grid, atmosphere and sun. The catalog opens in its own window, it can stay open next to the globe.	ფენების კატალოგი - ვექტორული საფუძველი, კოორდინატთა ბადე, ატმოსფერო და მზე. კატალოგი იხსნება ცალკე ფანჯარაში, მისი გახსნილად დატოვება შეიძლება გლობუსის გვერდით.
+Clear My Places…	„ჩემი ნიშნების“ გასუფთავება…
+close	დახურვა
+Continue drawing	ხაზვის გაგრძელება
+Coordinates	კოორდინატები
+Copied: {number}	დაკოპირდა: {number}
+Copy	კოპირება
+Copy of the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider.	ხედის ასლი გაცვლის ბუფერში - გლობუსი წარწერებით, ხატულების ზოლის, ნავიგაციის მართვის ელემენტებისა და დროის ზოლის გარეშე. სურათის ჩასმა შეიძლება პირდაპირ წერილში, ჩატში ან დოკუმენტში.
+Copy the coordinates to the clipboard.	კოორდინატების კოპირება გაცვლის ბუფერში.
+Copy the view to the clipboard	ხედის კოპირება გაცვლის ბუფერში
+Cut	ამოჭრა
+Data sources…	მონაცემთა წყაროები…
+Decimal degrees	ათობითი გრადუსები
+Degrees, minutes, seconds	გრადუსები, წუთები, წამები
+Delete "{name}" from My Places?	წაიშალოს „{name}“ „ჩემი ნიშნებიდან“?
+Delete all placemarks and folders of My Places, placemarks in all {count}? Deletion cannot be undone.	წაიშალოს „ჩემი ნიშნების“ ყველა ნიშანი და საქაღალდე, სულ {count} ნიშანი? წაშლის გაუქმება შეუძლებელია.
+Delete folder	საქაღალდის წაშლა
+Delete folder “{name}” with all its contents?	წაიშალოს საქაღალდე „{name}“ მთელი შიგთავსით?
+Delete placemark	ნიშნის წაშლა
+Delete vertex	წვეროს წაშლა
+Demo: prepared scenes with placemarks and tours. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour.	დემო: მომზადებული სცენები ნიშნებითა და ტურებით. ნიშნები ემატება „ჩემ ნიშნებს“ ახალ საქაღალდედ, სიის ქვემოთ ღილაკი ▶ ატარებს ტურს.
+Depth	სიღრმე
+Description of the folder. It is kept in My Places and in KML.	საქაღალდის აღწერა. ინახება „ჩემ ნიშნებში“ და KML-ში.
+Distance	მანძილი
+Distance from the camera to the point of view. More - a wider view.	მანძილი კამერიდან მზერის წერტილამდე. მეტი - უფრო ფართო ხედი.
+do not hide	არ დაიმალოს
+E	აღმ. გრძ.
+Esri World Imagery	Esri World Imagery
+Esri World Imagery - example	Esri World Imagery - მაგალითი
+Feature	ობიექტი
+Features	ობიექტები
+Find what is typed in the line. A place - a flight to it, several found places - a list below.	სტრიქონში აკრეფილის მოძებნა. ერთი ადგილი - გადაფრენა მასთან, რამდენიმე ნაპოვნი ადგილი - სია ქვემოთ.
+Finish drawing	ხაზვის დასრულება
+Fly here	აქ გადაფრენა
+Folder properties	საქაღალდის თვისებები
+Folder view	საქაღალდის ხედი
+Folder|add	საქაღალდე
+Format	ფორმატი
+Full screen (F11) - the globe view for a show. Esc or F11 returns the window.	მთელ ეკრანზე (F11) - გლობუსის ხედი ჩვენებისთვის. პანელები იმალება, ნავიგაციის მართვის ელემენტები, დროის ზოლი და ტური რჩება. Esc ან F11 აბრუნებს ფანჯარას.
+Full screen. Exit - Esc or F11.	მთელ ეკრანზე. გასვლა - Esc ან F11.
+Grid	კოორდინატთა ბადე
+Height	სიმაღლე
+Heights raise the surface and shade the slopes. The check turns the terrain on, a click on the name chooses the heights. Heights of the Earth - Mapzen Terrain Tiles. The vertical scale is in the view properties.	სიმაღლეები აწევს ზედაპირს და ფერდობებს ჩრდილავს. ალამი რთავს რელიეფს, სახელზე დაწკაპუნება ირჩევს სიმაღლეებს. დედამიწის სიმაღლეები - Mapzen Terrain Tiles. ვერტიკალური მასშტაბი ხედის თვისებებშია.
+Hide beyond	დამალვა ამ მანძილს იქით
+Hide sidebar	გვერდითი პანელის დამალვა
+Identify features	ობიექტების განსაზღვრა
+Identify. A click on the globe shows the coordinates, the height or depth of the point and the placemarks there.	ობიექტების განსაზღვრა. გლობუსზე დაწკაპუნება აჩვენებს წერტილის კოორდინატებს, სიმაღლეს ან სიღრმეს და ნიშნებს.
+Imagery of the whole Earth, the example basemap. Its terms are set by Esri.	მთელი დედამიწის სურათები, საბაზისო რუკის მაგალითი. მისი გამოყენების პირობებს ადგენს Esri.
+Imagery or map on the surface. A click on the row chooses the basemap. Esri World Imagery is an example basemap, its terms are set by Esri.	სურათები ან რუკა ზედაპირზე. სტრიქონზე დაწკაპუნება ირჩევს საბაზისო რუკას. Esri World Imagery საბაზისო რუკის მაგალითია, მისი გამოყენების პირობებს ადგენს Esri.
+Inform++ LLC	Inform++ LLC
+km	კმ
+Labels	წარწერები
+Lakes and reservoirs	წყალსატევები
+Language	ენა
+Latitude	განედი
+Latitude of the point the camera looks at.	იმ წერტილის განედი, რომელსაც კამერა უყურებს.
+Layers - switched on together	ფენები - ირთვება ერთად
+Light of the terrain and the air by the position of the sun. The night side of the Earth is dark. The time of the sun is the end of the period of the open time slider, without it the computer clock. Without the check the light falls from the north-west, as on a relief map.	რელიეფისა და ჰაერის განათება მზის მდებარეობის მიხედვით. დედამიწის ღამის მხარე ბნელია. მზის დრო არის გახსნილი დროის ზოლის შუალედის ბოლო, მის გარეშე - კომპიუტერის საათი. ალმის გარეშე სინათლე ეცემა ჩრდილო-დასავლეთიდან, როგორც რელიეფის რუკაზე.
+loading	იტვირთება
+loading {count}	იტვირთება {count}
+Longitude	გრძედი
+Longitude of the point the camera looks at.	იმ წერტილის გრძედი, რომელსაც კამერა უყურებს.
+m	მ
+Map	რუკა
+Measure distance	მანძილის გაზომვა
+Moscow, historical maps	მოსკოვი, ისტორიული რუკები
+Motorways yellow, main roads light yellow, the rest thin white. Over a city the roads cover the basemap with a dense mesh.	მაგისტრალები ყვითელია, მთავარი გზები ღია ყვითელი, დანარჩენი თხელი თეთრი. ქალაქის თავზე გზები საბაზისო რუკას ფარავს მჭიდრო ბადით.
+N	ჩ. გ.
+Names of airports with a square icon, runways when zooming in. They are labelled from a height below 1000 km.	აეროპორტების სახელები კვადრატული ხატულით, მიახლოებისას ასაფრენი ზოლები. წარწერა ჩანს 1000 კმ-ზე დაბალი სიმაღლიდან.
+Names of countries, regions, cities, towns and villages. Smaller places appear when zooming in.	ქვეყნების, რეგიონების, ქალაქების, დაბებისა და სოფლების სახელები. მიახლოებისას სულ უფრო მცირე პუნქტები ჩნდება.
+Names of seas, lakes and reservoirs, in light blue italics.	ზღვების, ტბებისა და წყალსაცავების სახელები, ცისფერი კურსივით.
+Narrow rivers as blue lines. They appear from about 600 m per pixel.	ვიწრო მდინარეები ლურჯი ხაზებით. ჩნდება დაახლოებით 600 მ პიქსელზე მასშტაბიდან.
+Nature	ბუნება
+Nature reserves, national parks and wildlife refuges, a green outline and a name. Names are seen below 3000 km, the outline together with motorways.	ნაკრძალები, ეროვნული პარკები და აღკვეთილები, მწვანე კონტური და სახელი. სახელები ჩანს 3000 კმ-ზე დაბლა, კონტური - მაგისტრალებთან ერთად.
+New placemark, path, polygon or circle in My Places.	ახალი ნიშანი, გზა, მრავალკუთხედი ან წრე „ჩემ ნიშნებში“.
+No	არა
+No - height tiles only	არა - მხოლოდ სიმაღლეების ფილები
+No features at the point	წერტილში ობიექტები არ არის
+none	არაფერი
+not received: {error}	არ მიღებულა: {error}
+Only one placemark or folder of this folder is seen on the globe. The check of one row clears the checks of the others.	გლობუსზე ჩანს ამ საქაღალდიდან მხოლოდ ერთი ნიშანი ან საქაღალდე. ერთი სტრიქონის ალამი ხსნის დანარჩენების ალმებს.
+Opacity of the selected placemarks, paths, polygons, pictures and folder contents. To the left - more transparent. The value is kept in My Places and in KML.	მონიშნული ნიშნების, გზების, მრავალკუთხედების, სურათებისა და საქაღალდეების შიგთავსის გაუმჭვირვალობა. მარცხნივ - უფრო გამჭვირვალე. მნიშვნელობა ინახება „ჩემ ნიშნებში“ და KML-ში.
+open	გახსნა
+Open KML or KMZ…	KML-ის ან KMZ-ის გახსნა…
+Open Scene	სცენის გახსნა
+Open Scene…	სცენის გახსნა…
+open the catalogue	კატალოგის გახსნა
+open the demo	დემოს გახსნა
+open the window	ფანჯრის გახსნა
+Orbit around	გარშემო შემოფრენა
+Parallels and meridians with degree labels, the equator, the tropics and the polar circles. The step of the grid changes with the camera height.	პარალელები და მერიდიანები გრადუსების წარწერებით, ეკვატორი, ტროპიკები და პოლარული წრეები. ბადის ბიჯი იცვლება კამერის სიმაღლესთან ერთად.
+Paste	ჩასმა
+Path|add	გზა
+Peaks	მწვერვალები
+Peaks and volcanoes with their height in metres, a triangle icon. They are labelled from a height below 400 km.	მწვერვალები და ვულკანები სიმაღლით მეტრებში, სამკუთხა ხატულა. წარწერა ჩანს 400 კმ-ზე დაბალი სიმაღლიდან.
+Place, coordinates or action. A place name or coordinates, for example Perm or 58.0105, 56.2294, give a flight. A layer or a window, for example «ruler» or «grid», is found by its name and turned on from the hint. Ctrl+K from anywhere in the window puts the cursor into this line.	ადგილი, კოორდინატები ან მოქმედება. ადგილის სახელი ან კოორდინატები, მაგალითად პერმი ან 58.0105, 56.2294, იწვევს გადაფრენას. ფენა ან ფანჯარა, მაგალითად „სახაზავი“ ან „ბადე“, იძებნება სახელით და ირთვება მინიშნებიდან. Ctrl+K ფანჯრის ნებისმიერი ადგილიდან კურსორს ამ სტრიქონში აყენებს.
+Placemark|add	ნიშანი
+Plates with numbers of motorways and main roads. They are labelled from a height below 1000 km.	ფირნიშები მაგისტრალებისა და მთავარი გზების ნომრებით. წარწერა ჩანს 1000 კმ-ზე დაბალი სიმაღლიდან.
+Polygon|add	მრავალკუთხედი
+Railways	რკინიგზები
+Record a flight	ტურის ჩაწერა
+Record a tour. Camera motion by mouse, keys or flights becomes a tour in My Places, a second click stops the recording.	ტურის ჩაწერა. კამერის მოძრაობა მაუსით, კლავიშებით ან გადაფრენებით ხდება ტური „ჩემ ნიშნებში“, მეორე დაწკაპუნება აჩერებს ჩაწერას.
+Recorded tour	ჩაწერილი ტური
+Remove from the globe	გლობუსიდან მოშორება
+Reserves and national parks	ნაკრძალები და ეროვნული პარკები
+Reset	საწყისზე დაბრუნება
+Return the view the folder had when the window opened.	იმ ხედის დაბრუნება, რომელიც საქაღალდეს ჰქონდა ფანჯრის გახსნისას.
+Rivers	მდინარეები
+Rivers, peaks and protected areas.	მდინარეები, მწვერვალები და დაცული ტერიტორიები.
+Road numbers	გზების ნომრები
+Roads	გზები
+Roads, their numbers, railways and airports.	გზები, მათი ნომრები, რკინიგზები და აეროპორტები.
+Ruler. Length, perimeter and area on the ellipsoid, the measurement can be saved to My Places.	სახაზავი. სიგრძე, პერიმეტრი და ფართობი ელიფსოიდზე, გაზომვის შენახვა შეიძლება „ჩემ ნიშნებში“.
+run	შესრულება
+S	ს. გ.
+Save measurement	გაზომვის შენახვა
+Save Scene	სცენის შენახვა
+Save tour	ტურის შენახვა
+Save view. The point of view becomes a placemark in My Places, flying to it returns the height, heading and tilt.	ხედის შენახვა. მზერის წერტილი ხდება ნიშანი „ჩემ ნიშნებში“, მასთან გადაფრენა აბრუნებს სიმაღლეს, კურსს და დახრას.
+Scene - the camera and the selected folder of My Places with its tour. It is saved to a file and opens on another computer.	სცენა - კამერა და „ჩემი ნიშნების“ არჩეული საქაღალდე თავისი ტურით. ინახება ფაილში და იხსნება სხვა კომპიუტერზე.
+Set as base map	საბაზისო რუკად დაყენება
+Settlements	დასახლებები
+Share view	ხედის გაზიარება
+Share View…	ხედის გაზიარება…
+Shores of lakes, reservoirs and wide rivers outlined in blue. Reservoirs are cut into pieces in the data, and the outline runs along the cuts too.	ტბების, წყალსაცავებისა და ფართო მდინარეების ნაპირები ლურჯი ხაზით არის შემოვლებული. მონაცემებში წყალსაცავები ნაწილებად არის დაჭრილი, და კონტური ჭრილებზეც გადის.
+Show contents as a group of radio buttons	შიგთავსის ჩვენება გადამრთველების ჯგუფად
+Show on the globe	გლობუსზე ჩვენება
+Show sidebar	გვერდითი პანელის ჩვენება
+Site	ადგილი
+Sky and light	ცა და სინათლე
+Snapshot folder view	მიმდინარე ხედის აღება საქაღალდისთვის
+Snapshot of the current view	მიმდინარე ხედის აღება
+Snapshot of the view to a PNG file.	ხედის სურათი PNG ფაილში.
+Snapshot view	მიმდინარე ხედის აღება ნიშნისთვის
+snow, mines, wind	თოვლი, მაღაროები, ქარი
+Sort A-Z	დალაგება ა-დან ჰ-მდე
+start	დაწყება
+stop	შეჩერება
+Take the view of the globe now: the point of view, distance, heading and tilt.	გლობუსის ახლანდელი ხედის აღება: მზერის წერტილი, მანძილი, კურსი და დახრა.
+The blue glow of the air around the planet, the sky over the horizon and the haze over the distant surface. Without the check the background of the view is black space, the surface is seen without haze.	ჰაერის ცისფერი ნათება პლანეტის გარშემო, ცა ჰორიზონტის ზემოთ და ბურუსი შორეულ ზედაპირზე. ალმის გარეშე ხედის ფონი შავი კოსმოსია, ზედაპირი ჩანს ბურუსის გარეშე.
+The check shows a layer on the globe. A row - its description. Layers are turned on together.	ალამი აჩვენებს ფენას გლობუსზე. სტრიქონი - მისი აღწერა. ფენები ირთვება ერთად.
+The OpenFreeMap vector base and the coordinate grid.	OpenFreeMap-ის ვექტორული საფუძველი და კოორდინატთა ბადე.
+The OpenStreetMap map.	OpenStreetMap-ის რუკა.
+The placemark is seen only while the eye is closer than this distance, as Region in KML. For a folder - all its placemarks. 0 - always seen.	ნიშანი ჩანს მხოლოდ მაშინ, როცა თვალი ამ მანძილზე ახლოსაა, როგორც Region KML-ში. საქაღალდისთვის - მისი ყველა ნიშანი. 0 - ჩანს ყოველთვის.
+The sun and the night side, the atmosphere.	მზე და ღამის მხარე, ატმოსფერო.
+The view is copied to the clipboard.	ხედი დაკოპირდა გაცვლის ბუფერში.
+Tilt	დახრა
+Tilt of the camera. 0 - looking straight down, more - towards the horizon.	კამერის დახრა. 0 - მზერა პირდაპირ ქვემოთ, მეტი - ჰორიზონტისკენ.
+Time slider	დროის ზოლი
+Time slider. While it is open, data outside its period is hidden. The closed slider shows all placemarks.	დროის ზოლი. სანამ ზოლი გახსნილია, მისი შუალედის გარეთ მონაცემები დამალულია. დახურული ზოლი აჩვენებს ყველა ნიშანს.
+Tour along the path	ტური გზის გასწვრივ
+Tour along the selected path	ტური არჩეული გზის გასწვრივ
+Tour over the checked places	ტური მონიშნულ „ჩემ ნიშნებზე“
+Tour over the checked places of the folder	ტური საქაღალდის მონიშნულ ნიშნებზე
+Tour: select the My Places folder or a path in it	ტური: აირჩიეთ „ჩემი ნიშნების“ საქაღალდე ან მასში გზა
+Transport	ტრანსპორტი
+Type	ტიპი
+Under the point	წერტილის ქვეშ
+Value	მნიშვნელობა
+View from {height}	ხედი {height} სიმაღლიდან
+View properties	ხედის თვისებები
+View properties: relief scale, language of labels, appearance.	ხედის თვისებები: საფუძველი და მონაცემთა წყაროები, რელიეფის მასშტაბი, წარწერების ენა, კოორდინატების ფორმატი, გაფორმება.
+View snapshot	ხედის სურათი
+Voyages of Columbus	კოლუმბის მოგზაურობები
+W	დას. გრძ.
+Water names	წყალსატევების სახელები
+What's here?	რა არის აქ?
+Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	საიდან უყურებს კამერა, როცა საქაღალდისკენ მიფრინავს. ხედი ყენდება რიცხვებით ან მიმდინარე ხედის აღებით. საკუთარი ხედის გარეშე გადაფრენა კადრში იღებს საქაღალდის ყველა ნიშანს.
+Where the camera looks. 0 - north at the top of the frame.	საით უყურებს კამერა. 0 - ჩრდილოეთი კადრის ზედა მხარესაა.
+Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	ალმის გარეშე საქაღალდე სიაში არ იშლება, მის ნიშნებს აჩვენებს და მალავს თავად საქაღალდის ალამი.
+Yes	დიახ
+ s	 წმ
+Continue	გაგრძელება
+End tour	ტურის დასრულება
+How many seconds the camera stands at each stop. A new pause acts from a jump by the buttons or from a new start of the tour.	რამდენ წამს დგას კამერა თითოეულ გაჩერებაზე. ახალი პაუზა მოქმედებს ღილაკებით გადასვლიდან ან ტურის ახალი გაშვებიდან.
+How much of the tour has passed. The slider rewinds the tour. The camera stands at this point at once, the tour goes on from it.	ტურის რა ნაწილი გავიდა. სლაიდერი ტურს გადაახვევს. კამერა მაშინვე დგება ამ წერტილში, ტური აქედან გრძელდება.
+Next stop	შემდეგი გაჩერება
+Pause	პაუზა
+Previous stop	წინა გაჩერება
+Stop {n} of {count}: {name}	გაჩერება {n} / {count}: {name}
+Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	გაჩერებების წარწერები კადრზე. გაჩერებაზე კადრის ქვედა ნაწილში მსხვილად ჩანს ნიშნის სახელი და აღწერა, გადაფრენისას წარწერა არ არის.
+Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	ტური წრეზე. ბოლო გაჩერების შემდეგ ტური პირველიდან იწყება. მას აჩერებს პაუზა ან ჯვარი.

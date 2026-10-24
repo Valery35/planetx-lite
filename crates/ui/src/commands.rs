@@ -5,145 +5,216 @@
 //! Действия программы для строки «Поиск» и Ctrl+K, перенос
 //! `ui/commands.py` модуля.
 //!
-//! Инструменты, окна, переключатели вида, демо и основы находятся по
-//! названию или по другому слову и выполняются из подсказки или по
-//! Enter. Подсказка - `scene::searchbar::Suggestion` вида Action, ключ -
-//! [`Command`]. Слова не показываются и не переводятся: в них русские
-//! и английские названия и близкие слова, как у модуля.
+//! Слои, каталог, окна, инструменты панели значков и демо находятся по
+//! названию или по другому слову и выполняются из подсказки или по Enter.
+//! Подсказка - `scene::searchbar::Suggestion` вида Action, ключ -
+//! [`Command`], приписка note - что сделает действие: «включить»,
+//! «открыть окно». Слова не показываются и не переводятся: в них русские
+//! и английские названия и близкие слова, как у модуля. Действий QGIS,
+//! тел глобуса и слоёв, которых у Lite нет, здесь нет.
 
 use scene::searchbar::Suggestion;
 
-use crate::basemap::Basemap;
 use crate::i18n::{Lang, tr};
+use crate::layers::Extra;
 
 /// Действие строки «Поиск».
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Command {
+    Layer(Extra),
+    Catalog,
     Ruler,
-    Placemark,
-    Sun,
-    Grid,
+    Place,
+    SaveView,
     Snapshot,
+    CopyView,
     Record,
-    Share,
-    Settings,
-    Dark,
-    Light,
-    Open,
-    About,
-    Manual,
+    Time,
+    Identify,
+    Properties,
     Sources,
+    About,
+    SceneSave,
+    SceneOpen,
     Fullscreen,
+    Share,
     /// Демо: раздел и номер в разделе `crate::demos::MENU`.
     Demo(usize, usize),
-    Basemap(Basemap),
 }
 
 impl Command {
-    /// Ключ подсказки.
+    /// Ключ подсказки, как у модуля: «layer:air», «tool:ruler».
     pub fn key(self) -> String {
         match self {
+            Self::Layer(e) => format!("layer:{}", e.key()),
+            Self::Catalog => "open:gallery".into(),
+            Self::Ruler => "tool:ruler".into(),
+            Self::Place => "tool:place".into(),
+            Self::SaveView => "tool:save_view".into(),
+            Self::Snapshot => "tool:snapshot".into(),
+            Self::CopyView => "tool:copy_view".into(),
+            Self::Record => "tool:record".into(),
+            Self::Time => "tool:time".into(),
+            Self::Identify => "tool:identify".into(),
+            Self::Properties => "tool:properties".into(),
+            Self::Sources => "tool:sources".into(),
+            Self::About => "tool:about".into(),
+            Self::SceneSave => "tool:scene_save".into(),
+            Self::SceneOpen => "tool:scene_open".into(),
+            Self::Fullscreen => "tool:fullscreen".into(),
+            Self::Share => "tool:share".into(),
             Self::Demo(s, d) => format!("demo:{s}:{d}"),
-            Self::Basemap(b) => format!("basemap:{}", b.key()),
-            other => format!("{other:?}").to_lowercase(),
         }
     }
 
     /// Действие по ключу подсказки.
     pub fn from_key(key: &str) -> Option<Self> {
-        all_commands().into_iter().find(|c| c.key() == key)
+        let mut all: Vec<Command> = Extra::ALL.iter().map(|e| Command::Layer(*e)).collect();
+        all.extend([
+            Command::Catalog,
+            Command::Ruler,
+            Command::Place,
+            Command::SaveView,
+            Command::Snapshot,
+            Command::CopyView,
+            Command::Record,
+            Command::Time,
+            Command::Identify,
+            Command::Properties,
+            Command::Sources,
+            Command::About,
+            Command::SceneSave,
+            Command::SceneOpen,
+            Command::Fullscreen,
+            Command::Share,
+        ]);
+        for (s, section) in crate::demos::MENU.iter().enumerate() {
+            all.extend((0..section.demos.len()).map(|d| Command::Demo(s, d)));
+        }
+        all.into_iter().find(|c| c.key() == key)
     }
 }
 
-fn all_commands() -> Vec<Command> {
-    let mut out = vec![
-        Command::Ruler,
-        Command::Placemark,
-        Command::Sun,
-        Command::Grid,
-        Command::Snapshot,
+/// Что сейчас включено: от этого «включить» или «выключить».
+#[derive(Debug, Clone, Default)]
+pub struct Now {
+    pub extras: std::collections::BTreeSet<Extra>,
+    pub recording: bool,
+    /// Шкала времени доступна и открыта.
+    pub time: Option<bool>,
+    pub identify: bool,
+}
+
+/// Другие слова слоёв, `WORDS` модуля.
+fn layer_words(extra: Extra) -> &'static [&'static str] {
+    match extra {
+        Extra::Air => &["атмосфера", "воздух", "дымка", "гало", "atmosphere", "haze", "air"],
+        Extra::Sun => &["ночь", "день", "освещение", "тень", "огни городов", "sun", "night", "city lights"],
+        Extra::Grid => &["сетка", "градусы", "экватор", "graticule", "grid"],
+    }
+}
+
+/// Подсказки всех действий на языке интерфейса, `build` модуля.
+pub fn actions(lang: Lang, now: &Now) -> Vec<Suggestion> {
+    let mut out = Vec::new();
+    let mut add = |c: Command, title: &str, note: &str, words: &[&str]| {
+        out.push(Suggestion::action(&c.key(), title, note, words));
+    };
+    let on_off = |on: bool| if on { tr(lang, "turn off") } else { tr(lang, "turn on") };
+    for extra in Extra::ALL {
+        let on = now.extras.contains(&extra);
+        add(Command::Layer(extra), tr(lang, extra.name()), on_off(on), layer_words(extra));
+    }
+    add(
+        Command::Catalog,
+        tr(lang, "Add data"),
+        tr(lang, "open the catalogue"),
+        &["витрина", "каталог", "gallery", "карты и слои", "add data"],
+    );
+    let open = tr(lang, "open the window");
+    let run = tr(lang, "run");
+    add(Command::Ruler, tr(lang, "Ruler"), open, &["измерить", "расстояние", "площадь", "длина", "ruler", "measure"]);
+    add(
+        Command::Place,
+        tr(lang, "New placemark"),
+        open,
+        &["метка", "путь", "многоугольник", "круг", "нарисовать", "placemark", "path", "polygon"],
+    );
+    add(Command::SaveView, tr(lang, "Save view"), run, &["закладка", "вид", "bookmark"]);
+    add(Command::Snapshot, tr(lang, "View snapshot"), open, &["скриншот", "картинка", "png", "screenshot"]);
+    add(
+        Command::CopyView,
+        tr(lang, "Copy the view to the clipboard"),
+        run,
+        &["копия экрана", "копия вида", "скриншот", "буфер обмена", "copy", "clipboard", "screenshot"],
+    );
+    add(
         Command::Record,
-        Command::Share,
-        Command::Settings,
-        Command::Dark,
-        Command::Light,
-        Command::Open,
-        Command::About,
-        Command::Manual,
-        Command::Sources,
-        Command::Fullscreen,
-    ];
-    for (s, section) in crate::demos::MENU.iter().enumerate() {
-        out.extend((0..section.demos.len()).map(|d| Command::Demo(s, d)));
+        tr(lang, "Record a flight"),
+        if now.recording { tr(lang, "stop") } else { tr(lang, "start") },
+        &["тур", "запись", "облёт", "tour", "record"],
+    );
+    if let Some(open_now) = now.time {
+        add(
+            Command::Time,
+            tr(lang, "Time slider"),
+            if open_now { tr(lang, "close") } else { tr(lang, "open") },
+            &["время", "дата", "time", "timeline"],
+        );
     }
-    out.extend(Basemap::ALL.iter().map(|b| Command::Basemap(*b)));
+    add(Command::Identify, tr(lang, "Identify features"), on_off(now.identify), &["опрос", "сведения", "identify"]);
+    add(
+        Command::Properties,
+        tr(lang, "View properties"),
+        open,
+        &["настройки", "рельеф", "подписи", "язык", "settings", "properties"],
+    );
+    add(
+        Command::Sources,
+        tr(lang, "Data sources"),
+        open,
+        &["подложка", "основа", "рельеф", "dem", "sources", "basemap"],
+    );
+    add(Command::About, tr(lang, "About"), open, &["версия", "about", "version"]);
+    add(Command::SceneSave, tr(lang, "Save Scene"), open, &["сцена", "scene"]);
+    add(Command::SceneOpen, tr(lang, "Open Scene"), open, &["сцена", "scene"]);
+    add(
+        Command::Fullscreen,
+        tr(lang, "Full screen"),
+        run,
+        &["полный экран", "весь экран", "показ", "презентация", "f11", "fullscreen", "full screen", "presentation"],
+    );
+    add(
+        Command::Share,
+        tr(lang, "Share view"),
+        open,
+        &["html", "страница", "браузер", "отправить", "share", "web", "page", "browser"],
+    );
+    for (s, section) in crate::demos::MENU.iter().enumerate() {
+        for (d, demo) in section.demos.iter().enumerate() {
+            add(Command::Demo(s, d), tr(lang, demo.en), tr(lang, "open the demo"), &["демо", "пример", "demo"]);
+        }
+    }
     out
-}
-
-/// Подсказки всех действий на языке интерфейса. sun, grid - включены ли
-/// они сейчас: «включить» или «выключить» зависит от вида.
-pub fn actions(lang: Lang, sun: bool, grid: bool) -> Vec<Suggestion> {
-    let on_off = |on: bool| if on { tr(lang, "Turn off") } else { tr(lang, "Turn on") };
-    all_commands()
-        .into_iter()
-        .map(|c| {
-            let (text, note, words): (String, String, &[&str]) = match c {
-                Command::Ruler => (
-                    tr(lang, "Ruler").into(),
-                    tr(lang, "Length, area, ground length").into(),
-                    &["линейка", "измерить", "расстояние", "площадь", "ruler", "measure", "distance", "area"],
-                ),
-                Command::Placemark => (
-                    tr(lang, "New placemark").into(),
-                    tr(lang, "Placemark, path, polygon or circle").into(),
-                    &["метка", "добавить", "нарисовать", "путь", "многоугольник", "placemark", "add", "draw", "path", "polygon"],
-                ),
-                Command::Sun => (tr(lang, "Sun").into(), on_off(sun).into(), &["солнце", "ночь", "день", "освещение", "sun", "night", "daylight"]),
-                Command::Grid => {
-                    (tr(lang, "Coordinate grid").into(), on_off(grid).into(), &["сетка", "параллели", "меридианы", "grid", "graticule"])
-                }
-                Command::Snapshot => (
-                    tr(lang, "Snapshot of the view").into(),
-                    tr(lang, "PNG file").into(),
-                    &["снимок", "картинка", "скриншот", "png", "snapshot", "screenshot"],
-                ),
-                Command::Record => (tr(lang, "Record a tour").into(), String::new(), &["запись", "записать", "тур", "record", "tour"]),
-                Command::Share => (tr(lang, "Share").into(), tr(lang, "Link to this view").into(), &["ссылка", "поделиться", "share", "link"]),
-                Command::Settings => (tr(lang, "Settings").into(), String::new(), &["настройки", "язык", "параметры", "settings", "language", "options"]),
-                Command::Dark => (tr(lang, "Dark").into(), tr(lang, "Appearance").into(), &["тёмная тема", "темная", "dark theme"]),
-                Command::Light => (tr(lang, "Light").into(), tr(lang, "Appearance").into(), &["светлая тема", "light theme"]),
-                Command::Open => (tr(lang, "Open…").into(), String::new(), &["открыть", "файл", "kml", "kmz", "сцена", "open", "file", "scene"]),
-                Command::About => (tr(lang, "About").into(), String::new(), &["о программе", "версия", "about", "version"]),
-                Command::Manual => (tr(lang, "User guide").into(), String::new(), &["руководство", "справка", "помощь", "manual", "help", "guide"]),
-                Command::Sources => (tr(lang, "Data sources").into(), String::new(), &["источники", "данные", "лицензии", "sources", "credits"]),
-                Command::Fullscreen => (tr(lang, "Full screen").into(), String::new(), &["весь экран", "полный экран", "fullscreen", "full screen"]),
-                Command::Demo(s, d) => {
-                    let section = &crate::demos::MENU[s];
-                    (tr(lang, section.demos[d].en).into(), tr(lang, section.en).into(), &["демо", "пример", "demo", "example"])
-                }
-                Command::Basemap(b) => (b.name(lang).to_string(), tr(lang, "Basemap").into(), &["основа", "подложка", "карта", "basemap", "map"]),
-            };
-            Suggestion::action(&c.key(), &text, &note, words)
-        })
-        .collect()
 }
 
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-    use super::{Command, actions};
+    use super::{Command, Now, actions};
     use crate::i18n::Lang;
     use scene::searchbar as sb;
 
     #[test]
     fn keys_round_trip_and_words_find() {
-        for s in actions(Lang::EN, false, false) {
+        let now = Now { time: Some(false), ..Now::default() };
+        for s in actions(Lang::EN, &now) {
             assert!(Command::from_key(&s.key).is_some(), "{}", s.key);
         }
-        let found = sb::suggestions("измерить", &[], &[], sb::LIMIT, &actions(Lang::RU, false, false));
+        let found = sb::suggestions("измерить", &[], &[], sb::LIMIT, &actions(Lang::RU, &now));
         assert_eq!(Command::from_key(&found[0].key), Some(Command::Ruler));
-        let found = sb::suggestions("самосвалы", &[], &[], sb::LIMIT, &actions(Lang::RU, false, false));
+        let found = sb::suggestions("самосвалы", &[], &[], sb::LIMIT, &actions(Lang::RU, &now));
         assert!(found.iter().any(|s| matches!(Command::from_key(&s.key), Some(Command::Demo(..)))));
     }
 }

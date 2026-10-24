@@ -50,6 +50,14 @@ pub fn pick(tree: &Folder, nav: &Navigator, px: f64, py: f64, radius: f64) -> Op
     found.into_iter().rev().min_by_key(|(_, k)| rank(k)).map(|(p, _)| p)
 }
 
+/// Все видимые метки под пикселем, по порядку дерева: для окна
+/// «Объекты».
+pub fn pick_all(tree: &Folder, nav: &Navigator, px: f64, py: f64, radius: f64) -> Vec<Vec<usize>> {
+    let mut found = Vec::new();
+    walk(tree, nav, px, py, radius, &mut Vec::new(), &mut found);
+    found.into_iter().map(|(p, _)| p).collect()
+}
+
 fn walk(folder: &Folder, nav: &Navigator, px: f64, py: f64, radius: f64, path: &mut Vec<usize>, found: &mut Vec<(Vec<usize>, Kind)>) {
     if !folder.visible {
         return;

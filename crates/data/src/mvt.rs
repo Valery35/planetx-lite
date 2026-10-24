@@ -62,15 +62,20 @@ impl Value {
 pub enum Geometry {
     Point,
     Line,
+    /// Многоугольник: части - кольца, первое внешнее.
+    Polygon,
 }
 
-/// Объект слоя. У точки - точки объекта, у линии - все вершины.
+/// Объект слоя. У точки - точки объекта, у линии - все вершины. parts -
+/// части линии или кольца многоугольника, их раскладывает
+/// [`decode_shapes`], у [`decode_layers`] они пусты.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Feature {
     pub id: u64,
     pub geometry: Geometry,
     pub attrs: HashMap<String, Value>,
     pub points: Vec<(i64, i64)>,
+    pub parts: Vec<Vec<(i64, i64)>>,
 }
 
 /// Объекты слоя и размер тайла в его единицах.
@@ -200,6 +205,45 @@ fn points(geometry: &[u64], every: bool) -> Vec<(i64, i64)> {
     out
 }
 
+/// Части геометрии: каждая команда MoveTo начинает новую часть,
+/// ClosePath замыкает кольцо первой вершиной.
+fn split_parts(geometry: &[u64]) -> Vec<Vec<(i64, i64)>> {
+    let mut out: Vec<Vec<(i64, i64)>> = Vec::new();
+    let (mut x, mut y) = (0i64, 0i64);
+    let mut i = 0;
+    while i < geometry.len() {
+        let command = geometry[i];
+        i += 1;
+        let (kind, count) = (command & 7, command >> 3);
+        match kind {
+            1 | 2 => {
+                for _ in 0..count {
+                    let (Some(dx), Some(dy)) = (geometry.get(i), geometry.get(i + 1)) else {
+                        return out;
+                    };
+                    x = x.wrapping_add(zigzag(*dx));
+                    y = y.wrapping_add(zigzag(*dy));
+                    i += 2;
+                    if kind == 1 {
+                        out.push(vec![(x, y)]);
+                    } else if let Some(part) = out.last_mut() {
+                        part.push((x, y));
+                    }
+                }
+            }
+            7 => {
+                if let Some(part) = out.last_mut()
+                    && let Some(&first) = part.first()
+                {
+                    part.push(first);
+                }
+            }
+            _ => return out,
+        }
+    }
+    out
+}
+
 /// Сжатый gzip тайл распаковывается.
 fn unpack(data: &[u8]) -> Result<std::borrow::Cow<'_, [u8]>, DecodeError> {
     if data.starts_with(&[0x1f, 0x8b]) {
@@ -217,6 +261,25 @@ pub fn decode_layers(
     data: &[u8],
     names: &HashSet<&str>,
     wanted: Option<&HashSet<String>>,
+) -> Result<HashMap<String, Layer>, DecodeError> {
+    decode(data, names, wanted, false)
+}
+
+/// Как [`decode_layers`], но с многоугольниками и частями геометрии
+/// у линий и многоугольников - для отрисовки линий векторной основы.
+pub fn decode_shapes(
+    data: &[u8],
+    names: &HashSet<&str>,
+    wanted: Option<&HashSet<String>>,
+) -> Result<HashMap<String, Layer>, DecodeError> {
+    decode(data, names, wanted, true)
+}
+
+fn decode(
+    data: &[u8],
+    names: &HashSet<&str>,
+    wanted: Option<&HashSet<String>>,
+    shapes: bool,
 ) -> Result<HashMap<String, Layer>, DecodeError> {
     let data = unpack(data)?;
     let mut out = HashMap::new();
@@ -275,6 +338,7 @@ pub fn decode_layers(
             let geometry_kind = match kind {
                 1 => Geometry::Point,
                 2 => Geometry::Line,
+                3 if shapes => Geometry::Polygon,
                 _ => continue,
             };
             let mut attrs = HashMap::new();
@@ -296,7 +360,8 @@ pub fn decode_layers(
                 }
             }
             let every = geometry_kind == Geometry::Line;
-            features.push(Feature { id, geometry: geometry_kind, attrs, points: points(&geometry, every) });
+            let split = if shapes && geometry_kind != Geometry::Point { split_parts(&geometry) } else { Vec::new() };
+            features.push(Feature { id, geometry: geometry_kind, attrs, points: points(&geometry, every), parts: split });
         }
         out.insert(title, Layer { features, extent });
     }

@@ -68,6 +68,9 @@ pub enum Action {
     Update(Vec<usize>, Place),
     /// Профиль высот линии или пути линейки.
     Profile,
+    /// Измерение линейки: окно глобуса спрашивает название, как
+    /// «Сохранить измерение» модуля.
+    Measure(Place),
 }
 
 /// Инструмент: точки, окно и вершины на глобусе.
@@ -95,6 +98,8 @@ pub struct Tool {
     pressed: Option<(usize, bool)>,
     /// Точка нажатия на вершину, логические пиксели окна.
     press_at: Option<egui::Pos2>,
+    /// «Сохранить» из меню на глобусе: окно сохраняет, как по кнопке.
+    pub save_request: bool,
 }
 
 /// Вид линейки или метки по номеру вкладки.
@@ -167,6 +172,7 @@ impl Tool {
             drag: None,
             pressed: None,
             press_at: None,
+            save_request: false,
         }
     }
 
@@ -314,24 +320,31 @@ impl Tool {
             }
         });
         ui.label(egui::RichText::new(self.hint(lang)).weak());
-        ui.horizontal(|ui| ui.label(tr(lang, "Name")).labelled_by(ui.text_edit_singleline(&mut self.name).id));
         let mut action = None;
+        // Кнопки - как у окна «Линейка» модуля: «Профиль высот»,
+        // «Сохранить», «Очистить». «Сохранить» спрашивает название.
         ui.horizontal(|ui| {
             let can = self.ruler.figure(false).is_some();
-            if ui.add_enabled(can, egui::Button::new(tr(lang, "Save"))).on_hover_text(tr(lang, "Put the shape into My Places with the measurement.")).clicked() {
-                if self.name.trim().is_empty() {
-                    self.name = placetree::numbered_name(tr(lang, "Measurement"), names);
-                }
+            if matches!(self.ruler.mode, Mode::Line | Mode::Path)
+                && ui.add_enabled(self.ruler.points.len() > 1, egui::Button::new(tr(lang, "Elevation profile"))).clicked()
+            {
+                action = Some(Action::Profile);
+            }
+            if ui.add_enabled(can, egui::Button::new(tr(lang, "Save"))).on_hover_text(tr(lang, "Put the shape into My Places with the measurement.")).clicked() || (can && std::mem::take(&mut self.save_request)) {
+                let base = match self.ruler.mode {
+                    Mode::Line => tr(lang, "Line"),
+                    Mode::Path | Mode::Point => tr(lang, "Path"),
+                    Mode::Polygon => tr(lang, "Polygon"),
+                    Mode::Circle => tr(lang, "Circle"),
+                };
+                self.name = placetree::numbered_name(base, names);
                 let text = summary(lang, &self.ruler.values(false, heights), self.ruler.mode, self.length_unit, self.area_unit);
-                action = self.place_of(text).map(Action::Add);
+                action = self.place_of(text).map(Action::Measure);
                 self.ruler.clear();
                 self.name.clear();
             }
             if ui.button(tr(lang, "Clear")).on_hover_text(tr(lang, "Remove the points.")).clicked() {
                 self.ruler.clear();
-            }
-            if matches!(self.ruler.mode, Mode::Line | Mode::Path) && ui.button(tr(lang, "Elevation profile")).clicked() {
-                action = Some(Action::Profile);
             }
         });
         action
@@ -373,7 +386,7 @@ impl Tool {
         ui.horizontal(|ui| {
             let can = self.ruler.figure(false).is_some();
             let save = if matches!(self.purpose, Purpose::Edit(_)) { tr(lang, "OK") } else { tr(lang, "Save") };
-            if ui.add_enabled(can, egui::Button::new(save)).on_hover_text(tr(lang, "Write the object to My Places.")).clicked() {
+            if ui.add_enabled(can, egui::Button::new(save)).on_hover_text(tr(lang, "Write the object to My Places.")).clicked() || (can && std::mem::take(&mut self.save_request)) {
                 let place = self.place_of(self.description.clone());
                 match (&self.purpose, place) {
                     (Purpose::Edit(path), Some(place)) => {

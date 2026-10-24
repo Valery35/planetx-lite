@@ -198,3 +198,210 @@ Tropic of Capricorn	Южный тропик
 Turn off	Выключить
 Turn on	Включить
 View	Вид
+ km	 км
+{coords}, depth {d} m	{coords}, глубина {d} м
+{coords}, height {h} m	{coords}, высота {h} м
+{name} - {what}	{name} - {what}
+{name} - earlier query	{name} - прежний запрос
+{name} - placemark	{name} - метка
+{name}. The check turns the layer off, the row stays. The «⋯» menu removes it from the globe.	{name}. Флажок выключает слой, строка остаётся. Меню «⋯» убирает его с глобуса.
+A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	Светлая линия с тёмным пунктиром. При отдалении пропадают вместе с магистралями. Станционные и подъездные пути не рисуются.
+Add	Добавить
+Add data	Добавить данные
+Airports	Аэропорты
+All	Все
+All maps and layers of the catalog.	Все карты и слои каталога.
+Allow the folder to expand	Разрешить раскрывать папку
+Atmosphere	Атмосфера
+Base map	Основа
+Base map on the globe	Подоснова на глобусе
+Base map on the globe - one	Подоснова на глобусе - одна
+Base maps	Подоснова
+Basemaps of the globe - imagery and maps. There is one base on the globe, under the layers.	Подложки глобуса - снимки и карты. На глобусе одна подоснова, под картами и слоями.
+Borders	Границы
+Borders and names	Границы и названия
+Borders of countries and regions and labels on the globe.	Границы стран и областей и подписи на глобусе.
+Borders of countries bright yellow, borders of regions thin white. Sea borders are not drawn.	Границы стран ярко-жёлтые, границы областей тонкие белые. Морские границы не рисуются.
+Catalog of layers - vector base, coordinate grid, atmosphere and sun. The catalog opens in its own window, it can stay open next to the globe.	Каталог слоёв - векторная основа, координатная сетка, атмосфера и солнце. Каталог открывается отдельным окном, его можно держать открытым рядом с глобусом.
+Clear My Places…	Очистить «Мои метки»…
+close	закрыть
+Coordinates	Координаты
+Copy	Копировать
+Copy of the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider.	Копия вида в буфер обмена - глобус с подписями и надписями, без панели значков, органов навигации и шкалы времени. Картинку можно сразу вставить в письмо, чат или документ.
+Copy the view to the clipboard	Копия вида в буфер обмена
+Cut	Вырезать
+Data sources…	Источники данных…
+Decimal degrees	Десятичные градусы
+Degrees, minutes, seconds	Градусы, минуты, секунды
+Delete "{name}" from My Places?	Удалить «{name}» из «Моих меток»?
+Delete all placemarks and folders of My Places, placemarks in all {count}? Deletion cannot be undone.	Удалить все метки и папки «Моих меток», всего меток {count}? Отменить удаление нельзя.
+Delete folder	Удалить папку
+Delete folder “{name}” with all its contents?	Удалить папку «{name}» со всем содержимым?
+Delete placemark	Удалить метку
+Demo: prepared scenes with placemarks and tours. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour.	Демо: подготовленные сцены с метками и турами. Метки ложатся новой папкой в «Мои метки», кнопка ▶ под списком проводит тур.
+Description of the folder. It is kept in My Places and in KML.	Описание папки. Оно хранится в «Моих метках» и в KML.
+Distance	Расстояние
+Distance from the camera to the point of view. More - a wider view.	Расстояние от камеры до точки взгляда. Больше - вид шире.
+do not hide	не скрывать
+E	в. д.
+Esri World Imagery - example	Esri World Imagery - пример
+Find what is typed in the line. A place - a flight to it, several found places - a list below.	Найти то, что введено в строке. Место - перелёт к нему, несколько найденных мест - список ниже.
+Folder properties	Свойства папки
+Folder view	Вид папки
+Folder|add	Папку
+Format	Формат
+Full screen (F11) - the globe view for a show. Esc or F11 returns the window.	Во весь экран (F11) - вид глобуса для показа. Панели прячутся, органы навигации, шкала времени и тур остаются. Esc или F11 возвращает окно.
+Grid	Координатная сетка
+Heights raise the surface and shade the slopes. The check turns the terrain on, a click on the name chooses the heights. Heights of the Earth - Mapzen Terrain Tiles. The vertical scale is in the view properties.	Высоты поднимают поверхность и дают отмывку склонов. Флажок включает рельеф, щелчок по названию - выбор высот. Высоты Земли - Mapzen Terrain Tiles. Вертикальный масштаб - в свойствах вида.
+Hide beyond	Скрывать дальше
+Hide sidebar	Скрыть боковую панель
+Identify features	Определить объекты
+Identify. A click on the globe shows the coordinates, the height or depth of the point and the placemarks there.	Определить объекты. Щелчок по глобусу показывает координаты, высоту или глубину точки и метки.
+Imagery of the whole Earth, the example basemap. Its terms are set by Esri.	Снимки всей Земли, пример подложки. Условия её использования задаёт Esri.
+Imagery or map on the surface. A click on the row chooses the basemap. Esri World Imagery is an example basemap, its terms are set by Esri.	Снимки или карта на поверхности. Щелчок по строке - выбор подложки. Esri World Imagery - пример подложки, условия её использования задаёт Esri.
+Labels	Подписи
+Lakes and reservoirs	Водоёмы
+Language	Язык
+Latitude	Широта
+Latitude of the point the camera looks at.	Широта точки, на которую смотрит камера.
+Layers - switched on together	Слои - включаются вместе
+loading {count}	загрузка {count}
+Longitude	Долгота
+Longitude of the point the camera looks at.	Долгота точки, на которую смотрит камера.
+Map	Карта
+Moscow, historical maps	Москва, исторические карты
+Motorways yellow, main roads light yellow, the rest thin white. Over a city the roads cover the basemap with a dense mesh.	Магистрали жёлтые, главные дороги светло-жёлтые, остальные тонкие белые. Над городом дороги закрывают подложку густой сеткой.
+N	с. ш.
+Names of airports with a square icon, runways when zooming in. They are labelled from a height below 1000 km.	Названия аэропортов с квадратным значком, при приближении взлётные полосы. Подписываются с высоты ниже 1000 км.
+Names of countries, regions, cities, towns and villages. Smaller places appear when zooming in.	Названия стран, областей, городов, посёлков и деревень. При приближении появляются всё более мелкие пункты.
+Names of seas, lakes and reservoirs, in light blue italics.	Названия морей, озёр и водохранилищ, голубым курсивом.
+Narrow rivers as blue lines. They appear from about 600 m per pixel.	Узкие реки синими линиями. Появляются примерно с 600 м на пиксель.
+Nature	Природа
+Nature reserves, national parks and wildlife refuges, a green outline and a name. Names are seen below 3000 km, the outline together with motorways.	Заповедники, национальные парки и заказники, зелёный контур и название. Названия видны ниже 3000 км, контур вместе с магистралями.
+New placemark, path, polygon or circle in My Places.	Новая метка, путь, многоугольник или круг в «Мои метки».
+No	Нет
+No - height tiles only	Нет - только тайлы высот
+Only one placemark or folder of this folder is seen on the globe. The check of one row clears the checks of the others.	На глобусе видна только одна метка или папка из этой папки. Флажок одной строки снимает флажки остальных.
+Opacity of the selected placemarks, paths, polygons, pictures and folder contents. To the left - more transparent. The value is kept in My Places and in KML.	Непрозрачность выделенных меток, путей, многоугольников, картинок и содержимого папок. Влево - прозрачнее. Значение сохраняется в «Моих метках» и в KML.
+open	открыть
+Open KML or KMZ…	Открыть KML или KMZ…
+Open Scene	Открыть сцену
+Open Scene…	Открыть сцену…
+open the catalogue	открыть каталог
+open the demo	открыть демо
+open the window	открыть окно
+Parallels and meridians with degree labels, the equator, the tropics and the polar circles. The step of the grid changes with the camera height.	Параллели и меридианы с подписями градусов, экватор, тропики и полярные круги. Шаг сетки меняется с высотой камеры.
+Paste	Вставить
+Path|add	Путь
+Peaks	Вершины
+Peaks and volcanoes with their height in metres, a triangle icon. They are labelled from a height below 400 km.	Вершины и вулканы с высотой в метрах, треугольный значок. Подписываются с высоты ниже 400 км.
+Place, coordinates or action. A place name or coordinates, for example Perm or 58.0105, 56.2294, give a flight. A layer or a window, for example «ruler» or «grid», is found by its name and turned on from the hint. Ctrl+K from anywhere in the window puts the cursor into this line.	Место, координаты или действие. Название места или координаты, например Пермь или 58.0105, 56.2294, дают перелёт. Слой или окно, например «линейка» или «сетка», находятся по названию и включаются из подсказки. Ctrl+K из любого места окна ставит курсор в эту строку.
+Placemark|add	Метку
+Plates with numbers of motorways and main roads. They are labelled from a height below 1000 km.	Таблички с номерами магистралей и главных дорог. Подписываются с высоты ниже 1000 км.
+Polygon|add	Многоугольник
+Railways	Железные дороги
+Record a flight	Записать облёт
+Record a tour. Camera motion by mouse, keys or flights becomes a tour in My Places, a second click stops the recording.	Записать облёт. Движение камеры мышью, клавишами или перелётами становится туром в «Моих метках», повторный щелчок останавливает запись.
+Recorded tour	Записанный тур
+Remove from the globe	Убрать с глобуса
+Reserves and national parks	Заповедники и нацпарки
+Reset	Сброс
+Return the view the folder had when the window opened.	Вернуть вид, который был у папки при открытии окна.
+Rivers	Реки
+Rivers, peaks and protected areas.	Реки, вершины и охраняемые территории.
+Road numbers	Номера дорог
+Roads	Дороги
+Roads, their numbers, railways and airports.	Дороги, их номера, железные дороги и аэропорты.
+Ruler. Length, perimeter and area on the ellipsoid, the measurement can be saved to My Places.	Линейка. Длина, периметр и площадь на эллипсоиде, сохранение измерения в «Мои метки».
+run	выполнить
+S	ю. ш.
+Save Scene	Сохранить сцену
+Save view. The point of view becomes a placemark in My Places, flying to it returns the height, heading and tilt.	Сохранить вид. Точка взгляда становится меткой в «Моих метках», перелёт к ней возвращает высоту, азимут и наклон.
+Scene - the camera and the selected folder of My Places with its tour. It is saved to a file and opens on another computer.	Сцена - камера и выбранная папка «Моих меток» с её туром. Сохраняется в файл и открывается на другом компьютере.
+Set as base map	Поставить подосновой
+Settlements	Населённые пункты
+Share view	Поделиться видом
+Share View…	Поделиться видом…
+Shores of lakes, reservoirs and wide rivers outlined in blue. Reservoirs are cut into pieces in the data, and the outline runs along the cuts too.	Берега озёр, водохранилищ и широких рек обведены синей линией. Водохранилища в данных разрезаны на куски, и контур проходит и по разрезам.
+Show contents as a group of radio buttons	Показать содержание как группу переключателей
+Show on the globe	Показать на глобусе
+Show sidebar	Показать боковую панель
+Sky and light	Небо и свет
+Snapshot folder view	Снимок вида папки
+Snapshot of the current view	Снимок текущего вида
+Snapshot of the view to a PNG file.	Снимок вида в файл PNG.
+Snapshot view	Снимок вида метки
+snow, mines, wind	снег, рудники, ветер
+Sort A-Z	Сортировать от А до Я
+start	начать
+stop	остановить
+Take the view of the globe now: the point of view, distance, heading and tilt.	Взять вид глобуса сейчас: точку взгляда, расстояние, азимут и наклон.
+The blue glow of the air around the planet, the sky over the horizon and the haze over the distant surface. Without the check the background of the view is black space, the surface is seen without haze.	Голубое свечение воздуха вокруг планеты, небо над горизонтом и дымка над далёкой поверхностью. Без флажка фон вида - чёрный космос, поверхность видна без дымки.
+The check shows a layer on the globe. A row - its description. Layers are turned on together.	Флажок показывает слой на глобусе. Строка - описание. Слои включаются вместе.
+The OpenFreeMap vector base and the coordinate grid.	Векторная основа OpenFreeMap и координатная сетка.
+The OpenStreetMap map.	Карта OpenStreetMap.
+The placemark is seen only while the eye is closer than this distance, as Region in KML. For a folder - all its placemarks. 0 - always seen.	Метка видна, только пока глаз ближе этого расстояния, как Region в KML. У папки - все её метки. 0 - видна всегда.
+The sun and the night side, the atmosphere.	Солнце и ночная сторона, атмосфера.
+The view is copied to the clipboard.	Вид скопирован в буфер обмена.
+Light of the terrain and the air by the position of the sun. The night side of the Earth is dark. The time of the sun is the end of the period of the open time slider, without it the computer clock. Without the check the light falls from the north-west, as on a relief map.	Свет рельефа и воздуха по положению солнца. Ночная сторона Земли тёмная. Время солнца - конец промежутка открытой шкалы времени, без неё - часы компьютера. Без флажка свет падает с северо-запада, как на карте рельефа.
+Tilt	Наклон
+Tilt of the camera. 0 - looking straight down, more - towards the horizon.	Наклон камеры. 0 - взгляд отвесно вниз, больше - к горизонту.
+Time slider	Шкала времени
+Time slider. While it is open, data outside its period is hidden. The closed slider shows all placemarks.	Шкала времени. Пока шкала открыта, данные вне её промежутка скрыты. Закрытая шкала показывает все метки.
+Tour along the path	Тур по пути
+Tour along the selected path	Тур вдоль выбранного пути
+Tour over the checked places	Тур по отмеченным «Моим меткам»
+Tour over the checked places of the folder	Тур по отмеченным меткам папки
+Tour: select the My Places folder or a path in it	Тур: выберите папку «Мои метки» или путь в ней
+Transport	Транспорт
+View from {height}	Обзор с высоты {height}
+View properties	Свойства вида
+View properties: relief scale, language of labels, appearance.	Свойства вида: основа и источники данных, масштаб рельефа, язык подписей, формат координат, оформление.
+View snapshot	Снимок вида
+Voyages of Columbus	Путешествия Колумба
+W	з. д.
+Water names	Названия водоёмов
+Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	Откуда смотрит камера, когда летит к папке. Вид задаётся вручную числами или снимком текущего вида. Без своего вида перелёт берёт в кадр все метки папки.
+Where the camera looks. 0 - north at the top of the frame.	Куда смотрит камера. 0 - север вверху кадра.
+Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	Без флажка папка в списке не раскрывается, её метки показывает и скрывает флажок самой папки.
+Yes	Да
+ m	 м
+Delete vertex	Удалить вершину
+Finish drawing	Завершить рисование
+Continue drawing	Продолжить рисование
+Add placemark here	Добавить метку здесь
+Measure distance	Измерить расстояние
+Fly here	Подлететь сюда
+Orbit around	Облететь вокруг
+What's here?	Что здесь?
+Copy the coordinates to the clipboard.	Скопировать координаты в буфер обмена.
+Features	Объекты
+Feature	Объект
+Value	Значение
+No features at the point	Под точкой объектов нет
+A double click on a row copies the value to the clipboard, a link opens in the browser.	Двойной щелчок по строке копирует значение в буфер обмена, ссылку открывает в браузере.
+Type	Тип
+Site	Место
+Under the point	Под точкой
+Address	Адрес
+Height	Высота
+Depth	Глубина
+Copied: {number}	Скопировано: {number}
+loading	загружается
+none	нет
+not received: {error}	не получен: {error}
+Save Scene…	Сохранить сцену…
+Full screen. Exit - Esc or F11.	Во весь экран. Выход - Esc или F11.
+Save measurement	Сохранить измерение
+Save tour	Сохранить тур
+How much of the tour has passed. The slider rewinds the tour. The camera stands at this point at once, the tour goes on from it.	Сколько тура прошло. Ползунок перематывает тур. Камера сразу встаёт в эту точку, тур идёт дальше с неё.
+Previous stop	Предыдущая остановка
+Next stop	Следующая остановка
+Pause	Пауза
+Continue	Продолжить
+Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	Тур по кругу. После последней остановки тур начинается с первой. Остановить его - пауза или крестик.
+Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	Подписи остановок на кадре. На остановке внизу кадра крупно стоят название и описание метки, в перелёте подписи нет.
+Stop {n} of {count}: {name}	Остановка {n} из {count}: {name}
+End tour	Закончить тур
+ s	 с
+How many seconds the camera stands at each stop. A new pause acts from a jump by the buttons or from a new start of the tour.	Сколько секунд камера стоит на каждой остановке. Новая пауза действует с перехода кнопками или с нового запуска тура.

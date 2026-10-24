@@ -16,11 +16,13 @@ program as a web page, on phones too.
 - [Finding a place](#finding-a-place)
 - [Opening files](#opening-files)
 - [My Places](#my-places)
+- [Layers](#layers)
+- [Globe menu](#globe-menu)
 - [Drawing and editing](#drawing-and-editing)
 - [Ruler](#ruler)
 - [Tours and the time slider](#tours-and-the-time-slider)
 - [Demo scenes](#demo-scenes)
-- [Settings](#settings)
+- [View properties](#view-properties)
 - [The web page](#the-web-page)
 - [Data sources and privacy](#data-sources-and-privacy)
 - [Problems](#problems)
@@ -45,30 +47,39 @@ The web page needs no installation: https://valery35.github.io/planetx-lite/
 
 ## Window
 
-- **Left panel.** Place search, the Places section with My Places, the
-  Layers section with the basemap, and the status line at the bottom:
-  the eye altitude and the number of requests in progress.
-- **Toolbar** in the top left corner of the globe:
+The window is laid out as in the PlanetX plugin for QGIS.
+
+- **Left panel.** The search line, the Places section with My Places,
+  the Layers section and the status line at the bottom. The first status
+  line is the view height and the number of loads in progress, for
+  example "View from 20 000 km В· loading 42". The second one is the point
+  under the cursor with its height or depth. Program messages take the
+  first line for five seconds.
+- **Toolbar** in the top left corner of the globe, a spinner turns to its
+  right while loading:
 
 | Button | Action |
 |---|---|
-| Panel | Shows or hides the left panel. On a narrow screen the panel starts hidden |
-| Open | Opens a scene, KML, KMZ or a data file |
-| Demo | The menu of demo scenes |
-| New placemark | Draws a new placemark, path, polygon or circle on the globe |
-| Ruler | Measures length, ground length, heading, perimeter and area |
-| Record a tour | Records the camera path while the globe moves. A second click ends the recording, the tour goes to My Places |
-| Snapshot of the view | Saves the view to a PNG file. Windows stay out of the snapshot, the source credits stay in |
-| Share | Copies a link to this view: the camera and the scenes opened by address or from the Demo menu. On a phone the system Share window opens. Files opened from the disk are not in the link |
-| Settings | The Settings window |
-| Full screen | Full screen on and off |
+| Sidebar | Hides or shows the left panel. On a narrow screen the panel starts hidden |
+| Identify features | When on, a click on the globe opens the Features window - coordinates, height or depth of the point and the placemarks there |
+| Ruler | The Ruler window: length, perimeter and area on the ellipsoid |
+| New placemark в–ѕ | Menu Placemark, Path, Polygon, Circle - the New placemark window on that tab |
+| Save view | Asks for a name and puts a placemark with the current camera view into the selected folder |
+| Record a flight | Records the camera path. A second click ends the recording and asks for the tour name |
+| Time slider | Opens and closes the time slider. Available when visible placemarks have time |
+| View snapshot | Saves the view to a PNG file |
+| Copy the view | Puts the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider |
+| Scene в–ѕ | Save SceneвЂ¦, Open SceneвЂ¦, Share ViewвЂ¦ - a link to the view. On a phone the system Share window opens |
+| Demo в–ѕ | Prepared scenes by topic |
+| View properties | The View properties window |
+| Full screen | Full screen, F11. The panels hide, the navigation controls and the time slider stay. Esc or F11 returns the window |
 | About | Version, the user guide, links |
 
 - **Navigation controls** in the top right corner of the globe, see
   Moving around the globe.
 - **Source credits** in the bottom right corner. A click opens the Data
-  sources window with full credits and links.
-
+  sources window with full credits and links. A click on the PlanetX
+  mark opens About.
 ## Moving around the globe
 
 The controls follow Google Earth.
@@ -98,21 +109,21 @@ Earth. While the cursor is far away they show as a faint outline.
 
 ## Finding a place
 
-Type a name or coordinates in the search field at the top of the panel
-and press Enter or Search. The camera flies to the place, a red mark
-shows it. With several results the list appears under the field. The
+Type a name, coordinates or an action in the line at the top of the
+panel and press Enter or Search. The camera flies to the place, a mark
+shows it. With several results the list appears under the line. The
 search uses Nominatim OpenStreetMap.
 
-While typing, suggestions appear under the field: placemarks from My
-Places, program actions and earlier queries. Actions are tools, windows,
-sun, grid, theme, demo scenes and basemaps. Other words find them too:
-"measure" finds the ruler, "screenshot" the snapshot. A click on a
-suggestion runs it. Enter with the exact name of a suggestion runs it,
-otherwise searches for a place. Ctrl+K puts the cursor into the field.
-
+While typing, a list of hints appears under the line: "name - placemark"
+from My Places, program actions like "Ruler - open the window" or "Grid -
+turn on", and "query - earlier query". Other words find the actions too:
+"measure" finds the ruler, "screenshot" the snapshot. A click on a hint
+runs it. Enter with the exact name of a hint runs it, otherwise searches
+for a place. Ctrl+K puts the cursor into the search line.
 ## Opening files
 
-The Open button, a file dropped onto the window, or file names on the
+Open Scene… in the Scene menu, Open KML or KMZ… in the My Places menu, a
+file dropped onto the window, or file names on the
 command line open:
 
 | File | What appears |
@@ -134,26 +145,70 @@ its content between runs.
 
 - A checkbox shows or hides a row and everything in it.
 - A double click flies to the row.
-- A click on a placemark on the globe opens its card: description,
-  links and fields. The card buttons fly to it and open Properties.
+- A click on a placemark on the globe opens its card: description, links
+  and fields. The card buttons fly to it and open Properties.
 - Ctrl+C copies the selected row as KML, Ctrl+V pastes KML from the
   clipboard into the selected folder.
-- A click selects the row. Delete removes it, F2 renames it.
+- A click selects the row. Delete removes it after a question, F2
+  renames it.
 - Drag a row onto a folder to put it inside, onto another row to put it
   before that row, onto My Places to put it at the end.
-- The right button opens the menu:
+
+Under the tree there is an opacity slider and the в–¶ button. The slider
+changes the opacity of the selected placemarks, paths, polygons, pictures
+and folder contents, the value is kept in KML. The в–¶ button plays a tour:
+for My Places and a folder over the checked placemarks, for a path along
+the path, for a placemark over its folder.
+
+The right button opens the menu, as in the plugin:
 
 | Row | Menu |
 |---|---|
-| Placemark, overlay | Fly to, Play tour (for a recorded tour), Elevation profile (for a path), Properties, Copy as KML, Save as KML, Save scene, Rename, Delete |
-| Folder | Fly to, Play tour, Save view, New folder, Copy as KML, Save as KML, Save scene, Rename, Delete |
-| My Places | Open, Play tour, Save as KML, Save scene, Clear My Places |
+| Folder | Fly to, Add в–ё, Cut, Copy, Paste, Delete, Open KML or KMZвЂ¦, Save as KMLвЂ¦, Snapshot folder view, Sort A-Z, Play tour, PropertiesвЂ¦ |
+| Placemark, path, overlay | Fly to, Play tour (for a recorded tour), Tour along the path and Elevation profile (for a path), Snapshot view, PropertiesвЂ¦, New Folder, Cut, Copy, Paste, Delete |
+| My Places | Add в–ё, Play tour, Sort A-Z, Open KML or KMZвЂ¦, Save as KMLвЂ¦, Copy, Paste, Clear My PlacesвЂ¦ |
 
-**Saving.** "Save as KML" writes the row to KML, or to KMZ when it
-contains pictures or models. "Save scene" writes a `.planetx` scene with
-the current camera. The PlanetX plugin for QGIS opens these scenes too.
-On the web page the file is downloaded.
+Add в–ё adds a folder, a placemark, a path, a polygon or a recorded tour.
+Snapshot view sets the current camera view to the row. PropertiesвЂ¦ of a
+folder: name, expanding, radio group, Hide beyond, description and the
+folder view.
 
+**Saving.** "Save as KMLвЂ¦" writes the row to KML, or to KMZ when it
+contains pictures or models. "Save SceneвЂ¦" in the Scene menu writes a
+`.planetx` scene with the current camera and the selected folder. The
+PlanetX plugin for QGIS opens these scenes too. On the web page the file
+is downloaded.
+
+## Layers
+
+The Layers section shows everything on the globe:
+
+- the Add data button - the catalog: base maps, the vector base and the
+  grid, the atmosphere and the sun;
+- "Base map В· name" - a click opens the choice of the basemap;
+- "Terrain В· Terrarium" - the checkbox turns the terrain on, a click on
+  the name opens the terrain menu;
+- layers of the catalog that are on: Atmosphere, Sun, Grid. The checkbox
+  turns a layer off, the row stays until "Remove from the globe" in the
+  "в‹Ї" menu;
+- groups of the OpenFreeMap vector base: Borders and names (borders,
+  settlements, water names), Transport (roads, road numbers, railways,
+  airports), Nature (rivers, lakes and reservoirs, peaks, reserves and
+  national parks). Lines lie over the imagery as in the plugin:
+  countries yellow, regions white, motorways yellow, railways light with
+  a dark dash, rivers blue. Borders and settlements are on by default.
+
+## Globe menu
+
+A right click without dragging opens the menu:
+
+- the coordinates of the point - a click copies them;
+- while drawing - Delete vertex, Finish drawing or Continue drawing,
+  Save, Clear;
+- over a placemark - its name and PropertiesвЂ¦;
+- Add placemark here, Measure distance, Fly here, Orbit around, What's
+  here?. What's here? opens the Features window with the address of the
+  point from Nominatim and its height.
 ## Drawing and editing
 
 The New placemark button opens a window with tabs Placemark, Path,
@@ -186,8 +241,9 @@ Points are placed and dragged as in drawing.
 
 Lengths and areas are measured on the WGS84 ellipsoid. Ground length
 follows the terrain, "≈" means terrain tiles are still loading. Units
-are chosen next to each value. Save puts the shape into My Places with
-the measurement in its description.
+are chosen next to each value. Save asks for a name, "Line 1", "Path 1"
+or similar, and puts the shape into My Places with the measurement in
+its description.
 
 **Elevation profile.** The Elevation profile button of the ruler for a
 line or a path, and the path menu item, open a window with a height
@@ -204,7 +260,7 @@ The play button next to a recorded tour starts it, "Play tour" in a
 folder menu flies over the folder's placemarks. During a tour the panel
 on top shows pause and stop. Dragging the globe stops the tour.
 
-Placemarks with dates turn on the Time button in the Places section. The
+Placemarks with dates turn on the Time slider button of the toolbar. The
 time slider under the toolbar shows the placemarks of the chosen period.
 Its buttons go to the start, play, go to the end and play in a loop. The
 speed is a multiple of real time from ×1 to ×86400, or the whole slider
@@ -212,8 +268,9 @@ in 20 s. 3D models on a `gx:Track` drive along it at the moment of the
 right handle, with the slider closed they stand at the end of the path.
 Animated glTF and Collada models play on their own.
 
-**Recording a tour.** The record button on the toolbar starts recording,
-the camera moves as usual meanwhile. A second click ends it. The tour
+**Recording a tour.** The Record a flight button starts recording,
+the camera moves as usual meanwhile. A second click ends it and asks for
+a name, "Tour 1". The tour
 goes to My Places as a path with a tour, the play button replays it.
 
 ## Demo scenes
@@ -226,18 +283,18 @@ Brienz, 3D models, haul trucks in open pits. The program downloads the
 demo files once and keeps them, the web page relies on the browser
 cache.
 
-## Settings
+## View properties
 
-| Setting | Values |
+The View properties window - the gear button, as in the plugin:
+
+| Group | What it sets |
 |---|---|
-| Interface language | As in the system or one of 16 languages |
-| Label language | Language of place names on the globe: as the interface, local names or a chosen language |
-| Appearance | Dark or Light |
-| Vertical exaggeration | Terrain height multiplier from 0.5 to 10 |
-| Sun | Terrain lit by the sun at the moment of the time slider or now, night is dark |
-| Coordinate grid | Parallels and meridians with labels, the equator, the tropics and the polar circles |
-
-Settings are kept between runs. `PLANETX_LANGUAGE=de` sets the language
+| Base map | The basemap and the Data sourcesвЂ¦ button |
+| Terrain | Vertical exaggeration from 0.5 to 10 |
+| Labels | Language of names on the globe: as the interface, local names or a chosen language |
+| Coordinates | Format: decimal degrees, degrees-minutes-seconds, UTM, MGRS |
+| Appearance | Light or dark, the interface language - as in the system or one of 16 languages |
+Properties are kept between runs. `PLANETX_LANGUAGE=de` sets the language
 for one run of the program.
 
 ## The web page

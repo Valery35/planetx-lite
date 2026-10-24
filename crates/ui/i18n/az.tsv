@@ -192,3 +192,215 @@ Tropic of Capricorn	Oğlaq tropiki
 Turn off	Söndür
 Turn on	Yandır
 View	Görünüş
+ km	 km
+ m	 m
+{coords}, depth {d} m	{coords}, dərinlik {d} m
+{coords}, height {h} m	{coords}, hündürlük {h} m
+{name} - {what}	{name} - {what}
+{name} - earlier query	{name} - əvvəlki sorğu
+{name} - placemark	{name} - nişan
+{name}, {ele} m	{name}, {ele} m
+{name}. The check turns the layer off, the row stays. The «⋯» menu removes it from the globe.	{name}. Bayraqcıq layı söndürür, sətir qalır. "⋯" menyusu layı qlobusdan götürür.
+© 2026 Inform++ LLC. Apache 2.0.	© 2026 Inform++ LLC. Apache 2.0.
+A double click on a row copies the value to the clipboard, a link opens in the browser.	Sətrə iki dəfə klik dəyəri mübadilə buferinə kopyalayır, keçid brauzerdə açılır.
+A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	Tünd qırıq xəttli açıq rəngli xətt. Uzaqlaşdıranda magistrallarla birlikdə yox olur. Stansiya və giriş yolları çəkilmir.
+Add	Əlavə et
+Add data	Məlumat əlavə et
+Add placemark here	Buraya nişan əlavə et
+Address	Ünvan
+Airports	Hava limanları
+All	Hamısı
+All maps and layers of the catalog.	Kataloqun bütün xəritələri və layları.
+Allow the folder to expand	Qovluğun açılmasına icazə ver
+Atmosphere	Atmosfer
+Base map	Əsas xəritə
+Base map on the globe	Qlobusda əsas xəritə
+Base map on the globe - one	Qlobusda əsas xəritə - bir
+Base maps	Əsas xəritələr
+Basemaps of the globe - imagery and maps. There is one base on the globe, under the layers.	Qlobusun əsas xəritələri - şəkillər və xəritələr. Qlobusda xəritələrin və layların altında bir əsas xəritə olur.
+Borders	Sərhədlər
+Borders and names	Sərhədlər və adlar
+Borders of countries and regions and labels on the globe.	Ölkələrin və regionların sərhədləri və qlobusdakı yazılar.
+Borders of countries bright yellow, borders of regions thin white. Sea borders are not drawn.	Ölkə sərhədləri parlaq sarı, region sərhədləri nazik ağ. Dəniz sərhədləri çəkilmir.
+Catalog of layers - vector base, coordinate grid, atmosphere and sun. The catalog opens in its own window, it can stay open next to the globe.	Laylar kataloqu - vektor əsas, koordinat şəbəkəsi, atmosfer və günəş. Kataloq ayrıca pəncərədə açılır, onu qlobusun yanında açıq saxlamaq olar.
+Clear My Places…	"Mənim yerlərim"i təmizlə…
+close	bağla
+Continue drawing	Çəkməyə davam et
+Coordinates	Koordinatlar
+Copied: {number}	Kopyalandı: {number}
+Copy	Kopyala
+Copy of the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider.	Görünüşün mübadilə buferinə surəti - yazılarla qlobus, ikonlar paneli, naviqasiya idarələri və zaman şkalası olmadan. Şəkli dərhal məktuba, çata və ya sənədə yapışdırmaq olar.
+Copy the coordinates to the clipboard.	Koordinatları mübadilə buferinə kopyala.
+Copy the view to the clipboard	Görünüşü mübadilə buferinə kopyala
+Cut	Kəs
+Data sources…	Məlumat mənbələri…
+Decimal degrees	Onluq dərəcələr
+Degrees, minutes, seconds	Dərəcə, dəqiqə, saniyə
+Delete "{name}" from My Places?	"{name}" "Mənim yerlərim"dən silinsin?
+Delete all placemarks and folders of My Places, placemarks in all {count}? Deletion cannot be undone.	"Mənim yerlərim"in bütün nişanları və qovluqları, cəmi {count} nişan silinsin? Silməni geri qaytarmaq olmaz.
+Delete folder	Qovluğu sil
+Delete folder “{name}” with all its contents?	"{name}" qovluğu bütün məzmunu ilə silinsin?
+Delete placemark	Nişanı sil
+Delete vertex	Təpəni sil
+Demo: prepared scenes with placemarks and tours. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour.	Demo: nişanlar və turlarla hazır səhnələr. Nişanlar "Mənim yerlərim"ə yeni qovluq kimi düşür, siyahının altındakı ▶ düyməsi turu göstərir.
+Depth	Dərinlik
+Description of the folder. It is kept in My Places and in KML.	Qovluğun təsviri. "Mənim yerlərim"də və KML-də saxlanılır.
+Distance	Məsafə
+Distance from the camera to the point of view. More - a wider view.	Kameradan baxış nöqtəsinə qədər məsafə. Çox - görünüş daha geniş.
+do not hide	gizlətmə
+E	ş. u.
+Esri World Imagery	Esri World Imagery
+Esri World Imagery - example	Esri World Imagery - nümunə
+Feature	Obyekt
+Features	Obyektlər
+Find what is typed in the line. A place - a flight to it, several found places - a list below.	Sətrə yazılanı tap. Bir yer - ora uçuş, bir neçə tapılmış yer - aşağıda siyahı.
+Finish drawing	Çəkməni bitir
+Fly here	Bura uç
+Folder properties	Qovluğun xüsusiyyətləri
+Folder view	Qovluğun görünüşü
+Folder|add	Qovluq
+Format	Format
+Full screen (F11) - the globe view for a show. Esc or F11 returns the window.	Tam ekran (F11) - nümayiş üçün qlobusun görünüşü. Panellər gizlənir, naviqasiya idarələri, zaman şkalası və tur qalır. Esc və ya F11 pəncərəni qaytarır.
+Full screen. Exit - Esc or F11.	Tam ekran. Çıxış - Esc və ya F11.
+Grid	Koordinat şəbəkəsi
+Height	Hündürlük
+Heights raise the surface and shade the slopes. The check turns the terrain on, a click on the name chooses the heights. Heights of the Earth - Mapzen Terrain Tiles. The vertical scale is in the view properties.	Hündürlüklər səthi qaldırır və yamacları kölgələndirir. Bayraqcıq relyefi yandırır, ada klik hündürlükləri seçir. Yerin hündürlükləri - Mapzen Terrain Tiles. Şaquli şişirtmə görünüşün xüsusiyyətlərindədir.
+Hide beyond	Bu məsafədən uzaqda gizlət
+Hide sidebar	Yan paneli gizlət
+Identify features	Obyektləri müəyyən et
+Identify. A click on the globe shows the coordinates, the height or depth of the point and the placemarks there.	Obyektləri müəyyən et. Qlobusa klik nöqtənin koordinatlarını, hündürlüyünü və ya dərinliyini və nişanları göstərir.
+Imagery of the whole Earth, the example basemap. Its terms are set by Esri.	Bütün Yerin şəkilləri, nümunə əsas xəritə. İstifadə şərtlərini Esri müəyyən edir.
+Imagery or map on the surface. A click on the row chooses the basemap. Esri World Imagery is an example basemap, its terms are set by Esri.	Səthdə şəkillər və ya xəritə. Sətrə klik əsas xəritəni seçir. Esri World Imagery nümunə əsas xəritədir, istifadə şərtlərini Esri müəyyən edir.
+Inform++ LLC	Inform++ LLC
+km	km
+Labels	Yazılar
+Lakes and reservoirs	Su hövzələri
+Language	Dil
+Latitude	En dairəsi
+Latitude of the point the camera looks at.	Kameranın baxdığı nöqtənin en dairəsi.
+Layers - switched on together	Laylar - birlikdə yandırılır
+Light of the terrain and the air by the position of the sun. The night side of the Earth is dark. The time of the sun is the end of the period of the open time slider, without it the computer clock. Without the check the light falls from the north-west, as on a relief map.	Günəşin mövqeyinə görə relyefin və havanın işığı. Yerin gecə tərəfi qaranlıqdır. Günəşin vaxtı açıq zaman şkalasının aralığının sonudur, şkala olmadıqda kompüterin saatı. Bayraqcıq olmadan işıq relyef xəritəsindəki kimi şimal-qərbdən düşür.
+loading	yüklənir
+loading {count}	yüklənir {count}
+Longitude	Uzunluq dairəsi
+Longitude of the point the camera looks at.	Kameranın baxdığı nöqtənin uzunluq dairəsi.
+m	m
+Map	Xəritə
+Measure distance	Məsafəni ölç
+Moscow, historical maps	Moskva, tarixi xəritələr
+Motorways yellow, main roads light yellow, the rest thin white. Over a city the roads cover the basemap with a dense mesh.	Magistrallar sarı, əsas yollar açıq sarı, qalanları nazik ağ. Şəhərin üzərində yollar əsas xəritəni sıx şəbəkə ilə örtür.
+N	şm. e.
+Names of airports with a square icon, runways when zooming in. They are labelled from a height below 1000 km.	Kvadrat ikonlu hava limanlarının adları, yaxınlaşdıranda uçuş-enmə zolaqları. 1000 km-dən aşağı hündürlükdən yazılır.
+Names of countries, regions, cities, towns and villages. Smaller places appear when zooming in.	Ölkələrin, regionların, şəhərlərin, qəsəbələrin və kəndlərin adları. Yaxınlaşdıranda getdikcə kiçik məntəqələr görünür.
+Names of seas, lakes and reservoirs, in light blue italics.	Dənizlərin, göllərin və su anbarlarının adları, açıq mavi kursivlə.
+Narrow rivers as blue lines. They appear from about 600 m per pixel.	Mavi xətlərlə dar çaylar. Piksel başına təxminən 600 m-dən görünür.
+Nature	Təbiət
+Nature reserves, national parks and wildlife refuges, a green outline and a name. Names are seen below 3000 km, the outline together with motorways.	Qoruqlar, milli parklar və yasaqlıqlar, yaşıl kontur və ad. Adlar 3000 km-dən aşağıda, kontur magistrallarla birlikdə görünür.
+New placemark, path, polygon or circle in My Places.	"Mənim yerlərim"də yeni nişan, yol, çoxbucaqlı və ya dairə.
+No	Xeyr
+No - height tiles only	Xeyr - yalnız hündürlük kafelləri
+No features at the point	Nöqtədə obyekt yoxdur
+none	yoxdur
+not received: {error}	alınmadı: {error}
+Only one placemark or folder of this folder is seen on the globe. The check of one row clears the checks of the others.	Qlobusda bu qovluqdan yalnız bir nişan və ya qovluq görünür. Bir sətrin bayraqcığı qalanlarının bayraqcıqlarını götürür.
+Opacity of the selected placemarks, paths, polygons, pictures and folder contents. To the left - more transparent. The value is kept in My Places and in KML.	Seçilmiş nişanların, yolların, çoxbucaqlıların, şəkillərin və qovluq məzmununun qeyri-şəffaflığı. Sola - daha şəffaf. Dəyər "Mənim yerlərim"də və KML-də saxlanılır.
+open	aç
+Open KML or KMZ…	KML və ya KMZ aç…
+Open Scene	Səhnəni aç
+Open Scene…	Səhnəni aç…
+open the catalogue	kataloqu aç
+open the demo	demonu aç
+open the window	pəncərəni aç
+Orbit around	Ətrafında uç
+Parallels and meridians with degree labels, the equator, the tropics and the polar circles. The step of the grid changes with the camera height.	Dərəcə yazılı paralellər və meridianlar, ekvator, tropiklər və qütb dairələri. Şəbəkənin addımı kameranın hündürlüyü ilə dəyişir.
+Paste	Yapışdır
+Path|add	Yol
+Peaks	Zirvələr
+Peaks and volcanoes with their height in metres, a triangle icon. They are labelled from a height below 400 km.	Metrlə hündürlükləri ilə zirvələr və vulkanlar, üçbucaq ikon. 400 km-dən aşağı hündürlükdən yazılır.
+Place, coordinates or action. A place name or coordinates, for example Perm or 58.0105, 56.2294, give a flight. A layer or a window, for example «ruler» or «grid», is found by its name and turned on from the hint. Ctrl+K from anywhere in the window puts the cursor into this line.	Yer, koordinatlar və ya əməliyyat. Yer adı və ya koordinatlar, məsələn Perm və ya 58.0105, 56.2294, uçuş verir. Lay və ya pəncərə, məsələn "xətkeş" və ya "şəbəkə", adı ilə tapılır və ipucudan yandırılır. Ctrl+K pəncərənin istənilən yerindən kursoru bu sətrə qoyur.
+Placemark|add	Nişan
+Plates with numbers of motorways and main roads. They are labelled from a height below 1000 km.	Magistralların və əsas yolların nömrələri olan lövhələr. 1000 km-dən aşağı hündürlükdən yazılır.
+Polygon|add	Çoxbucaqlı
+Railways	Dəmir yolları
+Record a flight	Tur yaz
+Record a tour. Camera motion by mouse, keys or flights becomes a tour in My Places, a second click stops the recording.	Tur yaz. Kameranın siçan, düymələr və ya uçuşlarla hərəkəti "Mənim yerlərim"də tura çevrilir, ikinci klik yazını dayandırır.
+Recorded tour	Yazılmış tur
+Remove from the globe	Qlobusdan götür
+Reserves and national parks	Qoruqlar və milli parklar
+Reset	Sıfırla
+Return the view the folder had when the window opened.	Pəncərə açılanda qovluğun malik olduğu görünüşü qaytar.
+Rivers	Çaylar
+Rivers, peaks and protected areas.	Çaylar, zirvələr və qorunan ərazilər.
+Road numbers	Yol nömrələri
+Roads	Yollar
+Roads, their numbers, railways and airports.	Yollar, onların nömrələri, dəmir yolları və hava limanları.
+Ruler. Length, perimeter and area on the ellipsoid, the measurement can be saved to My Places.	Xətkeş. Ellipsoid üzərində uzunluq, perimetr və sahə, ölçməni "Mənim yerlərim"də saxlamaq olar.
+run	icra et
+S	c. e.
+Save measurement	Ölçməni saxla
+Save Scene	Səhnəni saxla
+Save tour	Turu saxla
+Save view. The point of view becomes a placemark in My Places, flying to it returns the height, heading and tilt.	Görünüşü saxla. Baxış nöqtəsi "Mənim yerlərim"də nişana çevrilir, ona uçuş hündürlüyü, kursu və meyli qaytarır.
+Scene - the camera and the selected folder of My Places with its tour. It is saved to a file and opens on another computer.	Səhnə - kamera və "Mənim yerlərim"in seçilmiş qovluğu öz turu ilə. Fayla saxlanılır və başqa kompüterdə açılır.
+Set as base map	Əsas xəritə et
+Settlements	Yaşayış məntəqələri
+Share view	Görünüşü paylaş
+Share View…	Görünüşü paylaş…
+Shores of lakes, reservoirs and wide rivers outlined in blue. Reservoirs are cut into pieces in the data, and the outline runs along the cuts too.	Göllərin, su anbarlarının və geniş çayların sahilləri mavi xətlə haşiyələnib. Su anbarları məlumatlarda hissələrə bölünüb, kontur kəsiklər boyunca da keçir.
+Show contents as a group of radio buttons	Məzmunu dəyişdiricilər qrupu kimi göstər
+Show on the globe	Qlobusda göstər
+Show sidebar	Yan paneli göstər
+Site	Yer
+Sky and light	Səma və işıq
+Snapshot folder view	Qovluq üçün cari görünüşü götür
+Snapshot of the current view	Cari görünüşü götür
+Snapshot of the view to a PNG file.	Görünüşün PNG faylına şəkli.
+Snapshot view	Nişan üçün cari görünüşü götür
+snow, mines, wind	qar, mədənlər, külək
+Sort A-Z	A-dan Z-yə sırala
+start	başla
+stop	dayandır
+Take the view of the globe now: the point of view, distance, heading and tilt.	Qlobusun indiki görünüşünü götür: baxış nöqtəsi, məsafə, kurs və meyl.
+The blue glow of the air around the planet, the sky over the horizon and the haze over the distant surface. Without the check the background of the view is black space, the surface is seen without haze.	Planetin ətrafında havanın mavi parıltısı, üfüqün üstündə səma və uzaq səthin üzərində duman. Bayraqcıq olmadan görünüşün fonu qara kosmosdur, səth dumansız görünür.
+The check shows a layer on the globe. A row - its description. Layers are turned on together.	Bayraqcıq qlobusda layı göstərir. Sətir - onun təsviri. Laylar birlikdə yandırılır.
+The OpenFreeMap vector base and the coordinate grid.	OpenFreeMap vektor əsası və koordinat şəbəkəsi.
+The OpenStreetMap map.	OpenStreetMap xəritəsi.
+The placemark is seen only while the eye is closer than this distance, as Region in KML. For a folder - all its placemarks. 0 - always seen.	Nişan yalnız göz bu məsafədən yaxın olanda görünür, KML-dəki Region kimi. Qovluqda - onun bütün nişanları. 0 - həmişə görünür.
+The sun and the night side, the atmosphere.	Günəş və gecə tərəfi, atmosfer.
+The view is copied to the clipboard.	Görünüş mübadilə buferinə kopyalandı.
+Tilt	Meyl
+Tilt of the camera. 0 - looking straight down, more - towards the horizon.	Kameranın meyli. 0 - şaquli aşağı baxış, çox - üfüqə doğru.
+Time slider	Zaman şkalası
+Time slider. While it is open, data outside its period is hidden. The closed slider shows all placemarks.	Zaman şkalası. Şkala açıq olanda onun aralığından kənar məlumatlar gizlənir. Bağlı şkala bütün nişanları göstərir.
+Tour along the path	Yol boyunca tur
+Tour along the selected path	Seçilmiş yol boyunca tur
+Tour over the checked places	İşarələnmiş yerlər üzrə tur
+Tour over the checked places of the folder	Qovluğun işarələnmiş nişanları üzrə tur
+Tour: select the My Places folder or a path in it	Tur: "Mənim yerlərim" qovluğunu və ya içindəki yolu seçin
+Transport	Nəqliyyat
+Type	Növ
+Under the point	Nöqtənin altında
+Value	Dəyər
+View from {height}	{height} hündürlükdən görünüş
+View properties	Görünüşün xüsusiyyətləri
+View properties: relief scale, language of labels, appearance.	Görünüşün xüsusiyyətləri: əsas xəritə və məlumat mənbələri, relyefin miqyası, yazıların dili, koordinat formatı, tərtibat.
+View snapshot	Görünüşün şəkli
+Voyages of Columbus	Kolumbun səyahətləri
+W	q. u.
+Water names	Su hövzələrinin adları
+What's here?	Burada nə var?
+Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	Kamera qovluğa uçanda haradan baxır. Görünüş rəqəmlərlə və ya cari görünüşü götürməklə təyin edilir. Öz görünüşü olmadıqda uçuş qovluğun bütün nişanlarını kadra alır.
+Where the camera looks. 0 - north at the top of the frame.	Kameranın baxdığı istiqamət. 0 - kadrın yuxarısında şimal.
+Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	Bayraqcıq olmadan qovluq siyahıda açılmır, onun nişanlarını qovluğun öz bayraqcığı göstərir və gizlədir.
+Yes	Bəli
+ s	 san
+Continue	Davam et
+End tour	Turu bitir
+How many seconds the camera stands at each stop. A new pause acts from a jump by the buttons or from a new start of the tour.	Kamera hər dayanacaqda neçə saniyə dayanır. Yeni fasilə düymələrlə keçiddən və ya turun yeni başlanğıcından qüvvəyə minir.
+How much of the tour has passed. The slider rewinds the tour. The camera stands at this point at once, the tour goes on from it.	Turun nə qədəri keçib. Sürüşdürücü turu geri-irəli çəkir. Kamera dərhal bu nöqtədə dayanır, tur buradan davam edir.
+Next stop	Növbəti dayanacaq
+Pause	Fasilə
+Previous stop	Əvvəlki dayanacaq
+Stop {n} of {count}: {name}	Dayanacaq {n} / {count}: {name}
+Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	Kadrda dayanacaqların yazıları. Dayanacaqda kadrın aşağısında nişanın adı və təsviri iri hərflərlə görünür, uçuşda yazı olmur.
+Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	Dövri tur. Sonuncu dayanacaqdan sonra tur birincidən başlayır. Onu fasilə və ya çarpaz dayandırır.
