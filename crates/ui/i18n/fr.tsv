@@ -658,3 +658,45 @@ Macrostrat page	Page Macrostrat
 Age	Âge
 Age, Ma	Âge, Ma
 Map link	Lien vers la carte
+Active faults	Failles actives
+Plate boundaries	Limites de plaques
+Submarine cables	Câbles sous-marins
+Plate boundary	Limite de plaques
+Kind of slip	Type de rejet
+Database entry	Entrée de la base
+Slip rate	Vitesse de rejet
+{value} mm/yr	{value} mm/an
+Dip	Pendage
+Catalogue	Catalogue
+Plates	Plaques
+Speed	Vitesse
+Kind	Type
+Owner	Propriétaire
+Voltage	Tension
+{value} kV	{value} kV
+OSM object	Objet OSM
+Power cable	Câble électrique
+Communication line	Ligne de télécommunication
+Energy	Énergie
+Power plants of the world, power lines, substations, pipelines and submarine cables.	Centrales électriques du monde, lignes électriques, postes électriques, conduites et câbles sous-marins.
+GEM active faults	Failles actives GEM
+A click on a line - details	Un clic sur une ligne - détails
+Normal faults	Failles normales
+Reverse faults, thrusts, subduction	Failles inverses, chevauchements, subduction
+Strike-slip faults	Décrochements
+Spreading ridges	Dorsales
+Folds	Plis
+Kind of slip not given	Type de rejet non indiqué
+Plates moving apart	Divergence des plaques
+Plates sliding	Coulissement des plaques
+Plates converging	Convergence des plaques
+Oceanic spreading ridge	Dorsale océanique
+Continental rift	Rift continental
+Oceanic transform fault	Faille transformante océanique
+Continental transform fault	Faille transformante continentale
+Subduction zone	Zone de subduction
+Oceanic convergent boundary	Limite convergente océanique
+Continental collision	Collision continentale
+About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	Environ 13.7 mille failles actives du monde d’après la base GEM Global Active Faults, assemblée à partir de catalogues régionaux. La couleur montre le type de rejet. Il s’agit d’une faille normale, d’une faille inverse ou d’un chevauchement, d’un décrochement, d’une dorsale et d’un pli. Un clic sur une ligne affiche le nom, le type de rejet, la vitesse en mm/an, le pendage et le catalogue source. La première activation télécharge environ 11 Mo.
+Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. The Features window shows the boundary type and the plate speed.	Limites des plaques lithosphériques d’après le modèle PB2002. Rouge - divergence des plaques aux dorsales et aux rifts, vert - coulissement le long des failles transformantes, bleu - convergence dans les zones de subduction et de collision. La fenêtre « Objets » affiche le type de limite et la vitesse des plaques.
+Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	Lignes de télécommunication sous-marines (turquoise) et câbles électriques (violet) d’OpenStreetMap, visibles depuis toute altitude. OSM contient une partie des câbles du monde, surtout dans l’Atlantique et près de l’Europe. Un clic sur une ligne affiche le nom, le propriétaire et un lien vers l’objet OpenStreetMap.

@@ -658,3 +658,45 @@ Macrostrat page	Страница Macrostrat
 Age	Возраст
 Age, Ma	Возраст, млн лет
 Map link	Ссылка на карту
+Active faults	Активные разломы
+Plate boundaries	Границы плит
+Submarine cables	Подводные кабели
+Plate boundary	Граница плит
+Kind of slip	Вид смещения
+Database entry	Запись в базе
+Slip rate	Скорость смещения
+{value} mm/yr	{value} мм/год
+Dip	Падение
+Catalogue	Каталог
+Plates	Плиты
+Speed	Скорость
+Kind	Вид
+Owner	Владелец
+Voltage	Напряжение
+{value} kV	{value} кВ
+OSM object	Объект OSM
+Power cable	Силовой кабель
+Communication line	Линия связи
+Energy	Энергетика
+Power plants of the world, power lines, substations, pipelines and submarine cables.	Электростанции мира, линии электропередачи, подстанции, трубопроводы и подводные кабели.
+GEM active faults	Активные разломы GEM
+A click on a line - details	Щелчок по линии - сведения
+Normal faults	Сбросы
+Reverse faults, thrusts, subduction	Взбросы, надвиги, субдукция
+Strike-slip faults	Сдвиги
+Spreading ridges	Срединные хребты
+Folds	Складки
+Kind of slip not given	Вид смещения не указан
+Plates moving apart	Раздвиг плит
+Plates sliding	Сдвиг плит
+Plates converging	Схождение плит
+Oceanic spreading ridge	Океанический спрединговый хребет
+Continental rift	Континентальный рифт
+Oceanic transform fault	Океанический трансформный разлом
+Continental transform fault	Континентальный трансформный разлом
+Subduction zone	Зона субдукции
+Oceanic convergent boundary	Океаническая граница схождения
+Continental collision	Континентальная коллизия
+About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	Около 13.7 тысячи активных разломов мира по базе GEM Global Active Faults, сведённой из региональных каталогов. Цвет показывает вид смещения. Это сброс, взброс или надвиг, сдвиг, срединный хребет и складка. Щелчок по линии показывает название, вид смещения, скорость в мм/год, падение и каталог-источник. Первое включение скачивает около 11 МБ.
+Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. The Features window shows the boundary type and the plate speed.	Границы литосферных плит по модели PB2002. Красные - раздвиг плит на хребтах и рифтах, зелёные - сдвиг по трансформным разломам, синие - схождение в зонах субдукции и коллизии. Тип границы и скорость плит показывает окно «Объекты».
+Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	Подводные линии связи (бирюзовые) и силовые кабели (лиловые) из OpenStreetMap, видны с любой высоты. В OSM нанесена часть кабелей мира, больше всего в Атлантике и у Европы. Щелчок по линии показывает название, владельца и ссылку на объект OpenStreetMap.

@@ -110,6 +110,9 @@ enum ThemeScale {
 /// Загрузчики источников карты: первый уровень источника и загрузчик.
 type MapLoaders = Vec<(u32, Box<dyn TileLoader>)>;
 
+/// Предел ответа разового запроса, байты.
+const ANSWER_BYTES: u64 = 1 << 20;
+
 /// Загрузчики тайлов платформы.
 pub struct Loaders {
     /// Снимки Esri World Imagery.
@@ -129,8 +132,9 @@ pub struct Loaders {
     /// Загрузчик тайлов нового источника: карты каталога заводят свои
     /// загрузчики при включении.
     pub make: Box<dyn Fn(net::Source) -> Box<dyn TileLoader>>,
-    /// Новый разовый запрос: ряд дат темы GIBS.
-    pub request: Box<dyn Fn() -> Box<dyn net::Request>>,
+    /// Новый разовый запрос с пределом ответа в байтах: ряд дат темы
+    /// GIBS, сводки слоёв. На странице предел задаёт браузер.
+    pub request: Box<dyn Fn(u64) -> Box<dyn net::Request>>,
 }
 
 impl Loaders {
@@ -681,7 +685,7 @@ impl LiteApp {
         app.sync_maps();
         for layer in crate::dots::Layer::ALL {
             if app.extras_on.contains(&crate::layers::Extra::Dots(layer)) {
-                app.dots.enable(layer, (app.loaders.request)());
+                app.dots.enable(layer, (app.loaders.request)(layer.bytes()));
             }
         }
         // Основа прошлого запуска. Самопроверка ставит свою.
@@ -1107,7 +1111,7 @@ impl LiteApp {
         let places: Vec<&scene::kml::Place> = paths.iter().filter_map(|p| self.marks.place(p)).collect();
         groups.extend(crate::identify::places_group(self.lang, &places));
         if let Some((px, py, ppp)) = pixel {
-            groups.extend(self.dots.identify(self.lang, &self.nav, px, py, crate::card::PICK_PIXELS * ppp * 2.0, self.timebar.window()));
+            groups.extend(self.dots.identify(self.lang, &self.nav, (lat, lon), (px, py), crate::card::PICK_PIXELS * ppp * 2.0, self.timebar.window()));
         }
         groups.push(crate::identify::place_group(self.lang, height.filter(|_| self.settings.relief), address));
         if let Some((ask, answer)) = &self.map_ask
@@ -1126,7 +1130,7 @@ impl LiteApp {
         let pose = &self.nav.pose;
         let width = 2.0 * pose.distance * (self.nav.camera.fov_y.to_radians() / 2.0).tan() * self.nav.camera.aspect();
         let zoom = data::geocode::link_zoom(lat, width);
-        self.map_ask = key.and_then(|k| crate::mapvalue::Ask::start(k, lat, lon, zoom, (self.loaders.request)())).map(|a| (a, crate::mapvalue::Answer::Loading));
+        self.map_ask = key.and_then(|k| crate::mapvalue::Ask::start(k, lat, lon, zoom, (self.loaders.request)(ANSWER_BYTES))).map(|a| (a, crate::mapvalue::Answer::Loading));
     }
 
     /// Уровень воды по умолчанию: высота рельефа у края растра name -
@@ -1514,7 +1518,7 @@ impl LiteApp {
             Extra::Map(_) => {}
             Extra::Dots(layer) => {
                 if on {
-                    self.dots.enable(layer, (self.loaders.request)());
+                    self.dots.enable(layer, (self.loaders.request)(layer.bytes()));
                 } else {
                     self.dots.disable(layer);
                 }
@@ -1558,7 +1562,7 @@ impl LiteApp {
             if let crate::maps::Kind::Theme(theme) = kind
                 && !self.theme_days.contains_key(id)
             {
-                let request = (self.loaders.request)();
+                let request = (self.loaders.request)(ANSWER_BYTES);
                 request.start(&theme.domains_url());
                 self.theme_days.insert(id, ThemeDay::Asking(request));
             }
@@ -1588,7 +1592,7 @@ impl LiteApp {
                     if !self.theme_scales.contains_key(id) {
                         let state = match theme.colormap_url() {
                             Some(url) => {
-                                let request = (self.loaders.request)();
+                                let request = (self.loaders.request)(ANSWER_BYTES);
                                 request.start(&url);
                                 ThemeScale::Asking(request)
                             }
@@ -2923,6 +2927,13 @@ impl LiteApp {
         // Сводки слоёв точек и точки в видеокарту.
         if let Some(message) = self.dots.poll(self.lang) {
             self.open_message = Some(message);
+        }
+        // Линии слоёв линий - в картинки наложения.
+        if self.dots.dirty
+            && self.vector.set_line_sets(self.dots.line_sets())
+            && let Some(globe) = &mut self.globe
+        {
+            globe.clear_overlays();
         }
         let window = self.timebar.window();
         if (self.dots.dirty || window != self.dots_window)

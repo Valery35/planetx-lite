@@ -150,7 +150,7 @@ fn main() -> ExitCode {
                     let repaint = repaint.clone();
                     Box::new(move |source| Box::new(Loader::new(source, default_cache_dir(), repaint.clone())))
                 },
-                request: Box::new(move || Box::new(Requests::new(repaint.clone()))),
+                request: Box::new(move |limit| Box::new(Requests::with_limit(repaint.clone(), limit))),
             };
             let report: ui::Report = Box::new(move |text, ok| {
                 println!("{text}");

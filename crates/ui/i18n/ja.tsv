@@ -658,3 +658,45 @@ Macrostrat page	Macrostrat のページ
 Age	年代
 Age, Ma	年代、Ma
 Map link	地図へのリンク
+Active faults	活断層
+Plate boundaries	プレート境界
+Submarine cables	海底ケーブル
+Plate boundary	プレート境界
+Kind of slip	変位の種類
+Database entry	データベースの記録
+Slip rate	変位速度
+{value} mm/yr	{value} mm/年
+Dip	傾斜
+Catalogue	カタログ
+Plates	プレート
+Speed	速度
+Kind	種類
+Owner	所有者
+Voltage	電圧
+{value} kV	{value} kV
+OSM object	OSM オブジェクト
+Power cable	電力ケーブル
+Communication line	通信回線
+Energy	エネルギー
+Power plants of the world, power lines, substations, pipelines and submarine cables.	世界の発電所、送電線、変電所、パイプライン、海底ケーブル。
+GEM active faults	GEM 活断層
+A click on a line - details	線をクリック - 詳細
+Normal faults	正断層
+Reverse faults, thrusts, subduction	逆断層、衝上断層、沈み込み
+Strike-slip faults	横ずれ断層
+Spreading ridges	拡大軸
+Folds	褶曲
+Kind of slip not given	変位の種類は記載なし
+Plates moving apart	プレートの発散
+Plates sliding	プレートのずれ
+Plates converging	プレートの収束
+Oceanic spreading ridge	海洋拡大軸
+Continental rift	大陸リフト
+Oceanic transform fault	海洋トランスフォーム断層
+Continental transform fault	大陸トランスフォーム断層
+Subduction zone	沈み込み帯
+Oceanic convergent boundary	海洋収束境界
+Continental collision	大陸衝突
+About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	地域カタログから編集された GEM Global Active Faults データベースによる、世界の約 1万3700 の活断層。色は変位の種類を示します。正断層、逆断層または衝上断層、横ずれ断層、拡大軸、褶曲です。線をクリックすると、名前、変位の種類、mm/年単位の速度、傾斜、出典のカタログが表示されます。最初にオンにすると約 11 MB をダウンロードします。
+Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. The Features window shows the boundary type and the plate speed.	PB2002 モデルによるリソスフェアのプレート境界。赤 - 海嶺とリフトでのプレートの発散、緑 - トランスフォーム断層に沿ったずれ、青 - 沈み込み帯と衝突帯での収束。境界の種類とプレートの速度は「オブジェクト」ウィンドウに表示されます。
+Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	OpenStreetMap の海底通信回線(ターコイズ)と電力ケーブル(紫)で、どの高度からも見えます。OSM には世界のケーブルの一部が登録されており、大西洋とヨーロッパ近海に最も多くあります。線をクリックすると、名前、所有者、OpenStreetMap オブジェクトへのリンクが表示されます。

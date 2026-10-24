@@ -658,3 +658,45 @@ Macrostrat page	Macrostrat 페이지
 Age	연령
 Age, Ma	연령, Ma
 Map link	지도 링크
+Active faults	활성 단층
+Plate boundaries	판 경계
+Submarine cables	해저 케이블
+Plate boundary	판 경계
+Kind of slip	변위 유형
+Database entry	데이터베이스 항목
+Slip rate	변위 속도
+{value} mm/yr	{value} mm/년
+Dip	경사
+Catalogue	목록
+Plates	판
+Speed	속도
+Kind	유형
+Owner	소유자
+Voltage	전압
+{value} kV	{value} kV
+OSM object	OSM 객체
+Power cable	전력 케이블
+Communication line	통신 회선
+Energy	에너지
+Power plants of the world, power lines, substations, pipelines and submarine cables.	세계의 발전소, 송전선, 변전소, 파이프라인 및 해저 케이블.
+GEM active faults	GEM 활성 단층
+A click on a line - details	선 클릭 - 상세 정보
+Normal faults	정단층
+Reverse faults, thrusts, subduction	역단층, 충상단층, 섭입
+Strike-slip faults	주향이동단층
+Spreading ridges	확장 해령
+Folds	습곡
+Kind of slip not given	변위 유형 미기재
+Plates moving apart	판의 발산
+Plates sliding	판의 미끄러짐
+Plates converging	판의 수렴
+Oceanic spreading ridge	해양 확장 해령
+Continental rift	대륙 열곡
+Oceanic transform fault	해양 변환 단층
+Continental transform fault	대륙 변환 단층
+Subduction zone	섭입대
+Oceanic convergent boundary	해양 수렴 경계
+Continental collision	대륙 충돌
+About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	지역 목록을 모아 편집한 GEM Global Active Faults 데이터베이스에 따른 세계의 활성 단층 약 1만 3700개. 색은 변위 유형을 나타냅니다. 정단층, 역단층 또는 충상단층, 주향이동단층, 확장 해령, 습곡입니다. 선을 클릭하면 이름, 변위 유형, mm/년 단위의 속도, 경사, 원본 목록이 표시됩니다. 처음 켤 때 약 11 MB를 내려받습니다.
+Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. The Features window shows the boundary type and the plate speed.	PB2002 모델에 따른 암석권 판의 경계. 빨간색 - 해령과 열곡에서 판의 발산, 초록색 - 변환 단층을 따른 미끄러짐, 파란색 - 섭입대와 충돌대에서의 수렴. 경계 유형과 판 속도는 ‘객체’ 창에 표시됩니다.
+Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	OpenStreetMap의 해저 통신 회선(청록색)과 전력 케이블(보라색)로, 어느 고도에서나 보입니다. OSM에는 세계 케이블의 일부가 있으며 대서양과 유럽 근처에 가장 많습니다. 선을 클릭하면 이름, 소유자, OpenStreetMap 객체 링크가 표시됩니다.

@@ -136,6 +136,9 @@ fn key_words(key: &str) -> &'static [&'static str] {
         "quakes" => &["землетрясения", "сейсмика", "очаги", "earthquakes"],
         "volcanoes" => &["вулканы", "вулкан", "извержения", "gvp", "volcanoes", "volcano"],
         "fires" => &["пожары", "огонь", "fires", "firms"],
+        "plates" => &["тектоника", "плиты", "plates", "tectonics"],
+        "faults" => &["разломы", "активные разломы", "сбросы", "надвиги", "сдвиги", "gem", "faults", "active faults"],
+        "cables" => &["подводные кабели", "кабели", "submarine cables"],
         _ => &[],
     }
 }

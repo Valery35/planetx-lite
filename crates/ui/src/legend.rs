@@ -35,7 +35,7 @@ enum Scale {
     /// в логарифме значения.
     Bar { title: &'static str, stops: &'static [rastermaps::Stop], ticks: &'static [f64], log: bool },
     /// Строки с кружком цвета: заголовок, строки, подвал.
-    Rows { title: &'static str, rows: Vec<([u8; 3], &'static str)>, footer: &'static str },
+    Rows { title: &'static str, rows: Vec<([u8; 3], &'static str)>, footer: &'static str, lines: bool },
     /// Тема GIBS: название с датой и шкала цветовой карты, если пришла.
     Theme { title: String, map: Option<data::gibs::Colormap> },
     /// Горизонтали: сечение в середине вида и цвет линии.
@@ -57,6 +57,7 @@ fn scale_of(key: &str, kind: Kind) -> Option<Scale> {
                 title: crate::mapvalue::title(key),
                 rows: classes.iter().map(|(code, c)| (*c, crate::mapvalue::class_name(code))).collect(),
                 footer: "Click - the class at the point",
+                lines: false,
             }),
             _ => None,
         },
@@ -76,9 +77,10 @@ fn scale_of(key: &str, kind: Kind) -> Option<Scale> {
     }
 }
 
-/// Шкала слоя точек, `QuakeLegend`, `VolcanoLegend` и `FireLegend` модуля.
-fn dots_scale(layer: Layer) -> Scale {
-    match layer {
+/// Шкала слоя точек или линий, `QuakeLegend`, `VolcanoLegend`,
+/// `FireLegend` и `FaultLegend` модуля. У границ плит и кабелей шкалы нет.
+fn dots_scale(layer: Layer) -> Option<Scale> {
+    Some(match layer {
         Layer::Quakes => Scale::Bar { title: "Focus depth, km", stops: &data::quakes::DEPTH_STOPS, ticks: &data::quakes::DEPTH_TICKS, log: false },
         Layer::Fires => Scale::Bar { title: "Fire power, MW", stops: &data::fires::FRP_STOPS, ticks: &data::fires::FRP_TICKS, log: true },
         Layer::Volcanoes => {
@@ -87,9 +89,20 @@ fn dots_scale(layer: Layer) -> Scale {
                 title: "Holocene volcanoes, GVP",
                 rows: data::volcanoes::PERIODS.iter().zip(names).map(|(p, n)| (p.2, n)).collect(),
                 footer: "Dot size - volcano height",
+                lines: false,
             }
         }
-    }
+        Layer::Faults => Scale::Rows {
+            title: "GEM active faults",
+            rows: data::faults::KINDS.iter().map(|k| {
+                let c = data::faults::color(k);
+                ([c[0], c[1], c[2]], crate::dots::fault_name(k))
+            }).collect(),
+            footer: "A click on a line - details",
+            lines: true,
+        },
+        Layer::Plates | Layer::Cables => return None,
+    })
 }
 
 impl Scale {
@@ -184,7 +197,7 @@ pub fn show(
     if let Some((step, color)) = contours {
         scales.push((Some(Closed::Map("contours")), Scale::Contours { step, color }));
     }
-    scales.extend(dots.iter().map(|l| ((*l != Layer::Quakes).then_some(Closed::Dots(*l)), dots_scale(*l))));
+    scales.extend(dots.iter().filter_map(|l| Some(((*l != Layer::Quakes).then_some(Closed::Dots(*l)), dots_scale(*l)?))));
     if scales.is_empty() {
         return None;
     }
@@ -200,7 +213,7 @@ pub fn show(
                     width = width.max(m.names.len().div_ceil(ROWS) as f32 * COLUMN + 2.0 * PAD);
                 }
             }
-            Scale::Rows { title, rows, footer } => {
+            Scale::Rows { title, rows, footer, .. } => {
                 let texts = [tr(lang, title), tr(lang, footer)].into_iter().chain(rows.iter().map(|r| tr(lang, r.1)));
                 let longest = texts.filter(|t| !t.is_empty()).map(measure).fold(0.0f32, f32::max);
                 width = width.max(longest + PAD + 26.0 + PAD + 16.0);
@@ -317,13 +330,19 @@ pub fn show(
                     painter.line_segment([egui::pos2(x, mid), egui::pos2(x + 24.0, mid)], egui::Stroke::new(2.0, color(*c)));
                     text(egui::pos2(x + 30.0, y), &contours_text(lang, *step), p.plate_text);
                 }
-                Scale::Rows { title, rows, footer } => {
+                Scale::Rows { title, rows, footer, lines } => {
                     text(egui::pos2(x, y), tr(lang, title), p.plate_text);
                     y += LINE;
                     for (c, name) in rows {
-                        // Кружок с тёмным ободком, `darker(250)` модуля.
-                        let rim = egui::Color32::from_rgb(c[0] / 5 * 2, c[1] / 5 * 2, c[2] / 5 * 2);
-                        painter.circle(egui::pos2(x + 10.0, y + LINE / 2.0), 4.0, color(*c), egui::Stroke::new(1.0, rim));
+                        let mid = y + LINE / 2.0;
+                        if *lines {
+                            // Отрезок линии толщиной 2, «line» строк модуля.
+                            painter.line_segment([egui::pos2(x + 2.0, mid), egui::pos2(x + 18.0, mid)], egui::Stroke::new(2.0, color(*c)));
+                        } else {
+                            // Кружок с тёмным ободком, `darker(250)` модуля.
+                            let rim = egui::Color32::from_rgb(c[0] / 5 * 2, c[1] / 5 * 2, c[2] / 5 * 2);
+                            painter.circle(egui::pos2(x + 10.0, mid), 4.0, color(*c), egui::Stroke::new(1.0, rim));
+                        }
                         text(egui::pos2(x + 26.0, y), tr(lang, name), p.plate_text);
                         y += LINE;
                     }

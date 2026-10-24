@@ -29,7 +29,8 @@ pub enum Extra {
     Grid,
     /// Карта картинками, номер строки [`crate::maps::ALL`].
     Map(usize),
-    /// Слой точек: землетрясения, вулканы, пожары.
+    /// Слой точек или линий: землетрясения, вулканы, пожары, разломы,
+    /// границы плит, кабели.
     Dots(crate::dots::Layer),
 }
 
@@ -96,6 +97,7 @@ impl Extra {
                 _ => Category::Depths,
             },
             Extra::Dots(crate::dots::Layer::Fires) => Category::Fire,
+            Extra::Dots(crate::dots::Layer::Cables) => Category::Infra,
             Extra::Dots(_) => Category::Depths,
         }
     }
@@ -422,6 +424,7 @@ enum Category {
     Soil,
     Terrain,
     Tiles,
+    Infra,
 }
 
 /// Окно каталога «Добавить данные»: открыто ли, категория, поиск,
@@ -507,7 +510,8 @@ fn items() -> Vec<Item> {
     // Пожары - карта витрины группы «Планета огня», перед темами огня.
     out.push(Item::Extra(Extra::Dots(crate::dots::Layer::Fires)));
     out.extend((0..crate::maps::ALL.len()).map(|n| Item::Extra(Extra::Map(n))));
-    out.extend([crate::dots::Layer::Quakes, crate::dots::Layer::Volcanoes].map(|l| Item::Extra(Extra::Dots(l))));
+    use crate::dots::Layer;
+    out.extend([Layer::Quakes, Layer::Plates, Layer::Faults, Layer::Volcanoes, Layer::Cables].map(|l| Item::Extra(Extra::Dots(l))));
     out
 }
 
@@ -541,6 +545,7 @@ impl Catalog {
             (Category::Life, tr(lang, "Land and Life"), tr(lang, "Vegetation, dust, night lights and land cover types from NASA data.")),
             (Category::Sky, tr(lang, "Sky and light"), tr(lang, "The sun and the night side, the atmosphere.")),
             (Category::Depths, tr(lang, "Inside the Earth"), tr(lang, "The geological and lithological maps, earthquakes, plate boundaries and faults, mineral deposits and mining areas, the Earth cutaway and palaeogeography.")),
+            (Category::Infra, tr(lang, "Energy"), tr(lang, "Power plants of the world, power lines, substations, pipelines and submarine cables.")),
             (Category::Soil, tr(lang, "Soils"), tr(lang, "Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.")),
             (Category::Terrain, tr(lang, "Terrain analysis"), tr(lang, "Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.")),
             (Category::Tiles, tr(lang, "Map overlays"), tr(lang, "Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.")),

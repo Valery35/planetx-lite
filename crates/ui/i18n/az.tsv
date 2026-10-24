@@ -658,3 +658,45 @@ Macrostrat page	Macrostrat səhifəsi
 Age	Yaş
 Age, Ma	Yaş, Ma
 Map link	Xəritəyə keçid
+Active faults	Aktiv qırılmalar
+Plate boundaries	Lövhə sərhədləri
+Submarine cables	Sualtı kabellər
+Plate boundary	Lövhə sərhədi
+Kind of slip	Yerdəyişmənin növü
+Database entry	Bazada qeyd
+Slip rate	Yerdəyişmə sürəti
+{value} mm/yr	{value} mm/il
+Dip	Düşmə bucağı
+Catalogue	Kataloq
+Plates	Lövhələr
+Speed	Sürət
+Kind	Növ
+Owner	Sahibi
+Voltage	Gərginlik
+{value} kV	{value} kV
+OSM object	OSM obyekti
+Power cable	Güc kabeli
+Communication line	Rabitə xətti
+Energy	Energetika
+Power plants of the world, power lines, substations, pipelines and submarine cables.	Dünyanın elektrik stansiyaları, elektrik xətləri, yarımstansiyalar, boru kəmərləri və sualtı kabellər.
+GEM active faults	GEM aktiv qırılmaları
+A click on a line - details	Xəttə klik - məlumat
+Normal faults	Normal qırılmalar
+Reverse faults, thrusts, subduction	Əks qırılmalar, şaryajlar, subduksiya
+Strike-slip faults	Üfüqi sürüşmə qırılmaları
+Spreading ridges	Orta silsilələr
+Folds	Qırışıqlar
+Kind of slip not given	Yerdəyişmənin növü göstərilməyib
+Plates moving apart	Lövhələrin aralanması
+Plates sliding	Lövhələrin sürüşməsi
+Plates converging	Lövhələrin yaxınlaşması
+Oceanic spreading ridge	Okean yayılma silsiləsi
+Continental rift	Kontinental rift
+Oceanic transform fault	Okean transform qırılması
+Continental transform fault	Kontinental transform qırılması
+Subduction zone	Subduksiya zonası
+Oceanic convergent boundary	Okean yaxınlaşma sərhədi
+Continental collision	Kontinental toqquşma
+About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	Regional kataloqlardan tərtib edilmiş GEM Global Active Faults bazasına görə dünyanın təxminən 13.7 min aktiv qırılması. Rəng yerdəyişmənin növünü göstərir. Bu normal qırılma, əks qırılma və ya şaryaj, üfüqi sürüşmə qırılması, orta silsilə və qırışıqdır. Xəttə klik adı, yerdəyişmənin növünü, mm/il ilə sürəti, düşmə bucağını və mənbə kataloqu göstərir. İlk yandırma təxminən 11 MB yükləyir.
+Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. The Features window shows the boundary type and the plate speed.	PB2002 modelinə görə litosfer lövhələrinin sərhədləri. Qırmızı - silsilələrdə və riftlərdə lövhələrin aralanması, yaşıl - transform qırılmalar boyunca sürüşmə, mavi - subduksiya və toqquşma zonalarında yaxınlaşma. Sərhədin tipini və lövhələrin sürətini “Obyektlər” pəncərəsi göstərir.
+Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	OpenStreetMap-dən sualtı rabitə xətləri (firuzəyi) və güc kabelləri (bənövşəyi), istənilən hündürlükdən görünür. OSM-də dünya kabellərinin bir hissəsi var, ən çoxu Atlantikdə və Avropa yaxınlığındadır. Xəttə klik adı, sahibini və OpenStreetMap obyektinə keçidi göstərir.

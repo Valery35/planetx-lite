@@ -19,6 +19,8 @@
 //! - [`quakes`] - землетрясения USGS, перенос `core/quakes.py`;
 //! - [`bathymetry`] - своя батиметрия, перенос `core/bathymetry.py`;
 //! - [`contours`] - горизонтали рельефа и изолинии, перенос `core/contours.py`;
+//! - [`linesets`], [`faults`], [`plates`] - разломы, границы плит
+//!   и кабели линиями наложения;
 //! - [`csv`] - таблица CSV;
 //! - [`volcanoes`] и [`fires`] - вулканы GVP и пожары FIRMS;
 //! - [`slope`] - уклон и экспозиция, перенос `core/slope.py`;
@@ -30,15 +32,18 @@ pub mod cloud;
 pub mod contours;
 pub mod csv;
 pub mod dem;
+pub mod faults;
 pub mod fires;
 pub mod geocode;
 pub mod geology;
 pub mod gibs;
 pub mod grid;
 pub mod layers;
+pub mod linesets;
 pub mod lines;
 pub mod mvt;
 pub mod places;
+pub mod plates;
 pub mod quakes;
 pub mod rastermaps;
 pub mod slope;

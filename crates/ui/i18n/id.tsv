@@ -658,3 +658,45 @@ Macrostrat page	Halaman Macrostrat
 Age	Umur
 Age, Ma	Umur, Ma
 Map link	Tautan peta
+Active faults	Sesar aktif
+Plate boundaries	Batas lempeng
+Submarine cables	Kabel bawah laut
+Plate boundary	Batas lempeng
+Kind of slip	Jenis pergeseran
+Database entry	Entri basis data
+Slip rate	Laju pergeseran
+{value} mm/yr	{value} mm/tahun
+Dip	Kemiringan bidang sesar
+Catalogue	Katalog
+Plates	Lempeng
+Speed	Kecepatan
+Kind	Jenis
+Owner	Pemilik
+Voltage	Tegangan
+{value} kV	{value} kV
+OSM object	Objek OSM
+Power cable	Kabel listrik
+Communication line	Jalur komunikasi
+Energy	Energi
+Power plants of the world, power lines, substations, pipelines and submarine cables.	Pembangkit listrik dunia, saluran listrik, gardu induk, pipa dan kabel bawah laut.
+GEM active faults	Sesar aktif GEM
+A click on a line - details	Klik pada garis - keterangan
+Normal faults	Sesar normal
+Reverse faults, thrusts, subduction	Sesar naik, sesar sungkup, subduksi
+Strike-slip faults	Sesar geser
+Spreading ridges	Punggungan pemekaran
+Folds	Lipatan
+Kind of slip not given	Jenis pergeseran tidak disebutkan
+Plates moving apart	Lempeng saling menjauh
+Plates sliding	Lempeng saling bergeser
+Plates converging	Lempeng saling mendekat
+Oceanic spreading ridge	Punggungan pemekaran samudra
+Continental rift	Rift benua
+Oceanic transform fault	Sesar transform samudra
+Continental transform fault	Sesar transform benua
+Subduction zone	Zona subduksi
+Oceanic convergent boundary	Batas konvergen samudra
+Continental collision	Tumbukan benua
+About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	Sekitar 13.7 ribu sesar aktif dunia dari basis data GEM Global Active Faults yang disusun dari katalog regional. Warna menunjukkan jenis pergeseran. Jenisnya sesar normal, sesar naik atau sesar sungkup, sesar geser, punggungan pemekaran dan lipatan. Klik pada garis menampilkan nama, jenis pergeseran, laju dalam mm/tahun, kemiringan bidang sesar dan katalog sumber. Penyalaan pertama mengunduh sekitar 11 MB.
+Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. The Features window shows the boundary type and the plate speed.	Batas lempeng litosfer menurut model PB2002. Merah - lempeng saling menjauh di punggungan dan rift, hijau - lempeng bergeser di sepanjang sesar transform, biru - lempeng saling mendekat di zona subduksi dan tumbukan. Jenis batas dan kecepatan lempeng ditampilkan di jendela "Objek".
+Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	Jalur komunikasi bawah laut (pirus) dan kabel listrik (ungu) dari OpenStreetMap, terlihat dari ketinggian berapa pun. OSM memuat sebagian kabel dunia, paling banyak di Atlantik dan dekat Eropa. Klik pada garis menampilkan nama, pemilik dan tautan ke objek OpenStreetMap.

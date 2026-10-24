@@ -658,3 +658,45 @@ Macrostrat page	Macrostrat 页面
 Age	年龄
 Age, Ma	年龄，Ma
 Map link	地图链接
+Active faults	活动断层
+Plate boundaries	板块边界
+Submarine cables	海底电缆
+Plate boundary	板块边界
+Kind of slip	位移类型
+Database entry	数据库记录
+Slip rate	位移速率
+{value} mm/yr	{value} 毫米/年
+Dip	倾角
+Catalogue	目录
+Plates	板块
+Speed	速度
+Kind	类型
+Owner	所有者
+Voltage	电压
+{value} kV	{value} kV
+OSM object	OSM 对象
+Power cable	电力电缆
+Communication line	通信线路
+Energy	能源
+Power plants of the world, power lines, substations, pipelines and submarine cables.	世界发电厂、输电线路、变电站、管道和海底电缆。
+GEM active faults	GEM 活动断层
+A click on a line - details	单击线条 - 详细信息
+Normal faults	正断层
+Reverse faults, thrusts, subduction	逆断层、逆冲断层、俯冲
+Strike-slip faults	走滑断层
+Spreading ridges	扩张脊
+Folds	褶皱
+Kind of slip not given	未注明位移类型
+Plates moving apart	板块分离
+Plates sliding	板块错动
+Plates converging	板块汇聚
+Oceanic spreading ridge	大洋扩张脊
+Continental rift	大陆裂谷
+Oceanic transform fault	大洋转换断层
+Continental transform fault	大陆转换断层
+Subduction zone	俯冲带
+Oceanic convergent boundary	大洋汇聚边界
+Continental collision	大陆碰撞
+About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	根据由区域目录汇编的 GEM Global Active Faults 数据库，世界约 1.37 万条活动断层。颜色表示位移类型。类型为正断层、逆断层或逆冲断层、走滑断层、扩张脊和褶皱。单击线条可显示名称、位移类型、以毫米/年为单位的速率、倾角和来源目录。首次打开下载约 11 MB。
+Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. The Features window shows the boundary type and the plate speed.	根据 PB2002 模型的岩石圈板块边界。红色 - 洋脊和裂谷处的板块分离，绿色 - 沿转换断层的错动，蓝色 - 俯冲带和碰撞带的汇聚。边界类型和板块速度显示在“对象”窗口中。
+Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	来自 OpenStreetMap 的海底通信线路（青绿色）和电力电缆（紫色），在任何高度均可见。OSM 收录了世界部分电缆，大多位于大西洋和欧洲附近。单击线条可显示名称、所有者和 OpenStreetMap 对象的链接。

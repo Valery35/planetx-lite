@@ -658,3 +658,45 @@ Macrostrat page	Macrostrat-pagina
 Age	Ouderdom
 Age, Ma	Ouderdom, Ma
 Map link	Link naar de kaart
+Active faults	Actieve breuken
+Plate boundaries	Plaatgrenzen
+Submarine cables	Onderzeese kabels
+Plate boundary	Plaatgrens
+Kind of slip	Soort verschuiving
+Database entry	Databankregel
+Slip rate	Verschuivingssnelheid
+{value} mm/yr	{value} mm/jaar
+Dip	Helling van het breukvlak
+Catalogue	Catalogus
+Plates	Platen
+Speed	Snelheid
+Kind	Soort
+Owner	Eigenaar
+Voltage	Spanning
+{value} kV	{value} kV
+OSM object	OSM-object
+Power cable	Stroomkabel
+Communication line	Communicatiekabel
+Energy	Energie
+Power plants of the world, power lines, substations, pipelines and submarine cables.	Energiecentrales van de wereld, hoogspanningslijnen, onderstations, pijpleidingen en onderzeese kabels.
+GEM active faults	Actieve breuken GEM
+A click on a line - details	Een klik op een lijn - gegevens
+Normal faults	Afschuivingen
+Reverse faults, thrusts, subduction	Opschuivingen, overschuivingen, subductie
+Strike-slip faults	Horizontale verschuivingen
+Spreading ridges	Spreidingsruggen
+Folds	Plooien
+Kind of slip not given	Soort verschuiving niet opgegeven
+Plates moving apart	Uiteenwijken van platen
+Plates sliding	Langs elkaar schuiven van platen
+Plates converging	Convergentie van platen
+Oceanic spreading ridge	Oceanische spreidingsrug
+Continental rift	Continentale slenk
+Oceanic transform fault	Oceanische transformbreuk
+Continental transform fault	Continentale transformbreuk
+Subduction zone	Subductiezone
+Oceanic convergent boundary	Oceanische convergente grens
+Continental collision	Continentale botsing
+About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	Ongeveer 13.7 duizend actieve breuken van de wereld volgens de databank GEM Global Active Faults, samengesteld uit regionale catalogi. De kleur toont de soort verschuiving. Dat is een afschuiving, een opschuiving of overschuiving, een horizontale verschuiving, een spreidingsrug en een plooi. Een klik op een lijn toont de naam, de soort verschuiving, de snelheid in mm/jaar, de helling van het breukvlak en de broncatalogus. Het eerste aanzetten downloadt ongeveer 11 MB.
+Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. The Features window shows the boundary type and the plate speed.	Grenzen van de lithosfeerplaten volgens het model PB2002. Rood - uiteenwijken van platen bij ruggen en slenken, groen - langs elkaar schuiven bij transformbreuken, blauw - convergentie in subductie- en botsingszones. Het venster ‘Objecten’ toont het type grens en de snelheid van de platen.
+Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	Onderzeese communicatiekabels (turquoise) en stroomkabels (paars) uit OpenStreetMap, zichtbaar vanaf elke hoogte. OSM bevat een deel van de kabels van de wereld, de meeste in de Atlantische Oceaan en bij Europa. Een klik op een lijn toont de naam, de eigenaar en een link naar het OpenStreetMap-object.

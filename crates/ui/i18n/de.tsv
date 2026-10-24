@@ -658,3 +658,45 @@ Macrostrat page	Macrostrat-Seite
 Age	Alter
 Age, Ma	Alter, Ma
 Map link	Link zur Karte
+Active faults	Aktive Störungen
+Plate boundaries	Plattengrenzen
+Submarine cables	Seekabel
+Plate boundary	Plattengrenze
+Kind of slip	Art des Versatzes
+Database entry	Datenbankeintrag
+Slip rate	Versatzrate
+{value} mm/yr	{value} mm/Jahr
+Dip	Einfallen
+Catalogue	Katalog
+Plates	Platten
+Speed	Geschwindigkeit
+Kind	Art
+Owner	Eigentümer
+Voltage	Spannung
+{value} kV	{value} kV
+OSM object	OSM-Objekt
+Power cable	Stromkabel
+Communication line	Kommunikationskabel
+Energy	Energie
+Power plants of the world, power lines, substations, pipelines and submarine cables.	Kraftwerke der Welt, Stromleitungen, Umspannwerke, Rohrleitungen und Seekabel.
+GEM active faults	Aktive Störungen GEM
+A click on a line - details	Ein Klick auf eine Linie - Angaben
+Normal faults	Abschiebungen
+Reverse faults, thrusts, subduction	Aufschiebungen, Überschiebungen, Subduktion
+Strike-slip faults	Blattverschiebungen
+Spreading ridges	Spreizungsrücken
+Folds	Falten
+Kind of slip not given	Art des Versatzes nicht angegeben
+Plates moving apart	Plattendivergenz
+Plates sliding	Plattenverschiebung
+Plates converging	Plattenkonvergenz
+Oceanic spreading ridge	Ozeanischer Spreizungsrücken
+Continental rift	Kontinentaler Grabenbruch
+Oceanic transform fault	Ozeanische Transformstörung
+Continental transform fault	Kontinentale Transformstörung
+Subduction zone	Subduktionszone
+Oceanic convergent boundary	Ozeanische konvergente Grenze
+Continental collision	Kontinentale Kollision
+About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	Etwa 13.7 Tausend aktive Störungen der Welt nach der Datenbank GEM Global Active Faults, zusammengestellt aus regionalen Katalogen. Die Farbe zeigt die Art des Versatzes. Das ist eine Abschiebung, eine Aufschiebung oder Überschiebung, eine Blattverschiebung, ein Spreizungsrücken und eine Falte. Ein Klick auf eine Linie zeigt den Namen, die Art des Versatzes, die Versatzrate in mm/Jahr, das Einfallen und den Quellkatalog. Das erste Einschalten lädt etwa 11 MB herunter.
+Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. The Features window shows the boundary type and the plate speed.	Grenzen der Lithosphärenplatten nach dem Modell PB2002. Rot - Plattendivergenz an Rücken und Gräben, grün - Plattenverschiebung an Transformstörungen, blau - Plattenkonvergenz in Subduktions- und Kollisionszonen. Den Grenztyp und die Plattengeschwindigkeit zeigt das Fenster „Objekte“.
+Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	Unterseeische Kommunikationskabel (türkis) und Stromkabel (violett) aus OpenStreetMap, sichtbar aus jeder Höhe. In OSM ist ein Teil der Kabel der Welt erfasst, die meisten im Atlantik und vor Europa. Ein Klick auf eine Linie zeigt den Namen, den Eigentümer und einen Link zum OpenStreetMap-Objekt.

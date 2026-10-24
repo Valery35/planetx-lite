@@ -20,6 +20,7 @@ use std::sync::Arc;
 
 use data::lines::{self, Group};
 use data::contours;
+use data::linesets::{self, Line};
 use data::rastermaps;
 use data::places::Kind;
 use crate::maps::Kind as MapKind;
@@ -183,6 +184,8 @@ pub struct VectorBase {
     contour_levels: HashMap<TileKey, u32>,
     /// Цифры подписей горизонталей.
     glyphs: Option<Arc<contours::Glyphs>>,
+    /// Наборы линий слоёв каталога над картами, под линиями основы.
+    sets: Vec<Arc<Vec<Line>>>,
     #[cfg(not(target_arch = "wasm32"))]
     pool: Option<Pool>,
 }
@@ -217,6 +220,8 @@ struct Job {
     sources: Vec<(TileKey, Source)>,
     /// Карты снизу вверх: ключ, вид, тайл карты, глубина, клетка, тайл.
     maps: Vec<MapPart>,
+    /// Наборы линий слоёв каталога.
+    sets: Vec<Arc<Vec<Line>>>,
 }
 
 /// Картинка слоя RGBA 256 × 256 с премноженной альфой.
@@ -278,7 +283,9 @@ fn work(job: Job) -> Done {
         tiles.insert(k, tile);
     }
     let top = if job.groups.is_empty() { None } else { lines::draw(job.key, &|k| tiles.get(&k).cloned(), &job.groups) };
-    if job.maps.is_empty() {
+    let refs: Vec<&[Line]> = job.sets.iter().map(|s| s.as_slice()).collect();
+    let middle = if refs.is_empty() { None } else { linesets::draw(job.key, &refs) };
+    if job.maps.is_empty() && middle.is_none() {
         return Done { generation: job.generation, key: job.key, decoded, painted: Vec::new(), contours: Vec::new(), picture: top };
     }
     let mut painted = Vec::new();
@@ -303,7 +310,7 @@ fn work(job: Job) -> Done {
         }
     }
     let mut pieces: Vec<rastermaps::Piece<'_>> = layers.iter().map(|(r, depth, cell)| rastermaps::Piece { rgba: r, depth: *depth, cell: *cell }).collect();
-    if let Some(t) = &top {
+    for t in [&middle, &top].into_iter().flatten() {
         pieces.push(rastermaps::Piece { rgba: t, depth: 0, cell: (0, 0) });
     }
     let picture = rastermaps::compose(&pieces);
@@ -390,6 +397,7 @@ impl VectorBase {
             contour_pics: HashMap::new(),
             contour_levels: HashMap::new(),
             glyphs: None,
+            sets: Vec::new(),
             #[cfg(not(target_arch = "wasm32"))]
             pool: Pool::new(),
         };
@@ -449,6 +457,20 @@ impl VectorBase {
         true
     }
 
+    /// Новые наборы линий слоёв каталога. Картинки тайлов рисуются
+    /// заново. Возвращает, сменился ли набор.
+    pub fn set_line_sets(&mut self, sets: Vec<Arc<Vec<Line>>>) -> bool {
+        if sets.len() == self.sets.len() && sets.iter().zip(&self.sets).all(|(a, b)| Arc::ptr_eq(a, b)) {
+            return false;
+        }
+        self.sets = sets;
+        self.drawn.clear();
+        self.pending.clear();
+        self.ready.clear();
+        self.generation += 1;
+        true
+    }
+
     /// Цифры подписей горизонталей.
     pub fn set_glyphs(&mut self, glyphs: Arc<contours::Glyphs>) {
         self.glyphs = Some(glyphs);
@@ -489,7 +511,7 @@ impl VectorBase {
 
     /// Есть что рисовать: линии или карты.
     fn active(&self) -> bool {
-        !self.maps.is_empty() || !self.line_groups().is_empty()
+        !self.maps.is_empty() || !self.sets.is_empty() || !self.line_groups().is_empty()
     }
 
     /// Тайлы карт, нужные картинкам тайлов кадра draw: ключ карты, тайл,
@@ -647,6 +669,7 @@ impl VectorBase {
             }
             let job = Job {
                 maps,
+                sets: self.sets.clone(),
                 generation: self.generation,
                 key: *key,
                 groups: groups.clone(),

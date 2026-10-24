@@ -658,3 +658,45 @@ Macrostrat page	Macrostrat sayfası
 Age	Yaş
 Age, Ma	Yaş, Ma
 Map link	Harita bağlantısı
+Active faults	Aktif faylar
+Plate boundaries	Levha sınırları
+Submarine cables	Denizaltı kabloları
+Plate boundary	Levha sınırı
+Kind of slip	Atım türü
+Database entry	Veritabanı kaydı
+Slip rate	Atım hızı
+{value} mm/yr	{value} mm/yıl
+Dip	Eğim açısı
+Catalogue	Katalog
+Plates	Levhalar
+Speed	Hız
+Kind	Tür
+Owner	Sahip
+Voltage	Gerilim
+{value} kV	{value} kV
+OSM object	OSM nesnesi
+Power cable	Enerji kablosu
+Communication line	İletişim hattı
+Energy	Enerji
+Power plants of the world, power lines, substations, pipelines and submarine cables.	Dünyanın santralleri, enerji hatları, trafo merkezleri, boru hatları ve denizaltı kabloları.
+GEM active faults	GEM aktif fayları
+A click on a line - details	Çizgiye tıklama - ayrıntılar
+Normal faults	Normal faylar
+Reverse faults, thrusts, subduction	Ters faylar, bindirmeler, dalma-batma
+Strike-slip faults	Doğrultu atımlı faylar
+Spreading ridges	Okyanus ortası sırtları
+Folds	Kıvrımlar
+Kind of slip not given	Atım türü belirtilmemiş
+Plates moving apart	Levhaların ayrılması
+Plates sliding	Levhaların yanal kayması
+Plates converging	Levhaların yakınsaması
+Oceanic spreading ridge	Okyanusal yayılma sırtı
+Continental rift	Kıtasal rift
+Oceanic transform fault	Okyanusal transform fay
+Continental transform fault	Kıtasal transform fay
+Subduction zone	Dalma-batma zonu
+Oceanic convergent boundary	Okyanusal yakınsak sınır
+Continental collision	Kıtasal çarpışma
+About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	Bölgesel kataloglardan derlenmiş GEM Global Active Faults veritabanına göre dünyanın yaklaşık 13.7 bin aktif fayı. Renk atım türünü gösterir. Bunlar normal fay, ters fay veya bindirme, doğrultu atımlı fay, okyanus ortası sırtı ve kıvrımdır. Çizgiye tıklama adı, atım türünü, mm/yıl cinsinden hızı, eğim açısını ve kaynak kataloğu gösterir. İlk açılış yaklaşık 11 MB indirir.
+Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. The Features window shows the boundary type and the plate speed.	PB2002 modeline göre litosfer levhalarının sınırları. Kırmızı - sırtlarda ve riftlerde levhaların ayrılması, yeşil - transform faylar boyunca yanal kayma, mavi - dalma-batma ve çarpışma zonlarında yakınsama. Sınır türünü ve levha hızını "Nesneler" penceresi gösterir.
+Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	OpenStreetMap'ten denizaltı iletişim hatları (turkuaz) ve enerji kabloları (mor), her yükseklikten görünür. OSM dünyanın kablolarının bir kısmını içerir, en çoğu Atlantik'te ve Avrupa yakınındadır. Çizgiye tıklama adı, sahibini ve OpenStreetMap nesnesinin bağlantısını gösterir.

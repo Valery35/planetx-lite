@@ -658,3 +658,45 @@ Macrostrat page	Macrostrat-ის გვერდი
 Age	ასაკი
 Age, Ma	ასაკი, Ma
 Map link	რუკის ბმული
+Active faults	აქტიური რღვევები
+Plate boundaries	ფილების საზღვრები
+Submarine cables	წყალქვეშა კაბელები
+Plate boundary	ფილების საზღვარი
+Kind of slip	გადაადგილების სახე
+Database entry	ჩანაწერი ბაზაში
+Slip rate	გადაადგილების სიჩქარე
+{value} mm/yr	{value} მმ/წელი
+Dip	დაქანება
+Catalogue	კატალოგი
+Plates	ფილები
+Speed	სიჩქარე
+Kind	სახე
+Owner	მფლობელი
+Voltage	ძაბვა
+{value} kV	{value} კვ
+OSM object	OSM-ის ობიექტი
+Power cable	ძალოვანი კაბელი
+Communication line	კავშირგაბმულობის ხაზი
+Energy	ენერგეტიკა
+Power plants of the world, power lines, substations, pipelines and submarine cables.	მსოფლიოს ელექტროსადგურები, ელექტროგადამცემი ხაზები, ქვესადგურები, მილსადენები და წყალქვეშა კაბელები.
+GEM active faults	GEM-ის აქტიური რღვევები
+A click on a line - details	დაწკაპუნება ხაზზე - ცნობები
+Normal faults	ნორმალური რღვევები
+Reverse faults, thrusts, subduction	შებრუნებული რღვევები, შეცოცებები, სუბდუქცია
+Strike-slip faults	გადანაცვლებები
+Spreading ridges	შუა ქედები
+Folds	ნაოჭები
+Kind of slip not given	გადაადგილების სახე მითითებული არ არის
+Plates moving apart	ფილების დაშორება
+Plates sliding	ფილების გასრიალება
+Plates converging	ფილების დაახლოება
+Oceanic spreading ridge	ოკეანური სპრედინგის ქედი
+Continental rift	კონტინენტური რიფტი
+Oceanic transform fault	ოკეანური ტრანსფორმული რღვევა
+Continental transform fault	კონტინენტური ტრანსფორმული რღვევა
+Subduction zone	სუბდუქციის ზონა
+Oceanic convergent boundary	ოკეანური დაახლოების საზღვარი
+Continental collision	კონტინენტური კოლიზია
+About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB.	მსოფლიოს დაახლოებით 13.7 ათასი აქტიური რღვევა GEM Global Active Faults-ის ბაზის მიხედვით, შედგენილი რეგიონული კატალოგებიდან. ფერი აჩვენებს გადაადგილების სახეს. ეს არის ნორმალური რღვევა, შებრუნებული რღვევა ან შეცოცება, გადანაცვლება, შუა ქედი და ნაოჭი. ხაზზე დაწკაპუნება აჩვენებს სახელს, გადაადგილების სახეს, სიჩქარეს მმ/წელში, დაქანებას და წყარო კატალოგს. პირველი ჩართვა ჩამოტვირთავს დაახლოებით 11 მბ-ს.
+Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. The Features window shows the boundary type and the plate speed.	ლითოსფერული ფილების საზღვრები PB2002 მოდელის მიხედვით. წითელი - ფილების დაშორება ქედებსა და რიფტებზე, მწვანე - გასრიალება ტრანსფორმული რღვევების გასწვრივ, ლურჯი - დაახლოება სუბდუქციისა და კოლიზიის ზონებში. საზღვრის ტიპს და ფილების სიჩქარეს აჩვენებს ფანჯარა „ობიექტები“.
+Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object.	წყალქვეშა კავშირგაბმულობის ხაზები (ფირუზისფერი) და ძალოვანი კაბელები (იისფერი) OpenStreetMap-იდან, ჩანს ნებისმიერი სიმაღლიდან. OSM-ში შეტანილია მსოფლიოს კაბელების ნაწილი, ყველაზე მეტი ატლანტიკაში და ევროპასთან. ხაზზე დაწკაპუნება აჩვენებს სახელს, მფლობელს და ბმულს OpenStreetMap-ის ობიექტზე.
