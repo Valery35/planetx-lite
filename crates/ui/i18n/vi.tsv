@@ -629,3 +629,32 @@ Water level	Mực nước
 The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	Độ cao của mặt nước so với mực nước biển. Nước được vẽ ở độ cao này trên mọi điểm có đáy thấp hơn.
 Remove bathymetry	Gỡ độ sâu đáy
 The raster is no longer the globe terrain, no water is drawn over it.	Raster không còn là địa hình của quả địa cầu, không vẽ nước phía trên.
+Slope	Độ dốc
+Aspect	Hướng sườn
+Surface slope from the terrain heights, in classes from flat to steeper than 35°. The scale is in the bottom left corner of the view. Available on the Earth, Mars and the Moon.	Độ dốc bề mặt theo độ cao địa hình, chia lớp từ bằng phẳng đến dốc hơn 35°. Thang màu nằm ở góc dưới bên trái khung nhìn. Có cho Trái Đất, Sao Hỏa và Mặt Trăng.
+Which way a slope faces - the colour of the compass direction, flat ground is grey. It replaces the slope when switched on.	Hướng mà sườn dốc quay về - màu của phương hướng, nơi bằng phẳng có màu xám. Bật thay cho độ dốc.
+Terrain analysis	Phân tích địa hình
+Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.	Tô màu bề mặt theo độ dốc hoặc theo hướng sườn, bật một trong hai. Đường đồng mức địa hình nằm phía trên.
+Slope, °	Độ dốc, °
+Aspect, flat is grey	Hướng sườn, bằng phẳng màu xám
+N|compass	B
+NE|compass	ĐB
+E|compass	Đ
+SE|compass	ĐN
+S|compass	N
+SW|compass	TN
+W|compass	T
+NW|compass	TB
+Geological map	Bản đồ địa chất
+The Macrostrat geological map of the world compiled from maps of different scales. The colour shows the age of the rocks. In Russia and Europe the most detailed map is 1:5 000 000, in the USA the maps are much more detailed. A click in the Identify features mode shows the unit, the lithology, the age in Ma and the source map. The globe shows one such map - the geological map or a geophysical value map.	Bản đồ địa chất thế giới Macrostrat, tổng hợp từ các bản đồ có tỷ lệ khác nhau. Màu thể hiện tuổi của đá. Ở Nga và châu Âu bản đồ chi tiết nhất là 1:5 000 000, ở Hoa Kỳ các bản đồ chi tiết hơn nhiều. Nhấp chuột ở chế độ “Nhận dạng đối tượng” hiển thị đơn vị, thạch học, tuổi theo Ma và bản đồ nguồn. Quả địa cầu hiển thị một bản đồ loại này - địa chất hoặc bản đồ giá trị địa vật lý.
+Asking Macrostrat…	Đang truy vấn Macrostrat…
+Geology	Địa chất
+Macrostrat did not answer	Macrostrat không trả lời
+The map is empty at the point	Bản đồ trống tại điểm này
+Error	Lỗi
+Formation	Hệ tầng
+Note	Ghi chú
+Macrostrat page	Trang Macrostrat
+Age	Tuổi
+Age, Ma	Tuổi, Ma
+Map link	Liên kết bản đồ

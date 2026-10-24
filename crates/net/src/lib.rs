@@ -285,10 +285,40 @@ pub fn decode_tile(bytes: &[u8]) -> Result<Image, String> {
     let img = image::load_from_memory_with_format(bytes, format).map_err(|e| e.to_string())?;
     let rgba = img.to_rgba8();
     let (width, height) = rgba.dimensions();
+    // Тайлы 512 × 512, как у Macrostrat, - вдвое мельче, средним
+    // четырёх точек с премноженной альфой.
+    if (width, height) == (2 * TILE_SIZE, 2 * TILE_SIZE) {
+        return Ok(Image { width: TILE_SIZE, height: TILE_SIZE, rgba: halve(rgba.as_raw(), width as usize) });
+    }
     if (width, height) != (TILE_SIZE, TILE_SIZE) {
         return Err(format!("тайл {width} × {height}, ждали {TILE_SIZE} × {TILE_SIZE}"));
     }
     Ok(Image { width, height, rgba: rgba.into_raw() })
+}
+
+/// Картинка RGBA side × side вдвое мельче: среднее четырёх точек, цвет -
+/// по весу альфы, чтобы прозрачные точки не темнили край.
+fn halve(rgba: &[u8], side: usize) -> Vec<u8> {
+    let half = side / 2;
+    let mut out = Vec::with_capacity(half * half * 4);
+    for r in 0..half {
+        for c in 0..half {
+            let mut sum = [0u32; 4];
+            for (dr, dc) in [(0, 0), (0, 1), (1, 0), (1, 1)] {
+                let i = ((2 * r + dr) * side + 2 * c + dc) * 4;
+                let a = u32::from(rgba[i + 3]);
+                for k in 0..3 {
+                    sum[k] += u32::from(rgba[i + k]) * a;
+                }
+                sum[3] += a;
+            }
+            for k in 0..3 {
+                out.push(sum[k].checked_div(sum[3]).unwrap_or(0) as u8);
+            }
+            out.push((sum[3] / 4) as u8);
+        }
+    }
+    out
 }
 
 /// Итог загрузки тайла: картинка, байты, «тайла нет» или ошибка.

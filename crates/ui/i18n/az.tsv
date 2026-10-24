@@ -629,3 +629,32 @@ Water level	Su səviyyəsi
 The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	Su səthinin dəniz səviyyəsindən hündürlüyü. Su dibin daha aşağı olduğu bütün nöqtələrin üzərində bu hündürlükdə çəkilir.
 Remove bathymetry	Batimetriyanı götür
 The raster is no longer the globe terrain, no water is drawn over it.	Rastr artıq qlobusun relyefi deyil, üzərində su çəkilmir.
+Slope	Mail
+Aspect	Ekspozisiya
+Surface slope from the terrain heights, in classes from flat to steeper than 35°. The scale is in the bottom left corner of the view. Available on the Earth, Mars and the Moon.	Relyef hündürlüklərinə görə səthin mailliyi, düzdən 35°-dən dikə qədər siniflərlə. Şkala görünüşün sol aşağı küncündədir. Yer, Mars və Ay üçün mövcuddur.
+Which way a slope faces - the colour of the compass direction, flat ground is grey. It replaces the slope when switched on.	Yamacın hansı tərəfə baxdığı - dünya tərəfinin rəngi, düz yer bozdur. Mail əvəzinə yandırılır.
+Terrain analysis	Relyefin təhlili
+Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.	Səthin maillik və ya yamacın dünya tərəfi üzrə rənglənməsi, ikisindən biri yandırılır. Relyefin horizontalları onların üzərindədir.
+Slope, °	Mail, °
+Aspect, flat is grey	Ekspozisiya, düz yer bozdur
+N|compass	Şm
+NE|compass	ŞmŞ
+E|compass	Ş
+SE|compass	CŞ
+S|compass	C
+SW|compass	CQ
+W|compass	Q
+NW|compass	ŞmQ
+Geological map	Geoloji xəritə
+The Macrostrat geological map of the world compiled from maps of different scales. The colour shows the age of the rocks. In Russia and Europe the most detailed map is 1:5 000 000, in the USA the maps are much more detailed. A click in the Identify features mode shows the unit, the lithology, the age in Ma and the source map. The globe shows one such map - the geological map or a geophysical value map.	Müxtəlif miqyaslı xəritələrdən tərtib edilmiş Macrostrat dünya geoloji xəritəsi. Rəng süxurların yaşını göstərir. Rusiyada və Avropada ən təfərrüatlı xəritə 1:5 000 000-dır, ABŞ-da xəritələr xeyli təfərrüatlıdır. “Obyektləri müəyyən et” rejimində klik vahidi, litologiyanı, Ma ilə yaşı və mənbə xəritəni göstərir. Qlobusda belə bir xəritə göstərilir - geoloji və ya geofiziki dəyər xəritəsi.
+Asking Macrostrat…	Macrostrat-a sorğu…
+Geology	Geologiya
+Macrostrat did not answer	Macrostrat cavab vermədi
+The map is empty at the point	Xəritə bu nöqtədə boşdur
+Error	Xəta
+Formation	Lay dəstəsi
+Note	Qeyd
+Macrostrat page	Macrostrat səhifəsi
+Age	Yaş
+Age, Ma	Yaş, Ma
+Map link	Xəritəyə keçid

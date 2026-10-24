@@ -126,6 +126,10 @@ fn decode_accepts_tile_and_rejects_garbage() {
     assert!(net::decode_tile(b"not a png").is_err());
     assert!(net::decode_tile(&[]).is_err());
     assert!(net::decode_tile(&png(512, 256)).is_err());
+    // Тайл 512 × 512 - вдвое мельче, тот же цвет.
+    let big = net::decode_tile(&png(512, 512)).unwrap_or_else(|_| net::Image { width: 0, height: 0, rgba: Vec::new() });
+    assert_eq!((big.width, big.height), (256, 256));
+    assert_eq!(&big.rgba[..4], &image.rgba[..4]);
     let mut cut = png(256, 256);
     cut.truncate(cut.len() / 2);
     assert!(net::decode_tile(&cut).is_err());

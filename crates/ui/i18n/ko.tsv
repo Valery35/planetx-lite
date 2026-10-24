@@ -629,3 +629,32 @@ Water level	수위
 The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	해수면 기준 수면의 높이. 바닥이 더 낮은 모든 지점 위에 이 높이로 물이 그려집니다.
 Remove bathymetry	수심 제거
 The raster is no longer the globe terrain, no water is drawn over it.	래스터는 더 이상 지구본 지형이 아니며 그 위에 물이 그려지지 않습니다.
+Slope	경사
+Aspect	사면 방향
+Surface slope from the terrain heights, in classes from flat to steeper than 35°. The scale is in the bottom left corner of the view. Available on the Earth, Mars and the Moon.	지형 고도로 구한 지표면 경사로, 평탄부터 35°보다 가파른 것까지 등급으로 나눕니다. 범례는 화면 왼쪽 아래 모서리에 있습니다. 지구, 화성, 달에서 사용할 수 있습니다.
+Which way a slope faces - the colour of the compass direction, flat ground is grey. It replaces the slope when switched on.	사면이 향한 방향 - 방위의 색으로 표시하며 평탄한 곳은 회색입니다. 경사 대신 켜집니다.
+Terrain analysis	지형 분석
+Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.	경사 또는 사면 방향에 따른 지표면 색칠로, 둘 중 하나가 켜집니다. 지형 등고선은 그 위에 놓입니다.
+Slope, °	경사, °
+Aspect, flat is grey	사면 방향, 평탄은 회색
+N|compass	북
+NE|compass	북동
+E|compass	동
+SE|compass	남동
+S|compass	남
+SW|compass	남서
+W|compass	서
+NW|compass	북서
+Geological map	지질도
+The Macrostrat geological map of the world compiled from maps of different scales. The colour shows the age of the rocks. In Russia and Europe the most detailed map is 1:5 000 000, in the USA the maps are much more detailed. A click in the Identify features mode shows the unit, the lithology, the age in Ma and the source map. The globe shows one such map - the geological map or a geophysical value map.	여러 축척의 지도로 편집한 Macrostrat 세계 지질도. 색은 암석의 연령을 나타냅니다. 러시아와 유럽에서 가장 자세한 지도는 1:5 000 000이며 미국의 지도는 훨씬 자세합니다. ‘객체 식별’ 모드에서 클릭하면 지질 단위, 암상, Ma 단위의 연령, 원본 지도가 표시됩니다. 지구본에는 이런 지도가 하나만 표시됩니다 - 지질도 또는 지구물리 값 지도.
+Asking Macrostrat…	Macrostrat에 요청 중…
+Geology	지질
+Macrostrat did not answer	Macrostrat가 응답하지 않았습니다
+The map is empty at the point	이 지점에서 지도가 비어 있습니다
+Error	오류
+Formation	층
+Note	메모
+Macrostrat page	Macrostrat 페이지
+Age	연령
+Age, Ma	연령, Ma
+Map link	지도 링크

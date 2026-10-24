@@ -40,6 +40,9 @@ enum Scale {
     Theme { title: String, map: Option<data::gibs::Colormap> },
     /// Горизонтали: сечение в середине вида и цвет линии.
     Contours { step: f64, color: [u8; 3] },
+    /// Клетки цветов с подписями: уклон (подпись у левого края клетки)
+    /// или экспозиция (подпись посередине), `SlopeLegend` модуля.
+    Cells { title: &'static str, cells: Vec<([u8; 3], &'static str)>, centered: bool },
 }
 
 /// Шкала темы: ключ темы, название с датой, цветовая карта.
@@ -57,6 +60,18 @@ fn scale_of(key: &str, kind: Kind) -> Option<Scale> {
             }),
             _ => None,
         },
+        Kind::Terrain(crate::maps::Analysis::Slope) => Some(Scale::Cells {
+            title: "Slope, °",
+            cells: data::slope::SLOPE_STOPS.iter().zip(["0", "2", "5", "10", "15", "25", "35"]).map(|(s, l)| (s.1, l)).collect(),
+            centered: false,
+        }),
+        Kind::Terrain(crate::maps::Analysis::Aspect) => {
+            // Стороны света - с контекстом: «N» и «E» уже заняты подписями координат.
+            let names = ["N|compass", "NE|compass", "E|compass", "SE|compass", "S|compass", "SW|compass", "W|compass", "NW|compass"];
+            let mut cells = vec![(data::slope::FLAT_COLOR, "")];
+            cells.extend(data::slope::ASPECT_STOPS.iter().zip(names).map(|(s, n)| (s.1, n)));
+            Some(Scale::Cells { title: "Aspect, flat is grey", cells, centered: true })
+        }
         _ => None,
     }
 }
@@ -88,6 +103,7 @@ impl Scale {
                 None => LINE + PAD,
             },
             Scale::Contours { .. } => 2.0 * LINE + PAD,
+            Scale::Cells { .. } => LINE * 2.0 + BAR_HEIGHT + 2.0 + PAD,
         }
     }
 }
@@ -163,7 +179,8 @@ pub fn show(
     if let Some((key, title, map)) = theme {
         scales.push((Some(Closed::Map(key)), Scale::Theme { title, map }));
     }
-    scales.extend(maps.iter().filter_map(|(k, kind)| scale_of(k, *kind).map(|s| (Some(Closed::Map(k)), s))));
+    // У шкалы уклона крестика нет, как у модуля.
+    scales.extend(maps.iter().filter_map(|(k, kind)| scale_of(k, *kind).map(|s| ((!matches!(s, Scale::Cells { .. })).then_some(Closed::Map(k)), s))));
     if let Some((step, color)) = contours {
         scales.push((Some(Closed::Map("contours")), Scale::Contours { step, color }));
     }
@@ -192,7 +209,7 @@ pub fn show(
                 let text = contours_text(lang, *step);
                 width = width.max(PAD + 30.0 + measure(&text) + PAD + CLOSE);
             }
-            Scale::Bar { .. } => {}
+            Scale::Bar { .. } | Scale::Cells { .. } => {}
         }
     }
     let height: f32 = scales.iter().map(|(_, s)| s.height()).sum::<f32>() + PAD;
@@ -277,6 +294,20 @@ pub fn show(
                             }
                         }
                         None => {}
+                    }
+                }
+                Scale::Cells { title, cells, centered } => {
+                    text(egui::pos2(x, y), tr(lang, title), p.plate_text);
+                    y += LINE + 1.0;
+                    let w = BAR_WIDTH / cells.len().max(1) as f32;
+                    for (n, (c, label)) in cells.iter().enumerate() {
+                        let cx = x + 4.0 + n as f32 * w;
+                        painter.rect_filled(egui::Rect::from_min_size(egui::pos2(cx, y), egui::vec2(w, BAR_HEIGHT)), 0.0, color(*c));
+                        if !label.is_empty() {
+                            let label = tr(lang, label);
+                            let left = if *centered { cx + (w - measure(label)) / 2.0 } else { cx };
+                            text(egui::pos2(left, y + BAR_HEIGHT + 2.0), label, p.plate_text);
+                        }
                     }
                 }
                 Scale::Contours { step, color: c } => {

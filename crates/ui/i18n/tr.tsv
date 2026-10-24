@@ -629,3 +629,32 @@ Water level	Su seviyesi
 The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	Su yüzeyinin deniz seviyesinden yüksekliği. Su, tabanın daha alçak olduğu tüm noktaların üzerinde bu yükseklikte çizilir.
 Remove bathymetry	Batimetriyi kaldır
 The raster is no longer the globe terrain, no water is drawn over it.	Raster artık kürenin arazisi değildir, üzerinde su çizilmez.
+Slope	Eğim
+Aspect	Bakı
+Surface slope from the terrain heights, in classes from flat to steeper than 35°. The scale is in the bottom left corner of the view. Available on the Earth, Mars and the Moon.	Arazi yüksekliklerinden yüzey eğimi, düzden 35°'den dike kadar sınıflar halinde. Ölçek görünümün sol alt köşesindedir. Dünya, Mars ve Ay için kullanılabilir.
+Which way a slope faces - the colour of the compass direction, flat ground is grey. It replaces the slope when switched on.	Yamacın baktığı yön - ana yönün rengi, düz alanlar gridir. Eğim yerine açılır.
+Terrain analysis	Arazi analizi
+Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.	Yüzeyin eğime veya yamacın baktığı yöne göre renklendirilmesi, ikisinden biri açıktır. Arazinin eş yükselti eğrileri bunların üzerindedir.
+Slope, °	Eğim, °
+Aspect, flat is grey	Bakı, düz alan gri
+N|compass	K
+NE|compass	KD
+E|compass	D
+SE|compass	GD
+S|compass	G
+SW|compass	GB
+W|compass	B
+NW|compass	KB
+Geological map	Jeoloji haritası
+The Macrostrat geological map of the world compiled from maps of different scales. The colour shows the age of the rocks. In Russia and Europe the most detailed map is 1:5 000 000, in the USA the maps are much more detailed. A click in the Identify features mode shows the unit, the lithology, the age in Ma and the source map. The globe shows one such map - the geological map or a geophysical value map.	Farklı ölçekli haritalardan derlenmiş Macrostrat dünya jeoloji haritası. Renk kayaçların yaşını gösterir. Rusya ve Avrupa'da en ayrıntılı harita 1:5 000 000 ölçeklidir, ABD'de haritalar çok daha ayrıntılıdır. “Nesneleri tanımla” kipinde tıklama birimi, litolojiyi, Ma cinsinden yaşı ve kaynak haritayı gösterir. Kürede bu türden tek bir harita gösterilir - jeoloji haritası veya bir jeofizik değer haritası.
+Asking Macrostrat…	Macrostrat sorgulanıyor…
+Geology	Jeoloji
+Macrostrat did not answer	Macrostrat yanıt vermedi
+The map is empty at the point	Harita bu noktada boş
+Error	Hata
+Formation	Formasyon
+Note	Not
+Macrostrat page	Macrostrat sayfası
+Age	Yaş
+Age, Ma	Yaş, Ma
+Map link	Harita bağlantısı

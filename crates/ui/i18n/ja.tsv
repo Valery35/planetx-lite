@@ -629,3 +629,32 @@ Water level	水位
 The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	海面からの水面の高さ。底がこれより低いすべての点の上に、この高さで水が描かれます。
 Remove bathymetry	水深を削除
 The raster is no longer the globe terrain, no water is drawn over it.	ラスターは地球儀の地形ではなくなり、その上に水は描かれません。
+Slope	傾斜
+Aspect	斜面方位
+Surface slope from the terrain heights, in classes from flat to steeper than 35°. The scale is in the bottom left corner of the view. Available on the Earth, Mars and the Moon.	地形の標高から求めた地表の傾斜で、平坦から 35° より急までの階級に分けます。凡例は表示の左下隅にあります。地球、火星、月で利用できます。
+Which way a slope faces - the colour of the compass direction, flat ground is grey. It replaces the slope when switched on.	斜面が向いている方向 - 方位の色で示し、平坦地は灰色です。傾斜の代わりにオンになります。
+Terrain analysis	地形解析
+Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.	傾斜または斜面の方位による地表の色分けで、どちらか一方がオンになります。地形の等高線はその上に重なります。
+Slope, °	傾斜、°
+Aspect, flat is grey	斜面方位、平坦地は灰色
+N|compass	北
+NE|compass	北東
+E|compass	東
+SE|compass	南東
+S|compass	南
+SW|compass	南西
+W|compass	西
+NW|compass	北西
+Geological map	地質図
+The Macrostrat geological map of the world compiled from maps of different scales. The colour shows the age of the rocks. In Russia and Europe the most detailed map is 1:5 000 000, in the USA the maps are much more detailed. A click in the Identify features mode shows the unit, the lithology, the age in Ma and the source map. The globe shows one such map - the geological map or a geophysical value map.	縮尺の異なる地図から編集された Macrostrat の世界地質図。色は岩石の年代を示します。ロシアとヨーロッパで最も詳しい地図は 1:5 000 000 で、米国の地図ははるかに詳しくなります。「オブジェクトを識別」モードでクリックすると、地質単元、岩相、Ma 単位の年代、出典の地図が表示されます。地球儀に表示されるこの種の地図は 1 つだけです - 地質図または地球物理量の地図。
+Asking Macrostrat…	Macrostrat に問い合わせ中…
+Geology	地質
+Macrostrat did not answer	Macrostrat から応答がありません
+The map is empty at the point	この地点では地図が空です
+Error	エラー
+Formation	累層
+Note	注記
+Macrostrat page	Macrostrat のページ
+Age	年代
+Age, Ma	年代、Ma
+Map link	地図へのリンク

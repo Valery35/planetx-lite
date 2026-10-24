@@ -20,6 +20,8 @@ pub struct Ask {
     pub key: &'static str,
     pub at: (f64, f64),
     pixel: Option<(u32, u32)>,
+    /// Уровень карты запроса Macrostrat.
+    zoom: u32,
     request: Box<dyn net::Request>,
 }
 
@@ -27,11 +29,16 @@ pub struct Ask {
 pub enum Answer {
     Loading,
     Text(String),
+    /// Подразделения геологической карты в точке или ошибка запроса.
+    Geology(Result<Vec<data::geology::Unit>, String>),
 }
 
 /// Адрес запроса значения карты key в точке и пиксель тайла. None -
 /// у карты значения под щелчком нет.
-fn query(key: &str, lat: f64, lon: f64) -> Option<(String, Option<(u32, u32)>)> {
+fn query(key: &str, lat: f64, lon: f64, zoom: u32) -> Option<(String, Option<(u32, u32)>)> {
+    if key == "geology" {
+        return Some((data::geology::query_url(lat, lon, f64::from(zoom)), None));
+    }
     if let Some(f) = rastermaps::field(key) {
         let ((x, y), pixel) = rastermaps::pixel_of(lat, lon, f.max_level);
         return Some((net::template_url(f.url, (f.max_level, x, y)), Some(pixel)));
@@ -47,20 +54,33 @@ fn query(key: &str, lat: f64, lon: f64) -> Option<(String, Option<(u32, u32)>)> 
 impl Ask {
     /// Начать запрос значения карты key в точке. None - у карты значения
     /// под щелчком нет.
-    pub fn start(key: &'static str, lat: f64, lon: f64, request: Box<dyn net::Request>) -> Option<Ask> {
-        let (url, pixel) = query(key, lat, lon)?;
+    pub fn start(key: &'static str, lat: f64, lon: f64, zoom: u32, request: Box<dyn net::Request>) -> Option<Ask> {
+        let (url, pixel) = query(key, lat, lon, zoom)?;
         request.start(&url);
-        Some(Ask { key, at: (lat, lon), pixel, request })
+        Some(Ask { key, at: (lat, lon), pixel, zoom, request })
     }
 
-    /// Пришедший ответ словами, None - ещё нет.
-    pub fn take(&self, lang: Lang) -> Option<String> {
+    /// Пришедший ответ, None - ещё нет. Пустой ответ Macrostrat
+    /// повторяется на уровень мельче, как `_geology_arrived` модуля.
+    pub fn take(&mut self, lang: Lang) -> Option<Answer> {
         let answer = self.request.take()?;
-        Some(match answer {
+        if self.key == "geology" {
+            let units = answer.and_then(|b| data::geology::parse_query(&b));
+            if let Ok(found) = &units
+                && found.is_empty()
+                && let Some(z) = data::geology::coarser(self.zoom)
+            {
+                self.zoom = z;
+                self.request.start(&data::geology::query_url(self.at.0, self.at.1, f64::from(z)));
+                return None;
+            }
+            return Some(Answer::Geology(units));
+        }
+        Some(Answer::Text(match answer {
             Err(e) if e.contains("404") => tr(lang, "no data").to_string(),
             Err(e) => e,
             Ok(bytes) => value_text(lang, self.key, self.pixel, &bytes).unwrap_or_else(|| tr(lang, "no data").to_string()),
-        })
+        }))
     }
 }
 
@@ -171,10 +191,14 @@ pub fn title(key: &str) -> &'static str {
 }
 
 /// Группа карты окна «Объекты».
-pub fn group(lang: Lang, key: &str, answer: &Answer) -> Option<(String, Vec<Feature>)> {
+pub fn group(lang: Lang, key: &str, answer: &Answer, at: (f64, f64)) -> Option<(String, Vec<Feature>)> {
+    if key == "geology" {
+        return Some((tr(lang, "Geology").to_string(), geology_features(lang, at, answer)));
+    }
     let value = match answer {
         Answer::Loading => tr(lang, "loading…").to_string(),
         Answer::Text(t) => t.clone(),
+        Answer::Geology(_) => String::new(),
     };
     let row = |name: &'static str| (tr(lang, name).to_string(), value.clone());
     if let Some((group, line, _, notes)) = field_texts(key) {
@@ -195,6 +219,42 @@ pub fn group(lang: Lang, key: &str, answer: &Answer) -> Option<(String, Vec<Feat
     Some((tr(lang, group).to_string(), vec![(tr(lang, title(key)).to_string(), vec![row(if classes { "Class" } else { "Value" })])]))
 }
 
+/// Объекты группы «Геология» для точки at, `_identify_geology` модуля.
+fn geology_features(lang: Lang, at: (f64, f64), answer: &Answer) -> Vec<Feature> {
+    let units = match answer {
+        Answer::Geology(Ok(u)) => u,
+        Answer::Geology(Err(e)) => return vec![(tr(lang, "Macrostrat did not answer").to_string(), vec![(tr(lang, "Error").to_string(), e.clone())])],
+        _ => return vec![(tr(lang, "Asking Macrostrat…").to_string(), Vec::new())],
+    };
+    if units.is_empty() {
+        return vec![(tr(lang, "The map is empty at the point").to_string(), Vec::new())];
+    }
+    units
+        .iter()
+        .map(|unit| {
+            let (names, ages) = data::geology::age_text(unit);
+            let mut values = Vec::new();
+            let mut row = |name: &'static str, value: &str| {
+                if !value.is_empty() {
+                    values.push((tr(lang, name).to_string(), value.to_string()));
+                }
+            };
+            row("Age", &names);
+            row("Age, Ma", &ages);
+            row("Lithology", &unit.lith);
+            row("Formation", &unit.strat_name);
+            row("Description", &unit.descrip);
+            row("Note", &unit.comments);
+            let source = [unit.source.as_str(), unit.authors.as_str(), unit.year.as_str()].iter().filter(|s| !s.is_empty()).copied().collect::<Vec<_>>().join(", ");
+            row("Map", &source);
+            row("Map link", &unit.url);
+            row("Macrostrat page", &data::geology::page_url(at.0, at.1));
+            let title = if !unit.name.is_empty() { unit.name.clone() } else if !unit.lith.is_empty() { unit.lith.clone() } else { tr(lang, "Untitled").to_string() };
+            (title, values)
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::{Answer, group, query};
@@ -203,15 +263,15 @@ mod tests {
     #[test]
     fn query_kinds() {
         // Карта значений - тайл глубшего уровня и пиксель точки.
-        let (url, pixel) = query("emag", 58.0, 56.25).unwrap_or_default();
+        let (url, pixel) = query("emag", 58.0, 56.25, 8).unwrap_or_default();
         assert!(url.ends_with("emag/5/21/9.png"), "{url}");
         assert!(pixel.is_some());
         // Почвы - ответ службы.
-        let (url, pixel) = query("soil_clay", 58.0, 56.25).unwrap_or_default();
+        let (url, pixel) = query("soil_clay", 58.0, 56.25, 8).unwrap_or_default();
         assert!(url.contains("GetFeatureInfo") && pixel.is_none());
         // У наложений значения нет.
-        assert!(query("hiking", 0.0, 0.0).is_none());
-        let g = group(Lang::EN, "glim", &Answer::Loading).unwrap_or_default();
+        assert!(query("hiking", 0.0, 0.0, 8).is_none());
+        let g = group(Lang::EN, "glim", &Answer::Loading, (0.0, 0.0)).unwrap_or_default();
         assert_eq!(g.0, "Lithology");
         assert_eq!(g.1[0].1[0].0, "Class");
     }

@@ -14,12 +14,14 @@
 //! - [`grid`] - свой растр GeoTIFF или COG, через terrio;
 //! - [`dem`] - растр высот для врезки своего рельефа;
 //! - [`layers`] - слои GeoPackage, через terrio;
+//! - [`geology`] - геологическая карта Macrostrat, перенос `core/geology.py`;
 //! - [`gibs`] - темы NASA GIBS по датам, перенос `core/themes.py`;
 //! - [`quakes`] - землетрясения USGS, перенос `core/quakes.py`;
 //! - [`bathymetry`] - своя батиметрия, перенос `core/bathymetry.py`;
 //! - [`contours`] - горизонтали рельефа и изолинии, перенос `core/contours.py`;
 //! - [`csv`] - таблица CSV;
 //! - [`volcanoes`] и [`fires`] - вулканы GVP и пожары FIRMS;
+//! - [`slope`] - уклон и экспозиция, перенос `core/slope.py`;
 //! - [`rastermaps`] - карты картинками тайлов поверх снимка, перенос
 //!   `core/fields.py` и `core/tilemaps.py` модуля.
 
@@ -30,6 +32,7 @@ pub mod csv;
 pub mod dem;
 pub mod fires;
 pub mod geocode;
+pub mod geology;
 pub mod gibs;
 pub mod grid;
 pub mod layers;
@@ -38,4 +41,5 @@ pub mod mvt;
 pub mod places;
 pub mod quakes;
 pub mod rastermaps;
+pub mod slope;
 pub mod volcanoes;

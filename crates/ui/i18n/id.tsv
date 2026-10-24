@@ -629,3 +629,32 @@ Water level	Muka air
 The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	Ketinggian permukaan air di atas permukaan laut. Air digambar pada ketinggian ini di atas semua titik yang dasarnya lebih rendah.
 Remove bathymetry	Hapus batimetri
 The raster is no longer the globe terrain, no water is drawn over it.	Raster tidak lagi menjadi relief globe, air tidak digambar di atasnya.
+Slope	Kemiringan
+Aspect	Aspek lereng
+Surface slope from the terrain heights, in classes from flat to steeper than 35°. The scale is in the bottom left corner of the view. Available on the Earth, Mars and the Moon.	Kemiringan permukaan dari ketinggian relief, dalam kelas dari datar hingga lebih curam dari 35°. Skala ada di sudut kiri bawah tampilan. Tersedia untuk Bumi, Mars dan Bulan.
+Which way a slope faces - the colour of the compass direction, flat ground is grey. It replaces the slope when switched on.	Arah hadap lereng - warna arah mata angin, tanah datar berwarna abu-abu. Dinyalakan sebagai pengganti kemiringan.
+Terrain analysis	Analisis relief
+Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.	Pewarnaan permukaan menurut kemiringan atau arah hadap lereng, salah satu dari keduanya yang menyala. Garis kontur relief berada di atasnya.
+Slope, °	Kemiringan, °
+Aspect, flat is grey	Aspek lereng, datar berwarna abu-abu
+N|compass	U
+NE|compass	TL
+E|compass	T
+SE|compass	TG
+S|compass	S
+SW|compass	BD
+W|compass	B
+NW|compass	BL
+Geological map	Peta geologi
+The Macrostrat geological map of the world compiled from maps of different scales. The colour shows the age of the rocks. In Russia and Europe the most detailed map is 1:5 000 000, in the USA the maps are much more detailed. A click in the Identify features mode shows the unit, the lithology, the age in Ma and the source map. The globe shows one such map - the geological map or a geophysical value map.	Peta geologi dunia Macrostrat yang disusun dari peta berbagai skala. Warna menunjukkan umur batuan. Di Rusia dan Eropa peta paling rinci berskala 1:5 000 000, di AS petanya jauh lebih rinci. Klik dalam mode “Identifikasi objek” menampilkan satuan, litologi, umur dalam Ma dan peta sumber. Globe menampilkan satu peta semacam itu - peta geologi atau peta nilai geofisika.
+Asking Macrostrat…	Menghubungi Macrostrat…
+Geology	Geologi
+Macrostrat did not answer	Macrostrat tidak menjawab
+The map is empty at the point	Peta kosong di titik ini
+Error	Galat
+Formation	Formasi
+Note	Catatan
+Macrostrat page	Halaman Macrostrat
+Age	Umur
+Age, Ma	Umur, Ma
+Map link	Tautan peta

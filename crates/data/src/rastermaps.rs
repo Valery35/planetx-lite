@@ -288,6 +288,8 @@ pub enum Reading {
     /// Запрос GetFeatureInfo службы: шаблон с {west} {south} {east}
     /// {north} и множитель ответа.
     Query(&'static str, f64),
+    /// Запрос map_query Macrostrat (`crate::geology`).
+    Macrostrat,
 }
 
 /// Готовая карта: ключ строки «Слоёв», шаблон тайла ({z}/{x}/{y} или
@@ -414,7 +416,21 @@ const fn soil(key: &'static str, url: &'static str, query: &'static str, unit: &
 }
 
 /// Готовые карты в порядке строк каталога, `KEYS` модуля.
-pub const MAPS: [TileMap; 8] = [
+pub const MAPS: [TileMap; 9] = [
+    // Геологическая карта Macrostrat, тайлы 512 × 512.
+    TileMap {
+        key: "geology",
+        url: crate::geology::TILES,
+        max_level: crate::geology::MAX_LEVEL,
+        attribution: crate::geology::ATTRIBUTION,
+        opacity: crate::geology::OPACITY,
+        clear: None,
+        reading: Reading::Macrostrat,
+        coarse: "",
+        split: 0,
+        unit: "",
+        digits: 0,
+    },
     TileMap {
         key: "glim",
         url: terrain!("glim"),
@@ -532,7 +548,7 @@ pub fn value_of(map: &TileMap, pixel: [u8; 4]) -> Option<MapValue> {
     match map.reading {
         Reading::Classes(classes) => class_of(classes, [pixel[0], pixel[1], pixel[2]], CLASS_TOLERANCE).map(MapValue::Class),
         Reading::BlueShare => Some(MapValue::Percent((f64::from(pixel[2]) / 255.0 * 100.0).round() as u32)),
-        Reading::Query(..) => None,
+        Reading::Query(..) | Reading::Macrostrat => None,
     }
 }
 

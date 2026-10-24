@@ -86,6 +86,7 @@ impl Extra {
             Extra::Air | Extra::Sun => Category::Sky,
             Extra::Map(_) => match self.map().map(|e| e.group) {
                 Some(crate::maps::Group::Map) => Category::Map,
+                Some(crate::maps::Group::Terrain) => Category::Terrain,
                 Some(crate::maps::Group::Fire) => Category::Fire,
                 Some(crate::maps::Group::Gases) => Category::Gases,
                 Some(crate::maps::Group::Water) => Category::Water,
@@ -419,6 +420,7 @@ enum Category {
     Sky,
     Depths,
     Soil,
+    Terrain,
     Tiles,
 }
 
@@ -540,6 +542,7 @@ impl Catalog {
             (Category::Sky, tr(lang, "Sky and light"), tr(lang, "The sun and the night side, the atmosphere.")),
             (Category::Depths, tr(lang, "Inside the Earth"), tr(lang, "The geological and lithological maps, earthquakes, plate boundaries and faults, mineral deposits and mining areas, the Earth cutaway and palaeogeography.")),
             (Category::Soil, tr(lang, "Soils"), tr(lang, "Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.")),
+            (Category::Terrain, tr(lang, "Terrain analysis"), tr(lang, "Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.")),
             (Category::Tiles, tr(lang, "Map overlays"), tr(lang, "Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.")),
         ];
         egui::Window::new(tr(lang, "Add data")).open(&mut open).default_size([780.0, 520.0]).show(ctx, |ui| {

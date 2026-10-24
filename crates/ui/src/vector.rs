@@ -293,7 +293,7 @@ fn work(job: Job) -> Done {
                 r
             }
             (Raster::Raw(rgba), None) => {
-                let r = kind.picture(&rgba).map(Arc::new);
+                let r = kind.picture(&rgba, source).map(Arc::new);
                 painted.push(((id, source), r.clone()));
                 r
             }

@@ -629,3 +629,32 @@ Water level	Уровень воды
 The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	Высота поверхности воды над уровнем моря. Вода рисуется на этой высоте над всеми точками, где дно ниже.
 Remove bathymetry	Убрать батиметрию
 The raster is no longer the globe terrain, no water is drawn over it.	Растр перестаёт быть рельефом глобуса, вода над ним не рисуется.
+Slope	Уклон
+Aspect	Экспозиция
+Surface slope from the terrain heights, in classes from flat to steeper than 35°. The scale is in the bottom left corner of the view. Available on the Earth, Mars and the Moon.	Уклон поверхности по высотам рельефа, классами от ровного до круче 35°. Шкала стоит в левом нижнем углу вида. Есть у Земли, Марса и Луны.
+Which way a slope faces - the colour of the compass direction, flat ground is grey. It replaces the slope when switched on.	Куда обращён склон - цвет стороны света, ровное место серое. Включается вместо уклона.
+Terrain analysis	Анализ рельефа
+Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.	Раскраска поверхности по уклону или по стороне света склона, включается одна из двух. Горизонтали рельефа поверх них.
+Slope, °	Уклон, °
+Aspect, flat is grey	Экспозиция, ровное - серое
+N|compass	С
+NE|compass	СВ
+E|compass	В
+SE|compass	ЮВ
+S|compass	Ю
+SW|compass	ЮЗ
+W|compass	З
+NW|compass	СЗ
+Geological map	Геологическая карта
+The Macrostrat geological map of the world compiled from maps of different scales. The colour shows the age of the rocks. In Russia and Europe the most detailed map is 1:5 000 000, in the USA the maps are much more detailed. A click in the Identify features mode shows the unit, the lithology, the age in Ma and the source map. The globe shows one such map - the geological map or a geophysical value map.	Геологическая карта мира Macrostrat, сведённая из карт разного масштаба. Цвет показывает возраст пород. В России и Европе самая подробная карта - 1:5 000 000, в США карты намного подробнее. Щелчок в режиме «Определить объекты» показывает подразделение, литологию, возраст в млн лет и карту-источник. На глобусе одна такая карта - геологическая или карта значений геофизики.
+Asking Macrostrat…	Запрос к Macrostrat…
+Geology	Геология
+Macrostrat did not answer	Macrostrat не ответил
+The map is empty at the point	Карта в точке пуста
+Error	Ошибка
+Formation	Свита
+Note	Примечание
+Macrostrat page	Страница Macrostrat
+Age	Возраст
+Age, Ma	Возраст, млн лет
+Map link	Ссылка на карту

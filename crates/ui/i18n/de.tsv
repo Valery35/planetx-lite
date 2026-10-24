@@ -629,3 +629,32 @@ Water level	Wasserspiegel
 The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	Die Höhe der Wasseroberfläche über dem Meeresspiegel. Das Wasser wird auf dieser Höhe über allen Punkten gezeichnet, an denen der Grund tiefer liegt.
 Remove bathymetry	Bathymetrie entfernen
 The raster is no longer the globe terrain, no water is drawn over it.	Das Raster ist nicht mehr Teil des Globusgeländes, darüber wird kein Wasser gezeichnet.
+Slope	Hangneigung
+Aspect	Exposition
+Surface slope from the terrain heights, in classes from flat to steeper than 35°. The scale is in the bottom left corner of the view. Available on the Earth, Mars and the Moon.	Neigung der Oberfläche aus den Geländehöhen, in Klassen von eben bis steiler als 35°. Die Skala steht in der linken unteren Ecke der Ansicht. Verfügbar für die Erde, den Mars und den Mond.
+Which way a slope faces - the colour of the compass direction, flat ground is grey. It replaces the slope when switched on.	Wohin ein Hang zeigt - die Farbe der Himmelsrichtung, ebene Flächen sind grau. Wird statt der Hangneigung eingeschaltet.
+Terrain analysis	Geländeanalyse
+Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.	Färbung der Oberfläche nach Hangneigung oder nach der Himmelsrichtung des Hangs, eine der beiden ist eingeschaltet. Die Höhenlinien des Geländes liegen darüber.
+Slope, °	Hangneigung, °
+Aspect, flat is grey	Exposition, eben ist grau
+N|compass	N
+NE|compass	NO
+E|compass	O
+SE|compass	SO
+S|compass	S
+SW|compass	SW
+W|compass	W
+NW|compass	NW
+Geological map	Geologische Karte
+The Macrostrat geological map of the world compiled from maps of different scales. The colour shows the age of the rocks. In Russia and Europe the most detailed map is 1:5 000 000, in the USA the maps are much more detailed. A click in the Identify features mode shows the unit, the lithology, the age in Ma and the source map. The globe shows one such map - the geological map or a geophysical value map.	Die geologische Weltkarte von Macrostrat, zusammengesetzt aus Karten verschiedener Maßstäbe. Die Farbe zeigt das Alter der Gesteine. In Russland und Europa ist die genaueste Karte 1:5 000 000, in den USA sind die Karten deutlich genauer. Ein Klick im Modus „Objekte abfragen“ zeigt die Einheit, die Lithologie, das Alter in Ma und die Quellkarte. Der Globus zeigt eine solche Karte - die geologische Karte oder eine Karte geophysikalischer Werte.
+Asking Macrostrat…	Anfrage an Macrostrat…
+Geology	Geologie
+Macrostrat did not answer	Macrostrat hat nicht geantwortet
+The map is empty at the point	Die Karte ist an diesem Punkt leer
+Error	Fehler
+Formation	Formation
+Note	Anmerkung
+Macrostrat page	Macrostrat-Seite
+Age	Alter
+Age, Ma	Alter, Ma
+Map link	Link zur Karte

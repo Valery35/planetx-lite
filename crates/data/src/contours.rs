@@ -187,7 +187,7 @@ pub fn smooth(h: &Grid) -> Grid {
 
 /// Производные по строкам и столбцам, как numpy.gradient: в середине -
 /// центральная разность, у края - односторонняя.
-fn gradient(h: &Grid) -> (Grid, Grid) {
+pub fn gradient(h: &Grid) -> (Grid, Grid) {
     let (rows, cols) = (h.rows, h.cols);
     let d = |a: f64, b: f64, two: bool| if two { (b - a) / 2.0 } else { b - a };
     let d_row = Grid::from_fn(rows, cols, |r, c| {

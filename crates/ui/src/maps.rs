@@ -24,12 +24,22 @@ pub enum Kind {
     Theme(&'static Theme),
     /// Горизонтали рельефа по высотам Terrarium, цвета - по подложке.
     Contours(data::contours::Palette),
+    /// Уклон или экспозиция по высотам Terrarium.
+    Terrain(Analysis),
+}
+
+/// Анализ рельефа: на глобусе одна из двух раскрасок, как у модуля.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Analysis {
+    Slope,
+    Aspect,
 }
 
 /// Группа каталога, как у модуля.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Group {
     Map,
+    Terrain,
     Fire,
     Gases,
     Water,
@@ -53,7 +63,7 @@ pub struct Entry {
 /// Строки: темы GIBS в порядке `gallery_items` модуля, за ними слои
 /// в порядке `LAYERS`. «Повторяемости воды» в списке
 /// каталога модуля нет, её нет и здесь.
-pub const ALL: [Entry; 38] = [
+pub const ALL: [Entry; 41] = [
     Entry {
         key: "contours",
         name: "Contours",
@@ -216,6 +226,13 @@ pub const ALL: [Entry; 38] = [
         source: "NASA GIBS",
     },
     Entry {
+        key: "geology",
+        name: "Geological map",
+        tip: "The Macrostrat geological map of the world compiled from maps of different scales. The colour shows the age of the rocks. In Russia and Europe the most detailed map is 1:5 000 000, in the USA the maps are much more detailed. A click in the Identify features mode shows the unit, the lithology, the age in Ma and the source map. The globe shows one such map - the geological map or a geophysical value map.",
+        group: Group::Depths,
+        source: "Macrostrat",
+    },
+    Entry {
         key: "glim",
         name: "Lithology",
         tip: "The GLiM lithological map of the world - surface rocks in 16 classes: unconsolidated sediments, sedimentary, volcanic, plutonic and metamorphic rocks, ice. It is compiled from 92 regional maps at a scale of about 1:3 750 000. A click in Identify features mode shows the rock class. The globe shows one such map - lithological, geological, soil, water or a geophysical value map.",
@@ -320,6 +337,20 @@ pub const ALL: [Entry; 38] = [
         group: Group::Tiles,
         source: "Waymarked Trails",
     },
+    Entry {
+        key: "slope",
+        name: "Slope",
+        tip: "Surface slope from the terrain heights, in classes from flat to steeper than 35°. The scale is in the bottom left corner of the view. Available on the Earth, Mars and the Moon.",
+        group: Group::Terrain,
+        source: "Terrarium",
+    },
+    Entry {
+        key: "aspect",
+        name: "Aspect",
+        tip: "Which way a slope faces - the colour of the compass direction, flat ground is grey. It replaces the slope when switched on.",
+        group: Group::Terrain,
+        source: "Terrarium",
+    },
 ];
 
 /// Номер строки по ключу.
@@ -329,6 +360,11 @@ pub fn index(key: &str) -> Option<usize> {
 
 /// Вид карты строки.
 pub fn kind(key: &str) -> Option<Kind> {
+    match key {
+        "slope" => return Some(Kind::Terrain(Analysis::Slope)),
+        "aspect" => return Some(Kind::Terrain(Analysis::Aspect)),
+        _ => {}
+    }
     if key == "contours" {
         return Some(Kind::Contours(data::contours::Palette::Map));
     }
@@ -352,6 +388,7 @@ impl Kind {
         match self {
             Kind::Theme(_) => Some(0),
             Kind::Field(_) | Kind::Map(_) => Some(1),
+            Kind::Terrain(_) => Some(2),
             Kind::Overlay(_) | Kind::Contours(_) => None,
         }
     }
@@ -369,6 +406,7 @@ impl Kind {
             Kind::Overlay(o) => o.max_level,
             Kind::Theme(t) => t.level,
             Kind::Contours(_) => data::contours::LEVEL,
+            Kind::Terrain(_) => net::TERRARIUM.max_level,
         }
     }
 
@@ -380,7 +418,7 @@ impl Kind {
             Kind::Overlay(o) => o.attribution,
             Kind::Theme(_) => gibs::ATTRIBUTION.0,
             // Подпись высот Terrarium и так стоит на экране.
-            Kind::Contours(_) => "",
+            Kind::Contours(_) | Kind::Terrain(_) => "",
         }
     }
 
@@ -391,13 +429,13 @@ impl Kind {
             Kind::Map(m) => m.attribution.1,
             Kind::Overlay(o) => o.terms,
             Kind::Theme(_) => gibs::ATTRIBUTION.1,
-            Kind::Contours(_) => "",
+            Kind::Contours(_) | Kind::Terrain(_) => "",
         }
     }
 
     /// Пришедший тайл RGBA в картинку слоя с премноженной альфой, None -
     /// рисовать нечего.
-    pub fn picture(self, rgba: &[u8]) -> Option<Vec<u8>> {
+    pub fn picture(self, rgba: &[u8], key: globe_core::lod::TileKey) -> Option<Vec<u8>> {
         match self {
             Kind::Field(f) => rastermaps::field_rgba(f, rgba),
             Kind::Map(m) => rastermaps::map_rgba(m, rgba, m.opacity),
@@ -405,6 +443,15 @@ impl Kind {
             Kind::Theme(t) => gibs::overlay_rgba(rgba, gibs::OPACITY, t.clear),
             // Картинку горизонталей рисует задание по тайлу высот.
             Kind::Contours(_) => None,
+            // Уклон - по высотам самого тайла, как slope_prepare модуля.
+            Kind::Terrain(a) => {
+                let heights = data::contours::terrarium(rgba);
+                let (slope, aspect) = data::slope::slope_aspect(&heights, key.0, key.2, globe_core::ellipsoid::EARTH.a);
+                Some(match a {
+                    Analysis::Slope => data::slope::slope_rgba(&slope),
+                    Analysis::Aspect => data::slope::aspect_rgba(&aspect),
+                })
+            }
         }
     }
 
@@ -432,6 +479,7 @@ impl Kind {
             Kind::Theme(_) => Vec::new(),
             // Высоты Terrarium до уровня съёмки, кэш - общий с рельефом.
             Kind::Contours(_) => vec![(0, net::Source { max_level: data::contours::SOURCE_LEVEL, ..net::TERRARIUM })],
+            Kind::Terrain(_) => vec![(0, net::TERRARIUM)],
         }
     }
 }

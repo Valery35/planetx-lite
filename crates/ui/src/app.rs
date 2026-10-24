@@ -1113,7 +1113,7 @@ impl LiteApp {
         if let Some((ask, answer)) = &self.map_ask
             && ask.at == (lat, lon)
         {
-            groups.extend(crate::mapvalue::group(self.lang, ask.key, answer));
+            groups.extend(crate::mapvalue::group(self.lang, ask.key, answer, ask.at));
         }
         crate::identify::Objects { point: self.point_text(lat, lon, height, 6), groups, at: (lat, lon) }
     }
@@ -1122,7 +1122,11 @@ impl LiteApp {
     /// `_ask_tilemap` модуля. Ответ ложится в окно «Объекты».
     fn ask_map_value(&mut self, lat: f64, lon: f64) {
         let key = self.vector.map_keys().into_iter().find(|k| crate::maps::kind(k).and_then(|m| m.slot()) == Some(1));
-        self.map_ask = key.and_then(|k| crate::mapvalue::Ask::start(k, lat, lon, (self.loaders.request)())).map(|a| (a, crate::mapvalue::Answer::Loading));
+        // Уровень карты запроса Macrostrat - по ширине вида, link_zoom модуля.
+        let pose = &self.nav.pose;
+        let width = 2.0 * pose.distance * (self.nav.camera.fov_y.to_radians() / 2.0).tan() * self.nav.camera.aspect();
+        let zoom = data::geocode::link_zoom(lat, width);
+        self.map_ask = key.and_then(|k| crate::mapvalue::Ask::start(k, lat, lon, zoom, (self.loaders.request)())).map(|a| (a, crate::mapvalue::Answer::Loading));
     }
 
     /// Уровень воды по умолчанию: высота рельефа у края растра name -
@@ -1182,12 +1186,12 @@ impl LiteApp {
         }
         // Пришло значение карты - строка группы карты.
         if let Some((ask, answer)) = &mut self.map_ask
-            && let Some(text) = ask.take(lang)
+            && let Some(got) = ask.take(lang)
         {
-            *answer = crate::mapvalue::Answer::Text(text);
+            *answer = got;
             if let Some(objects) = &mut self.objects
                 && objects.at == ask.at
-                && let Some(group) = crate::mapvalue::group(lang, ask.key, answer)
+                && let Some(group) = crate::mapvalue::group(lang, ask.key, answer, ask.at)
             {
                 match objects.groups.iter_mut().find(|(name, _)| *name == group.0) {
                     Some(slot) => *slot = group,

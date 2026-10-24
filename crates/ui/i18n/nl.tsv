@@ -629,3 +629,32 @@ Water level	Waterniveau
 The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	De hoogte van het wateroppervlak boven zeeniveau. Het water wordt op deze hoogte getekend boven alle punten waar de bodem lager ligt.
 Remove bathymetry	Bathymetrie verwijderen
 The raster is no longer the globe terrain, no water is drawn over it.	Het raster is geen reliëf van de globe meer, erboven wordt geen water getekend.
+Slope	Helling
+Aspect	Expositie
+Surface slope from the terrain heights, in classes from flat to steeper than 35°. The scale is in the bottom left corner of the view. Available on the Earth, Mars and the Moon.	Helling van het oppervlak uit de reliëfhoogten, in klassen van vlak tot steiler dan 35°. De schaal staat in de linkerbenedenhoek van de weergave. Beschikbaar voor de aarde, Mars en de maan.
+Which way a slope faces - the colour of the compass direction, flat ground is grey. It replaces the slope when switched on.	Waar een helling naartoe gericht is - de kleur van de windrichting, vlak terrein is grijs. Wordt aangezet in plaats van de helling.
+Terrain analysis	Reliëfanalyse
+Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.	Kleuring van het oppervlak naar helling of naar de windrichting van de helling, een van beide staat aan. De hoogtelijnen van het reliëf liggen erboven.
+Slope, °	Helling, °
+Aspect, flat is grey	Expositie, vlak is grijs
+N|compass	N
+NE|compass	NO
+E|compass	O
+SE|compass	ZO
+S|compass	Z
+SW|compass	ZW
+W|compass	W
+NW|compass	NW
+Geological map	Geologische kaart
+The Macrostrat geological map of the world compiled from maps of different scales. The colour shows the age of the rocks. In Russia and Europe the most detailed map is 1:5 000 000, in the USA the maps are much more detailed. A click in the Identify features mode shows the unit, the lithology, the age in Ma and the source map. The globe shows one such map - the geological map or a geophysical value map.	De geologische wereldkaart van Macrostrat, samengesteld uit kaarten van verschillende schalen. De kleur toont de ouderdom van de gesteenten. In Rusland en Europa is de meest gedetailleerde kaart 1:5 000 000, in de VS zijn de kaarten veel gedetailleerder. Een klik in de modus “Objecten identificeren” toont de eenheid, de lithologie, de ouderdom in Ma en de bronkaart. De globe toont één zo’n kaart - de geologische kaart of een kaart van een geofysische waarde.
+Asking Macrostrat…	Macrostrat wordt bevraagd…
+Geology	Geologie
+Macrostrat did not answer	Macrostrat heeft niet geantwoord
+The map is empty at the point	De kaart is leeg op dit punt
+Error	Fout
+Formation	Formatie
+Note	Opmerking
+Macrostrat page	Macrostrat-pagina
+Age	Ouderdom
+Age, Ma	Ouderdom, Ma
+Map link	Link naar de kaart
