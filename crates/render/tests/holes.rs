@@ -412,3 +412,44 @@ fn missing_tile_is_counted() {
     let floor = if exact { 1000 } else { 0 };
     assert!(underlay > floor, "{underlay}");
 }
+
+#[test]
+fn cut_opens_the_surface_and_glass_does_not() {
+    // Маска подземного режима: вырез убирает поверхность, под ней видна
+    // подстилка, прозрачная поверхность глубину пишет, подстилку
+    // закрывает. Подземная сетка рисуется отдельной отрисовкой.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 500.0, 0.0, 0.0);
+    let sel = lod::select(&cam, &|_| true, Options::default());
+    let (_, before) = holes(&mut globe, &cam, &sel);
+    // Рамка маски вокруг Перми, середина картинки - вырез, край пуст.
+    let (u, v) = terrain::mercator_share(PERM.0, PERM.1);
+    let d = 1.0e-4;
+    let bounds = [u - d, v - d, u + d, v + d];
+    let side = 16usize;
+    let paint = |px: [u8; 4]| -> Vec<u8> {
+        (0..side * side).flat_map(|i| { let (r, c) = (i / side, i % side); if r == 0 || c == 0 || r == side - 1 || c == side - 1 { [0; 4] } else { px } }).collect()
+    };
+    let hole = paint([0, 0, 0, 255]);
+    globe.set_cut(Some((bounds, side as u32, side as u32, &hole)));
+    let (_, cut) = holes(&mut globe, &cam, &sel);
+    assert!(cut > before, "{cut} > {before}");
+    let glass = paint([255, 0, 0, 0]);
+    globe.set_cut(Some((bounds, side as u32, side as u32, &glass)));
+    globe.set_opacity(0.3);
+    let (_, see) = holes(&mut globe, &cam, &sel);
+    assert_eq!(see, before);
+    globe.set_cut(None);
+    let base = globe.render(&cam, &sel, None, FrameOptions::default()).draws;
+    let center = Ellipsoid::wgs84().geodetic_to_ecef(PERM.0, PERM.1, -50.0);
+    let v = |x: f32, y: f32| render::SubVertex { offset: [x, y, 0.0], normal: [0.0, 0.0, 1.0], color: [200, 100, 50, 255] };
+    let mesh = render::SubMesh { center, vertices: vec![v(0.0, 0.0), v(30.0, 0.0), v(0.0, 30.0)], indices: vec![0, 1, 2], cull_front: false };
+    globe.set_subsurface("wells", Some(&mesh));
+    assert_eq!(globe.render(&cam, &sel, None, FrameOptions::default()).draws, base + 1);
+    globe.set_subsurface("wells", None);
+    assert_eq!(globe.render(&cam, &sel, None, FrameOptions::default()).draws, base);
+}

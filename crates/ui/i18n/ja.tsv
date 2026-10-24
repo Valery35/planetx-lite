@@ -961,3 +961,23 @@ OSRM service, data © OpenStreetMap	OSRM サービス、データ © OpenStreetM
 The service did not answer ({error}), route over road tiles	サービスが応答しません ({error})、道路タイルによる経路
 Map error	地図上のエラー
 Clear|route	リセット
+Subsurface mode	地下モード
+Surface opacity	地表の不透明度
+Opacity of the surface. Lower - drill holes and bed roofs show through the terrain.	地表の不透明度。下げると、地形を通してボーリング孔と地層の上面が見えます。
+Block cut	ブロックの切り取り
+Remove the surface and the roofs inside the cut polygon. The beds show along the cut edge, the model bottom at its floor.	切り取り多角形の内側の地表と上面を取り除きます。切り口の縁に地層が見え、底にはモデルの下面が見えます。
+Camera under the ground	地下のカメラ
+The camera goes below the terrain down to the model bottom inside its frame. Above the model the camera moves along its bottom, not along the terrain.	カメラはモデルの枠内で地形の下へモデルの下面まで降ります。モデルの上では、カメラは地形ではなくモデルの下面に沿って動きます。
+Remove the model	モデルを取り除く
+Drill holes {holes}, roofs {horizons}, sections {sections}. Vertices {vertices}.	ボーリング孔 {holes}、上面 {horizons}、断面 {sections}。頂点 {vertices}。
+Tunnels {count}.	トンネル {count}。
+Not found: {names}.	見つかりません：{names}。
+Rows skipped - {count}.	スキップした行 - {count}。
+Subsurface mode…	地下モード…
+The Subsurface mode window - surface transparency above the model, the block cut and the camera under the ground. The data is a GeoPackage file with drill holes, bed roofs, sections and tunnels, open it like any other file.	「地下モード」ウィンドウ - モデル上の地表の透明度、ブロックの切り取り、地下のカメラ。データはボーリング孔、地層の上面、断面、トンネルを含む GeoPackage ファイルで、他のファイルと同じように開きます。
+No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.	地下データがありません：ボーリング孔、地層の上面、トンネルを含む GeoPackage ファイルを開いてください。
+Permian deposits	ペルム系の堆積物
+The sea and ocean floor below zero and water above it. Without the check the sea surface is flat, at zero.	ゼロより下の海と大洋の底と、その上の水。チェックを外すと海面は平らで、ゼロの高さになります。
+Ground above the grids	グリッド上の地面
+Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.	地下モデル（標高グリッド、地層の上面、ボーリング孔）の上の地面の不透明度。右へ動かすと地面は不透明に、左へ動かすと透明になり、左端では見えなくなります。データの範囲外では地面は変わりません。
+The Subsurface mode window - the block cut and the camera under the ground.	「地下モード」ウィンドウ - ブロックの切り取りと地下のカメラ。

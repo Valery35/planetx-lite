@@ -42,6 +42,8 @@ mod points;
 pub use points::{Dot, PointsMesh};
 mod stars;
 pub use stars::StarPoint;
+mod subsurface;
+pub use subsurface::{SubMesh, SubVertex, light_at};
 use points::Points;
 pub use pictures::{PictureMesh, mip_levels};
 use pictures::Pictures;
@@ -117,6 +119,11 @@ struct DrawUniform {
     water: [f32; 4],
     /// Проход воды: признак (1 - вода), глубина полной воды на экране.
     sea: [f32; 4],
+    /// Маска подземного режима: сдвиг и масштаб от долей тайла к долям
+    /// маски по u и v.
+    cut: [f32; 4],
+    /// x - непрозрачность поверхности в рамке модели, y - признак маски.
+    glass: [f32; 4],
 }
 
 /// Окно всего снимка.
@@ -292,6 +299,8 @@ pub struct Globe {
     queue: wgpu::Queue,
     tile_pipeline: wgpu::RenderPipeline,
     water_pipeline: wgpu::RenderPipeline,
+    /// Тайлы со смешиванием: поверхность над подземной моделью.
+    glass_pipeline: wgpu::RenderPipeline,
     hole_count_pipeline: wgpu::RenderPipeline,
     hole_show_pipeline: wgpu::RenderPipeline,
     sky_pipeline: wgpu::RenderPipeline,
@@ -302,6 +311,13 @@ pub struct Globe {
     models: Models,
     air: wgpu::Buffer,
     air_bind: wgpu::BindGroup,
+    air_layout: wgpu::BindGroupLayout,
+    /// Маска подземного режима: рамка в долях мира (запад, север,
+    /// восток, юг) и картинка в видеокарте. None - маски нет.
+    cut: Option<([f64; 4], wgpu::TextureView)>,
+    /// Непрозрачность поверхности над подземной моделью.
+    opacity: f32,
+    subsurface: subsurface::Subsurface,
     /// Снять следующий кадр.
     grab_next: bool,
     grabbed: Grabbed,
@@ -550,18 +566,38 @@ impl Globe {
                 count: None,
             }],
         });
+        // Группа воздуха несёт и маску подземного режима: она одна
+        // на кадр, а групп у WebGPU не больше четырёх.
         let air_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("air"),
-            entries: &[wgpu::BindGroupLayoutEntry {
-                binding: 0,
-                visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
+            entries: &[
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
                 },
-                count: None,
-            }],
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Texture {
+                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                        view_dimension: wgpu::TextureViewDimension::D2,
+                        multisampled: false,
+                    },
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 2,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                    count: None,
+                },
+            ],
         });
         // Небо рисуется с тем же расположением, что и тайлы: воздух
         // в группе 2 у обоих.
@@ -587,7 +623,7 @@ impl Globe {
             color: wgpu::BlendComponent::OVER,
             alpha: wgpu::BlendComponent { src_factor: wgpu::BlendFactor::Zero, dst_factor: wgpu::BlendFactor::One, operation: wgpu::BlendOperation::Add },
         };
-        let make_tile_pipeline = |label: &str, water: bool| {
+        let make_tile_pipeline = |label: &str, water: bool, blend: bool| {
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some(label),
                 layout: Some(&tile_layout),
@@ -611,7 +647,10 @@ impl Globe {
                     compilation_options: Default::default(),
                     targets: &[Some(wgpu::ColorTargetState {
                         format: COLOR_FORMAT,
-                        blend: water.then_some(water_blend),
+                        // Тайл смешивается только при подземной модели:
+                        // поверхность над ней прозрачна. Смешивание у всех
+                        // тайлов стоило кадрам самопроверки 5 из 60.
+                        blend: blend.then_some(water_blend),
                         write_mask: wgpu::ColorWrites::ALL,
                     })],
                 }),
@@ -619,8 +658,9 @@ impl Globe {
                 cache: None,
             })
         };
-        let tile_pipeline = make_tile_pipeline("tile", false);
-        let water_pipeline = make_tile_pipeline("water", true);
+        let tile_pipeline = make_tile_pipeline("tile", false, false);
+        let glass_pipeline = make_tile_pipeline("glass", false, true);
+        let water_pipeline = make_tile_pipeline("water", true, true);
         let hole_pipeline = |writes: wgpu::ColorWrites, label: &str| {
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some(label),
@@ -675,11 +715,6 @@ impl Globe {
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
-        let air_bind = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: Some("air"),
-            layout: &air_layout,
-            entries: &[wgpu::BindGroupEntry { binding: 0, resource: air.as_entire_binding() }],
-        });
         let hole_count_pipeline = hole_pipeline(wgpu::ColorWrites::empty(), "holes count");
         let hole_show_pipeline = hole_pipeline(wgpu::ColorWrites::ALL, "holes show");
         let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
@@ -707,6 +742,7 @@ impl Globe {
         });
         let blank = Self::texture_bind(device, queue, &texture_layout, &sampler, 1, 1, &[255, 255, 255, 255]);
         let clear = Self::upload_view(device, queue, 1, 1, &[0, 0, 0, 0], OVERLAY_FORMAT);
+        let air_bind = Self::air_bind(device, &air_layout, &air, &clear, &sampler);
         let clear_bind = device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("overlay and lights"),
             layout: &over_layout,
@@ -739,6 +775,7 @@ impl Globe {
             queue: queue.clone(),
             tile_pipeline,
             water_pipeline,
+            glass_pipeline,
             hole_count_pipeline,
             hole_show_pipeline,
             sky_pipeline,
@@ -749,6 +786,10 @@ impl Globe {
             models: Models::new(device, queue),
             air,
             air_bind,
+            air_layout,
+            cut: None,
+            opacity: 1.0,
+            subsurface: subsurface::Subsurface::new(device),
             grab_next: false,
             grabbed: Arc::new(Mutex::new(None)),
             draw_layout,
@@ -930,6 +971,46 @@ impl Globe {
     }
 
     /// Забыть огни городов: солнце выключено.
+    fn air_bind(device: &wgpu::Device, layout: &wgpu::BindGroupLayout, air: &wgpu::Buffer, cut: &wgpu::TextureView, sampler: &wgpu::Sampler) -> wgpu::BindGroup {
+        device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("air"),
+            layout,
+            entries: &[
+                wgpu::BindGroupEntry { binding: 0, resource: air.as_entire_binding() },
+                wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::TextureView(cut) },
+                wgpu::BindGroupEntry { binding: 2, resource: wgpu::BindingResource::Sampler(sampler) },
+            ],
+        })
+    }
+
+    /// Маска подземного режима, `cut_rgba` модуля: рамка в долях мира
+    /// Web Mercator (запад, север, восток, юг), картинка RGBA. Красный -
+    /// поверхность прозрачна, альфа - поверхности нет, вырез. Край
+    /// картинки должен быть пустым: за рамкой берётся крайняя точка.
+    /// None - маски нет.
+    pub fn set_cut(&mut self, mask: Option<([f64; 4], u32, u32, &[u8])>) {
+        self.cut = mask.filter(|(b, w, h, rgba)| b[2] > b[0] && b[3] > b[1] && *w > 0 && *h > 0 && rgba.len() == (*w as usize) * (*h as usize) * 4).map(|(b, w, h, rgba)| {
+            (b, Self::upload_view(&self.device, &self.queue, w, h, rgba, OVERLAY_FORMAT))
+        });
+        let view = self.cut.as_ref().map_or(&self.clear, |(_, v)| v);
+        self.air_bind = Self::air_bind(&self.device, &self.air_layout, &self.air, view, &self.sampler);
+    }
+
+    /// Непрозрачность поверхности в рамке модели подземного режима.
+    pub fn set_opacity(&mut self, opacity: f32) {
+        self.opacity = if opacity.is_finite() { opacity.clamp(0.0, 1.0) } else { 1.0 };
+    }
+
+    /// Подземная сетка name, None - убрать.
+    pub fn set_subsurface(&mut self, name: &str, mesh: Option<&SubMesh>) {
+        self.subsurface.set(&self.device, name, mesh);
+    }
+
+    /// Убрать все подземные сетки.
+    pub fn clear_subsurface(&mut self) {
+        self.subsurface.clear();
+    }
+
     /// Сетки тайлов устарели: высоты сменились без смены уровня, например
     /// дно моря включено или пришло от предка. under - тайлы высот, сетки
     /// внутри них пересобираются, None - все сетки. Сетка пересобирается
@@ -1288,7 +1369,7 @@ impl Globe {
                     _ => ((None, [0.0; 4]), (None, [0.0; 4])),
                 };
                 me.ensure_over((overlay, lights));
-                out.push(Item { kind, mesh, texture, overlay, lights, cap: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow, water: [0.0; 4], sea: [0.0; 4] } });
+                out.push(Item { kind, mesh, texture, overlay, lights, cap: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow, water: [0.0; 4], sea: [0.0; 4], cut: [0.0; 4], glass: [1.0, 0.0, 0.0, 0.0] } });
             }
         };
         let flat = |rgb: [f32; 3]| [rgb[0], rgb[1], rgb[2], 1.0];
@@ -1326,6 +1407,21 @@ impl Globe {
                 if self.cap_binds[i].is_some() {
                     item.cap = Some(i);
                     item.uniform.color[3] = 0.0;
+                }
+            }
+        }
+        // Маска подземного режима: окно тайла в картинке маски.
+        if let Some((b, _)) = &self.cut {
+            let (w, h) = (b[2] - b[0], b[3] - b[1]);
+            for item in out.iter_mut().filter(|i| i.kind == Kind::Tile) {
+                if let MeshId::Tile { z, x, y } = item.mesh
+                    && w > 0.0
+                    && h > 0.0
+                {
+                    let n = f64::from(1u32 << z.min(30));
+                    let (u0, v0) = (f64::from(x) / n, f64::from(y) / n);
+                    item.uniform.cut = [((u0 - b[0]) / w) as f32, ((v0 - b[1]) / h) as f32, (1.0 / (n * w)) as f32, (1.0 / (n * h)) as f32];
+                    item.uniform.glass = [self.opacity, 1.0, 0.0, 0.0];
                 }
             }
         }
@@ -1577,7 +1673,10 @@ impl Globe {
                 occlusion_query_set: queries.then_some(&self.query_set),
                 multiview_mask: None,
             });
-            pass.set_pipeline(&self.tile_pipeline);
+            // Подземные сетки - до тайлов: прозрачная поверхность ложится
+            // на них смешиванием, как у модуля.
+            draws += self.subsurface.draw(&self.device, &self.queue, &mut pass, camera);
+            pass.set_pipeline(if self.cut.is_some() { &self.glass_pipeline } else { &self.tile_pipeline });
             pass.set_bind_group(2, &self.air_bind, &[]);
             let mut underlay_open = false;
             let mut water_open = false;

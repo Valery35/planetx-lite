@@ -961,3 +961,23 @@ OSRM service, data © OpenStreetMap	OSRM hizmeti, veriler © OpenStreetMap
 The service did not answer ({error}), route over road tiles	Hizmet yanıt vermedi ({error}), rota yol karoları üzerinden
 Map error	Haritada hata
 Clear|route	Sıfırla
+Subsurface mode	Yeraltı kipi
+Surface opacity	Yüzey opaklığı
+Opacity of the surface. Lower - drill holes and bed roofs show through the terrain.	Yüzey opaklığı. Daha düşük - sondajlar ve katman tavanları arazinin içinden görünür.
+Block cut	Blok kesiti
+Remove the surface and the roofs inside the cut polygon. The beds show along the cut edge, the model bottom at its floor.	Kesit çokgeninin içindeki yüzeyi ve tavanları kaldır. Kesitin kenarında katmanlar, tabanında modelin alt yüzü görünür.
+Camera under the ground	Yerin altında kamera
+The camera goes below the terrain down to the model bottom inside its frame. Above the model the camera moves along its bottom, not along the terrain.	Kamera modelin çerçevesi içinde arazinin altına, modelin alt yüzüne kadar iner. Modelin üzerinde kamera arazide değil, modelin alt yüzü boyunca hareket eder.
+Remove the model	Modeli kaldır
+Drill holes {holes}, roofs {horizons}, sections {sections}. Vertices {vertices}.	Sondaj {holes}, tavan {horizons}, kesit {sections}. Köşe {vertices}.
+Tunnels {count}.	Tünel {count}.
+Not found: {names}.	Bulunamadı: {names}.
+Rows skipped - {count}.	Atlanan satır - {count}.
+Subsurface mode…	Yeraltı kipi…
+The Subsurface mode window - surface transparency above the model, the block cut and the camera under the ground. The data is a GeoPackage file with drill holes, bed roofs, sections and tunnels, open it like any other file.	"Yeraltı kipi" penceresi - model üzerindeki yüzeyin saydamlığı, blok kesiti ve yerin altında kamera. Veriler sondajlar, katman tavanları, kesitler ve tüneller içeren bir GeoPackage dosyasıdır, her dosya gibi açılır.
+No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.	Yeraltı verisi yok: sondajlar, katman tavanları veya tüneller içeren bir GeoPackage dosyası açın.
+Permian deposits	Perm çökelleri
+The sea and ocean floor below zero and water above it. Without the check the sea surface is flat, at zero.	Sıfırın altındaki deniz ve okyanus tabanı ve üzerindeki su. İşaret yokken deniz yüzeyi düzdür, sıfırdadır.
+Ground above the grids	Gridlerin üzerindeki zemin
+Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.	Yeraltı modelinin üzerindeki zeminin opaklığı - kotlara göre gridler, tavanlar, sondajlar. Sağa doğru zemin opaktır, sola doğru daha saydamdır, sol kenarda görünmez. Veri sınırının dışında zemin değişmez.
+The Subsurface mode window - the block cut and the camera under the ground.	"Yeraltı kipi" penceresi - blok kesiti ve yerin altında kamera.

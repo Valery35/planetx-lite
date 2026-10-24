@@ -961,3 +961,23 @@ OSRM service, data © OpenStreetMap	Dienst OSRM, gegevens © OpenStreetMap
 The service did not answer ({error}), route over road tiles	De dienst antwoordde niet ({error}), route over wegtegels
 Map error	Fout op de kaart
 Clear|route	Wissen
+Subsurface mode	Ondergrondmodus
+Surface opacity	Dekking van het oppervlak
+Opacity of the surface. Lower - drill holes and bed roofs show through the terrain.	Dekking van het oppervlak. Lager - boorgaten en laagdaken schijnen door het reliëf.
+Block cut	Blokuitsnede
+Remove the surface and the roofs inside the cut polygon. The beds show along the cut edge, the model bottom at its floor.	Het oppervlak en de daken binnen de uitsnedeveelhoek verwijderen. Langs de rand van de uitsnede zijn de lagen zichtbaar, op de bodem de onderkant van het model.
+Camera under the ground	Camera onder de grond
+The camera goes below the terrain down to the model bottom inside its frame. Above the model the camera moves along its bottom, not along the terrain.	De camera daalt binnen het kader van het model onder het reliëf tot de onderkant van het model. Boven het model beweegt de camera langs zijn onderkant, niet langs het reliëf.
+Remove the model	Model verwijderen
+Drill holes {holes}, roofs {horizons}, sections {sections}. Vertices {vertices}.	Boorgaten {holes}, daken {horizons}, doorsneden {sections}. Hoekpunten {vertices}.
+Tunnels {count}.	Tunnels {count}.
+Not found: {names}.	Niet gevonden: {names}.
+Rows skipped - {count}.	Overgeslagen regels - {count}.
+Subsurface mode…	Ondergrondmodus…
+The Subsurface mode window - surface transparency above the model, the block cut and the camera under the ground. The data is a GeoPackage file with drill holes, bed roofs, sections and tunnels, open it like any other file.	Het venster ‘Ondergrondmodus’ - transparantie van het oppervlak boven het model, blokuitsnede en camera onder de grond. De gegevens zijn een GeoPackage-bestand met boorgaten, laagdaken, doorsneden en tunnels, het wordt geopend zoals elk ander bestand.
+No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.	Geen ondergrondgegevens: open een GeoPackage-bestand met boorgaten, laagdaken of tunnels.
+Permian deposits	Permische afzettingen
+The sea and ocean floor below zero and water above it. Without the check the sea surface is flat, at zero.	De bodem van zeeën en oceanen onder nul en het water erboven. Zonder vinkje is het zeeoppervlak vlak, op nul.
+Ground above the grids	Grond boven de grids
+Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.	Dekking van de grond boven het ondergrondmodel - grids naar hoogten, daken, boorgaten. Naar rechts is de grond ondoorzichtig, naar links doorzichtiger, aan de linkerrand is hij niet te zien. Buiten de omtrek van de gegevens verandert de grond niet.
+The Subsurface mode window - the block cut and the camera under the ground.	Het venster ‘Ondergrondmodus’ - blokuitsnede en camera onder de grond.

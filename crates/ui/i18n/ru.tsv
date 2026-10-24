@@ -961,3 +961,23 @@ OSRM service, data © OpenStreetMap	Сервис OSRM, данные © OpenStree
 The service did not answer ({error}), route over road tiles	Сервис не ответил ({error}), маршрут по тайлам дорог
 Map error	Ошибка на карте
 Clear|route	Сбросить
+Subsurface mode	Подземный режим
+Surface opacity	Непрозрачность поверхности
+Opacity of the surface. Lower - drill holes and bed roofs show through the terrain.	Непрозрачность поверхности. Меньше - сквозь рельеф видны скважины и кровли пластов.
+Block cut	Вырез блока
+Remove the surface and the roofs inside the cut polygon. The beds show along the cut edge, the model bottom at its floor.	Убрать поверхность и кровли внутри многоугольника выреза. По краю выреза видны пласты, на дне - низ модели.
+Camera under the ground	Камера под землёй
+The camera goes below the terrain down to the model bottom inside its frame. Above the model the camera moves along its bottom, not along the terrain.	Камера опускается ниже рельефа до низа модели в её рамке. Над моделью камера ходит по её низу, а не по рельефу.
+Remove the model	Убрать модель
+Drill holes {holes}, roofs {horizons}, sections {sections}. Vertices {vertices}.	Скважин {holes}, кровель {horizons}, разрезов {sections}. Вершин {vertices}.
+Tunnels {count}.	Тоннелей {count}.
+Not found: {names}.	Не найдены {names}.
+Rows skipped - {count}.	Пропущено строк - {count}.
+Subsurface mode…	Подземный режим…
+The Subsurface mode window - surface transparency above the model, the block cut and the camera under the ground. The data is a GeoPackage file with drill holes, bed roofs, sections and tunnels, open it like any other file.	Окно «Подземный режим» - прозрачность земли над моделью, вырез блока и камера под землёй. Данные - файл GeoPackage со скважинами, кровлями пластов, разрезами и тоннелями, он открывается как любой файл.
+No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.	Подземных данных нет: откройте файл GeoPackage со скважинами, кровлями пластов или тоннелями.
+Permian deposits	Пермские отложения
+The sea and ocean floor below zero and water above it. Without the check the sea surface is flat, at zero.	Дно морей и океанов ниже нуля и вода над ним. Без флажка поверхность моря ровная, на уровне нуля.
+Ground above the grids	Земля над гридами
+Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.	Непрозрачность земли над подземной моделью - гридами по отметкам, кровлями, скважинами. Вправо земля непрозрачна, влево прозрачнее, у левого края её не видно. Вне контура данных земля не меняется.
+The Subsurface mode window - the block cut and the camera under the ground.	Окно «Подземный режим» - вырез блока и камера под землёй.

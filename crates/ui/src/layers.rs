@@ -136,6 +136,10 @@ pub struct State<'a> {
     pub vector: &'a VectorBase,
     /// Свои растры рельефа.
     pub own: Vec<String>,
+    /// Флажок «Глубины морей и океанов».
+    pub sea: bool,
+    /// Непрозрачность земли над подземной моделью, None - модели нет.
+    pub ground: Option<f32>,
 }
 
 /// Что попросили строки раздела или каталог.
@@ -158,6 +162,12 @@ pub enum Action {
     Catalog,
     /// Окно «Батиметрия водоёма» своего растра.
     Bathymetry(String),
+    /// Глубины морей и океанов включить или снять.
+    Sea(bool),
+    /// Непрозрачность земли над подземной моделью.
+    Ground(f32),
+    /// Открыть окно «Подземный режим».
+    Subsurface,
 }
 
 /// Название основы в строке и меню, как в списке подложек модуля: Esri
@@ -300,12 +310,37 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
             return true;
         }
         ui.separator();
+        let mut sea = state.sea;
+        if ui.checkbox(&mut sea, tr(lang, "Sea and ocean depths")).on_hover_text(tr(lang, "The sea and ocean floor below zero and water above it. Without the check the sea surface is flat, at zero.")).changed() {
+            out.push(Action::Sea(sea));
+            return true;
+        }
+        ui.separator();
         if ui.button(tr(lang, "Data sources…")).clicked() {
             out.push(Action::Sources);
             return true;
         }
         false
     });
+    // Земля над подземной моделью, видна, пока модель есть, как строка
+    // «Земля над гридами» модуля.
+    if let Some(alpha) = state.ground {
+        ui.horizontal(|ui| {
+            ui.add_space(4.0);
+            ui.label(tr(lang, "Ground above the grids"));
+            let mut value = alpha;
+            let slider = ui.add(egui::Slider::new(&mut value, 0.0..=1.0).show_value(false)).on_hover_text(tr(
+                lang,
+                "Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.",
+            ));
+            if slider.changed() {
+                out.push(Action::Ground(value));
+            }
+            if ui.small_button("…").on_hover_text(tr(lang, "The Subsurface mode window - the block cut and the camera under the ground.")).clicked() {
+                out.push(Action::Subsurface);
+            }
+        });
+    }
     // Включённые слои каталога.
     for extra in Extra::all() {
         if !state.extras.contains(&extra) {

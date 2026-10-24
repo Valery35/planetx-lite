@@ -29,6 +29,11 @@ struct Draw {
     water: vec4<f32>,
     // Проход воды: x - признак, y - глубина полной воды на экране.
     sea: vec4<f32>,
+    // Маска подземного режима: сдвиг и масштаб от долей тайла к долям
+    // маски по u и v.
+    cut: vec4<f32>,
+    // x - непрозрачность поверхности в рамке модели, y - признак маски.
+    glass: vec4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> draw: Draw;
@@ -36,6 +41,10 @@ struct Draw {
 @group(1) @binding(1) var tile_sampler: sampler;
 // Наложение линий векторной основы, как картинка overlay.py модуля
 // поверх снимка: значения экрана, альфа умножена на цвет.
+// Маска подземного режима, `cut_rgba` модуля: красный - поверхность
+// прозрачна, альфа - вырез, поверхности нет.
+@group(2) @binding(1) var cut_texture: texture_2d<f32>;
+@group(2) @binding(2) var cut_sampler: sampler;
 @group(3) @binding(0) var over_texture: texture_2d<f32>;
 @group(3) @binding(1) var over_sampler: sampler;
 // Огни городов NASA Black Marble, видны на ночной стороне при солнце.
@@ -109,6 +118,7 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     let picture = textureSample(tile_texture, tile_sampler, draw.window.xy + in.uv * draw.window.z);
     let lines = textureSample(over_texture, over_sampler, draw.over.xy + in.uv * draw.over.z) * draw.over.w;
     let glow = textureSample(lights_texture, lights_sampler, draw.lights.xy + in.uv * draw.lights.z) * draw.lights.w;
+    let mask = textureSample(cut_texture, cut_sampler, draw.cut.xy + in.uv * draw.cut.zw);
     if draw.hole.w > 0.5 {
         let low = draw.hole.xy;
         let high = draw.hole.xy + vec2<f32>(draw.hole.z, draw.hole.z);
@@ -120,6 +130,14 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     var base = photo * (1.0 - lines.a) + lines.rgb;
     var shade = in.shade;
     var alpha = 1.0;
+    if draw.glass.y > 0.5 {
+        if mask.a > 0.5 {
+            discard;
+        }
+        if mask.r > 0.5 {
+            alpha = draw.glass.x;
+        }
+    }
     // Вода только над рельефом ниже нуля, у берега прозрачнее.
     let water = draw.sea.x > 0.5;
     if water {
@@ -127,7 +145,7 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
             discard;
         }
         base = draw.water.rgb;
-        alpha = draw.water.a * clamp(-in.height / draw.sea.y, 0.25, 1.0);
+        alpha = alpha * draw.water.a * clamp(-in.height / draw.sea.y, 0.25, 1.0);
         shade = 1.0;
     }
     // Со светом солнца отмывка не нужна: тени даёт само солнце.

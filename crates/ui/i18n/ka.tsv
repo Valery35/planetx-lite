@@ -961,3 +961,23 @@ OSRM service, data © OpenStreetMap	სერვისი OSRM, მონაც�
 The service did not answer ({error}), route over road tiles	სერვისმა არ უპასუხა ({error}), მარშრუტი გზების ფილებით
 Map error	შეცდომა რუკაზე
 Clear|route	ჩამოყრა
+Subsurface mode	მიწისქვეშა რეჟიმი
+Surface opacity	ზედაპირის გაუმჭვირვალობა
+Opacity of the surface. Lower - drill holes and bed roofs show through the terrain.	ზედაპირის გაუმჭვირვალობა. ნაკლები - რელიეფში ჩანს ჭაბურღილები და ფენების სახურავები.
+Block cut	ბლოკის ამონაჭერი
+Remove the surface and the roofs inside the cut polygon. The beds show along the cut edge, the model bottom at its floor.	ზედაპირისა და სახურავების მოშორება ამონაჭრის მრავალკუთხედის შიგნით. ამონაჭრის კიდეზე ჩანს ფენები, ფსკერზე - მოდელის ქვედა ზედაპირი.
+Camera under the ground	კამერა მიწის ქვეშ
+The camera goes below the terrain down to the model bottom inside its frame. Above the model the camera moves along its bottom, not along the terrain.	კამერა მოდელის ჩარჩოში რელიეფის ქვემოთ ეშვება მოდელის ქვედა ზედაპირამდე. მოდელის ზემოთ კამერა მოძრაობს მის ქვედა ზედაპირზე და არა რელიეფზე.
+Remove the model	მოდელის მოშორება
+Drill holes {holes}, roofs {horizons}, sections {sections}. Vertices {vertices}.	ჭაბურღილები {holes}, სახურავები {horizons}, ჭრილები {sections}. წვეროები {vertices}.
+Tunnels {count}.	გვირაბები {count}.
+Not found: {names}.	ვერ მოიძებნა: {names}.
+Rows skipped - {count}.	გამოტოვებული სტრიქონები - {count}.
+Subsurface mode…	მიწისქვეშა რეჟიმი…
+The Subsurface mode window - surface transparency above the model, the block cut and the camera under the ground. The data is a GeoPackage file with drill holes, bed roofs, sections and tunnels, open it like any other file.	ფანჯარა „მიწისქვეშა რეჟიმი“ - ზედაპირის გამჭვირვალობა მოდელის ზემოთ, ბლოკის ამონაჭერი და კამერა მიწის ქვეშ. მონაცემები - GeoPackage ფაილი ჭაბურღილებით, ფენების სახურავებით, ჭრილებით და გვირაბებით, ის იხსნება როგორც ნებისმიერი ფაილი.
+No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.	მიწისქვეშა მონაცემები არ არის: გახსენით GeoPackage ფაილი ჭაბურღილებით, ფენების სახურავებით ან გვირაბებით.
+Permian deposits	პერმული ნალექები
+The sea and ocean floor below zero and water above it. Without the check the sea surface is flat, at zero.	ზღვებისა და ოკეანეების ფსკერი ნულის ქვემოთ და წყალი მის ზემოთ. ალმის გარეშე ზღვის ზედაპირი სწორია, ნულის დონეზე.
+Ground above the grids	მიწა გრიდების ზემოთ
+Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.	მიწის გაუმჭვირვალობა მიწისქვეშა მოდელის ზემოთ - გრიდები ნიშნულებით, სახურავები, ჭაბურღილები. მარჯვნივ მიწა გაუმჭვირვალეა, მარცხნივ უფრო გამჭვირვალე, მარცხენა კიდესთან ის არ ჩანს. მონაცემების კონტურის გარეთ მიწა არ იცვლება.
+The Subsurface mode window - the block cut and the camera under the ground.	ფანჯარა „მიწისქვეშა რეჟიმი“ - ბლოკის ამონაჭერი და კამერა მიწის ქვეშ.

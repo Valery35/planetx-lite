@@ -163,15 +163,17 @@ fn label_name(lang: Lang, code: &str) -> String {
 }
 
 /// Окно «Свойства вида», как `ui/properties.py` модуля: группы «Основа»,
-/// «Рельеф», «Подписи», «Координаты», «Оформление», «Поиск» с очисткой
-/// истории и кнопка «Закрыть». Групп QGIS («Карта QGIS», «Обновление»),
-/// недр и помощника у Lite нет.
+/// «Рельеф», «Подписи», «Координаты», «Оформление», «Недра», «Поиск»
+/// с очисткой истории и кнопка «Закрыть». Групп QGIS («Карта QGIS»,
+/// «Обновление») и помощника у Lite нет.
 /// Язык интерфейса модуль берёт у QGIS, у Lite он выбирается в группе
 /// «Оформление». Меняет settings и basemap на месте. Возвращает,
-/// изменилось ли что-то, и нажата ли кнопка «Источники данных…».
-pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut Settings, basemap: &mut Basemap) -> (bool, bool) {
+/// изменилось ли что-то, нажата ли кнопка «Источники данных…» и кнопка
+/// «Подземный режим…».
+pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut Settings, basemap: &mut Basemap) -> (bool, bool, bool) {
     let before = (settings.clone(), *basemap);
     let mut sources = false;
+    let mut under = false;
     let mut close = false;
     egui::Window::new(tr(lang, "View properties"))
         .open(open)
@@ -270,6 +272,15 @@ pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut S
                     ui.end_row();
                 });
             });
+            group(ui, tr(lang, "Inside the Earth"), |ui| {
+                let button = ui.button(tr(lang, "Subsurface mode…")).on_hover_text(tr(
+                    lang,
+                    "The Subsurface mode window - surface transparency above the model, the block cut and the camera under the ground. The data is a GeoPackage file with drill holes, bed roofs, sections and tunnels, open it like any other file.",
+                ));
+                if button.clicked() {
+                    under = true;
+                }
+            });
             group(ui, tr(lang, "Search"), |ui| {
                 let button = ui.add_enabled(!settings.history.is_empty(), egui::Button::new(tr(lang, "Clear search history")));
                 if button.on_hover_text(tr(lang, "Erase the previous queries of the Search field.")).clicked() {
@@ -285,7 +296,7 @@ pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut S
     if close {
         *open = false;
     }
-    ((settings.clone(), *basemap) != before, sources)
+    ((settings.clone(), *basemap) != before, sources, under)
 }
 
 /// Форматы координат строки состояния и меню глобуса, `FORMATS` модуля.

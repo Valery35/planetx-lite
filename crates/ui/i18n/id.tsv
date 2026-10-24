@@ -961,3 +961,23 @@ OSRM service, data © OpenStreetMap	Layanan OSRM, data © OpenStreetMap
 The service did not answer ({error}), route over road tiles	Layanan tidak menjawab ({error}), rute melalui ubin jalan
 Map error	Galat di peta
 Clear|route	Atur ulang
+Subsurface mode	Mode bawah permukaan
+Surface opacity	Opasitas permukaan
+Opacity of the surface. Lower - drill holes and bed roofs show through the terrain.	Opasitas permukaan. Lebih rendah - lubang bor dan atap lapisan terlihat menembus relief.
+Block cut	Potongan blok
+Remove the surface and the roofs inside the cut polygon. The beds show along the cut edge, the model bottom at its floor.	Hapus permukaan dan atap di dalam poligon potongan. Di tepi potongan lapisan terlihat, di dasarnya bagian bawah model.
+Camera under the ground	Kamera di bawah tanah
+The camera goes below the terrain down to the model bottom inside its frame. Above the model the camera moves along its bottom, not along the terrain.	Kamera turun di bawah relief hingga bagian bawah model di dalam bingkainya. Di atas model kamera bergerak mengikuti bagian bawahnya, bukan mengikuti relief.
+Remove the model	Hapus model
+Drill holes {holes}, roofs {horizons}, sections {sections}. Vertices {vertices}.	Lubang bor {holes}, atap {horizons}, penampang {sections}. Simpul {vertices}.
+Tunnels {count}.	Terowongan {count}.
+Not found: {names}.	Tidak ditemukan: {names}.
+Rows skipped - {count}.	Baris dilewati - {count}.
+Subsurface mode…	Mode bawah permukaan…
+The Subsurface mode window - surface transparency above the model, the block cut and the camera under the ground. The data is a GeoPackage file with drill holes, bed roofs, sections and tunnels, open it like any other file.	Jendela "Mode bawah permukaan" - transparansi permukaan di atas model, potongan blok, dan kamera di bawah tanah. Datanya berupa berkas GeoPackage dengan lubang bor, atap lapisan, penampang, dan terowongan, berkas ini dibuka seperti berkas lain.
+No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.	Tidak ada data bawah permukaan: buka berkas GeoPackage dengan lubang bor, atap lapisan, atau terowongan.
+Permian deposits	Endapan Perm
+The sea and ocean floor below zero and water above it. Without the check the sea surface is flat, at zero.	Dasar laut dan samudra di bawah nol dan air di atasnya. Tanpa centang permukaan laut datar, pada nol.
+Ground above the grids	Tanah di atas grid
+Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.	Opasitas tanah di atas model bawah permukaan - grid menurut elevasi, atap, lubang bor. Ke kanan tanah tidak tembus pandang, ke kiri lebih transparan, di tepi kiri tanah tidak terlihat. Di luar batas data tanah tidak berubah.
+The Subsurface mode window - the block cut and the camera under the ground.	Jendela "Mode bawah permukaan" - potongan blok dan kamera di bawah tanah.

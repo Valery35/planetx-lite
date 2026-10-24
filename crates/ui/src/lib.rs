@@ -48,6 +48,7 @@ pub mod ruler;
 pub mod search;
 pub mod settings;
 pub mod share;
+pub mod subsurface;
 pub mod theme;
 pub mod timeline;
 pub mod tool;

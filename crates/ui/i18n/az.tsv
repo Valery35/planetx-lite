@@ -961,3 +961,23 @@ OSRM service, data © OpenStreetMap	OSRM xidməti, məlumatlar © OpenStreetMap
 The service did not answer ({error}), route over road tiles	Xidmət cavab vermədi ({error}), marşrut yol kafelləri ilə
 Map error	Xəritədə xəta
 Clear|route	Sıfırla
+Subsurface mode	Yeraltı rejim
+Surface opacity	Səthin qeyri-şəffaflığı
+Opacity of the surface. Lower - drill holes and bed roofs show through the terrain.	Səthin qeyri-şəffaflığı. Az olduqca - relyefin arasından quyular və layların tavanları görünür.
+Block cut	Blokun kəsiyi
+Remove the surface and the roofs inside the cut polygon. The beds show along the cut edge, the model bottom at its floor.	Kəsik çoxbucaqlısının daxilində səthi və tavanları götür. Kəsiyin kənarında laylar, dibində modelin altı görünür.
+Camera under the ground	Yerin altında kamera
+The camera goes below the terrain down to the model bottom inside its frame. Above the model the camera moves along its bottom, not along the terrain.	Kamera modelin çərçivəsində relyefdən aşağı modelin altına qədər enir. Model üzərində kamera relyef üzrə deyil, modelin altı üzrə hərəkət edir.
+Remove the model	Modeli götür
+Drill holes {holes}, roofs {horizons}, sections {sections}. Vertices {vertices}.	Quyular {holes}, tavanlar {horizons}, kəsiklər {sections}. Təpələr {vertices}.
+Tunnels {count}.	Tunellər {count}.
+Not found: {names}.	Tapılmadı: {names}.
+Rows skipped - {count}.	Buraxılmış sətirlər - {count}.
+Subsurface mode…	Yeraltı rejim…
+The Subsurface mode window - surface transparency above the model, the block cut and the camera under the ground. The data is a GeoPackage file with drill holes, bed roofs, sections and tunnels, open it like any other file.	"Yeraltı rejim" pəncərəsi - model üzərində səthin şəffaflığı, blokun kəsiyi və yerin altında kamera. Məlumatlar quyular, layların tavanları, kəsiklər və tunellər olan GeoPackage faylıdır, istənilən fayl kimi açılır.
+No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.	Yeraltı məlumatı yoxdur: quyular, layların tavanları və ya tunellər olan GeoPackage faylını açın.
+Permian deposits	Perm çöküntüləri
+The sea and ocean floor below zero and water above it. Without the check the sea surface is flat, at zero.	Sıfırdan aşağı dəniz və okeanların dibi və onun üzərində su. Bayraqcıq olmadan dəniz səthi düzdür, sıfır səviyyəsindədir.
+Ground above the grids	Qridlərin üzərində yer
+Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.	Yeraltı model üzərində yerin qeyri-şəffaflığı - yüksəkliklər üzrə qridlər, tavanlar, quyular. Sağa doğru yer qeyri-şəffafdır, sola doğru daha şəffaf, sol kənarda görünmür. Məlumat konturundan kənarda yer dəyişmir.
+The Subsurface mode window - the block cut and the camera under the ground.	"Yeraltı rejim" pəncərəsi - blokun kəsiyi və yerin altında kamera.

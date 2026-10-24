@@ -157,6 +157,9 @@ impl Loaders {
 }
 
 /// Хранилище высот, общее для кадра и навигатора.
+/// Пол камеры под землёй, общий с рельефом навигации.
+type FloorCell = Arc<RwLock<Option<crate::subsurface::Floor>>>;
+
 #[derive(Clone, Default)]
 pub struct Heights(Arc<RwLock<HeightStore>>);
 
@@ -230,6 +233,12 @@ pub struct LiteApp {
     open_message: Option<String>,
     /// Маршруты по дорогам, `RouteManager` модуля.
     route: crate::route::Router,
+    /// Подземный режим, `SubsurfaceManager` модуля.
+    subsurface: Option<crate::subsurface::Subsurface>,
+    /// Пол камеры под землёй для рельефа навигации.
+    floor: FloorCell,
+    /// Папка последнего открытого файла в программе.
+    open_dir: Option<std::path::PathBuf>,
     /// Тайлы коридора маршрута у загрузчика векторной основы и те из них,
     /// что не нужны самой основе.
     route_keys: HashSet<TileKey>,
@@ -683,7 +692,16 @@ impl LiteApp {
         }
         let mut nav = Navigator::new(camera, pose);
         let source = heights.clone();
-        nav.set_terrain(Some(Arc::new(move |lat, lon| source.read().height_at(lat, lon))));
+        // Камера под землёй: в рамке подземной модели рельеф навигации -
+        // её низ, `GlobeView.floor` модуля.
+        let floor: FloorCell = Arc::new(RwLock::new(None));
+        let below = floor.clone();
+        nav.set_terrain(Some(Arc::new(move |lat, lon| {
+            let store = source.read();
+            let h = store.height_at(lat, lon);
+            let f = *below.read().unwrap_or_else(std::sync::PoisonError::into_inner);
+            f.and_then(|f| f.at(lat, lon, store.scale(), || store.heights_at(&[(lat, lon)], false).first().copied().unwrap_or(0.0))).map_or(h, |low| low.min(h))
+        })));
         let labels = Labels::new(lang, &settings.labels);
         let mut app = Self {
             lang,
@@ -715,6 +733,9 @@ impl LiteApp {
             marks: Marks::default(),
             pending_open: Vec::new(),
             open_message: None,
+            subsurface: None,
+            floor,
+            open_dir: None,
             route_keys: HashSet::new(),
             route_only: HashSet::new(),
             route: crate::route::Router::new(data::routing::Mode::from_name(&settings.route).unwrap_or(data::routing::Mode::Car)),
@@ -1639,9 +1660,15 @@ impl LiteApp {
         let before = self.settings.clone();
         let mut open = self.settings_open;
         let mut basemap = self.basemap;
-        let (changed, sources) = crate::settings::window(ctx, self.lang, &mut open, &mut self.settings, &mut basemap);
+        let (changed, sources, under) = crate::settings::window(ctx, self.lang, &mut open, &mut self.settings, &mut basemap);
         self.settings_open = open;
         self.credits.sources_open |= sources;
+        if under {
+            match &mut self.subsurface {
+                Some(sub) => sub.window_open = true,
+                None => self.open_message = Some(tr(self.lang, "No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.").to_string()),
+            }
+        }
         self.set_basemap(basemap);
         if !changed {
             return;
@@ -1655,14 +1682,7 @@ impl LiteApp {
             self.heights.write().set_scale(if s.relief { s.scale } else { 0.0 });
         }
         if s.sea != before.sea {
-            // Дно моря: высоты заново из глубин, сетки заново, как
-            // `_set_sea_floor` модуля.
-            let floor = self.earth_floor();
-            let relief = &self.relief;
-            self.heights.write().refloor(floor, &|tile| relief.patch(tile));
-            if let Some(globe) = &mut self.globe {
-                globe.stale_meshes(None);
-            }
+            self.sea_changed();
         }
         if s.language != before.language || s.labels != before.labels {
             let old_root = marks::root_name(self.lang).to_string();
@@ -1681,12 +1701,38 @@ impl LiteApp {
         }
     }
 
+    /// Флажок «Глубины морей и океанов» сменился: высоты заново из
+    /// глубин, сетки заново, как `_set_sea_floor` модуля.
+    fn sea_changed(&mut self) {
+        let floor = self.earth_floor();
+        let relief = &self.relief;
+        self.heights.write().refloor(floor, &|tile| relief.patch(tile));
+        if let Some(globe) = &mut self.globe {
+            globe.stale_meshes(None);
+        }
+    }
+
     /// Действия раздела «Слои» и каталога «Добавить данные».
     fn apply_layers(&mut self, actions: Vec<crate::layers::Action>) {
         use crate::layers::Action;
         for action in actions {
             match action {
                 Action::Basemap(b) => self.set_basemap(b),
+                Action::Sea(on) => {
+                    self.settings.sea = on;
+                    self.settings_dirty = true;
+                    self.sea_changed();
+                }
+                Action::Ground(alpha) => {
+                    if let Some(sub) = &mut self.subsurface {
+                        sub.options.opacity = alpha;
+                    }
+                }
+                Action::Subsurface => {
+                    if let Some(sub) = &mut self.subsurface {
+                        sub.window_open = true;
+                    }
+                }
                 Action::Relief(on) => {
                     self.settings.relief = on;
                     self.heights.write().set_scale(if on { self.settings.scale } else { 0.0 });
@@ -1845,6 +1891,8 @@ impl LiteApp {
             on: &self.extras_on,
             vector: &self.vector,
             own: self.relief.names().into_iter().map(str::to_string).collect(),
+            sea: self.settings.sea,
+            ground: self.subsurface.as_ref().map(|s| s.options.opacity),
         }
     }
 
@@ -2284,6 +2332,17 @@ impl LiteApp {
     /// Возвращает позу сцены или ошибку.
     fn open_file(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
         let lower = name.to_lowercase();
+        // Растр кровли, которого ждёт подземная модель, - ей.
+        if let Some(sub) = self.subsurface.as_mut().filter(|s| s.wants(name)) {
+            sub.add_side(name, bytes.to_vec());
+            return Ok(None);
+        }
+        if lower.ends_with(".gpkg")
+            && let Ok(layers) = data::layers::read(bytes.to_vec(), name)
+            && crate::subsurface::is_subsurface(&layers)
+        {
+            return Ok(self.open_subsurface(layers, name, fly));
+        }
         if lower.ends_with(".tif") || lower.ends_with(".tiff") {
             return self.open_relief(bytes, name, fly);
         }
@@ -2311,6 +2370,73 @@ impl LiteApp {
             Err(e) => {
                 self.open_message = Some(trf(self.lang, "The file did not open: {name}: {e}", &[("name", name), ("e", &e)]));
                 Err(e)
+            }
+        }
+    }
+
+    /// Открыть подземную модель из слоёв файла name, `start` модуля:
+    /// прежняя модель уходит, окно режима открывается, камера летит
+    /// к модели.
+    fn open_subsurface(&mut self, layers: Vec<data::layers::LayerData>, name: &str, fly: Option<f64>) -> Option<Pose> {
+        let now = fly.unwrap_or(0.0);
+        let mut sub = crate::subsurface::Subsurface::new(layers, name, self.open_dir.clone(), now);
+        sub.window_open = true;
+        let pose = sub.middle().map(|(lat, lon, extent)| Pose::new(lat, lon, (extent * 1.5).max(2000.0), 30.0, 60.0));
+        self.subsurface = Some(sub);
+        if let Some(globe) = &mut self.globe {
+            globe.clear_subsurface();
+        }
+        if let Some(pose) = pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
+            match fly {
+                Some(now) => crate::input::fly(&mut self.nav, pose, now),
+                None => self.nav.show(pose),
+            }
+        }
+        self.open_message = None;
+        pose
+    }
+
+    /// Шаг подземного режима: сетки заново, маска, прозрачность, пол
+    /// камеры, окно.
+    fn step_subsurface(&mut self, ctx: &egui::Context, now: f64) {
+        let lang = self.lang;
+        let mut remove = false;
+        if let Some(sub) = &mut self.subsurface {
+            let (changed, gone) = if self.check.is_none() && (self.shot.is_none() || self.shot_ui) { sub.window(ctx, lang) } else { (false, false) };
+            remove = gone;
+            let _ = changed;
+            let (version, scale) = {
+                let s = self.heights.read();
+                (s.version(), s.scale())
+            };
+            *self.floor.write().unwrap_or_else(std::sync::PoisonError::into_inner) = sub.floor();
+            if let Some(globe) = &mut self.globe {
+                globe.set_opacity(sub.options.opacity);
+                if sub.due(now, version, scale)
+                    && let Some(model) = &sub.model
+                {
+                    let heights = &self.heights;
+                    let ground = |pts: &[(f64, f64)]| heights.read().heights_at(pts, false);
+                    let (meshes, count) = crate::subsurface::build(model, scale, &ground, sub.cut_on());
+                    for (name, mesh) in &meshes {
+                        globe.set_subsurface(name, mesh.as_ref());
+                    }
+                    sub.built(lang, now, version, scale, count);
+                }
+                if sub.mask_dirty {
+                    let made = sub.model.as_ref().and_then(|m| crate::subsurface::mask(m, sub.cut_on()));
+                    globe.set_cut(made.as_ref().map(|(b, w, h, rgba)| (*b, *w, *h, rgba.as_slice())));
+                    sub.mask_dirty = false;
+                }
+            }
+        }
+        if remove {
+            self.subsurface = None;
+            *self.floor.write().unwrap_or_else(std::sync::PoisonError::into_inner) = None;
+            if let Some(globe) = &mut self.globe {
+                globe.clear_subsurface();
+                globe.set_cut(None);
+                globe.set_opacity(1.0);
             }
         }
     }
@@ -2930,6 +3056,7 @@ impl LiteApp {
                 let name = path.file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
                 match std::fs::read(&path) {
                     Ok(bytes) => {
+                    self.open_dir = path.parent().map(std::path::Path::to_path_buf);
                     // Ошибку открытия показывает панель.
                     let _ = self.open_file(&bytes, &name, Some(now));
                 }
@@ -4257,6 +4384,7 @@ impl eframe::App for LiteApp {
         self.picked(now);
         self.step_links(now);
         self.step_route(now);
+        self.step_subsurface(&ctx, now);
         self.check_linked_models(now);
         for (bytes, name) in std::mem::take(&mut self.pending_open) {
             let _ = self.open_file(&bytes, &name, None);

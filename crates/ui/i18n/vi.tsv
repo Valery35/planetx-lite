@@ -961,3 +961,23 @@ OSRM service, data © OpenStreetMap	Dịch vụ OSRM, dữ liệu © OpenStreetM
 The service did not answer ({error}), route over road tiles	Dịch vụ không trả lời ({error}), tuyến đường theo ô đường
 Map error	Lỗi trên bản đồ
 Clear|route	Đặt lại
+Subsurface mode	Chế độ dưới lòng đất
+Surface opacity	Độ mờ đục của bề mặt
+Opacity of the surface. Lower - drill holes and bed roofs show through the terrain.	Độ mờ đục của bề mặt. Thấp hơn - giếng khoan và mái các vỉa hiện xuyên qua địa hình.
+Block cut	Cắt khối
+Remove the surface and the roofs inside the cut polygon. The beds show along the cut edge, the model bottom at its floor.	Gỡ bề mặt và các mái bên trong đa giác cắt. Dọc mép vết cắt thấy các vỉa, ở đáy thấy mặt dưới của mô hình.
+Camera under the ground	Máy quay dưới lòng đất
+The camera goes below the terrain down to the model bottom inside its frame. Above the model the camera moves along its bottom, not along the terrain.	Máy quay hạ xuống dưới địa hình đến mặt dưới của mô hình trong khung của nó. Phía trên mô hình máy quay di chuyển theo mặt dưới của mô hình, không theo địa hình.
+Remove the model	Gỡ mô hình
+Drill holes {holes}, roofs {horizons}, sections {sections}. Vertices {vertices}.	Giếng khoan {holes}, mái {horizons}, mặt cắt {sections}. Đỉnh {vertices}.
+Tunnels {count}.	Đường hầm {count}.
+Not found: {names}.	Không tìm thấy: {names}.
+Rows skipped - {count}.	Số dòng bị bỏ qua - {count}.
+Subsurface mode…	Chế độ dưới lòng đất…
+The Subsurface mode window - surface transparency above the model, the block cut and the camera under the ground. The data is a GeoPackage file with drill holes, bed roofs, sections and tunnels, open it like any other file.	Cửa sổ "Chế độ dưới lòng đất" - độ trong suốt của bề mặt phía trên mô hình, cắt khối và máy quay dưới lòng đất. Dữ liệu là tệp GeoPackage có giếng khoan, mái các vỉa, mặt cắt và đường hầm, tệp được mở như mọi tệp khác.
+No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.	Không có dữ liệu dưới lòng đất: hãy mở tệp GeoPackage có giếng khoan, mái các vỉa hoặc đường hầm.
+Permian deposits	Trầm tích kỷ Permi
+The sea and ocean floor below zero and water above it. Without the check the sea surface is flat, at zero.	Đáy biển và đại dương dưới mức không và nước phía trên. Khi bỏ đánh dấu mặt biển phẳng, ở mức không.
+Ground above the grids	Mặt đất phía trên các lưới
+Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.	Độ mờ đục của mặt đất phía trên mô hình dưới lòng đất - lưới theo cao độ, mái các vỉa, giếng khoan. Sang phải mặt đất mờ đục, sang trái trong suốt hơn, ở mép trái không thấy. Ngoài đường bao dữ liệu mặt đất không thay đổi.
+The Subsurface mode window - the block cut and the camera under the ground.	Cửa sổ "Chế độ dưới lòng đất" - cắt khối và máy quay dưới lòng đất.

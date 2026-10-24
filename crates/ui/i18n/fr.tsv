@@ -961,3 +961,23 @@ OSRM service, data © OpenStreetMap	Service OSRM, données © OpenStreetMap
 The service did not answer ({error}), route over road tiles	Le service n’a pas répondu ({error}), itinéraire par tuiles de routes
 Map error	Erreur sur la carte
 Clear|route	Réinitialiser
+Subsurface mode	Mode souterrain
+Surface opacity	Opacité de la surface
+Opacity of the surface. Lower - drill holes and bed roofs show through the terrain.	Opacité de la surface. Plus faible - les forages et les toits des couches se voient à travers le relief.
+Block cut	Coupe du bloc
+Remove the surface and the roofs inside the cut polygon. The beds show along the cut edge, the model bottom at its floor.	Retirer la surface et les toits à l’intérieur du polygone de coupe. Les couches se voient au bord de la coupe, la base du modèle au fond.
+Camera under the ground	Caméra sous terre
+The camera goes below the terrain down to the model bottom inside its frame. Above the model the camera moves along its bottom, not along the terrain.	La caméra descend sous le relief jusqu’à la base du modèle dans son cadre. Au-dessus du modèle, la caméra se déplace le long de sa base et non du relief.
+Remove the model	Retirer le modèle
+Drill holes {holes}, roofs {horizons}, sections {sections}. Vertices {vertices}.	Forages {holes}, toits {horizons}, coupes {sections}. Sommets {vertices}.
+Tunnels {count}.	Tunnels {count}.
+Not found: {names}.	Introuvables : {names}.
+Rows skipped - {count}.	Lignes ignorées - {count}.
+Subsurface mode…	Mode souterrain…
+The Subsurface mode window - surface transparency above the model, the block cut and the camera under the ground. The data is a GeoPackage file with drill holes, bed roofs, sections and tunnels, open it like any other file.	La fenêtre « Mode souterrain » - transparence de la surface au-dessus du modèle, coupe du bloc et caméra sous terre. Les données sont un fichier GeoPackage avec forages, toits des couches, coupes et tunnels, il s’ouvre comme tout autre fichier.
+No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.	Aucune donnée souterraine : ouvrez un fichier GeoPackage avec des forages, des toits de couches ou des tunnels.
+Permian deposits	Dépôts permiens
+The sea and ocean floor below zero and water above it. Without the check the sea surface is flat, at zero.	Le fond des mers et des océans sous zéro et l’eau au-dessus. Case décochée, la surface de la mer est plane, à zéro.
+Ground above the grids	Sol au-dessus des grilles
+Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.	Opacité du sol au-dessus du modèle souterrain - grilles d’altitudes, toits, forages. Vers la droite le sol est opaque, vers la gauche plus transparent, au bord gauche il n’est pas visible. Hors du contour des données, le sol ne change pas.
+The Subsurface mode window - the block cut and the camera under the ground.	La fenêtre « Mode souterrain » - coupe du bloc et caméra sous terre.

@@ -961,3 +961,23 @@ OSRM service, data © OpenStreetMap	OSRM 服务，数据 © OpenStreetMap
 The service did not answer ({error}), route over road tiles	服务未响应（{error}），按道路瓦片规划路线
 Map error	地图错误
 Clear|route	重置
+Subsurface mode	地下模式
+Surface opacity	地表不透明度
+Opacity of the surface. Lower - drill holes and bed roofs show through the terrain.	地表不透明度。调低后可透过地形看到钻孔和地层顶面。
+Block cut	块体切割
+Remove the surface and the roofs inside the cut polygon. The beds show along the cut edge, the model bottom at its floor.	移除切割多边形内的地表和顶面。切口边缘可见地层，底部可见模型底面。
+Camera under the ground	地下相机
+The camera goes below the terrain down to the model bottom inside its frame. Above the model the camera moves along its bottom, not along the terrain.	相机在模型范围内下降到地形以下，直至模型底面。在模型上方，相机沿模型底面而非地形移动。
+Remove the model	移除模型
+Drill holes {holes}, roofs {horizons}, sections {sections}. Vertices {vertices}.	钻孔 {holes}，顶面 {horizons}，剖面 {sections}。顶点 {vertices}。
+Tunnels {count}.	隧道 {count}。
+Not found: {names}.	未找到：{names}。
+Rows skipped - {count}.	跳过的行 - {count}。
+Subsurface mode…	地下模式…
+The Subsurface mode window - surface transparency above the model, the block cut and the camera under the ground. The data is a GeoPackage file with drill holes, bed roofs, sections and tunnels, open it like any other file.	“地下模式”窗口 - 模型上方地表的透明度、块体切割和地下相机。数据为包含钻孔、地层顶面、剖面和隧道的 GeoPackage 文件，可像其他文件一样打开。
+No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.	没有地下数据：请打开包含钻孔、地层顶面或隧道的 GeoPackage 文件。
+Permian deposits	二叠系沉积
+The sea and ocean floor below zero and water above it. Without the check the sea surface is flat, at zero.	零以下的海洋底部及其上方的水。不勾选时海面平坦，位于零高度。
+Ground above the grids	网格上方的地面
+Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.	地下模型（高程网格、地层顶面、钻孔）上方地面的不透明度。向右地面不透明，向左更透明，在最左端则不可见。数据范围外的地面不变。
+The Subsurface mode window - the block cut and the camera under the ground.	“地下模式”窗口 - 块体切割和地下相机。

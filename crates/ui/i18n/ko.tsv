@@ -961,3 +961,23 @@ OSRM service, data © OpenStreetMap	OSRM 서비스, 데이터 © OpenStreetMap
 The service did not answer ({error}), route over road tiles	서비스가 응답하지 않았습니다({error}). 도로 타일로 만든 경로
 Map error	지도 오류
 Clear|route	초기화
+Subsurface mode	지하 모드
+Surface opacity	지표면 불투명도
+Opacity of the surface. Lower - drill holes and bed roofs show through the terrain.	지표면 불투명도. 낮추면 지형을 통해 시추공과 지층 상면이 보입니다.
+Block cut	블록 절단
+Remove the surface and the roofs inside the cut polygon. The beds show along the cut edge, the model bottom at its floor.	절단 다각형 안의 지표면과 상면을 제거합니다. 절단 가장자리에서는 지층이, 바닥에서는 모델의 하면이 보입니다.
+Camera under the ground	지하 카메라
+The camera goes below the terrain down to the model bottom inside its frame. Above the model the camera moves along its bottom, not along the terrain.	카메라가 모델의 틀 안에서 지형 아래로 모델의 하면까지 내려갑니다. 모델 위에서는 카메라가 지형이 아니라 모델의 하면을 따라 움직입니다.
+Remove the model	모델 제거
+Drill holes {holes}, roofs {horizons}, sections {sections}. Vertices {vertices}.	시추공 {holes}, 상면 {horizons}, 단면 {sections}. 꼭짓점 {vertices}.
+Tunnels {count}.	터널 {count}.
+Not found: {names}.	찾을 수 없음: {names}.
+Rows skipped - {count}.	건너뛴 행 - {count}.
+Subsurface mode…	지하 모드…
+The Subsurface mode window - surface transparency above the model, the block cut and the camera under the ground. The data is a GeoPackage file with drill holes, bed roofs, sections and tunnels, open it like any other file.	‘지하 모드’ 창 - 모델 위 지표면의 투명도, 블록 절단, 지하 카메라. 데이터는 시추공, 지층 상면, 단면, 터널이 담긴 GeoPackage 파일이며 다른 파일처럼 엽니다.
+No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.	지하 데이터가 없습니다: 시추공, 지층 상면 또는 터널이 담긴 GeoPackage 파일을 여십시오.
+Permian deposits	페름기 퇴적층
+The sea and ocean floor below zero and water above it. Without the check the sea surface is flat, at zero.	0 아래의 바다와 대양 바닥과 그 위의 물. 확인란을 끄면 해수면은 0 높이에서 평평합니다.
+Ground above the grids	그리드 위 지면
+Opacity of the ground above the subsurface model - grids by elevations, roofs, drill holes. To the right the ground is opaque, to the left more transparent, at the left edge it is not seen. Outside the data outline the ground does not change.	지하 모델(표고 그리드, 지층 상면, 시추공) 위 지면의 불투명도. 오른쪽으로 갈수록 지면이 불투명하고 왼쪽으로 갈수록 투명해지며 왼쪽 끝에서는 보이지 않습니다. 데이터 윤곽 밖에서는 지면이 바뀌지 않습니다.
+The Subsurface mode window - the block cut and the camera under the ground.	‘지하 모드’ 창 - 블록 절단과 지하 카메라.

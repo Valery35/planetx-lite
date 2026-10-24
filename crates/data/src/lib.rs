@@ -28,7 +28,11 @@
 //! - [`rastermaps`] - карты картинками тайлов поверх снимка, перенос
 //!   `core/fields.py` и `core/tilemaps.py` модуля;
 //! - [`routing`] - маршрут по дорогам векторных тайлов и сервис OSRM,
-//!   перенос `core/routing.py` модуля.
+//!   перенос `core/routing.py` модуля;
+//! - [`drillholes`] - скважины из таблиц устьев, интервалов
+//!   и инклинометрии, перенос `core/drillholes.py` модуля;
+//! - [`subsurface`] - сетки подземного режима, стволы, горизонты
+//!   и разрезы, перенос `core/subsurface.py` модуля.
 
 pub mod bathymetry;
 pub mod cloud;
@@ -36,6 +40,7 @@ pub mod contours;
 pub mod csv;
 pub mod dem;
 pub mod deposits;
+pub mod drillholes;
 pub mod faults;
 pub mod fires;
 pub mod geocode;
@@ -56,4 +61,5 @@ pub mod rastermaps;
 pub mod routing;
 pub mod slope;
 pub mod stars;
+pub mod subsurface;
 pub mod volcanoes;

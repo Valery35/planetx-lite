@@ -9,8 +9,9 @@
 //! первом открытии. Программа хранит его в папке кэша, страница
 //! полагается на кэш браузера. Раскладка - как в папке `planetx/demo`
 //! модуля, меню - как у модуля, без демо, которые Lite пока не
-//! показывает: подземный вид, поезда вживую, исторические карты, Марс,
-//! Луна и небо.
+//! показывает: поезда вживую, исторические карты, Марс, Луна и небо.
+//! У подземного демо файл GeoPackage идёт раньше растров кровель:
+//! растры ждёт открытая им модель.
 
 /// Начало адреса файлов демо.
 pub const BASE: &str = "https://raw.githubusercontent.com/Valery35/planetx-terrain/main/demo/";
@@ -49,6 +50,22 @@ pub const MENU: [Section; 6] = [
         en: "Inside the Earth",
         demos: &[
             Demo { en: "Japan Trench", files: &["japan.planetx"] },
+            Demo {
+                en: "Permian deposits",
+                files: &[
+                    "subsurface/perm_subsurface.gpkg",
+                    "subsurface/roof_01.tif",
+                    "subsurface/roof_02.tif",
+                    "subsurface/roof_03.tif",
+                    "subsurface/roof_04.tif",
+                    "subsurface/roof_05.tif",
+                    "subsurface/roof_06.tif",
+                    "subsurface/roof_07.tif",
+                    "subsurface/roof_08.tif",
+                    "subsurface/roof_09.tif",
+                    "subsurface.planetx",
+                ],
+            },
             Demo { en: "Vegas Loop tunnels", files: &["vegas/vegas_loop.gpkg"] },
         ],
     },
