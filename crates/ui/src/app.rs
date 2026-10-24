@@ -1462,6 +1462,7 @@ impl LiteApp {
             self.lang = s.lang();
             self.labels = Labels::new(self.lang, &s.labels);
             self.labels.kinds = self.vector.label_kinds();
+            self.labels.set_plates(&self.dots.plate_names());
             self.search = Search::new(Some(self.lang.code()));
             // Корень «Мои метки» - на новом языке, если его не переименовали.
             let new_root = marks::root_name(self.lang);
@@ -2928,12 +2929,15 @@ impl LiteApp {
         if let Some(message) = self.dots.poll(self.lang) {
             self.open_message = Some(message);
         }
-        // Линии слоёв линий - в картинки наложения.
-        if self.dots.dirty
-            && self.vector.set_line_sets(self.dots.line_sets())
-            && let Some(globe) = &mut self.globe
-        {
-            globe.clear_overlays();
+        // Линии слоёв линий - в картинки наложения, названия плит -
+        // в надписи.
+        if self.dots.dirty {
+            self.labels.set_plates(&self.dots.plate_names());
+            if self.vector.set_line_sets(self.dots.line_sets())
+                && let Some(globe) = &mut self.globe
+            {
+                globe.clear_overlays();
+            }
         }
         let window = self.timebar.window();
         if (self.dots.dirty || window != self.dots_window)

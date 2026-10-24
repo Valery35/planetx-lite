@@ -111,10 +111,8 @@ impl Layer {
             Layer::Faults => {
                 "About 13.7 thousand active faults of the world from the GEM Global Active Faults database compiled from regional catalogues. The colour shows the kind of slip. It is a normal fault, a reverse fault or thrust, a strike-slip fault, a spreading ridge and a fold. A click on a line shows the name, the kind of slip, the slip rate in mm/yr, the dip and the source catalogue. The first switch-on downloads about 11 MB."
             }
-            // Надписей названий плит в Lite пока нет, фраза о них из
-            // текста модуля снята.
             Layer::Plates => {
-                "Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. The Features window shows the boundary type and the plate speed."
+                "Lithospheric plate boundaries after the PB2002 model. Red - plates moving apart at ridges and rifts, green - plates sliding along transform faults, blue - plates converging in subduction and collision zones. Plate names show as labels. The Features window shows the boundary type and the plate speed."
             }
             Layer::Cables => {
                 "Submarine communication lines (turquoise) and power cables (purple) from OpenStreetMap, visible from any altitude. OSM holds part of the world's cables, most of them in the Atlantic and near Europe. A click on a line shows the name, owner and a link to the OpenStreetMap object."
@@ -426,6 +424,20 @@ impl Dots {
                 State::Ready(d) => d.lines().cloned(),
                 _ => None,
             })
+            .collect()
+    }
+
+    /// Названия плит включённой строки «Границы плит»: название,
+    /// широта, долгота.
+    pub fn plate_names(&self) -> Vec<(String, f64, f64)> {
+        self.layers
+            .iter()
+            .filter_map(|(_, s)| match s {
+                State::Ready(Data::Plates(_, _, p)) => Some(p),
+                _ => None,
+            })
+            .flatten()
+            .map(|p| (p.name.clone(), p.lat, p.lon))
             .collect()
     }
 
