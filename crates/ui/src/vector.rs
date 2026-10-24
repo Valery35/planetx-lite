@@ -10,12 +10,18 @@
 //! Тайл разбирается один раз при приходе. Картинки линий тайлов кадра
 //! рисуются с пределом времени на кадр: на странице нет потоков, а долгая
 //! пауза кадра под Wayland закрывала окно программы.
+//!
+//! В ту же картинку тайла под линиями ложатся карты картинками
+//! (crate::maps): своя картинка наложения у тайла одна, как картинка
+//! стопки слоёв _overlay_stack модуля.
 
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::sync::Arc;
 
 use data::lines::{self, Group};
+use data::rastermaps;
 use data::places::Kind;
+use crate::maps::Kind as MapKind;
 use globe_core::lod::TileKey;
 
 /// Строка группы векторной основы, `VECTOR_GROUPS` модуля.
@@ -165,8 +171,28 @@ pub struct VectorBase {
     ready: Vec<Done>,
     /// Номер набора групп: ответ потока под прежние группы отбрасывается.
     generation: u64,
+    /// Карты под линиями снизу вверх: ключ строки и вид.
+    maps: Vec<(&'static str, MapKind)>,
+    /// Тайлы карт: пришедшие и уже раскрашенные.
+    rasters: HashMap<(&'static str, TileKey), Raster>,
     #[cfg(not(target_arch = "wasm32"))]
     pool: Option<Pool>,
+}
+
+/// Тайл карты: пришедший RGBA или картинка слоя, None - рисовать нечего.
+#[derive(Clone)]
+enum Raster {
+    Raw(Arc<Vec<u8>>),
+    Ready(Option<Arc<Vec<u8>>>),
+}
+
+/// Тайл карты для тайла глобуса key: свой или предок на глубшем уровне
+/// карты, глубина и клетка доли.
+fn raster_of(key: TileKey, max_level: u32) -> (TileKey, u32, (u32, u32)) {
+    let (z, x, y) = key;
+    let depth = z.saturating_sub(max_level);
+    let cells = 1u32 << depth.min(31);
+    ((z - depth, x >> depth, y >> depth), depth, (x % cells, y % cells))
 }
 
 /// Векторный тайл для задания: ещё байты или уже разобранный.
@@ -181,6 +207,25 @@ struct Job {
     key: TileKey,
     groups: HashSet<Group>,
     sources: Vec<(TileKey, Source)>,
+    /// Карты снизу вверх: ключ, вид, тайл карты, глубина, клетка, тайл.
+    maps: Vec<MapPart>,
+}
+
+/// Картинка слоя RGBA 256 × 256 с премноженной альфой.
+type Picture = Arc<Vec<u8>>;
+/// Клетка доли предка: столбец и строка.
+type Cell = (u32, u32);
+/// Раскрашенный тайл карты: (ключ карты, тайл) и картинка.
+type Painted = ((&'static str, TileKey), Option<Picture>);
+
+/// Карта в задании: ключ, вид, тайл карты, глубина и клетка доли, тайл.
+struct MapPart {
+    id: &'static str,
+    kind: MapKind,
+    source: TileKey,
+    depth: u32,
+    cell: Cell,
+    raster: Raster,
 }
 
 /// Готовая картинка и разобранные по дороге тайлы.
@@ -191,6 +236,8 @@ struct Done {
     generation: u64,
     key: TileKey,
     decoded: Vec<(TileKey, Arc<lines::Tile>)>,
+    /// Раскрашенные по дороге тайлы карт.
+    painted: Vec<Painted>,
     picture: Option<Vec<u8>>,
 }
 
@@ -209,8 +256,31 @@ fn work(job: Job) -> Done {
         };
         tiles.insert(k, tile);
     }
-    let picture = lines::draw(job.key, &|k| tiles.get(&k).cloned(), &job.groups);
-    Done { generation: job.generation, key: job.key, decoded, picture }
+    let top = if job.groups.is_empty() { None } else { lines::draw(job.key, &|k| tiles.get(&k).cloned(), &job.groups) };
+    if job.maps.is_empty() {
+        return Done { generation: job.generation, key: job.key, decoded, painted: Vec::new(), picture: top };
+    }
+    let mut painted = Vec::new();
+    let mut layers: Vec<(Picture, u32, Cell)> = Vec::new();
+    for MapPart { id, kind, source, depth, cell, raster } in job.maps {
+        let ready = match raster {
+            Raster::Ready(r) => r,
+            Raster::Raw(rgba) => {
+                let r = kind.picture(&rgba).map(Arc::new);
+                painted.push(((id, source), r.clone()));
+                r
+            }
+        };
+        if let Some(r) = ready {
+            layers.push((r, depth, cell));
+        }
+    }
+    let mut pieces: Vec<rastermaps::Piece<'_>> = layers.iter().map(|(r, depth, cell)| rastermaps::Piece { rgba: r, depth: *depth, cell: *cell }).collect();
+    if let Some(t) = &top {
+        pieces.push(rastermaps::Piece { rgba: t, depth: 0, cell: (0, 0) });
+    }
+    let picture = rastermaps::compose(&pieces);
+    Done { generation: job.generation, key: job.key, decoded, painted, picture }
 }
 
 /// Заданий у рабочих потоков сразу, как `MAX_JOBS` наложения модуля.
@@ -274,6 +344,8 @@ impl VectorBase {
             pending: HashSet::new(),
             ready: Vec::new(),
             generation: 0,
+            maps: Vec::new(),
+            rasters: HashMap::new(),
             #[cfg(not(target_arch = "wasm32"))]
             pool: Pool::new(),
         };
@@ -315,6 +387,64 @@ impl VectorBase {
         self.rows.iter().flat_map(|r| r.kinds().iter().copied()).collect()
     }
 
+    /// Новые карты под линиями снизу вверх. Картинки тайлов рисуются
+    /// заново, разобранные векторные тайлы остаются. Возвращает, сменился
+    /// ли набор.
+    pub fn set_maps(&mut self, maps: Vec<(&'static str, MapKind)>) -> bool {
+        if maps == self.maps {
+            return false;
+        }
+        let keep: HashSet<&'static str> = maps.iter().map(|(k, _)| *k).collect();
+        self.rasters.retain(|(k, _), _| keep.contains(k));
+        self.maps = maps;
+        self.drawn.clear();
+        self.pending.clear();
+        self.ready.clear();
+        self.generation += 1;
+        true
+    }
+
+    /// Ключи карт под линиями.
+    pub fn map_keys(&self) -> Vec<&'static str> {
+        self.maps.iter().map(|(k, _)| *k).collect()
+    }
+
+    /// Есть что рисовать: линии или карты.
+    fn active(&self) -> bool {
+        !self.maps.is_empty() || !self.line_groups().is_empty()
+    }
+
+    /// Тайлы карт, нужные картинкам тайлов кадра draw: ключ карты, тайл,
+    /// приоритет.
+    pub fn maps_wanted(&self, draw: &[TileKey]) -> Vec<(&'static str, TileKey, f64)> {
+        let mut out = Vec::new();
+        let mut seen: HashSet<(&'static str, TileKey)> = HashSet::new();
+        for key in draw {
+            if self.drawn.contains_key(key) {
+                continue;
+            }
+            for (id, kind) in &self.maps {
+                let (source, _, _) = raster_of(*key, kind.max_level());
+                if !self.rasters.contains_key(&(*id, source)) && seen.insert((*id, source)) {
+                    out.push((*id, source, 50.0 - f64::from(source.0)));
+                }
+            }
+        }
+        out
+    }
+
+    /// Пришедший тайл карты id: RGBA 256 × 256 или None - тайла нет.
+    pub fn add_map(&mut self, id: &'static str, key: TileKey, rgba: Option<Vec<u8>>) {
+        if !self.maps.iter().any(|(k, _)| *k == id) {
+            return;
+        }
+        let raster = match rgba {
+            Some(r) if r.len() == (lines::TILE_SIZE * lines::TILE_SIZE * 4) as usize => Raster::Raw(Arc::new(r)),
+            _ => Raster::Ready(None),
+        };
+        self.rasters.insert((id, key), raster);
+    }
+
     /// Векторные тайлы, нужные картинкам линий тайлов кадра draw.
     pub fn wanted(&self, draw: &[TileKey]) -> Vec<(TileKey, f64)> {
         let groups = self.line_groups();
@@ -354,7 +484,7 @@ impl VectorBase {
     pub fn step(&mut self, draw: &[TileKey], budget: f64, globe: &mut render::Globe) {
         let groups = self.line_groups();
         self.drawn.retain(|k, on| !*on || globe.has_overlay(*k));
-        if groups.is_empty() {
+        if !self.active() {
             return;
         }
         let start = web_time::Instant::now();
@@ -379,6 +509,9 @@ impl VectorBase {
                     self.raw.remove(&k);
                     self.tiles.insert(k, t);
                 }
+                for (k, r) in done.painted {
+                    self.rasters.insert(k, Raster::Ready(r));
+                }
                 self.finish(globe, done.key, done.picture);
             }
         }
@@ -392,7 +525,18 @@ impl VectorBase {
             if !sources.iter().all(|s| self.tiles.contains_key(s) || self.raw.contains_key(s)) {
                 continue;
             }
+            let mut maps = Vec::with_capacity(self.maps.len());
+            for (id, kind) in &self.maps {
+                let (source, depth, cell) = raster_of(*key, kind.max_level());
+                if let Some(r) = self.rasters.get(&(*id, source)) {
+                    maps.push(MapPart { id, kind: *kind, source, depth, cell, raster: r.clone() });
+                }
+            }
+            if maps.len() < self.maps.len() {
+                continue;
+            }
             let job = Job {
+                maps,
                 generation: self.generation,
                 key: *key,
                 groups: groups.clone(),
@@ -423,6 +567,9 @@ impl VectorBase {
                 self.raw.remove(&k);
                 self.tiles.insert(k, t);
             }
+            for (k, r) in done.painted {
+                self.rasters.insert(k, Raster::Ready(r));
+            }
             self.finish(globe, done.key, done.picture);
             if start.elapsed().as_secs_f64() > budget {
                 break;
@@ -432,6 +579,11 @@ impl VectorBase {
             let keep: HashSet<TileKey> = draw.iter().flat_map(|k| lines::sources(*k, &groups)).collect();
             self.tiles.retain(|k, _| keep.contains(k));
             self.raw.retain(|k, _| keep.contains(k));
+        }
+        if self.rasters.len() > KEEP_TILES {
+            let keep: HashSet<(&'static str, TileKey)> =
+                draw.iter().flat_map(|k| self.maps.iter().map(|(id, kind)| (*id, raster_of(*k, kind.max_level()).0))).collect();
+            self.rasters.retain(|k, _| keep.contains(k));
         }
     }
 
@@ -445,7 +597,7 @@ impl VectorBase {
 
     /// Все картинки линий готовы для тайлов draw.
     pub fn ready(&self, draw: &[TileKey]) -> bool {
-        self.line_groups().is_empty() || draw.iter().all(|k| self.drawn.contains_key(k))
+        !self.active() || draw.iter().all(|k| self.drawn.contains_key(k))
     }
 
     /// Строки и группы в текст настроек.

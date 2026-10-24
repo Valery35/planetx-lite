@@ -145,7 +145,12 @@ fn main() -> ExitCode {
                 places: Box::new(Loader::new(OPENFREEMAP, default_cache_dir(), repaint.clone())),
                 search: Box::new(Requests::new(repaint.clone())),
                 pictures: Box::new(Requests::with_limit(repaint.clone(), ui::pictures::MAX_BYTES)),
-                files: Box::new(Requests::with_limit(repaint, SCENE_BYTES)),
+                files: Box::new(Requests::with_limit(repaint.clone(), SCENE_BYTES)),
+                make: {
+                    let repaint = repaint.clone();
+                    Box::new(move |source| Box::new(Loader::new(source, default_cache_dir(), repaint.clone())))
+                },
+                request: Box::new(move || Box::new(Requests::new(repaint.clone()))),
             };
             let report: ui::Report = Box::new(move |text, ok| {
                 println!("{text}");

@@ -404,3 +404,179 @@ Previous stop	上一个停靠点
 Stop {n} of {count}: {name}	停靠点 {n}/{count}：{name}
 Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	画面上的停靠点说明。在停靠点，地标的名称和说明以大字显示在画面底部，飞行途中没有说明。
 Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	循环游览。最后一个停靠点之后，游览从第一个重新开始。暂停或叉号可停止游览。
+The geological and lithological maps, earthquakes, plate boundaries and faults, mineral deposits and mining areas, the Earth cutaway and palaeogeography.	地质图和岩性图、地震、板块边界和断层、矿床和采矿区、地球剖面和古地理。
+Soils	土壤
+Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.	SoilGrids 表层土壤 0-5 cm 的属性 - 黏土、沙、有机碳和 pH，250 m 格网。
+Map overlays	地图叠加
+Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.	叠加在底图上的透明地图 - 航标、徒步路线和骑行路线。可同时开启多个。
+Sea marks	航标
+OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.	OpenSeaMap 航标 - 浮标、灯塔、导标、航道和锚地。航标在近处可见，从约 1:500 000 的地图比例尺开始显示。该地图不能代替海图。
+Hiking routes	徒步路线
+Waymarked hiking routes from OpenStreetMap by Waymarked Trails - international, national, regional and local trails in the colour of their level.	Waymarked Trails 提供的 OpenStreetMap 标记徒步路线 - 国际、国家、区域和地方步道，以其等级颜色显示。
+Cycling routes	骑行路线
+Waymarked cycling routes from OpenStreetMap by Waymarked Trails - from international cycle routes to local ones.	Waymarked Trails 提供的 OpenStreetMap 标记骑行路线 - 从国际骑行路线到地方路线。
+Lithology	岩性
+The GLiM lithological map of the world - surface rocks in 16 classes: unconsolidated sediments, sedimentary, volcanic, plutonic and metamorphic rocks, ice. It is compiled from 92 regional maps at a scale of about 1:3 750 000. A click in Identify features mode shows the rock class. The globe shows one such map - lithological, geological, soil, water or a geophysical value map.	GLiM 世界岩性图 - 地表岩石分为 16 类：松散沉积物、沉积岩、火山岩、深成岩和变质岩、冰。该图由 92 幅区域图汇编而成，比例尺约为 1:3 750 000。在“识别对象”模式下单击可显示岩石类别。地球上只显示一幅此类地图 - 岩性图、地质图、土壤图、水体图或地球物理数值图。
+Land cover	土地覆盖
+The ESA WorldCover land cover map for 2021 from Sentinel-1 and Sentinel-2 images with a 10 m pixel - forest, shrubland, grassland, cropland, built-up, bare land, snow and ice, water, wetland, mangroves, moss and lichen. A click in Identify features mode shows the class.	基于 Sentinel-1 和 Sentinel-2 影像的 2021 年 ESA WorldCover 土地覆盖图，像元 10 m - 森林、灌丛、草地、耕地、建成区、裸地、冰雪、水体、湿地、红树林、苔藓和地衣。在“识别对象”模式下单击可显示类别。
+Water transitions	水体变化
+What happened to water from 1984 to 2021 in Landsat images - permanent and seasonal water, new and lost, transitions between them, JRC Global Surface Water. New reservoirs, shrunken lakes and migrating channels are visible. A click in Identify features mode shows the class.	Landsat 影像中 1984 年至 2021 年水体的变化 - 永久水体和季节性水体、新增和消失的水体、它们之间的转换，JRC Global Surface Water。可见新水库、萎缩的湖泊和迁移的河道。在“识别对象”模式下单击可显示类别。
+Clay in soil	土壤黏粒
+The share of clay particles in the soil layer 0-5 cm from ISRIC SoilGrids - a model built on 240 thousand soil profiles, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids 土壤层 0-5 cm 中黏粒的比例 - 基于 24 万个土壤剖面的模型，250 m 格网。在“识别对象”模式下单击会向 SoilGrids 查询数值。
+Sand in soil	土壤砂粒
+The share of sand particles in the soil layer 0-5 cm from ISRIC SoilGrids, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids 土壤层 0-5 cm 中砂粒的比例，250 m 格网。在“识别对象”模式下单击会向 SoilGrids 查询数值。
+Soil organic carbon	土壤有机碳
+Organic carbon content of the soil layer 0-5 cm from ISRIC SoilGrids, g/kg, a 250 m grid. The highest values are in the peatlands of the tundra and taiga. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids 土壤层 0-5 cm 的有机碳含量，g/kg，250 m 格网。最高值位于苔原和泰加林的泥炭地。在“识别对象”模式下单击会向 SoilGrids 查询数值。
+Soil pH	土壤 pH
+Soil pH in water, layer 0-5 cm, from ISRIC SoilGrids, a 250 m grid. Yellow soils are acid, green neutral, turquoise alkaline. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids 水浸提土壤 pH，土层 0-5 cm，250 m 格网。黄色为酸性土壤，绿色为中性，青绿色为碱性。在“识别对象”模式下单击会向 SoilGrids 查询数值。
+Ocean floor age	洋底年龄
+Age of the oceanic crust after the grid of Seton et al. 2020, 0.1° spacing. Young floor at mid-ocean ridges is red, old floor at ocean margins is blue and purple. Land and continental crust are not coloured. The globe shows one value map at a time - ocean floor age, magnetic anomalies, gravity or heat flow. A click in the Identify features mode shows the age in Ma.	根据 Seton 等 2020 年格网的洋壳年龄，间距 0.1°。洋中脊处的年轻洋底为红色，大洋边缘的古老洋底为蓝色和紫色。陆地和大陆地壳不着色。地球上一次只显示一幅数值图 - 洋底年龄、磁异常、重力或热流。在“识别对象”模式下单击可显示以 Ma 为单位的年龄。
+Gravity anomalies	重力异常
+Free-air gravity anomaly after the XGM2019e model to degree 719, about 28 km spacing. Red marks gravity above normal, blue marks gravity below normal. Deep-sea trenches show lows down to -300 mGal, volcanic islands and mountains show highs. A click in the Identify features mode shows the anomaly in mGal.	根据 XGM2019e 模型至 719 阶的自由空气重力异常，间距约 28 km。红色表示重力高于正常值，蓝色表示低于正常值。深海海沟显示低至 -300 mGal 的低值，火山岛和山脉显示高值。在“识别对象”模式下单击可显示以 mGal 为单位的异常。
+Bouguer anomalies	布格异常
+Gravity anomaly minus the attraction of the relief - the Bouguer correction after the ETOPO 2022 relief with a rock density of 2670 kg/m³, water and ice with their own densities, and the terrain correction for the surrounding relief within 167 km. The anomaly shows the density of the interior without the effect of mountains and ocean depths. Under mountains it is negative, which is thick light crust, over the ocean it is positive. A click in the Identify features mode shows the anomaly in mGal.	减去地形引力的重力异常 - 基于 ETOPO 2022 地形的布格改正，岩石密度 2670 kg/m³，水和冰按各自密度计算，并对半径 167 km 内的周围地形进行地形改正。该异常显示不受山脉和海洋深度影响的地下密度。山脉下方为负值，表示厚而轻的地壳，海洋上方为正值。在“识别对象”模式下单击可显示以 mGal 为单位的异常。
+Heat flow	热流
+Heat flow from the interior through the Earth's surface on a 0.5° grid built from 91 thousand measurements of the IHFC 2024 database. Blue marks cold old shields, red marks rifts, ridges and volcanic areas. Far from measurements the grid is smoothed. A click in the Identify features mode shows the flow in mW/m².	基于 IHFC 2024 数据库 9.1 万个测量值构建的 0.5° 格网，表示地球内部经地表散出的热流。蓝色表示寒冷古老的地盾，红色表示裂谷、洋脊和火山区。远离测点处格网经过平滑。在“识别对象”模式下单击可显示以 mW/m² 为单位的热流。
+Magnetic anomalies	磁异常
+Anomalies of the Earth magnetic field after the NOAA NCEI EMAG2v3 grid - the departure of the field from the normal one at 4 km above the ellipsoid, a step of about 4 km. Red means a stronger field, blue a weaker one. The anomalies reveal the crust - ridges and stripes of the ocean floor, ancient shields, ore districts. Empty places have no survey. A click in the Identify features mode shows the value in nT.	根据 NOAA NCEI EMAG2v3 格网的地磁场异常 - 椭球面以上 4 km 处磁场相对正常磁场的偏差，间距约 4 km。红色表示磁场较强，蓝色表示较弱。异常揭示地壳结构 - 洋底的洋脊和条带、古老地盾、矿区。空白处没有测量。在“识别对象”模式下单击可显示以 nT 为单位的数值。
+Planet of Water	水之星球
+Precipitation, soil moisture, snow, ice, water vapor, chlorophyll, salinity and floods from NASA data, currents from NOAA data.	NASA 数据中的降水、土壤湿度、雪、冰、水汽、叶绿素、盐度和洪水，NOAA 数据中的洋流。
+Land and Life	陆地与生命
+Vegetation, dust, night lights and land cover types from NASA data.	NASA 数据中的植被、沙尘、夜间灯光和土地覆盖类型。
+NASA and USGS	NASA 和 USGS
+OSM Humanitarian	OSM 人道主义
+OSM France	OSM 法国
+Esri World Street Map	Esri 街道
+Esri Light Gray Canvas	Esri 浅灰
+Esri Dark Gray Canvas	Esri 深灰
+Esri Ocean	Esri 海洋
+Esri World Terrain	Esri 地形
+Esri Shaded Relief	Esri 晕渲地形
+Esri Physical	Esri 自然地理
+Esri World Hillshade	Esri 详细晕渲
+USGS Imagery (USA)	USGS 影像（美国）
+USGS Imagery Topo (USA)	USGS 影像与地图（美国）
+USGS Topo (USA)	USGS 地形图（美国）
+USGS Shaded Relief (USA)	USGS 晕渲地形（美国）
+Save Scene…	保存场景…
+Planet of Fire	火之星球
+Fire spots, smoke, aerosol and carbon monoxide of fires and industry from NASA data.	NASA 数据中的火点、烟雾、气溶胶以及火灾和工业排放的一氧化碳。
+Planet of Air	空气之星球
+Nitrogen dioxide, sulfur dioxide, methane, carbon dioxide and ozone from NASA data.	NASA 数据中的二氧化氮、二氧化硫、甲烷、二氧化碳和臭氧。
+Smoke, aerosol index	烟雾，气溶胶指数
+Absorbing aerosol - smoke of fires and dust - from OMPS per day, since 2012.	吸收性气溶胶 - 火灾烟雾和沙尘 - OMPS 逐日数据，自 2012 年起。
+Aerosol optical depth	气溶胶光学厚度
+How much the air dims light because of smoke, dust and smog, MODIS per day, since 2017.	空气因烟雾、沙尘和雾霾对光的削弱程度，MODIS 逐日数据，自 2017 年起。
+Carbon monoxide	一氧化碳
+Carbon monoxide mixing ratio at about 5 km from AIRS per day, since 2002. Fire plumes are seen over thousands of kilometres.	AIRS 约 5 km 高度的一氧化碳混合比，逐日，自 2002 年起。火灾烟羽可延伸数千公里。
+Carbon monoxide emission	一氧化碳排放
+Surface carbon monoxide emission from the MERRA-2 reanalysis per month, since 1980. The series lags by several months.	MERRA-2 再分析的地表一氧化碳排放，逐月，自 1980 年起。该序列滞后数月。
+Precipitation	降水
+IMERG precipitation rate per day, since 2000.	IMERG 降水强度，逐日，自 2000 年起。
+Soil moisture	土壤湿度
+Moisture of the top centimetres of soil from SMAP per day, since 2015. The series has missing days.	SMAP 土壤表层数厘米的湿度，逐日，自 2015 年起。序列中有缺失的日期。
+Snow cover	积雪覆盖
+Snow from MODIS Terra imagery per day, since 2000. There are gaps under clouds and in the polar night, seas and lakes are not coloured.	MODIS Terra 影像中的积雪，逐日，自 2000 年起。云下和极夜期间有空缺，海洋和湖泊不着色。
+Snow over 8 days	8 天积雪
+Snow and lake ice from MODIS Terra imagery, an 8-day summary, since 2000. There are fewer gaps under clouds than in the daily layer.	MODIS Terra 影像中的积雪和湖冰，8 天合成，自 2000 年起。云下的空缺比逐日图层少。
+Snow mass	积雪质量
+Snow amount in kilograms per square metre from the SMAP Level 4 model per day, since 2015, a cell of about 9 km. It is a model calculation from satellite data, clouds leave no gaps.	SMAP Level 4 模型中每平方米的积雪量（千克），逐日，自 2015 年起，单元约 9 km。这是基于卫星数据的模型计算，云不会造成空缺。
+Sea ice	海冰
+Sea ice concentration from GHRSST MUR per day, since 2002.	GHRSST MUR 海冰密集度，逐日，自 2002 年起。
+Water vapour	水汽
+Water vapour in the atmospheric column from MODIS Terra per day, since 2000.	MODIS Terra 大气柱中的水汽，逐日，自 2000 年起。
+Chlorophyll	叶绿素
+Algae chlorophyll in the surface layer of the sea from PACE per day, since 2024.	PACE 海洋表层藻类叶绿素，逐日，自 2024 年起。
+Sea salinity	海水盐度
+Sea surface salinity from SMAP, an 8-day running mean, since 2015.	SMAP 海表盐度，8 天滑动平均，自 2015 年起。
+Floods	洪水
+Water beyond its usual banks from MODIS over 3 days, since 2021.	MODIS 3 天内超出正常河岸的水体，自 2021 年起。
+Nitrogen dioxide	二氧化氮
+Tropospheric nitrogen dioxide from TROPOMI per day, since 2018. Cities, roads and power plants are seen.	TROPOMI 对流层二氧化氮，逐日，自 2018 年起。可见城市、道路和发电厂。
+Sulphur dioxide	二氧化硫
+Near-surface sulphur dioxide from OMPS per day, since 2012. Volcanoes and plants are seen.	OMPS 近地表二氧化硫，逐日，自 2012 年起。可见火山和工厂。
+Methane	甲烷
+Methane mixing ratio at about 7 km from AIRS per month, since 2002.	AIRS 约 7 km 高度的甲烷混合比，逐月，自 2002 年起。
+Carbon dioxide	二氧化碳
+Column-average carbon dioxide from OCO-2, orbit swaths per day, since 2014. The series lags by several months.	OCO-2 二氧化碳柱平均浓度，逐日轨道条带，自 2014 年起。该序列滞后数月。
+Ozone	臭氧
+Total column ozone from OMI per day, since 2004. The ozone hole over Antarctica is seen.	OMI 臭氧总量，逐日，自 2004 年起。可见南极上空的臭氧洞。
+Vegetation	植被
+NDVI vegetation index from MODIS Terra over 16 days, since 2000. The series lags by a month.	MODIS Terra 植被指数 NDVI，16 天合成，自 2000 年起。该序列滞后一个月。
+Dust	沙尘
+Dust in the atmosphere from AIRS per day, since 2002.	AIRS 大气中的沙尘，逐日，自 2002 年起。
+Night lights	夜间灯光
+VIIRS night image per day, since 2021. City lights, fires, gas flares and auroras are seen.	VIIRS 夜间影像，逐日，自 2021 年起。可见城市灯光、火灾、天然气火炬和极光。
+Magnetic anomaly, nT	磁异常，nT
+Ocean floor age, Ma	洋底年龄，Ma
+Gravity anomaly, mGal	重力异常，mGal
+Bouguer anomaly, mGal	布格异常，mGal
+Heat flow, mW/m²	热流，mW/m²
+Water occurrence 1984-2021, %	水体出现频率 1984-2021，%
+Clay in soil 0-5 cm, %	土壤黏粒 0-5 cm，%
+Sand in soil 0-5 cm, %	土壤砂粒 0-5 cm，%
+Soil organic carbon 0-5 cm, g/kg	土壤有机碳 0-5 cm，g/kg
+Soil pH 0-5 cm, in water	土壤 pH 0-5 cm，水浸提
+GLiM lithology	GLiM 岩性
+Water transitions 1984-2021, JRC	水体变化 1984-2021，JRC
+ESA WorldCover 2021 land cover	ESA WorldCover 2021 土地覆盖
+Unconsolidated sediments	松散沉积物
+Siliciclastic sedimentary rocks	硅质碎屑沉积岩
+Mixed sedimentary rocks	混合沉积岩
+Carbonate sedimentary rocks	碳酸盐沉积岩
+Evaporites	蒸发岩
+Pyroclastics	火山碎屑岩
+Acid volcanic rocks	酸性火山岩
+Intermediate volcanic rocks	中性火山岩
+Basic volcanic rocks	基性火山岩
+Acid plutonic rocks	酸性深成岩
+Intermediate plutonic rocks	中性深成岩
+Basic plutonic rocks	基性深成岩
+Metamorphic rocks	变质岩
+Ice and glaciers	冰和冰川
+Permanent water	永久水体
+New permanent water	新增永久水体
+Lost permanent water	消失的永久水体
+Seasonal water	季节性水体
+New seasonal water	新增季节性水体
+Lost seasonal water	消失的季节性水体
+Seasonal to permanent	季节性转为永久
+Permanent to seasonal	永久转为季节性
+Ephemeral permanent water	短暂永久水体
+Ephemeral seasonal water	短暂季节性水体
+Forest	森林
+Shrubland	灌丛
+Grassland	草地
+Cropland	耕地
+Built-up	建成区
+Bare and sparse vegetation	裸地和稀疏植被
+Snow and ice	冰雪
+Permanent water bodies	永久水域
+Herbaceous wetland	草本湿地
+Mangroves	红树林
+Moss and lichen	苔藓和地衣
+Magnetic anomaly	磁异常
+Field anomaly	磁场异常
+nT	nT
+Ocean floor	洋底
+Crust age	地壳年龄
+Ma	Ma
+Gravity	重力
+Free-air anomaly	自由空气异常
+mGal	mGal
+Bouguer anomaly	布格异常
+Heat flow|value	热流
+mW/m²	mW/m²
+Grid height	格网高度
+4 km above the ellipsoid	椭球面以上 4 km
+Dataset	数据集
+Rock density	岩石密度
+the tile was not read	未能读取瓦片
+no data	无数据
+loading…	正在加载…
+Soil	土壤
+Water	水
+Class	类别
+Click - the class at the point	单击 - 该点的类别
+{name} · {day}	{name} · {day}
+{name}, {units} · {day}	{name}, {units} · {day}

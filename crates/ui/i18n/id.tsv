@@ -404,3 +404,179 @@ Previous stop	Perhentian sebelumnya
 Stop {n} of {count}: {name}	Perhentian {n} dari {count}: {name}
 Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	Keterangan perhentian di bingkai. Di perhentian, nama dan deskripsi penanda tampil besar di bagian bawah bingkai, saat terbang tidak ada keterangan.
 Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	Tur berulang. Setelah perhentian terakhir, tur dimulai dari yang pertama. Jeda atau tanda silang menghentikannya.
+The geological and lithological maps, earthquakes, plate boundaries and faults, mineral deposits and mining areas, the Earth cutaway and palaeogeography.	Peta geologi dan litologi, gempa bumi, batas lempeng dan sesar, endapan mineral dan wilayah tambang, penampang Bumi dan paleogeografi.
+Soils	Tanah
+Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.	Sifat lapisan atas tanah 0-5 cm menurut SoilGrids - lempung, pasir, karbon organik dan pH, grid 250 m.
+Map overlays	Lapisan peta tambahan
+Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.	Peta transparan di atas peta dasar - rambu laut, rute pendakian dan rute sepeda. Beberapa dapat aktif sekaligus.
+Sea marks	Rambu laut
+OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.	Rambu navigasi OpenSeaMap - pelampung, mercusuar, garis arah, alur pelayaran dan tempat berlabuh. Rambu terlihat dari dekat, mulai skala peta sekitar 1:500 000. Peta ini tidak menggantikan peta laut.
+Hiking routes	Rute pendakian
+Waymarked hiking routes from OpenStreetMap by Waymarked Trails - international, national, regional and local trails in the colour of their level.	Rute pendakian bertanda dari OpenStreetMap melalui Waymarked Trails - jalur internasional, nasional, regional dan lokal dalam warna tingkatnya.
+Cycling routes	Rute sepeda
+Waymarked cycling routes from OpenStreetMap by Waymarked Trails - from international cycle routes to local ones.	Rute sepeda bertanda dari OpenStreetMap melalui Waymarked Trails - dari rute sepeda internasional hingga lokal.
+Lithology	Litologi
+The GLiM lithological map of the world - surface rocks in 16 classes: unconsolidated sediments, sedimentary, volcanic, plutonic and metamorphic rocks, ice. It is compiled from 92 regional maps at a scale of about 1:3 750 000. A click in Identify features mode shows the rock class. The globe shows one such map - lithological, geological, soil, water or a geophysical value map.	Peta litologi dunia GLiM - batuan di permukaan dalam 16 kelas: sedimen lepas, batuan sedimen, vulkanik, plutonik dan metamorf, es. Peta disusun dari 92 peta regional dengan skala sekitar 1:3 750 000. Klik dalam mode “Identifikasi objek” menampilkan kelas batuan. Globe menampilkan satu peta semacam itu - litologi, geologi, tanah, air atau peta nilai geofisika.
+Land cover	Tutupan lahan
+The ESA WorldCover land cover map for 2021 from Sentinel-1 and Sentinel-2 images with a 10 m pixel - forest, shrubland, grassland, cropland, built-up, bare land, snow and ice, water, wetland, mangroves, moss and lichen. A click in Identify features mode shows the class.	Peta tutupan lahan ESA WorldCover tahun 2021 dari citra Sentinel-1 dan Sentinel-2 dengan piksel 10 m - hutan, semak, padang rumput, lahan pertanian, lahan terbangun, lahan terbuka, salju dan es, air, lahan basah, mangrove, lumut dan liken. Klik dalam mode “Identifikasi objek” menampilkan kelasnya.
+Water transitions	Perubahan air
+What happened to water from 1984 to 2021 in Landsat images - permanent and seasonal water, new and lost, transitions between them, JRC Global Surface Water. New reservoirs, shrunken lakes and migrating channels are visible. A click in Identify features mode shows the class.	Apa yang terjadi pada air dari 1984 hingga 2021 pada citra Landsat - air permanen dan musiman, baru dan hilang, peralihan di antaranya, JRC Global Surface Water. Waduk baru, danau yang menyusut dan alur sungai yang berpindah terlihat. Klik dalam mode “Identifikasi objek” menampilkan kelasnya.
+Clay in soil	Lempung dalam tanah
+The share of clay particles in the soil layer 0-5 cm from ISRIC SoilGrids - a model built on 240 thousand soil profiles, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	Bagian partikel lempung pada lapisan tanah 0-5 cm menurut ISRIC SoilGrids - model berdasarkan 240 ribu profil tanah, grid 250 m. Klik dalam mode “Identifikasi objek” meminta nilai dari SoilGrids.
+Sand in soil	Pasir dalam tanah
+The share of sand particles in the soil layer 0-5 cm from ISRIC SoilGrids, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	Bagian partikel pasir pada lapisan tanah 0-5 cm menurut ISRIC SoilGrids, grid 250 m. Klik dalam mode “Identifikasi objek” meminta nilai dari SoilGrids.
+Soil organic carbon	Karbon organik tanah
+Organic carbon content of the soil layer 0-5 cm from ISRIC SoilGrids, g/kg, a 250 m grid. The highest values are in the peatlands of the tundra and taiga. A click in Identify features mode asks SoilGrids for the value.	Kandungan karbon organik pada lapisan tanah 0-5 cm menurut ISRIC SoilGrids, g/kg, grid 250 m. Nilai tertinggi ada di lahan gambut tundra dan taiga. Klik dalam mode “Identifikasi objek” meminta nilai dari SoilGrids.
+Soil pH	pH tanah
+Soil pH in water, layer 0-5 cm, from ISRIC SoilGrids, a 250 m grid. Yellow soils are acid, green neutral, turquoise alkaline. A click in Identify features mode asks SoilGrids for the value.	pH tanah dalam air, lapisan 0-5 cm, menurut ISRIC SoilGrids, grid 250 m. Tanah kuning bersifat asam, hijau netral, toska basa. Klik dalam mode “Identifikasi objek” meminta nilai dari SoilGrids.
+Ocean floor age	Umur dasar samudra
+Age of the oceanic crust after the grid of Seton et al. 2020, 0.1° spacing. Young floor at mid-ocean ridges is red, old floor at ocean margins is blue and purple. Land and continental crust are not coloured. The globe shows one value map at a time - ocean floor age, magnetic anomalies, gravity or heat flow. A click in the Identify features mode shows the age in Ma.	Umur kerak samudra menurut grid Seton dkk. 2020, jarak 0.1°. Dasar muda di punggungan tengah samudra berwarna merah, dasar tua di tepi samudra berwarna biru dan ungu. Daratan dan kerak benua tidak diwarnai. Globe menampilkan satu peta nilai pada satu waktu - umur dasar samudra, anomali magnetik, gravitasi atau aliran panas. Klik dalam mode “Identifikasi objek” menampilkan umur dalam Ma.
+Gravity anomalies	Anomali gravitasi
+Free-air gravity anomaly after the XGM2019e model to degree 719, about 28 km spacing. Red marks gravity above normal, blue marks gravity below normal. Deep-sea trenches show lows down to -300 mGal, volcanic islands and mountains show highs. A click in the Identify features mode shows the anomaly in mGal.	Anomali gravitasi udara bebas menurut model XGM2019e hingga derajat 719, jarak sekitar 28 km. Merah menandai gravitasi di atas normal, biru di bawah normal. Palung laut dalam menunjukkan nilai rendah hingga -300 mGal, pulau vulkanik dan pegunungan menunjukkan nilai tinggi. Klik dalam mode “Identifikasi objek” menampilkan anomali dalam mGal.
+Bouguer anomalies	Anomali Bouguer
+Gravity anomaly minus the attraction of the relief - the Bouguer correction after the ETOPO 2022 relief with a rock density of 2670 kg/m³, water and ice with their own densities, and the terrain correction for the surrounding relief within 167 km. The anomaly shows the density of the interior without the effect of mountains and ocean depths. Under mountains it is negative, which is thick light crust, over the ocean it is positive. A click in the Identify features mode shows the anomaly in mGal.	Anomali gravitasi dikurangi tarikan relief - koreksi Bouguer menurut relief ETOPO 2022 dengan densitas batuan 2670 kg/m³, air dan es dengan densitasnya sendiri, serta koreksi medan untuk relief sekitar dalam radius 167 km. Anomali menunjukkan densitas bagian dalam Bumi tanpa pengaruh pegunungan dan kedalaman samudra. Di bawah pegunungan nilainya negatif, yaitu kerak tebal yang ringan, di atas samudra positif. Klik dalam mode “Identifikasi objek” menampilkan anomali dalam mGal.
+Heat flow	Aliran panas
+Heat flow from the interior through the Earth's surface on a 0.5° grid built from 91 thousand measurements of the IHFC 2024 database. Blue marks cold old shields, red marks rifts, ridges and volcanic areas. Far from measurements the grid is smoothed. A click in the Identify features mode shows the flow in mW/m².	Aliran panas dari bagian dalam melalui permukaan Bumi pada grid 0.5° yang dibangun dari 91 ribu pengukuran basis data IHFC 2024. Biru menandai perisai tua yang dingin, merah menandai rift, punggungan dan wilayah vulkanik. Jauh dari titik pengukuran grid dihaluskan. Klik dalam mode “Identifikasi objek” menampilkan aliran dalam mW/m².
+Magnetic anomalies	Anomali magnetik
+Anomalies of the Earth magnetic field after the NOAA NCEI EMAG2v3 grid - the departure of the field from the normal one at 4 km above the ellipsoid, a step of about 4 km. Red means a stronger field, blue a weaker one. The anomalies reveal the crust - ridges and stripes of the ocean floor, ancient shields, ore districts. Empty places have no survey. A click in the Identify features mode shows the value in nT.	Anomali medan magnet Bumi menurut grid EMAG2v3 NOAA NCEI - penyimpangan medan dari medan normal pada ketinggian 4 km di atas elipsoid, jarak sekitar 4 km. Merah berarti medan lebih kuat, biru lebih lemah. Anomali mengungkap struktur kerak - punggungan dan lajur dasar samudra, perisai tua, distrik bijih. Tempat kosong tidak memiliki survei. Klik dalam mode “Identifikasi objek” menampilkan nilai dalam nT.
+Planet of Water	Planet Air
+Precipitation, soil moisture, snow, ice, water vapor, chlorophyll, salinity and floods from NASA data, currents from NOAA data.	Curah hujan, kelembapan tanah, salju, es, uap air, klorofil, salinitas dan banjir dari data NASA, arus dari data NOAA.
+Land and Life	Daratan dan Kehidupan
+Vegetation, dust, night lights and land cover types from NASA data.	Vegetasi, debu, cahaya malam dan jenis tutupan lahan dari data NASA.
+NASA and USGS	NASA dan USGS
+OSM Humanitarian	OSM Kemanusiaan
+OSM France	OSM Prancis
+Esri World Street Map	Esri Jalan
+Esri Light Gray Canvas	Esri Abu-abu terang
+Esri Dark Gray Canvas	Esri Abu-abu gelap
+Esri Ocean	Esri Samudra
+Esri World Terrain	Esri Medan
+Esri Shaded Relief	Esri Relief bayangan
+Esri Physical	Esri Fisik
+Esri World Hillshade	Esri Relief bayangan rinci
+USGS Imagery (USA)	USGS Citra (AS)
+USGS Imagery Topo (USA)	USGS Citra dengan peta (AS)
+USGS Topo (USA)	USGS Peta topografi (AS)
+USGS Shaded Relief (USA)	USGS Relief bayangan (AS)
+Save Scene…	Simpan adegan…
+Planet of Fire	Planet Api
+Fire spots, smoke, aerosol and carbon monoxide of fires and industry from NASA data.	Titik api, asap, aerosol dan karbon monoksida dari kebakaran dan industri dari data NASA.
+Planet of Air	Planet Udara
+Nitrogen dioxide, sulfur dioxide, methane, carbon dioxide and ozone from NASA data.	Nitrogen dioksida, sulfur dioksida, metana, karbon dioksida dan ozon dari data NASA.
+Smoke, aerosol index	Asap, indeks aerosol
+Absorbing aerosol - smoke of fires and dust - from OMPS per day, since 2012.	Aerosol penyerap - asap kebakaran dan debu - dari OMPS per hari, sejak 2012.
+Aerosol optical depth	Kedalaman optik aerosol
+How much the air dims light because of smoke, dust and smog, MODIS per day, since 2017.	Seberapa besar udara meredam cahaya karena asap, debu dan kabut asap, MODIS per hari, sejak 2017.
+Carbon monoxide	Karbon monoksida
+Carbon monoxide mixing ratio at about 5 km from AIRS per day, since 2002. Fire plumes are seen over thousands of kilometres.	Rasio campuran karbon monoksida pada ketinggian sekitar 5 km dari AIRS per hari, sejak 2002. Gumpalan asap kebakaran terlihat hingga ribuan kilometer.
+Carbon monoxide emission	Emisi karbon monoksida
+Surface carbon monoxide emission from the MERRA-2 reanalysis per month, since 1980. The series lags by several months.	Emisi karbon monoksida di permukaan dari reanalisis MERRA-2 per bulan, sejak 1980. Deret data tertinggal beberapa bulan.
+Precipitation	Curah hujan
+IMERG precipitation rate per day, since 2000.	Intensitas curah hujan IMERG per hari, sejak 2000.
+Soil moisture	Kelembapan tanah
+Moisture of the top centimetres of soil from SMAP per day, since 2015. The series has missing days.	Kelembapan beberapa sentimeter teratas tanah dari SMAP per hari, sejak 2015. Deret data memiliki hari yang hilang.
+Snow cover	Tutupan salju
+Snow from MODIS Terra imagery per day, since 2000. There are gaps under clouds and in the polar night, seas and lakes are not coloured.	Salju dari citra MODIS Terra per hari, sejak 2000. Ada celah di bawah awan dan pada malam kutub, laut dan danau tidak diwarnai.
+Snow over 8 days	Salju selama 8 hari
+Snow and lake ice from MODIS Terra imagery, an 8-day summary, since 2000. There are fewer gaps under clouds than in the daily layer.	Salju dan es danau dari citra MODIS Terra, ringkasan 8 hari, sejak 2000. Celah di bawah awan lebih sedikit daripada pada lapisan harian.
+Snow mass	Massa salju
+Snow amount in kilograms per square metre from the SMAP Level 4 model per day, since 2015, a cell of about 9 km. It is a model calculation from satellite data, clouds leave no gaps.	Jumlah salju dalam kilogram per meter persegi dari model SMAP Level 4 per hari, sejak 2015, sel sekitar 9 km. Ini adalah perhitungan model dari data satelit, awan tidak meninggalkan celah.
+Sea ice	Es laut
+Sea ice concentration from GHRSST MUR per day, since 2002.	Konsentrasi es laut dari GHRSST MUR per hari, sejak 2002.
+Water vapour	Uap air
+Water vapour in the atmospheric column from MODIS Terra per day, since 2000.	Uap air dalam kolom atmosfer dari MODIS Terra per hari, sejak 2000.
+Chlorophyll	Klorofil
+Algae chlorophyll in the surface layer of the sea from PACE per day, since 2024.	Klorofil alga di lapisan permukaan laut dari PACE per hari, sejak 2024.
+Sea salinity	Salinitas laut
+Sea surface salinity from SMAP, an 8-day running mean, since 2015.	Salinitas permukaan laut dari SMAP, rata-rata bergerak 8 hari, sejak 2015.
+Floods	Banjir
+Water beyond its usual banks from MODIS over 3 days, since 2021.	Air yang meluap dari tepian biasanya dari MODIS selama 3 hari, sejak 2021.
+Nitrogen dioxide	Nitrogen dioksida
+Tropospheric nitrogen dioxide from TROPOMI per day, since 2018. Cities, roads and power plants are seen.	Nitrogen dioksida troposfer dari TROPOMI per hari, sejak 2018. Kota, jalan dan pembangkit listrik terlihat.
+Sulphur dioxide	Sulfur dioksida
+Near-surface sulphur dioxide from OMPS per day, since 2012. Volcanoes and plants are seen.	Sulfur dioksida dekat permukaan dari OMPS per hari, sejak 2012. Gunung api dan pabrik terlihat.
+Methane	Metana
+Methane mixing ratio at about 7 km from AIRS per month, since 2002.	Rasio campuran metana pada ketinggian sekitar 7 km dari AIRS per bulan, sejak 2002.
+Carbon dioxide	Karbon dioksida
+Column-average carbon dioxide from OCO-2, orbit swaths per day, since 2014. The series lags by several months.	Rata-rata kolom karbon dioksida dari OCO-2, jalur orbit per hari, sejak 2014. Deret data tertinggal beberapa bulan.
+Ozone	Ozon
+Total column ozone from OMI per day, since 2004. The ozone hole over Antarctica is seen.	Ozon kolom total dari OMI per hari, sejak 2004. Lubang ozon di atas Antarktika terlihat.
+Vegetation	Vegetasi
+NDVI vegetation index from MODIS Terra over 16 days, since 2000. The series lags by a month.	Indeks vegetasi NDVI dari MODIS Terra selama 16 hari, sejak 2000. Deret data tertinggal satu bulan.
+Dust	Debu
+Dust in the atmosphere from AIRS per day, since 2002.	Debu di atmosfer dari AIRS per hari, sejak 2002.
+Night lights	Cahaya malam
+VIIRS night image per day, since 2021. City lights, fires, gas flares and auroras are seen.	Citra malam VIIRS per hari, sejak 2021. Cahaya kota, kebakaran, suar gas dan aurora terlihat.
+Magnetic anomaly, nT	Anomali magnetik, nT
+Ocean floor age, Ma	Umur dasar samudra, Ma
+Gravity anomaly, mGal	Anomali gravitasi, mGal
+Bouguer anomaly, mGal	Anomali Bouguer, mGal
+Heat flow, mW/m²	Aliran panas, mW/m²
+Water occurrence 1984-2021, %	Kemunculan air 1984-2021, %
+Clay in soil 0-5 cm, %	Lempung dalam tanah 0-5 cm, %
+Sand in soil 0-5 cm, %	Pasir dalam tanah 0-5 cm, %
+Soil organic carbon 0-5 cm, g/kg	Karbon organik tanah 0-5 cm, g/kg
+Soil pH 0-5 cm, in water	pH tanah 0-5 cm, dalam air
+GLiM lithology	Litologi GLiM
+Water transitions 1984-2021, JRC	Perubahan air 1984-2021, JRC
+ESA WorldCover 2021 land cover	Tutupan lahan ESA WorldCover 2021
+Unconsolidated sediments	Sedimen lepas
+Siliciclastic sedimentary rocks	Batuan sedimen silisiklastik
+Mixed sedimentary rocks	Batuan sedimen campuran
+Carbonate sedimentary rocks	Batuan sedimen karbonat
+Evaporites	Evaporit
+Pyroclastics	Piroklastik
+Acid volcanic rocks	Batuan vulkanik asam
+Intermediate volcanic rocks	Batuan vulkanik menengah
+Basic volcanic rocks	Batuan vulkanik basa
+Acid plutonic rocks	Batuan plutonik asam
+Intermediate plutonic rocks	Batuan plutonik menengah
+Basic plutonic rocks	Batuan plutonik basa
+Metamorphic rocks	Batuan metamorf
+Ice and glaciers	Es dan gletser
+Permanent water	Air permanen
+New permanent water	Air permanen baru
+Lost permanent water	Air permanen yang hilang
+Seasonal water	Air musiman
+New seasonal water	Air musiman baru
+Lost seasonal water	Air musiman yang hilang
+Seasonal to permanent	Musiman menjadi permanen
+Permanent to seasonal	Permanen menjadi musiman
+Ephemeral permanent water	Air permanen sementara
+Ephemeral seasonal water	Air musiman sementara
+Forest	Hutan
+Shrubland	Semak
+Grassland	Padang rumput
+Cropland	Lahan pertanian
+Built-up	Lahan terbangun
+Bare and sparse vegetation	Lahan terbuka dan vegetasi jarang
+Snow and ice	Salju dan es
+Permanent water bodies	Badan air permanen
+Herbaceous wetland	Lahan basah herba
+Mangroves	Mangrove
+Moss and lichen	Lumut dan liken
+Magnetic anomaly	Anomali magnetik
+Field anomaly	Anomali medan
+nT	nT
+Ocean floor	Dasar samudra
+Crust age	Umur kerak
+Ma	Ma
+Gravity	Gravitasi
+Free-air anomaly	Anomali udara bebas
+mGal	mGal
+Bouguer anomaly	Anomali Bouguer
+Heat flow|value	Aliran panas
+mW/m²	mW/m²
+Grid height	Ketinggian grid
+4 km above the ellipsoid	4 km di atas elipsoid
+Dataset	Kumpulan data
+Rock density	Densitas batuan
+the tile was not read	ubin tidak terbaca
+no data	tidak ada data
+loading…	memuat…
+Soil	Tanah
+Water	Air
+Class	Kelas
+Click - the class at the point	Klik - kelas di titik
+{name} · {day}	{name} · {day}
+{name}, {units} · {day}	{name}, {units} · {day}

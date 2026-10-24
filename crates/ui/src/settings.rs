@@ -18,6 +18,8 @@ pub const KEY: &str = "planetx_settings";
 /// Вертикальный масштаб рельефа: пределы и шаг, как у модуля.
 pub const SCALE_RANGE: (f64, f64) = (0.5, 10.0);
 pub const SCALE_STEP: f64 = 0.5;
+/// Предел высоты дерева меток при чтении настроек, точки экрана.
+pub const PLACES_MAX: f32 = 10000.0;
 
 /// Языки подписей сверх языков интерфейса: коды OpenMapTiles модуля.
 const LABEL_EXTRA: [(&str, &str); 4] = [("pl", "Polski"), ("uk", "Українська"), ("kk", "Қазақша"), ("ar", "العربية")];
@@ -45,11 +47,19 @@ pub struct Settings {
     pub coords: String,
     /// Прежние запросы строки «Поиск», от новых к старым, как у модуля.
     pub history: Vec<String>,
+    /// Высота дерева «Моих меток» над разделом «Слои», точки экрана.
+    /// 0 - по умолчанию. Граница разделов тянется мышью, как разделитель
+    /// панели модуля.
+    pub places_height: f32,
+    /// Включённые карты картинками, ключи [`crate::maps::ALL`].
+    pub maps: Vec<String>,
+    /// Ключ основы, `Basemap::key`.
+    pub basemap: String,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new() }
+        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into() }
     }
 }
 
@@ -61,7 +71,7 @@ impl Settings {
 
     pub fn to_text(&self) -> String {
         format!(
-            "language={}\nlabels={}\ntheme={}\nscale={}\nsun={}\ngrid={}\nair={}\nrelief={}\nvector={}\ncoords={}\n",
+            "language={}\nlabels={}\ntheme={}\nscale={}\nsun={}\ngrid={}\nair={}\nrelief={}\nvector={}\ncoords={}\nplaces_height={}\nmaps={}\nbasemap={}\n",
             self.language.as_deref().unwrap_or(""),
             self.labels,
             if self.dark { "dark" } else { "light" },
@@ -71,7 +81,10 @@ impl Settings {
             self.air,
             self.relief,
             self.vector,
-            self.coords
+            self.coords,
+            self.places_height,
+            self.maps.join(","),
+            self.basemap
         ) + &self.history.iter().map(|h| format!("history={h}\n")).collect::<String>()
     }
 
@@ -96,6 +109,17 @@ impl Settings {
                 "coords" if COORD_FORMATS.contains(&value) => s.coords = value.to_string(),
                 "vector" => s.vector = crate::vector::VectorBase::from_text(value).to_text(),
                 "history" if !value.is_empty() && s.history.len() < scene::searchbar::HISTORY => s.history.push(value.to_string()),
+                "basemap" if Basemap::from_key(value).is_some() => s.basemap = value.to_string(),
+                "maps" => {
+                    s.maps = value.split(',').filter(|k| crate::maps::index(k).is_some()).map(str::to_string).collect();
+                }
+                "places_height" => {
+                    if let Ok(v) = value.parse::<f32>()
+                        && v.is_finite()
+                    {
+                        s.places_height = v.clamp(0.0, PLACES_MAX);
+                    }
+                }
                 "scale" => {
                     if let Ok(v) = value.parse::<f64>()
                         && v.is_finite()
@@ -139,7 +163,7 @@ pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut S
             group(ui, tr(lang, "Base map"), |ui| {
                 ui.horizontal(|ui| {
                     egui::ComboBox::from_id_salt("properties-basemap").selected_text(crate::layers::basemap_title(lang, *basemap)).show_ui(ui, |ui| {
-                        for b in Basemap::ALL {
+                        for b in Basemap::all() {
                             ui.selectable_value(basemap, b, crate::layers::basemap_title(lang, b));
                         }
                     });
@@ -238,9 +262,11 @@ mod tests {
 
     #[test]
     fn settings_round_trip_and_hostile_text() {
-        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()] };
+        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into() };
         assert_eq!(Settings::from_text(&s.to_text()), s);
-        let bad = Settings::from_text("language=xx\nlabels=../x\ntheme=dark\nscale=1e9\nscale=NaN\nfoo=bar\nno equals");
+        let bad = Settings::from_text("language=xx\nlabels=../x\ntheme=dark\nscale=1e9\nscale=NaN\nfoo=bar\nno equals\nplaces_height=-5\nplaces_height=NaN\nmaps=emag,../x");
+        assert_eq!(bad.maps, ["emag"]);
+        assert_eq!(bad.places_height, 0.0);
         assert_eq!(bad.language, None);
         assert_eq!(bad.labels, "");
         assert!(bad.dark);

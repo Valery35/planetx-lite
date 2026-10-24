@@ -404,3 +404,179 @@ Previous stop	Vorheriger Halt
 Stop {n} of {count}: {name}	Halt {n} von {count}: {name}
 Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	Beschriftungen der Halte im Bild. An einem Halt stehen Name und Beschreibung der Ortsmarke groß unten im Bild, im Flug gibt es keine Beschriftung.
 Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	Tour in Schleife. Nach dem letzten Halt beginnt die Tour beim ersten. Pause oder das Kreuz beendet sie.
+The geological and lithological maps, earthquakes, plate boundaries and faults, mineral deposits and mining areas, the Earth cutaway and palaeogeography.	Die geologische und die lithologische Karte, Erdbeben, Plattengrenzen und Störungen, Lagerstätten und Bergbaugebiete, der Erdschnitt und die Paläogeographie.
+Soils	Böden
+Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.	Eigenschaften der obersten Bodenschicht 0-5 cm nach SoilGrids - Ton, Sand, organischer Kohlenstoff und pH, Raster 250 m.
+Map overlays	Kartenüberlagerungen
+Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.	Transparente Karten über der Grundkarte - Seezeichen, Wander- und Radrouten. Mehrere können gleichzeitig eingeschaltet sein.
+Sea marks	Seezeichen
+OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.	Navigationszeichen von OpenSeaMap - Tonnen, Leuchttürme, Leitlinien, Fahrwasser und Ankerplätze. Die Zeichen sind aus der Nähe zu sehen, ab einem Kartenmaßstab von etwa 1:500 000. Die Karte ersetzt keine Seekarte.
+Hiking routes	Wanderrouten
+Waymarked hiking routes from OpenStreetMap by Waymarked Trails - international, national, regional and local trails in the colour of their level.	Markierte Wanderrouten aus OpenStreetMap von Waymarked Trails - internationale, nationale, regionale und lokale Wege in der Farbe ihrer Ebene.
+Cycling routes	Radrouten
+Waymarked cycling routes from OpenStreetMap by Waymarked Trails - from international cycle routes to local ones.	Markierte Radrouten aus OpenStreetMap von Waymarked Trails - von internationalen bis zu lokalen Radrouten.
+Lithology	Lithologie
+The GLiM lithological map of the world - surface rocks in 16 classes: unconsolidated sediments, sedimentary, volcanic, plutonic and metamorphic rocks, ice. It is compiled from 92 regional maps at a scale of about 1:3 750 000. A click in Identify features mode shows the rock class. The globe shows one such map - lithological, geological, soil, water or a geophysical value map.	Die lithologische Weltkarte GLiM - Gesteine an der Oberfläche in 16 Klassen: Lockersedimente, Sediment-, Vulkan-, Plutonit- und metamorphe Gesteine, Eis. Die Karte ist aus 92 regionalen Karten im Maßstab von etwa 1:3 750 000 zusammengestellt. Ein Klick im Modus „Objekte abfragen“ zeigt die Gesteinsklasse. Der Globus zeigt eine solche Karte - lithologisch, geologisch, Boden, Wasser oder eine Karte geophysikalischer Werte.
+Land cover	Landbedeckung
+The ESA WorldCover land cover map for 2021 from Sentinel-1 and Sentinel-2 images with a 10 m pixel - forest, shrubland, grassland, cropland, built-up, bare land, snow and ice, water, wetland, mangroves, moss and lichen. A click in Identify features mode shows the class.	Die Landbedeckungskarte ESA WorldCover für 2021 aus Sentinel-1- und Sentinel-2-Bildern mit 10 m Pixel - Wald, Gebüsch, Grasland, Ackerland, Bebauung, offener Boden, Schnee und Eis, Wasser, Feuchtgebiete, Mangroven, Moose und Flechten. Ein Klick im Modus „Objekte abfragen“ zeigt die Klasse.
+Water transitions	Wasserveränderungen
+What happened to water from 1984 to 2021 in Landsat images - permanent and seasonal water, new and lost, transitions between them, JRC Global Surface Water. New reservoirs, shrunken lakes and migrating channels are visible. A click in Identify features mode shows the class.	Was mit dem Wasser von 1984 bis 2021 auf Landsat-Bildern geschah - ständiges und saisonales Wasser, neues und verschwundenes, Übergänge zwischen ihnen, JRC Global Surface Water. Neue Stauseen, geschrumpfte Seen und wandernde Flussläufe sind sichtbar. Ein Klick im Modus „Objekte abfragen“ zeigt die Klasse.
+Clay in soil	Ton im Boden
+The share of clay particles in the soil layer 0-5 cm from ISRIC SoilGrids - a model built on 240 thousand soil profiles, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	Anteil der Tonpartikel in der Bodenschicht 0-5 cm nach ISRIC SoilGrids - ein Modell auf Grundlage von 240 000 Bodenprofilen, Raster 250 m. Ein Klick im Modus „Objekte abfragen“ fragt den Wert bei SoilGrids ab.
+Sand in soil	Sand im Boden
+The share of sand particles in the soil layer 0-5 cm from ISRIC SoilGrids, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	Anteil der Sandpartikel in der Bodenschicht 0-5 cm nach ISRIC SoilGrids, Raster 250 m. Ein Klick im Modus „Objekte abfragen“ fragt den Wert bei SoilGrids ab.
+Soil organic carbon	Organischer Bodenkohlenstoff
+Organic carbon content of the soil layer 0-5 cm from ISRIC SoilGrids, g/kg, a 250 m grid. The highest values are in the peatlands of the tundra and taiga. A click in Identify features mode asks SoilGrids for the value.	Gehalt an organischem Kohlenstoff in der Bodenschicht 0-5 cm nach ISRIC SoilGrids, g/kg, Raster 250 m. Die höchsten Werte liegen in den Mooren der Tundra und Taiga. Ein Klick im Modus „Objekte abfragen“ fragt den Wert bei SoilGrids ab.
+Soil pH	Boden-pH
+Soil pH in water, layer 0-5 cm, from ISRIC SoilGrids, a 250 m grid. Yellow soils are acid, green neutral, turquoise alkaline. A click in Identify features mode asks SoilGrids for the value.	pH-Wert des Bodens in Wasser, Schicht 0-5 cm, nach ISRIC SoilGrids, Raster 250 m. Gelbe Böden sind sauer, grüne neutral, türkise basisch. Ein Klick im Modus „Objekte abfragen“ fragt den Wert bei SoilGrids ab.
+Ocean floor age	Alter des Ozeanbodens
+Age of the oceanic crust after the grid of Seton et al. 2020, 0.1° spacing. Young floor at mid-ocean ridges is red, old floor at ocean margins is blue and purple. Land and continental crust are not coloured. The globe shows one value map at a time - ocean floor age, magnetic anomalies, gravity or heat flow. A click in the Identify features mode shows the age in Ma.	Alter der ozeanischen Kruste nach dem Raster von Seton et al. 2020, Abstand 0.1°. Junger Boden an den mittelozeanischen Rücken ist rot, alter Boden an den Ozeanrändern blau und violett. Land und kontinentale Kruste sind nicht eingefärbt. Der Globus zeigt jeweils eine Wertekarte - Alter des Ozeanbodens, magnetische Anomalien, Schwere oder Wärmefluss. Ein Klick im Modus „Objekte abfragen“ zeigt das Alter in Ma.
+Gravity anomalies	Schwereanomalien
+Free-air gravity anomaly after the XGM2019e model to degree 719, about 28 km spacing. Red marks gravity above normal, blue marks gravity below normal. Deep-sea trenches show lows down to -300 mGal, volcanic islands and mountains show highs. A click in the Identify features mode shows the anomaly in mGal.	Freiluftanomalie der Schwere nach dem Modell XGM2019e bis Grad 719, Abstand etwa 28 km. Rot bedeutet Schwere über dem Normalwert, Blau unter dem Normalwert. Tiefseegräben zeigen Tiefs bis -300 mGal, Vulkaninseln und Gebirge zeigen Hochs. Ein Klick im Modus „Objekte abfragen“ zeigt die Anomalie in mGal.
+Bouguer anomalies	Bouguer-Anomalien
+Gravity anomaly minus the attraction of the relief - the Bouguer correction after the ETOPO 2022 relief with a rock density of 2670 kg/m³, water and ice with their own densities, and the terrain correction for the surrounding relief within 167 km. The anomaly shows the density of the interior without the effect of mountains and ocean depths. Under mountains it is negative, which is thick light crust, over the ocean it is positive. A click in the Identify features mode shows the anomaly in mGal.	Schwereanomalie abzüglich der Anziehung des Reliefs - die Bouguer-Korrektur nach dem Relief ETOPO 2022 mit einer Gesteinsdichte von 2670 kg/m³, Wasser und Eis mit eigener Dichte, und die Geländekorrektur für das umgebende Relief im Umkreis von 167 km. Die Anomalie zeigt die Dichte des Erdinneren ohne den Einfluss von Gebirgen und Ozeantiefen. Unter Gebirgen ist sie negativ, das ist dicke leichte Kruste, über dem Ozean positiv. Ein Klick im Modus „Objekte abfragen“ zeigt die Anomalie in mGal.
+Heat flow	Wärmefluss
+Heat flow from the interior through the Earth's surface on a 0.5° grid built from 91 thousand measurements of the IHFC 2024 database. Blue marks cold old shields, red marks rifts, ridges and volcanic areas. Far from measurements the grid is smoothed. A click in the Identify features mode shows the flow in mW/m².	Wärmefluss aus dem Erdinneren durch die Erdoberfläche auf einem 0.5°-Raster aus 91 000 Messungen der Datenbank IHFC 2024. Blau zeigt kalte alte Schilde, Rot zeigt Rifts, Rücken und Vulkangebiete. Fern von Messungen ist das Raster geglättet. Ein Klick im Modus „Objekte abfragen“ zeigt den Fluss in mW/m².
+Magnetic anomalies	Magnetische Anomalien
+Anomalies of the Earth magnetic field after the NOAA NCEI EMAG2v3 grid - the departure of the field from the normal one at 4 km above the ellipsoid, a step of about 4 km. Red means a stronger field, blue a weaker one. The anomalies reveal the crust - ridges and stripes of the ocean floor, ancient shields, ore districts. Empty places have no survey. A click in the Identify features mode shows the value in nT.	Anomalien des Erdmagnetfelds nach dem Raster EMAG2v3 von NOAA NCEI - die Abweichung des Feldes vom Normalfeld in 4 km Höhe über dem Ellipsoid, Abstand etwa 4 km. Rot bedeutet ein stärkeres Feld, Blau ein schwächeres. Die Anomalien zeigen den Aufbau der Kruste - Rücken und Streifen des Ozeanbodens, alte Schilde, Erzreviere. Leere Stellen haben keine Vermessung. Ein Klick im Modus „Objekte abfragen“ zeigt den Wert in nT.
+Planet of Water	Planet des Wassers
+Precipitation, soil moisture, snow, ice, water vapor, chlorophyll, salinity and floods from NASA data, currents from NOAA data.	Niederschlag, Bodenfeuchte, Schnee, Eis, Wasserdampf, Chlorophyll, Salzgehalt und Überschwemmungen nach Daten der NASA, Strömungen nach Daten der NOAA.
+Land and Life	Land und Leben
+Vegetation, dust, night lights and land cover types from NASA data.	Vegetation, Staub, nächtliche Lichter und Arten der Landbedeckung nach Daten der NASA.
+NASA and USGS	NASA und USGS
+OSM Humanitarian	OSM Humanitär
+OSM France	OSM Frankreich
+Esri World Street Map	Esri Straßen
+Esri Light Gray Canvas	Esri Hellgrau
+Esri Dark Gray Canvas	Esri Dunkelgrau
+Esri Ocean	Esri Ozeane
+Esri World Terrain	Esri Gelände
+Esri Shaded Relief	Esri Schummerung
+Esri Physical	Esri Physisch
+Esri World Hillshade	Esri Schummerung detailliert
+USGS Imagery (USA)	USGS Bilder (USA)
+USGS Imagery Topo (USA)	USGS Bilder mit Karte (USA)
+USGS Topo (USA)	USGS Topokarte (USA)
+USGS Shaded Relief (USA)	USGS Schummerung (USA)
+Save Scene…	Szene speichern…
+Planet of Fire	Planet des Feuers
+Fire spots, smoke, aerosol and carbon monoxide of fires and industry from NASA data.	Brandherde, Rauch, Aerosol und Kohlenmonoxid von Bränden und Industrie nach Daten der NASA.
+Planet of Air	Planet der Luft
+Nitrogen dioxide, sulfur dioxide, methane, carbon dioxide and ozone from NASA data.	Stickstoffdioxid, Schwefeldioxid, Methan, Kohlendioxid und Ozon nach Daten der NASA.
+Smoke, aerosol index	Rauch, Aerosolindex
+Absorbing aerosol - smoke of fires and dust - from OMPS per day, since 2012.	Absorbierendes Aerosol - Rauch von Bränden und Staub - nach OMPS pro Tag, seit 2012.
+Aerosol optical depth	Aerosol-optische Dicke
+How much the air dims light because of smoke, dust and smog, MODIS per day, since 2017.	Wie stark die Luft das Licht durch Rauch, Staub und Smog abschwächt, MODIS pro Tag, seit 2017.
+Carbon monoxide	Kohlenmonoxid
+Carbon monoxide mixing ratio at about 5 km from AIRS per day, since 2002. Fire plumes are seen over thousands of kilometres.	Mischungsverhältnis von Kohlenmonoxid in etwa 5 km Höhe nach AIRS pro Tag, seit 2002. Rauchfahnen von Bränden sind über Tausende Kilometer zu sehen.
+Carbon monoxide emission	Kohlenmonoxid-Emission
+Surface carbon monoxide emission from the MERRA-2 reanalysis per month, since 1980. The series lags by several months.	Kohlenmonoxid-Emission an der Oberfläche nach der Reanalyse MERRA-2 pro Monat, seit 1980. Die Reihe hinkt einige Monate hinterher.
+Precipitation	Niederschlag
+IMERG precipitation rate per day, since 2000.	Niederschlagsrate IMERG pro Tag, seit 2000.
+Soil moisture	Bodenfeuchte
+Moisture of the top centimetres of soil from SMAP per day, since 2015. The series has missing days.	Feuchte der obersten Zentimeter des Bodens nach SMAP pro Tag, seit 2015. In der Reihe fehlen manche Tage.
+Snow cover	Schneedecke
+Snow from MODIS Terra imagery per day, since 2000. There are gaps under clouds and in the polar night, seas and lakes are not coloured.	Schnee nach Bildern von MODIS Terra pro Tag, seit 2000. Unter Wolken und in der Polarnacht gibt es Lücken, Meere und Seen werden nicht eingefärbt.
+Snow over 8 days	Schnee über 8 Tage
+Snow and lake ice from MODIS Terra imagery, an 8-day summary, since 2000. There are fewer gaps under clouds than in the daily layer.	Schnee und Seeeis nach Bildern von MODIS Terra, eine 8-Tage-Zusammenfassung, seit 2000. Unter Wolken gibt es weniger Lücken als in der Tagesebene.
+Snow mass	Schneemasse
+Snow amount in kilograms per square metre from the SMAP Level 4 model per day, since 2015, a cell of about 9 km. It is a model calculation from satellite data, clouds leave no gaps.	Schneemenge in Kilogramm pro Quadratmeter nach dem Modell SMAP Level 4 pro Tag, seit 2015, Zelle etwa 9 km. Es ist eine Modellrechnung aus Satellitendaten, Wolken erzeugen keine Lücken.
+Sea ice	Meereis
+Sea ice concentration from GHRSST MUR per day, since 2002.	Meereiskonzentration nach GHRSST MUR pro Tag, seit 2002.
+Water vapour	Wasserdampf
+Water vapour in the atmospheric column from MODIS Terra per day, since 2000.	Wasserdampf in der atmosphärischen Säule nach MODIS Terra pro Tag, seit 2000.
+Chlorophyll	Chlorophyll
+Algae chlorophyll in the surface layer of the sea from PACE per day, since 2024.	Algenchlorophyll in der Oberflächenschicht des Meeres nach PACE pro Tag, seit 2024.
+Sea salinity	Salzgehalt des Meeres
+Sea surface salinity from SMAP, an 8-day running mean, since 2015.	Salzgehalt der Meeresoberfläche nach SMAP, gleitendes Mittel über 8 Tage, seit 2015.
+Floods	Überschwemmungen
+Water beyond its usual banks from MODIS over 3 days, since 2021.	Wasser außerhalb seiner üblichen Ufer nach MODIS über 3 Tage, seit 2021.
+Nitrogen dioxide	Stickstoffdioxid
+Tropospheric nitrogen dioxide from TROPOMI per day, since 2018. Cities, roads and power plants are seen.	Troposphärisches Stickstoffdioxid nach TROPOMI pro Tag, seit 2018. Städte, Straßen und Kraftwerke sind zu sehen.
+Sulphur dioxide	Schwefeldioxid
+Near-surface sulphur dioxide from OMPS per day, since 2012. Volcanoes and plants are seen.	Bodennahes Schwefeldioxid nach OMPS pro Tag, seit 2012. Vulkane und Fabriken sind zu sehen.
+Methane	Methan
+Methane mixing ratio at about 7 km from AIRS per month, since 2002.	Mischungsverhältnis von Methan in etwa 7 km Höhe nach AIRS pro Monat, seit 2002.
+Carbon dioxide	Kohlendioxid
+Column-average carbon dioxide from OCO-2, orbit swaths per day, since 2014. The series lags by several months.	Säulenmittel von Kohlendioxid nach OCO-2, Orbitstreifen pro Tag, seit 2014. Die Reihe hinkt einige Monate hinterher.
+Ozone	Ozon
+Total column ozone from OMI per day, since 2004. The ozone hole over Antarctica is seen.	Gesamtozon der Säule nach OMI pro Tag, seit 2004. Das Ozonloch über der Antarktis ist zu sehen.
+Vegetation	Vegetation
+NDVI vegetation index from MODIS Terra over 16 days, since 2000. The series lags by a month.	Vegetationsindex NDVI nach MODIS Terra über 16 Tage, seit 2000. Die Reihe hinkt einen Monat hinterher.
+Dust	Staub
+Dust in the atmosphere from AIRS per day, since 2002.	Staub in der Atmosphäre nach AIRS pro Tag, seit 2002.
+Night lights	Nächtliche Lichter
+VIIRS night image per day, since 2021. City lights, fires, gas flares and auroras are seen.	Nachtbild von VIIRS pro Tag, seit 2021. Lichter der Städte, Brände, Gasfackeln und Polarlichter sind zu sehen.
+Magnetic anomaly, nT	Magnetische Anomalie, nT
+Ocean floor age, Ma	Alter des Ozeanbodens, Ma
+Gravity anomaly, mGal	Schwereanomalie, mGal
+Bouguer anomaly, mGal	Bouguer-Anomalie, mGal
+Heat flow, mW/m²	Wärmefluss, mW/m²
+Water occurrence 1984-2021, %	Wasserhäufigkeit 1984-2021, %
+Clay in soil 0-5 cm, %	Ton im Boden 0-5 cm, %
+Sand in soil 0-5 cm, %	Sand im Boden 0-5 cm, %
+Soil organic carbon 0-5 cm, g/kg	Organischer Bodenkohlenstoff 0-5 cm, g/kg
+Soil pH 0-5 cm, in water	Boden-pH 0-5 cm, in Wasser
+GLiM lithology	Lithologie GLiM
+Water transitions 1984-2021, JRC	Wasserveränderungen 1984-2021, JRC
+ESA WorldCover 2021 land cover	Landbedeckung ESA WorldCover 2021
+Unconsolidated sediments	Lockersedimente
+Siliciclastic sedimentary rocks	Siliziklastische Sedimentgesteine
+Mixed sedimentary rocks	Gemischte Sedimentgesteine
+Carbonate sedimentary rocks	Karbonatische Sedimentgesteine
+Evaporites	Evaporite
+Pyroclastics	Pyroklastika
+Acid volcanic rocks	Saure Vulkanite
+Intermediate volcanic rocks	Intermediäre Vulkanite
+Basic volcanic rocks	Basische Vulkanite
+Acid plutonic rocks	Saure Plutonite
+Intermediate plutonic rocks	Intermediäre Plutonite
+Basic plutonic rocks	Basische Plutonite
+Metamorphic rocks	Metamorphe Gesteine
+Ice and glaciers	Eis und Gletscher
+Permanent water	Ständiges Wasser
+New permanent water	Neues ständiges Wasser
+Lost permanent water	Verschwundenes ständiges Wasser
+Seasonal water	Saisonales Wasser
+New seasonal water	Neues saisonales Wasser
+Lost seasonal water	Verschwundenes saisonales Wasser
+Seasonal to permanent	Saisonal zu ständig
+Permanent to seasonal	Ständig zu saisonal
+Ephemeral permanent water	Kurzzeitiges ständiges Wasser
+Ephemeral seasonal water	Kurzzeitiges saisonales Wasser
+Forest	Wald
+Shrubland	Gebüsch
+Grassland	Grasland
+Cropland	Ackerland
+Built-up	Bebauung
+Bare and sparse vegetation	Offener Boden und spärliche Vegetation
+Snow and ice	Schnee und Eis
+Permanent water bodies	Ständige Gewässer
+Herbaceous wetland	Krautige Feuchtgebiete
+Mangroves	Mangroven
+Moss and lichen	Moose und Flechten
+Magnetic anomaly	Magnetische Anomalie
+Field anomaly	Feldanomalie
+nT	nT
+Ocean floor	Ozeanboden
+Crust age	Alter der Kruste
+Ma	Ma
+Gravity	Schwere
+Free-air anomaly	Freiluftanomalie
+mGal	mGal
+Bouguer anomaly	Bouguer-Anomalie
+Heat flow|value	Wärmefluss
+mW/m²	mW/m²
+Grid height	Höhe des Rasters
+4 km above the ellipsoid	4 km über dem Ellipsoid
+Dataset	Datensatz
+Rock density	Gesteinsdichte
+the tile was not read	die Kachel wurde nicht gelesen
+no data	keine Daten
+loading…	wird geladen…
+Soil	Boden
+Water	Wasser
+Class	Klasse
+Click - the class at the point	Klick - die Klasse am Punkt
+{name} · {day}	{name} · {day}
+{name}, {units} · {day}	{name}, {units} · {day}

@@ -69,7 +69,7 @@ impl Command {
 
     /// Действие по ключу подсказки.
     pub fn from_key(key: &str) -> Option<Self> {
-        let mut all: Vec<Command> = Extra::ALL.iter().map(|e| Command::Layer(*e)).collect();
+        let mut all: Vec<Command> = Extra::all().into_iter().map(Command::Layer).collect();
         all.extend([
             Command::Catalog,
             Command::Ruler,
@@ -111,6 +111,7 @@ fn layer_words(extra: Extra) -> &'static [&'static str] {
         Extra::Air => &["атмосфера", "воздух", "дымка", "гало", "atmosphere", "haze", "air"],
         Extra::Sun => &["ночь", "день", "освещение", "тень", "огни городов", "sun", "night", "city lights"],
         Extra::Grid => &["сетка", "градусы", "экватор", "graticule", "grid"],
+        Extra::Map(_) => &[],
     }
 }
 
@@ -121,7 +122,7 @@ pub fn actions(lang: Lang, now: &Now) -> Vec<Suggestion> {
         out.push(Suggestion::action(&c.key(), title, note, words));
     };
     let on_off = |on: bool| if on { tr(lang, "turn off") } else { tr(lang, "turn on") };
-    for extra in Extra::ALL {
+    for extra in Extra::all() {
         let on = now.extras.contains(&extra);
         add(Command::Layer(extra), tr(lang, extra.name()), on_off(on), layer_words(extra));
     }

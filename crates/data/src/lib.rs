@@ -13,13 +13,18 @@
 //!   `core/geocode.py` модуля;
 //! - [`grid`] - свой растр GeoTIFF или COG, через terrio;
 //! - [`dem`] - растр высот для врезки своего рельефа;
-//! - [`layers`] - слои GeoPackage, через terrio.
+//! - [`layers`] - слои GeoPackage, через terrio;
+//! - [`gibs`] - темы NASA GIBS по датам, перенос `core/themes.py`;
+//! - [`rastermaps`] - карты картинками тайлов поверх снимка, перенос
+//!   `core/fields.py` и `core/tilemaps.py` модуля.
 
 pub mod cloud;
 pub mod dem;
 pub mod geocode;
+pub mod gibs;
 pub mod grid;
 pub mod layers;
 pub mod lines;
 pub mod mvt;
 pub mod places;
+pub mod rastermaps;

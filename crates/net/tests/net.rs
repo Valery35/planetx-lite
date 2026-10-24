@@ -369,3 +369,11 @@ fn tilejson_source_gives_raw_bytes() {
     }
     assert_eq!(asked.load(Ordering::SeqCst), 1);
 }
+#[test]
+fn wms_bbox_is_tile_frame_in_metres() {
+    // Тайл 1/0/0 - северо-западная четверть мира.
+    let url = net::template_url("https://x/?BBOX={bbox}&W=256", (1, 0, 0));
+    assert_eq!(url, "https://x/?BBOX=-20037508.34,0.00,0.00,20037508.34&W=256");
+    let b = net::tile_bbox((0, 0, 0));
+    assert!((b[2] - net::MERCATOR_HALF).abs() < 1e-6 && (b[1] + net::MERCATOR_HALF).abs() < 1e-6);
+}

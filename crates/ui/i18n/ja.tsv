@@ -404,3 +404,179 @@ Previous stop	前の停止地点
 Stop {n} of {count}: {name}	停止地点 {n}/{count}：{name}
 Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	画面上の停止地点の字幕。停止地点では目印の名前と説明が画面下部に大きく表示され、移動中は字幕がありません。
 Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	ツアーを繰り返し再生。最後の停止地点の後、ツアーは最初から始まります。一時停止または × で止まります。
+The geological and lithological maps, earthquakes, plate boundaries and faults, mineral deposits and mining areas, the Earth cutaway and palaeogeography.	地質図と岩相図、地震、プレート境界と断層、鉱床と鉱山地域、地球の断面、古地理。
+Soils	土壌
+Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.	SoilGrids による表層土 0-5 cm の性質 - 粘土、砂、有機炭素、pH、250 m グリッド。
+Map overlays	地図のオーバーレイ
+Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.	背景地図の上に重ねる透明な地図 - 航路標識、ハイキングルート、サイクリングルート。複数を同時に表示できます。
+Sea marks	航路標識
+OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.	OpenSeaMap の航路標識 - ブイ、灯台、導標、航路、錨地。標識は近づくと表示され、地図の縮尺約 1:500 000 から見えます。この地図は海図の代わりにはなりません。
+Hiking routes	ハイキングルート
+Waymarked hiking routes from OpenStreetMap by Waymarked Trails - international, national, regional and local trails in the colour of their level.	Waymarked Trails による OpenStreetMap の標識付きハイキングルート - 国際、国、地域、地元の道をそれぞれのレベルの色で表示します。
+Cycling routes	サイクリングルート
+Waymarked cycling routes from OpenStreetMap by Waymarked Trails - from international cycle routes to local ones.	Waymarked Trails による OpenStreetMap の標識付きサイクリングルート - 国際サイクルルートから地元のルートまで。
+Lithology	岩相
+The GLiM lithological map of the world - surface rocks in 16 classes: unconsolidated sediments, sedimentary, volcanic, plutonic and metamorphic rocks, ice. It is compiled from 92 regional maps at a scale of about 1:3 750 000. A click in Identify features mode shows the rock class. The globe shows one such map - lithological, geological, soil, water or a geophysical value map.	GLiM 世界岩相図 - 地表の岩石を 16 分類で表示します: 未固結堆積物、堆積岩、火山岩、深成岩、変成岩、氷。この地図は縮尺約 1:3 750 000 の 92 枚の地域図から編集されています。「オブジェクトを識別」モードでクリックすると岩石の分類が表示されます。地球儀に表示されるこの種の地図は 1 つだけです - 岩相図、地質図、土壌図、水の地図、または地球物理量の地図。
+Land cover	土地被覆
+The ESA WorldCover land cover map for 2021 from Sentinel-1 and Sentinel-2 images with a 10 m pixel - forest, shrubland, grassland, cropland, built-up, bare land, snow and ice, water, wetland, mangroves, moss and lichen. A click in Identify features mode shows the class.	Sentinel-1 と Sentinel-2 の画像による 2021 年の ESA WorldCover 土地被覆図、画素 10 m - 森林、低木地、草地、農地、市街地、裸地、雪氷、水域、湿地、マングローブ、コケと地衣類。「オブジェクトを識別」モードでクリックすると分類が表示されます。
+Water transitions	水域の変化
+What happened to water from 1984 to 2021 in Landsat images - permanent and seasonal water, new and lost, transitions between them, JRC Global Surface Water. New reservoirs, shrunken lakes and migrating channels are visible. A click in Identify features mode shows the class.	Landsat 画像による 1984 年から 2021 年までの水域の変化 - 恒常的な水域と季節的な水域、新しい水域と消えた水域、それらの間の遷移、JRC Global Surface Water。新しい貯水池、縮小した湖、移動する河道が見えます。「オブジェクトを識別」モードでクリックすると分類が表示されます。
+Clay in soil	土壌中の粘土
+The share of clay particles in the soil layer 0-5 cm from ISRIC SoilGrids - a model built on 240 thousand soil profiles, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids による土壌層 0-5 cm の粘土粒子の割合 - 24 万の土壌断面に基づくモデル、250 m グリッド。「オブジェクトを識別」モードでクリックすると SoilGrids に値を問い合わせます。
+Sand in soil	土壌中の砂
+The share of sand particles in the soil layer 0-5 cm from ISRIC SoilGrids, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids による土壌層 0-5 cm の砂粒子の割合、250 m グリッド。「オブジェクトを識別」モードでクリックすると SoilGrids に値を問い合わせます。
+Soil organic carbon	土壌有機炭素
+Organic carbon content of the soil layer 0-5 cm from ISRIC SoilGrids, g/kg, a 250 m grid. The highest values are in the peatlands of the tundra and taiga. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids による土壌層 0-5 cm の有機炭素含有量、g/kg、250 m グリッド。最も高い値はツンドラとタイガの泥炭地にあります。「オブジェクトを識別」モードでクリックすると SoilGrids に値を問い合わせます。
+Soil pH	土壌 pH
+Soil pH in water, layer 0-5 cm, from ISRIC SoilGrids, a 250 m grid. Yellow soils are acid, green neutral, turquoise alkaline. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids による水抽出の土壌 pH、層 0-5 cm、250 m グリッド。黄色は酸性土壌、緑は中性、ターコイズはアルカリ性です。「オブジェクトを識別」モードでクリックすると SoilGrids に値を問い合わせます。
+Ocean floor age	海洋底の年代
+Age of the oceanic crust after the grid of Seton et al. 2020, 0.1° spacing. Young floor at mid-ocean ridges is red, old floor at ocean margins is blue and purple. Land and continental crust are not coloured. The globe shows one value map at a time - ocean floor age, magnetic anomalies, gravity or heat flow. A click in the Identify features mode shows the age in Ma.	Seton ほか 2020 年のグリッドによる海洋地殻の年代、間隔 0.1°。中央海嶺の若い海底は赤、海洋の縁の古い海底は青と紫です。陸地と大陸地殻は着色されません。地球儀に一度に表示される値の地図は 1 つです - 海洋底の年代、磁気異常、重力、熱流量。「オブジェクトを識別」モードでクリックすると年代が Ma で表示されます。
+Gravity anomalies	重力異常
+Free-air gravity anomaly after the XGM2019e model to degree 719, about 28 km spacing. Red marks gravity above normal, blue marks gravity below normal. Deep-sea trenches show lows down to -300 mGal, volcanic islands and mountains show highs. A click in the Identify features mode shows the anomaly in mGal.	XGM2019e モデルによる 719 次までのフリーエア重力異常、間隔約 28 km。赤は正常より大きい重力、青は正常より小さい重力を示します。海溝では -300 mGal までの低値、火山島と山地では高値が見られます。「オブジェクトを識別」モードでクリックすると異常が mGal で表示されます。
+Bouguer anomalies	ブーゲー異常
+Gravity anomaly minus the attraction of the relief - the Bouguer correction after the ETOPO 2022 relief with a rock density of 2670 kg/m³, water and ice with their own densities, and the terrain correction for the surrounding relief within 167 km. The anomaly shows the density of the interior without the effect of mountains and ocean depths. Under mountains it is negative, which is thick light crust, over the ocean it is positive. A click in the Identify features mode shows the anomaly in mGal.	地形の引力を差し引いた重力異常 - 岩石密度 2670 kg/m³ の ETOPO 2022 地形によるブーゲー補正、水と氷はそれぞれの密度、半径 167 km 以内の周囲の地形に対する地形補正を含みます。この異常は山と海の深さの影響を除いた地下の密度を示します。山の下では負で、厚く軽い地殻を示し、海洋上では正です。「オブジェクトを識別」モードでクリックすると異常が mGal で表示されます。
+Heat flow	熱流量
+Heat flow from the interior through the Earth's surface on a 0.5° grid built from 91 thousand measurements of the IHFC 2024 database. Blue marks cold old shields, red marks rifts, ridges and volcanic areas. Far from measurements the grid is smoothed. A click in the Identify features mode shows the flow in mW/m².	IHFC 2024 データベースの 9 万 1 千の測定値から作成した 0.5° グリッドによる、地球内部から地表を通る熱流量。青は冷たく古い楯状地、赤はリフト、海嶺、火山地域を示します。測定点から離れた場所ではグリッドは平滑化されています。「オブジェクトを識別」モードでクリックすると熱流量が mW/m² で表示されます。
+Magnetic anomalies	磁気異常
+Anomalies of the Earth magnetic field after the NOAA NCEI EMAG2v3 grid - the departure of the field from the normal one at 4 km above the ellipsoid, a step of about 4 km. Red means a stronger field, blue a weaker one. The anomalies reveal the crust - ridges and stripes of the ocean floor, ancient shields, ore districts. Empty places have no survey. A click in the Identify features mode shows the value in nT.	NOAA NCEI の EMAG2v3 グリッドによる地球磁場の異常 - 楕円体上 4 km における標準磁場からの偏差、間隔約 4 km。赤は強い磁場、青は弱い磁場を示します。異常から地殻の構造がわかります - 海洋底の海嶺と縞模様、古い楯状地、鉱床地帯。空白の場所は測量がありません。「オブジェクトを識別」モードでクリックすると値が nT で表示されます。
+Planet of Water	水の惑星
+Precipitation, soil moisture, snow, ice, water vapor, chlorophyll, salinity and floods from NASA data, currents from NOAA data.	NASA のデータによる降水量、土壌水分、雪、氷、水蒸気、クロロフィル、塩分、洪水、NOAA のデータによる海流。
+Land and Life	陸地と生命
+Vegetation, dust, night lights and land cover types from NASA data.	NASA のデータによる植生、塵、夜間の光、土地被覆の種類。
+NASA and USGS	NASA と USGS
+OSM Humanitarian	OSM 人道支援
+OSM France	OSM フランス
+Esri World Street Map	Esri 道路
+Esri Light Gray Canvas	Esri ライトグレー
+Esri Dark Gray Canvas	Esri ダークグレー
+Esri Ocean	Esri 海洋
+Esri World Terrain	Esri 地形
+Esri Shaded Relief	Esri 陰影起伏
+Esri Physical	Esri 自然地図
+Esri World Hillshade	Esri 詳細陰影起伏
+USGS Imagery (USA)	USGS 画像 (米国)
+USGS Imagery Topo (USA)	USGS 画像と地図 (米国)
+USGS Topo (USA)	USGS 地形図 (米国)
+USGS Shaded Relief (USA)	USGS 陰影起伏 (米国)
+Save Scene…	シーンを保存…
+Planet of Fire	火の惑星
+Fire spots, smoke, aerosol and carbon monoxide of fires and industry from NASA data.	NASA のデータによる火災地点、煙、エアロゾル、火災と産業による一酸化炭素。
+Planet of Air	空気の惑星
+Nitrogen dioxide, sulfur dioxide, methane, carbon dioxide and ozone from NASA data.	NASA のデータによる二酸化窒素、二酸化硫黄、メタン、二酸化炭素、オゾン。
+Smoke, aerosol index	煙、エアロゾル指数
+Absorbing aerosol - smoke of fires and dust - from OMPS per day, since 2012.	吸収性エアロゾル - 火災の煙と塵 - OMPS による日別データ、2012 年から。
+Aerosol optical depth	エアロゾル光学的厚さ
+How much the air dims light because of smoke, dust and smog, MODIS per day, since 2017.	煙、塵、スモッグによって大気が光をどれだけ弱めるか、MODIS による日別データ、2017 年から。
+Carbon monoxide	一酸化炭素
+Carbon monoxide mixing ratio at about 5 km from AIRS per day, since 2002. Fire plumes are seen over thousands of kilometres.	AIRS による高度約 5 km の一酸化炭素混合比、日別、2002 年から。火災の煙は数千キロメートルにわたって見えます。
+Carbon monoxide emission	一酸化炭素の排出
+Surface carbon monoxide emission from the MERRA-2 reanalysis per month, since 1980. The series lags by several months.	MERRA-2 再解析による地表の一酸化炭素排出量、月別、1980 年から。データは数か月遅れます。
+Precipitation	降水量
+IMERG precipitation rate per day, since 2000.	IMERG による降水強度、日別、2000 年から。
+Soil moisture	土壌水分
+Moisture of the top centimetres of soil from SMAP per day, since 2015. The series has missing days.	SMAP による土壌の表層数センチメートルの水分、日別、2015 年から。データには欠けている日があります。
+Snow cover	積雪
+Snow from MODIS Terra imagery per day, since 2000. There are gaps under clouds and in the polar night, seas and lakes are not coloured.	MODIS Terra の画像による積雪、日別、2000 年から。雲の下と極夜には欠損があり、海と湖は着色されません。
+Snow over 8 days	8 日間の積雪
+Snow and lake ice from MODIS Terra imagery, an 8-day summary, since 2000. There are fewer gaps under clouds than in the daily layer.	MODIS Terra の画像による積雪と湖氷、8 日間の集計、2000 年から。雲の下の欠損は日別レイヤーより少なくなります。
+Snow mass	積雪量
+Snow amount in kilograms per square metre from the SMAP Level 4 model per day, since 2015, a cell of about 9 km. It is a model calculation from satellite data, clouds leave no gaps.	SMAP Level 4 モデルによる 1 平方メートルあたりのキログラム単位の積雪量、日別、2015 年から、セル約 9 km。衛星データによるモデル計算のため、雲による欠損はありません。
+Sea ice	海氷
+Sea ice concentration from GHRSST MUR per day, since 2002.	GHRSST MUR による海氷密接度、日別、2002 年から。
+Water vapour	水蒸気
+Water vapour in the atmospheric column from MODIS Terra per day, since 2000.	MODIS Terra による大気柱の水蒸気、日別、2000 年から。
+Chlorophyll	クロロフィル
+Algae chlorophyll in the surface layer of the sea from PACE per day, since 2024.	PACE による海の表層の藻類クロロフィル、日別、2024 年から。
+Sea salinity	海水の塩分
+Sea surface salinity from SMAP, an 8-day running mean, since 2015.	SMAP による海面塩分、8 日間の移動平均、2015 年から。
+Floods	洪水
+Water beyond its usual banks from MODIS over 3 days, since 2021.	MODIS による通常の岸を越えた水、3 日間、2021 年から。
+Nitrogen dioxide	二酸化窒素
+Tropospheric nitrogen dioxide from TROPOMI per day, since 2018. Cities, roads and power plants are seen.	TROPOMI による対流圏の二酸化窒素、日別、2018 年から。都市、道路、発電所が見えます。
+Sulphur dioxide	二酸化硫黄
+Near-surface sulphur dioxide from OMPS per day, since 2012. Volcanoes and plants are seen.	OMPS による地表付近の二酸化硫黄、日別、2012 年から。火山と工場が見えます。
+Methane	メタン
+Methane mixing ratio at about 7 km from AIRS per month, since 2002.	AIRS による高度約 7 km のメタン混合比、月別、2002 年から。
+Carbon dioxide	二酸化炭素
+Column-average carbon dioxide from OCO-2, orbit swaths per day, since 2014. The series lags by several months.	OCO-2 による二酸化炭素のカラム平均濃度、日別の軌道帯、2014 年から。データは数か月遅れます。
+Ozone	オゾン
+Total column ozone from OMI per day, since 2004. The ozone hole over Antarctica is seen.	OMI によるオゾン全量、日別、2004 年から。南極上空のオゾンホールが見えます。
+Vegetation	植生
+NDVI vegetation index from MODIS Terra over 16 days, since 2000. The series lags by a month.	MODIS Terra による植生指数 NDVI、16 日間、2000 年から。データは 1 か月遅れます。
+Dust	塵
+Dust in the atmosphere from AIRS per day, since 2002.	AIRS による大気中の塵、日別、2002 年から。
+Night lights	夜間の光
+VIIRS night image per day, since 2021. City lights, fires, gas flares and auroras are seen.	VIIRS の夜間画像、日別、2021 年から。都市の光、火災、ガスフレア、オーロラが見えます。
+Magnetic anomaly, nT	磁気異常、nT
+Ocean floor age, Ma	海洋底の年代、Ma
+Gravity anomaly, mGal	重力異常、mGal
+Bouguer anomaly, mGal	ブーゲー異常、mGal
+Heat flow, mW/m²	熱流量、mW/m²
+Water occurrence 1984-2021, %	水域の出現頻度 1984-2021、%
+Clay in soil 0-5 cm, %	土壌中の粘土 0-5 cm、%
+Sand in soil 0-5 cm, %	土壌中の砂 0-5 cm、%
+Soil organic carbon 0-5 cm, g/kg	土壌有機炭素 0-5 cm、g/kg
+Soil pH 0-5 cm, in water	土壌 pH 0-5 cm、水抽出
+GLiM lithology	GLiM 岩相
+Water transitions 1984-2021, JRC	水域の変化 1984-2021、JRC
+ESA WorldCover 2021 land cover	ESA WorldCover 2021 土地被覆
+Unconsolidated sediments	未固結堆積物
+Siliciclastic sedimentary rocks	砕屑性堆積岩
+Mixed sedimentary rocks	混合堆積岩
+Carbonate sedimentary rocks	炭酸塩堆積岩
+Evaporites	蒸発岩
+Pyroclastics	火砕岩
+Acid volcanic rocks	酸性火山岩
+Intermediate volcanic rocks	中性火山岩
+Basic volcanic rocks	塩基性火山岩
+Acid plutonic rocks	酸性深成岩
+Intermediate plutonic rocks	中性深成岩
+Basic plutonic rocks	塩基性深成岩
+Metamorphic rocks	変成岩
+Ice and glaciers	氷と氷河
+Permanent water	恒常的な水域
+New permanent water	新しい恒常的な水域
+Lost permanent water	消えた恒常的な水域
+Seasonal water	季節的な水域
+New seasonal water	新しい季節的な水域
+Lost seasonal water	消えた季節的な水域
+Seasonal to permanent	季節的から恒常的へ
+Permanent to seasonal	恒常的から季節的へ
+Ephemeral permanent water	一時的な恒常的水域
+Ephemeral seasonal water	一時的な季節的水域
+Forest	森林
+Shrubland	低木地
+Grassland	草地
+Cropland	農地
+Built-up	市街地
+Bare and sparse vegetation	裸地と疎らな植生
+Snow and ice	雪氷
+Permanent water bodies	恒常的な水体
+Herbaceous wetland	草本湿地
+Mangroves	マングローブ
+Moss and lichen	コケと地衣類
+Magnetic anomaly	磁気異常
+Field anomaly	磁場の異常
+nT	nT
+Ocean floor	海洋底
+Crust age	地殻の年代
+Ma	Ma
+Gravity	重力
+Free-air anomaly	フリーエア異常
+mGal	mGal
+Bouguer anomaly	ブーゲー異常
+Heat flow|value	熱流量
+mW/m²	mW/m²
+Grid height	グリッドの高さ
+4 km above the ellipsoid	楕円体上 4 km
+Dataset	データセット
+Rock density	岩石密度
+the tile was not read	タイルを読み込めませんでした
+no data	データなし
+loading…	読み込み中…
+Soil	土壌
+Water	水
+Class	分類
+Click - the class at the point	クリック - 地点の分類
+{name} · {day}	{name} · {day}
+{name}, {units} · {day}	{name}, {units} · {day}

@@ -404,3 +404,179 @@ Previous stop	Vorige stop
 Stop {n} of {count}: {name}	Stop {n} van {count}: {name}
 Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	Bijschriften van de stops in beeld. Bij een stop staan de naam en de beschrijving van de plaatsmarkering groot onder in beeld, tijdens de vlucht is er geen bijschrift.
 Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	Rondleiding in een lus. Na de laatste stop begint de rondleiding weer bij de eerste. De pauze of het kruisje stopt haar.
+The geological and lithological maps, earthquakes, plate boundaries and faults, mineral deposits and mining areas, the Earth cutaway and palaeogeography.	De geologische en lithologische kaarten, aardbevingen, plaatgrenzen en breuken, ertsafzettingen en mijngebieden, de doorsnede van de aarde en de paleogeografie.
+Soils	Bodems
+Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.	Eigenschappen van de bovenste bodemlaag 0-5 cm volgens SoilGrids - klei, zand, organische koolstof en pH, raster van 250 m.
+Map overlays	Kaartoverlays
+Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.	Transparante kaarten boven de basiskaart - zeemarkeringen, wandel- en fietsroutes. Er kunnen er meerdere tegelijk aan staan.
+Sea marks	Zeemarkeringen
+OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.	Navigatiemarkeringen van OpenSeaMap - boeien, vuurtorens, lichtenlijnen, vaargeulen en ankerplaatsen. De markeringen zijn van dichtbij zichtbaar, vanaf een kaartschaal van ongeveer 1:500 000. De kaart vervangt geen zeekaart.
+Hiking routes	Wandelroutes
+Waymarked hiking routes from OpenStreetMap by Waymarked Trails - international, national, regional and local trails in the colour of their level.	Gemarkeerde wandelroutes uit OpenStreetMap via Waymarked Trails - internationale, nationale, regionale en lokale paden in de kleur van hun niveau.
+Cycling routes	Fietsroutes
+Waymarked cycling routes from OpenStreetMap by Waymarked Trails - from international cycle routes to local ones.	Gemarkeerde fietsroutes uit OpenStreetMap via Waymarked Trails - van internationale tot lokale fietsroutes.
+Lithology	Lithologie
+The GLiM lithological map of the world - surface rocks in 16 classes: unconsolidated sediments, sedimentary, volcanic, plutonic and metamorphic rocks, ice. It is compiled from 92 regional maps at a scale of about 1:3 750 000. A click in Identify features mode shows the rock class. The globe shows one such map - lithological, geological, soil, water or a geophysical value map.	De lithologische wereldkaart GLiM - gesteenten aan het oppervlak in 16 klassen: losse sedimenten, sedimentaire, vulkanische, plutonische en metamorfe gesteenten, ijs. De kaart is samengesteld uit 92 regionale kaarten op een schaal van ongeveer 1:3 750 000. Een klik in de modus “Objecten identificeren” toont de gesteenteklasse. De globe toont één zo’n kaart - lithologisch, geologisch, bodem, water of een kaart van een geofysische waarde.
+Land cover	Landbedekking
+The ESA WorldCover land cover map for 2021 from Sentinel-1 and Sentinel-2 images with a 10 m pixel - forest, shrubland, grassland, cropland, built-up, bare land, snow and ice, water, wetland, mangroves, moss and lichen. A click in Identify features mode shows the class.	De landbedekkingskaart ESA WorldCover voor 2021 uit Sentinel-1- en Sentinel-2-beelden met een pixel van 10 m - bos, struikgewas, grasland, akkerland, bebouwing, kale grond, sneeuw en ijs, water, wetlands, mangroven, mossen en korstmossen. Een klik in de modus “Objecten identificeren” toont de klasse.
+Water transitions	Veranderingen van water
+What happened to water from 1984 to 2021 in Landsat images - permanent and seasonal water, new and lost, transitions between them, JRC Global Surface Water. New reservoirs, shrunken lakes and migrating channels are visible. A click in Identify features mode shows the class.	Wat er met het water is gebeurd van 1984 tot 2021 op Landsat-beelden - permanent en seizoensgebonden water, nieuw en verdwenen, overgangen daartussen, JRC Global Surface Water. Nieuwe stuwmeren, gekrompen meren en verschuivende geulen zijn zichtbaar. Een klik in de modus “Objecten identificeren” toont de klasse.
+Clay in soil	Klei in de bodem
+The share of clay particles in the soil layer 0-5 cm from ISRIC SoilGrids - a model built on 240 thousand soil profiles, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	Aandeel kleideeltjes in de bodemlaag 0-5 cm volgens ISRIC SoilGrids - een model op basis van 240 duizend bodemprofielen, raster van 250 m. Een klik in de modus “Objecten identificeren” vraagt de waarde op bij SoilGrids.
+Sand in soil	Zand in de bodem
+The share of sand particles in the soil layer 0-5 cm from ISRIC SoilGrids, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	Aandeel zanddeeltjes in de bodemlaag 0-5 cm volgens ISRIC SoilGrids, raster van 250 m. Een klik in de modus “Objecten identificeren” vraagt de waarde op bij SoilGrids.
+Soil organic carbon	Organische koolstof in de bodem
+Organic carbon content of the soil layer 0-5 cm from ISRIC SoilGrids, g/kg, a 250 m grid. The highest values are in the peatlands of the tundra and taiga. A click in Identify features mode asks SoilGrids for the value.	Gehalte aan organische koolstof in de bodemlaag 0-5 cm volgens ISRIC SoilGrids, g/kg, raster van 250 m. De hoogste waarden liggen in de veengebieden van de toendra en de taiga. Een klik in de modus “Objecten identificeren” vraagt de waarde op bij SoilGrids.
+Soil pH	Bodem-pH
+Soil pH in water, layer 0-5 cm, from ISRIC SoilGrids, a 250 m grid. Yellow soils are acid, green neutral, turquoise alkaline. A click in Identify features mode asks SoilGrids for the value.	pH van de bodem in water, laag 0-5 cm, volgens ISRIC SoilGrids, raster van 250 m. Gele bodems zijn zuur, groene neutraal, turquoise basisch. Een klik in de modus “Objecten identificeren” vraagt de waarde op bij SoilGrids.
+Ocean floor age	Leeftijd van de oceaanbodem
+Age of the oceanic crust after the grid of Seton et al. 2020, 0.1° spacing. Young floor at mid-ocean ridges is red, old floor at ocean margins is blue and purple. Land and continental crust are not coloured. The globe shows one value map at a time - ocean floor age, magnetic anomalies, gravity or heat flow. A click in the Identify features mode shows the age in Ma.	Leeftijd van de oceanische korst volgens het raster van Seton et al. 2020, stap 0.1°. Jonge bodem bij de mid-oceanische ruggen is rood, oude bodem aan de randen van de oceanen is blauw en paars. Land en continentale korst zijn niet gekleurd. De globe toont telkens één waardenkaart - leeftijd van de oceaanbodem, magnetische anomalieën, zwaartekracht of warmtestroom. Een klik in de modus “Objecten identificeren” toont de leeftijd in Ma.
+Gravity anomalies	Zwaartekrachtanomalieën
+Free-air gravity anomaly after the XGM2019e model to degree 719, about 28 km spacing. Red marks gravity above normal, blue marks gravity below normal. Deep-sea trenches show lows down to -300 mGal, volcanic islands and mountains show highs. A click in the Identify features mode shows the anomaly in mGal.	Vrije-luchtanomalie van de zwaartekracht volgens het model XGM2019e tot graad 719, stap ongeveer 28 km. Rood betekent zwaartekracht boven normaal, blauw onder normaal. Diepzeetroggen tonen minima tot -300 mGal, vulkanische eilanden en gebergten tonen maxima. Een klik in de modus “Objecten identificeren” toont de anomalie in mGal.
+Bouguer anomalies	Bouguer-anomalieën
+Gravity anomaly minus the attraction of the relief - the Bouguer correction after the ETOPO 2022 relief with a rock density of 2670 kg/m³, water and ice with their own densities, and the terrain correction for the surrounding relief within 167 km. The anomaly shows the density of the interior without the effect of mountains and ocean depths. Under mountains it is negative, which is thick light crust, over the ocean it is positive. A click in the Identify features mode shows the anomaly in mGal.	Zwaartekrachtanomalie min de aantrekking van het reliëf - de Bouguer-correctie volgens het reliëf ETOPO 2022 met een gesteentedichtheid van 2670 kg/m³, water en ijs met hun eigen dichtheid, en de terreincorrectie voor het omringende reliëf binnen 167 km. De anomalie toont de dichtheid van het binnenste zonder het effect van gebergten en oceaandiepten. Onder gebergten is zij negatief, dat is dikke lichte korst, boven de oceaan positief. Een klik in de modus “Objecten identificeren” toont de anomalie in mGal.
+Heat flow	Warmtestroom
+Heat flow from the interior through the Earth's surface on a 0.5° grid built from 91 thousand measurements of the IHFC 2024 database. Blue marks cold old shields, red marks rifts, ridges and volcanic areas. Far from measurements the grid is smoothed. A click in the Identify features mode shows the flow in mW/m².	Warmtestroom uit het binnenste door het aardoppervlak op een raster van 0.5° gebouwd uit 91 duizend metingen van de database IHFC 2024. Blauw toont koude oude schilden, rood toont riften, ruggen en vulkanische gebieden. Ver van metingen is het raster afgevlakt. Een klik in de modus “Objecten identificeren” toont de stroom in mW/m².
+Magnetic anomalies	Magnetische anomalieën
+Anomalies of the Earth magnetic field after the NOAA NCEI EMAG2v3 grid - the departure of the field from the normal one at 4 km above the ellipsoid, a step of about 4 km. Red means a stronger field, blue a weaker one. The anomalies reveal the crust - ridges and stripes of the ocean floor, ancient shields, ore districts. Empty places have no survey. A click in the Identify features mode shows the value in nT.	Anomalieën van het aardmagnetisch veld volgens het raster EMAG2v3 van NOAA NCEI - de afwijking van het veld ten opzichte van het normale veld op 4 km boven de ellipsoïde, stap ongeveer 4 km. Rood betekent een sterker veld, blauw een zwakker. De anomalieën tonen de opbouw van de korst - ruggen en strepen van de oceaanbodem, oude schilden, ertsdistricten. Lege plekken hebben geen opname. Een klik in de modus “Objecten identificeren” toont de waarde in nT.
+Planet of Water	Planeet van water
+Precipitation, soil moisture, snow, ice, water vapor, chlorophyll, salinity and floods from NASA data, currents from NOAA data.	Neerslag, bodemvocht, sneeuw, ijs, waterdamp, chlorofyl, zoutgehalte en overstromingen volgens gegevens van NASA, stromingen volgens gegevens van NOAA.
+Land and Life	Land en leven
+Vegetation, dust, night lights and land cover types from NASA data.	Vegetatie, stof, nachtelijke lichten en soorten landbedekking volgens gegevens van NASA.
+NASA and USGS	NASA en USGS
+OSM Humanitarian	OSM Humanitair
+OSM France	OSM Frankrijk
+Esri World Street Map	Esri Straten
+Esri Light Gray Canvas	Esri Lichtgrijs
+Esri Dark Gray Canvas	Esri Donkergrijs
+Esri Ocean	Esri Oceanen
+Esri World Terrain	Esri Terrein
+Esri Shaded Relief	Esri Reliëfschaduw
+Esri Physical	Esri Fysisch
+Esri World Hillshade	Esri Reliëfschaduw gedetailleerd
+USGS Imagery (USA)	USGS Beelden (VS)
+USGS Imagery Topo (USA)	USGS Beelden met kaart (VS)
+USGS Topo (USA)	USGS Topografische kaart (VS)
+USGS Shaded Relief (USA)	USGS Reliëfschaduw (VS)
+Save Scene…	Scène opslaan…
+Planet of Fire	Planeet van vuur
+Fire spots, smoke, aerosol and carbon monoxide of fires and industry from NASA data.	Brandhaarden, rook, aerosol en koolmonoxide van branden en industrie volgens gegevens van NASA.
+Planet of Air	Planeet van lucht
+Nitrogen dioxide, sulfur dioxide, methane, carbon dioxide and ozone from NASA data.	Stikstofdioxide, zwaveldioxide, methaan, koolstofdioxide en ozon volgens gegevens van NASA.
+Smoke, aerosol index	Rook, aerosolindex
+Absorbing aerosol - smoke of fires and dust - from OMPS per day, since 2012.	Absorberend aerosol - rook van branden en stof - volgens OMPS per dag, sinds 2012.
+Aerosol optical depth	Optische dikte van aerosol
+How much the air dims light because of smoke, dust and smog, MODIS per day, since 2017.	Hoeveel de lucht het licht dempt door rook, stof en smog, MODIS per dag, sinds 2017.
+Carbon monoxide	Koolmonoxide
+Carbon monoxide mixing ratio at about 5 km from AIRS per day, since 2002. Fire plumes are seen over thousands of kilometres.	Mengverhouding van koolmonoxide op ongeveer 5 km volgens AIRS per dag, sinds 2002. Rookpluimen van branden zijn over duizenden kilometers zichtbaar.
+Carbon monoxide emission	Uitstoot van koolmonoxide
+Surface carbon monoxide emission from the MERRA-2 reanalysis per month, since 1980. The series lags by several months.	Uitstoot van koolmonoxide aan het oppervlak volgens de heranalyse MERRA-2 per maand, sinds 1980. De reeks loopt enkele maanden achter.
+Precipitation	Neerslag
+IMERG precipitation rate per day, since 2000.	Neerslagintensiteit IMERG per dag, sinds 2000.
+Soil moisture	Bodemvocht
+Moisture of the top centimetres of soil from SMAP per day, since 2015. The series has missing days.	Vocht in de bovenste centimeters van de bodem volgens SMAP per dag, sinds 2015. In de reeks ontbreken soms dagen.
+Snow cover	Sneeuwbedekking
+Snow from MODIS Terra imagery per day, since 2000. There are gaps under clouds and in the polar night, seas and lakes are not coloured.	Sneeuw volgens beelden van MODIS Terra per dag, sinds 2000. Onder wolken en in de poolnacht zijn er gaten, zeeën en meren worden niet gekleurd.
+Snow over 8 days	Sneeuw over 8 dagen
+Snow and lake ice from MODIS Terra imagery, an 8-day summary, since 2000. There are fewer gaps under clouds than in the daily layer.	Sneeuw en meerijs volgens beelden van MODIS Terra, een overzicht van 8 dagen, sinds 2000. Onder wolken zijn er minder gaten dan in de daglaag.
+Snow mass	Sneeuwmassa
+Snow amount in kilograms per square metre from the SMAP Level 4 model per day, since 2015, a cell of about 9 km. It is a model calculation from satellite data, clouds leave no gaps.	Sneeuwhoeveelheid in kilogram per vierkante meter volgens het model SMAP Level 4 per dag, sinds 2015, cel van ongeveer 9 km. Het is een modelberekening op basis van satellietgegevens, wolken laten geen gaten.
+Sea ice	Zee-ijs
+Sea ice concentration from GHRSST MUR per day, since 2002.	Concentratie van zee-ijs volgens GHRSST MUR per dag, sinds 2002.
+Water vapour	Waterdamp
+Water vapour in the atmospheric column from MODIS Terra per day, since 2000.	Waterdamp in de atmosferische kolom volgens MODIS Terra per dag, sinds 2000.
+Chlorophyll	Chlorofyl
+Algae chlorophyll in the surface layer of the sea from PACE per day, since 2024.	Chlorofyl van algen in de oppervlaktelaag van de zee volgens PACE per dag, sinds 2024.
+Sea salinity	Zoutgehalte van de zee
+Sea surface salinity from SMAP, an 8-day running mean, since 2015.	Zoutgehalte van het zeeoppervlak volgens SMAP, voortschrijdend gemiddelde over 8 dagen, sinds 2015.
+Floods	Overstromingen
+Water beyond its usual banks from MODIS over 3 days, since 2021.	Water buiten de gebruikelijke oevers volgens MODIS over 3 dagen, sinds 2021.
+Nitrogen dioxide	Stikstofdioxide
+Tropospheric nitrogen dioxide from TROPOMI per day, since 2018. Cities, roads and power plants are seen.	Troposferisch stikstofdioxide volgens TROPOMI per dag, sinds 2018. Steden, wegen en elektriciteitscentrales zijn zichtbaar.
+Sulphur dioxide	Zwaveldioxide
+Near-surface sulphur dioxide from OMPS per day, since 2012. Volcanoes and plants are seen.	Zwaveldioxide nabij het oppervlak volgens OMPS per dag, sinds 2012. Vulkanen en fabrieken zijn zichtbaar.
+Methane	Methaan
+Methane mixing ratio at about 7 km from AIRS per month, since 2002.	Mengverhouding van methaan op ongeveer 7 km volgens AIRS per maand, sinds 2002.
+Carbon dioxide	Koolstofdioxide
+Column-average carbon dioxide from OCO-2, orbit swaths per day, since 2014. The series lags by several months.	Kolomgemiddelde koolstofdioxide volgens OCO-2, baanstroken per dag, sinds 2014. De reeks loopt enkele maanden achter.
+Ozone	Ozon
+Total column ozone from OMI per day, since 2004. The ozone hole over Antarctica is seen.	Totale ozonkolom volgens OMI per dag, sinds 2004. Het ozongat boven Antarctica is zichtbaar.
+Vegetation	Vegetatie
+NDVI vegetation index from MODIS Terra over 16 days, since 2000. The series lags by a month.	Vegetatie-index NDVI volgens MODIS Terra over 16 dagen, sinds 2000. De reeks loopt een maand achter.
+Dust	Stof
+Dust in the atmosphere from AIRS per day, since 2002.	Stof in de atmosfeer volgens AIRS per dag, sinds 2002.
+Night lights	Nachtelijke lichten
+VIIRS night image per day, since 2021. City lights, fires, gas flares and auroras are seen.	Nachtbeeld van VIIRS per dag, sinds 2021. Lichten van steden, branden, gasfakkels en poollicht zijn zichtbaar.
+Magnetic anomaly, nT	Magnetische anomalie, nT
+Ocean floor age, Ma	Leeftijd van de oceaanbodem, Ma
+Gravity anomaly, mGal	Zwaartekrachtanomalie, mGal
+Bouguer anomaly, mGal	Bouguer-anomalie, mGal
+Heat flow, mW/m²	Warmtestroom, mW/m²
+Water occurrence 1984-2021, %	Voorkomen van water 1984-2021, %
+Clay in soil 0-5 cm, %	Klei in de bodem 0-5 cm, %
+Sand in soil 0-5 cm, %	Zand in de bodem 0-5 cm, %
+Soil organic carbon 0-5 cm, g/kg	Organische koolstof in de bodem 0-5 cm, g/kg
+Soil pH 0-5 cm, in water	Bodem-pH 0-5 cm, in water
+GLiM lithology	Lithologie GLiM
+Water transitions 1984-2021, JRC	Veranderingen van water 1984-2021, JRC
+ESA WorldCover 2021 land cover	Landbedekking ESA WorldCover 2021
+Unconsolidated sediments	Losse sedimenten
+Siliciclastic sedimentary rocks	Siliciklastische sedimentaire gesteenten
+Mixed sedimentary rocks	Gemengde sedimentaire gesteenten
+Carbonate sedimentary rocks	Carbonaatgesteenten
+Evaporites	Evaporieten
+Pyroclastics	Pyroclastica
+Acid volcanic rocks	Zure vulkanische gesteenten
+Intermediate volcanic rocks	Intermediaire vulkanische gesteenten
+Basic volcanic rocks	Basische vulkanische gesteenten
+Acid plutonic rocks	Zure plutonische gesteenten
+Intermediate plutonic rocks	Intermediaire plutonische gesteenten
+Basic plutonic rocks	Basische plutonische gesteenten
+Metamorphic rocks	Metamorfe gesteenten
+Ice and glaciers	IJs en gletsjers
+Permanent water	Permanent water
+New permanent water	Nieuw permanent water
+Lost permanent water	Verdwenen permanent water
+Seasonal water	Seizoenswater
+New seasonal water	Nieuw seizoenswater
+Lost seasonal water	Verdwenen seizoenswater
+Seasonal to permanent	Seizoens naar permanent
+Permanent to seasonal	Permanent naar seizoens
+Ephemeral permanent water	Kortstondig permanent water
+Ephemeral seasonal water	Kortstondig seizoenswater
+Forest	Bos
+Shrubland	Struikgewas
+Grassland	Grasland
+Cropland	Akkerland
+Built-up	Bebouwing
+Bare and sparse vegetation	Kale grond en schaarse vegetatie
+Snow and ice	Sneeuw en ijs
+Permanent water bodies	Permanente wateren
+Herbaceous wetland	Kruidachtige wetlands
+Mangroves	Mangroven
+Moss and lichen	Mossen en korstmossen
+Magnetic anomaly	Magnetische anomalie
+Field anomaly	Veldanomalie
+nT	nT
+Ocean floor	Oceaanbodem
+Crust age	Leeftijd van de korst
+Ma	Ma
+Gravity	Zwaartekracht
+Free-air anomaly	Vrije-luchtanomalie
+mGal	mGal
+Bouguer anomaly	Bouguer-anomalie
+Heat flow|value	Warmtestroom
+mW/m²	mW/m²
+Grid height	Hoogte van het raster
+4 km above the ellipsoid	4 km boven de ellipsoïde
+Dataset	Dataset
+Rock density	Gesteentedichtheid
+the tile was not read	de tegel is niet gelezen
+no data	geen gegevens
+loading…	laden…
+Soil	Bodem
+Water	Water
+Class	Klasse
+Click - the class at the point	Klik - de klasse op het punt
+{name} · {day}	{name} · {day}
+{name}, {units} · {day}	{name}, {units} · {day}

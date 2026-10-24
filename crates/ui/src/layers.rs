@@ -27,17 +27,35 @@ pub enum Extra {
     Air,
     Sun,
     Grid,
+    /// Карта картинками, номер строки [crate::maps::ALL].
+    Map(usize),
 }
 
 impl Extra {
     /// Порядок строк включённого, `ACTIVE_ORDER` модуля.
     pub const ALL: [Extra; 3] = [Extra::Air, Extra::Sun, Extra::Grid];
 
+    /// Все слои каталога: свои и карты картинками.
+    pub fn all() -> Vec<Extra> {
+        let mut out = Self::ALL.to_vec();
+        out.extend((0..crate::maps::ALL.len()).map(Extra::Map));
+        out
+    }
+
+    /// Строка карты картинками.
+    pub fn map(self) -> Option<&'static crate::maps::Entry> {
+        match self {
+            Extra::Map(n) => crate::maps::ALL.get(n),
+            _ => None,
+        }
+    }
+
     pub fn name(self) -> &'static str {
         match self {
             Extra::Air => "Atmosphere",
             Extra::Sun => "Sun",
             Extra::Grid => "Grid",
+            Extra::Map(_) => self.map().map_or("", |e| e.name),
         }
     }
 
@@ -52,6 +70,7 @@ impl Extra {
             Extra::Grid => {
                 "Parallels and meridians with degree labels, the equator, the tropics and the polar circles. The step of the grid changes with the camera height."
             }
+            Extra::Map(_) => self.map().map_or("", |e| e.tip),
         }
     }
 
@@ -60,6 +79,15 @@ impl Extra {
         match self {
             Extra::Grid => Category::Map,
             Extra::Air | Extra::Sun => Category::Sky,
+            Extra::Map(_) => match self.map().map(|e| e.group) {
+                Some(crate::maps::Group::Fire) => Category::Fire,
+                Some(crate::maps::Group::Gases) => Category::Gases,
+                Some(crate::maps::Group::Water) => Category::Water,
+                Some(crate::maps::Group::Life) => Category::Life,
+                Some(crate::maps::Group::Soil) => Category::Soil,
+                Some(crate::maps::Group::Tiles) => Category::Tiles,
+                _ => Category::Depths,
+            },
         }
     }
 
@@ -69,7 +97,13 @@ impl Extra {
             Extra::Air => "air",
             Extra::Sun => "sun",
             Extra::Grid => "grid",
+            Extra::Map(_) => self.map().map_or("", |e| e.key),
         }
+    }
+
+    /// Слой по ключу настроек.
+    pub fn from_key(key: &str) -> Option<Extra> {
+        Self::all().into_iter().find(|e| e.key() == key)
     }
 }
 
@@ -110,6 +144,7 @@ pub fn basemap_title(lang: Lang, b: Basemap) -> &'static str {
     match b {
         Basemap::Esri => tr(lang, "Esri World Imagery - example"),
         Basemap::Osm => "OpenStreetMap",
+        Basemap::Ready(_) => b.name(lang),
     }
 }
 
@@ -202,7 +237,20 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
                 return true;
             }
         }
-        false
+        // Готовые источники подменю по группам, как `READY_GROUPS` модуля.
+        ui.separator();
+        let mut chosen = false;
+        for group in crate::basemap::ReadyGroup::ALL {
+            ui.menu_button(tr(lang, group.name()), |ui| {
+                for b in Basemap::all().into_iter().filter(|b| b.ready().is_some_and(|r| r.group == group)) {
+                    if ui.radio(state.basemap == b, basemap_title(lang, b)).clicked() {
+                        out.push(Action::Basemap(b));
+                        chosen = true;
+                    }
+                }
+            });
+        }
+        chosen
     });
     // Рельеф: флажок - рельеф, текст - меню.
     let title = format!("{} · Terrarium", tr(lang, "Terrain"));
@@ -223,7 +271,7 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
         false
     });
     // Включённые слои каталога.
-    for extra in Extra::ALL {
+    for extra in Extra::all() {
         if !state.extras.contains(&extra) {
             continue;
         }
@@ -337,7 +385,14 @@ enum Category {
     All,
     Base,
     Map,
+    Fire,
+    Water,
+    Gases,
+    Life,
     Sky,
+    Depths,
+    Soil,
+    Tiles,
 }
 
 /// Окно каталога «Добавить данные»: открыто ли, категория, поиск,
@@ -387,6 +442,7 @@ impl Item {
         match self {
             Item::Base(Basemap::Esri) => tr(lang, "Imagery of the whole Earth, the example basemap. Its terms are set by Esri.").to_string(),
             Item::Base(Basemap::Osm) => tr(lang, "The OpenStreetMap map.").to_string(),
+            Item::Base(b) => b.attribution(lang).0.to_string(),
             Item::Group(n) => tr(lang, TREE[n].1).to_string(),
             Item::Extra(e) => tr(lang, e.tip()).to_string(),
         }
@@ -397,8 +453,9 @@ impl Item {
         match self {
             Item::Base(Basemap::Esri) => "Esri",
             Item::Base(Basemap::Osm) => "OpenStreetMap",
+            Item::Base(b) => b.ready().map_or("", |r| r.group.name()),
             Item::Group(_) => "OpenFreeMap",
-            Item::Extra(_) => "",
+            Item::Extra(e) => e.map().map_or("", |m| m.source),
         }
     }
 
@@ -412,11 +469,12 @@ impl Item {
 }
 
 fn items() -> Vec<Item> {
-    let mut out: Vec<Item> = Basemap::ALL.iter().map(|b| Item::Base(*b)).collect();
+    let mut out: Vec<Item> = Basemap::all().into_iter().map(Item::Base).collect();
     out.extend((0..TREE.len()).map(Item::Group));
     out.push(Item::Extra(Extra::Grid));
     out.push(Item::Extra(Extra::Air));
     out.push(Item::Extra(Extra::Sun));
+    out.extend((0..crate::maps::ALL.len()).map(|n| Item::Extra(Extra::Map(n))));
     out
 }
 
@@ -444,7 +502,14 @@ impl Catalog {
             (Category::All, tr(lang, "All"), tr(lang, "All maps and layers of the catalog.")),
             (Category::Base, tr(lang, "Base maps"), tr(lang, "Basemaps of the globe - imagery and maps. There is one base on the globe, under the layers.")),
             (Category::Map, tr(lang, "Map"), tr(lang, "The OpenFreeMap vector base and the coordinate grid.")),
+            (Category::Fire, tr(lang, "Planet of Fire"), tr(lang, "Fire spots, smoke, aerosol and carbon monoxide of fires and industry from NASA data.")),
+            (Category::Water, tr(lang, "Planet of Water"), tr(lang, "Precipitation, soil moisture, snow, ice, water vapor, chlorophyll, salinity and floods from NASA data, currents from NOAA data.")),
+            (Category::Gases, tr(lang, "Planet of Air"), tr(lang, "Nitrogen dioxide, sulfur dioxide, methane, carbon dioxide and ozone from NASA data.")),
+            (Category::Life, tr(lang, "Land and Life"), tr(lang, "Vegetation, dust, night lights and land cover types from NASA data.")),
             (Category::Sky, tr(lang, "Sky and light"), tr(lang, "The sun and the night side, the atmosphere.")),
+            (Category::Depths, tr(lang, "Inside the Earth"), tr(lang, "The geological and lithological maps, earthquakes, plate boundaries and faults, mineral deposits and mining areas, the Earth cutaway and palaeogeography.")),
+            (Category::Soil, tr(lang, "Soils"), tr(lang, "Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.")),
+            (Category::Tiles, tr(lang, "Map overlays"), tr(lang, "Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.")),
         ];
         egui::Window::new(tr(lang, "Add data")).open(&mut open).default_size([780.0, 520.0]).show(ctx, |ui| {
             ui.add(egui::TextEdit::singleline(&mut self.search).hint_text(tr(lang, "snow, mines, wind")).desired_width(f32::INFINITY));

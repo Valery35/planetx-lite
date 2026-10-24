@@ -199,10 +199,28 @@ pub fn tile_url(source: &Source, key: TileKey) -> String {
     template_url(source.url, key)
 }
 
-/// Адрес тайла key по шаблону с местами {z}, {x}, {y}.
+/// Адрес тайла key по шаблону с местами {z}, {x}, {y} или {bbox} - рамкой
+/// тайла WMS в метрах EPSG:3857, как `WmsSource` модуля.
 pub fn template_url(template: &str, key: TileKey) -> String {
     let (z, x, y) = key;
-    template.replace("{z}", &z.to_string()).replace("{x}", &x.to_string()).replace("{y}", &y.to_string())
+    let out = template.replace("{z}", &z.to_string()).replace("{x}", &x.to_string()).replace("{y}", &y.to_string());
+    if out.contains("{bbox}") {
+        let b = tile_bbox(key);
+        return out.replace("{bbox}", &format!("{:.2},{:.2},{:.2},{:.2}", b[0], b[1], b[2], b[3]));
+    }
+    out
+}
+
+/// Половина стороны мира Web Mercator, метры.
+pub const MERCATOR_HALF: f64 = std::f64::consts::PI * 6378137.0;
+
+/// Рамка тайла key в метрах EPSG:3857: запад, юг, восток, север.
+pub fn tile_bbox(key: TileKey) -> [f64; 4] {
+    let (z, x, y) = key;
+    let side = 2.0 * MERCATOR_HALF / 2f64.powi(z.min(30) as i32);
+    let west = -MERCATOR_HALF + f64::from(x) * side;
+    let north = MERCATOR_HALF - f64::from(y) * side;
+    [west, north - side, west + side, north]
 }
 
 /// Первый шаблон адреса тайлов из TileJSON - строка массива "tiles".

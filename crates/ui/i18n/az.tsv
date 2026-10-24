@@ -404,3 +404,179 @@ Previous stop	Əvvəlki dayanacaq
 Stop {n} of {count}: {name}	Dayanacaq {n} / {count}: {name}
 Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	Kadrda dayanacaqların yazıları. Dayanacaqda kadrın aşağısında nişanın adı və təsviri iri hərflərlə görünür, uçuşda yazı olmur.
 Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	Dövri tur. Sonuncu dayanacaqdan sonra tur birincidən başlayır. Onu fasilə və ya çarpaz dayandırır.
+The geological and lithological maps, earthquakes, plate boundaries and faults, mineral deposits and mining areas, the Earth cutaway and palaeogeography.	Geoloji və litoloji xəritələr, zəlzələlər, lövhə sərhədləri və qırılmalar, yataqlar və mədən sahələri, Yerin kəsiyi və paleocoğrafiya.
+Soils	Torpaqlar
+Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.	SoilGrids məlumatlarına görə 0-5 cm üst torpaq qatının xassələri - gil, qum, üzvi karbon və pH, 250 m tor.
+Map overlays	Xəritə örtükləri
+Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.	Əsas xəritənin üzərində şəffaf xəritələr - dəniz nişanları, piyada və velosiped marşrutları. Bir neçəsi eyni vaxtda açıq ola bilər.
+Sea marks	Dəniz nişanları
+OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.	OpenSeaMap naviqasiya nişanları - üzən nişanlar, mayaklar, istiqamət xətləri, farvaterlər və lövbər yerləri. Nişanlar yaxından, təxminən 1:500 000 xəritə miqyasından görünür. Xəritə naviqasiya xəritəsini əvəz etmir.
+Hiking routes	Piyada marşrutları
+Waymarked hiking routes from OpenStreetMap by Waymarked Trails - international, national, regional and local trails in the colour of their level.	Waymarked Trails vasitəsilə OpenStreetMap-dən işarələnmiş piyada marşrutları - beynəlxalq, milli, regional və yerli cığırlar öz səviyyələrinin rəngində.
+Cycling routes	Velosiped marşrutları
+Waymarked cycling routes from OpenStreetMap by Waymarked Trails - from international cycle routes to local ones.	Waymarked Trails vasitəsilə OpenStreetMap-dən işarələnmiş velosiped marşrutları - beynəlxalq velosiped marşrutlarından yerli marşrutlara qədər.
+Lithology	Litologiya
+The GLiM lithological map of the world - surface rocks in 16 classes: unconsolidated sediments, sedimentary, volcanic, plutonic and metamorphic rocks, ice. It is compiled from 92 regional maps at a scale of about 1:3 750 000. A click in Identify features mode shows the rock class. The globe shows one such map - lithological, geological, soil, water or a geophysical value map.	GLiM dünya litoloji xəritəsi - səthdəki süxurlar 16 sinifdə: bərkiməmiş çöküntülər, çökmə, vulkanik, plutonik və metamorfik süxurlar, buz. Xəritə təxminən 1:3 750 000 miqyaslı 92 regional xəritədən tərtib edilib. “Obyektləri müəyyən et” rejimində klik süxur sinfini göstərir. Qlobusda belə bir xəritə göstərilir - litoloji, geoloji, torpaq, su və ya geofiziki dəyər xəritəsi.
+Land cover	Torpaq örtüyü
+The ESA WorldCover land cover map for 2021 from Sentinel-1 and Sentinel-2 images with a 10 m pixel - forest, shrubland, grassland, cropland, built-up, bare land, snow and ice, water, wetland, mangroves, moss and lichen. A click in Identify features mode shows the class.	Sentinel-1 və Sentinel-2 şəkillərinə görə 10 m piksellə 2021-ci il üçün ESA WorldCover torpaq örtüyü xəritəsi - meşə, kolluq, çəmənlik, əkin sahəsi, tikili ərazi, çılpaq torpaq, qar və buz, su, bataqlıq, manqrlar, mamır və şibyələr. “Obyektləri müəyyən et” rejimində klik sinfi göstərir.
+Water transitions	Suyun dəyişməsi
+What happened to water from 1984 to 2021 in Landsat images - permanent and seasonal water, new and lost, transitions between them, JRC Global Surface Water. New reservoirs, shrunken lakes and migrating channels are visible. A click in Identify features mode shows the class.	Landsat şəkillərinə görə 1984-2021-ci illərdə suyun başına gələnlər - daimi və mövsümi su, yeni və itən su, onlar arasında keçidlər, JRC Global Surface Water. Yeni su anbarları, kiçilmiş göllər və yerini dəyişən məcralar görünür. “Obyektləri müəyyən et” rejimində klik sinfi göstərir.
+Clay in soil	Torpaqda gil
+The share of clay particles in the soil layer 0-5 cm from ISRIC SoilGrids - a model built on 240 thousand soil profiles, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids məlumatlarına görə 0-5 cm torpaq qatında gil hissəciklərinin payı - 240 min torpaq kəsiyinə əsaslanan model, 250 m tor. “Obyektləri müəyyən et” rejimində klik dəyəri SoilGrids-dən soruşur.
+Sand in soil	Torpaqda qum
+The share of sand particles in the soil layer 0-5 cm from ISRIC SoilGrids, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids məlumatlarına görə 0-5 cm torpaq qatında qum hissəciklərinin payı, 250 m tor. “Obyektləri müəyyən et” rejimində klik dəyəri SoilGrids-dən soruşur.
+Soil organic carbon	Torpağın üzvi karbonu
+Organic carbon content of the soil layer 0-5 cm from ISRIC SoilGrids, g/kg, a 250 m grid. The highest values are in the peatlands of the tundra and taiga. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids məlumatlarına görə 0-5 cm torpaq qatında üzvi karbonun miqdarı, g/kg, 250 m tor. Ən yüksək dəyərlər tundra və tayqanın torf bataqlıqlarındadır. “Obyektləri müəyyən et” rejimində klik dəyəri SoilGrids-dən soruşur.
+Soil pH	Torpağın pH-ı
+Soil pH in water, layer 0-5 cm, from ISRIC SoilGrids, a 250 m grid. Yellow soils are acid, green neutral, turquoise alkaline. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids məlumatlarına görə suda torpağın pH-ı, 0-5 cm qat, 250 m tor. Sarı torpaqlar turş, yaşıllar neytral, firuzəyilər qələvidir. “Obyektləri müəyyən et” rejimində klik dəyəri SoilGrids-dən soruşur.
+Ocean floor age	Okean dibinin yaşı
+Age of the oceanic crust after the grid of Seton et al. 2020, 0.1° spacing. Young floor at mid-ocean ridges is red, old floor at ocean margins is blue and purple. Land and continental crust are not coloured. The globe shows one value map at a time - ocean floor age, magnetic anomalies, gravity or heat flow. A click in the Identify features mode shows the age in Ma.	Seton və həmmüəlliflərinin 2020-ci il toruna görə okean qabığının yaşı, 0.1° addım. Okeanortası silsilələrdə gənc dib qırmızı, okean kənarlarında qədim dib göy və bənövşəyidir. Quru və materik qabığı rənglənmir. Qlobusda eyni anda bir dəyər xəritəsi göstərilir - okean dibinin yaşı, maqnit anomaliyaları, ağırlıq qüvvəsi və ya istilik axını. “Obyektləri müəyyən et” rejimində klik yaşı Ma ilə göstərir.
+Gravity anomalies	Ağırlıq qüvvəsi anomaliyaları
+Free-air gravity anomaly after the XGM2019e model to degree 719, about 28 km spacing. Red marks gravity above normal, blue marks gravity below normal. Deep-sea trenches show lows down to -300 mGal, volcanic islands and mountains show highs. A click in the Identify features mode shows the anomaly in mGal.	XGM2019e modelinə görə 719-cu dərəcəyə qədər sərbəst hava ağırlıq qüvvəsi anomaliyası, təxminən 28 km addım. Qırmızı normadan yuxarı, göy normadan aşağı ağırlıq qüvvəsini göstərir. Dərin dəniz çökəkliklərində -300 mGal-a qədər enmələr, vulkanik adalarda və dağlarda qalxmalar görünür. “Obyektləri müəyyən et” rejimində klik anomaliyanı mGal ilə göstərir.
+Bouguer anomalies	Buge anomaliyaları
+Gravity anomaly minus the attraction of the relief - the Bouguer correction after the ETOPO 2022 relief with a rock density of 2670 kg/m³, water and ice with their own densities, and the terrain correction for the surrounding relief within 167 km. The anomaly shows the density of the interior without the effect of mountains and ocean depths. Under mountains it is negative, which is thick light crust, over the ocean it is positive. A click in the Identify features mode shows the anomaly in mGal.	Relyefin cazibəsi çıxılmış ağırlıq qüvvəsi anomaliyası - 2670 kg/m³ süxur sıxlığı ilə ETOPO 2022 relyefinə görə Buge düzəlişi, su və buz öz sıxlıqları ilə, və 167 km radiusda ətraf relyef üçün relyef düzəlişi. Anomaliya dağların və okean dərinliklərinin təsiri olmadan yer təkinin sıxlığını göstərir. Dağların altında mənfidir, bu qalın yüngül qabıqdır, okean üzərində müsbətdir. “Obyektləri müəyyən et” rejimində klik anomaliyanı mGal ilə göstərir.
+Heat flow	İstilik axını
+Heat flow from the interior through the Earth's surface on a 0.5° grid built from 91 thousand measurements of the IHFC 2024 database. Blue marks cold old shields, red marks rifts, ridges and volcanic areas. Far from measurements the grid is smoothed. A click in the Identify features mode shows the flow in mW/m².	IHFC 2024 bazasının 91 min ölçməsinə əsasən qurulmuş 0.5° torda yer təkindən Yer səthi vasitəsilə istilik axını. Göy rəng soyuq qədim qalxanları, qırmızı riftləri, silsilələri və vulkanik əraziləri göstərir. Ölçmələrdən uzaqda tor hamarlanıb. “Obyektləri müəyyən et” rejimində klik axını mW/m² ilə göstərir.
+Magnetic anomalies	Maqnit anomaliyaları
+Anomalies of the Earth magnetic field after the NOAA NCEI EMAG2v3 grid - the departure of the field from the normal one at 4 km above the ellipsoid, a step of about 4 km. Red means a stronger field, blue a weaker one. The anomalies reveal the crust - ridges and stripes of the ocean floor, ancient shields, ore districts. Empty places have no survey. A click in the Identify features mode shows the value in nT.	NOAA NCEI EMAG2v3 toruna görə Yerin maqnit sahəsinin anomaliyaları - ellipsoiddən 4 km hündürlükdə sahənin normal sahədən meyli, təxminən 4 km addım. Qırmızı daha güclü, göy daha zəif sahə deməkdir. Anomaliyalar qabığın quruluşunu üzə çıxarır - okean dibinin silsilələri və zolaqları, qədim qalxanlar, filiz rayonları. Boş yerlərdə çəkiliş yoxdur. “Obyektləri müəyyən et” rejimində klik dəyəri nT ilə göstərir.
+Planet of Water	Su planeti
+Precipitation, soil moisture, snow, ice, water vapor, chlorophyll, salinity and floods from NASA data, currents from NOAA data.	NASA məlumatlarına görə yağıntılar, torpaq nəmliyi, qar, buz, su buxarı, xlorofil, şoranlıq və daşqınlar, NOAA məlumatlarına görə axınlar.
+Land and Life	Quru və həyat
+Vegetation, dust, night lights and land cover types from NASA data.	NASA məlumatlarına görə bitki örtüyü, toz, gecə işıqları və torpaq örtüyü növləri.
+NASA and USGS	NASA və USGS
+OSM Humanitarian	OSM Humanitar
+OSM France	OSM Fransa
+Esri World Street Map	Esri Küçələr
+Esri Light Gray Canvas	Esri Açıq boz
+Esri Dark Gray Canvas	Esri Tünd boz
+Esri Ocean	Esri Okeanlar
+Esri World Terrain	Esri Relyef
+Esri Shaded Relief	Esri Kölgəli relyef
+Esri Physical	Esri Fiziki
+Esri World Hillshade	Esri Ətraflı kölgəli relyef
+USGS Imagery (USA)	USGS Şəkillər (ABŞ)
+USGS Imagery Topo (USA)	USGS Xəritəli şəkillər (ABŞ)
+USGS Topo (USA)	USGS Topoqrafik xəritə (ABŞ)
+USGS Shaded Relief (USA)	USGS Kölgəli relyef (ABŞ)
+Save Scene…	Səhnəni saxla…
+Planet of Fire	Od planeti
+Fire spots, smoke, aerosol and carbon monoxide of fires and industry from NASA data.	NASA məlumatlarına görə yanğın ocaqları, tüstü, aerozol və yanğınların və sənayenin dəm qazı.
+Planet of Air	Hava planeti
+Nitrogen dioxide, sulfur dioxide, methane, carbon dioxide and ozone from NASA data.	NASA məlumatlarına görə azot dioksid, kükürd dioksid, metan, karbon qazı və ozon.
+Smoke, aerosol index	Tüstü, aerozol indeksi
+Absorbing aerosol - smoke of fires and dust - from OMPS per day, since 2012.	Udan aerozol - yanğın tüstüsü və toz - OMPS üzrə gündəlik, 2012-ci ildən.
+Aerosol optical depth	Aerozolun optik qalınlığı
+How much the air dims light because of smoke, dust and smog, MODIS per day, since 2017.	Havanın tüstü, toz və smoq səbəbindən işığı nə qədər zəiflətməsi, MODIS gündəlik, 2017-ci ildən.
+Carbon monoxide	Dəm qazı
+Carbon monoxide mixing ratio at about 5 km from AIRS per day, since 2002. Fire plumes are seen over thousands of kilometres.	AIRS üzrə təxminən 5 km hündürlükdə dəm qazının payı, gündəlik, 2002-ci ildən. Yanğın tüstüləri minlərlə kilometr boyunca görünür.
+Carbon monoxide emission	Dəm qazı tullantıları
+Surface carbon monoxide emission from the MERRA-2 reanalysis per month, since 1980. The series lags by several months.	MERRA-2 reanalizinə görə səthdə dəm qazı tullantıları, aylıq, 1980-ci ildən. Sıra bir neçə ay gecikir.
+Precipitation	Yağıntılar
+IMERG precipitation rate per day, since 2000.	IMERG yağıntı intensivliyi, gündəlik, 2000-ci ildən.
+Soil moisture	Torpaq nəmliyi
+Moisture of the top centimetres of soil from SMAP per day, since 2015. The series has missing days.	SMAP üzrə torpağın üst santimetrlərinin nəmliyi, gündəlik, 2015-ci ildən. Sırada buraxılmış günlər olur.
+Snow cover	Qar örtüyü
+Snow from MODIS Terra imagery per day, since 2000. There are gaps under clouds and in the polar night, seas and lakes are not coloured.	MODIS Terra şəkillərinə görə qar, gündəlik, 2000-ci ildən. Buludların altında və qütb gecəsində boşluqlar var, dənizlər və göllər rənglənmir.
+Snow over 8 days	8 gün ərzində qar
+Snow and lake ice from MODIS Terra imagery, an 8-day summary, since 2000. There are fewer gaps under clouds than in the daily layer.	MODIS Terra şəkillərinə görə qar və göl buzu, 8 günlük icmal, 2000-ci ildən. Buludların altında boşluqlar gündəlik laydan azdır.
+Snow mass	Qar kütləsi
+Snow amount in kilograms per square metre from the SMAP Level 4 model per day, since 2015, a cell of about 9 km. It is a model calculation from satellite data, clouds leave no gaps.	SMAP Level 4 modelinə görə kvadrat metrə kiloqramla qar ehtiyatı, gündəlik, 2015-ci ildən, xana təxminən 9 km. Bu peyk məlumatlarına əsaslanan model hesablamasıdır, buludlar boşluq yaratmır.
+Sea ice	Dəniz buzu
+Sea ice concentration from GHRSST MUR per day, since 2002.	GHRSST MUR üzrə dəniz buzunun sıxlığı, gündəlik, 2002-ci ildən.
+Water vapour	Su buxarı
+Water vapour in the atmospheric column from MODIS Terra per day, since 2000.	MODIS Terra üzrə atmosfer sütununda su buxarı, gündəlik, 2000-ci ildən.
+Chlorophyll	Xlorofil
+Algae chlorophyll in the surface layer of the sea from PACE per day, since 2024.	PACE üzrə dənizin səth qatında yosun xlorofili, gündəlik, 2024-cü ildən.
+Sea salinity	Dəniz şoranlığı
+Sea surface salinity from SMAP, an 8-day running mean, since 2015.	SMAP üzrə dəniz səthinin şoranlığı, 8 günlük sürüşən orta, 2015-ci ildən.
+Floods	Daşqınlar
+Water beyond its usual banks from MODIS over 3 days, since 2021.	MODIS üzrə adi sahillərindən çıxmış su, 3 gün ərzində, 2021-ci ildən.
+Nitrogen dioxide	Azot dioksid
+Tropospheric nitrogen dioxide from TROPOMI per day, since 2018. Cities, roads and power plants are seen.	TROPOMI üzrə troposferdə azot dioksid, gündəlik, 2018-ci ildən. Şəhərlər, yollar və elektrik stansiyaları görünür.
+Sulphur dioxide	Kükürd dioksid
+Near-surface sulphur dioxide from OMPS per day, since 2012. Volcanoes and plants are seen.	OMPS üzrə səthə yaxın kükürd dioksid, gündəlik, 2012-ci ildən. Vulkanlar və zavodlar görünür.
+Methane	Metan
+Methane mixing ratio at about 7 km from AIRS per month, since 2002.	AIRS üzrə təxminən 7 km hündürlükdə metanın payı, aylıq, 2002-ci ildən.
+Carbon dioxide	Karbon qazı
+Column-average carbon dioxide from OCO-2, orbit swaths per day, since 2014. The series lags by several months.	OCO-2 üzrə atmosfer sütununda karbon qazının orta miqdarı, gündəlik orbit zolaqları, 2014-cü ildən. Sıra bir neçə ay gecikir.
+Ozone	Ozon
+Total column ozone from OMI per day, since 2004. The ozone hole over Antarctica is seen.	OMI üzrə ümumi ozon miqdarı, gündəlik, 2004-cü ildən. Antarktida üzərində ozon dəliyi görünür.
+Vegetation	Bitki örtüyü
+NDVI vegetation index from MODIS Terra over 16 days, since 2000. The series lags by a month.	MODIS Terra üzrə NDVI bitki örtüyü indeksi, 16 gün ərzində, 2000-ci ildən. Sıra bir ay gecikir.
+Dust	Toz
+Dust in the atmosphere from AIRS per day, since 2002.	AIRS üzrə atmosferdə toz, gündəlik, 2002-ci ildən.
+Night lights	Gecə işıqları
+VIIRS night image per day, since 2021. City lights, fires, gas flares and auroras are seen.	VIIRS gecə şəkli, gündəlik, 2021-ci ildən. Şəhər işıqları, yanğınlar, qaz məşəlləri və qütb parıltıları görünür.
+Magnetic anomaly, nT	Maqnit anomaliyası, nT
+Ocean floor age, Ma	Okean dibinin yaşı, Ma
+Gravity anomaly, mGal	Ağırlıq qüvvəsi anomaliyası, mGal
+Bouguer anomaly, mGal	Buge anomaliyası, mGal
+Heat flow, mW/m²	İstilik axını, mW/m²
+Water occurrence 1984-2021, %	Suyun təkrarlanması 1984-2021, %
+Clay in soil 0-5 cm, %	Torpaqda gil 0-5 cm, %
+Sand in soil 0-5 cm, %	Torpaqda qum 0-5 cm, %
+Soil organic carbon 0-5 cm, g/kg	Torpağın üzvi karbonu 0-5 cm, g/kg
+Soil pH 0-5 cm, in water	Torpağın pH-ı 0-5 cm, suda
+GLiM lithology	GLiM litologiyası
+Water transitions 1984-2021, JRC	Suyun dəyişməsi 1984-2021, JRC
+ESA WorldCover 2021 land cover	ESA WorldCover 2021 torpaq örtüyü
+Unconsolidated sediments	Bərkiməmiş çöküntülər
+Siliciclastic sedimentary rocks	Qırıntılı çökmə süxurlar
+Mixed sedimentary rocks	Qarışıq çökmə süxurlar
+Carbonate sedimentary rocks	Karbonatlı çökmə süxurlar
+Evaporites	Evaporitlər
+Pyroclastics	Piroklastika
+Acid volcanic rocks	Turş vulkanik süxurlar
+Intermediate volcanic rocks	Orta vulkanik süxurlar
+Basic volcanic rocks	Əsasi vulkanik süxurlar
+Acid plutonic rocks	Turş plutonik süxurlar
+Intermediate plutonic rocks	Orta plutonik süxurlar
+Basic plutonic rocks	Əsasi plutonik süxurlar
+Metamorphic rocks	Metamorfik süxurlar
+Ice and glaciers	Buz və buzlaqlar
+Permanent water	Daimi su
+New permanent water	Yeni daimi su
+Lost permanent water	İtən daimi su
+Seasonal water	Mövsümi su
+New seasonal water	Yeni mövsümi su
+Lost seasonal water	İtən mövsümi su
+Seasonal to permanent	Mövsümidən daimiyə
+Permanent to seasonal	Daimidən mövsümiyə
+Ephemeral permanent water	Müvəqqəti daimi su
+Ephemeral seasonal water	Müvəqqəti mövsümi su
+Forest	Meşə
+Shrubland	Kolluq
+Grassland	Çəmənlik
+Cropland	Əkin sahəsi
+Built-up	Tikili ərazi
+Bare and sparse vegetation	Çılpaq torpaq və seyrək bitki örtüyü
+Snow and ice	Qar və buz
+Permanent water bodies	Daimi su hövzələri
+Herbaceous wetland	Otlu bataqlıqlar
+Mangroves	Manqrlar
+Moss and lichen	Mamır və şibyələr
+Magnetic anomaly	Maqnit anomaliyası
+Field anomaly	Sahə anomaliyası
+nT	nT
+Ocean floor	Okean dibi
+Crust age	Qabığın yaşı
+Ma	Ma
+Gravity	Ağırlıq qüvvəsi
+Free-air anomaly	Sərbəst hava anomaliyası
+mGal	mGal
+Bouguer anomaly	Buge anomaliyası
+Heat flow|value	İstilik axını
+mW/m²	mW/m²
+Grid height	Torun hündürlüyü
+4 km above the ellipsoid	Ellipsoiddən 4 km yuxarı
+Dataset	Məlumat dəsti
+Rock density	Süxurun sıxlığı
+the tile was not read	tayl oxunmadı
+no data	məlumat yoxdur
+loading…	yüklənir…
+Soil	Torpaq
+Water	Su
+Class	Sinif
+Click - the class at the point	Klik - nöqtədəki sinif
+{name} · {day}	{name} · {day}
+{name}, {units} · {day}	{name}, {units} · {day}

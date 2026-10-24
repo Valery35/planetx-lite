@@ -404,3 +404,179 @@ Previous stop	이전 정류 지점
 Stop {n} of {count}: {name}	정류 지점 {n}/{count}: {name}
 Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	화면의 정류 지점 자막. 정류 지점에서는 장소 표시의 이름과 설명이 화면 아래에 크게 표시되고, 이동 중에는 자막이 없습니다.
 Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	투어 반복. 마지막 정류 지점 다음에 투어가 처음부터 다시 시작됩니다. 일시 정지나 X 버튼으로 멈춥니다.
+The geological and lithological maps, earthquakes, plate boundaries and faults, mineral deposits and mining areas, the Earth cutaway and palaeogeography.	지질도와 암상도, 지진, 판 경계와 단층, 광상과 광산 지역, 지구 단면과 고지리.
+Soils	토양
+Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.	SoilGrids에 따른 표토 0-5 cm의 특성 - 점토, 모래, 유기 탄소, pH, 250 m 격자.
+Map overlays	지도 오버레이
+Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.	배경 지도 위의 투명한 지도 - 항로 표지, 도보 경로, 자전거 경로. 여러 개를 동시에 켤 수 있습니다.
+Sea marks	항로 표지
+OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.	OpenSeaMap 항로 표지 - 부표, 등대, 도표, 항로, 정박지. 표지는 가까이에서 지도 축척 약 1:500 000부터 보입니다. 이 지도는 해도를 대신하지 않습니다.
+Hiking routes	도보 경로
+Waymarked hiking routes from OpenStreetMap by Waymarked Trails - international, national, regional and local trails in the colour of their level.	Waymarked Trails가 제공하는 OpenStreetMap의 표시된 도보 경로 - 국제, 국가, 지역, 지방 탐방로를 각 등급의 색으로 표시합니다.
+Cycling routes	자전거 경로
+Waymarked cycling routes from OpenStreetMap by Waymarked Trails - from international cycle routes to local ones.	Waymarked Trails가 제공하는 OpenStreetMap의 표시된 자전거 경로 - 국제 자전거 경로부터 지방 경로까지.
+Lithology	암상
+The GLiM lithological map of the world - surface rocks in 16 classes: unconsolidated sediments, sedimentary, volcanic, plutonic and metamorphic rocks, ice. It is compiled from 92 regional maps at a scale of about 1:3 750 000. A click in Identify features mode shows the rock class. The globe shows one such map - lithological, geological, soil, water or a geophysical value map.	GLiM 세계 암상도 - 지표 암석을 16개 등급으로 구분합니다: 미고결 퇴적물, 퇴적암, 화산암, 심성암, 변성암, 얼음. 이 지도는 축척 약 1:3 750 000의 지역 지도 92장으로 편집되었습니다. ‘객체 식별’ 모드에서 클릭하면 암석 등급이 표시됩니다. 지구본에는 이런 지도가 하나만 표시됩니다 - 암상도, 지질도, 토양도, 수자원 지도 또는 지구물리 값 지도.
+Land cover	토지 피복
+The ESA WorldCover land cover map for 2021 from Sentinel-1 and Sentinel-2 images with a 10 m pixel - forest, shrubland, grassland, cropland, built-up, bare land, snow and ice, water, wetland, mangroves, moss and lichen. A click in Identify features mode shows the class.	Sentinel-1 및 Sentinel-2 영상으로 만든 2021년 ESA WorldCover 토지 피복도, 화소 10 m - 숲, 관목지, 초지, 농경지, 시가지, 나지, 눈과 얼음, 수역, 습지, 맹그로브, 이끼와 지의류. ‘객체 식별’ 모드에서 클릭하면 등급이 표시됩니다.
+Water transitions	수역 변화
+What happened to water from 1984 to 2021 in Landsat images - permanent and seasonal water, new and lost, transitions between them, JRC Global Surface Water. New reservoirs, shrunken lakes and migrating channels are visible. A click in Identify features mode shows the class.	Landsat 영상에 나타난 1984년부터 2021년까지의 수역 변화 - 영구 수역과 계절 수역, 새로 생긴 수역과 사라진 수역, 그 사이의 전이, JRC Global Surface Water. 새 저수지, 줄어든 호수, 이동하는 하도가 보입니다. ‘객체 식별’ 모드에서 클릭하면 등급이 표시됩니다.
+Clay in soil	토양 점토
+The share of clay particles in the soil layer 0-5 cm from ISRIC SoilGrids - a model built on 240 thousand soil profiles, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids에 따른 토양층 0-5 cm의 점토 입자 비율 - 24만 개 토양 단면을 바탕으로 한 모델, 250 m 격자. ‘객체 식별’ 모드에서 클릭하면 SoilGrids에 값을 요청합니다.
+Sand in soil	토양 모래
+The share of sand particles in the soil layer 0-5 cm from ISRIC SoilGrids, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids에 따른 토양층 0-5 cm의 모래 입자 비율, 250 m 격자. ‘객체 식별’ 모드에서 클릭하면 SoilGrids에 값을 요청합니다.
+Soil organic carbon	토양 유기 탄소
+Organic carbon content of the soil layer 0-5 cm from ISRIC SoilGrids, g/kg, a 250 m grid. The highest values are in the peatlands of the tundra and taiga. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids에 따른 토양층 0-5 cm의 유기 탄소 함량, g/kg, 250 m 격자. 가장 높은 값은 툰드라와 타이가의 이탄지에 있습니다. ‘객체 식별’ 모드에서 클릭하면 SoilGrids에 값을 요청합니다.
+Soil pH	토양 pH
+Soil pH in water, layer 0-5 cm, from ISRIC SoilGrids, a 250 m grid. Yellow soils are acid, green neutral, turquoise alkaline. A click in Identify features mode asks SoilGrids for the value.	ISRIC SoilGrids에 따른 물 추출 토양 pH, 층 0-5 cm, 250 m 격자. 노란색은 산성 토양, 녹색은 중성, 청록색은 알칼리성입니다. ‘객체 식별’ 모드에서 클릭하면 SoilGrids에 값을 요청합니다.
+Ocean floor age	해양저 연령
+Age of the oceanic crust after the grid of Seton et al. 2020, 0.1° spacing. Young floor at mid-ocean ridges is red, old floor at ocean margins is blue and purple. Land and continental crust are not coloured. The globe shows one value map at a time - ocean floor age, magnetic anomalies, gravity or heat flow. A click in the Identify features mode shows the age in Ma.	Seton 외 2020년 격자에 따른 해양 지각의 연령, 간격 0.1°. 중앙 해령의 젊은 해저는 빨간색, 해양 가장자리의 오래된 해저는 파란색과 보라색입니다. 육지와 대륙 지각은 색칠되지 않습니다. 지구본에는 한 번에 하나의 값 지도가 표시됩니다 - 해양저 연령, 자기 이상, 중력 또는 열류량. ‘객체 식별’ 모드에서 클릭하면 연령이 Ma 단위로 표시됩니다.
+Gravity anomalies	중력 이상
+Free-air gravity anomaly after the XGM2019e model to degree 719, about 28 km spacing. Red marks gravity above normal, blue marks gravity below normal. Deep-sea trenches show lows down to -300 mGal, volcanic islands and mountains show highs. A click in the Identify features mode shows the anomaly in mGal.	XGM2019e 모델에 따른 719차까지의 프리에어 중력 이상, 간격 약 28 km. 빨간색은 정상보다 큰 중력, 파란색은 정상보다 작은 중력을 나타냅니다. 해구에서는 -300 mGal까지의 낮은 값, 화산섬과 산지에서는 높은 값이 나타납니다. ‘객체 식별’ 모드에서 클릭하면 이상값이 mGal 단위로 표시됩니다.
+Bouguer anomalies	부게 이상
+Gravity anomaly minus the attraction of the relief - the Bouguer correction after the ETOPO 2022 relief with a rock density of 2670 kg/m³, water and ice with their own densities, and the terrain correction for the surrounding relief within 167 km. The anomaly shows the density of the interior without the effect of mountains and ocean depths. Under mountains it is negative, which is thick light crust, over the ocean it is positive. A click in the Identify features mode shows the anomaly in mGal.	지형 인력을 뺀 중력 이상 - 암석 밀도 2670 kg/m³의 ETOPO 2022 지형에 따른 부게 보정, 물과 얼음은 각자의 밀도, 반경 167 km 이내 주변 지형에 대한 지형 보정을 포함합니다. 이 이상은 산과 해양 깊이의 영향을 뺀 지구 내부의 밀도를 보여 줍니다. 산 아래에서는 음수이며 이는 두껍고 가벼운 지각을 뜻하고, 해양 위에서는 양수입니다. ‘객체 식별’ 모드에서 클릭하면 이상값이 mGal 단위로 표시됩니다.
+Heat flow	열류량
+Heat flow from the interior through the Earth's surface on a 0.5° grid built from 91 thousand measurements of the IHFC 2024 database. Blue marks cold old shields, red marks rifts, ridges and volcanic areas. Far from measurements the grid is smoothed. A click in the Identify features mode shows the flow in mW/m².	IHFC 2024 데이터베이스의 측정값 9만 1천 개로 만든 0.5° 격자에 따른, 지구 내부에서 지표를 통과하는 열류량. 파란색은 차갑고 오래된 순상지, 빨간색은 열곡, 해령, 화산 지역을 나타냅니다. 측정 지점에서 먼 곳의 격자는 평활화되어 있습니다. ‘객체 식별’ 모드에서 클릭하면 열류량이 mW/m² 단위로 표시됩니다.
+Magnetic anomalies	자기 이상
+Anomalies of the Earth magnetic field after the NOAA NCEI EMAG2v3 grid - the departure of the field from the normal one at 4 km above the ellipsoid, a step of about 4 km. Red means a stronger field, blue a weaker one. The anomalies reveal the crust - ridges and stripes of the ocean floor, ancient shields, ore districts. Empty places have no survey. A click in the Identify features mode shows the value in nT.	NOAA NCEI EMAG2v3 격자에 따른 지구 자기장 이상 - 타원체 위 4 km 높이에서 정상 자기장으로부터의 편차, 간격 약 4 km. 빨간색은 더 강한 자기장, 파란색은 더 약한 자기장을 뜻합니다. 이상은 지각 구조를 드러냅니다 - 해양저의 해령과 줄무늬, 오래된 순상지, 광화 지대. 빈 곳은 측량이 없습니다. ‘객체 식별’ 모드에서 클릭하면 값이 nT 단위로 표시됩니다.
+Planet of Water	물의 행성
+Precipitation, soil moisture, snow, ice, water vapor, chlorophyll, salinity and floods from NASA data, currents from NOAA data.	NASA 자료에 따른 강수, 토양 수분, 눈, 얼음, 수증기, 엽록소, 염분, 홍수, NOAA 자료에 따른 해류.
+Land and Life	땅과 생명
+Vegetation, dust, night lights and land cover types from NASA data.	NASA 자료에 따른 식생, 먼지, 야간 조명, 토지 피복 유형.
+NASA and USGS	NASA 및 USGS
+OSM Humanitarian	OSM 인도주의
+OSM France	OSM 프랑스
+Esri World Street Map	Esri 도로
+Esri Light Gray Canvas	Esri 밝은 회색
+Esri Dark Gray Canvas	Esri 어두운 회색
+Esri Ocean	Esri 해양
+Esri World Terrain	Esri 지형
+Esri Shaded Relief	Esri 음영 기복
+Esri Physical	Esri 자연 지도
+Esri World Hillshade	Esri 상세 음영 기복
+USGS Imagery (USA)	USGS 영상 (미국)
+USGS Imagery Topo (USA)	USGS 영상과 지도 (미국)
+USGS Topo (USA)	USGS 지형도 (미국)
+USGS Shaded Relief (USA)	USGS 음영 기복 (미국)
+Save Scene…	장면 저장…
+Planet of Fire	불의 행성
+Fire spots, smoke, aerosol and carbon monoxide of fires and industry from NASA data.	NASA 자료에 따른 화재 지점, 연기, 에어로졸, 화재와 산업에서 나온 일산화탄소.
+Planet of Air	공기의 행성
+Nitrogen dioxide, sulfur dioxide, methane, carbon dioxide and ozone from NASA data.	NASA 자료에 따른 이산화질소, 이산화황, 메탄, 이산화탄소, 오존.
+Smoke, aerosol index	연기, 에어로졸 지수
+Absorbing aerosol - smoke of fires and dust - from OMPS per day, since 2012.	흡수성 에어로졸 - 화재 연기와 먼지 - OMPS 일별 자료, 2012년부터.
+Aerosol optical depth	에어로졸 광학 두께
+How much the air dims light because of smoke, dust and smog, MODIS per day, since 2017.	연기, 먼지, 스모그 때문에 대기가 빛을 얼마나 약하게 하는지, MODIS 일별 자료, 2017년부터.
+Carbon monoxide	일산화탄소
+Carbon monoxide mixing ratio at about 5 km from AIRS per day, since 2002. Fire plumes are seen over thousands of kilometres.	AIRS에 따른 고도 약 5 km의 일산화탄소 혼합비, 일별, 2002년부터. 화재 연기는 수천 킬로미터에 걸쳐 보입니다.
+Carbon monoxide emission	일산화탄소 배출
+Surface carbon monoxide emission from the MERRA-2 reanalysis per month, since 1980. The series lags by several months.	MERRA-2 재분석에 따른 지표 일산화탄소 배출량, 월별, 1980년부터. 자료는 몇 달 늦습니다.
+Precipitation	강수
+IMERG precipitation rate per day, since 2000.	IMERG 강수 강도, 일별, 2000년부터.
+Soil moisture	토양 수분
+Moisture of the top centimetres of soil from SMAP per day, since 2015. The series has missing days.	SMAP에 따른 토양 상층 몇 센티미터의 수분, 일별, 2015년부터. 자료에 빠진 날이 있습니다.
+Snow cover	적설
+Snow from MODIS Terra imagery per day, since 2000. There are gaps under clouds and in the polar night, seas and lakes are not coloured.	MODIS Terra 영상에 따른 눈, 일별, 2000년부터. 구름 아래와 극야에는 빈 곳이 있고, 바다와 호수는 색칠되지 않습니다.
+Snow over 8 days	8일간의 눈
+Snow and lake ice from MODIS Terra imagery, an 8-day summary, since 2000. There are fewer gaps under clouds than in the daily layer.	MODIS Terra 영상에 따른 눈과 호수 얼음, 8일 합성, 2000년부터. 구름 아래의 빈 곳이 일별 레이어보다 적습니다.
+Snow mass	적설량
+Snow amount in kilograms per square metre from the SMAP Level 4 model per day, since 2015, a cell of about 9 km. It is a model calculation from satellite data, clouds leave no gaps.	SMAP Level 4 모델에 따른 제곱미터당 킬로그램 단위의 눈의 양, 일별, 2015년부터, 셀 약 9 km. 위성 자료를 이용한 모델 계산이므로 구름으로 인한 빈 곳이 없습니다.
+Sea ice	해빙
+Sea ice concentration from GHRSST MUR per day, since 2002.	GHRSST MUR에 따른 해빙 밀집도, 일별, 2002년부터.
+Water vapour	수증기
+Water vapour in the atmospheric column from MODIS Terra per day, since 2000.	MODIS Terra에 따른 대기 기둥의 수증기, 일별, 2000년부터.
+Chlorophyll	엽록소
+Algae chlorophyll in the surface layer of the sea from PACE per day, since 2024.	PACE에 따른 바다 표층의 조류 엽록소, 일별, 2024년부터.
+Sea salinity	바다 염분
+Sea surface salinity from SMAP, an 8-day running mean, since 2015.	SMAP에 따른 해수면 염분, 8일 이동 평균, 2015년부터.
+Floods	홍수
+Water beyond its usual banks from MODIS over 3 days, since 2021.	MODIS에 따른 평소 강둑을 넘은 물, 3일간, 2021년부터.
+Nitrogen dioxide	이산화질소
+Tropospheric nitrogen dioxide from TROPOMI per day, since 2018. Cities, roads and power plants are seen.	TROPOMI에 따른 대류권 이산화질소, 일별, 2018년부터. 도시, 도로, 발전소가 보입니다.
+Sulphur dioxide	이산화황
+Near-surface sulphur dioxide from OMPS per day, since 2012. Volcanoes and plants are seen.	OMPS에 따른 지표 부근 이산화황, 일별, 2012년부터. 화산과 공장이 보입니다.
+Methane	메탄
+Methane mixing ratio at about 7 km from AIRS per month, since 2002.	AIRS에 따른 고도 약 7 km의 메탄 혼합비, 월별, 2002년부터.
+Carbon dioxide	이산화탄소
+Column-average carbon dioxide from OCO-2, orbit swaths per day, since 2014. The series lags by several months.	OCO-2에 따른 이산화탄소 기둥 평균 농도, 일별 궤도 띠, 2014년부터. 자료는 몇 달 늦습니다.
+Ozone	오존
+Total column ozone from OMI per day, since 2004. The ozone hole over Antarctica is seen.	OMI에 따른 오존 전량, 일별, 2004년부터. 남극 상공의 오존 구멍이 보입니다.
+Vegetation	식생
+NDVI vegetation index from MODIS Terra over 16 days, since 2000. The series lags by a month.	MODIS Terra에 따른 식생 지수 NDVI, 16일간, 2000년부터. 자료는 한 달 늦습니다.
+Dust	먼지
+Dust in the atmosphere from AIRS per day, since 2002.	AIRS에 따른 대기 중 먼지, 일별, 2002년부터.
+Night lights	야간 조명
+VIIRS night image per day, since 2021. City lights, fires, gas flares and auroras are seen.	VIIRS 야간 영상, 일별, 2021년부터. 도시 불빛, 화재, 가스 플레어, 오로라가 보입니다.
+Magnetic anomaly, nT	자기 이상, nT
+Ocean floor age, Ma	해양저 연령, Ma
+Gravity anomaly, mGal	중력 이상, mGal
+Bouguer anomaly, mGal	부게 이상, mGal
+Heat flow, mW/m²	열류량, mW/m²
+Water occurrence 1984-2021, %	수역 출현 빈도 1984-2021, %
+Clay in soil 0-5 cm, %	토양 점토 0-5 cm, %
+Sand in soil 0-5 cm, %	토양 모래 0-5 cm, %
+Soil organic carbon 0-5 cm, g/kg	토양 유기 탄소 0-5 cm, g/kg
+Soil pH 0-5 cm, in water	토양 pH 0-5 cm, 물 추출
+GLiM lithology	GLiM 암상
+Water transitions 1984-2021, JRC	수역 변화 1984-2021, JRC
+ESA WorldCover 2021 land cover	ESA WorldCover 2021 토지 피복
+Unconsolidated sediments	미고결 퇴적물
+Siliciclastic sedimentary rocks	쇄설성 퇴적암
+Mixed sedimentary rocks	혼합 퇴적암
+Carbonate sedimentary rocks	탄산염 퇴적암
+Evaporites	증발암
+Pyroclastics	화산쇄설암
+Acid volcanic rocks	산성 화산암
+Intermediate volcanic rocks	중성 화산암
+Basic volcanic rocks	염기성 화산암
+Acid plutonic rocks	산성 심성암
+Intermediate plutonic rocks	중성 심성암
+Basic plutonic rocks	염기성 심성암
+Metamorphic rocks	변성암
+Ice and glaciers	얼음과 빙하
+Permanent water	영구 수역
+New permanent water	새 영구 수역
+Lost permanent water	사라진 영구 수역
+Seasonal water	계절 수역
+New seasonal water	새 계절 수역
+Lost seasonal water	사라진 계절 수역
+Seasonal to permanent	계절에서 영구로
+Permanent to seasonal	영구에서 계절로
+Ephemeral permanent water	일시적 영구 수역
+Ephemeral seasonal water	일시적 계절 수역
+Forest	숲
+Shrubland	관목지
+Grassland	초지
+Cropland	농경지
+Built-up	시가지
+Bare and sparse vegetation	나지와 희소 식생
+Snow and ice	눈과 얼음
+Permanent water bodies	영구 수체
+Herbaceous wetland	초본 습지
+Mangroves	맹그로브
+Moss and lichen	이끼와 지의류
+Magnetic anomaly	자기 이상
+Field anomaly	자기장 이상
+nT	nT
+Ocean floor	해양저
+Crust age	지각 연령
+Ma	Ma
+Gravity	중력
+Free-air anomaly	프리에어 이상
+mGal	mGal
+Bouguer anomaly	부게 이상
+Heat flow|value	열류량
+mW/m²	mW/m²
+Grid height	격자 높이
+4 km above the ellipsoid	타원체 위 4 km
+Dataset	데이터 세트
+Rock density	암석 밀도
+the tile was not read	타일을 읽지 못함
+no data	데이터 없음
+loading…	불러오는 중…
+Soil	토양
+Water	물
+Class	등급
+Click - the class at the point	클릭 - 지점의 등급
+{name} · {day}	{name} · {day}
+{name}, {units} · {day}	{name}, {units} · {day}

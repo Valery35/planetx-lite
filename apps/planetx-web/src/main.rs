@@ -96,7 +96,12 @@ fn main() {
                         places: Box::new(net::web::Loader::new(net::OPENFREEMAP, repaint.clone())),
                         search: Box::new(net::web::Requests::new(repaint.clone())),
                         pictures: Box::new(net::web::Requests::new(repaint.clone())),
-                        files: Box::new(net::web::Requests::new(repaint)),
+                        files: Box::new(net::web::Requests::new(repaint.clone())),
+                        make: {
+                            let repaint = repaint.clone();
+                            Box::new(move |source| Box::new(net::web::Loader::new(source, repaint.clone())))
+                        },
+                        request: Box::new(move || Box::new(net::web::Requests::new(repaint.clone()))),
                     };
                     let report: ui::Report = Box::new(move |text, _ok| show(text));
                     let mut app = ui::LiteApp::new(cc, loaders, scenario, report).with_scenes(&demo);

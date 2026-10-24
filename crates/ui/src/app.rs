@@ -64,6 +64,9 @@ pub const RECORD_PERIOD: f64 = 0.1;
 pub const VECTOR_BUDGET: f64 = 0.003;
 /// Время на разбор тайлов подписей за кадр, секунды. Выбор помощника.
 pub const LABEL_BUDGET: f64 = 0.003;
+/// Наименьшая высота дерева меток и раздела «Слои» при перетаскивании
+/// границы, точки экрана. Выбор помощника.
+pub const SECTION_MIN: f32 = 60.0;
 /// Снимков основы в видеокарту за кадр, как `UPLOADS_PER_FRAME`
 /// в `render/view.py` модуля. Пока камера движется - один.
 pub const UPLOADS_PER_FRAME: usize = 3;
@@ -88,6 +91,25 @@ struct Shot {
     idle: u32,
 }
 
+/// День ряда темы GIBS.
+enum ThemeDay {
+    /// Запрос ряда дат идёт.
+    Asking(Box<dyn net::Request>),
+    /// Последний готовый день ряда.
+    Day(String),
+    /// Ряда нет: служба не ответила или ответ пуст.
+    Failed,
+}
+
+/// Цветовая карта темы GIBS для шкалы.
+enum ThemeScale {
+    Asking(Box<dyn net::Request>),
+    Ready(Option<data::gibs::Colormap>),
+}
+
+/// Загрузчики источников карты: первый уровень источника и загрузчик.
+type MapLoaders = Vec<(u32, Box<dyn TileLoader>)>;
+
 /// Загрузчики тайлов платформы.
 pub struct Loaders {
     /// Снимки Esri World Imagery.
@@ -104,14 +126,21 @@ pub struct Loaders {
     pub pictures: Box<dyn net::Request>,
     /// Файлы сцен по ссылкам: на странице сцены демо и `?scene=`.
     pub files: Box<dyn net::Request>,
+    /// Загрузчик тайлов нового источника: карты каталога заводят свои
+    /// загрузчики при включении.
+    pub make: Box<dyn Fn(net::Source) -> Box<dyn TileLoader>>,
+    /// Новый разовый запрос: ряд дат темы GIBS.
+    pub request: Box<dyn Fn() -> Box<dyn net::Request>>,
 }
 
 impl Loaders {
     /// Загрузчик основы.
-    pub fn basemap(&self, basemap: Basemap) -> &dyn TileLoader {
+    /// Загрузчик встроенной основы. У готовой подосновы загрузчик свой.
+    pub fn basemap(&self, basemap: Basemap) -> Option<&dyn TileLoader> {
         match basemap {
-            Basemap::Esri => self.esri.as_ref(),
-            Basemap::Osm => self.osm.as_ref(),
+            Basemap::Esri => Some(self.esri.as_ref()),
+            Basemap::Osm => Some(self.osm.as_ref()),
+            Basemap::Ready(_) => None,
         }
     }
 }
@@ -268,6 +297,18 @@ pub struct LiteApp {
     cursor_point: Option<(f64, f64, f64)>,
     /// Тайлы, которые просили подписи в прошлом кадре.
     label_keys: std::collections::HashSet<globe_core::lod::TileKey>,
+    /// Загрузчики включённых карт картинками: ключ строки - (первый
+    /// уровень источника, загрузчик).
+    map_loaders: HashMap<&'static str, MapLoaders>,
+    /// День ряда тем GIBS: запрос идёт, день выбран или ряда нет.
+    theme_days: HashMap<&'static str, ThemeDay>,
+    /// Цветовые карты тем GIBS для шкалы: запрос идёт или пришла.
+    theme_scales: HashMap<&'static str, ThemeScale>,
+    /// Адреса и папки кэша тем на день: строка живёт до конца программы,
+    /// загрузчику нужна постоянная.
+    lasting: HashMap<String, &'static str>,
+    /// Загрузчик выбранной готовой подосновы.
+    ready_loader: Option<(Basemap, Box<dyn TileLoader>)>,
     /// Пришедшие снимки основы, ждущие загрузки в видеокарту.
     pending: HashMap<TileKey, net::Image>,
     /// Тайлы, нарисованные прошлым кадром, - их снимки грузятся первыми.
@@ -280,6 +321,8 @@ pub struct LiteApp {
     globe_menu: Option<crate::globemenu::GlobeMenu>,
     /// Окно «Объекты».
     objects: Option<crate::identify::Objects>,
+    /// Запрос значения карты под щелчком и его итог.
+    map_ask: Option<(crate::mapvalue::Ask, crate::mapvalue::Answer)>,
     /// Копия строк KML для пункта «Вставить».
     clip_kml: Option<String>,
     /// Вопрос перед удалением: заголовок, текст, что удалить.
@@ -491,6 +534,7 @@ impl LiteApp {
         let extras_on: std::collections::BTreeSet<crate::layers::Extra> = [(crate::layers::Extra::Air, settings.air), (crate::layers::Extra::Sun, settings.sun), (crate::layers::Extra::Grid, settings.grid)]
             .into_iter()
             .filter_map(|(e, on)| on.then_some(e))
+            .chain(settings.maps.iter().filter_map(|k| crate::maps::index(k)).map(crate::layers::Extra::Map))
             .collect();
         // Тёмная тема в цветах модуля по умолчанию, решения автора
         // от 23 октября 2026 года.
@@ -583,9 +627,15 @@ impl LiteApp {
             loading_since: None,
             label_keys: std::collections::HashSet::new(),
             pending: HashMap::new(),
+            map_loaders: HashMap::new(),
+            ready_loader: None,
+            theme_days: HashMap::new(),
+            theme_scales: HashMap::new(),
+            lasting: HashMap::new(),
             drawn: std::collections::HashSet::new(),
             was_moving: false,
             objects: None,
+            map_ask: None,
             confirm: None,
             folder_props: None,
             recording: None,
@@ -608,6 +658,13 @@ impl LiteApp {
             app.places_dirty = false;
         }
         app.install_fonts(&cc.egui_ctx);
+        app.sync_maps();
+        // Основа прошлого запуска. Самопроверка ставит свою.
+        if app.check.is_none()
+            && let Some(b) = Basemap::from_key(&app.settings.basemap)
+        {
+            app.set_basemap(b);
+        }
         app
     }
 
@@ -1006,6 +1063,7 @@ impl LiteApp {
             Choice::WhatHere => {
                 if let Some((lat, lon)) = point {
                     self.search.reverse(lat, lon);
+                    self.ask_map_value(lat, lon);
                     self.objects = Some(self.make_objects(lat, lon, None, Some(tr(self.lang, "loading").to_string())));
                 }
             }
@@ -1024,7 +1082,19 @@ impl LiteApp {
         let places: Vec<&scene::kml::Place> = paths.iter().filter_map(|p| self.marks.place(p)).collect();
         groups.extend(crate::identify::places_group(self.lang, &places));
         groups.push(crate::identify::place_group(self.lang, height.filter(|_| self.settings.relief), address));
+        if let Some((ask, answer)) = &self.map_ask
+            && ask.at == (lat, lon)
+        {
+            groups.extend(crate::mapvalue::group(self.lang, ask.key, answer));
+        }
         crate::identify::Objects { point: self.point_text(lat, lon, height, 6), groups, at: (lat, lon) }
+    }
+
+    /// Значение карты значений или готовой карты под точкой, как
+    /// `_ask_tilemap` модуля. Ответ ложится в окно «Объекты».
+    fn ask_map_value(&mut self, lat: f64, lon: f64) {
+        let key = self.vector.map_keys().into_iter().find(|k| crate::maps::kind(k).and_then(|m| m.slot()) == Some(1));
+        self.map_ask = key.and_then(|k| crate::mapvalue::Ask::start(k, lat, lon, (self.loaders.request)())).map(|a| (a, crate::mapvalue::Answer::Loading));
     }
 
     /// Удалить всё из «Моих меток» после вопроса.
@@ -1063,6 +1133,21 @@ impl LiteApp {
             };
             self.search.address = None;
             self.objects = Some(self.make_objects(lat, lon, None, Some(text)));
+        }
+        // Пришло значение карты - строка группы карты.
+        if let Some((ask, answer)) = &mut self.map_ask
+            && let Some(text) = ask.take(lang)
+        {
+            *answer = crate::mapvalue::Answer::Text(text);
+            if let Some(objects) = &mut self.objects
+                && objects.at == ask.at
+                && let Some(group) = crate::mapvalue::group(lang, ask.key, answer)
+            {
+                match objects.groups.iter_mut().find(|(name, _)| *name == group.0) {
+                    Some(slot) => *slot = group,
+                    None => objects.groups.push(group),
+                }
+            }
         }
         if let Some(objects) = &mut self.objects
             && !objects.window(ctx, lang)
@@ -1351,14 +1436,81 @@ impl LiteApp {
             Extra::Air => self.settings.air = on,
             Extra::Sun => self.settings.sun = on,
             Extra::Grid => self.settings.grid = on,
+            Extra::Map(_) => {}
         }
         if on {
+            // Карта значений или готовая карта на глобусе одна, как
+            // у модуля: включение другой снимает прежнюю.
+            if let Some(slot) = extra.map().and_then(|e| crate::maps::kind(e.key)).and_then(|k| k.slot()) {
+                self.extras_on.retain(|e| e.map().and_then(|m| crate::maps::kind(m.key)).and_then(|k| k.slot()) != Some(slot));
+            }
             self.extras_on.insert(extra);
             self.extras.insert(extra);
         } else {
             self.extras_on.remove(&extra);
         }
+        if matches!(extra, Extra::Map(_)) {
+            self.sync_maps();
+        }
         self.settings_dirty = true;
+    }
+
+    /// Карты картинками на глобусе - по включённым строкам: снизу карта
+    /// значений или готовая карта, над ней наложения. Загрузчики заводятся
+    /// и убираются вместе со строками.
+    fn sync_maps(&mut self) {
+        let mut on: Vec<(&'static str, crate::maps::Kind)> = crate::maps::ALL
+            .iter()
+            .enumerate()
+            .filter(|(n, _)| self.extras_on.contains(&crate::layers::Extra::Map(*n)))
+            .filter_map(|(_, e)| crate::maps::kind(e.key).map(|k| (e.key, k)))
+            .collect();
+        self.settings.maps = on.iter().map(|(id, _)| id.to_string()).collect();
+        // Тема GIBS ложится, когда известен день ряда: до ответа ряда
+        // дат картинки тайлов ждали бы её и не рисовались.
+        for (id, kind) in &on {
+            if let crate::maps::Kind::Theme(theme) = kind
+                && !self.theme_days.contains_key(id)
+            {
+                let request = (self.loaders.request)();
+                request.start(&theme.domains_url());
+                self.theme_days.insert(id, ThemeDay::Asking(request));
+            }
+        }
+        on.retain(|(id, kind)| !matches!(kind, crate::maps::Kind::Theme(_)) || matches!(self.theme_days.get(id), Some(ThemeDay::Day(_))));
+        on.sort_by_key(|(_, k)| !k.is_single());
+        self.map_loaders.retain(|k, _| on.iter().any(|(id, _)| id == k));
+        for (id, kind) in &on {
+            if !self.map_loaders.contains_key(id) {
+                let mut sources = kind.sources(id);
+                if let (crate::maps::Kind::Theme(theme), Some(ThemeDay::Day(day))) = (kind, self.theme_days.get(id)) {
+                    let url = lasting(&mut self.lasting, theme.url(day));
+                    let name = lasting(&mut self.lasting, format!("gibs-{}-{day}", theme.key));
+                    let max_level = theme.level;
+                    let ext = if theme.ext == "jpeg" { "jpg" } else { "png" };
+                    sources = vec![(0, net::Source { name, url, max_requests: 4, max_level, ext, placeholders: false, raw: false, tilejson: None })];
+                    // Шкала темы - по её цветовой карте.
+                    if !self.theme_scales.contains_key(id) {
+                        let state = match theme.colormap_url() {
+                            Some(url) => {
+                                let request = (self.loaders.request)();
+                                request.start(&url);
+                                ThemeScale::Asking(request)
+                            }
+                            None => ThemeScale::Ready(None),
+                        };
+                        self.theme_scales.insert(id, state);
+                    }
+                }
+                let loaders = sources.into_iter().map(|(level, source)| (level, (self.loaders.make)(source))).collect();
+                self.map_loaders.insert(id, loaders);
+            }
+        }
+        if self.vector.set_maps(on)
+            && let Some(globe) = &mut self.globe
+        {
+            globe.clear_overlays();
+        }
     }
 
     /// Новые строки векторной основы: линии рисуются заново, подписи - по
@@ -2097,23 +2249,37 @@ impl LiteApp {
             // Под раздел «Слои» - его высота в прошлом кадре.
             let layers_height = self.layers_height;
             if crate::theme::section(ui, "marks", title) {
-                let room = (ui.available_height() - layers_height - status_height - 34.0).max(60.0);
+                // Дереву - заданная границей высота, иначе место над
+                // «Слоями». Разделам остаётся не меньше SECTION_MIN.
+                let free = ui.available_height() - status_height - 34.0;
+                let chosen = self.settings.places_height;
+                let room = if chosen > 0.0 { chosen } else { free - layers_height };
+                let room = room.min(free - SECTION_MIN).max(SECTION_MIN);
                 let root = self.marks.root(marks::root_name(lang));
                 let empty = root.children.is_empty();
-                egui::ScrollArea::vertical().max_height(room).auto_shrink([false, true]).show(ui, |ui| {
-                    crate::marks::root_ui(ui, root, lang, &mut self.tree_state, &mut actions);
-                });
+                let shown = egui::ScrollArea::vertical()
+                    .max_height(room)
+                    .auto_shrink([false, chosen <= 0.0])
+                    .show(ui, |ui| {
+                        crate::marks::root_ui(ui, root, lang, &mut self.tree_state, &mut actions);
+                    })
+                    .inner_rect
+                    .height();
                 if empty {
                     ui.label(egui::RichText::new(hint).color(crate::theme::pal().muted));
                 }
                 self.tour_row(ui, &mut actions);
-                ui.add_space(6.0);
+                self.splitter(ui, shown);
             }
             let top = ui.cursor().top();
             if crate::theme::section(ui, "layers", layers_title) {
                 let mut out = Vec::new();
                 let mut menu = self.layers_menu.take();
-                crate::layers::panel(ui, lang, &self.layers_state(), &mut menu, &mut out);
+                let state = self.layers_state();
+                let room = (ui.available_height() - status_height - 8.0).max(SECTION_MIN);
+                egui::ScrollArea::vertical().id_salt("layers").max_height(room).auto_shrink([false, true]).show(ui, |ui| {
+                    crate::layers::panel(ui, lang, &state, &mut menu, &mut out);
+                });
                 self.layers_menu = menu;
                 self.apply_layers(out);
             }
@@ -2124,6 +2290,27 @@ impl LiteApp {
             });
         });
         self.tree_actions(ui, actions, now);
+    }
+
+    /// Граница между «Моими метками» и «Слоями»: тянется мышью, как
+    /// разделитель панели модуля. Двойной щелчок возвращает высоту
+    /// по умолчанию. room - высота дерева в этом кадре.
+    fn splitter(&mut self, ui: &mut egui::Ui, room: f32) {
+        let (rect, response) = ui.allocate_exact_size(egui::vec2(ui.available_width(), 8.0), egui::Sense::click_and_drag());
+        let response = response.on_hover_cursor(egui::CursorIcon::ResizeVertical);
+        let active = response.hovered() || response.dragged();
+        let color = if active { crate::theme::pal().accent } else { crate::theme::pal().muted.gamma_multiply(0.4) };
+        ui.painter().hline(rect.x_range(), rect.center().y, egui::Stroke::new(if active { 2.0 } else { 1.0 }, color));
+        if response.dragged() {
+            self.settings.places_height = (room + response.drag_delta().y).clamp(SECTION_MIN, crate::settings::PLACES_MAX);
+        }
+        if response.drag_stopped() {
+            self.settings_dirty = true;
+        }
+        if response.double_clicked() {
+            self.settings.places_height = 0.0;
+            self.settings_dirty = true;
+        }
     }
 
     /// Строка под деревом «Моих меток», как у модуля: ползунок
@@ -2508,6 +2695,11 @@ impl LiteApp {
         ctx.request_repaint();
     }
 
+    /// Загрузчик основы: встроенный или готовой подосновы.
+    fn base_loader(&self, basemap: Basemap) -> Option<&dyn TileLoader> {
+        self.loaders.basemap(basemap).or_else(|| self.ready_loader.as_ref().filter(|(b, _)| *b == basemap).map(|(_, l)| l.as_ref()))
+    }
+
     /// Сменить основу: снимки прежней забываются.
     fn set_basemap(&mut self, basemap: Basemap) {
         if basemap == self.basemap {
@@ -2515,6 +2707,11 @@ impl LiteApp {
         }
         self.basemap = basemap;
         self.pending.clear();
+        if basemap.ready().is_some() && self.ready_loader.as_ref().is_none_or(|(b, _)| *b != basemap) {
+            self.ready_loader = Some((basemap, (self.loaders.make)(basemap.source())));
+        }
+        self.settings.basemap = basemap.key().to_string();
+        self.settings_dirty = true;
         if let Some(globe) = &mut self.globe {
             globe.clear_textures();
         }
@@ -2555,9 +2752,10 @@ impl LiteApp {
 
     /// Снимки и высоты пришедших тайлов - в видеокарту и в хранилище.
     fn upload(&mut self) {
-        for basemap in Basemap::ALL {
+        let bases: Vec<Basemap> = Basemap::ALL.into_iter().chain(self.ready_loader.as_ref().map(|(b, _)| *b)).collect();
+        for basemap in bases {
             // Тайлы прежней основы, пришедшие после смены, не нужны.
-            let arrived = self.loaders.basemap(basemap).take();
+            let arrived = self.base_loader(basemap).map(|l| l.take()).unwrap_or_default();
             let Some(globe) = &mut self.globe else {
                 continue;
             };
@@ -2589,6 +2787,41 @@ impl LiteApp {
                 self.labels.add(loaded.key, bytes.clone());
             }
             self.vector.add(loaded.key, bytes);
+        }
+        // Ряды дат тем GIBS: выбран день - тема ложится на глобус.
+        let mut days_changed = false;
+        let now_utc = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64());
+        for state in self.theme_days.values_mut() {
+            if let ThemeDay::Asking(request) = state
+                && let Some(answer) = request.take()
+            {
+                let intervals = answer.map(|b| data::gibs::parse_domains(&String::from_utf8_lossy(&b))).unwrap_or_default();
+                let ready = data::gibs::ready_intervals(&intervals, now_utc);
+                *state = data::gibs::pick_day(&ready, None).map_or(ThemeDay::Failed, ThemeDay::Day);
+                days_changed = true;
+            }
+        }
+        if days_changed {
+            self.sync_maps();
+        }
+        for state in self.theme_scales.values_mut() {
+            if let ThemeScale::Asking(request) = state
+                && let Some(answer) = request.take()
+            {
+                *state = ThemeScale::Ready(answer.ok().and_then(|b| data::gibs::parse_colormap(&String::from_utf8_lossy(&b))));
+            }
+        }
+        // Тайлы карт картинками.
+        for (id, loaders) in &self.map_loaders {
+            for (_, loader) in loaders {
+                for loaded in loader.take() {
+                    let rgba = match loaded.content {
+                        Ok(net::Content::Image(image)) => Some(image.rgba),
+                        _ => None,
+                    };
+                    self.vector.add_map(id, loaded.key, rgba);
+                }
+            }
         }
         // Разбор подписей - в бюджете кадра.
         if self.labels.decode_queued(LABEL_BUDGET) {
@@ -2639,7 +2872,9 @@ impl LiteApp {
     /// Знак PlanetX и подпись источников, как в модуле: подложка
     /// и рельеф целиком, дальше векторная основа.
     fn attribution(&mut self, ctx: &egui::Context, view: egui::Rect) {
-        let parts = [self.basemap.attribution(self.lang), credits::TERRAIN, labels::ATTRIBUTION];
+        let mut parts = vec![self.basemap.attribution(self.lang), credits::TERRAIN, labels::ATTRIBUTION];
+        // Подписи включённых карт картинками.
+        parts.extend(self.vector.map_keys().into_iter().filter_map(crate::maps::kind).map(|k| (k.attribution(), k.link())));
         self.credits.show(ctx, view, self.lang, &parts, 2);
     }
 
@@ -3000,8 +3235,10 @@ impl eframe::App for LiteApp {
         self.nav.camera.width = width;
         self.nav.camera.height = height;
 
-        let loading = self.loaders.basemap(self.basemap).busy()
+        let loading = self.base_loader(self.basemap).is_some_and(|l| l.busy())
             || !self.pending.is_empty()
+            || self.map_loaders.values().flatten().any(|(_, l)| l.busy())
+            || self.theme_days.values().any(|d| matches!(d, ThemeDay::Asking(_)))
             || self.loaders.terrain.busy()
             || self.loaders.places.busy()
             || self.labels.pending
@@ -3010,9 +3247,10 @@ impl eframe::App for LiteApp {
             || self.fetching.is_some()
             || self.relief.busy();
         self.loading_since = if loading { self.loading_since.or(Some(now)) } else { None };
+        let base_busy = self.base_loader(self.basemap).is_some_and(|l| l.busy());
         if let Some(check) = &mut self.check {
             let parts = [
-                ("basemap", self.loaders.basemap(self.basemap).busy()),
+                ("basemap", base_busy),
                 ("terrain", self.loaders.terrain.busy()),
                 ("places", self.loaders.places.busy()),
                 ("labels", self.labels.pending),
@@ -3063,6 +3301,7 @@ impl eframe::App for LiteApp {
                 let (px, py) = (f64::from(pos.x - rect.min.x) * ppp, f64::from(pos.y - rect.min.y) * ppp);
                 if let Some(p) = globe_core::navigation::ground_under(&self.nav.camera, px, py, self.nav.pose.terrain.as_ref()) {
                     let (lat, lon, _) = self.nav.camera.ellipsoid.ecef_to_geodetic(p);
+                    self.ask_map_value(lat, lon);
                     self.objects = Some(self.make_objects(lat, lon, Some((px, py, ppp)), None));
                 }
             }
@@ -3148,9 +3387,12 @@ impl eframe::App for LiteApp {
         wanted.extend(selection.want.iter().copied().filter(|(k, _)| !self.pending.contains_key(k)));
         self.was_moving = moving;
         self.drawn = selection.draw.iter().copied().collect();
-        for basemap in Basemap::ALL {
-            let loader = self.loaders.basemap(basemap);
-            loader.want(if basemap == self.basemap { &wanted } else { &[] });
+        let bases: Vec<Basemap> = Basemap::ALL.into_iter().chain(self.ready_loader.as_ref().map(|(b, _)| *b)).collect();
+        for basemap in bases {
+            let loader = self.loaders.basemap(basemap).or_else(|| self.ready_loader.as_ref().filter(|(b, _)| *b == basemap).map(|(_, l)| l.as_ref()));
+            if let Some(loader) = loader {
+                loader.want(if basemap == self.basemap { &wanted } else { &[] });
+            }
         }
         // Высоты глубже уровня 15 у своего рельефа собираются здесь.
         let needs = self.relief.route(height_needs(&store, &selection), &store);
@@ -3162,6 +3404,15 @@ impl eframe::App for LiteApp {
         let asked = self.label_keys.clone();
         vector_tiles.extend(self.vector.wanted(&selection.draw).into_iter().filter(|(k, _)| !asked.contains(k)));
         self.loaders.places.want(&vector_tiles);
+        // Тайлы карт: каждому источнику - его уровни.
+        let map_tiles = self.vector.maps_wanted(&selection.draw);
+        for (id, loaders) in &self.map_loaders {
+            for (n, (level, loader)) in loaders.iter().enumerate() {
+                let next = loaders.get(n + 1).map_or(u32::MAX, |(l, _)| *l);
+                let list: Vec<(TileKey, f64)> = map_tiles.iter().filter(|(k, key, _)| k == id && key.0 >= *level && key.0 < next).map(|(_, key, p)| (*key, *p)).collect();
+                loader.want(&list);
+            }
+        }
         // Линии векторной основы - не дольше VECTOR_BUDGET за кадр.
         self.vector.step(&selection.draw, VECTOR_BUDGET, globe);
         let lines_pending = !self.vector.ready(&selection.draw);
@@ -3246,6 +3497,30 @@ impl eframe::App for LiteApp {
             self.navpad.tooltip(ui, rect, self.lang);
         }
         self.attribution(&ctx, rect);
+        // Шкалы карт над подписью источников, крестик убирает карту.
+        let maps: Vec<(&'static str, crate::maps::Kind)> = self.vector.map_keys().into_iter().filter_map(|k| crate::maps::kind(k).map(|m| (k, m))).collect();
+        let theme = maps.iter().find_map(|(k, m)| match (m, self.theme_days.get(k)) {
+            (crate::maps::Kind::Theme(_), Some(ThemeDay::Day(day))) => {
+                let name = crate::maps::ALL.iter().find(|e| e.key == *k).map_or("", |e| tr(self.lang, e.name));
+                let scale = match self.theme_scales.get(k) {
+                    Some(ThemeScale::Ready(s)) => s.clone(),
+                    _ => None,
+                };
+                let units = scale.as_ref().map_or("", |s| s.units.as_str());
+                let title = if units.is_empty() {
+                    trf(self.lang, "{name} · {day}", &[("name", name), ("day", day)])
+                } else {
+                    trf(self.lang, "{name}, {units} · {day}", &[("name", name), ("units", units), ("day", day)])
+                };
+                Some((*k, title, scale))
+            }
+            _ => None,
+        });
+        if let Some(key) = crate::legend::show(&ctx, self.lang, rect, self.credits.rect, &maps, theme)
+            && let Some(n) = crate::maps::index(key)
+        {
+            self.set_extra(crate::layers::Extra::Map(n), false);
+        }
         if let Some(Snapshot::Hide(to)) = self.snapshot {
             // Окна скрыты в этом кадре: снимок - глобус с подписью
             // источников.
@@ -3289,4 +3564,15 @@ impl eframe::App for LiteApp {
             ctx.request_repaint();
         }
     }
+}
+
+/// Строка, которая живёт до конца программы: адрес и папка кэша темы на
+/// день. Каждая разная строка заводится один раз.
+fn lasting(cache: &mut HashMap<String, &'static str>, text: String) -> &'static str {
+    if let Some(s) = cache.get(&text) {
+        return s;
+    }
+    let s: &'static str = Box::leak(text.clone().into_boxed_str());
+    cache.insert(text, s);
+    s
 }

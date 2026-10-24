@@ -404,3 +404,179 @@ Previous stop	წინა გაჩერება
 Stop {n} of {count}: {name}	გაჩერება {n} / {count}: {name}
 Stop captions on the frame. At a stop the name and the description of the placemark stand large at the bottom of the frame, in flight there is no caption.	გაჩერებების წარწერები კადრზე. გაჩერებაზე კადრის ქვედა ნაწილში მსხვილად ჩანს ნიშნის სახელი და აღწერა, გადაფრენისას წარწერა არ არის.
 Tour in a loop. After the last stop the tour starts from the first. Pause or the cross stops it.	ტური წრეზე. ბოლო გაჩერების შემდეგ ტური პირველიდან იწყება. მას აჩერებს პაუზა ან ჯვარი.
+The geological and lithological maps, earthquakes, plate boundaries and faults, mineral deposits and mining areas, the Earth cutaway and palaeogeography.	გეოლოგიური და ლითოლოგიური რუკები, მიწისძვრები, ფილების საზღვრები და რღვევები, საბადოები და სამთო უბნები, დედამიწის ჭრილი და პალეოგეოგრაფია.
+Soils	ნიადაგები
+Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.	ნიადაგის ზედა ფენის 0-5 სმ თვისებები SoilGrids-ის მიხედვით - თიხა, ქვიშა, ორგანული ნახშირბადი და pH, ბადე 250 მ.
+Map overlays	რუკების გადაფარვები
+Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.	გამჭვირვალე რუკები საბაზისო რუკის ზემოთ - საზღვაო ნიშნები, საფეხმავლო და ველოსიპედის მარშრუტები. რამდენიმე შეიძლება ერთდროულად იყოს ჩართული.
+Sea marks	საზღვაო ნიშნები
+OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.	OpenSeaMap-ის სანავიგაციო ნიშნები - ტივტივები, შუქურები, სასწორი ხაზები, ფარვატერები და ღუზის ადგილები. ნიშნები ჩანს ახლოდან, რუკის დაახლოებით 1:500 000 მასშტაბიდან. რუკა არ ცვლის სანავიგაციო რუკას.
+Hiking routes	საფეხმავლო მარშრუტები
+Waymarked hiking routes from OpenStreetMap by Waymarked Trails - international, national, regional and local trails in the colour of their level.	OpenStreetMap-ის მონიშნული საფეხმავლო მარშრუტები Waymarked Trails-ის მიხედვით - საერთაშორისო, ეროვნული, რეგიონული და ადგილობრივი ბილიკები თავისი დონის ფერით.
+Cycling routes	ველოსიპედის მარშრუტები
+Waymarked cycling routes from OpenStreetMap by Waymarked Trails - from international cycle routes to local ones.	OpenStreetMap-ის მონიშნული ველოსიპედის მარშრუტები Waymarked Trails-ის მიხედვით - საერთაშორისო ველომარშრუტებიდან ადგილობრივამდე.
+Lithology	ლითოლოგია
+The GLiM lithological map of the world - surface rocks in 16 classes: unconsolidated sediments, sedimentary, volcanic, plutonic and metamorphic rocks, ice. It is compiled from 92 regional maps at a scale of about 1:3 750 000. A click in Identify features mode shows the rock class. The globe shows one such map - lithological, geological, soil, water or a geophysical value map.	მსოფლიოს ლითოლოგიური რუკა GLiM - ზედაპირის ქანები 16 კლასად: ფხვიერი ნალექები, დანალექი, ვულკანური, პლუტონური და მეტამორფული ქანები, ყინული. რუკა შედგენილია 92 რეგიონული რუკიდან, მასშტაბი დაახლოებით 1:3 750 000. დაწკაპუნება რეჟიმში „ობიექტების განსაზღვრა“ აჩვენებს ქანის კლასს. გლობუსზე ერთი ასეთი რუკაა - ლითოლოგიური, გეოლოგიური, ნიადაგის, წყლის ან გეოფიზიკური მნიშვნელობების რუკა.
+Land cover	მიწის საფარი
+The ESA WorldCover land cover map for 2021 from Sentinel-1 and Sentinel-2 images with a 10 m pixel - forest, shrubland, grassland, cropland, built-up, bare land, snow and ice, water, wetland, mangroves, moss and lichen. A click in Identify features mode shows the class.	ESA WorldCover-ის მიწის საფარის რუკა 2021 წლისთვის Sentinel-1 და Sentinel-2 სურათების მიხედვით 10 მ პიქსელით - ტყე, ბუჩქნარი, მდელო, სახნავი, განაშენიანება, შიშველი მიწა, თოვლი და ყინული, წყალი, ჭაობი, მანგროები, ხავსები და მღიერები. დაწკაპუნება რეჟიმში „ობიექტების განსაზღვრა“ აჩვენებს კლასს.
+Water transitions	წყლის ცვლილებები
+What happened to water from 1984 to 2021 in Landsat images - permanent and seasonal water, new and lost, transitions between them, JRC Global Surface Water. New reservoirs, shrunken lakes and migrating channels are visible. A click in Identify features mode shows the class.	რა მოუვიდა წყალს 1984-დან 2021 წლამდე Landsat-ის სურათების მიხედვით - მუდმივი და სეზონური წყალი, ახალი და გამქრალი, გადასვლები მათ შორის, JRC Global Surface Water. ჩანს ახალი წყალსაცავები, დამცრობილი ტბები და მოხეტიალე კალაპოტები. დაწკაპუნება რეჟიმში „ობიექტების განსაზღვრა“ აჩვენებს კლასს.
+Clay in soil	თიხა ნიადაგში
+The share of clay particles in the soil layer 0-5 cm from ISRIC SoilGrids - a model built on 240 thousand soil profiles, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	თიხის ნაწილაკების წილი ნიადაგის 0-5 სმ ფენაში ISRIC SoilGrids-ის მიხედვით - მოდელი 240 ათასი ნიადაგის ჭრილის საფუძველზე, ბადე 250 მ. დაწკაპუნება რეჟიმში „ობიექტების განსაზღვრა“ მნიშვნელობას SoilGrids-ს სთხოვს.
+Sand in soil	ქვიშა ნიადაგში
+The share of sand particles in the soil layer 0-5 cm from ISRIC SoilGrids, a 250 m grid. A click in Identify features mode asks SoilGrids for the value.	ქვიშის ნაწილაკების წილი ნიადაგის 0-5 სმ ფენაში ISRIC SoilGrids-ის მიხედვით, ბადე 250 მ. დაწკაპუნება რეჟიმში „ობიექტების განსაზღვრა“ მნიშვნელობას SoilGrids-ს სთხოვს.
+Soil organic carbon	ნიადაგის ორგანული ნახშირბადი
+Organic carbon content of the soil layer 0-5 cm from ISRIC SoilGrids, g/kg, a 250 m grid. The highest values are in the peatlands of the tundra and taiga. A click in Identify features mode asks SoilGrids for the value.	ორგანული ნახშირბადის შემცველობა ნიადაგის 0-5 სმ ფენაში ISRIC SoilGrids-ის მიხედვით, g/kg, ბადე 250 მ. ყველაზე მაღალი მნიშვნელობები ტუნდრისა და ტაიგის ტორფნარებშია. დაწკაპუნება რეჟიმში „ობიექტების განსაზღვრა“ მნიშვნელობას SoilGrids-ს სთხოვს.
+Soil pH	ნიადაგის pH
+Soil pH in water, layer 0-5 cm, from ISRIC SoilGrids, a 250 m grid. Yellow soils are acid, green neutral, turquoise alkaline. A click in Identify features mode asks SoilGrids for the value.	ნიადაგის pH წყლის გამონაწურში, ფენა 0-5 სმ, ISRIC SoilGrids-ის მიხედვით, ბადე 250 მ. ყვითელი ნიადაგები მჟავეა, მწვანე - ნეიტრალური, ფირუზისფერი - ტუტე. დაწკაპუნება რეჟიმში „ობიექტების განსაზღვრა“ მნიშვნელობას SoilGrids-ს სთხოვს.
+Ocean floor age	ოკეანის ფსკერის ასაკი
+Age of the oceanic crust after the grid of Seton et al. 2020, 0.1° spacing. Young floor at mid-ocean ridges is red, old floor at ocean margins is blue and purple. Land and continental crust are not coloured. The globe shows one value map at a time - ocean floor age, magnetic anomalies, gravity or heat flow. A click in the Identify features mode shows the age in Ma.	ოკეანური ქერქის ასაკი Seton-ისა და თანაავტორების 2020 წლის ბადის მიხედვით, ბიჯი 0.1°. ახალგაზრდა ფსკერი შუაოკეანურ ქედებთან წითელია, ძველი ფსკერი ოკეანეების კიდეებთან - ლურჯი და იისფერი. ხმელეთი და კონტინენტური ქერქი არ არის შეფერილი. გლობუსზე ერთდროულად ერთი მნიშვნელობების რუკაა - ფსკერის ასაკი, მაგნიტური ანომალიები, სიმძიმის ძალა ან სითბური ნაკადი. დაწკაპუნება რეჟიმში „ობიექტების განსაზღვრა“ აჩვენებს ასაკს Ma-ში.
+Gravity anomalies	სიმძიმის ძალის ანომალიები
+Free-air gravity anomaly after the XGM2019e model to degree 719, about 28 km spacing. Red marks gravity above normal, blue marks gravity below normal. Deep-sea trenches show lows down to -300 mGal, volcanic islands and mountains show highs. A click in the Identify features mode shows the anomaly in mGal.	სიმძიმის ძალის ანომალია თავისუფალ ჰაერში XGM2019e მოდელის მიხედვით 719 ხარისხამდე, ბიჯი დაახლოებით 28 კმ. წითელი ნიშნავს ნორმაზე მეტ სიმძიმის ძალას, ლურჯი - ნორმაზე ნაკლებს. ღრმაწყლოვან ღრმულებზე ჩავარდნებია -300 mGal-მდე, ვულკანურ კუნძულებსა და მთებზე - აწევა. დაწკაპუნება რეჟიმში „ობიექტების განსაზღვრა“ აჩვენებს ანომალიას mGal-ში.
+Bouguer anomalies	ბუგეს ანომალიები
+Gravity anomaly minus the attraction of the relief - the Bouguer correction after the ETOPO 2022 relief with a rock density of 2670 kg/m³, water and ice with their own densities, and the terrain correction for the surrounding relief within 167 km. The anomaly shows the density of the interior without the effect of mountains and ocean depths. Under mountains it is negative, which is thick light crust, over the ocean it is positive. A click in the Identify features mode shows the anomaly in mGal.	სიმძიმის ძალის ანომალია რელიეფის მიზიდულობის გამოკლებით - ბუგეს შესწორება ETOPO 2022 რელიეფის მიხედვით ქანის 2670 kg/m³ სიმკვრივით, წყალი და ყინული საკუთარი სიმკვრივით, და შესწორება გარშემო რელიეფზე 167 კმ რადიუსში. ანომალია აჩვენებს წიაღის სიმკვრივეს მთებისა და ოკეანის სიღრმეების გავლენის გარეშე. მთების ქვეშ ის უარყოფითია, ეს სქელი მსუბუქი ქერქია, ოკეანის ზემოთ - დადებითი. დაწკაპუნება რეჟიმში „ობიექტების განსაზღვრა“ აჩვენებს ანომალიას mGal-ში.
+Heat flow	სითბური ნაკადი
+Heat flow from the interior through the Earth's surface on a 0.5° grid built from 91 thousand measurements of the IHFC 2024 database. Blue marks cold old shields, red marks rifts, ridges and volcanic areas. Far from measurements the grid is smoothed. A click in the Identify features mode shows the flow in mW/m².	სითბოს ნაკადი წიაღიდან დედამიწის ზედაპირის გავლით 0.5° ბადეზე, რომელიც აგებულია IHFC 2024 ბაზის 91 ათასი გაზომვით. ლურჯი - ცივი ძველი ფარები, წითელი - რიფტები, ქედები და ვულკანური არეები. გაზომვებიდან მოშორებით ბადე გაგლუვებულია. დაწკაპუნება რეჟიმში „ობიექტების განსაზღვრა“ აჩვენებს ნაკადს mW/m²-ში.
+Magnetic anomalies	მაგნიტური ანომალიები
+Anomalies of the Earth magnetic field after the NOAA NCEI EMAG2v3 grid - the departure of the field from the normal one at 4 km above the ellipsoid, a step of about 4 km. Red means a stronger field, blue a weaker one. The anomalies reveal the crust - ridges and stripes of the ocean floor, ancient shields, ore districts. Empty places have no survey. A click in the Identify features mode shows the value in nT.	დედამიწის მაგნიტური ველის ანომალიები NOAA NCEI-ის EMAG2v3 ბადის მიხედვით - ველის გადახრა ნორმალურისგან ელიფსოიდიდან 4 კმ სიმაღლეზე, ბიჯი დაახლოებით 4 კმ. წითელი - ველი უფრო ძლიერია, ლურჯი - უფრო სუსტი. ანომალიები ავლენს ქერქის აგებულებას - ოკეანის ფსკერის ქედებსა და ზოლებს, ძველ ფარებს, მადნიან რაიონებს. ცარიელ ადგილებში აგეგმვა არ არის. დაწკაპუნება რეჟიმში „ობიექტების განსაზღვრა“ აჩვენებს მნიშვნელობას nT-ში.
+Planet of Water	წყლის პლანეტა
+Precipitation, soil moisture, snow, ice, water vapor, chlorophyll, salinity and floods from NASA data, currents from NOAA data.	ნალექები, ნიადაგის ტენიანობა, თოვლი, ყინული, წყლის ორთქლი, ქლოროფილი, მარილიანობა და წყალდიდობები NASA-ს მონაცემებით, დინებები NOAA-ს მონაცემებით.
+Land and Life	ხმელეთი და სიცოცხლე
+Vegetation, dust, night lights and land cover types from NASA data.	მცენარეულობა, მტვერი, ღამის განათება და საფარის ტიპები NASA-ს მონაცემებით.
+NASA and USGS	NASA და USGS
+OSM Humanitarian	OSM ჰუმანიტარული
+OSM France	OSM საფრანგეთი
+Esri World Street Map	Esri ქუჩები
+Esri Light Gray Canvas	Esri ღია ნაცრისფერი
+Esri Dark Gray Canvas	Esri მუქი ნაცრისფერი
+Esri Ocean	Esri ოკეანეები
+Esri World Terrain	Esri რელიეფი
+Esri Shaded Relief	Esri რელიეფის დაჩრდილვა
+Esri Physical	Esri ფიზიკური
+Esri World Hillshade	Esri დეტალური დაჩრდილვა
+USGS Imagery (USA)	USGS სურათები (აშშ)
+USGS Imagery Topo (USA)	USGS სურათები რუკით (აშშ)
+USGS Topo (USA)	USGS ტოპორუკა (აშშ)
+USGS Shaded Relief (USA)	USGS რელიეფის დაჩრდილვა (აშშ)
+Save Scene…	სცენის შენახვა…
+Planet of Fire	ცეცხლის პლანეტა
+Fire spots, smoke, aerosol and carbon monoxide of fires and industry from NASA data.	ხანძრის კერები, კვამლი, აეროზოლი და ხანძრებისა და მრეწველობის მხუთავი აირი NASA-ს მონაცემებით.
+Planet of Air	ჰაერის პლანეტა
+Nitrogen dioxide, sulfur dioxide, methane, carbon dioxide and ozone from NASA data.	აზოტის დიოქსიდი, გოგირდის დიოქსიდი, მეთანი, ნახშირორჟანგი და ოზონი NASA-ს მონაცემებით.
+Smoke, aerosol index	კვამლი, აეროზოლის ინდექსი
+Absorbing aerosol - smoke of fires and dust - from OMPS per day, since 2012.	შთამნთქმელი აეროზოლი - ხანძრების კვამლი და მტვერი - OMPS-ის მიხედვით დღე-ღამეში, 2012 წლიდან.
+Aerosol optical depth	აეროზოლის ოპტიკური სისქე
+How much the air dims light because of smoke, dust and smog, MODIS per day, since 2017.	რამდენად ასუსტებს ჰაერი სინათლეს კვამლის, მტვრისა და სმოგის გამო, MODIS დღე-ღამეში, 2017 წლიდან.
+Carbon monoxide	მხუთავი აირი
+Carbon monoxide mixing ratio at about 5 km from AIRS per day, since 2002. Fire plumes are seen over thousands of kilometres.	მხუთავი აირის წილი დაახლოებით 5 კმ სიმაღლეზე AIRS-ის მიხედვით დღე-ღამეში, 2002 წლიდან. ხანძრების კვამლის შლეიფები ათასობით კილომეტრზე ჩანს.
+Carbon monoxide emission	მხუთავი აირის გამონაბოლქვი
+Surface carbon monoxide emission from the MERRA-2 reanalysis per month, since 1980. The series lags by several months.	მხუთავი აირის გამონაბოლქვი ზედაპირთან MERRA-2 რეანალიზის მიხედვით თვეში, 1980 წლიდან. მწკრივი რამდენიმე თვით ჩამორჩება.
+Precipitation	ნალექები
+IMERG precipitation rate per day, since 2000.	ნალექების ინტენსივობა IMERG დღე-ღამეში, 2000 წლიდან.
+Soil moisture	ნიადაგის ტენიანობა
+Moisture of the top centimetres of soil from SMAP per day, since 2015. The series has missing days.	ნიადაგის ზედა სანტიმეტრების ტენიანობა SMAP-ის მიხედვით დღე-ღამეში, 2015 წლიდან. მწკრივში ზოგი დღე გამოტოვებულია.
+Snow cover	თოვლის საფარი
+Snow from MODIS Terra imagery per day, since 2000. There are gaps under clouds and in the polar night, seas and lakes are not coloured.	თოვლი MODIS Terra-ს სურათების მიხედვით დღე-ღამეში, 2000 წლიდან. ღრუბლების ქვეშ და პოლარულ ღამეს ხარვეზებია, ზღვები და ტბები არ იფერება.
+Snow over 8 days	თოვლი 8 დღე-ღამეში
+Snow and lake ice from MODIS Terra imagery, an 8-day summary, since 2000. There are fewer gaps under clouds than in the daily layer.	თოვლი და ტბების ყინული MODIS Terra-ს სურათების მიხედვით, 8 დღე-ღამის შეჯამება, 2000 წლიდან. ღრუბლების ქვეშ ხარვეზები ნაკლებია, ვიდრე დღიურ ფენაში.
+Snow mass	თოვლის მასა
+Snow amount in kilograms per square metre from the SMAP Level 4 model per day, since 2015, a cell of about 9 km. It is a model calculation from satellite data, clouds leave no gaps.	თოვლის მარაგი კილოგრამებში კვადრატულ მეტრზე SMAP Level 4 მოდელის მიხედვით დღე-ღამეში, 2015 წლიდან, უჯრა დაახლოებით 9 კმ. ეს თანამგზავრის მონაცემებით მოდელის გაანგარიშებაა, ღრუბლები ხარვეზებს არ იძლევა.
+Sea ice	ზღვის ყინული
+Sea ice concentration from GHRSST MUR per day, since 2002.	ზღვის ყინულის შეკრულობა GHRSST MUR-ის მიხედვით დღე-ღამეში, 2002 წლიდან.
+Water vapour	წყლის ორთქლი
+Water vapour in the atmospheric column from MODIS Terra per day, since 2000.	წყლის ორთქლი ატმოსფეროს სვეტში MODIS Terra-ს მიხედვით დღე-ღამეში, 2000 წლიდან.
+Chlorophyll	ქლოროფილი
+Algae chlorophyll in the surface layer of the sea from PACE per day, since 2024.	წყალმცენარეების ქლოროფილი ზღვის ზედაპირულ ფენაში PACE-ის მიხედვით დღე-ღამეში, 2024 წლიდან.
+Sea salinity	ზღვის მარილიანობა
+Sea surface salinity from SMAP, an 8-day running mean, since 2015.	ზღვის ზედაპირის მარილიანობა SMAP-ის მიხედვით, 8 დღე-ღამის მცოცავი საშუალო, 2015 წლიდან.
+Floods	წყალდიდობები
+Water beyond its usual banks from MODIS over 3 days, since 2021.	ჩვეულ ნაპირებს გადმოსული წყალი MODIS-ის მიხედვით 3 დღე-ღამეში, 2021 წლიდან.
+Nitrogen dioxide	აზოტის დიოქსიდი
+Tropospheric nitrogen dioxide from TROPOMI per day, since 2018. Cities, roads and power plants are seen.	აზოტის დიოქსიდი ტროპოსფეროში TROPOMI-ს მიხედვით დღე-ღამეში, 2018 წლიდან. ჩანს ქალაქები, გზები და ელექტროსადგურები.
+Sulphur dioxide	გოგირდის დიოქსიდი
+Near-surface sulphur dioxide from OMPS per day, since 2012. Volcanoes and plants are seen.	გოგირდის დიოქსიდი ზედაპირთან OMPS-ის მიხედვით დღე-ღამეში, 2012 წლიდან. ჩანს ვულკანები და ქარხნები.
+Methane	მეთანი
+Methane mixing ratio at about 7 km from AIRS per month, since 2002.	მეთანის წილი დაახლოებით 7 კმ სიმაღლეზე AIRS-ის მიხედვით თვეში, 2002 წლიდან.
+Carbon dioxide	ნახშირორჟანგი
+Column-average carbon dioxide from OCO-2, orbit swaths per day, since 2014. The series lags by several months.	ნახშირორჟანგის საშუალო შემცველობა ატმოსფეროს სვეტში OCO-2-ის მიხედვით, ორბიტის ზოლები დღე-ღამეში, 2014 წლიდან. მწკრივი რამდენიმე თვით ჩამორჩება.
+Ozone	ოზონი
+Total column ozone from OMI per day, since 2004. The ozone hole over Antarctica is seen.	ოზონის საერთო შემცველობა OMI-ს მიხედვით დღე-ღამეში, 2004 წლიდან. ჩანს ოზონის ხვრელი ანტარქტიდის თავზე.
+Vegetation	მცენარეულობა
+NDVI vegetation index from MODIS Terra over 16 days, since 2000. The series lags by a month.	მცენარეულობის ინდექსი NDVI MODIS Terra-ს მიხედვით 16 დღე-ღამეში, 2000 წლიდან. მწკრივი ერთი თვით ჩამორჩება.
+Dust	მტვერი
+Dust in the atmosphere from AIRS per day, since 2002.	მტვერი ატმოსფეროში AIRS-ის მიხედვით დღე-ღამეში, 2002 წლიდან.
+Night lights	ღამის განათება
+VIIRS night image per day, since 2021. City lights, fires, gas flares and auroras are seen.	VIIRS-ის ღამის სურათი დღე-ღამეში, 2021 წლიდან. ჩანს ქალაქების განათება, ხანძრები, გაზის ჩირაღდნები და პოლარული ციალი.
+Magnetic anomaly, nT	მაგნიტური ანომალია, nT
+Ocean floor age, Ma	ოკეანის ფსკერის ასაკი, Ma
+Gravity anomaly, mGal	სიმძიმის ძალის ანომალია, mGal
+Bouguer anomaly, mGal	ბუგეს ანომალია, mGal
+Heat flow, mW/m²	სითბური ნაკადი, mW/m²
+Water occurrence 1984-2021, %	წყლის განმეორებადობა 1984-2021, %
+Clay in soil 0-5 cm, %	თიხა ნიადაგში 0-5 სმ, %
+Sand in soil 0-5 cm, %	ქვიშა ნიადაგში 0-5 სმ, %
+Soil organic carbon 0-5 cm, g/kg	ნიადაგის ორგანული ნახშირბადი 0-5 სმ, g/kg
+Soil pH 0-5 cm, in water	ნიადაგის pH 0-5 სმ, წყალში
+GLiM lithology	ლითოლოგია GLiM
+Water transitions 1984-2021, JRC	წყლის ცვლილებები 1984-2021, JRC
+ESA WorldCover 2021 land cover	მიწის საფარი ESA WorldCover 2021
+Unconsolidated sediments	ფხვიერი ნალექები
+Siliciclastic sedimentary rocks	ნატეხოვანი დანალექი ქანები
+Mixed sedimentary rocks	შერეული დანალექი ქანები
+Carbonate sedimentary rocks	კარბონატული დანალექი ქანები
+Evaporites	ევაპორიტები
+Pyroclastics	პიროკლასტიკა
+Acid volcanic rocks	მჟავე ვულკანური ქანები
+Intermediate volcanic rocks	საშუალო ვულკანური ქანები
+Basic volcanic rocks	ფუძე ვულკანური ქანები
+Acid plutonic rocks	მჟავე პლუტონური ქანები
+Intermediate plutonic rocks	საშუალო პლუტონური ქანები
+Basic plutonic rocks	ფუძე პლუტონური ქანები
+Metamorphic rocks	მეტამორფული ქანები
+Ice and glaciers	ყინული და მყინვარები
+Permanent water	მუდმივი წყალი
+New permanent water	ახალი მუდმივი წყალი
+Lost permanent water	გამქრალი მუდმივი წყალი
+Seasonal water	სეზონური წყალი
+New seasonal water	ახალი სეზონური წყალი
+Lost seasonal water	გამქრალი სეზონური წყალი
+Seasonal to permanent	სეზონური გახდა მუდმივი
+Permanent to seasonal	მუდმივი გახდა სეზონური
+Ephemeral permanent water	დროებითი მუდმივი წყალი
+Ephemeral seasonal water	დროებითი სეზონური წყალი
+Forest	ტყე
+Shrubland	ბუჩქნარი
+Grassland	მდელო
+Cropland	სახნავი
+Built-up	განაშენიანება
+Bare and sparse vegetation	შიშველი მიწა და მეჩხერი მცენარეულობა
+Snow and ice	თოვლი და ყინული
+Permanent water bodies	მუდმივი წყალსატევები
+Herbaceous wetland	ბალახოვანი ჭაობები
+Mangroves	მანგროები
+Moss and lichen	ხავსები და მღიერები
+Magnetic anomaly	მაგნიტური ანომალია
+Field anomaly	ველის ანომალია
+nT	nT
+Ocean floor	ოკეანის ფსკერი
+Crust age	ქერქის ასაკი
+Ma	Ma
+Gravity	სიმძიმის ძალა
+Free-air anomaly	ანომალია თავისუფალ ჰაერში
+mGal	mGal
+Bouguer anomaly	ბუგეს ანომალია
+Heat flow|value	სითბოს ნაკადი
+mW/m²	mW/m²
+Grid height	ბადის სიმაღლე
+4 km above the ellipsoid	4 კმ ელიფსოიდის ზემოთ
+Dataset	მონაცემთა ნაკრები
+Rock density	ქანის სიმკვრივე
+the tile was not read	ფილა არ წაიკითხა
+no data	მონაცემები არ არის
+loading…	იტვირთება…
+Soil	ნიადაგი
+Water	წყალი
+Class	კლასი
+Click - the class at the point	დაწკაპუნება - კლასი წერტილში
+{name} · {day}	{name} · {day}
+{name}, {units} · {day}	{name}, {units} · {day}
