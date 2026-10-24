@@ -68,11 +68,9 @@ Dark	어둡게
 Light	밝게
 Terrain	지형
 Vertical exaggeration	수직 과장
-Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	지형 높이 배율. 1보다 크면 산과 골짜기가 더 뚜렷해집니다.
 Label language	레이블 언어
 As the interface	인터페이스와 같게
 Local names	현지 이름
-Language of place names on the globe. Without a name in this language the Latin or local name is shown.	지구본 지명의 언어. 이 언어로 된 이름이 없으면 라틴 문자 또는 현지 이름이 표시됩니다.
 Loading the font for this language…	이 언어의 글꼴을 불러오는 중…
 Version {v}	버전 {v}
 A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Windows, Linux, macOS와 웹용 3D 지구본: 지형, 영상, 장면, KML, 자체 데이터.
@@ -926,3 +924,40 @@ West	서
 Rotation	회전
 Stars	별
 Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere.	Yale Bright Star Catalogue의 별. 별은 우주에서 보이며 카메라가 대기권으로 내려가면 희미해집니다.
+Source of the globe imagery. The terms of use of each source are in the Data sources window.	지구본 이미지의 출처. 각 출처의 이용 조건은 ‘데이터 출처’ 창에 있습니다.
+All globe sources with their terms of use.	지구본의 모든 출처와 이용 조건.
+Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.	지형 높이 배율. 1보다 크면 산과 골짜기가 더 두드러지고 평탄한 지형도 보이게 됩니다. 카메라는 높아진 지표면 위에 머뭅니다. 변경 후 지구본은 몇 초 안에 지표면을 다시 만듭니다.
+Language of place, water, peak and other labels on the globe. "As the interface" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.	지구본의 지명, 수역, 산봉우리 및 기타 레이블의 언어. ‘인터페이스와 같게’는 인터페이스 언어를 씁니다. 선택한 언어의 이름이 없으면 로마자 이름이나 현지 이름이 표시됩니다. 레이블은 바로 바뀝니다.
+How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.	상태 표시줄과 ‘객체’ 창에서 좌표를 쓰는 방식. ‘검색’ 필드는 선택과 관계없이 네 형식을 모두 이해합니다. 북위 84°보다 북쪽과 남위 80°보다 남쪽에서는 UTM과 MGRS가 십진 도로 바뀝니다.
+Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once.	지구본 창의 모양. ‘밝게’ - 어두운 아이콘이 있는 회색 막대와 밝은 창. ‘어둡게’ - 어두운 막대와 어두운 창. 모양은 바로 바뀝니다.
+Language of menus, windows and messages. "As in the system" takes the language of the system.	메뉴, 창, 메시지의 언어. ‘시스템과 같게’는 시스템 언어를 씁니다.
+Clear search history	검색 기록 지우기
+Erase the previous queries of the Search field.	‘검색’ 필드의 이전 검색어를 지웁니다.
+Sea and ocean depths	바다와 대양의 수심
+With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	확인란을 켜면 바다와 대양의 바닥이 반투명한 물 아래 제 수심에 놓이고, 상태 표시줄은 커서 아래 수심을, 고도 단면도는 수심과 해수면을 표시합니다. 확인란을 끄면 해수면 아래 높이는 0으로 계산되고 바다는 평평합니다. 지구에만 있습니다.
+Directions from here	여기서 출발하는 경로
+Directions to here	여기로 도착하는 경로
+by car	자동차로
+by bike	자전거로
+on foot	도보로
+By car	자동차
+By bike	자전거
+On foot	도보
+{hours} h {minutes} min	{hours}시간 {minutes}분
+{value} min	{value}분
+The route start is set. The end is the Directions to here item of the globe menu.	경로 출발지를 정했습니다. 도착지는 지구본 메뉴의 ‘여기로 도착하는 경로’ 항목입니다.
+The route end is set. The start is the Directions from here item of the globe menu.	경로 도착지를 정했습니다. 출발지는 지구본 메뉴의 ‘여기서 출발하는 경로’ 항목입니다.
+Route: asking the service…	경로: 서비스에 요청 중…
+No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	경로를 만들지 못했습니다: 서비스가 ‘{error}’라고 응답했으며, 벡터 기본도의 도로로는 직선거리 {limit} km까지만 경로를 만듭니다.
+No route: the corridor between the points is {count} road tiles, the limit is {limit}.	경로를 만들지 못했습니다: 지점 사이 통로는 도로 타일 {count}개이며 한도는 {limit}입니다.
+Route: road tiles {done} of {total}	경로: 도로 타일 {done} / {total}
+Route: calculating…	경로: 계산 중…
+Route	경로
+{name}: {summary}	{name}: {summary}
+No route found: the points are not linked by the vector base roads or lie more than {reach} m from them.	경로를 찾지 못했습니다: 지점이 벡터 기본도의 도로로 이어져 있지 않거나 도로에서 {reach} m보다 멀리 있습니다.
+{a} - {b}, {km} km, {time} {mode}	{a} - {b}, {km} km, {mode} {time}
+point	지점
+OSRM service, data © OpenStreetMap	OSRM 서비스, 데이터 © OpenStreetMap
+The service did not answer ({error}), route over road tiles	서비스가 응답하지 않았습니다({error}). 도로 타일로 만든 경로
+Map error	지도 오류
+Clear|route	초기화

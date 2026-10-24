@@ -67,11 +67,9 @@ Dark	მუქი
 Light	ღია
 Terrain	რელიეფი
 Vertical exaggeration	ვერტიკალური გაზვიადება
-Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	რელიეფის სიმაღლის მამრავლი. 1-ზე მეტისას მთები და ხეობები უფრო გამოკვეთილია.
 Label language	წარწერების ენა
 As the interface	როგორც ინტერფეისი
 Local names	ადგილობრივი სახელები
-Language of place names on the globe. Without a name in this language the Latin or local name is shown.	გლობუსზე ადგილების სახელების ენა. ამ ენაზე სახელის არარსებობისას ნაჩვენებია ლათინური ან ადგილობრივი სახელი.
 Loading the font for this language…	ამ ენის შრიფტის ჩატვირთვა…
 Version {v}	ვერსია {v}
 A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	3D გლობუსი Windows-ის, Linux-ის, macOS-ისა და ვებისთვის: რელიეფი, სურათები, სცენები, KML და საკუთარი მონაცემები.
@@ -926,3 +924,40 @@ West	დასავლეთი
 Rotation	შემობრუნება
 Stars	ვარსკვლავები
 Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere.	Yale Bright Star Catalogue-ის ვარსკვლავები. ვარსკვლავები ჩანს კოსმოსიდან და ქრება, როცა კამერა ატმოსფეროში ეშვება.
+Source of the globe imagery. The terms of use of each source are in the Data sources window.	გლობუსზე სურათის წყარო. თითოეული წყაროს გამოყენების პირობები ფანჯარაშია „მონაცემთა წყაროები“.
+All globe sources with their terms of use.	გლობუსის ყველა წყარო გამოყენების პირობებით.
+Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.	რელიეფის სიმაღლეების მამრავლი. 1-ზე მეტისას მთები და ხეობები უფრო გამოკვეთილია, ვაკე რელიეფი შესამჩნევი ხდება. კამერა აწეული ზედაპირის ზემოთ რჩება. ცვლილების შემდეგ გლობუსი ზედაპირს რამდენიმე წამში ხელახლა აგებს.
+Language of place, water, peak and other labels on the globe. "As the interface" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.	გლობუსზე პუნქტების, წყალსატევების, მწვერვალების და სხვა წარწერების ენა. „როგორც ინტერფეისი“ იღებს ინტერფეისის ენას. თუ არჩეულ ენაზე სახელი არ არის, ჩანს ლათინური ან ადგილობრივი სახელი. წარწერები მაშინვე იცვლება.
+How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.	როგორ იწერება კოორდინატები მდგომარეობის ზოლში და ფანჯარაში „ობიექტები“. ველი „ძიება“ არჩევანის მიუხედავად ოთხივე ფორმატს იგებს. 84° ჩრდილოეთ განედის ზემოთ და 80° სამხრეთ განედის ქვემოთ UTM და MGRS იცვლება ათობითი გრადუსებით.
+Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once.	გლობუსის ფანჯრის გაფორმება. „ღია“ - ნაცრისფერი ზოლები მუქი ხატულებით და ღია ფანჯრები. „მუქი“ - მუქი ზოლები და მუქი ფანჯრები. გაფორმება მაშინვე იცვლება.
+Language of menus, windows and messages. "As in the system" takes the language of the system.	მენიუების, ფანჯრების და შეტყობინებების ენა. „როგორც სისტემაში“ იღებს სისტემის ენას.
+Clear search history	ძიების ისტორიის გასუფთავება
+Erase the previous queries of the Search field.	ველის „ძიება“ წინა მოთხოვნების წაშლა.
+Sea and ocean depths	ზღვებისა და ოკეანეების სიღრმეები
+With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	ალმით ზღვებისა და ოკეანეების ფსკერი თავის სიღრმეზე დევს ნახევრად გამჭვირვალე წყლის ქვეშ, მდგომარეობის ზოლი აჩვენებს სიღრმეს კურსორის ქვეშ, სიმაღლეების პროფილი - სიღრმეებს და ზღვის დონეს. ალმის გარეშე ზღვის დონის ქვემოთ სიმაღლეები ნულად ითვლება, ზღვა სწორია. არის მხოლოდ დედამიწისთვის.
+Directions from here	მარშრუტი აქედან
+Directions to here	მარშრუტი აქამდე
+by car	მანქანით
+by bike	ველოსიპედით
+on foot	ფეხით
+By car	მანქანით
+By bike	ველოსიპედით
+On foot	ფეხით
+{hours} h {minutes} min	{hours} სთ {minutes} წთ
+{value} min	{value} წთ
+The route start is set. The end is the Directions to here item of the globe menu.	მარშრუტის დასაწყისი დაყენებულია. დასასრული - პუნქტი „მარშრუტი აქამდე“ გლობუსის მენიუში.
+The route end is set. The start is the Directions from here item of the globe menu.	მარშრუტის დასასრული დაყენებულია. დასაწყისი - პუნქტი „მარშრუტი აქედან“ გლობუსის მენიუში.
+Route: asking the service…	მარშრუტი: მოთხოვნა სერვისს…
+No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	მარშრუტი ვერ აიგო: სერვისმა უპასუხა „{error}“, ვექტორული საფუძვლის გზებით კი მარშრუტი იგება {limit} კმ-მდე პირდაპირი ხაზით.
+No route: the corridor between the points is {count} road tiles, the limit is {limit}.	მარშრუტი ვერ აიგო: წერტილებს შორის დერეფანი - გზების {count} ფილაა, ზღვარი {limit}.
+Route: road tiles {done} of {total}	მარშრუტი: გზების ფილები {done} / {total}
+Route: calculating…	მარშრუტი: გამოთვლა…
+Route	მარშრუტი
+{name}: {summary}	{name}: {summary}
+No route found: the points are not linked by the vector base roads or lie more than {reach} m from them.	მარშრუტი ვერ მოიძებნა: წერტილები არ არის დაკავშირებული ვექტორული საფუძვლის გზებით ან მათგან {reach} მ-ზე შორსაა.
+{a} - {b}, {km} km, {time} {mode}	{a} - {b}, {km} კმ, {time} {mode}
+point	წერტილი
+OSRM service, data © OpenStreetMap	სერვისი OSRM, მონაცემები © OpenStreetMap
+The service did not answer ({error}), route over road tiles	სერვისმა არ უპასუხა ({error}), მარშრუტი გზების ფილებით
+Map error	შეცდომა რუკაზე
+Clear|route	ჩამოყრა

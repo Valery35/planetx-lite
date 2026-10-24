@@ -67,11 +67,9 @@ Dark	Gelap
 Light	Terang
 Terrain	Relief
 Vertical exaggeration	Pembesaran vertikal
-Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Pengali ketinggian relief. Di atas 1 gunung dan lembah tampak lebih menonjol.
 Label language	Bahasa label
 As the interface	Seperti antarmuka
 Local names	Nama lokal
-Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Bahasa nama tempat di globe. Tanpa nama dalam bahasa ini, nama Latin atau lokal ditampilkan.
 Loading the font for this language…	Memuat fon untuk bahasa ini…
 Version {v}	Versi {v}
 A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Globe 3D untuk Windows, Linux, macOS, dan web: relief, citra, adegan, KML, dan data sendiri.
@@ -926,3 +924,40 @@ West	Barat
 Rotation	Rotasi
 Stars	Bintang
 Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere.	Bintang dari Yale Bright Star Catalogue. Bintang terlihat dari antariksa dan memudar saat kamera turun ke atmosfer.
+Source of the globe imagery. The terms of use of each source are in the Data sources window.	Sumber gambar di globe. Syarat penggunaan setiap sumber ada di jendela "Sumber data".
+All globe sources with their terms of use.	Semua sumber globe beserta syarat penggunaannya.
+Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.	Pengali ketinggian relief. Di atas 1 gunung dan lembah lebih menonjol, dan relief datar menjadi terlihat. Kamera tetap berada di atas permukaan yang dinaikkan. Setelah perubahan globe menyusun ulang permukaan dalam beberapa detik.
+Language of place, water, peak and other labels on the globe. "As the interface" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.	Bahasa nama tempat, perairan, puncak, dan label lain di globe. "Seperti antarmuka" memakai bahasa antarmuka. Jika nama dalam bahasa yang dipilih tidak ada, nama dalam huruf Latin atau nama lokal ditampilkan. Label langsung berubah.
+How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.	Cara koordinat ditulis di baris status dan di jendela "Objek". Kolom "Cari" memahami keempat format apa pun pilihannya. Di utara 84° dan di selatan 80° UTM dan MGRS diganti dengan derajat desimal.
+Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once.	Tampilan jendela globe. "Terang" - panel abu-abu dengan ikon gelap dan jendela terang. "Gelap" - panel gelap dan jendela gelap. Tampilan langsung berubah.
+Language of menus, windows and messages. "As in the system" takes the language of the system.	Bahasa menu, jendela, dan pesan. "Seperti sistem" memakai bahasa sistem.
+Clear search history	Hapus riwayat pencarian
+Erase the previous queries of the Search field.	Hapus kueri sebelumnya dari kolom "Cari".
+Sea and ocean depths	Kedalaman laut dan samudra
+With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Dengan kotak dicentang dasar laut dan samudra berada pada kedalamannya di bawah air semitransparan, baris status menampilkan kedalaman di bawah kursor, dan profil ketinggian menampilkan kedalaman dan permukaan laut. Tanpa centang ketinggian di bawah permukaan laut dihitung nol dan laut datar. Hanya ada untuk Bumi.
+Directions from here	Rute dari sini
+Directions to here	Rute ke sini
+by car	dengan mobil
+by bike	dengan sepeda
+on foot	berjalan kaki
+By car	Dengan mobil
+By bike	Dengan sepeda
+On foot	Berjalan kaki
+{hours} h {minutes} min	{hours} j {minutes} mnt
+{value} min	{value} mnt
+The route start is set. The end is the Directions to here item of the globe menu.	Awal rute sudah dipasang. Akhirnya adalah item "Rute ke sini" di menu globe.
+The route end is set. The start is the Directions from here item of the globe menu.	Akhir rute sudah dipasang. Awalnya adalah item "Rute dari sini" di menu globe.
+Route: asking the service…	Rute: menghubungi layanan…
+No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Rute tidak dibuat: layanan menjawab "{error}", dan melalui jalan dasar vektor rute dihitung hingga {limit} km garis lurus.
+No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Rute tidak dibuat: koridor antara titik berisi {count} ubin jalan, batasnya {limit}.
+Route: road tiles {done} of {total}	Rute: ubin jalan {done} dari {total}
+Route: calculating…	Rute: menghitung…
+Route	Rute
+{name}: {summary}	{name}: {summary}
+No route found: the points are not linked by the vector base roads or lie more than {reach} m from them.	Rute tidak ditemukan: titik tidak terhubung oleh jalan dasar vektor atau berjarak lebih dari {reach} m darinya.
+{a} - {b}, {km} km, {time} {mode}	{a} - {b}, {km} km, {time} {mode}
+point	titik
+OSRM service, data © OpenStreetMap	Layanan OSRM, data © OpenStreetMap
+The service did not answer ({error}), route over road tiles	Layanan tidak menjawab ({error}), rute melalui ubin jalan
+Map error	Galat di peta
+Clear|route	Atur ulang

@@ -43,6 +43,7 @@ pub mod pictures;
 pub mod places;
 pub mod profile;
 pub mod relief;
+pub mod route;
 pub mod ruler;
 pub mod search;
 pub mod settings;

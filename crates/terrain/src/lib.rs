@@ -126,13 +126,24 @@ pub fn ancestor(key: TileKey, level: u32) -> TileKey {
 
 /// Тайл высот из картинки RGBA и глубины моря того же тайла: высоты
 /// ниже floor обрезаются до floor, как у [`make_tile`], глубины - высоты
-/// без обрезки. Глубин нет (None), если ниже floor ничего нет.
+/// без обрезки. Глубин нет (None), если ниже floor и ниже нуля ничего
+/// нет. С floor минус бесконечность дно моря остаётся в тайле, глубины
+/// всё равно хранятся: по ним [`HeightStore::refloor`] убирает дно.
+/// Глубже [`SEA_LEVEL`] глубины хранятся и с нулями: дно туда приходит
+/// от предка, [`HeightStore::merge_sea`].
 pub fn make_tile_depths(z: u32, x: u32, y: u32, rgba: &[u8], floor: f32, encoding: Encoding) -> Option<(HeightTile, Option<Vec<i16>>)> {
     if rgba.len() != SIZE * SIZE * 4 {
         return None;
     }
-    let raw = decode(rgba, 4, None, encoding);
-    let depths = raw.iter().any(|h| *h < floor).then(|| raw.iter().map(|h| h.round().clamp(-32768.0, 32767.0) as i16).collect());
+    tile_depths(z, x, y, decode(rgba, 4, None, encoding), floor)
+}
+
+/// То же, что [`make_tile_depths`], для уже прочитанных высот raw.
+pub fn tile_depths(z: u32, x: u32, y: u32, raw: Vec<f32>, floor: f32) -> Option<(HeightTile, Option<Vec<i16>>)> {
+    if raw.len() != SIZE * SIZE {
+        return None;
+    }
+    let depths = raw.iter().any(|h| *h < floor.max(0.0) || (z > SEA_LEVEL && *h <= 0.0)).then(|| raw.iter().map(|h| h.round().clamp(-32768.0, 32767.0) as i16).collect());
     let tile = HeightTile::new(z, x, y, raw.into_iter().map(|h| h.max(floor)).collect())?;
     Some((tile, depths))
 }
@@ -144,6 +155,15 @@ pub fn make_tile_depths(z: u32, x: u32, y: u32, rgba: &[u8], floor: f32, encodin
 pub fn sample(tile: &HeightTile, u: f64, v: f64) -> f64 {
     sample_grid((tile.z, tile.x, tile.y), &|row, col| tile.at(row, col), u, v)
 }
+
+/// Глубже этого уровня дно моря у Terrarium ненадёжно: на уровнях 11-12
+/// у Японского жёлоба нули, у Багамских островов тоже. `SEA_LEVEL`
+/// изолиний модуля, его записка к GEBCO в `core/dem.py`.
+pub const SEA_LEVEL: u32 = 10;
+/// Глубже стольких метров у предка - открытое море: глубина предка
+/// берётся и там, где у тайла выбросы выше нуля. `SEA_DEPTH` изолиний
+/// модуля.
+pub const SEA_DEPTH: f64 = -50.0;
 
 /// Билинейная выборка сетки SIZE × SIZE тайла key, значение узла - at.
 fn sample_grid(key: TileKey, at: &dyn Fn(usize, usize) -> f64, u: f64, v: f64) -> f64 {
@@ -421,6 +441,92 @@ impl HeightStore {
             }
         }
         0.0
+    }
+
+    /// Высоты с дном моря или без: тайлы с глубинами собираются заново
+    /// из глубин, высоты ниже floor обрезаются до floor, как при приходе
+    /// тайла. patch - свой рельеф поверх тайла. Сетки тайлов после этого
+    /// пересобираются заново, уровень тайлов прежний.
+    pub fn refloor(&mut self, floor: f32, patch: &dyn Fn(HeightTile) -> HeightTile) {
+        let mut keys: Vec<TileKey> = self.depths.keys().copied().collect();
+        keys.sort_unstable();
+        for key in keys {
+            let Some(depths) = self.depths.get(&key).cloned() else {
+                continue;
+            };
+            let (z, x, y) = key;
+            if let Some(tile) = HeightTile::new(z, x, y, depths.iter().map(|d| f32::from(*d).max(floor)).collect()) {
+                self.add(patch(tile));
+            }
+        }
+        self.low = self.tiles.values().map(|t| f64::from(t.low)).fold(0.0, f64::min);
+        self.version += 1;
+    }
+
+    /// Дно моря тайла key глубже [`SEA_LEVEL`] из глубин ближайшего
+    /// готового предка уровня SEA_LEVEL и мельче, как `merge_sea` модуля
+    /// с GEBCO: глубина предка берётся там, где она ниже нуля, а высота
+    /// тайла не выше нуля. Суша тайла и береговая линия остаются его,
+    /// кроме открытого моря глубже [`SEA_DEPTH`] у предка: там высоты
+    /// выше нуля - выбросы данных.
+    /// raw - высоты тайла SIZE × SIZE без обрезки.
+    pub fn merge_sea(&self, key: TileKey, raw: &mut [f32]) {
+        if key.0 <= SEA_LEVEL || raw.len() != SIZE * SIZE {
+            return;
+        }
+        // Ближайший готовый предок: без глубин у него моря нет.
+        let Some(up) = (0..=SEA_LEVEL).rev().map(|l| ancestor(key, l)).find(|a| self.tiles.contains_key(a)) else {
+            return;
+        };
+        let Some(depths) = self.depths.get(&up) else {
+            return;
+        };
+        let (z, x, y) = key;
+        let n = f64::from(1u32 << z.min(31));
+        let size = SIZE as f64;
+        let at = |row: usize, col: usize| f64::from(depths.get(row * SIZE + col).copied().unwrap_or(0));
+        for (i, h) in raw.iter_mut().enumerate() {
+            let (row, col) = (i / SIZE, i % SIZE);
+            let u = (f64::from(x) + (col as f64 + 0.5) / size) / n;
+            let v = (f64::from(y) + (row as f64 + 0.5) / size) / n;
+            let sea = sample_grid(up, &at, u, v);
+            if (sea < 0.0 && *h <= 0.0) || sea < SEA_DEPTH {
+                *h = sea as f32;
+            }
+        }
+    }
+
+    /// Дно моря от тайла up уровня [`SEA_LEVEL`] и мельче, пришедшего
+    /// после своих потомков: потомки глубже SEA_LEVEL с глубинами
+    /// собираются заново, как при приходе, floor и patch - как у
+    /// [`HeightStore::refloor`]. Возвращает ключи пересобранных тайлов.
+    pub fn remerge_sea(&mut self, up: TileKey, floor: f32, patch: &dyn Fn(HeightTile) -> HeightTile) -> Vec<TileKey> {
+        if up.0 > SEA_LEVEL {
+            return Vec::new();
+        }
+        let mut keys: Vec<TileKey> = self.depths.keys().copied().filter(|k| k.0 > SEA_LEVEL && ancestor(*k, up.0) == up).collect();
+        keys.sort_unstable();
+        let mut done = Vec::new();
+        for key in keys {
+            let Some(depths) = self.depths.get(&key).cloned() else {
+                continue;
+            };
+            // Ближайший готовый предок должен быть up, иначе дно уже
+            // взято у более точного.
+            let nearest = (0..=SEA_LEVEL).rev().map(|l| ancestor(key, l)).find(|a| self.tiles.contains_key(a));
+            if nearest != Some(up) {
+                continue;
+            }
+            let mut raw: Vec<f32> = depths.iter().map(|d| f32::from(*d)).collect();
+            self.merge_sea(key, &mut raw);
+            let (z, x, y) = key;
+            if let Some((tile, Some(d))) = tile_depths(z, x, y, raw, floor) {
+                self.add_depths(key, d);
+                self.add(patch(tile));
+                done.push(key);
+            }
+        }
+        done
     }
 
     /// Глубины моря тайла key ([`make_tile_depths`]).

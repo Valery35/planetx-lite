@@ -67,11 +67,9 @@ Dark	Donker
 Light	Licht
 Terrain	Reliëf
 Vertical exaggeration	Verticale overdrijving
-Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Hoogtevermenigvuldiger van het reliëf. Boven 1 zijn bergen en dalen sterker zichtbaar.
 Label language	Taal van de labels
 As the interface	Zoals de interface
 Local names	Lokale namen
-Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Taal van plaatsnamen op de globe. Zonder naam in deze taal wordt de Latijnse of lokale naam getoond.
 Loading the font for this language…	Lettertype voor deze taal laden…
 Version {v}	Versie {v}
 A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Een 3D-globe voor Windows, Linux, macOS en het web: reliëf, beelden, scènes, KML en eigen gegevens.
@@ -926,3 +924,40 @@ West	West
 Rotation	Draaiing
 Stars	Sterren
 Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere.	Sterren uit de Yale Bright Star Catalogue. De sterren zijn zichtbaar vanuit de ruimte en vervagen wanneer de camera in de atmosfeer daalt.
+Source of the globe imagery. The terms of use of each source are in the Data sources window.	Bron van het beeld op de globe. De gebruiksvoorwaarden van elke bron staan in het venster ‘Gegevensbronnen’.
+All globe sources with their terms of use.	Alle bronnen van de globe met hun gebruiksvoorwaarden.
+Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.	Vermenigvuldiger van de reliëfhoogten. Boven 1 springen bergen en dalen meer in het oog, en vlak reliëf wordt zichtbaar. De camera blijft boven het verhoogde oppervlak. Na een wijziging bouwt de globe het oppervlak binnen enkele seconden opnieuw op.
+Language of place, water, peak and other labels on the globe. "As the interface" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.	Taal van de namen van plaatsen, wateren, toppen en andere labels op de globe. ‘Zoals de interface’ neemt de taal van de interface. Ontbreekt een naam in de gekozen taal, dan staat de naam in Latijns schrift of de lokale naam. De labels veranderen meteen.
+How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.	Hoe coördinaten worden geschreven in de statusregel en in het venster ‘Objecten’. Het veld ‘Zoeken’ begrijpt alle vier de formaten, ongeacht de keuze. Ten noorden van 84° en ten zuiden van 80° worden UTM en MGRS vervangen door decimale graden.
+Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once.	Uiterlijk van het globevenster. ‘Licht’ - grijze balken met donkere pictogrammen en lichte vensters. ‘Donker’ - donkere balken en donkere vensters. Het uiterlijk verandert meteen.
+Language of menus, windows and messages. "As in the system" takes the language of the system.	Taal van menu’s, vensters en meldingen. ‘Zoals het systeem’ neemt de taal van het systeem.
+Clear search history	Zoekgeschiedenis wissen
+Erase the previous queries of the Search field.	De eerdere zoekopdrachten van het veld ‘Zoeken’ wissen.
+Sea and ocean depths	Diepten van zeeën en oceanen
+With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Met het vinkje ligt de bodem van zeeën en oceanen op zijn diepte onder halfdoorzichtig water, de statusregel toont de diepte onder de cursor en het hoogteprofiel toont diepten en zeeniveau. Zonder vinkje tellen hoogten onder zeeniveau als nul en is de zee vlak. Alleen beschikbaar voor de aarde.
+Directions from here	Route vanaf hier
+Directions to here	Route naar hier
+by car	met de auto
+by bike	met de fiets
+on foot	te voet
+By car	Met de auto
+By bike	Met de fiets
+On foot	Te voet
+{hours} h {minutes} min	{hours} u {minutes} min
+{value} min	{value} min
+The route start is set. The end is the Directions to here item of the globe menu.	Het begin van de route is gezet. Het einde is het item ‘Route naar hier’ in het menu op de globe.
+The route end is set. The start is the Directions from here item of the globe menu.	Het einde van de route is gezet. Het begin is het item ‘Route vanaf hier’ in het menu op de globe.
+Route: asking the service…	Route: dienst wordt bevraagd…
+No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Geen route: de dienst antwoordde ‘{error}’, en over de wegen van de vectorbasis wordt een route berekend tot {limit} km hemelsbreed.
+No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Geen route: de corridor tussen de punten telt {count} wegtegels, de grens is {limit}.
+Route: road tiles {done} of {total}	Route: wegtegels {done} van {total}
+Route: calculating…	Route: berekenen…
+Route	Route
+{name}: {summary}	{name}: {summary}
+No route found: the points are not linked by the vector base roads or lie more than {reach} m from them.	Geen route gevonden: de punten zijn niet verbonden door wegen van de vectorbasis of liggen verder dan {reach} m ervan.
+{a} - {b}, {km} km, {time} {mode}	{a} - {b}, {km} km, {time} {mode}
+point	punt
+OSRM service, data © OpenStreetMap	Dienst OSRM, gegevens © OpenStreetMap
+The service did not answer ({error}), route over road tiles	De dienst antwoordde niet ({error}), route over wegtegels
+Map error	Fout op de kaart
+Clear|route	Wissen

@@ -67,11 +67,9 @@ Dark	Scuro
 Light	Chiaro
 Terrain	Rilievo
 Vertical exaggeration	Esagerazione verticale
-Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Moltiplicatore di altezza del rilievo. Sopra 1 monti e valli appaiono più marcati.
 Label language	Lingua delle etichette
 As the interface	Come l’interfaccia
 Local names	Nomi locali
-Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Lingua dei nomi dei luoghi sul globo. Senza un nome in questa lingua si mostra il nome latino o locale.
 Loading the font for this language…	Caricamento del carattere per questa lingua…
 Version {v}	Versione {v}
 A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Un globo 3D per Windows, Linux, macOS e il web: rilievo, immagini, scene, KML e dati propri.
@@ -926,3 +924,40 @@ West	Ovest
 Rotation	Rotazione
 Stars	Stelle
 Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere.	Stelle dello Yale Bright Star Catalogue. Le stelle si vedono dallo spazio e svaniscono quando la fotocamera scende nell’atmosfera.
+Source of the globe imagery. The terms of use of each source are in the Data sources window.	Fonte dell’immagine sul globo. Le condizioni d’uso di ogni fonte sono nella finestra «Fonti dei dati».
+All globe sources with their terms of use.	Tutte le fonti del globo con le loro condizioni d’uso.
+Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.	Moltiplicatore delle altezze del rilievo. Sopra 1 monti e valli risaltano di più, e il rilievo pianeggiante diventa visibile. La fotocamera resta sopra la superficie sollevata. Dopo una modifica il globo ricostruisce la superficie in pochi secondi.
+Language of place, water, peak and other labels on the globe. "As the interface" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.	Lingua dei nomi di località, specchi d’acqua, cime e altre etichette del globo. «Come l’interfaccia» prende la lingua dell’interfaccia. Se manca un nome nella lingua scelta, si mostra il nome in caratteri latini o quello locale. Le etichette cambiano subito.
+How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.	Come si scrivono le coordinate nella barra di stato e nella finestra «Oggetti». Il campo «Cerca» capisce tutti e quattro i formati qualunque sia la scelta. A nord di 84° e a sud di 80° UTM e MGRS sono sostituiti da gradi decimali.
+Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once.	Aspetto della finestra del globo. «Chiaro» - barre grigie con icone scure e finestre chiare. «Scuro» - barre scure e finestre scure. L’aspetto cambia subito.
+Language of menus, windows and messages. "As in the system" takes the language of the system.	Lingua di menu, finestre e messaggi. «Come nel sistema» prende la lingua del sistema.
+Clear search history	Cancella la cronologia di ricerca
+Erase the previous queries of the Search field.	Cancella le richieste precedenti del campo «Cerca».
+Sea and ocean depths	Profondità di mari e oceani
+With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Con la casella attiva il fondo di mari e oceani giace alla sua profondità sotto acqua semitrasparente, la barra di stato mostra la profondità sotto il cursore e il profilo altimetrico mostra profondità e livello del mare. Senza la casella le altezze sotto il livello del mare contano come zero e il mare è piatto. Disponibile solo per la Terra.
+Directions from here	Percorso da qui
+Directions to here	Percorso fino a qui
+by car	in auto
+by bike	in bici
+on foot	a piedi
+By car	In auto
+By bike	In bici
+On foot	A piedi
+{hours} h {minutes} min	{hours} h {minutes} min
+{value} min	{value} min
+The route start is set. The end is the Directions to here item of the globe menu.	L’inizio del percorso è impostato. La fine è la voce «Percorso fino a qui» del menu sul globo.
+The route end is set. The start is the Directions from here item of the globe menu.	La fine del percorso è impostata. L’inizio è la voce «Percorso da qui» del menu sul globo.
+Route: asking the service…	Percorso: richiesta al servizio…
+No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Nessun percorso: il servizio ha risposto «{error}», e sulle strade della base vettoriale un percorso si calcola fino a {limit} km in linea d’aria.
+No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Nessun percorso: il corridoio tra i punti è di {count} tile stradali, il limite è {limit}.
+Route: road tiles {done} of {total}	Percorso: tile stradali {done} di {total}
+Route: calculating…	Percorso: calcolo…
+Route	Percorso
+{name}: {summary}	{name}: {summary}
+No route found: the points are not linked by the vector base roads or lie more than {reach} m from them.	Nessun percorso trovato: i punti non sono collegati dalle strade della base vettoriale o distano più di {reach} m da esse.
+{a} - {b}, {km} km, {time} {mode}	{a} - {b}, {km} km, {time} {mode}
+point	punto
+OSRM service, data © OpenStreetMap	Servizio OSRM, dati © OpenStreetMap
+The service did not answer ({error}), route over road tiles	Il servizio non ha risposto ({error}), percorso sulle tile stradali
+Map error	Errore sulla mappa
+Clear|route	Azzera

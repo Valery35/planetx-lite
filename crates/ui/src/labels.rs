@@ -455,7 +455,9 @@ impl Labels {
         let at: Vec<(f64, f64)> = todo.iter().map(|p| (p.lat, p.lon)).collect();
         let hs = heights.heights_at(&at, true);
         for (place, h) in todo.into_iter().zip(hs) {
-            let point = e.geodetic_to_ecef(place.lat, place.lon, h);
+            // Подпись над дном моря стоит на воде, как `label_heights`
+            // модуля.
+            let point = e.geodetic_to_ecef(place.lat, place.lon, h.max(0.0));
             let normal = e.surface_normal(place.lat, place.lon);
             self.points.insert(places::identity(place), (version, point, normal));
         }

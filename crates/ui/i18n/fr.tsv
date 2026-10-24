@@ -67,11 +67,9 @@ Dark	Sombre
 Light	Clair
 Terrain	Relief
 Vertical exaggeration	Exagération verticale
-Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Multiplicateur de hauteur du relief. Au-dessus de 1, montagnes et vallées sont plus marquées.
 Label language	Langue des étiquettes
 As the interface	Comme l’interface
 Local names	Noms locaux
-Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Langue des noms de lieux sur le globe. Sans nom dans cette langue, le nom latin ou local est affiché.
 Loading the font for this language…	Chargement de la police pour cette langue…
 A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Un globe 3D pour Windows, Linux, macOS et le web : relief, images, scènes, KML et vos données.
 Controls	Commandes
@@ -926,3 +924,40 @@ West	Ouest
 Rotation	Rotation
 Stars	Étoiles
 Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere.	Étoiles du Yale Bright Star Catalogue. Les étoiles sont visibles depuis l’espace et s’effacent quand la caméra descend dans l’atmosphère.
+Source of the globe imagery. The terms of use of each source are in the Data sources window.	Source de l’image du globe. Les conditions d’utilisation de chaque source se trouvent dans la fenêtre « Sources des données ».
+All globe sources with their terms of use.	Toutes les sources du globe avec leurs conditions d’utilisation.
+Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.	Multiplicateur des altitudes du relief. Au-dessus de 1, montagnes et vallées ressortent davantage, et le relief plat devient visible. La caméra reste au-dessus de la surface soulevée. Après un changement, le globe reconstruit la surface en quelques secondes.
+Language of place, water, peak and other labels on the globe. "As the interface" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.	Langue des noms de lieux, de plans d’eau, de sommets et des autres étiquettes du globe. « Comme l’interface » reprend la langue de l’interface. Si un nom manque dans la langue choisie, le nom en alphabet latin ou le nom local s’affiche. Les étiquettes changent aussitôt.
+How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.	Comment les coordonnées s’écrivent dans la barre d’état et dans la fenêtre « Objets ». Le champ « Chercher » comprend les quatre formats quel que soit le choix. Au nord de 84° et au sud de 80°, UTM et MGRS sont remplacés par des degrés décimaux.
+Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once.	Apparence de la fenêtre du globe. « Clair » - plaques grises avec icônes sombres et fenêtres claires. « Sombre » - plaques sombres et fenêtres sombres. L’apparence change aussitôt.
+Language of menus, windows and messages. "As in the system" takes the language of the system.	Langue des menus, des fenêtres et des messages. « Comme le système » reprend la langue du système.
+Clear search history	Effacer l’historique de recherche
+Erase the previous queries of the Search field.	Effacer les requêtes précédentes du champ « Chercher ».
+Sea and ocean depths	Profondeurs des mers et des océans
+With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Case cochée, le fond des mers et des océans se trouve à sa profondeur sous une eau semi-transparente, la barre d’état affiche la profondeur sous le curseur et le profil d’altitude affiche les profondeurs et le niveau de la mer. Case décochée, les altitudes sous le niveau de la mer comptent comme zéro et la mer est plane. Disponible seulement pour la Terre.
+Directions from here	Itinéraire depuis ici
+Directions to here	Itinéraire jusqu’ici
+by car	en voiture
+by bike	à vélo
+on foot	à pied
+By car	En voiture
+By bike	À vélo
+On foot	À pied
+{hours} h {minutes} min	{hours} h {minutes} min
+{value} min	{value} min
+The route start is set. The end is the Directions to here item of the globe menu.	Le départ de l’itinéraire est placé. L’arrivée est l’élément « Itinéraire jusqu’ici » du menu du globe.
+The route end is set. The start is the Directions from here item of the globe menu.	L’arrivée de l’itinéraire est placée. Le départ est l’élément « Itinéraire depuis ici » du menu du globe.
+Route: asking the service…	Itinéraire : requête au service…
+No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Pas d’itinéraire : le service a répondu « {error} », et sur les routes du fond vectoriel un itinéraire se calcule jusqu’à {limit} km à vol d’oiseau.
+No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Pas d’itinéraire : le couloir entre les points compte {count} tuiles de routes, la limite est {limit}.
+Route: road tiles {done} of {total}	Itinéraire : tuiles de routes {done} sur {total}
+Route: calculating…	Itinéraire : calcul…
+Route	Itinéraire
+{name}: {summary}	{name} : {summary}
+No route found: the points are not linked by the vector base roads or lie more than {reach} m from them.	Aucun itinéraire trouvé : les points ne sont pas reliés par les routes du fond vectoriel ou sont à plus de {reach} m de celles-ci.
+{a} - {b}, {km} km, {time} {mode}	{a} - {b}, {km} km, {time} {mode}
+point	point
+OSRM service, data © OpenStreetMap	Service OSRM, données © OpenStreetMap
+The service did not answer ({error}), route over road tiles	Le service n’a pas répondu ({error}), itinéraire par tuiles de routes
+Map error	Erreur sur la carte
+Clear|route	Réinitialiser

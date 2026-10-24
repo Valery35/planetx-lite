@@ -72,11 +72,9 @@ Dark	Тёмное
 Light	Светлое
 Terrain	Рельеф
 Vertical exaggeration	Вертикальный масштаб
-Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Множитель высот рельефа. Больше 1 - горы и долины выразительнее.
 Label language	Язык подписей
 As the interface	Как интерфейс
 Local names	Местные названия
-Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Язык названий пунктов на глобусе. Если названия на этом языке нет, ставится название латиницей или местное.
 Loading the font for this language…	Загрузка шрифта для этого языка…
 Version {v}	Версия {v}
 A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Трёхмерный глобус для Windows, Linux, macOS и браузера: рельеф, снимки, сцены, KML и свои данные.
@@ -926,3 +924,40 @@ West	Запад
 Rotation	Поворот
 Stars	Звёзды
 Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere.	Звёзды каталога ярких звёзд Йельского университета. Звёзды видны из космоса и гаснут, когда камера опускается в атмосферу.
+Source of the globe imagery. The terms of use of each source are in the Data sources window.	Источник картинки на глобусе. Условия использования каждого источника - в окне «Источники данных».
+All globe sources with their terms of use.	Все источники глобуса с условиями использования.
+Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.	Множитель высот рельефа. Больше 1 - горы и долины выразительнее, равнинный рельеф становится заметен. Камера остаётся над поднятой поверхностью. После смены глобус пересобирает поверхность за несколько секунд.
+Language of place, water, peak and other labels on the globe. "As the interface" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.	Язык названий пунктов, водоёмов, вершин и других подписей глобуса. «Как интерфейс» берёт язык интерфейса. Если названия на выбранном языке нет, ставится название латиницей или местное. Подписи меняются сразу.
+How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.	Как записаны координаты в строке состояния и в окне «Объекты». Поле «Поиск» понимает все четыре формата независимо от выбора. Выше 84° северной и ниже 80° южной широты UTM и MGRS заменяются десятичными градусами.
+Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once.	Оформление окна глобуса. «Светлое» - серые плашки с тёмными значками и светлые окна. «Тёмное» - тёмные плашки и тёмные окна. Оформление меняется сразу.
+Language of menus, windows and messages. "As in the system" takes the language of the system.	Язык меню, окон и сообщений. «Как в системе» берёт язык системы.
+Clear search history	Очистить историю поиска
+Erase the previous queries of the Search field.	Стереть прежние запросы строки «Поиск».
+Sea and ocean depths	Глубины морей и океанов
+With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	С флажком дно морей и океанов лежит на своих глубинах, над ним полупрозрачная вода, строка состояния показывает глубину под курсором, профиль высот - глубины и уровень моря. Без флажка высоты ниже уровня моря считаются нулём, море ровное. Есть только у Земли.
+Directions from here	Проложить маршрут отсюда
+Directions to here	Проложить маршрут сюда
+by car	на машине
+by bike	на велосипеде
+on foot	пешком
+By car	На машине
+By bike	На велосипеде
+On foot	Пешком
+{hours} h {minutes} min	{hours} ч {minutes} мин
+{value} min	{value} мин
+The route start is set. The end is the Directions to here item of the globe menu.	Начало маршрута поставлено. Конец - пункт «Проложить маршрут сюда» меню на глобусе.
+The route end is set. The start is the Directions from here item of the globe menu.	Конец маршрута поставлен. Начало - пункт «Проложить маршрут отсюда» меню на глобусе.
+Route: asking the service…	Маршрут: запрос к сервису…
+No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Маршрут не построен: сервис ответил «{error}», а по дорогам векторной основы маршрут строится до {limit} км по прямой.
+No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Маршрут не построен: коридор между точками - {count} тайлов дорог, предел {limit}.
+Route: road tiles {done} of {total}	Маршрут: тайлы дорог {done} из {total}
+Route: calculating…	Маршрут: расчёт…
+Route	Маршрут
+{name}: {summary}	{name}: {summary}
+No route found: the points are not linked by the vector base roads or lie more than {reach} m from them.	Маршрут не найден: точки не связаны дорогами векторной основы или дальше {reach} м от них.
+{a} - {b}, {km} km, {time} {mode}	{a} - {b}, {km} км, {time} {mode}
+point	точка
+OSRM service, data © OpenStreetMap	Сервис OSRM, данные © OpenStreetMap
+The service did not answer ({error}), route over road tiles	Сервис не ответил ({error}), маршрут по тайлам дорог
+Map error	Ошибка на карте
+Clear|route	Сбросить

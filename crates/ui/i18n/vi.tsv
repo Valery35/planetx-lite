@@ -67,11 +67,9 @@ Dark	Tối
 Light	Sáng
 Terrain	Địa hình
 Vertical exaggeration	Phóng đại theo chiều dọc
-Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Hệ số độ cao địa hình. Trên 1 núi và thung lũng trông rõ hơn.
 Label language	Ngôn ngữ nhãn
 As the interface	Như giao diện
 Local names	Tên địa phương
-Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Ngôn ngữ tên địa danh trên quả địa cầu. Nếu không có tên bằng ngôn ngữ này, hiển thị tên Latinh hoặc tên địa phương.
 Loading the font for this language…	Đang tải phông chữ cho ngôn ngữ này…
 Version {v}	Phiên bản {v}
 A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Quả địa cầu 3D cho Windows, Linux, macOS và web: địa hình, ảnh, cảnh, KML và dữ liệu riêng.
@@ -926,3 +924,40 @@ West	Tây
 Rotation	Góc xoay
 Stars	Các vì sao
 Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere.	Các vì sao từ Yale Bright Star Catalogue. Các vì sao hiện khi nhìn từ không gian và mờ dần khi máy quay hạ xuống bầu khí quyển.
+Source of the globe imagery. The terms of use of each source are in the Data sources window.	Nguồn hình ảnh trên quả địa cầu. Điều kiện sử dụng của từng nguồn nằm trong cửa sổ "Nguồn dữ liệu".
+All globe sources with their terms of use.	Tất cả nguồn của quả địa cầu kèm điều kiện sử dụng.
+Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.	Hệ số độ cao địa hình. Trên 1 núi và thung lũng nổi rõ hơn, địa hình bằng phẳng trở nên dễ thấy. Máy quay luôn ở trên bề mặt đã nâng. Sau khi thay đổi quả địa cầu dựng lại bề mặt trong vài giây.
+Language of place, water, peak and other labels on the globe. "As the interface" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.	Ngôn ngữ tên địa danh, mặt nước, đỉnh núi và các nhãn khác trên quả địa cầu. "Như giao diện" dùng ngôn ngữ giao diện. Nếu không có tên bằng ngôn ngữ đã chọn, tên chữ Latinh hoặc tên địa phương được hiển thị. Nhãn thay đổi ngay.
+How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.	Cách ghi tọa độ trên dòng trạng thái và trong cửa sổ "Các đối tượng". Trường "Tìm" hiểu cả bốn định dạng bất kể lựa chọn. Ở phía bắc vĩ độ 84° và phía nam vĩ độ 80° UTM và MGRS được thay bằng độ thập phân.
+Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once.	Giao diện cửa sổ quả địa cầu. "Sáng" - thanh màu xám với biểu tượng tối và cửa sổ sáng. "Tối" - thanh tối và cửa sổ tối. Giao diện thay đổi ngay.
+Language of menus, windows and messages. "As in the system" takes the language of the system.	Ngôn ngữ của menu, cửa sổ và thông báo. "Như hệ thống" dùng ngôn ngữ của hệ thống.
+Clear search history	Xóa lịch sử tìm kiếm
+Erase the previous queries of the Search field.	Xóa các truy vấn trước đây của trường "Tìm".
+Sea and ocean depths	Độ sâu biển và đại dương
+With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Khi đánh dấu ô, đáy biển và đại dương nằm ở độ sâu của nó dưới lớp nước bán trong suốt, dòng trạng thái hiển thị độ sâu dưới con trỏ, mặt cắt độ cao hiển thị độ sâu và mực nước biển. Khi bỏ đánh dấu, độ cao dưới mực nước biển được tính là không và biển phẳng. Chỉ có cho Trái Đất.
+Directions from here	Chỉ đường từ đây
+Directions to here	Chỉ đường đến đây
+by car	bằng ô tô
+by bike	bằng xe đạp
+on foot	đi bộ
+By car	Bằng ô tô
+By bike	Bằng xe đạp
+On foot	Đi bộ
+{hours} h {minutes} min	{hours} giờ {minutes} phút
+{value} min	{value} phút
+The route start is set. The end is the Directions to here item of the globe menu.	Đã đặt điểm đầu của tuyến đường. Điểm cuối là mục "Chỉ đường đến đây" trong menu trên quả địa cầu.
+The route end is set. The start is the Directions from here item of the globe menu.	Đã đặt điểm cuối của tuyến đường. Điểm đầu là mục "Chỉ đường từ đây" trong menu trên quả địa cầu.
+Route: asking the service…	Tuyến đường: đang truy vấn dịch vụ…
+No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Không lập được tuyến đường: dịch vụ trả lời "{error}", còn theo đường của nền vector tuyến đường chỉ được lập trong phạm vi {limit} km đường chim bay.
+No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Không lập được tuyến đường: hành lang giữa các điểm gồm {count} ô đường, giới hạn là {limit}.
+Route: road tiles {done} of {total}	Tuyến đường: ô đường {done} / {total}
+Route: calculating…	Tuyến đường: đang tính…
+Route	Tuyến đường
+{name}: {summary}	{name}: {summary}
+No route found: the points are not linked by the vector base roads or lie more than {reach} m from them.	Không tìm thấy tuyến đường: các điểm không được nối bằng đường của nền vector hoặc cách đường hơn {reach} m.
+{a} - {b}, {km} km, {time} {mode}	{a} - {b}, {km} km, {time} {mode}
+point	điểm
+OSRM service, data © OpenStreetMap	Dịch vụ OSRM, dữ liệu © OpenStreetMap
+The service did not answer ({error}), route over road tiles	Dịch vụ không trả lời ({error}), tuyến đường theo ô đường
+Map error	Lỗi trên bản đồ
+Clear|route	Đặt lại

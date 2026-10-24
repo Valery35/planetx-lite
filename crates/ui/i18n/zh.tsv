@@ -71,11 +71,9 @@ Dark	深色
 Light	浅色
 Terrain	地形
 Vertical exaggeration	垂直夸张
-Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	地形高度倍数。大于 1 时山脉和山谷更加明显。
 Label language	标注语言
 As the interface	与界面相同
 Local names	当地名称
-Language of place names on the globe. Without a name in this language the Latin or local name is shown.	地球上地名的语言。没有该语言的名称时显示拉丁或当地名称。
 Loading the font for this language…	正在加载此语言的字体…
 Version {v}	版本 {v}
 A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	适用于 Windows、Linux、macOS 和网页的三维地球：地形、影像、场景、KML 和自有数据。
@@ -926,3 +924,40 @@ West	西
 Rotation	旋转
 Stars	恒星
 Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere.	来自 Yale Bright Star Catalogue 的恒星。从太空可见恒星，相机下降到大气层中时恒星逐渐消失。
+Source of the globe imagery. The terms of use of each source are in the Data sources window.	地球影像的来源。各来源的使用条件见“数据来源”窗口。
+All globe sources with their terms of use.	地球的所有来源及其使用条件。
+Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.	地形高度倍数。大于 1 时山脉和山谷更加突出，平坦地形也变得可见。相机始终位于抬升后的地表之上。更改后地球会在几秒内重建地表。
+Language of place, water, peak and other labels on the globe. "As the interface" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.	地球上地名、水体、山峰及其他标注的语言。“与界面相同”使用界面语言。若所选语言中没有名称，则显示拉丁字母名称或当地名称。标注立即更改。
+How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.	状态栏和“对象”窗口中坐标的书写方式。“搜索”字段无论如何选择都能识别全部四种格式。在北纬 84° 以北和南纬 80° 以南，UTM 和 MGRS 由十进制度代替。
+Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once.	地球窗口的外观。“浅色” - 灰色面板配深色图标和浅色窗口。“深色” - 深色面板和深色窗口。外观立即更改。
+Language of menus, windows and messages. "As in the system" takes the language of the system.	菜单、窗口和消息的语言。“跟随系统”使用系统语言。
+Clear search history	清除搜索历史
+Erase the previous queries of the Search field.	清除“搜索”字段之前的查询。
+Sea and ocean depths	海洋深度
+With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	勾选后，海洋底部位于其深度处，上方为半透明的水，状态栏显示光标下的深度，高程剖面显示深度和海平面。不勾选时，海平面以下的高度计为零，海面平坦。仅适用于地球。
+Directions from here	从这里规划路线
+Directions to here	到这里规划路线
+by car	驾车
+by bike	骑行
+on foot	步行
+By car	驾车
+By bike	骑行
+On foot	步行
+{hours} h {minutes} min	{hours} 小时 {minutes} 分钟
+{value} min	{value} 分钟
+The route start is set. The end is the Directions to here item of the globe menu.	已设置路线起点。终点为地球菜单中的“到这里规划路线”项。
+The route end is set. The start is the Directions from here item of the globe menu.	已设置路线终点。起点为地球菜单中的“从这里规划路线”项。
+Route: asking the service…	路线：正在请求服务…
+No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	未能规划路线：服务回复“{error}”，而沿矢量底图的道路只能规划直线距离 {limit} 公里以内的路线。
+No route: the corridor between the points is {count} road tiles, the limit is {limit}.	未能规划路线：两点之间的走廊包含 {count} 个道路瓦片，上限为 {limit}。
+Route: road tiles {done} of {total}	路线：道路瓦片 {done} / {total}
+Route: calculating…	路线：正在计算…
+Route	路线
+{name}: {summary}	{name}：{summary}
+No route found: the points are not linked by the vector base roads or lie more than {reach} m from them.	未找到路线：两点未由矢量底图的道路连通，或距道路超过 {reach} 米。
+{a} - {b}, {km} km, {time} {mode}	{a} - {b}，{km} 公里，{mode} {time}
+point	点
+OSRM service, data © OpenStreetMap	OSRM 服务，数据 © OpenStreetMap
+The service did not answer ({error}), route over road tiles	服务未响应（{error}），按道路瓦片规划路线
+Map error	地图错误
+Clear|route	重置

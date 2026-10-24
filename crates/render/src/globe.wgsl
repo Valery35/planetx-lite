@@ -25,6 +25,10 @@ struct Draw {
     over: vec4<f32>,
     // Окно огней городов: u0, v0, сторона, признак.
     lights: vec4<f32>,
+    // Проход воды: цвет rgb в значениях экрана и непрозрачность.
+    water: vec4<f32>,
+    // Проход воды: x - признак, y - глубина полной воды на экране.
+    sea: vec4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> draw: Draw;
@@ -48,6 +52,8 @@ struct VertexOut {
     @location(3) glow: vec3<f32>,
     // Нормаль рельефа в ECEF для света солнца.
     @location(4) normal: vec3<f32>,
+    // Высота вершины на экране, для прохода воды.
+    @location(5) height: f32,
 };
 
 // Свет солнца, перенос `brightness` из `core/sun.py` модуля: ламбертов
@@ -70,9 +76,15 @@ fn sun_brightness(cos_sun: f32) -> f32 {
 // вместо 60, 22 октября 2026 года. Дымка меняется по кадру плавно,
 // между вершинами она интерполируется.
 @vertex
-fn tile_vs(@location(0) offset: vec3<f32>, @location(1) uv: vec2<f32>, @location(2) shade: f32, @location(3) normal: vec3<f32>) -> VertexOut {
+fn tile_vs(@location(0) offset: vec3<f32>, @location(1) uv: vec2<f32>, @location(2) shade: f32, @location(3) normal: vec3<f32>, @location(4) sea: vec4<f32>) -> VertexOut {
     var out: VertexOut;
-    out.position = draw.mvp * vec4<f32>(offset, 1.0);
+    // В проходе воды сетка опускается на уровень моря, как у модуля.
+    var p = offset;
+    if draw.sea.x > 0.5 {
+        p = p - sea.xyz * sea.w;
+    }
+    out.position = draw.mvp * vec4<f32>(p, 1.0);
+    out.height = sea.w;
     out.uv = uv;
     out.shade = shade;
     out.normal = normal;
@@ -104,10 +116,21 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
             discard;
         }
     }
-    let photo = mix(to_srgb(picture.rgb), draw.color.rgb, draw.color.a);
-    let base = photo * (1.0 - lines.a) + lines.rgb;
-    // Со светом солнца отмывка не нужна: тени даёт само солнце.
+    var photo = mix(to_srgb(picture.rgb), draw.color.rgb, draw.color.a);
+    var base = photo * (1.0 - lines.a) + lines.rgb;
     var shade = in.shade;
+    var alpha = 1.0;
+    // Вода только над рельефом ниже нуля, у берега прозрачнее.
+    let water = draw.sea.x > 0.5;
+    if water {
+        if in.height >= 0.0 {
+            discard;
+        }
+        base = draw.water.rgb;
+        alpha = draw.water.a * clamp(-in.height / draw.sea.y, 0.25, 1.0);
+        shade = 1.0;
+    }
+    // Со светом солнца отмывка не нужна: тени даёт само солнце.
     let n = in.normal;
     if air_frame.sun.w > 0.5 && dot(n, n) > 0.0 {
         shade = sun_brightness(dot(normalize(n), air_frame.sun.xyz));
@@ -115,11 +138,11 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     var ground = clamp(base * shade, vec3<f32>(0.0), vec3<f32>(1.0));
     // Огни городов: ночью по высоте солнца над горизонтом, к дню гаснут,
     // как у модуля. Облаков у Lite нет.
-    if air_frame.sun.w > 0.5 && draw.lights.w > 0.5 && dot(n, n) > 0.0 {
+    if air_frame.sun.w > 0.5 && draw.lights.w > 0.5 && !water && dot(n, n) > 0.0 {
         let day = smoothstep(SUN_TWILIGHT, SUN_DAYLIGHT, dot(normalize(n), air_frame.sun.xyz));
         ground = min(ground + glow.rgb * (1.0 - day), vec3<f32>(1.0));
     }
     // Дымка: воздух между глазом и поверхностью. Белая подложка под
     // дымкой остаётся белой: through + (1 - through) = 1.
-    return vec4<f32>(min(ground * in.through + in.glow, vec3<f32>(1.0)), 1.0);
+    return vec4<f32>(min(ground * in.through + in.glow, vec3<f32>(1.0)), alpha);
 }

@@ -70,7 +70,7 @@ fn half_ready(key: TileKey) -> bool {
 
 /// Дыры и видимая подстилка.
 fn holes(globe: &mut Globe, camera: &Camera, selection: &lod::Selection) -> (u64, u64) {
-    let stats = globe.render(camera, selection, None, FrameOptions { count_holes: true, show_holes: false, air: false, ratio: 1.0, sun: None });
+    let stats = globe.render(camera, selection, None, FrameOptions { count_holes: true, show_holes: false, air: false, ratio: 1.0, sun: None, water: None });
     assert!(stats.draws > 0);
     (stats.holes.unwrap(), stats.underlay.unwrap())
 }
@@ -163,7 +163,7 @@ fn picture_keeps_its_brightness() {
     for key in &sel.draw {
         globe.upload(*key, 256, 256, &rgba);
     }
-    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: None });
+    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: None, water: None });
     let pixel = center_pixel(&device, &queue, &globe);
     eprintln!("пиксель в середине кадра: {pixel:?}");
     for c in &pixel[..3] {
@@ -341,7 +341,7 @@ fn model_is_drawn_lit_from_the_sun() {
 fn grab(globe: &mut Globe, cam: &Camera, air: bool) -> render::Frame {
     let sel = lod::select(cam, &|_| true, Options::default());
     globe.grab();
-    globe.render(cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air, ratio: 1.0, sun: None });
+    globe.render(cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air, ratio: 1.0, sun: None, water: None });
     globe.take_grab().unwrap()
 }
 

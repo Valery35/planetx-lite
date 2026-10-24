@@ -30,6 +30,9 @@ pub enum Choice {
     FlyHere,
     Spin,
     WhatHere,
+    /// «Проложить маршрут отсюда» и «сюда», `route_items` модуля.
+    RouteFrom,
+    RouteTo,
 }
 
 /// Рисование под меню: вершина под курсором, завершено ли, можно ли
@@ -98,6 +101,11 @@ impl GlobeMenu {
                     }
                     pick(ui, tr(lang, "Fly here"), Choice::FlyHere);
                     pick(ui, tr(lang, "Orbit around"), Choice::Spin);
+                    if self.drawing.is_none() {
+                        ui.separator();
+                        pick(ui, tr(lang, "Directions from here"), Choice::RouteFrom);
+                        pick(ui, tr(lang, "Directions to here"), Choice::RouteTo);
+                    }
                     ui.separator();
                     pick(ui, tr(lang, "What's here?"), Choice::WhatHere);
                 }

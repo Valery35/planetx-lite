@@ -4,7 +4,7 @@
 
 //! Окно: глобус с подложкой и рельефом, навигация мышью и пальцами.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
@@ -43,8 +43,15 @@ pub const CLOUD_POINT_SIZE: f32 = 2.0;
 /// Начальный вид - Пермь из космоса с 20 000 км, отвесно, север вверху.
 /// Решение автора от 22 октября 2026 года.
 pub const START: (f64, f64, f64) = (check::PERM.0, check::PERM.1, check::SPACE_DISTANCE);
-/// Пол высот Земли: дно моря прижато к уровню моря, подложка рисует воду.
+/// Пол высот Земли без флажка «Глубины морей и океанов»: дно моря прижато
+/// к уровню моря, подложка рисует воду.
 pub const EARTH_FLOOR: f32 = 0.0;
+/// Вода над дном моря: цвет в значениях экрана и непрозрачность,
+/// `WATER_COLOR` модуля.
+pub const WATER_COLOR: [f32; 4] = [0.09, 0.30, 0.55, 0.5];
+/// Доля непрозрачности воды под картой аномалий поля, `WATER_UNDER_FIELD`
+/// модуля.
+pub const WATER_UNDER_FIELD: f32 = 0.15;
 
 /// Куда отдать отчёт самопроверки: текст и итог, true - пройдена.
 pub type Report = Box<dyn FnMut(&str, bool)>;
@@ -179,9 +186,16 @@ fn height_needs(store: &HeightStore, sel: &Selection) -> Vec<(TileKey, f64)> {
     let want: HashMap<TileKey, f64> = sel.want.iter().copied().collect();
     for key in sel.draw.iter().chain(sel.want.iter().map(|(k, _)| k)) {
         let height_key = store.wanted(*key);
+        let p = want.get(key).copied().unwrap_or(1.0);
         if store.tile(height_key).is_none() {
-            let p = want.get(key).copied().unwrap_or(1.0);
             let slot = wanted.entry(height_key).or_insert(p);
+            *slot = slot.max(p);
+        }
+        // Дно моря глубже terrain::SEA_LEVEL берётся у предка этого
+        // уровня, он нужен вместе с тайлом.
+        let sea = terrain::ancestor(height_key, terrain::SEA_LEVEL);
+        if height_key.0 > terrain::SEA_LEVEL && store.tile(sea).is_none() {
+            let slot = wanted.entry(sea).or_insert(p);
             *slot = slot.max(p);
         }
     }
@@ -214,6 +228,12 @@ pub struct LiteApp {
     pending_open: Vec<(Vec<u8>, String)>,
     /// Сообщение об открытии файла: название сцены или ошибка.
     open_message: Option<String>,
+    /// Маршруты по дорогам, `RouteManager` модуля.
+    route: crate::route::Router,
+    /// Тайлы коридора маршрута у загрузчика векторной основы и те из них,
+    /// что не нужны самой основе.
+    route_keys: HashSet<TileKey>,
+    route_only: HashSet<TileKey>,
     /// Прочитанные браузером брошенные файлы: байты или ошибка и имя.
     dropped_box: DroppedBox,
     /// Снимок окна вместе с панелью.
@@ -681,7 +701,7 @@ impl LiteApp {
             shot: None,
             labels,
             search: Search::new(Some(lang.code())),
-            settings,
+            settings: settings.clone(),
             settings_open: false,
             panel_open: true,
             web_fonts: HashMap::new(),
@@ -695,6 +715,9 @@ impl LiteApp {
             marks: Marks::default(),
             pending_open: Vec::new(),
             open_message: None,
+            route_keys: HashSet::new(),
+            route_only: HashSet::new(),
+            route: crate::route::Router::new(data::routing::Mode::from_name(&settings.route).unwrap_or(data::routing::Mode::Car)),
             dropped_box: DroppedBox::default(),
             shot_ui: false,
             player: None,
@@ -1141,7 +1164,7 @@ impl LiteApp {
     }
 
     /// Выбор в меню на глобусе.
-    fn globe_menu_choice(&mut self, ctx: &egui::Context, choice: crate::globemenu::Choice, point: Option<(f64, f64)>, now: f64) {
+    fn globe_menu_choice(&mut self, ctx: &egui::Context, choice: crate::globemenu::Choice, point: Option<(f64, f64)>, place: Option<(Vec<usize>, String)>, now: f64) {
         use crate::globemenu::Choice;
         match choice {
             Choice::CopyCoords(text) => {
@@ -1203,7 +1226,26 @@ impl LiteApp {
                     self.objects = Some(self.make_objects(lat, lon, None, Some(tr(self.lang, "loading").to_string())));
                 }
             }
+            Choice::RouteFrom | Choice::RouteTo => {
+                // Точечная метка под курсором даёт свою точку и название,
+                // как `route_items` модуля.
+                let picked = place.and_then(|(path, _)| self.marks.place(&path).filter(|p| p.kind == scene::features::Kind::Point).and_then(|p| p.points.first().map(|q| (q.0, q.1, p.name.clone()))));
+                let Some(end) = picked.or_else(|| point.map(|(lat, lon)| (lat, lon, String::new()))) else {
+                    return;
+                };
+                if choice == Choice::RouteFrom {
+                    self.route.set_origin(self.lang, end, now);
+                } else {
+                    self.route.set_target(self.lang, end, now);
+                }
+            }
         }
+    }
+
+    /// Пол высот Земли: 0 - высоты ниже нуля обнуляются, минус
+    /// бесконечность - дно моря остаётся, `_earth_floor` модуля.
+    fn earth_floor(&self) -> f32 {
+        if self.settings.sea { f32::NEG_INFINITY } else { EARTH_FLOOR }
     }
 
     /// Окно «Объекты» для точки: метки под пикселем, если он дан, и место
@@ -1291,11 +1333,12 @@ impl LiteApp {
         if let Some(menu) = &self.globe_menu {
             let (choice, open) = menu.show(ctx, lang);
             let point = menu.point;
+            let place = menu.place.clone();
             if !open {
                 self.globe_menu = None;
             }
             if let Some(c) = choice {
-                self.globe_menu_choice(ctx, c, point, now);
+                self.globe_menu_choice(ctx, c, point, place, now);
             }
         }
         // Пришёл адрес «Что здесь?» - строка «Адрес» в группе «Место».
@@ -1610,6 +1653,16 @@ impl LiteApp {
         }
         if (s.scale - before.scale).abs() > f64::EPSILON {
             self.heights.write().set_scale(if s.relief { s.scale } else { 0.0 });
+        }
+        if s.sea != before.sea {
+            // Дно моря: высоты заново из глубин, сетки заново, как
+            // `_set_sea_floor` модуля.
+            let floor = self.earth_floor();
+            let relief = &self.relief;
+            self.heights.write().refloor(floor, &|tile| relief.patch(tile));
+            if let Some(globe) = &mut self.globe {
+                globe.stale_meshes(None);
+            }
         }
         if s.language != before.language || s.labels != before.labels {
             let old_root = marks::root_name(self.lang).to_string();
@@ -3260,6 +3313,28 @@ impl LiteApp {
         }
     }
 
+    /// Шаг маршрута: готовый путь ложится линией в выделенную папку
+    /// «Моих меток», окно летит к нему, как `_done` модуля.
+    fn step_route(&mut self, now: f64) {
+        let loaders = &self.loaders;
+        let request = || (loaders.request)(crate::route::SERVICE_BYTES);
+        let Some((route, summary)) = self.route.step(self.lang, now, &request) else {
+            return;
+        };
+        let lang = self.lang;
+        let name = scene::placetree::numbered_name(tr(lang, "Route"), &self.marks.names());
+        let mut place = scene::kml::Place::new(&name, scene::features::Kind::Line, route.points);
+        place.color = crate::route::ROUTE_COLOR;
+        place.width = crate::route::ROUTE_WIDTH;
+        place.description = summary.clone();
+        let folder = self.tree_state.selected.clone().filter(|p| self.marks.folder(p).is_some()).unwrap_or_default();
+        let at = self.marks.insert(&folder, scene::kml::Item::Place(place), marks::root_name(lang));
+        self.tree_state.selected = Some(at.clone());
+        self.marks_changed();
+        self.queued.push(crate::marks::Action::Fly(at));
+        self.route.show(trf(lang, "{name}: {summary}", &[("name", &name), ("summary", &summary)]), true);
+    }
+
     /// Шаг сетевых ссылок: пришедший документ заменяет содержимое папки,
     /// как `NetLinks._arrived` модуля.
     fn step_links(&mut self, now: f64) {
@@ -3465,6 +3540,13 @@ impl LiteApp {
             if self.label_keys.contains(&loaded.key) {
                 self.labels.add(loaded.key, bytes.clone());
             }
+            if self.route_keys.contains(&loaded.key) {
+                self.route.add_tile(self.lang, loaded.key, bytes.as_deref().map(Vec::as_slice));
+                // Тайл только маршрута в основу не идёт.
+                if self.route_only.contains(&loaded.key) {
+                    continue;
+                }
+            }
             self.vector.add(loaded.key, bytes);
         }
         // Ряды дат тем GIBS: выбран день - тема ложится на глобус.
@@ -3612,22 +3694,45 @@ impl LiteApp {
         if arrived.is_empty() && !self.relief.busy() {
             return;
         }
+        let mut restale = Vec::new();
         {
             let mut store = self.heights.write();
             for loaded in arrived {
                 let (z, x, y) = loaded.key;
-                if let Ok(net::Content::Image(img)) = loaded.content
-                    && let Some((tile, depths)) = terrain::make_tile_depths(z, x, y, &img.rgba, EARTH_FLOOR, Encoding::Terrarium)
-                {
+                let Ok(net::Content::Image(img)) = loaded.content else {
+                    continue;
+                };
+                if img.rgba.len() != terrain::SIZE * terrain::SIZE * 4 {
+                    continue;
+                }
+                // Дно моря глубже уровня terrain::SEA_LEVEL - из предка.
+                let mut raw = terrain::decode(&img.rgba, 4, None, Encoding::Terrarium);
+                store.merge_sea(loaded.key, &mut raw);
+                if let Some((tile, depths)) = terrain::tile_depths(z, x, y, raw, self.earth_floor()) {
                     // Свой рельеф врезается в тайл до хранилища. Глубины
                     // моря - для профиля высот и окна «Объекты».
+                    let sea = depths.is_some();
                     if let Some(d) = depths {
                         store.add_depths(loaded.key, d);
                     }
                     store.add(self.relief.patch(tile));
+                    // Потомки, пришедшие раньше, берут дно у этого тайла.
+                    if sea {
+                        let relief = &self.relief;
+                        let floor = self.earth_floor();
+                        let done = store.remerge_sea(loaded.key, floor, &|t| relief.patch(t));
+                        if !done.is_empty() {
+                            restale.push(loaded.key);
+                        }
+                    }
                 }
             }
             self.relief.build(&mut store);
+        }
+        if let Some(globe) = &mut self.globe
+            && !restale.is_empty()
+        {
+            globe.stale_meshes(Some(&restale));
         }
         // Точные высоты могли прийти выше глаза.
         self.nav.keep_clear();
@@ -3819,6 +3924,17 @@ impl LiteApp {
         }
         if let Some(place) = picked.and_then(|n| self.search.found.get(n).cloned()) {
             self.fly_to_found(&place, now);
+        }
+        // Строка маршрута под поиском, `set_answer` модуля.
+        match self.route.ui(ui, self.lang) {
+            Some(crate::route::Link::Mode(mode)) => {
+                self.settings.route = mode.name().to_string();
+                self.settings_dirty = true;
+                self.route.set_mode(self.lang, mode, now);
+            }
+            Some(crate::route::Link::Fix) => ui.ctx().open_url(egui::OpenUrl::new_tab(data::routing::FIX_MAP)),
+            Some(crate::route::Link::Clear) => self.route.clear(),
+            None => {}
         }
     }
 
@@ -4034,6 +4150,7 @@ impl eframe::App for LiteApp {
             || self.lights_loader.as_ref().is_some_and(|l| l.busy())
             || self.theme_days.values().any(|d| matches!(d, ThemeDay::Asking(_)))
             || self.dots.busy()
+            || self.route.busy()
             || self.loaders.terrain.busy()
             || self.loaders.places.busy()
             || self.labels.pending
@@ -4139,6 +4256,7 @@ impl eframe::App for LiteApp {
         self.pictures.due(now);
         self.picked(now);
         self.step_links(now);
+        self.step_route(now);
         self.check_linked_models(now);
         for (bytes, name) in std::mem::take(&mut self.pending_open) {
             let _ = self.open_file(&bytes, &name, None);
@@ -4207,6 +4325,10 @@ impl eframe::App for LiteApp {
         self.label_keys = vector_tiles.iter().map(|(k, _)| *k).collect();
         let asked = self.label_keys.clone();
         vector_tiles.extend(self.vector.wanted(&selection.draw).into_iter().filter(|(k, _)| !asked.contains(k)));
+        // Тайлы дорог маршрута - тем же загрузчиком, раньше основы.
+        self.route_keys = self.route.wanted().into_iter().collect();
+        self.route_only = self.route_keys.iter().copied().filter(|k| !vector_tiles.iter().any(|(v, _)| v == k)).collect();
+        vector_tiles.extend(self.route_only.iter().map(|k| (*k, lod::INFINITE_PRIORITY)));
         self.loaders.places.want(&vector_tiles);
         // Уровень высот горизонталей: открытое море - глубины с уровня
         // contours::SEA_LEVEL, как sea_high модуля.
@@ -4294,12 +4416,18 @@ impl eframe::App for LiteApp {
         let sun = self.settings.sun.then(|| scene::sun::direction(sun_moment(window)));
         globe.set_model_sun(sun.map(|s| [s[0] as f32, s[1] as f32, s[2] as f32]));
         let recreated = globe.resize(width, height);
+        // Вода над дном моря, под картой аномалий поля прозрачнее: синяя
+        // вода делала красное молодое дно у хребтов фиолетовым.
+        let water = self.settings.sea.then(|| {
+            let under_field = if self.settings.maps.iter().any(|m| m == "emag") { WATER_UNDER_FIELD } else { 1.0 };
+            [WATER_COLOR[0], WATER_COLOR[1], WATER_COLOR[2], WATER_COLOR[3] * under_field]
+        });
         let count_holes = self.check.as_ref().is_some_and(Check::count_holes);
         if self.check.as_mut().is_some_and(Check::take_grab_request) {
             globe.grab();
         }
         let stats =
-            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air, ratio: ppp as f32, sun });
+            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air, ratio: ppp as f32, sun, water });
         drop(store);
         if let Some(check) = &mut self.check
             && check.waits_frame()

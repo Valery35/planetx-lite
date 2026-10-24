@@ -67,11 +67,9 @@ Dark	Tünd
 Light	Açıq
 Terrain	Relyef
 Vertical exaggeration	Şaquli şişirtmə
-Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Relyefin hündürlük vurğusu. 1-dən yuxarı dağlar və dərələr daha qabarıq görünür.
 Label language	Yazıların dili
 As the interface	İnterfeys kimi
 Local names	Yerli adlar
-Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Qlobusdakı yer adlarının dili. Bu dildə ad yoxdursa, latın və ya yerli ad göstərilir.
 Loading the font for this language…	Bu dil üçün şrift yüklənir…
 Version {v}	Versiya {v}
 A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Windows, Linux, macOS və veb üçün 3D qlobus: relyef, şəkillər, səhnələr, KML və öz məlumatlarınız.
@@ -926,3 +924,40 @@ West	Qərb
 Rotation	Dönmə
 Stars	Ulduzlar
 Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere.	Yale Bright Star Catalogue kataloqunun ulduzları. Ulduzlar kosmosdan görünür və kamera atmosferə enəndə sönür.
+Source of the globe imagery. The terms of use of each source are in the Data sources window.	Qlobusdakı şəklin mənbəyi. Hər mənbənin istifadə şərtləri "Məlumat mənbələri" pəncərəsindədir.
+All globe sources with their terms of use.	Qlobusun bütün mənbələri istifadə şərtləri ilə.
+Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.	Relyef hündürlüklərinin vurğusu. 1-dən yuxarı dağlar və dərələr daha qabarıq olur, düzən relyef görünən olur. Kamera qaldırılmış səthin üzərində qalır. Dəyişiklikdən sonra qlobus səthi bir neçə saniyəyə yenidən qurur.
+Language of place, water, peak and other labels on the globe. "As the interface" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.	Qlobusdakı məntəqə, su hövzəsi, zirvə və digər yazıların dili. "İnterfeys kimi" interfeys dilini götürür. Seçilmiş dildə ad yoxdursa, latın hərfli və ya yerli ad göstərilir. Yazılar dərhal dəyişir.
+How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.	Koordinatların status sətrində və "Obyektlər" pəncərəsində necə yazıldığı. "Axtar" sahəsi seçimdən asılı olmayaraq dörd formatın hamısını başa düşür. 84° şimal və 80° cənub enliyindən o tərəfdə UTM və MGRS onluq dərəcələrlə əvəz olunur.
+Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once.	Qlobus pəncərəsinin tərtibatı. "Açıq" - tünd nişanəli boz lövhəciklər və açıq pəncərələr. "Tünd" - tünd lövhəciklər və tünd pəncərələr. Tərtibat dərhal dəyişir.
+Language of menus, windows and messages. "As in the system" takes the language of the system.	Menyuların, pəncərələrin və mesajların dili. "Sistemdəki kimi" sistemin dilini götürür.
+Clear search history	Axtarış tarixçəsini təmizlə
+Erase the previous queries of the Search field.	"Axtar" sahəsinin əvvəlki sorğularını sil.
+Sea and ocean depths	Dəniz və okeanların dərinlikləri
+With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Bayraqcıq qoyulanda dəniz və okeanların dibi yarımşəffaf suyun altında öz dərinliyində uzanır, status sətri kursorun altındakı dərinliyi, hündürlük profili dərinlikləri və dəniz səviyyəsini göstərir. Bayraqcıq olmadan dəniz səviyyəsindən aşağı hündürlüklər sıfır sayılır, dəniz düzdür. Yalnız Yer üçün var.
+Directions from here	Buradan marşrut çək
+Directions to here	Bura marşrut çək
+by car	maşınla
+by bike	velosipedlə
+on foot	piyada
+By car	Maşınla
+By bike	Velosipedlə
+On foot	Piyada
+{hours} h {minutes} min	{hours} saat {minutes} dəq
+{value} min	{value} dəq
+The route start is set. The end is the Directions to here item of the globe menu.	Marşrutun başlanğıcı qoyuldu. Sonu qlobusdakı menyunun "Bura marşrut çək" bəndidir.
+The route end is set. The start is the Directions from here item of the globe menu.	Marşrutun sonu qoyuldu. Başlanğıcı qlobusdakı menyunun "Buradan marşrut çək" bəndidir.
+Route: asking the service…	Marşrut: xidmətə sorğu…
+No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Marşrut qurulmadı: xidmət "{error}" cavabını verdi, vektor əsasının yolları ilə isə marşrut düz xətt üzrə {limit} km-ə qədər qurulur.
+No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Marşrut qurulmadı: nöqtələr arasındakı dəhliz {count} yol kafelidir, hədd {limit}.
+Route: road tiles {done} of {total}	Marşrut: yol kafelləri {done} / {total}
+Route: calculating…	Marşrut: hesablanır…
+Route	Marşrut
+{name}: {summary}	{name}: {summary}
+No route found: the points are not linked by the vector base roads or lie more than {reach} m from them.	Marşrut tapılmadı: nöqtələr vektor əsasının yolları ilə bağlı deyil və ya onlardan {reach} m-dən uzaqdadır.
+{a} - {b}, {km} km, {time} {mode}	{a} - {b}, {km} km, {mode} {time}
+point	nöqtə
+OSRM service, data © OpenStreetMap	OSRM xidməti, məlumatlar © OpenStreetMap
+The service did not answer ({error}), route over road tiles	Xidmət cavab vermədi ({error}), marşrut yol kafelləri ilə
+Map error	Xəritədə xəta
+Clear|route	Sıfırla

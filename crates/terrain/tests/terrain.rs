@@ -58,6 +58,75 @@ fn sea_depths_kept_for_profile() {
 }
 
 #[test]
+fn deep_tile_takes_sea_floor_from_level_10() {
+    // У Terrarium глубже уровня 10 над морем нули: дно берётся у предка,
+    // суша тайла остаётся.
+    let mut store = HeightStore::new();
+    let up = (tr::SEA_LEVEL, 300, 400);
+    let mut coarse = vec![-2000.0; SIZE * SIZE];
+    coarse[..SIZE * 4].fill(-10.0);
+    let made = tr::tile_depths(up.0, up.1, up.2, coarse, 0.0);
+    let (tile, depths) = made.expect("tile");
+    store.add(tile);
+    store.add_depths(up, depths.expect("depths"));
+    // Север тайла - мель предка в -10 м, юг - открытое море.
+    let mut raw = vec![0.0; SIZE * SIZE];
+    raw[0] = 15.0;
+    raw[1] = -5.0;
+    let far = SIZE * SIZE - 1;
+    raw[far - 1] = 300.0;
+    store.merge_sea((tr::SEA_LEVEL + 2, 1200, 1600), &mut raw);
+    assert_eq!(raw[0], 15.0);
+    assert_eq!(raw[1], -10.0);
+    assert_eq!(raw[far], -2000.0);
+    assert_eq!(raw[far - 1], -2000.0);
+    // Уровень 10 и мельче не меняется.
+    let mut own = vec![0.0; SIZE * SIZE];
+    store.merge_sea(up, &mut own);
+    assert!(own.iter().all(|h| *h == 0.0));
+}
+
+#[test]
+fn late_ancestor_gives_sea_floor() {
+    // Тайл уровня 12 пришёл раньше предка: нули над морем остаются,
+    // с приходом предка дно берётся у него.
+    let mut store = HeightStore::new();
+    let key = (tr::SEA_LEVEL + 2, 1200, 1600);
+    let up = (tr::SEA_LEVEL, 300, 400);
+    let mut raw = vec![0.0; SIZE * SIZE];
+    store.merge_sea(key, &mut raw);
+    let (tile, depths) = tr::tile_depths(key.0, key.1, key.2, raw, f32::NEG_INFINITY).expect("tile");
+    store.add(tile);
+    store.add_depths(key, depths.expect("zeros are kept below level 10"));
+    let (tile, depths) = tr::tile_depths(up.0, up.1, up.2, vec![-2000.0; SIZE * SIZE], f32::NEG_INFINITY).expect("up");
+    store.add(tile);
+    store.add_depths(up, depths.expect("depths"));
+    assert_eq!(store.remerge_sea(up, f32::NEG_INFINITY, &|t| t), [key]);
+    assert_eq!(store.tile(key).map(|t| t.heights[0]), Some(-2000.0));
+}
+
+#[test]
+fn sea_floor_on_and_off() {
+    // С дном моря тайл несёт глубины и глубины хранятся, флажок
+    // убирает и возвращает дно без новой загрузки.
+    let mut heights = vec![-3000.0; SIZE * SIZE];
+    heights[..SIZE * SIZE / 2].fill(200.0);
+    let made = tr::make_tile_depths(0, 0, 0, &encode(&heights), f32::NEG_INFINITY, Encoding::Terrarium);
+    let (tile, depths) = made.expect("tile");
+    let mut store = HeightStore::new();
+    store.add(tile);
+    store.add_depths((0, 0, 0), depths.expect("depths"));
+    let sea = [(-40.0, 10.0)];
+    assert!((store.heights_at(&sea, false)[0] + 3000.0).abs() < 1.0);
+    assert!(store.low() < -2999.0);
+    store.refloor(0.0, &|t| t);
+    assert_eq!(store.heights_at(&sea, false), [0.0]);
+    assert_eq!(store.low(), 0.0);
+    store.refloor(f32::NEG_INFINITY, &|t| t);
+    assert!((store.heights_at(&sea, false)[0] + 3000.0).abs() < 1.0);
+}
+
+#[test]
 fn mapbox_encoding() {
     // -10000 + (R·65536 + G·256 + B)·0.1: 1000 м = 110000 = (1, 173, 176).
     let got = tr::decode(&[1, 173, 176], 3, None, Encoding::Mapbox);

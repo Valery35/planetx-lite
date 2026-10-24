@@ -67,11 +67,9 @@ Dark	Koyu
 Light	Açık
 Terrain	Arazi
 Vertical exaggeration	Düşey abartma
-Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Arazinin yükseklik çarpanı. 1'in üzerinde dağlar ve vadiler daha belirgin görünür.
 Label language	Etiket dili
 As the interface	Arayüz gibi
 Local names	Yerel adlar
-Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Küredeki yer adlarının dili. Bu dilde ad yoksa Latin veya yerel ad gösterilir.
 Loading the font for this language…	Bu dil için yazı tipi yükleniyor…
 Version {v}	Sürüm {v}
 A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Windows, Linux, macOS ve web için 3B küre: arazi, görüntüler, sahneler, KML ve kendi verileriniz.
@@ -926,3 +924,40 @@ West	Batı
 Rotation	Dönüş
 Stars	Yıldızlar
 Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere.	Yale Bright Star Catalogue yıldızları. Yıldızlar uzaydan görünür ve kamera atmosfere indiğinde söner.
+Source of the globe imagery. The terms of use of each source are in the Data sources window.	Küredeki görüntünün kaynağı. Her kaynağın kullanım koşulları "Veri kaynakları" penceresindedir.
+All globe sources with their terms of use.	Kürenin tüm kaynakları ve kullanım koşulları.
+Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.	Arazi yüksekliklerinin çarpanı. 1'in üzerinde dağlar ve vadiler daha belirgin olur, düz arazi görünür hale gelir. Kamera yükseltilmiş yüzeyin üzerinde kalır. Bir değişiklikten sonra küre yüzeyi birkaç saniye içinde yeniden oluşturur.
+Language of place, water, peak and other labels on the globe. "As the interface" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.	Küredeki yer, su kütlesi, zirve ve diğer etiketlerin dili. "Arayüz gibi" arayüz dilini alır. Seçilen dilde ad yoksa Latin harfli veya yerel ad gösterilir. Etiketler hemen değişir.
+How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.	Koordinatların durum satırında ve "Nesneler" penceresinde nasıl yazıldığı. "Ara" alanı seçimden bağımsız olarak dört biçimin hepsini anlar. 84° kuzeyin ve 80° güneyin ötesinde UTM ve MGRS ondalık derecelerle değiştirilir.
+Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once.	Küre penceresinin görünümü. "Açık" - koyu simgeli gri çubuklar ve açık pencereler. "Koyu" - koyu çubuklar ve koyu pencereler. Görünüm hemen değişir.
+Language of menus, windows and messages. "As in the system" takes the language of the system.	Menülerin, pencerelerin ve iletilerin dili. "Sistemdeki gibi" sistemin dilini alır.
+Clear search history	Arama geçmişini temizle
+Erase the previous queries of the Search field.	"Ara" alanının önceki sorgularını sil.
+Sea and ocean depths	Deniz ve okyanus derinlikleri
+With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Kutu işaretliyken deniz ve okyanus tabanı yarı saydam suyun altında kendi derinliğinde durur, durum satırı imlecin altındaki derinliği, yükseklik profili derinlikleri ve deniz seviyesini gösterir. İşaret yokken deniz seviyesinin altındaki yükseklikler sıfır sayılır ve deniz düzdür. Yalnızca Dünya için vardır.
+Directions from here	Buradan rota oluştur
+Directions to here	Buraya rota oluştur
+by car	arabayla
+by bike	bisikletle
+on foot	yürüyerek
+By car	Arabayla
+By bike	Bisikletle
+On foot	Yürüyerek
+{hours} h {minutes} min	{hours} sa {minutes} dk
+{value} min	{value} dk
+The route start is set. The end is the Directions to here item of the globe menu.	Rotanın başlangıcı kondu. Bitiş, küredeki menünün "Buraya rota oluştur" öğesidir.
+The route end is set. The start is the Directions from here item of the globe menu.	Rotanın bitişi kondu. Başlangıç, küredeki menünün "Buradan rota oluştur" öğesidir.
+Route: asking the service…	Rota: hizmet sorgulanıyor…
+No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Rota oluşturulamadı: hizmet "{error}" yanıtını verdi, vektör altlığın yolları üzerinden ise kuş uçuşu {limit} km'ye kadar rota oluşturulur.
+No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Rota oluşturulamadı: noktalar arasındaki koridor {count} yol karosu, sınır {limit}.
+Route: road tiles {done} of {total}	Rota: yol karoları {done} / {total}
+Route: calculating…	Rota: hesaplanıyor…
+Route	Rota
+{name}: {summary}	{name}: {summary}
+No route found: the points are not linked by the vector base roads or lie more than {reach} m from them.	Rota bulunamadı: noktalar vektör altlığın yollarıyla bağlı değil veya onlardan {reach} m'den uzakta.
+{a} - {b}, {km} km, {time} {mode}	{a} - {b}, {km} km, {mode} {time}
+point	nokta
+OSRM service, data © OpenStreetMap	OSRM hizmeti, veriler © OpenStreetMap
+The service did not answer ({error}), route over road tiles	Hizmet yanıt vermedi ({error}), rota yol karoları üzerinden
+Map error	Haritada hata
+Clear|route	Sıfırla

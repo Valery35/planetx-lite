@@ -67,11 +67,9 @@ Dark	Dunkel
 Light	Hell
 Terrain	Gelände
 Vertical exaggeration	Überhöhung
-Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	Höhenfaktor des Geländes. Über 1 wirken Berge und Täler ausgeprägter.
 Label language	Sprache der Beschriftung
 As the interface	Wie die Oberfläche
 Local names	Lokale Namen
-Language of place names on the globe. Without a name in this language the Latin or local name is shown.	Sprache der Ortsnamen auf dem Globus. Ohne Namen in dieser Sprache wird der lateinische oder lokale Name gezeigt.
 Loading the font for this language…	Schrift für diese Sprache wird geladen…
 A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Ein 3D-Globus für Windows, Linux, macOS und das Web: Gelände, Bilder, Szenen, KML und eigene Daten.
 Controls	Steuerung
@@ -926,3 +924,40 @@ West	Westen
 Rotation	Drehung
 Stars	Sterne
 Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere.	Sterne aus dem Yale Bright Star Catalogue. Die Sterne sind aus dem Weltraum sichtbar und verblassen, wenn die Kamera in die Atmosphäre sinkt.
+Source of the globe imagery. The terms of use of each source are in the Data sources window.	Quelle der Bilder auf dem Globus. Die Nutzungsbedingungen jeder Quelle stehen im Fenster „Datenquellen“.
+All globe sources with their terms of use.	Alle Quellen des Globus mit ihren Nutzungsbedingungen.
+Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.	Faktor der Geländehöhen. Über 1 wirken Berge und Täler ausgeprägter, flaches Gelände wird sichtbar. Die Kamera bleibt über der angehobenen Oberfläche. Nach einer Änderung baut der Globus die Oberfläche in wenigen Sekunden neu auf.
+Language of place, water, peak and other labels on the globe. "As the interface" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.	Sprache der Namen von Orten, Gewässern, Gipfeln und anderen Beschriftungen auf dem Globus. „Wie die Oberfläche“ übernimmt die Sprache der Oberfläche. Fehlt ein Name in der gewählten Sprache, steht der lateinische oder der örtliche Name. Die Beschriftungen ändern sich sofort.
+How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.	Wie die Koordinaten in der Statuszeile und im Fenster „Objekte“ geschrieben werden. Das Feld „Suchen“ versteht alle vier Formate unabhängig von der Wahl. Nördlich von 84° und südlich von 80° werden UTM und MGRS durch Dezimalgrad ersetzt.
+Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once.	Aussehen des Globusfensters. „Hell“ - graue Leisten mit dunklen Symbolen und helle Fenster. „Dunkel“ - dunkle Leisten und dunkle Fenster. Das Aussehen ändert sich sofort.
+Language of menus, windows and messages. "As in the system" takes the language of the system.	Sprache der Menüs, Fenster und Meldungen. „Wie im System“ übernimmt die Sprache des Systems.
+Clear search history	Suchverlauf löschen
+Erase the previous queries of the Search field.	Die früheren Anfragen des Feldes „Suchen“ löschen.
+Sea and ocean depths	Tiefen der Meere und Ozeane
+With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Mit dem Häkchen liegt der Meeres- und Ozeanboden in seiner Tiefe unter halbtransparentem Wasser, die Statuszeile zeigt die Tiefe unter dem Mauszeiger, das Höhenprofil zeigt Tiefen und Meeresspiegel. Ohne Häkchen zählen Höhen unter dem Meeresspiegel als null, das Meer ist eben. Nur für die Erde verfügbar.
+Directions from here	Route von hier
+Directions to here	Route hierher
+by car	mit dem Auto
+by bike	mit dem Fahrrad
+on foot	zu Fuß
+By car	Mit dem Auto
+By bike	Mit dem Fahrrad
+On foot	Zu Fuß
+{hours} h {minutes} min	{hours} h {minutes} min
+{value} min	{value} min
+The route start is set. The end is the Directions to here item of the globe menu.	Der Start der Route ist gesetzt. Das Ziel ist der Punkt „Route hierher“ im Menü auf dem Globus.
+The route end is set. The start is the Directions from here item of the globe menu.	Das Ziel der Route ist gesetzt. Der Start ist der Punkt „Route von hier“ im Menü auf dem Globus.
+Route: asking the service…	Route: Anfrage an den Dienst…
+No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Keine Route: Der Dienst antwortete „{error}“, und über die Straßen der Vektorgrundlage wird eine Route bis {limit} km Luftlinie berechnet.
+No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Keine Route: Der Korridor zwischen den Punkten umfasst {count} Straßenkacheln, die Grenze ist {limit}.
+Route: road tiles {done} of {total}	Route: Straßenkacheln {done} von {total}
+Route: calculating…	Route: Berechnung…
+Route	Route
+{name}: {summary}	{name}: {summary}
+No route found: the points are not linked by the vector base roads or lie more than {reach} m from them.	Keine Route gefunden: Die Punkte sind nicht durch Straßen der Vektorgrundlage verbunden oder liegen weiter als {reach} m von ihnen entfernt.
+{a} - {b}, {km} km, {time} {mode}	{a} - {b}, {km} km, {time} {mode}
+point	Punkt
+OSRM service, data © OpenStreetMap	Dienst OSRM, Daten © OpenStreetMap
+The service did not answer ({error}), route over road tiles	Der Dienst hat nicht geantwortet ({error}), Route über Straßenkacheln
+Map error	Fehler auf der Karte
+Clear|route	Zurücksetzen

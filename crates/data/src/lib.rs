@@ -26,7 +26,9 @@
 //! - [`plants`] и [`deposits`] - электростанции WRI и месторождения USGS;
 //! - [`slope`] - уклон и экспозиция, перенос `core/slope.py`;
 //! - [`rastermaps`] - карты картинками тайлов поверх снимка, перенос
-//!   `core/fields.py` и `core/tilemaps.py` модуля.
+//!   `core/fields.py` и `core/tilemaps.py` модуля;
+//! - [`routing`] - маршрут по дорогам векторных тайлов и сервис OSRM,
+//!   перенос `core/routing.py` модуля.
 
 pub mod bathymetry;
 pub mod cloud;
@@ -51,6 +53,7 @@ pub mod platemotion;
 pub mod plates;
 pub mod quakes;
 pub mod rastermaps;
+pub mod routing;
 pub mod slope;
 pub mod stars;
 pub mod volcanoes;

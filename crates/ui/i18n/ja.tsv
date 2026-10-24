@@ -68,11 +68,9 @@ Dark	ダーク
 Light	ライト
 Terrain	地形
 Vertical exaggeration	高さの強調
-Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced.	地形の高さの倍率。1 を超えると山や谷がより強調されます。
 Label language	ラベルの言語
 As the interface	表示言語と同じ
 Local names	現地名
-Language of place names on the globe. Without a name in this language the Latin or local name is shown.	地球儀上の地名の言語。この言語の名前がない場合はラテン文字または現地の名前を表示します。
 Loading the font for this language…	この言語のフォントを読み込み中…
 Version {v}	バージョン {v}
 A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.	Windows、Linux、macOS とウェブ向けの 3D 地球儀：地形、画像、シーン、KML、独自データ。
@@ -926,3 +924,40 @@ West	西
 Rotation	回転
 Stars	星
 Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere.	Yale Bright Star Catalogue の星。星は宇宙から見え、カメラが大気圏に降りると消えていきます。
+Source of the globe imagery. The terms of use of each source are in the Data sources window.	地球儀の画像のソース。各ソースの利用条件は「データソース」ウィンドウにあります。
+All globe sources with their terms of use.	地球儀のすべてのソースと利用条件。
+Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.	地形の高さの倍率。1 を超えると山や谷がより際立ち、平坦な地形も見えるようになります。カメラは持ち上げた地表の上にとどまります。変更後、地球儀は数秒で地表を作り直します。
+Language of place, water, peak and other labels on the globe. "As the interface" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.	地球儀の地名、水域名、山頂名などのラベルの言語。「表示言語と同じ」は表示言語を使います。選んだ言語の名前がない場合は、ラテン文字の名前または現地の名前を表示します。ラベルはすぐに変わります。
+How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.	ステータス行と「オブジェクト」ウィンドウでの座標の書き方。「検索」欄は選択にかかわらず 4 つの形式をすべて理解します。北緯 84° より北と南緯 80° より南では、UTM と MGRS は 10 進の度に置き換わります。
+Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once.	地球儀ウィンドウの外観。「ライト」- 暗いアイコンの灰色のバーと明るいウィンドウ。「ダーク」- 暗いバーと暗いウィンドウ。外観はすぐに変わります。
+Language of menus, windows and messages. "As in the system" takes the language of the system.	メニュー、ウィンドウ、メッセージの言語。「システムと同じ」はシステムの言語を使います。
+Clear search history	検索履歴を消去
+Erase the previous queries of the Search field.	「検索」欄の以前の検索語を消去します。
+Sea and ocean depths	海と大洋の水深
+With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	チェックを入れると、海と大洋の底は半透明の水の下でその水深に置かれ、ステータス行にカーソル位置の水深、標高断面図に水深と海面が表示されます。チェックを外すと、海面下の高さはゼロとみなされ、海は平らになります。地球でのみ使えます。
+Directions from here	ここから経路を検索
+Directions to here	ここまで経路を検索
+by car	車で
+by bike	自転車で
+on foot	徒歩で
+By car	車
+By bike	自転車
+On foot	徒歩
+{hours} h {minutes} min	{hours} 時間 {minutes} 分
+{value} min	{value} 分
+The route start is set. The end is the Directions to here item of the globe menu.	経路の出発地を設定しました。目的地は地球儀のメニューの「ここまで経路を検索」で設定します。
+The route end is set. The start is the Directions from here item of the globe menu.	経路の目的地を設定しました。出発地は地球儀のメニューの「ここから経路を検索」で設定します。
+Route: asking the service…	経路：サービスに問い合わせ中…
+No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	経路を作成できません：サービスの応答は「{error}」で、ベクトル基図の道路による経路は直線距離 {limit} km までです。
+No route: the corridor between the points is {count} road tiles, the limit is {limit}.	経路を作成できません：地点間の回廊は道路タイル {count} 枚で、上限は {limit} です。
+Route: road tiles {done} of {total}	経路：道路タイル {done} / {total}
+Route: calculating…	経路：計算中…
+Route	経路
+{name}: {summary}	{name}：{summary}
+No route found: the points are not linked by the vector base roads or lie more than {reach} m from them.	経路が見つかりません：地点がベクトル基図の道路でつながっていないか、道路から {reach} m より離れています。
+{a} - {b}, {km} km, {time} {mode}	{a} - {b}、{km} km、{mode} {time}
+point	地点
+OSRM service, data © OpenStreetMap	OSRM サービス、データ © OpenStreetMap
+The service did not answer ({error}), route over road tiles	サービスが応答しません ({error})、道路タイルによる経路
+Map error	地図上のエラー
+Clear|route	リセット

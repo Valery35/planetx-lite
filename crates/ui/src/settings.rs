@@ -41,6 +41,9 @@ pub struct Settings {
     pub air: bool,
     /// Строка «Звёзды», у модуля включена по умолчанию.
     pub stars: bool,
+    /// Флажок «Глубины морей и океанов» окна «Свойства вида»: дно моря
+    /// на своих глубинах, над ним вода. У модуля включён по умолчанию.
+    pub sea: bool,
     /// Флажок строки «Рельеф» раздела «Слои».
     pub relief: bool,
     /// Строки векторной основы, `VectorBase::to_text`.
@@ -59,11 +62,13 @@ pub struct Settings {
     pub basemap: String,
     /// Включённые слои точек, ключи `crate::dots::Layer`.
     pub dots: Vec<String>,
+    /// Способ маршрута, `data::routing::Mode::name`, `route_mode` модуля.
+    pub route: String,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, stars: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new() }
+        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, stars: true, sea: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new(), route: "car".into() }
     }
 }
 
@@ -75,7 +80,7 @@ impl Settings {
 
     pub fn to_text(&self) -> String {
         format!(
-            "language={}\nlabels={}\ntheme={}\nscale={}\nsun={}\ngrid={}\nair={}\nstars={}\nrelief={}\nvector={}\ncoords={}\nplaces_height={}\nmaps={}\nbasemap={}\ndots={}\n",
+            "language={}\nlabels={}\ntheme={}\nscale={}\nsun={}\ngrid={}\nair={}\nstars={}\nsea={}\nrelief={}\nvector={}\ncoords={}\nplaces_height={}\nmaps={}\nbasemap={}\ndots={}\nroute={}\n",
             self.language.as_deref().unwrap_or(""),
             self.labels,
             if self.dark { "dark" } else { "light" },
@@ -84,13 +89,15 @@ impl Settings {
             self.grid,
             self.air,
             self.stars,
+            self.sea,
             self.relief,
             self.vector,
             self.coords,
             self.places_height,
             self.maps.join(","),
             self.basemap,
-            self.dots.join(",")
+            self.dots.join(","),
+            self.route
         ) + &self.history.iter().map(|h| format!("history={h}\n")).collect::<String>()
     }
 
@@ -112,11 +119,13 @@ impl Settings {
                 "grid" => s.grid = value == "true",
                 "air" => s.air = value != "false",
                 "stars" => s.stars = value != "false",
+                "sea" => s.sea = value != "false",
                 "relief" => s.relief = value != "false",
                 "coords" if COORD_FORMATS.contains(&value) => s.coords = value.to_string(),
                 "vector" => s.vector = crate::vector::VectorBase::from_text(value).to_text(),
                 "history" if !value.is_empty() && s.history.len() < scene::searchbar::HISTORY => s.history.push(value.to_string()),
                 "basemap" if Basemap::from_key(value).is_some() => s.basemap = value.to_string(),
+                "route" if data::routing::Mode::from_name(value).is_some() => s.route = value.to_string(),
                 "dots" => {
                     s.dots = value.split(',').filter(|k| crate::dots::Layer::from_key(k).is_some()).map(str::to_string).collect();
                 }
@@ -154,8 +163,9 @@ fn label_name(lang: Lang, code: &str) -> String {
 }
 
 /// Окно «Свойства вида», как `ui/properties.py` модуля: группы «Основа»,
-/// «Рельеф», «Подписи», «Координаты», «Оформление» и кнопка «Закрыть».
-/// Групп QGIS («Карта QGIS», «Обновление»), недр и помощника у Lite нет.
+/// «Рельеф», «Подписи», «Координаты», «Оформление», «Поиск» с очисткой
+/// истории и кнопка «Закрыть». Групп QGIS («Карта QGIS», «Обновление»),
+/// недр и помощника у Lite нет.
 /// Язык интерфейса модуль берёт у QGIS, у Lite он выбирается в группе
 /// «Оформление». Меняет settings и basemap на месте. Возвращает,
 /// изменилось ли что-то, и нажата ли кнопка «Источники данных…».
@@ -176,8 +186,10 @@ pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut S
                         for b in Basemap::all() {
                             ui.selectable_value(basemap, b, crate::layers::basemap_title(lang, b));
                         }
-                    });
-                    if ui.button(tr(lang, "Data sources…")).clicked() {
+                    })
+                    .response
+                    .on_hover_text(tr(lang, "Source of the globe imagery. The terms of use of each source are in the Data sources window."));
+                    if ui.button(tr(lang, "Data sources…")).on_hover_text(tr(lang, "All globe sources with their terms of use.")).clicked() {
                         sources = true;
                     }
                 });
@@ -189,14 +201,21 @@ pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut S
                         settings.relief,
                         egui::DragValue::new(&mut settings.scale).range(SCALE_RANGE.0..=SCALE_RANGE.1).speed(SCALE_STEP).fixed_decimals(1),
                     )
-                    .on_hover_text(tr(lang, "Height multiplier of the terrain. Above 1 mountains and valleys look more pronounced."));
+                    .on_hover_text(tr(
+                        lang,
+                        "Multiplier of terrain heights. Above 1 mountains and valleys stand out more, and flat terrain becomes visible. The camera stays above the raised surface. After a change the globe rebuilds the surface within a few seconds.",
+                    ));
                 });
+                ui.checkbox(&mut settings.sea, tr(lang, "Sea and ocean depths")).on_hover_text(tr(
+                    lang,
+                    "With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.",
+                ));
             });
             group(ui, tr(lang, "Labels"), |ui| {
                 ui.horizontal(|ui| {
                     ui.label(tr(lang, "Language")).on_hover_text(tr(
                         lang,
-                        "Language of place names on the globe. Without a name in this language the Latin or local name is shown.",
+                        "Language of place, water, peak and other labels on the globe. \"As the interface\" takes the interface language. If a name in the chosen language is missing, the Latin or local name is shown. Labels change at once.",
                     ));
                     egui::ComboBox::from_id_salt("settings-labels").selected_text(label_name(lang, &settings.labels)).show_ui(ui, |ui| {
                         for code in std::iter::once("").chain(std::iter::once(data::places::LOCAL)).chain(data::places::LABEL_LANGUAGES) {
@@ -218,7 +237,12 @@ pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut S
                         for key in COORD_FORMATS {
                             ui.selectable_value(&mut settings.coords, key.to_string(), name(key));
                         }
-                    });
+                    })
+                    .response
+                    .on_hover_text(tr(
+                        lang,
+                        "How coordinates are written in the status line and the Features window. The Search field understands all four formats whatever the choice. North of 84° and south of 80° UTM and MGRS are replaced with decimal degrees.",
+                    ));
                 });
             });
             group(ui, tr(lang, "Appearance"), |ui| {
@@ -228,7 +252,9 @@ pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut S
                     egui::ComboBox::from_id_salt("properties-theme").selected_text(shown).show_ui(ui, |ui| {
                         ui.selectable_value(&mut settings.dark, false, tr(lang, "Light"));
                         ui.selectable_value(&mut settings.dark, true, tr(lang, "Dark"));
-                    });
+                    })
+                    .response
+                    .on_hover_text(tr(lang, "Look of the globe window. Light - grey plates with dark icons and light windows. Dark - dark plates and dark windows. The look changes at once."));
                     ui.end_row();
                     ui.label(tr(lang, "Interface language"));
                     let current = settings.language.as_deref().and_then(Lang::from_code);
@@ -238,9 +264,17 @@ pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut S
                         for (code, name) in LANGUAGES {
                             ui.selectable_value(&mut settings.language, Some(code.to_string()), name);
                         }
-                    });
+                    })
+                    .response
+                    .on_hover_text(tr(lang, "Language of menus, windows and messages. \"As in the system\" takes the language of the system."));
                     ui.end_row();
                 });
+            });
+            group(ui, tr(lang, "Search"), |ui| {
+                let button = ui.add_enabled(!settings.history.is_empty(), egui::Button::new(tr(lang, "Clear search history")));
+                if button.on_hover_text(tr(lang, "Erase the previous queries of the Search field.")).clicked() {
+                    settings.history.clear();
+                }
             });
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
                 if ui.button(tr(lang, "Close")).clicked() {
@@ -272,7 +306,7 @@ mod tests {
 
     #[test]
     fn settings_round_trip_and_hostile_text() {
-        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, stars: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()] };
+        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, stars: false, sea: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()], route: "foot".into() };
         assert_eq!(Settings::from_text(&s.to_text()), s);
         let bad = Settings::from_text("language=xx\nlabels=../x\ntheme=dark\nscale=1e9\nscale=NaN\nfoo=bar\nno equals\nplaces_height=-5\nplaces_height=NaN\nmaps=emag,../x");
         assert_eq!(bad.maps, ["emag"]);

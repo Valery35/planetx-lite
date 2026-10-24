@@ -92,6 +92,10 @@ struct Vertex {
     shade: f32,
     /// Нормаль рельефа в ECEF для света солнца.
     normal: [f32; 3],
+    /// Вверх по нормали эллипсоида и высота вершины на экране,
+    /// `TerrainMesh::sea`. Проход воды опускает по ним сетку на уровень
+    /// моря.
+    sea: [f32; 4],
 }
 
 /// Сеток, пересобираемых за кадр, когда пришли более точные высоты.
@@ -109,6 +113,10 @@ struct DrawUniform {
     over: [f32; 4],
     /// Окно огней городов: u0, v0, сторона, признак (1 - есть).
     lights: [f32; 4],
+    /// Проход воды: цвет rgb в значениях экрана и непрозрачность.
+    water: [f32; 4],
+    /// Проход воды: признак (1 - вода), глубина полной воды на экране.
+    sea: [f32; 4],
 }
 
 /// Окно всего снимка.
@@ -179,7 +187,16 @@ pub struct FrameOptions {
     pub ratio: f32,
     /// Свет солнца: направление на солнце в ECEF, None - отмывка.
     pub sun: Option<[f64; 3]>,
+    /// Вода над дном моря: цвет rgb в значениях экрана и непрозрачность.
+    /// Вода рисуется там, где рельеф ниже нуля, сетки тайлов при этом
+    /// опускаются на уровень моря. None - воды нет, у Земли высоты ниже
+    /// нуля тогда обнулены.
+    pub water: Option<[f32; 4]>,
 }
+
+/// Глубина полной воды в метрах, мельче вода прозрачнее, `SHALLOW`
+/// модуля. Умножается на масштаб рельефа.
+pub const SHALLOW: f32 = 200.0;
 
 /// Воздух кадра, см. air.wgsl.
 #[repr(C)]
@@ -226,6 +243,8 @@ enum Kind {
     Tile,
     Underlay,
     Cap,
+    /// Вода над тайлом ниже уровня моря.
+    Water,
 }
 
 /// Одна отрисовка сетки.
@@ -272,6 +291,7 @@ pub struct Globe {
     device: wgpu::Device,
     queue: wgpu::Queue,
     tile_pipeline: wgpu::RenderPipeline,
+    water_pipeline: wgpu::RenderPipeline,
     hole_count_pipeline: wgpu::RenderPipeline,
     hole_show_pipeline: wgpu::RenderPipeline,
     sky_pipeline: wgpu::RenderPipeline,
@@ -558,38 +578,49 @@ impl Globe {
         let vertex_layout = wgpu::VertexBufferLayout {
             array_stride: std::mem::size_of::<Vertex>() as u64,
             step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2, 2 => Float32, 3 => Float32x3],
+            attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2, 2 => Float32, 3 => Float32x3, 4 => Float32x4],
         };
-        let tile_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("tile"),
-            layout: Some(&tile_layout),
-            vertex: wgpu::VertexState {
-                module: &globe_shader,
-                entry_point: Some("tile_vs"),
-                compilation_options: Default::default(),
-                buffers: &[Some(vertex_layout)],
-            },
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleList,
-                front_face: wgpu::FrontFace::Ccw,
-                cull_mode: Some(wgpu::Face::Back),
-                ..Default::default()
-            },
-            depth_stencil: Some(depth_state(true, wgpu::CompareFunction::Less)),
-            multisample: wgpu::MultisampleState::default(),
-            fragment: Some(wgpu::FragmentState {
-                module: &globe_shader,
-                entry_point: Some("tile_fs"),
-                compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: COLOR_FORMAT,
-                    blend: None,
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-            }),
-            multiview_mask: None,
-            cache: None,
-        });
+        // Вода - та же программа тайла: глубину не пишет, дно видно
+        // сквозь неё, суша выше нуля закрывает её проверкой глубины, как
+        // `_draw_water` модуля. Альфа кадра остаётся.
+        let water_blend = wgpu::BlendState {
+            color: wgpu::BlendComponent::OVER,
+            alpha: wgpu::BlendComponent { src_factor: wgpu::BlendFactor::Zero, dst_factor: wgpu::BlendFactor::One, operation: wgpu::BlendOperation::Add },
+        };
+        let make_tile_pipeline = |label: &str, water: bool| {
+            device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                label: Some(label),
+                layout: Some(&tile_layout),
+                vertex: wgpu::VertexState {
+                    module: &globe_shader,
+                    entry_point: Some("tile_vs"),
+                    compilation_options: Default::default(),
+                    buffers: &[Some(vertex_layout.clone())],
+                },
+                primitive: wgpu::PrimitiveState {
+                    topology: wgpu::PrimitiveTopology::TriangleList,
+                    front_face: wgpu::FrontFace::Ccw,
+                    cull_mode: Some(wgpu::Face::Back),
+                    ..Default::default()
+                },
+                depth_stencil: Some(if water { depth_state(false, wgpu::CompareFunction::LessEqual) } else { depth_state(true, wgpu::CompareFunction::Less) }),
+                multisample: wgpu::MultisampleState::default(),
+                fragment: Some(wgpu::FragmentState {
+                    module: &globe_shader,
+                    entry_point: Some("tile_fs"),
+                    compilation_options: Default::default(),
+                    targets: &[Some(wgpu::ColorTargetState {
+                        format: COLOR_FORMAT,
+                        blend: water.then_some(water_blend),
+                        write_mask: wgpu::ColorWrites::ALL,
+                    })],
+                }),
+                multiview_mask: None,
+                cache: None,
+            })
+        };
+        let tile_pipeline = make_tile_pipeline("tile", false);
+        let water_pipeline = make_tile_pipeline("water", true);
         let hole_pipeline = |writes: wgpu::ColorWrites, label: &str| {
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some(label),
@@ -707,6 +738,7 @@ impl Globe {
             device: device.clone(),
             queue: queue.clone(),
             tile_pipeline,
+            water_pipeline,
             hole_count_pipeline,
             hole_show_pipeline,
             sky_pipeline,
@@ -898,6 +930,23 @@ impl Globe {
     }
 
     /// Забыть огни городов: солнце выключено.
+    /// Сетки тайлов устарели: высоты сменились без смены уровня, например
+    /// дно моря включено или пришло от предка. under - тайлы высот, сетки
+    /// внутри них пересобираются, None - все сетки. Сетка пересобирается
+    /// в бюджете кадра, до того рисуется прежняя.
+    pub fn stale_meshes(&mut self, under: Option<&[TileKey]>) {
+        for (id, mesh) in &mut self.meshes {
+            let hit = match (id, under) {
+                (_, None) => true,
+                (MeshId::Tile { z, x, y }, Some(keys)) => keys.iter().any(|k| k.0 <= *z && (x >> (z - k.0).min(31), y >> (z - k.0).min(31)) == (k.1, k.2)),
+                (MeshId::PolarCap { .. }, Some(_)) => false,
+            };
+            if hit {
+                mesh.level = -2;
+            }
+        }
+    }
+
     pub fn clear_lights(&mut self) {
         self.lights.clear();
         self.over_binds.retain(|(_, l), _| l.is_none());
@@ -1145,6 +1194,7 @@ impl Globe {
         };
         let shade = &mesh.shade;
         let normals = &mesh.normals;
+        let sea = &mesh.sea;
         let mesh: TileMesh = mesh.mesh.clone();
         let vertices: Vec<Vertex> = mesh
             .positions
@@ -1157,6 +1207,7 @@ impl Globe {
                 uv: uv.to_array(),
                 shade: *s,
                 normal: normals.get(i).map_or([0.0, 0.0, 0.0], |n| n.to_array()),
+                sea: sea.get(i).map_or([0.0; 4], |s| s.to_array()),
             })
             .collect();
         let vertices = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -1213,6 +1264,7 @@ impl Globe {
         selection: &Selection,
         heights: Option<&HeightStore>,
         projection: DMat4,
+        water: Option<[f32; 4]>,
     ) -> Vec<Item> {
         self.update_caps(selection);
         let mut out = Vec::new();
@@ -1236,7 +1288,7 @@ impl Globe {
                     _ => ((None, [0.0; 4]), (None, [0.0; 4])),
                 };
                 me.ensure_over((overlay, lights));
-                out.push(Item { kind, mesh, texture, overlay, lights, cap: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow } });
+                out.push(Item { kind, mesh, texture, overlay, lights, cap: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow, water: [0.0; 4], sea: [0.0; 4] } });
             }
         };
         let flat = |rgb: [f32; 3]| [rgb[0], rgb[1], rgb[2], 1.0];
@@ -1276,6 +1328,27 @@ impl Globe {
                     item.uniform.color[3] = 0.0;
                 }
             }
+        }
+        // Вода - копии тайлов после всех тайлов, только с рельефом, как
+        // у модуля.
+        if let Some(color) = water
+            && let Some(store) = heights.filter(|s| s.scale() > 0.0)
+        {
+            let sea = [1.0, (f64::from(SHALLOW) * store.scale()).max(1.0) as f32, 0.0, 0.0];
+            let copies: Vec<Item> = out
+                .iter()
+                .filter(|i| i.kind == Kind::Tile)
+                .map(|i| Item {
+                    kind: Kind::Water,
+                    mesh: i.mesh,
+                    texture: i.texture,
+                    overlay: i.overlay,
+                    lights: i.lights,
+                    cap: None,
+                    uniform: DrawUniform { water: color, sea, ..i.uniform },
+                })
+                .collect();
+            out.extend(copies);
         }
         out
     }
@@ -1447,7 +1520,7 @@ impl Globe {
         self.frame += 1;
         self.resize(camera.width, camera.height);
         let projection = depth_fix() * camera.projection();
-        let items = self.items(camera, selection, heights, projection);
+        let items = self.items(camera, selection, heights, projection, options.water);
         let count = items.len() as u64;
         if count > self.uniform_capacity {
             let capacity = count.next_power_of_two();
@@ -1507,6 +1580,7 @@ impl Globe {
             pass.set_pipeline(&self.tile_pipeline);
             pass.set_bind_group(2, &self.air_bind, &[]);
             let mut underlay_open = false;
+            let mut water_open = false;
             for (i, item) in items.iter().enumerate() {
                 // Подстилка идёт подряд, её видимые пиксели считает
                 // второй запрос.
@@ -1517,6 +1591,10 @@ impl Globe {
                 if underlay_open && item.kind != Kind::Underlay {
                     pass.end_occlusion_query();
                     underlay_open = false;
+                }
+                if item.kind == Kind::Water && !water_open {
+                    pass.set_pipeline(&self.water_pipeline);
+                    water_open = true;
                 }
                 let Some(mesh) = self.meshes.get(&item.mesh) else {
                     continue;
