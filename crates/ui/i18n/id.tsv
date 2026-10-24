@@ -758,3 +758,85 @@ Plate speed	Kecepatan lempeng
 Direction	Arah
 sea level	permukaan laut
 water level {level}	muka air {level}
+A wall from the raised object down to the ground, a post for a point. Works with a height above zero.	Dinding dari objek yang dinaikkan sampai ke tanah, pada titik berupa tiang. Berlaku jika ketinggian di atas nol.
+Absolute	Absolut
+Add field	Tambah kolom
+Airport	Bandara
+Altitude mode	Acuan ketinggian
+as in the tour	seperti pada tur
+Bus	Bus
+Cafe	Kafe
+Camera	Kamera
+Camp	Perkemahan
+Car	Mobil
+Church	Gereja
+Clamped to ground	Menempel di tanah
+Clamped to sea floor	Menempel di dasar laut
+Colour of the placemark label on the globe, as LabelStyle in KML. A dark label gets a light outline.	Warna label penanda di globe, seperti LabelStyle di KML. Label gelap mendapat garis tepi terang.
+Date and time of the view. A flight to the placemark and a tour set the time slider to this time.	Tanggal dan waktu tampilan. Penerbangan ke penanda dan tur mengatur bilah waktu ke waktu ini.
+Date/time	Tanggal/waktu
+Earth	Bumi
+Extend to ground	Perpanjang ke tanah
+Field	Kolom
+Fill color of the polygon, with its transparency. The wall down to the ground takes this color too.	Warna isian poligon. Transparansi juga diatur di sini. Dinding sampai ke tanah juga diberi warna ini.
+Fire station	Pemadam kebakaran
+Flag	Bendera
+Flight speed	Kecepatan terbang
+Flow along the path	Aliran di sepanjang jalur
+Fly-around height	Ketinggian terbang keliling
+Globe layers from the snapshot, rows switched on: {count}	Lapisan globe dari cuplikan, baris yang menyala: {count}
+Height by slider. The scale is logarithmic, near the ground the step is metres, higher up hundreds of metres and kilometres.	Ketinggian dengan penggeser. Skalanya logaritmik, dekat tanah langkahnya meter, lebih tinggi ratusan meter dan kilometer.
+Hiking	Pendakian
+Hospital	Rumah sakit
+Hotel	Hotel
+House	Rumah
+How many seconds the camera stays at this tour stop. As in the tour - the pause from the tour panel.	Berapa detik kamera berhenti di perhentian tur ini. "Seperti pada tur" - jeda dari panel tur.
+How many times faster than usual the tour flies to this placemark. Below one - slower, smoother for a show.	Berapa kali lebih cepat dari biasanya tur terbang ke penanda ini. Di bawah satu - lebih lambat, lebih halus untuk presentasi.
+Icon of the point on the globe and in the list. In KML it goes as the address of a standard icon of the same theme.	Ikon titik di globe dan di daftar. Di KML ikon disimpan sebagai alamat ikon standar dengan tema yang sama.
+Icon size as a share of the usual one, as the IconStyle scale in KML. 0 - only the label on the globe.	Ukuran ikon sebagai bagian dari ukuran biasa, seperti scale IconStyle di KML. 0 - di globe hanya label.
+Icon size	Ukuran ikon
+Icon	Ikon
+Information	Informasi
+Interval	Rentang
+Label colour	Warna label
+Label size as a share of the usual one. 0 - only the icon on the globe, the name stays in the list.	Ukuran label sebagai bagian dari ukuran biasa. 0 - di globe hanya ikon, nama tetap ada di daftar.
+Label size	Ukuran label
+Moment	Saat
+Museum	Museum
+No icon	Tanpa ikon
+No label	Tanpa label
+Object fields	Kolom objek
+Object fields, as ExtendedData in KML. The placemark card and the Objects window show them, Explain this passes them to the assistant. A field without a name is not saved.	Kolom objek, seperti ExtendedData di KML. Kartu penanda dan jendela "Objek" menampilkannya, "Jelaskan ini" meneruskannya ke asisten. Kolom tanpa nama tidak disimpan.
+Parking	Parkir
+Peak	Puncak
+Pharmacy	Apotek
+Place view	Tampilan penanda
+Police	Polisi
+Post office	Kantor pos
+Properties: {name}	Properti: {name}
+Pushpin	Paku penanda
+Quarry	Tambang terbuka
+Railway	Rel kereta
+Relative to ground	Relatif terhadap tanah
+Relative to sea floor	Relatif terhadap dasar laut
+Remove field	Hapus kolom
+Restaurant	Restoran
+Return the view the place had when the window opened.	Kembalikan tampilan yang dimiliki penanda saat jendela dibuka.
+Rows of the Layers section that were switched on at the view snapshot. A flight to the placemark and a tour switch them on and the others off - so a tour stop shows its own layers. A new snapshot of the current view takes them again.	Baris bagian "Lapisan" yang menyala saat cuplikan tampilan. Penerbangan ke penanda dan tur menyalakannya dan mematikan yang lain - sehingga perhentian tur menampilkan lapisannya sendiri. Cuplikan baru dari tampilan saat ini mengambilnya lagi.
+School	Sekolah
+Ship	Kapal
+Shop	Toko
+Short dashes of the line colour run along the path from the first point to the last one, like a flow of goods. The path lies on the ground. The setting is kept in KML.	Garis putus pendek berwarna garis bergerak di sepanjang jalur dari titik pertama ke titik terakhir, seperti aliran barang. Jalur terletak di tanah. Pengaturan ini disimpan di KML.
+Skiing	Ski
+Snapshot current view	Cuplikan tampilan saat ini
+Space	Antariksa
+Survey point	Titik survei
+Swimming	Berenang
+The fly-around camera is closer to the ground or farther from it in all recorded poses. The middle is the recorded height, the ends are four times lower and four times higher. Path points are dragged with the mouse on the globe, the poses between them follow.	Kamera terbang keliling lebih dekat ke tanah atau lebih jauh darinya di semua pose rekaman. Bagian tengah adalah ketinggian rekaman, ujungnya empat kali lebih rendah dan empat kali lebih tinggi. Titik jalur digeser dengan tetikus di globe, pose di antaranya mengikuti.
+The placemark's own time, as TimeStamp and TimeSpan in KML. A placemark with a time shows while its time falls into the interval of the time slider at the top of the view. A placemark without a time always shows.	Waktu milik penanda sendiri, seperti TimeStamp dan TimeSpan di KML. Penanda dengan waktu terlihat selama waktunya masuk ke rentang bilah waktu di bagian atas tampilan. Penanda tanpa waktu selalu terlihat.
+The rise above the surface or the sea floor, in the absolute mode the altitude above sea level.	Kenaikan di atas permukaan atau dasar laut, dalam mode absolut ketinggian di atas permukaan laut.
+Time and visibility	Waktu dan visibilitas
+Tour pause	Jeda tur
+Tram	Trem
+What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	Dari mana ketinggian diukur. Menempel di tanah - penanda terletak di tanah, di atas laut di air. Menempel di dasar laut - di dasar. Relatif terhadap tanah dan dasar laut - kenaikan di atasnya. Absolut - ketinggian di atas permukaan laut. Mode disimpan di KML.
+Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	Dari mana kamera melihat saat terbang ke penanda atau berhenti di sana dalam tur. Tanpa tampilan sendiri kamera membingkai seluruh penanda.

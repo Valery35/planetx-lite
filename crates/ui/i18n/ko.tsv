@@ -758,3 +758,85 @@ Plate speed	판 속도
 Direction	방향
 sea level	해수면
 water level {level}	수위 {level}
+A wall from the raised object down to the ground, a post for a point. Works with a height above zero.	올린 객체에서 지면까지의 벽이며 점은 기둥이 됩니다. 높이가 0보다 클 때 작동합니다.
+Absolute	절대
+Add field	필드 추가
+Airport	공항
+Altitude mode	고도 기준
+as in the tour	투어와 같음
+Bus	버스
+Cafe	카페
+Camera	카메라
+Camp	야영지
+Car	자동차
+Church	교회
+Clamped to ground	지면에 고정
+Clamped to sea floor	해저에 고정
+Colour of the placemark label on the globe, as LabelStyle in KML. A dark label gets a light outline.	지구본의 장소 표시 레이블 색으로, KML의 LabelStyle과 같습니다. 어두운 레이블에는 밝은 윤곽선이 붙습니다.
+Date and time of the view. A flight to the placemark and a tour set the time slider to this time.	화면의 날짜와 시간. 장소 표시로의 이동과 투어는 시간 막대를 이 시간으로 맞춥니다.
+Date/time	날짜/시간
+Earth	지구
+Extend to ground	지면까지 돌출
+Field	필드
+Fill color of the polygon, with its transparency. The wall down to the ground takes this color too.	다각형의 채우기 색. 투명도도 여기서 정합니다. 지면까지의 벽도 이 색으로 칠해집니다.
+Fire station	소방서
+Flag	깃발
+Flight speed	이동 속도
+Flow along the path	경로를 따른 흐름
+Fly-around height	선회 비행 높이
+Globe layers from the snapshot, rows switched on: {count}	스냅샷의 지구본 레이어, 켜진 행 수: {count}
+Height by slider. The scale is logarithmic, near the ground the step is metres, higher up hundreds of metres and kilometres.	슬라이더로 높이를 정합니다. 눈금은 로그이며 지면 가까이에서는 단계가 미터, 더 높으면 수백 미터와 킬로미터입니다.
+Hiking	하이킹
+Hospital	병원
+Hotel	호텔
+House	집
+How many seconds the camera stays at this tour stop. As in the tour - the pause from the tour panel.	이 투어 정류점에서 카메라가 머무는 초 수. ‘투어와 같음’은 투어 패널의 일시 정지를 씁니다.
+How many times faster than usual the tour flies to this placemark. Below one - slower, smoother for a show.	투어가 이 장소 표시로 평소보다 몇 배 빠르게 이동하는지. 1 미만이면 더 느리고 발표에 더 부드럽습니다.
+Icon of the point on the globe and in the list. In KML it goes as the address of a standard icon of the same theme.	지구본과 목록에 표시되는 점의 아이콘. KML에서는 같은 주제의 표준 아이콘 주소로 저장됩니다.
+Icon size as a share of the usual one, as the IconStyle scale in KML. 0 - only the label on the globe.	평소 크기에 대한 비율로 나타낸 아이콘 크기로, KML의 IconStyle scale과 같습니다. 0이면 지구본에 레이블만 표시됩니다.
+Icon size	아이콘 크기
+Icon	아이콘
+Information	안내
+Interval	기간
+Label colour	레이블 색
+Label size as a share of the usual one. 0 - only the icon on the globe, the name stays in the list.	평소 크기에 대한 비율로 나타낸 레이블 크기. 0이면 지구본에 아이콘만 표시되고 이름은 목록에 남습니다.
+Label size	레이블 크기
+Moment	시점
+Museum	박물관
+No icon	아이콘 없음
+No label	레이블 없음
+Object fields	객체 필드
+Object fields, as ExtendedData in KML. The placemark card and the Objects window show them, Explain this passes them to the assistant. A field without a name is not saved.	객체 필드로, KML의 ExtendedData와 같습니다. 장소 표시 카드와 ‘객체’ 창에 표시되며 ‘이것 설명’은 이를 도우미에게 넘깁니다. 이름 없는 필드는 저장되지 않습니다.
+Parking	주차장
+Peak	정상
+Pharmacy	약국
+Place view	장소 표시 화면
+Police	경찰
+Post office	우체국
+Properties: {name}	속성: {name}
+Pushpin	압정
+Quarry	채석장
+Railway	철도
+Relative to ground	지면 기준 상대
+Relative to sea floor	해저 기준 상대
+Remove field	필드 제거
+Restaurant	식당
+Return the view the place had when the window opened.	창을 열 때 장소 표시가 가졌던 화면으로 되돌립니다.
+Rows of the Layers section that were switched on at the view snapshot. A flight to the placemark and a tour switch them on and the others off - so a tour stop shows its own layers. A new snapshot of the current view takes them again.	화면 스냅샷 때 켜져 있던 ‘레이어’ 섹션의 행. 장소 표시로의 이동과 투어는 이 행을 켜고 나머지를 끕니다. 그래서 투어 정류점은 자신의 레이어를 보여 줍니다. 현재 화면의 새 스냅샷이 이를 다시 기억합니다.
+School	학교
+Ship	선박
+Shop	상점
+Short dashes of the line colour run along the path from the first point to the last one, like a flow of goods. The path lies on the ground. The setting is kept in KML.	선 색의 짧은 대시가 경로를 따라 첫 점에서 마지막 점으로 화물 흐름처럼 움직입니다. 경로는 지면에 놓입니다. 이 설정은 KML에 저장됩니다.
+Skiing	스키
+Snapshot current view	현재 화면 스냅샷
+Space	우주
+Survey point	측량점
+Swimming	해수욕
+The fly-around camera is closer to the ground or farther from it in all recorded poses. The middle is the recorded height, the ends are four times lower and four times higher. Path points are dragged with the mouse on the globe, the poses between them follow.	기록된 모든 자세에서 선회 비행 카메라를 지면에 더 가깝게 또는 더 멀게 합니다. 가운데는 기록된 높이이고 양 끝은 네 배 낮고 네 배 높습니다. 경로 점은 지구본에서 마우스로 끌 수 있으며 그 사이의 자세가 따라갑니다.
+The placemark's own time, as TimeStamp and TimeSpan in KML. A placemark with a time shows while its time falls into the interval of the time slider at the top of the view. A placemark without a time always shows.	장소 표시 자체의 시간으로, KML의 TimeStamp 및 TimeSpan과 같습니다. 시간이 있는 장소 표시는 그 시간이 화면 위쪽 시간 막대의 기간에 들어 있는 동안 보입니다. 시간이 없는 장소 표시는 항상 보입니다.
+The rise above the surface or the sea floor, in the absolute mode the altitude above sea level.	지표면 또는 해저 위로의 높이이며 절대 모드에서는 해수면 기준 고도입니다.
+Time and visibility	시간과 표시
+Tour pause	투어 일시 정지
+Tram	노면전차
+What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	고도를 무엇에서 재는지. 지면에 고정 - 장소 표시가 지면에, 바다 위에서는 수면에 놓입니다. 해저에 고정 - 해저에 놓입니다. 지면 기준 상대와 해저 기준 상대 - 그 위로의 높이. 절대 - 해수면 기준 고도. 이 모드는 KML에 저장됩니다.
+Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	카메라가 장소 표시로 이동하거나 투어에서 그곳에 머물 때 보는 위치. 자체 화면이 없으면 카메라가 장소 표시 전체를 화면에 담습니다.

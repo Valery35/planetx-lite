@@ -1427,9 +1427,12 @@ impl LiteApp {
         // Длина по рельефу - по настоящим высотам, без масштаба рельефа.
         let heights_at = self.true_heights();
         let ready = !self.loaders.terrain.busy();
+        let pose = &self.nav.pose;
+        let current = [pose.lat, pose.lon, pose.distance, pose.heading, pose.tilt];
         let Some(tool) = &mut self.tool else {
             return;
         };
+        tool.current_view = current;
         let action = tool.window(ctx, self.lang, &names, Some((&heights_at, ready)));
         if !tool.open {
             self.tool = None;
@@ -3473,7 +3476,7 @@ impl eframe::App for LiteApp {
             let padded = self.shows_ui() && self.navpad.input(&ctx, rect, globe_response.layer_id, &mut self.nav, now);
             let busy = padded || self.tool.as_mut().is_some_and(|t| t.input(&ctx, &globe_response, rect, ppp, &self.nav));
             if !busy {
-                self.input.handle(&ctx, rect, &mut self.nav, now, ppp);
+                self.input.handle(&ctx, rect, globe_response.layer_id, &mut self.nav, now, ppp);
             }
             // Точка под курсором - вторая строка состояния, как у модуля.
             let heights_at = self.true_heights();

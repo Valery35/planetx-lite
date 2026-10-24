@@ -67,12 +67,16 @@ pub fn fly(nav: &mut Navigator, end: Pose, now: f64) {
 }
 
 impl Input {
-    /// Разобрать ввод кадра. rect - место глобуса в окне, ppp - пикселей
-    /// кадра глобуса на логический пиксель. true - вид изменился.
-    pub fn handle(&mut self, ctx: &egui::Context, rect: egui::Rect, nav: &mut Navigator, now: f64, ppp: f64) -> bool {
+    /// Разобрать ввод кадра. rect - место глобуса в окне, layer - слой
+    /// глобуса, ppp - пикселей кадра глобуса на логический пиксель. true -
+    /// вид изменился.
+    pub fn handle(&mut self, ctx: &egui::Context, rect: egui::Rect, layer: egui::LayerId, nav: &mut Navigator, now: f64, ppp: f64) -> bool {
         let (events, pointer, mods) = ctx.input(|i| (i.events.clone(), i.pointer.clone(), i.modifiers));
         let to_px = |p: egui::Pos2| (f64::from(p.x - rect.min.x) * ppp, f64::from(p.y - rect.min.y) * ppp);
-        let inside = pointer.hover_pos().is_some_and(|p| rect.contains(p));
+        // Над глобусом окно, меню или панель - мышь их, а не глобуса:
+        // перетаскивание окна за заголовок двигало и Землю.
+        let on_globe = |p: egui::Pos2| rect.contains(p) && ctx.layer_id_at(p).is_none_or(|l| l == layer);
+        let inside = pointer.hover_pos().is_some_and(on_globe);
         let mut changed = false;
 
         if let Some(touch) = ctx.multi_touch() {
@@ -99,7 +103,7 @@ impl Input {
 
         for event in &events {
             match event {
-                egui::Event::PointerButton { pos, button, pressed: true, .. } if rect.contains(*pos) => {
+                egui::Event::PointerButton { pos, button, pressed: true, .. } if on_globe(*pos) => {
                     let (px, py) = to_px(*pos);
                     changed |= self.press(nav, *button, mods, px, py, now);
                 }
@@ -140,7 +144,7 @@ impl Input {
             if !pointer.button_double_clicked(button) || mods.shift || mods.command || mods.ctrl {
                 continue;
             }
-            let Some(pos) = pointer.interact_pos().filter(|p| rect.contains(*p)) else {
+            let Some(pos) = pointer.interact_pos().filter(|p| on_globe(*p)) else {
                 continue;
             };
             let pose = nav.pose.clone();
@@ -253,4 +257,50 @@ fn key_press(nav: &mut Navigator, key: egui::Key, mods: egui::Modifiers, now: f6
         _ => return false,
     }
     true
+}
+
+#[cfg(test)]
+mod tests {
+    use eframe::egui;
+    use globe_core::camera::Camera;
+    use globe_core::ellipsoid::Ellipsoid;
+    use globe_core::navigation::{Navigator, Pose};
+    use globe_core::{DMat3, DVec3};
+
+    use super::Input;
+
+    /// Кадр: глобус центральной панелью, окно над ним, разбор мыши.
+    fn frame(ctx: &egui::Context, input: &mut Input, nav: &mut Navigator, events: Vec<egui::Event>) {
+        let raw = egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(800.0, 600.0))), events, ..Default::default() };
+        let mut out = ctx.run_ui(raw, |ui| {
+            let ctx = ui.ctx().clone();
+            let response = ui.allocate_rect(ui.max_rect(), egui::Sense::click_and_drag());
+            egui::Window::new("props").fixed_pos([100.0, 100.0]).fixed_size([200.0, 150.0]).show(&ctx, |ui| ui.label("x"));
+            input.handle(&ctx, response.rect, response.layer_id, nav, 0.0, 1.0);
+        });
+        out.textures_delta.clear();
+    }
+
+    fn press(at: egui::Pos2) -> Vec<egui::Event> {
+        vec![
+            egui::Event::PointerMoved(at),
+            egui::Event::PointerButton { pos: at, button: egui::PointerButton::Primary, pressed: true, modifiers: egui::Modifiers::NONE },
+        ]
+    }
+
+    #[test]
+    fn window_over_globe_keeps_the_mouse() {
+        // Перетаскивание окна за заголовок двигало и Землю, замечание
+        // автора от 24 октября 2026 года.
+        let ctx = egui::Context::default();
+        let mut nav = Navigator::new(Camera::new(Ellipsoid::wgs84(), DVec3::ZERO, DMat3::IDENTITY), Pose::new(58.0, 56.0, 3.0e6, 0.0, 0.0));
+        let mut input = Input::default();
+        frame(&ctx, &mut input, &mut nav, Vec::new());
+        frame(&ctx, &mut input, &mut nav, press(egui::pos2(150.0, 110.0)));
+        assert!(input.mode.is_none(), "окно отдало мышь глобусу");
+        frame(&ctx, &mut input, &mut nav, vec![egui::Event::PointerButton { pos: egui::pos2(150.0, 110.0), button: egui::PointerButton::Primary, pressed: false, modifiers: egui::Modifiers::NONE }]);
+        // Мимо окна - глобус.
+        frame(&ctx, &mut input, &mut nav, press(egui::pos2(600.0, 450.0)));
+        assert!(input.mode.is_some());
+    }
 }

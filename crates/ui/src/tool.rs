@@ -27,7 +27,7 @@ use scene::features::{self, Kind};
 use scene::kml::Place;
 use scene::{geodesic, measure, placetree};
 
-use crate::i18n::{Lang, tr};
+use crate::i18n::{Lang, tr, trf};
 use crate::ruler::{Mode, Row, Ruler, Values, shown};
 
 /// Логических пикселей вокруг вершины, в них она хватается.
@@ -100,6 +100,13 @@ pub struct Tool {
     press_at: Option<egui::Pos2>,
     /// «Сохранить» из меню на глобусе: окно сохраняет, как по кнопке.
     pub save_request: bool,
+    /// Поля окна свойств метки сверх названия, цвета и толщины, у правки.
+    pub props: Option<crate::placeprops::PlaceFields>,
+    /// Вершины не правятся: у 3D-пути высоты у каждой вершины, как
+    /// `globemenu.editable` модуля.
+    pub fixed: bool,
+    /// Вид глобуса сейчас для «Снимок текущего вида».
+    pub current_view: [f64; 5],
 }
 
 /// Вид линейки или метки по номеру вкладки.
@@ -145,7 +152,14 @@ impl Tool {
         };
         let [r, g, b, a] = place.color;
         let mut tool = Self::with(Purpose::Edit(path), mode, egui::Color32::from_rgba_unmultiplied(r, g, b, a));
-        tool.ruler.points = place.points.clone();
+        let props = crate::placeprops::PlaceFields::new(place);
+        // У облёта вершины - опорные позы пути, позы между ними следуют.
+        tool.ruler.points = match &props.tour_keys {
+            Some(keys) => crate::placeprops::PlaceFields::tour_points(place, keys),
+            None => place.points.clone(),
+        };
+        tool.fixed = place.alts.is_some();
+        tool.props = Some(props);
         tool.ruler.finished = true;
         tool.name = place.name.clone();
         tool.description = place.description.clone();
@@ -173,6 +187,9 @@ impl Tool {
             pressed: None,
             press_at: None,
             save_request: false,
+            props: None,
+            fixed: false,
+            current_view: [0.0, 0.0, 1.0e7, 0.0, 0.0],
         }
     }
 
@@ -212,6 +229,13 @@ impl Tool {
         place.color = [r, g, b, a];
         place.width = self.width;
         place.fill = (figure.kind == Kind::Polygon && self.fill).then_some([r, g, b, FILL_ALPHA]);
+        if let Some(props) = &self.props {
+            if self.fixed {
+                place.points = self.original.as_ref().map(|p| p.points.clone()).unwrap_or_default();
+            }
+            let points = place.points.clone();
+            props.apply(&mut place, &points);
+        }
         if self.purpose == Purpose::Ruler {
             place.color = RULER_COLOR;
             place.fill = (figure.kind == Kind::Polygon).then_some(RULER_FILL);
@@ -232,9 +256,12 @@ impl Tool {
             self.reset_name(lang, names);
         }
         let title = match self.purpose {
-            Purpose::Ruler => tr(lang, "Ruler"),
-            Purpose::Place => tr(lang, "New placemark"),
-            Purpose::Edit(_) => tr(lang, "Properties"),
+            Purpose::Ruler => tr(lang, "Ruler").to_string(),
+            Purpose::Place => tr(lang, "New placemark").to_string(),
+            Purpose::Edit(_) => {
+                let name = self.original.as_ref().map(|p| p.name.as_str()).filter(|n| !n.is_empty()).unwrap_or(tr(lang, "Untitled"));
+                trf(lang, "Properties: {name}", &[("name", name)])
+            }
         };
         let mut open = self.open;
         let mut action = None;
@@ -246,10 +273,14 @@ impl Tool {
             .pivot(egui::Align2::RIGHT_TOP)
             .default_pos(ctx.content_rect().right_top() + egui::vec2(-crate::navpad::WIDTH - 2.0 * crate::navpad::MARGIN - 8.0, 60.0))
             .show(ctx, |ui| {
-                ui.set_max_width(300.0);
+                ui.set_max_width(if self.props.is_some() { 420.0 } else { 300.0 });
                 match self.purpose {
                     Purpose::Ruler => action = self.ruler_body(ui, lang, names, heights),
-                    _ => action = self.place_body(ui, lang, names),
+                    // Окно свойств высокое - с прокруткой.
+                    Purpose::Edit(_) => {
+                        egui::ScrollArea::vertical().max_height((ctx.content_rect().height() - 140.0).max(200.0)).show(ui, |ui| action = self.place_body(ui, lang, names));
+                    }
+                    Purpose::Place => action = self.place_body(ui, lang, names),
                 }
             });
         // Окно закрывают крестик и кнопки OK и «Отмена».
@@ -376,12 +407,16 @@ impl Tool {
                     .on_hover_text(tr(lang, "Width of the line and outline in screen pixels. It does not depend on the scale."));
                 ui.end_row();
             }
-            if matches!(self.ruler.mode, Mode::Polygon | Mode::Circle) {
+            if matches!(self.ruler.mode, Mode::Polygon | Mode::Circle) && self.props.is_none() {
                 ui.label(tr(lang, "Fill"));
                 ui.checkbox(&mut self.fill, "");
                 ui.end_row();
             }
         });
+        let current = self.current_view;
+        if let Some(props) = &mut self.props {
+            props.ui(ui, lang, current);
+        }
         let mut action = None;
         ui.horizontal(|ui| {
             let can = self.ruler.figure(false).is_some();
@@ -430,6 +465,9 @@ impl Tool {
     /// ppp - пикселей кадра на логический пиксель. true - мышь занята
     /// инструментом (тянется вершина), навигации она не достаётся.
     pub fn input(&mut self, ctx: &egui::Context, response: &egui::Response, rect: egui::Rect, ppp: f64, nav: &Navigator) -> bool {
+        if self.fixed {
+            return false;
+        }
         let to_px = |p: egui::Pos2| (f64::from(p.x - rect.min.x) * ppp, f64::from(p.y - rect.min.y) * ppp);
         let ground = |p: egui::Pos2| {
             let (px, py) = to_px(p);

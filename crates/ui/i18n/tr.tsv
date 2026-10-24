@@ -758,3 +758,85 @@ Plate speed	Levha hızı
 Direction	Yön
 sea level	deniz seviyesi
 water level {level}	su seviyesi {level}
+A wall from the raised object down to the ground, a post for a point. Works with a height above zero.	Yükseltilmiş nesneden zemine kadar bir duvar, noktada bir direk. Yükseklik sıfırdan büyükken çalışır.
+Absolute	Mutlak
+Add field	Alan ekle
+Airport	Havalimanı
+Altitude mode	Yükseklik referansı
+as in the tour	turdaki gibi
+Bus	Otobüs
+Cafe	Kafe
+Camera	Fotoğraf makinesi
+Camp	Kamp
+Car	Otomobil
+Church	Kilise
+Clamped to ground	Zemine sabit
+Clamped to sea floor	Deniz tabanına sabit
+Colour of the placemark label on the globe, as LabelStyle in KML. A dark label gets a light outline.	Yer işareti etiketinin küredeki rengi, KML'deki LabelStyle gibi. Koyu bir etiket açık bir dış çizgi alır.
+Date and time of the view. A flight to the placemark and a tour set the time slider to this time.	Görünümün tarihi ve saati. Yer işaretine uçuş ve tur zaman çubuğunu bu saate getirir.
+Date/time	Tarih/saat
+Earth	Dünya
+Extend to ground	Zemine kadar uzat
+Field	Alan
+Fill color of the polygon, with its transparency. The wall down to the ground takes this color too.	Çokgenin dolgu rengi. Saydamlık da burada ayarlanır. Zemine kadar uzanan duvar da bu renge boyanır.
+Fire station	İtfaiye
+Flag	Bayrak
+Flight speed	Uçuş hızı
+Flow along the path	Yol boyunca akış
+Fly-around height	Çevre uçuşu yüksekliği
+Globe layers from the snapshot, rows switched on: {count}	Anlık görüntüdeki küre katmanları, açık satırlar: {count}
+Height by slider. The scale is logarithmic, near the ground the step is metres, higher up hundreds of metres and kilometres.	Kaydırıcıyla yükseklik. Ölçek logaritmiktir, zemine yakın adım metre, daha yukarıda yüzlerce metre ve kilometredir.
+Hiking	Yürüyüş
+Hospital	Hastane
+Hotel	Otel
+House	Ev
+How many seconds the camera stays at this tour stop. As in the tour - the pause from the tour panel.	Kameranın bu tur durağında kaç saniye kaldığı. "Turdaki gibi" - tur panelindeki duraklama.
+How many times faster than usual the tour flies to this placemark. Below one - slower, smoother for a show.	Turun bu yer işaretine olağandan kaç kat hızlı uçtuğu. Birin altında - daha yavaş, gösterim için daha yumuşak.
+Icon of the point on the globe and in the list. In KML it goes as the address of a standard icon of the same theme.	Noktanın küredeki ve listedeki simgesi. KML'de aynı temalı standart bir simgenin adresi olarak kaydedilir.
+Icon size as a share of the usual one, as the IconStyle scale in KML. 0 - only the label on the globe.	Olağan boyutun oranı olarak simge boyutu, KML'deki IconStyle scale gibi. 0 - kürede yalnızca etiket.
+Icon size	Simge boyutu
+Icon	Simge
+Information	Bilgi
+Interval	Aralık
+Label colour	Etiket rengi
+Label size as a share of the usual one. 0 - only the icon on the globe, the name stays in the list.	Olağan boyutun oranı olarak etiket boyutu. 0 - kürede yalnızca simge, ad listede kalır.
+Label size	Etiket boyutu
+Moment	An
+Museum	Müze
+No icon	Simge yok
+No label	Etiket yok
+Object fields	Nesne alanları
+Object fields, as ExtendedData in KML. The placemark card and the Objects window show them, Explain this passes them to the assistant. A field without a name is not saved.	KML'deki ExtendedData gibi nesne alanları. Yer işareti kartı ve "Nesneler" penceresi bunları gösterir, "Bunu açıkla" bunları asistana iletir. Adı olmayan alan kaydedilmez.
+Parking	Otopark
+Peak	Zirve
+Pharmacy	Eczane
+Place view	Yer işareti görünümü
+Police	Polis
+Post office	Postane
+Properties: {name}	Özellikler: {name}
+Pushpin	Raptiye
+Quarry	Taş ocağı
+Railway	Demiryolu
+Relative to ground	Zemine göre
+Relative to sea floor	Deniz tabanına göre
+Remove field	Alanı kaldır
+Restaurant	Restoran
+Return the view the place had when the window opened.	Pencere açıldığında yer işaretinin sahip olduğu görünümü geri getir.
+Rows of the Layers section that were switched on at the view snapshot. A flight to the placemark and a tour switch them on and the others off - so a tour stop shows its own layers. A new snapshot of the current view takes them again.	Görünümün anlık görüntüsü alınırken açık olan "Katmanlar" bölümü satırları. Yer işaretine uçuş ve tur bunları açar ve diğerlerini kapatır - böylece bir tur durağı kendi katmanlarını gösterir. Geçerli görünümün yeni anlık görüntüsü bunları yeniden kaydeder.
+School	Okul
+Ship	Gemi
+Shop	Mağaza
+Short dashes of the line colour run along the path from the first point to the last one, like a flow of goods. The path lies on the ground. The setting is kept in KML.	Çizgi renginde kısa tireler yol boyunca ilk noktadan son noktaya, bir yük akışı gibi ilerler. Yol zeminde durur. Ayar KML'de saklanır.
+Skiing	Kayak
+Snapshot current view	Geçerli görünümün anlık görüntüsü
+Space	Uzay
+Survey point	Jeodezik nokta
+Swimming	Yüzme
+The fly-around camera is closer to the ground or farther from it in all recorded poses. The middle is the recorded height, the ends are four times lower and four times higher. Path points are dragged with the mouse on the globe, the poses between them follow.	Çevre uçuşu kamerası tüm kayıtlı pozlarda zemine daha yakın veya ondan daha uzaktır. Orta nokta kayıtlı yüksekliktir, uçlar dört kat daha alçak ve dört kat daha yüksektir. Yol noktaları kürede fareyle sürüklenir, aradaki pozlar onları izler.
+The placemark's own time, as TimeStamp and TimeSpan in KML. A placemark with a time shows while its time falls into the interval of the time slider at the top of the view. A placemark without a time always shows.	Yer işaretinin kendi zamanı, KML'deki TimeStamp ve TimeSpan gibi. Zamanı olan yer işareti, zamanı görünümün üstündeki zaman çubuğunun aralığına düştükçe görünür. Zamanı olmayan yer işareti her zaman görünür.
+The rise above the surface or the sea floor, in the absolute mode the altitude above sea level.	Yüzeyin veya deniz tabanının üzerindeki yükselme, mutlak kipte deniz seviyesinden yükseklik.
+Time and visibility	Zaman ve görünürlük
+Tour pause	Tur duraklaması
+Tram	Tramvay
+What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	Yüksekliğin neye göre ölçüldüğü. Zemine sabit - yer işareti zeminde, denizin üzerinde suda durur. Deniz tabanına sabit - tabanda. Zemine ve deniz tabanına göre - bunların üzerindeki yükselme. Mutlak - deniz seviyesinden yükseklik. Kip KML'de kaydedilir.
+Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	Kamera yer işaretine uçarken veya turda onda dururken nereden bakar. Kendi görünümü yoksa kamera yer işaretinin tamamını kadraja alır.

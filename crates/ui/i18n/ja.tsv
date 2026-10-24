@@ -758,3 +758,85 @@ Plate speed	プレートの速度
 Direction	方向
 sea level	海面
 water level {level}	水位 {level}
+A wall from the raised object down to the ground, a post for a point. Works with a height above zero.	持ち上げたオブジェクトから地面までの壁で、点の場合は柱になります。高さがゼロより大きいときに働きます。
+Absolute	絶対
+Add field	フィールドを追加
+Airport	空港
+Altitude mode	高度の基準
+as in the tour	ツアーと同じ
+Bus	バス
+Cafe	カフェ
+Camera	カメラ
+Camp	キャンプ場
+Car	自動車
+Church	教会
+Clamped to ground	地表に固定
+Clamped to sea floor	海底に固定
+Colour of the placemark label on the globe, as LabelStyle in KML. A dark label gets a light outline.	地球儀上の目印のラベルの色で、KML の LabelStyle に相当します。暗いラベルには明るい縁取りが付きます。
+Date and time of the view. A flight to the placemark and a tour set the time slider to this time.	表示の日付と時刻。目印への移動とツアーはタイムバーをこの時刻に合わせます。
+Date/time	日付/時刻
+Earth	地球
+Extend to ground	地面まで延長
+Field	フィールド
+Fill color of the polygon, with its transparency. The wall down to the ground takes this color too.	多角形の塗りつぶしの色。透明度もここで設定します。地面までの壁もこの色で塗られます。
+Fire station	消防署
+Flag	旗
+Flight speed	移動速度
+Flow along the path	経路に沿った流れ
+Fly-around height	周回飛行の高さ
+Globe layers from the snapshot, rows switched on: {count}	スナップショットの地球儀レイヤー、オンの行数：{count}
+Height by slider. The scale is logarithmic, near the ground the step is metres, higher up hundreds of metres and kilometres.	スライダーで高さを設定します。目盛りは対数で、地面近くでは刻みがメートル、高くなると数百メートルやキロメートルになります。
+Hiking	ハイキング
+Hospital	病院
+Hotel	ホテル
+House	家
+How many seconds the camera stays at this tour stop. As in the tour - the pause from the tour panel.	このツアーの停留点でカメラが止まる秒数。「ツアーと同じ」はツアーパネルの一時停止を使います。
+How many times faster than usual the tour flies to this placemark. Below one - slower, smoother for a show.	このツアーでこの目印への移動が通常より何倍速いか。1 未満では遅くなり、上映向けに滑らかになります。
+Icon of the point on the globe and in the list. In KML it goes as the address of a standard icon of the same theme.	地球儀とリスト上の点のアイコン。KML では同じテーマの標準アイコンのアドレスとして保存されます。
+Icon size as a share of the usual one, as the IconStyle scale in KML. 0 - only the label on the globe.	通常に対する割合で表すアイコンの大きさで、KML の IconStyle の scale に相当します。0 では地球儀にラベルだけを表示します。
+Icon size	アイコンの大きさ
+Icon	アイコン
+Information	案内
+Interval	期間
+Label colour	ラベルの色
+Label size as a share of the usual one. 0 - only the icon on the globe, the name stays in the list.	通常に対する割合で表すラベルの大きさ。0 では地球儀にアイコンだけを表示し、名前はリストに残ります。
+Label size	ラベルの大きさ
+Moment	時点
+Museum	博物館
+No icon	アイコンなし
+No label	ラベルなし
+Object fields	オブジェクトのフィールド
+Object fields, as ExtendedData in KML. The placemark card and the Objects window show them, Explain this passes them to the assistant. A field without a name is not saved.	オブジェクトのフィールドで、KML の ExtendedData に相当します。目印のカードと「オブジェクト」ウィンドウに表示され、「これを説明」でアシスタントに渡されます。名前のないフィールドは保存されません。
+Parking	駐車場
+Peak	山頂
+Pharmacy	薬局
+Place view	目印の表示
+Police	警察
+Post office	郵便局
+Properties: {name}	プロパティ：{name}
+Pushpin	画びょう
+Quarry	採石場
+Railway	鉄道
+Relative to ground	地表からの相対
+Relative to sea floor	海底からの相対
+Remove field	フィールドを削除
+Restaurant	レストラン
+Return the view the place had when the window opened.	ウィンドウを開いたときの目印の表示に戻します。
+Rows of the Layers section that were switched on at the view snapshot. A flight to the placemark and a tour switch them on and the others off - so a tour stop shows its own layers. A new snapshot of the current view takes them again.	表示のスナップショット時にオンだった「レイヤー」セクションの行。目印への移動とツアーはこれらをオンにし、他をオフにします。こうしてツアーの停留点は自分のレイヤーを表示します。現在の表示の新しいスナップショットでこれらを改めて記憶します。
+School	学校
+Ship	船
+Shop	店
+Short dashes of the line colour run along the path from the first point to the last one, like a flow of goods. The path lies on the ground. The setting is kept in KML.	線の色の短い破線が、経路に沿って最初の点から最後の点へ物流のように流れます。経路は地面に沿います。この設定は KML に保存されます。
+Skiing	スキー
+Snapshot current view	現在の表示のスナップショット
+Space	宇宙
+Survey point	測量点
+Swimming	海水浴
+The fly-around camera is closer to the ground or farther from it in all recorded poses. The middle is the recorded height, the ends are four times lower and four times higher. Path points are dragged with the mouse on the globe, the poses between them follow.	記録したすべての姿勢で、周回飛行のカメラを地面に近づけたり遠ざけたりします。中央は記録時の高さで、両端は 4 分の 1 と 4 倍です。経路の点は地球儀上でマウスでドラッグでき、その間の姿勢も追従します。
+The placemark's own time, as TimeStamp and TimeSpan in KML. A placemark with a time shows while its time falls into the interval of the time slider at the top of the view. A placemark without a time always shows.	目印自身の時刻で、KML の TimeStamp と TimeSpan に相当します。時刻のある目印は、その時刻が表示上部のタイムバーの期間に入っている間だけ表示されます。時刻のない目印は常に表示されます。
+The rise above the surface or the sea floor, in the absolute mode the altitude above sea level.	地表または海底からの高さで、絶対モードでは海面からの高度です。
+Time and visibility	時刻と表示
+Tour pause	ツアーの一時停止
+Tram	路面電車
+What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	高度の基準。地表に固定 - 目印は地面に置かれ、海上では水面に置かれます。海底に固定 - 海底に置かれます。地表からの相対と海底からの相対 - それらからの高さ。絶対 - 海面からの高度。このモードは KML に保存されます。
+Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	目印へ移動するとき、またはツアーで目印に止まるときのカメラの視点。独自の表示がない場合、カメラは目印全体を画面に収めます。

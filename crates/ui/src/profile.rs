@@ -117,6 +117,8 @@ impl ProfileWindow {
             .open(open)
             .collapsible(false)
             .default_size([560.0, 260.0])
+            .resizable(true)
+            .min_height(MIN_CHART + STATS_HEIGHT + 20.0)
             .pivot(egui::Align2::CENTER_BOTTOM)
             .default_pos(ctx.content_rect().center_bottom() - egui::vec2(0.0, 40.0))
             .show(ctx, |ui| {
@@ -165,6 +167,39 @@ fn water_mesh(line: &[egui::Pos2], level_y: f32, from: usize, to: usize, color: 
     mesh
 }
 
+/// Высота строк итогов под графиком, логические пиксели.
+const STATS_HEIGHT: f32 = 48.0;
+/// Наименьшая высота графика.
+const MIN_CHART: f32 = 140.0;
+
+/// Отрезки расстояний, где кривая ниже уровня level: начало и конец
+/// с точкой пересечения уровня между соседними точками.
+fn wet_runs(heights: &[f64], distance: &[f64], level: f64) -> Vec<(f64, f64)> {
+    let cross = |i: usize| {
+        let (h0, h1) = (heights[i], heights[i + 1]);
+        let t = if (h1 - h0).abs() > 0.0 { ((level - h0) / (h1 - h0)).clamp(0.0, 1.0) } else { 0.0 };
+        distance[i] + t * (distance[i + 1] - distance[i])
+    };
+    let n = heights.len().min(distance.len());
+    let mut out = Vec::new();
+    let mut start: Option<f64> = None;
+    for (i, h) in heights.iter().enumerate().take(n) {
+        let wet = *h < level;
+        match (wet, start) {
+            (true, None) => start = Some(if i == 0 { distance[0] } else { cross(i - 1) }),
+            (false, Some(a)) => {
+                out.push((a, cross(i - 1)));
+                start = None;
+            }
+            _ => {}
+        }
+    }
+    if let (Some(a), Some(last)) = (start, distance.get(n.saturating_sub(1))) {
+        out.push((a, *last));
+    }
+    out
+}
+
 /// Пунктир от a до b.
 fn dashed(painter: &egui::Painter, a: egui::Pos2, b: egui::Pos2) {
     painter.extend(egui::Shape::dashed_line(&[a, b], egui::Stroke::new(1.2, WATER_LINE), 6.0, 4.0));
@@ -174,7 +209,10 @@ fn dashed(painter: &egui::Painter, a: egui::Pos2, b: egui::Pos2) {
 /// Возвращает точку пути под курсором.
 fn chart(ui: &mut egui::Ui, lang: Lang, p: &Profile, water: &[f64]) -> Option<(f64, f64)> {
     let width = ui.available_width().max(200.0);
-    let (rect, response) = ui.allocate_exact_size(egui::vec2(width, 180.0), egui::Sense::hover());
+    // График берёт высоту окна за вычетом строк итогов: окно тянется
+    // и по вертикали.
+    let height = (ui.available_height() - STATS_HEIGHT).max(MIN_CHART);
+    let (rect, response) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
     let painter = ui.painter_at(rect);
     let text_color = ui.visuals().text_color();
     let font = egui::FontId::proportional(11.0);
@@ -222,12 +260,22 @@ fn chart(ui: &mut egui::Ui, lang: Lang, p: &Profile, water: &[f64]) -> Option<(f
     }
     painter.add(egui::Shape::mesh(mesh));
     if p.low < 0.0 && line.len() >= 2 {
-        // Ниже уровня моря - вода от кривой до нуля. Сухие впадины ниже
-        // нуля тоже заливаются, высоты не отличают их от моря.
+        // Ниже уровня моря - вода от кривой до нуля и пунктир уровня над
+        // ней, над сушей пунктира нет. Сухие впадины ниже нуля тоже
+        // заливаются, высоты не отличают их от моря.
         let sea = to_screen(x0, 0.0).y;
         painter.add(egui::Shape::mesh(water_mesh(&line, sea, 0, line.len() - 1, WATER)));
-        dashed(&painter, egui::pos2(plot.left(), sea), egui::pos2(plot.right(), sea));
-        painter.text(egui::pos2(plot.right() - 4.0, sea - 2.0), egui::Align2::RIGHT_BOTTOM, tr(lang, "sea level"), font.clone(), WATER_LINE);
+        let mut widest: Option<(f32, f32)> = None;
+        for (a, b) in wet_runs(&p.height, &p.distance, 0.0) {
+            let (xa, xb) = (to_screen(a, 0.0).x, to_screen(b, 0.0).x);
+            dashed(&painter, egui::pos2(xa, sea), egui::pos2(xb, sea));
+            if widest.is_none_or(|(l, r)| xb - xa > r - l) {
+                widest = Some((xa, xb));
+            }
+        }
+        if let Some((_, xb)) = widest.filter(|(l, r)| r - l > 80.0) {
+            painter.text(egui::pos2(xb - 4.0, sea - 2.0), egui::Align2::RIGHT_BOTTOM, tr(lang, "sea level"), font.clone(), WATER_LINE);
+        }
     }
     // Свои водоёмы - на каждом отрезке подряд мокрых точек.
     let mut start: Option<usize> = None;
@@ -280,7 +328,7 @@ fn slope(p: &Profile, i: usize) -> f64 {
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-    use super::{axis_text, distance_text, nice_step, of_line, percent};
+    use super::{axis_text, distance_text, nice_step, of_line, percent, wet_runs};
     use crate::i18n::Lang;
 
     #[test]
@@ -295,6 +343,17 @@ mod tests {
         assert_eq!(axis_text(Lang::EN, 2500.0, 500.0), "2500\u{a0}m");
         assert_eq!(axis_text(Lang::EN, 4000.0, 2000.0), "4\u{a0}km");
         assert_eq!(percent(0.1234), "12.3\u{a0}%");
+    }
+
+    #[test]
+    fn sea_line_only_over_water() {
+        // Суша 0-100 м, море 100-300 м, суша дальше: пунктир уровня моря
+        // только над морем, замечание автора от 24 октября 2026 года.
+        let heights = [10.0, 10.0, -10.0, -30.0, 10.0];
+        let distance = [0.0, 100.0, 200.0, 300.0, 400.0];
+        assert_eq!(wet_runs(&heights, &distance, 0.0), [(150.0, 375.0)]);
+        assert_eq!(wet_runs(&[-1.0, -2.0], &[0.0, 50.0], 0.0), [(0.0, 50.0)]);
+        assert!(wet_runs(&[5.0, 6.0], &[0.0, 50.0], 0.0).is_empty());
     }
 
     #[test]

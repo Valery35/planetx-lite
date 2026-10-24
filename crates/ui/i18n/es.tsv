@@ -758,3 +758,85 @@ Plate speed	Velocidad de la placa
 Direction	Dirección
 sea level	nivel del mar
 water level {level}	nivel del agua {level}
+A wall from the raised object down to the ground, a post for a point. Works with a height above zero.	Una pared desde el objeto elevado hasta el suelo, en un punto un poste. Funciona con una altura mayor que cero.
+Absolute	Absoluta
+Add field	Añadir campo
+Airport	Aeropuerto
+Altitude mode	Referencia de altura
+as in the tour	como en el recorrido
+Bus	Autobús
+Cafe	Cafetería
+Camera	Cámara
+Camp	Campamento
+Car	Coche
+Church	Iglesia
+Clamped to ground	Sobre el suelo
+Clamped to sea floor	Sobre el fondo marino
+Colour of the placemark label on the globe, as LabelStyle in KML. A dark label gets a light outline.	Color de la etiqueta de la marca en el globo, como LabelStyle en KML. Una etiqueta oscura recibe un contorno claro.
+Date and time of the view. A flight to the placemark and a tour set the time slider to this time.	Fecha y hora de la vista. El vuelo a la marca y el recorrido ponen la barra de tiempo en esta hora.
+Date/time	Fecha/hora
+Earth	Tierra
+Extend to ground	Extruir hasta el suelo
+Field	Campo
+Fill color of the polygon, with its transparency. The wall down to the ground takes this color too.	Color de relleno del polígono. La transparencia también se fija aquí. La pared hasta el suelo toma también este color.
+Fire station	Bomberos
+Flag	Bandera
+Flight speed	Velocidad de vuelo
+Flow along the path	Flujo a lo largo de la ruta
+Fly-around height	Altura del sobrevuelo
+Globe layers from the snapshot, rows switched on: {count}	Capas del globo de la instantánea, filas activadas: {count}
+Height by slider. The scale is logarithmic, near the ground the step is metres, higher up hundreds of metres and kilometres.	Altura con el control deslizante. La escala es logarítmica, cerca del suelo el paso es de metros, más arriba de cientos de metros y kilómetros.
+Hiking	Senderismo
+Hospital	Hospital
+Hotel	Hotel
+House	Casa
+How many seconds the camera stays at this tour stop. As in the tour - the pause from the tour panel.	Cuántos segundos se detiene la cámara en esta parada del recorrido. «Como en el recorrido» - la pausa del panel del recorrido.
+How many times faster than usual the tour flies to this placemark. Below one - slower, smoother for a show.	Cuántas veces más rápido de lo habitual vuela el recorrido hasta esta marca. Por debajo de uno - más lento, más suave para una presentación.
+Icon of the point on the globe and in the list. In KML it goes as the address of a standard icon of the same theme.	Icono del punto en el globo y en la lista. En KML se guarda como la dirección de un icono estándar del mismo tema.
+Icon size as a share of the usual one, as the IconStyle scale in KML. 0 - only the label on the globe.	Tamaño del icono como fracción del habitual, como scale de IconStyle en KML. 0 - en el globo solo la etiqueta.
+Icon size	Tamaño del icono
+Icon	Icono
+Information	Información
+Interval	Intervalo
+Label colour	Color de la etiqueta
+Label size as a share of the usual one. 0 - only the icon on the globe, the name stays in the list.	Tamaño de la etiqueta como fracción del habitual. 0 - en el globo solo el icono, el nombre queda en la lista.
+Label size	Tamaño de la etiqueta
+Moment	Momento
+Museum	Museo
+No icon	Sin icono
+No label	Sin etiqueta
+Object fields	Campos del objeto
+Object fields, as ExtendedData in KML. The placemark card and the Objects window show them, Explain this passes them to the assistant. A field without a name is not saved.	Campos del objeto, como ExtendedData en KML. La ficha de la marca y la ventana «Objetos» los muestran, «Explica esto» los pasa al asistente. Un campo sin nombre no se guarda.
+Parking	Aparcamiento
+Peak	Cima
+Pharmacy	Farmacia
+Place view	Vista de la marca
+Police	Policía
+Post office	Correos
+Properties: {name}	Propiedades: {name}
+Pushpin	Chincheta
+Quarry	Cantera
+Railway	Ferrocarril
+Relative to ground	Relativa al suelo
+Relative to sea floor	Relativa al fondo marino
+Remove field	Quitar campo
+Restaurant	Restaurante
+Return the view the place had when the window opened.	Devolver la vista que tenía la marca al abrir la ventana.
+Rows of the Layers section that were switched on at the view snapshot. A flight to the placemark and a tour switch them on and the others off - so a tour stop shows its own layers. A new snapshot of the current view takes them again.	Filas de la sección «Capas» que estaban activadas en la instantánea de la vista. El vuelo a la marca y el recorrido las activan y desactivan las demás - así una parada del recorrido muestra sus propias capas. Una nueva instantánea de la vista actual las vuelve a guardar.
+School	Escuela
+Ship	Barco
+Shop	Tienda
+Short dashes of the line colour run along the path from the first point to the last one, like a flow of goods. The path lies on the ground. The setting is kept in KML.	Trazos cortos del color de la línea recorren la ruta del primer punto al último, como un flujo de mercancías. La ruta se apoya en el suelo. El ajuste se guarda en KML.
+Skiing	Esquí
+Snapshot current view	Instantánea de la vista actual
+Space	Espacio
+Survey point	Vértice geodésico
+Swimming	Baño
+The fly-around camera is closer to the ground or farther from it in all recorded poses. The middle is the recorded height, the ends are four times lower and four times higher. Path points are dragged with the mouse on the globe, the poses between them follow.	La cámara del sobrevuelo queda más cerca del suelo o más lejos de él en todas las poses grabadas. El centro es la altura grabada, los extremos son cuatro veces más bajos y cuatro veces más altos. Los puntos de la ruta se arrastran con el ratón en el globo, las poses entre ellos los siguen.
+The placemark's own time, as TimeStamp and TimeSpan in KML. A placemark with a time shows while its time falls into the interval of the time slider at the top of the view. A placemark without a time always shows.	La hora propia de la marca, como TimeStamp y TimeSpan en KML. Una marca con hora se ve mientras su hora cae en el intervalo de la barra de tiempo en la parte superior de la vista. Una marca sin hora se ve siempre.
+The rise above the surface or the sea floor, in the absolute mode the altitude above sea level.	La elevación sobre la superficie o el fondo marino, en el modo absoluto la altura sobre el nivel del mar.
+Time and visibility	Tiempo y visibilidad
+Tour pause	Pausa en el recorrido
+Tram	Tranvía
+What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	Desde qué se mide la altura. Sobre el suelo - la marca está en el suelo, sobre el mar en el agua. Sobre el fondo marino - en el fondo. Relativa al suelo y al fondo marino - la elevación sobre ellos. Absoluta - la altura sobre el nivel del mar. El modo se guarda en KML.
+Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	Desde dónde mira la cámara cuando vuela a la marca o se detiene en ella en un recorrido. Sin vista propia la cámara encuadra la marca entera.

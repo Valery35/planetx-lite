@@ -758,3 +758,85 @@ Plate speed	板块速度
 Direction	方向
 sea level	海平面
 water level {level}	水位 {level}
+A wall from the raised object down to the ground, a post for a point. Works with a height above zero.	从抬升的对象到地面的墙，点则为立柱。高度大于零时生效。
+Absolute	绝对
+Add field	添加字段
+Airport	机场
+Altitude mode	高度基准
+as in the tour	与游览相同
+Bus	公交车
+Cafe	咖啡馆
+Camera	相机
+Camp	营地
+Car	汽车
+Church	教堂
+Clamped to ground	贴地
+Clamped to sea floor	贴海底
+Colour of the placemark label on the globe, as LabelStyle in KML. A dark label gets a light outline.	地标标注在地球上的颜色，相当于 KML 中的 LabelStyle。深色标注带浅色描边。
+Date and time of the view. A flight to the placemark and a tour set the time slider to this time.	视图的日期和时间。飞往地标和游览会将时间条设为此时间。
+Date/time	日期/时间
+Earth	地球
+Extend to ground	延伸至地面
+Field	字段
+Fill color of the polygon, with its transparency. The wall down to the ground takes this color too.	多边形的填充颜色。透明度也在此设置。到地面的墙也使用此颜色。
+Fire station	消防站
+Flag	旗帜
+Flight speed	飞行速度
+Flow along the path	沿路径流动
+Fly-around height	环绕飞行高度
+Globe layers from the snapshot, rows switched on: {count}	快照中的地球图层，已开启行数：{count}
+Height by slider. The scale is logarithmic, near the ground the step is metres, higher up hundreds of metres and kilometres.	用滑块设置高度。刻度为对数，近地面时步长为米，较高时为数百米和公里。
+Hiking	徒步
+Hospital	医院
+Hotel	酒店
+House	房屋
+How many seconds the camera stays at this tour stop. As in the tour - the pause from the tour panel.	相机在此游览停靠点停留的秒数。“与游览相同”使用游览面板中的暂停。
+How many times faster than usual the tour flies to this placemark. Below one - slower, smoother for a show.	游览飞往此地标的速度是平常的几倍。小于一则更慢，演示时更平稳。
+Icon of the point on the globe and in the list. In KML it goes as the address of a standard icon of the same theme.	点在地球上和列表中的图标。在 KML 中保存为同主题标准图标的地址。
+Icon size as a share of the usual one, as the IconStyle scale in KML. 0 - only the label on the globe.	图标大小，为常规大小的比例，相当于 KML 中 IconStyle 的 scale。0 表示地球上只显示标注。
+Icon size	图标大小
+Icon	图标
+Information	信息
+Interval	时间段
+Label colour	标注颜色
+Label size as a share of the usual one. 0 - only the icon on the globe, the name stays in the list.	标注大小，为常规大小的比例。0 表示地球上只显示图标，名称仍保留在列表中。
+Label size	标注大小
+Moment	时刻
+Museum	博物馆
+No icon	无图标
+No label	无标注
+Object fields	对象字段
+Object fields, as ExtendedData in KML. The placemark card and the Objects window show them, Explain this passes them to the assistant. A field without a name is not saved.	对象字段，相当于 KML 中的 ExtendedData。地标卡片和“对象”窗口会显示它们，“解释一下”会将它们传给助手。没有名称的字段不会保存。
+Parking	停车场
+Peak	山峰
+Pharmacy	药店
+Place view	地标视图
+Police	警察局
+Post office	邮局
+Properties: {name}	属性：{name}
+Pushpin	图钉
+Quarry	采石场
+Railway	铁路
+Relative to ground	相对地面
+Relative to sea floor	相对海底
+Remove field	删除字段
+Restaurant	餐厅
+Return the view the place had when the window opened.	恢复打开窗口时地标的视图。
+Rows of the Layers section that were switched on at the view snapshot. A flight to the placemark and a tour switch them on and the others off - so a tour stop shows its own layers. A new snapshot of the current view takes them again.	拍摄视图快照时已开启的“图层”部分的行。飞往地标和游览会开启这些行并关闭其余行 - 这样游览停靠点会显示自己的图层。当前视图的新快照会重新记录它们。
+School	学校
+Ship	船舶
+Shop	商店
+Short dashes of the line colour run along the path from the first point to the last one, like a flow of goods. The path lies on the ground. The setting is kept in KML.	线条颜色的短划线沿路径从第一个点流向最后一个点，如同货物流。路径贴在地面上。此设置保存在 KML 中。
+Skiing	滑雪
+Snapshot current view	当前视图快照
+Space	太空
+Survey point	测量点
+Swimming	游泳
+The fly-around camera is closer to the ground or farther from it in all recorded poses. The middle is the recorded height, the ends are four times lower and four times higher. Path points are dragged with the mouse on the globe, the poses between them follow.	在所有录制姿态中，使环绕飞行相机更靠近或更远离地面。中间为录制高度，两端分别为四分之一和四倍。可在地球上用鼠标拖动路径点，它们之间的姿态随之变化。
+The placemark's own time, as TimeStamp and TimeSpan in KML. A placemark with a time shows while its time falls into the interval of the time slider at the top of the view. A placemark without a time always shows.	地标自身的时间，相当于 KML 中的 TimeStamp 和 TimeSpan。带时间的地标在其时间落入视图顶部时间条的时间段内时可见。无时间的地标始终可见。
+The rise above the surface or the sea floor, in the absolute mode the altitude above sea level.	高出地表或海底的高度，绝对模式下为海拔高度。
+Time and visibility	时间与可见性
+Tour pause	游览暂停
+Tram	有轨电车
+What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	高度的计算基准。贴地 - 地标位于地面，海上位于水面。贴海底 - 位于海底。相对地面和相对海底 - 高出它们的高度。绝对 - 海拔高度。该模式保存在 KML 中。
+Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	相机飞往地标或在游览中停留于此时的观察位置。没有自身视图时，相机将整个地标纳入画面。

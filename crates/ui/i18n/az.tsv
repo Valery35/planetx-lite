@@ -758,3 +758,85 @@ Plate speed	Lövhənin sürəti
 Direction	İstiqamət
 sea level	dəniz səviyyəsi
 water level {level}	su səviyyəsi {level}
+A wall from the raised object down to the ground, a post for a point. Works with a height above zero.	Qaldırılmış obyektdən yerə qədər divar, nöqtədə dirək. Hündürlük sıfırdan böyük olduqda işləyir.
+Absolute	Mütləq
+Add field	Sahə əlavə et
+Airport	Hava limanı
+Altitude mode	Hündürlüyün hesablanması
+as in the tour	turdakı kimi
+Bus	Avtobus
+Cafe	Kafe
+Camera	Fotoaparat
+Camp	Düşərgə
+Car	Avtomobil
+Church	Məbəd
+Clamped to ground	Səthdə
+Clamped to sea floor	Dəniz dibi boyunca
+Colour of the placemark label on the globe, as LabelStyle in KML. A dark label gets a light outline.	Nişanın qlobusdakı yazısının rəngi, KML-dəki LabelStyle kimi. Tünd yazı açıq kontur alır.
+Date and time of the view. A flight to the placemark and a tour set the time slider to this time.	Görünüşün tarixi və vaxtı. Nişana uçuş və tur zaman şkalasını bu vaxta qoyur.
+Date/time	Tarix/vaxt
+Earth	Yer
+Extend to ground	Yerə qədər uzat
+Field	Sahə
+Fill color of the polygon, with its transparency. The wall down to the ground takes this color too.	Çoxbucaqlının doldurma rəngi. Şəffaflıq da burada verilir. Yerə qədər divar da bu rənglə boyanır.
+Fire station	Yanğınsöndürmə hissəsi
+Flag	Bayraq
+Flight speed	Uçuş sürəti
+Flow along the path	Yol boyunca axın
+Fly-around height	Ətrafa uçuş hündürlüyü
+Globe layers from the snapshot, rows switched on: {count}	Görüntüdəki qlobus layları, yandırılmış sətirlər: {count}
+Height by slider. The scale is logarithmic, near the ground the step is metres, higher up hundreds of metres and kilometres.	Sürgü ilə hündürlük. Şkala loqarifmikdir, yerə yaxın addım metrdir, yuxarıda yüzlərlə metr və kilometr.
+Hiking	Piyada marşrutu
+Hospital	Xəstəxana
+Hotel	Mehmanxana
+House	Ev
+How many seconds the camera stays at this tour stop. As in the tour - the pause from the tour panel.	Kameranın turun bu dayanacağında neçə saniyə durduğu. "Turdakı kimi" - tur panelindəki fasilə.
+How many times faster than usual the tour flies to this placemark. Below one - slower, smoother for a show.	Turun bu nişana uçuşu adi haldan neçə dəfə sürətlidir. Birdən az - daha yavaş, nümayiş üçün daha rəvan.
+Icon of the point on the globe and in the list. In KML it goes as the address of a standard icon of the same theme.	Nöqtənin qlobusda və siyahıda nişanəsi. KML-də eyni mövzulu standart nişanənin ünvanı kimi gedir.
+Icon size as a share of the usual one, as the IconStyle scale in KML. 0 - only the label on the globe.	Nişanənin ölçüsü, adi ölçünün payı, KML-dəki IconStyle scale kimi. 0 - qlobusda yalnız yazı.
+Icon size	Nişanənin ölçüsü
+Icon	Nişanə
+Information	Məlumat
+Interval	Aralıq
+Label colour	Yazının rəngi
+Label size as a share of the usual one. 0 - only the icon on the globe, the name stays in the list.	Yazının ölçüsü, adi ölçünün payı. 0 - qlobusda yalnız nişanə, ad siyahıda qalır.
+Label size	Yazının ölçüsü
+Moment	An
+Museum	Muzey
+No icon	Nişanəsiz
+No label	Yazısız
+Object fields	Obyektin sahələri
+Object fields, as ExtendedData in KML. The placemark card and the Objects window show them, Explain this passes them to the assistant. A field without a name is not saved.	KML-dəki ExtendedData kimi obyektin sahələri. Onları nişanın kartı və "Obyektlər" pəncərəsi göstərir, "Bunu izah et" onları köməkçiyə ötürür. Adı olmayan sahə saxlanmır.
+Parking	Dayanacaq
+Peak	Zirvə
+Pharmacy	Aptek
+Place view	Nişanın görünüşü
+Police	Polis
+Post office	Poçt
+Properties: {name}	Xüsusiyyətlər: {name}
+Pushpin	Sancaq
+Quarry	Karxana
+Railway	Dəmir yolu
+Relative to ground	Səthə nisbətən
+Relative to sea floor	Dəniz dibinə nisbətən
+Remove field	Sahəni sil
+Restaurant	Restoran
+Return the view the place had when the window opened.	Pəncərə açılanda nişanın malik olduğu görünüşü qaytar.
+Rows of the Layers section that were switched on at the view snapshot. A flight to the placemark and a tour switch them on and the others off - so a tour stop shows its own layers. A new snapshot of the current view takes them again.	Görünüşün görüntüsü çəkiləndə yandırılmış "Laylar" bölməsinin sətirləri. Nişana uçuş və tur onları yandırır və qalanlarını söndürür - beləliklə turun dayanacağı öz laylarını göstərir. Cari görünüşün yeni görüntüsü onları yenidən yadda saxlayır.
+School	Məktəb
+Ship	Gəmi
+Shop	Mağaza
+Short dashes of the line colour run along the path from the first point to the last one, like a flow of goods. The path lies on the ground. The setting is kept in KML.	Yol boyunca birinci nöqtədən sonuncuya xəttin rəngində qısa ştrixlər yük axını kimi qaçır. Yol yerdə uzanır. Bu əlamət KML-də saxlanılır.
+Skiing	Dağ xizəyi
+Snapshot current view	Cari görünüşün görüntüsü
+Space	Kosmos
+Survey point	Geodeziya məntəqəsi
+Swimming	Çimmə
+The fly-around camera is closer to the ground or farther from it in all recorded poses. The middle is the recorded height, the ends are four times lower and four times higher. Path points are dragged with the mouse on the globe, the poses between them follow.	Ətrafa uçuş kamerası yazının bütün pozalarında yerə daha yaxın və ya ondan daha uzaqdır. Ortada yazının hündürlüyüdür, kənarlar dörd dəfə aşağı və dörd dəfə yuxarıdır. Yolun nöqtələri qlobusda siçanla çəkilir, aralarındakı pozalar onları izləyir.
+The placemark's own time, as TimeStamp and TimeSpan in KML. A placemark with a time shows while its time falls into the interval of the time slider at the top of the view. A placemark without a time always shows.	Nişanın öz vaxtı, KML-dəki TimeStamp və TimeSpan kimi. Vaxtı olan nişan vaxtı görünüşün yuxarısındakı zaman şkalasının aralığına düşənə qədər görünür. Vaxtı olmayan nişan həmişə görünür.
+The rise above the surface or the sea floor, in the absolute mode the altitude above sea level.	Səth və ya dib üzərində qalxma, mütləq rejimdə dəniz səviyyəsindən hündürlük.
+Time and visibility	Vaxt və görünmə
+Tour pause	Turda fasilə
+Tram	Tramvay
+What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	Hündürlüyün nədən hesablandığı. Səthdə - nişan yerdə, dəniz üzərində suda uzanır. Dəniz dibi boyunca - dibdə. Səthə və dibə nisbətən - onların üzərində qalxma. Mütləq - dəniz səviyyəsindən hündürlük. Rejim KML-də saxlanılır.
+Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	Kamera nişana uçanda və ya turda onun üzərində duranda haradan baxır. Öz görünüşü olmadan kamera nişanı bütövlükdə kadra alır.

@@ -758,3 +758,85 @@ Plate speed	Tốc độ mảng
 Direction	Hướng
 sea level	mực nước biển
 water level {level}	mực nước {level}
+A wall from the raised object down to the ground, a post for a point. Works with a height above zero.	Bức tường từ đối tượng được nâng lên xuống tới mặt đất, với điểm là một cột. Có tác dụng khi độ cao lớn hơn không.
+Absolute	Tuyệt đối
+Add field	Thêm trường
+Airport	Sân bay
+Altitude mode	Gốc tính độ cao
+as in the tour	như chuyến tham quan
+Bus	Xe buýt
+Cafe	Quán cà phê
+Camera	Máy ảnh
+Camp	Khu cắm trại
+Car	Ô tô
+Church	Nhà thờ
+Clamped to ground	Bám mặt đất
+Clamped to sea floor	Bám đáy biển
+Colour of the placemark label on the globe, as LabelStyle in KML. A dark label gets a light outline.	Màu nhãn của dấu vị trí trên quả địa cầu, như LabelStyle trong KML. Nhãn tối được viền sáng.
+Date and time of the view. A flight to the placemark and a tour set the time slider to this time.	Ngày và giờ của khung nhìn. Chuyến bay tới dấu vị trí và chuyến tham quan đặt thanh thời gian về thời điểm này.
+Date/time	Ngày/giờ
+Earth	Trái Đất
+Extend to ground	Kéo dài xuống mặt đất
+Field	Trường
+Fill color of the polygon, with its transparency. The wall down to the ground takes this color too.	Màu tô của đa giác. Độ trong suốt cũng được đặt ở đây. Bức tường xuống mặt đất cũng được tô màu này.
+Fire station	Trạm cứu hỏa
+Flag	Cờ
+Flight speed	Tốc độ bay
+Flow along the path	Dòng chảy dọc đường đi
+Fly-around height	Độ cao bay vòng
+Globe layers from the snapshot, rows switched on: {count}	Các lớp quả địa cầu từ ảnh chụp, số dòng đang bật: {count}
+Height by slider. The scale is logarithmic, near the ground the step is metres, higher up hundreds of metres and kilometres.	Độ cao bằng thanh trượt. Thang đo logarit, gần mặt đất bước là mét, cao hơn là hàng trăm mét và kilômét.
+Hiking	Đi bộ đường dài
+Hospital	Bệnh viện
+Hotel	Khách sạn
+House	Nhà
+How many seconds the camera stays at this tour stop. As in the tour - the pause from the tour panel.	Số giây máy quay dừng tại điểm dừng này của chuyến tham quan. "Như chuyến tham quan" - khoảng dừng từ bảng chuyến tham quan.
+How many times faster than usual the tour flies to this placemark. Below one - slower, smoother for a show.	Số lần chuyến tham quan bay tới dấu vị trí này nhanh hơn bình thường. Dưới một - chậm hơn, mượt hơn khi trình chiếu.
+Icon of the point on the globe and in the list. In KML it goes as the address of a standard icon of the same theme.	Biểu tượng của điểm trên quả địa cầu và trong danh sách. Trong KML biểu tượng được lưu dưới dạng địa chỉ của biểu tượng chuẩn cùng chủ đề.
+Icon size as a share of the usual one, as the IconStyle scale in KML. 0 - only the label on the globe.	Kích thước biểu tượng theo tỷ lệ so với thường, như scale của IconStyle trong KML. 0 - trên quả địa cầu chỉ có nhãn.
+Icon size	Kích thước biểu tượng
+Icon	Biểu tượng
+Information	Thông tin
+Interval	Khoảng thời gian
+Label colour	Màu nhãn
+Label size as a share of the usual one. 0 - only the icon on the globe, the name stays in the list.	Kích thước nhãn theo tỷ lệ so với thường. 0 - trên quả địa cầu chỉ có biểu tượng, tên vẫn ở trong danh sách.
+Label size	Kích thước nhãn
+Moment	Thời điểm
+Museum	Bảo tàng
+No icon	Không có biểu tượng
+No label	Không có nhãn
+Object fields	Các trường của đối tượng
+Object fields, as ExtendedData in KML. The placemark card and the Objects window show them, Explain this passes them to the assistant. A field without a name is not saved.	Các trường của đối tượng, như ExtendedData trong KML. Thẻ của dấu vị trí và cửa sổ "Các đối tượng" hiển thị chúng, "Giải thích điều này" chuyển chúng cho trợ lý. Trường không có tên không được lưu.
+Parking	Bãi đỗ xe
+Peak	Đỉnh núi
+Pharmacy	Nhà thuốc
+Place view	Khung nhìn của dấu vị trí
+Police	Cảnh sát
+Post office	Bưu điện
+Properties: {name}	Thuộc tính: {name}
+Pushpin	Ghim
+Quarry	Mỏ đá
+Railway	Đường sắt
+Relative to ground	Tương đối với mặt đất
+Relative to sea floor	Tương đối với đáy biển
+Remove field	Xóa trường
+Restaurant	Nhà hàng
+Return the view the place had when the window opened.	Trả lại khung nhìn mà dấu vị trí có khi mở cửa sổ.
+Rows of the Layers section that were switched on at the view snapshot. A flight to the placemark and a tour switch them on and the others off - so a tour stop shows its own layers. A new snapshot of the current view takes them again.	Các dòng của mục "Lớp" đang bật khi chụp khung nhìn. Chuyến bay tới dấu vị trí và chuyến tham quan bật chúng và tắt các dòng khác - nhờ đó điểm dừng của chuyến tham quan hiển thị các lớp riêng. Ảnh chụp mới của khung nhìn hiện tại ghi nhớ lại chúng.
+School	Trường học
+Ship	Tàu thủy
+Shop	Cửa hàng
+Short dashes of the line colour run along the path from the first point to the last one, like a flow of goods. The path lies on the ground. The setting is kept in KML.	Các vạch ngắn cùng màu đường chạy dọc đường đi từ điểm đầu đến điểm cuối, như một dòng hàng hóa. Đường đi nằm trên mặt đất. Thiết lập được lưu trong KML.
+Skiing	Trượt tuyết
+Snapshot current view	Chụp khung nhìn hiện tại
+Space	Không gian vũ trụ
+Survey point	Mốc trắc địa
+Swimming	Bơi lội
+The fly-around camera is closer to the ground or farther from it in all recorded poses. The middle is the recorded height, the ends are four times lower and four times higher. Path points are dragged with the mouse on the globe, the poses between them follow.	Máy quay bay vòng gần mặt đất hơn hoặc xa hơn ở mọi tư thế đã ghi. Ở giữa là độ cao đã ghi, hai đầu thấp hơn bốn lần và cao hơn bốn lần. Các điểm của đường đi được kéo bằng chuột trên quả địa cầu, các tư thế giữa chúng đi theo.
+The placemark's own time, as TimeStamp and TimeSpan in KML. A placemark with a time shows while its time falls into the interval of the time slider at the top of the view. A placemark without a time always shows.	Thời gian riêng của dấu vị trí, như TimeStamp và TimeSpan trong KML. Dấu vị trí có thời gian được hiển thị khi thời gian của nó nằm trong khoảng của thanh thời gian ở phía trên khung nhìn. Dấu vị trí không có thời gian luôn hiển thị.
+The rise above the surface or the sea floor, in the absolute mode the altitude above sea level.	Độ nâng trên bề mặt hoặc đáy biển, ở chế độ tuyệt đối là độ cao trên mực nước biển.
+Time and visibility	Thời gian và khả năng hiển thị
+Tour pause	Tạm dừng trong chuyến tham quan
+Tram	Xe điện
+What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	Độ cao được tính từ đâu. Bám mặt đất - dấu vị trí nằm trên mặt đất, trên biển nằm trên mặt nước. Bám đáy biển - nằm ở đáy. Tương đối với mặt đất và đáy biển - độ nâng phía trên chúng. Tuyệt đối - độ cao trên mực nước biển. Chế độ được lưu trong KML.
+Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	Máy quay nhìn từ đâu khi bay tới dấu vị trí hoặc dừng ở đó trong chuyến tham quan. Không có khung nhìn riêng thì máy quay đưa toàn bộ dấu vị trí vào khung hình.

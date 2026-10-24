@@ -758,3 +758,85 @@ Plate speed	Скорость плиты
 Direction	Направление
 sea level	уровень моря
 water level {level}	уровень воды {level}
+A wall from the raised object down to the ground, a post for a point. Works with a height above zero.	Стена от поднятого объекта до земли, у точки - стойка. Работает при высоте больше нуля.
+Absolute	Абсолютная
+Add field	Добавить поле
+Airport	Аэропорт
+Altitude mode	Отсчёт высоты
+as in the tour	как у тура
+Bus	Автобус
+Cafe	Кафе
+Camera	Фотоаппарат
+Camp	Лагерь
+Car	Автомобиль
+Church	Храм
+Clamped to ground	На поверхности
+Clamped to sea floor	Вдоль морского дна
+Colour of the placemark label on the globe, as LabelStyle in KML. A dark label gets a light outline.	Цвет подписи метки на глобусе, как LabelStyle в KML. Тёмная подпись получает светлую обводку.
+Date and time of the view. A flight to the placemark and a tour set the time slider to this time.	Дата и время вида. Перелёт к метке и тур ставят шкалу времени на это время.
+Date/time	Дата/время
+Earth	Земля
+Extend to ground	Выдавить до земли
+Field	Поле
+Fill color of the polygon, with its transparency. The wall down to the ground takes this color too.	Цвет заливки многоугольника. Прозрачность задаётся здесь же. Заливкой красится и стена до земли.
+Fire station	Пожарная часть
+Flag	Флаг
+Flight speed	Скорость перелёта
+Flow along the path	Поток по пути
+Fly-around height	Высота облёта
+Globe layers from the snapshot, rows switched on: {count}	Слои глобуса со снимка, включено строк {count}
+Height by slider. The scale is logarithmic, near the ground the step is metres, higher up hundreds of metres and kilometres.	Высота ползунком. Шкала логарифмическая, у земли шаг - метры, выше - сотни метров и километры.
+Hiking	Пеший маршрут
+Hospital	Больница
+Hotel	Гостиница
+House	Дом
+How many seconds the camera stays at this tour stop. As in the tour - the pause from the tour panel.	Сколько секунд камера стоит на этой остановке тура. «Как у тура» - пауза с панели тура.
+How many times faster than usual the tour flies to this placemark. Below one - slower, smoother for a show.	Во сколько раз перелёт тура к этой метке быстрее обычного. Меньше единицы - медленнее, плавнее для показа.
+Icon of the point on the globe and in the list. In KML it goes as the address of a standard icon of the same theme.	Значок точки на глобусе и в списке. В KML он уходит адресом стандартного значка той же темы.
+Icon size as a share of the usual one, as the IconStyle scale in KML. 0 - only the label on the globe.	Размер значка, доля обычного, как scale IconStyle в KML. 0 - на глобусе только подпись.
+Icon size	Размер значка
+Icon	Значок
+Information	Справка
+Interval	Промежуток
+Label colour	Цвет подписи
+Label size as a share of the usual one. 0 - only the icon on the globe, the name stays in the list.	Размер подписи, доля обычного. 0 - на глобусе только значок, название остаётся в списке.
+Label size	Размер подписи
+Moment	Момент
+Museum	Музей
+No icon	Без значка
+No label	Без подписи
+Object fields	Поля объекта
+Object fields, as ExtendedData in KML. The placemark card and the Objects window show them, Explain this passes them to the assistant. A field without a name is not saved.	Поля объекта, как ExtendedData в KML. Их показывают карточка метки и окно «Объекты», «Объясни это» отдаёт их помощнику. Поле без имени не сохраняется.
+Parking	Стоянка
+Peak	Вершина
+Pharmacy	Аптека
+Place view	Вид метки
+Police	Полиция
+Post office	Почта
+Properties: {name}	Свойства: {name}
+Pushpin	Кнопка
+Quarry	Карьер
+Railway	Железная дорога
+Relative to ground	Относительно поверхности
+Relative to sea floor	Относительно морского дна
+Remove field	Удалить поле
+Restaurant	Ресторан
+Return the view the place had when the window opened.	Вернуть вид, который был у метки при открытии окна.
+Rows of the Layers section that were switched on at the view snapshot. A flight to the placemark and a tour switch them on and the others off - so a tour stop shows its own layers. A new snapshot of the current view takes them again.	Строки раздела «Слои», которые были включены при снимке вида. Перелёт к метке и тур включают их и выключают остальные - так остановка тура показывает свои слои. Снимок текущего вида запоминает их заново.
+School	Школа
+Ship	Судно
+Shop	Магазин
+Short dashes of the line colour run along the path from the first point to the last one, like a flow of goods. The path lies on the ground. The setting is kept in KML.	По пути от первой точки к последней бегут короткие штрихи цвета линии, как поток грузов. Путь лежит на земле. Признак сохраняется в KML.
+Skiing	Горные лыжи
+Snapshot current view	Снимок текущего вида
+Space	Космос
+Survey point	Геодезический пункт
+Swimming	Купание
+The fly-around camera is closer to the ground or farther from it in all recorded poses. The middle is the recorded height, the ends are four times lower and four times higher. Path points are dragged with the mouse on the globe, the poses between them follow.	Камера облёта ближе к земле или дальше от неё во всех позах записи. Посередине - высота записи, края - вчетверо ниже и вчетверо выше. Точки пути тянутся мышью на глобусе, позы между ними следуют за ними.
+The placemark's own time, as TimeStamp and TimeSpan in KML. A placemark with a time shows while its time falls into the interval of the time slider at the top of the view. A placemark without a time always shows.	Собственное время метки, как TimeStamp и TimeSpan в KML. Метка со временем видна, пока её время попадает в промежуток шкалы времени вверху вида. Метка без времени видна всегда.
+The rise above the surface or the sea floor, in the absolute mode the altitude above sea level.	Подъём над поверхностью или дном, в абсолютном режиме - высота над уровнем моря.
+Time and visibility	Время и видимость
+Tour pause	Пауза в туре
+Tram	Трамвай
+What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	От чего отсчитывается высота. На поверхности - метка лежит на земле, над морем на воде. Вдоль морского дна - на дне. Относительно поверхности и дна - подъём над ними. Абсолютная - высота над уровнем моря. Режим сохраняется в KML.
+Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	Откуда смотрит камера, когда летит к метке или стоит на ней в туре. Без своего вида камера берёт метку в кадр целиком.

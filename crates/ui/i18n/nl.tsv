@@ -758,3 +758,85 @@ Plate speed	Plaatsnelheid
 Direction	Richting
 sea level	zeeniveau
 water level {level}	waterstand {level}
+A wall from the raised object down to the ground, a post for a point. Works with a height above zero.	Een wand van het verhoogde object tot de grond, bij een punt een paal. Werkt bij een hoogte boven nul.
+Absolute	Absoluut
+Add field	Veld toevoegen
+Airport	Luchthaven
+Altitude mode	Hoogtereferentie
+as in the tour	zoals in de rondleiding
+Bus	Bus
+Cafe	Café
+Camera	Fotocamera
+Camp	Kamp
+Car	Auto
+Church	Kerk
+Clamped to ground	Op de grond
+Clamped to sea floor	Op de zeebodem
+Colour of the placemark label on the globe, as LabelStyle in KML. A dark label gets a light outline.	Kleur van het label van de plaatsmarkering op de globe, zoals LabelStyle in KML. Een donker label krijgt een lichte omlijning.
+Date and time of the view. A flight to the placemark and a tour set the time slider to this time.	Datum en tijd van de weergave. De vlucht naar de plaatsmarkering en de rondleiding zetten de tijdbalk op deze tijd.
+Date/time	Datum/tijd
+Earth	Aarde
+Extend to ground	Doortrekken tot de grond
+Field	Veld
+Fill color of the polygon, with its transparency. The wall down to the ground takes this color too.	Vulkleur van de veelhoek. De transparantie wordt hier ook ingesteld. Ook de wand tot de grond krijgt deze kleur.
+Fire station	Brandweerkazerne
+Flag	Vlag
+Flight speed	Vliegsnelheid
+Flow along the path	Stroom langs het pad
+Fly-around height	Hoogte van de rondvlucht
+Globe layers from the snapshot, rows switched on: {count}	Globelagen uit de momentopname, ingeschakelde regels: {count}
+Height by slider. The scale is logarithmic, near the ground the step is metres, higher up hundreds of metres and kilometres.	Hoogte met de schuifregelaar. De schaal is logaritmisch, bij de grond is de stap meters, hoger honderden meters en kilometers.
+Hiking	Wandelen
+Hospital	Ziekenhuis
+Hotel	Hotel
+House	Huis
+How many seconds the camera stays at this tour stop. As in the tour - the pause from the tour panel.	Hoeveel seconden de camera bij deze halte van de rondleiding blijft. ‘Zoals in de rondleiding’ - de pauze uit het rondleidingspaneel.
+How many times faster than usual the tour flies to this placemark. Below one - slower, smoother for a show.	Hoeveel keer sneller dan normaal de rondleiding naar deze plaatsmarkering vliegt. Onder één - langzamer, vloeiender voor een presentatie.
+Icon of the point on the globe and in the list. In KML it goes as the address of a standard icon of the same theme.	Pictogram van het punt op de globe en in de lijst. In KML gaat het mee als adres van een standaardpictogram met hetzelfde thema.
+Icon size as a share of the usual one, as the IconStyle scale in KML. 0 - only the label on the globe.	Pictogramgrootte als deel van de gewone, zoals scale van IconStyle in KML. 0 - op de globe alleen het label.
+Icon size	Pictogramgrootte
+Icon	Pictogram
+Information	Informatie
+Interval	Periode
+Label colour	Labelkleur
+Label size as a share of the usual one. 0 - only the icon on the globe, the name stays in the list.	Labelgrootte als deel van de gewone. 0 - op de globe alleen het pictogram, de naam blijft in de lijst.
+Label size	Labelgrootte
+Moment	Moment
+Museum	Museum
+No icon	Geen pictogram
+No label	Geen label
+Object fields	Objectvelden
+Object fields, as ExtendedData in KML. The placemark card and the Objects window show them, Explain this passes them to the assistant. A field without a name is not saved.	Objectvelden, zoals ExtendedData in KML. De kaart van de plaatsmarkering en het venster ‘Objecten’ tonen ze, ‘Leg dit uit’ geeft ze door aan de assistent. Een veld zonder naam wordt niet opgeslagen.
+Parking	Parkeerplaats
+Peak	Top
+Pharmacy	Apotheek
+Place view	Weergave van de plaatsmarkering
+Police	Politie
+Post office	Postkantoor
+Properties: {name}	Eigenschappen: {name}
+Pushpin	Punaise
+Quarry	Groeve
+Railway	Spoorweg
+Relative to ground	Ten opzichte van de grond
+Relative to sea floor	Ten opzichte van de zeebodem
+Remove field	Veld verwijderen
+Restaurant	Restaurant
+Return the view the place had when the window opened.	De weergave herstellen die de plaatsmarkering had bij het openen van het venster.
+Rows of the Layers section that were switched on at the view snapshot. A flight to the placemark and a tour switch them on and the others off - so a tour stop shows its own layers. A new snapshot of the current view takes them again.	Regels van de sectie ‘Lagen’ die aan stonden bij de momentopname van de weergave. De vlucht naar de plaatsmarkering en de rondleiding zetten ze aan en de overige uit - zo toont een halte van de rondleiding haar eigen lagen. Een nieuwe momentopname van de huidige weergave neemt ze opnieuw over.
+School	School
+Ship	Schip
+Shop	Winkel
+Short dashes of the line colour run along the path from the first point to the last one, like a flow of goods. The path lies on the ground. The setting is kept in KML.	Korte streepjes in de lijnkleur lopen langs het pad van het eerste punt naar het laatste, zoals een goederenstroom. Het pad ligt op de grond. De instelling wordt in KML bewaard.
+Skiing	Skiën
+Snapshot current view	Momentopname van de huidige weergave
+Space	Ruimte
+Survey point	Meetpunt
+Swimming	Zwemmen
+The fly-around camera is closer to the ground or farther from it in all recorded poses. The middle is the recorded height, the ends are four times lower and four times higher. Path points are dragged with the mouse on the globe, the poses between them follow.	De camera van de rondvlucht is in alle opgenomen standen dichter bij de grond of verder ervan. Het midden is de opgenomen hoogte, de uiteinden zijn vier keer lager en vier keer hoger. Padpunten worden met de muis op de globe versleept, de standen ertussen volgen ze.
+The placemark's own time, as TimeStamp and TimeSpan in KML. A placemark with a time shows while its time falls into the interval of the time slider at the top of the view. A placemark without a time always shows.	De eigen tijd van de plaatsmarkering, zoals TimeStamp en TimeSpan in KML. Een plaatsmarkering met een tijd is zichtbaar zolang haar tijd binnen de periode van de tijdbalk boven in de weergave valt. Een plaatsmarkering zonder tijd is altijd zichtbaar.
+The rise above the surface or the sea floor, in the absolute mode the altitude above sea level.	De verhoging boven het oppervlak of de zeebodem, in de absolute modus de hoogte boven zeeniveau.
+Time and visibility	Tijd en zichtbaarheid
+Tour pause	Pauze in de rondleiding
+Tram	Tram
+What the altitude is measured from. Clamped to ground - the placemark lies on the ground, over the sea on the water. Clamped to sea floor - on the floor. Relative to ground and to sea floor - the rise above them. Absolute - the altitude above sea level. The mode is saved in KML.	Waarvandaan de hoogte wordt gemeten. Op de grond - de plaatsmarkering ligt op de grond, boven zee op het water. Op de zeebodem - op de bodem. Ten opzichte van de grond en de zeebodem - de verhoging erboven. Absoluut - de hoogte boven zeeniveau. De modus wordt in KML opgeslagen.
+Where the camera looks from when it flies to the place or stands at it in a tour. Without a view of its own the camera frames the whole place.	Van waar de camera kijkt als hij naar de plaatsmarkering vliegt of er in een rondleiding bij staat. Zonder eigen weergave neemt de camera de hele plaatsmarkering in beeld.
