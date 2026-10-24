@@ -39,7 +39,7 @@ mod models;
 pub use models::{ModelMesh, ModelPart, ModelPlace};
 use models::Models;
 mod points;
-pub use points::PointsMesh;
+pub use points::{Dot, PointsMesh};
 use points::Points;
 pub use pictures::{PictureMesh, mip_levels};
 use pictures::Pictures;

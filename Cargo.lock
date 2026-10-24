@@ -3399,6 +3399,7 @@ dependencies = [
  "skrifa",
  "sys-locale",
  "terrain",
+ "tiny-skia",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",

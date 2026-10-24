@@ -580,3 +580,52 @@ Class	Lớp
 Click - the class at the point	Nhấp chuột - lớp tại điểm
 {name} · {day}	{name} · {day}
 {name}, {units} · {day}	{name}, {units} · {day}
+Earthquakes	Động đất
+Earthquakes of magnitude 4.5 and above over the last 30 days from the USGS feed. A circle marks the epicentre on the surface. The focus is seen at its depth in the removed sector of the Earth cutaway row. The colour shows the focus depth, the size shows the magnitude. The feed is loaded when the row is switched on.	Động đất có độ lớn từ 4.5 trở lên trong 30 ngày qua theo dữ liệu USGS. Vòng tròn đánh dấu tâm chấn trên bề mặt. Chấn tiêu hiện ở độ sâu của nó trong phần cắt bỏ của dòng "Mặt cắt Trái Đất". Màu thể hiện độ sâu chấn tiêu, kích thước thể hiện độ lớn. Dữ liệu được tải khi bật dòng.
+Volcanoes	Núi lửa
+About 1200 volcanoes that erupted in the last 12 thousand years after the Global Volcanism Program list of the Smithsonian Institution. The colour is the time of the last eruption, the size is the volcano height. A click on a dot shows the volcano type, the year of the last eruption, the tectonic setting and the volcano page on the GVP site. The first switch-on downloads about 2 MB.	Khoảng 1200 núi lửa đã phun trào trong 12 nghìn năm qua theo danh sách Global Volcanism Program của Smithsonian Institution. Màu là thời gian lần phun trào gần nhất, kích thước là độ cao núi lửa. Nhấp vào một điểm để xem loại núi lửa, năm phun trào gần nhất, bối cảnh kiến tạo và trang của núi lửa trên trang web GVP. Lần bật đầu tiên tải về khoảng 2 MB.
+Fires	Đám cháy
+Fire spots of the last 24 hours from VIIRS images of the NOAA-20 satellite, the NASA FIRMS feed. The color and size of a dot show the radiative power.	Điểm cháy trong 24 giờ qua theo ảnh VIIRS của vệ tinh NOAA-20, dữ liệu NASA FIRMS. Màu và kích thước của điểm thể hiện công suất bức xạ.
+NASA FIRMS, 24 hours	NASA FIRMS, 24 giờ
+Magnitude	Độ lớn
+Focus depth	Độ sâu chấn tiêu
+{value} km	{value} km
+Time, UTC	Thời gian, UTC
+USGS page	Trang USGS
+Last eruption	Lần phun trào gần nhất
+date unknown	không rõ ngày
+{year} BCE	{year} TCN
+{value} m	{value} m
+Country	Quốc gia
+Setting	Bối cảnh kiến tạo
+Confidence	Độ tin cậy
+Source	Nguồn
+Radiative power	Công suất bức xạ
+{value} MW	{value} MW
+Image time, UTC	Thời gian chụp ảnh, UTC
+Image	Ảnh
+night	ban đêm
+day	ban ngày
+Focus depth, km	Độ sâu chấn tiêu, km
+Fire power, MW	Công suất đám cháy, MW
+Holocene volcanoes, GVP	Núi lửa Holocen, GVP
+Dot size - volcano height	Kích thước điểm - độ cao núi lửa
+Erupted since 1900	Phun trào từ năm 1900
+Erupted in 1500-1899	Phun trào trong 1500-1899
+Erupted before 1500	Phun trào trước năm 1500
+Eruption date unknown	Không rõ ngày phun trào
+{layer}: not received: {error}	{layer}: không nhận được: {error}
+Contours	Đường đồng mức
+Lines of equal terrain height, as on a topographic map. The interval follows the view scale - hundreds of metres from afar, 5-10 m close up, every fifth contour is thicker and labelled with its height. Below sea level they are blue isobaths. They are built from the globe heights and from an own terrain raster of the project.	Các đường cùng độ cao địa hình, như trên bản đồ địa hình. Khoảng cao đều theo tỷ lệ khung nhìn - hàng trăm mét khi nhìn xa, 5-10 m khi nhìn gần. Cứ đường thứ năm dày hơn và ghi độ cao. Dưới mực nước biển là các đường đẳng sâu màu xanh lam. Các đường được dựng từ độ cao của quả địa cầu và từ raster địa hình riêng của dự án.
+every {step} m, thicker every {index} m	mỗi {step} m, dày hơn mỗi {index} m
+Water body bathymetry	Độ sâu đáy thủy vực
+Water body bathymetry…	Độ sâu đáy thủy vực…
+The raster "{name}" goes into the globe terrain as the bed of the water body, water is drawn above it at the water body level. The default level is the terrain height at the edge of the raster, for a lake it is usually the water surface.	Raster "{name}" đi vào địa hình quả địa cầu làm đáy thủy vực, nước được vẽ phía trên ở mực nước của thủy vực. Mực mặc định là độ cao địa hình ở mép raster, với hồ thường là mặt nước.
+Values are depths	Giá trị là độ sâu
+The depth below the water surface, with a plus or minus sign. The bed elevation is the water level minus the depth.	Độ sâu dưới mặt nước, có dấu cộng hoặc trừ. Độ cao đáy bằng mực nước trừ độ sâu.
+Values are bed elevations	Giá trị là độ cao đáy
+The bed height above sea level, like the terrain. The water level is needed only for the water surface.	Độ cao của đáy so với mực nước biển, như với địa hình. Mực nước chỉ cần cho mặt nước.
+Water level	Mực nước
+The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	Độ cao của mặt nước so với mực nước biển. Nước được vẽ ở độ cao này trên mọi điểm có đáy thấp hơn.
+Remove bathymetry	Gỡ độ sâu đáy
+The raster is no longer the globe terrain, no water is drawn over it.	Raster không còn là địa hình của quả địa cầu, không vẽ nước phía trên.

@@ -114,6 +114,16 @@ pub fn store(dir: &std::path::Path, path: &str, bytes: &[u8]) -> std::io::Result
     std::fs::rename(&part, &target)
 }
 
+/// Уровень воды Бриенцского озера в демо, м: средний уровень 563.7 м
+/// по swisstopo, округлён, `BRIENZ_LEVEL` модуля.
+pub const BRIENZ_LEVEL: f64 = 564.0;
+
+/// Батиметрия растра демо по имени файла: у дна Бриенцского озера -
+/// отметки дна и уровень озера, как `open_demo` модуля.
+pub fn lake(name: &str) -> Option<(data::bathymetry::Kind, f64)> {
+    (name == "brienzersee_bed.tif").then_some((data::bathymetry::Kind::Bed, BRIENZ_LEVEL))
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]

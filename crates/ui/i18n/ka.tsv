@@ -580,3 +580,52 @@ Class	კლასი
 Click - the class at the point	დაწკაპუნება - კლასი წერტილში
 {name} · {day}	{name} · {day}
 {name}, {units} · {day}	{name}, {units} · {day}
+Earthquakes	მიწისძვრები
+Earthquakes of magnitude 4.5 and above over the last 30 days from the USGS feed. A circle marks the epicentre on the surface. The focus is seen at its depth in the removed sector of the Earth cutaway row. The colour shows the focus depth, the size shows the magnitude. The feed is loaded when the row is switched on.	USGS-ის მონაცემებით ბოლო 30 დღის მიწისძვრები 4.5 და მეტი მაგნიტუდით. წრე აღნიშნავს ეპიცენტრს ზედაპირზე. თავის სიღრმეზე კერა ჩანს სტრიქონის „დედამიწის ჭრილი“ ამოღებულ სექტორში. ფერი აჩვენებს კერის სიღრმეს, ზომა - მაგნიტუდას. მონაცემები იტვირთება სტრიქონის ჩართვისას.
+Volcanoes	ვულკანები
+About 1200 volcanoes that erupted in the last 12 thousand years after the Global Volcanism Program list of the Smithsonian Institution. The colour is the time of the last eruption, the size is the volcano height. A click on a dot shows the volcano type, the year of the last eruption, the tectonic setting and the volcano page on the GVP site. The first switch-on downloads about 2 MB.	დაახლოებით 1200 ვულკანი, რომლებიც ამოიფრქვნენ ბოლო 12 ათასი წლის განმავლობაში, Smithsonian Institution-ის Global Volcanism Program-ის სიის მიხედვით. ფერი - ბოლო ამოფრქვევის დრო, ზომა - ვულკანის სიმაღლე. წერტილზე დაწკაპუნება აჩვენებს ვულკანის ტიპს, ბოლო ამოფრქვევის წელს, ტექტონიკურ გარემოს და ვულკანის გვერდს GVP-ის საიტზე. პირველი ჩართვა ჩამოტვირთავს დაახლოებით 2 მბ-ს.
+Fires	ხანძრები
+Fire spots of the last 24 hours from VIIRS images of the NOAA-20 satellite, the NASA FIRMS feed. The color and size of a dot show the radiative power.	ბოლო 24 საათის ხანძრის კერები NOAA-20 თანამგზავრის VIIRS სურათების მიხედვით, NASA FIRMS-ის მონაცემები. წერტილის ფერი და ზომა აჩვენებს გამოსხივების სიმძლავრეს.
+NASA FIRMS, 24 hours	NASA FIRMS, 24 საათი
+Magnitude	მაგნიტუდა
+Focus depth	კერის სიღრმე
+{value} km	{value} კმ
+Time, UTC	დრო, UTC
+USGS page	USGS-ის გვერდი
+Last eruption	ბოლო ამოფრქვევა
+date unknown	თარიღი უცნობია
+{year} BCE	ძვ. წ. {year}
+{value} m	{value} მ
+Country	ქვეყანა
+Setting	ტექტონიკური გარემო
+Confidence	სანდოობა
+Source	წყარო
+Radiative power	გამოსხივების სიმძლავრე
+{value} MW	{value} მგვტ
+Image time, UTC	სურათის დრო, UTC
+Image	სურათი
+night	ღამის
+day	დღის
+Focus depth, km	კერის სიღრმე, კმ
+Fire power, MW	ხანძრის სიმძლავრე, მგვტ
+Holocene volcanoes, GVP	ჰოლოცენის ვულკანები, GVP
+Dot size - volcano height	წერტილის ზომა - ვულკანის სიმაღლე
+Erupted since 1900	ამოიფრქვა 1900 წლიდან
+Erupted in 1500-1899	ამოიფრქვა 1500-1899 წლებში
+Erupted before 1500	ამოიფრქვა 1500 წლამდე
+Eruption date unknown	ამოფრქვევის თარიღი უცნობია
+{layer}: not received: {error}	{layer}: არ მიღებულა: {error}
+Contours	ჰორიზონტალები
+Lines of equal terrain height, as on a topographic map. The interval follows the view scale - hundreds of metres from afar, 5-10 m close up, every fifth contour is thicker and labelled with its height. Below sea level they are blue isobaths. They are built from the globe heights and from an own terrain raster of the project.	რელიეფის თანაბარი სიმაღლის ხაზები, როგორც ტოპოგრაფიულ რუკაზე. კვეთა ირჩევა ხედის მასშტაბით - შორიდან ასობით მეტრი, ახლოდან 5-10 მ. ყოველი მეხუთე ჰორიზონტალი გამსხვილებულია და წარწერილია ნიშნულით. ზღვის დონის ქვემოთ ეს ლურჯი იზობათებია. იგება გლობუსის სიმაღლეებით და პროექტის საკუთარი რელიეფის რასტრით.
+every {step} m, thicker every {index} m	ყოველ {step} მ, გამსხვილებული ყოველ {index} მ
+Water body bathymetry	წყალსატევის ბათიმეტრია
+Water body bathymetry…	წყალსატევის ბათიმეტრია…
+The raster "{name}" goes into the globe terrain as the bed of the water body, water is drawn above it at the water body level. The default level is the terrain height at the edge of the raster, for a lake it is usually the water surface.	რასტრი „{name}“ გლობუსის რელიეფში წყალსატევის ფსკერად ჯდება, მის ზემოთ წყალი იხატება წყალსატევის დონეზე. ნაგულისხმევი დონე არის რელიეფის სიმაღლე რასტრის კიდესთან, ტბისთვის ეს ჩვეულებრივ წყლის ზედაპირია.
+Values are depths	მნიშვნელობები - სიღრმეები
+The depth below the water surface, with a plus or minus sign. The bed elevation is the water level minus the depth.	სიღრმე წყლის ზედაპირის ქვემოთ, პლუს ან მინუს ნიშნით. ფსკერის ნიშნული არის წყლის დონეს გამოკლებული სიღრმე.
+Values are bed elevations	მნიშვნელობები - ფსკერის ნიშნულები
+The bed height above sea level, like the terrain. The water level is needed only for the water surface.	ფსკერის სიმაღლე ზღვის დონიდან, როგორც რელიეფისა. წყლის დონე საჭიროა მხოლოდ წყლის ზედაპირისთვის.
+Water level	წყლის დონე
+The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	წყლის ზედაპირის სიმაღლე ზღვის დონიდან. წყალი ამ სიმაღლეზე იხატება ყველა წერტილზე, სადაც ფსკერი უფრო დაბლაა.
+Remove bathymetry	ბათიმეტრიის მოშორება
+The raster is no longer the globe terrain, no water is drawn over it.	რასტრი აღარ არის გლობუსის რელიეფი, მის ზემოთ წყალი არ იხატება.

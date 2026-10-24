@@ -10,9 +10,14 @@
 //! рамки растра Terrarium не отдаёт: они собираются здесь из предка
 //! уровня 15 и растра, не больше [`PER_FRAME`] за кадр. Растр,
 //! добавленный после загрузки высот, переписывает уже загруженные тайлы.
+//!
+//! Растр бывает батиметрией водоёма, как пункт «Батиметрия водоёма…»
+//! модуля: глубины пересчитываются в отметки дна (`data::bathymetry`),
+//! над дном рисуется вода на уровне водоёма (water).
 
 use std::collections::{HashMap, HashSet};
 
+use data::bathymetry;
 use data::dem::Dem;
 use globe_core::lod::TileKey;
 use terrain::inset::{self, Bounds};
@@ -26,6 +31,10 @@ struct Entry {
     dem: Dem,
     bounds: Bounds,
     level: u32,
+    /// Байты файла растра: батиметрия читает его заново.
+    bytes: std::sync::Arc<Vec<u8>>,
+    /// Батиметрия: что в растре и уровень воды.
+    lake: Option<(bathymetry::Kind, f64)>,
 }
 
 /// Врезанные растры и очередь глубоких тайлов.
@@ -58,8 +67,8 @@ impl Relief {
     }
 
     /// Врезать растр. Загруженные тайлы под ним переписываются.
-    pub fn add(&mut self, name: &str, dem: Dem, store: &mut HeightStore) {
-        let entry = Entry { name: name.to_string(), bounds: dem.bounds, level: inset::level_for(dem.pixel), dem };
+    pub fn add(&mut self, name: &str, dem: Dem, bytes: Vec<u8>, store: &mut HeightStore) {
+        let entry = Entry { name: name.to_string(), bounds: dem.bounds, level: inset::level_for(dem.pixel), dem, bytes: std::sync::Arc::new(bytes), lake: None };
         for key in store.keys() {
             if key.0 > MAX_LEVEL || !inset::overlaps(inset::tile_bounds(key.0, key.1, key.2), entry.bounds) {
                 continue;
@@ -73,6 +82,90 @@ impl Relief {
         self.entries.push(entry);
         store.deep = self.insets();
         self.pending.clear();
+    }
+
+    /// Батиметрия растра name: что в растре и уровень воды.
+    pub fn lake(&self, name: &str) -> Option<(bathymetry::Kind, f64)> {
+        self.entries.iter().find(|e| e.name == name).and_then(|e| e.lake)
+    }
+
+    /// Рамка растра name в метрах EPSG:3857.
+    pub fn bounds(&self, name: &str) -> Option<Bounds> {
+        self.entries.iter().find(|e| e.name == name).map(|e| e.bounds)
+    }
+
+    /// Сделать растр name батиметрией водоёма или убрать её: глубины -
+    /// в отметки дна. Высоты загружаются заново: тайлы под прежним
+    /// растром уже несут его значения.
+    pub fn set_lake(&mut self, name: &str, lake: Option<(bathymetry::Kind, f64)>, store: &mut HeightStore) -> Result<(), String> {
+        let Some(entry) = self.entries.iter_mut().find(|e| e.name == name) else {
+            return Err(format!("{name}?"));
+        };
+        let mut grid = data::grid::Grid::read(entry.bytes.to_vec(), name)?;
+        if let Some((kind, level)) = lake {
+            for v in &mut grid.values {
+                *v = bathymetry::to_bed(f64::from(*v), kind, level) as f32;
+            }
+        }
+        entry.dem = Dem::new(grid, inset::BAND_SHARE)?;
+        entry.lake = lake;
+        store.clear();
+        store.deep = self.insets();
+        self.pending.clear();
+        Ok(())
+    }
+
+    /// Убрать растр name из своего рельефа.
+    pub fn remove(&mut self, name: &str, store: &mut HeightStore) {
+        self.entries.retain(|e| e.name != name);
+        self.pending.clear();
+        store.clear();
+        store.deep = self.insets();
+    }
+
+    /// Вода растров с батиметрией на уровне водоёма, как `water_mesh`
+    /// (`ui/inset.py`) модуля: дно читается сеткой не больше
+    /// `WATER_SIDE` узлов по стороне, высота на экране - уровень,
+    /// умноженный на масштаб рельефа scale.
+    pub fn water(&self, ellipsoid: &globe_core::ellipsoid::Ellipsoid, scale: f64) -> Vec<render::FeatureMesh> {
+        let mut out = Vec::new();
+        for e in &self.entries {
+            let Some((_, level)) = e.lake else {
+                continue;
+            };
+            let grid = e.dem.grid();
+            let (w, h) = (grid.width as f64, grid.height as f64);
+            let step = (w.max(h) / bathymetry::WATER_SIDE as f64).max(1.0);
+            let cols = ((w / step).round() as usize).max(2);
+            let rows = ((h / step).round() as usize).max(2);
+            let mut bed = Vec::with_capacity(rows * cols);
+            let mut points = Vec::with_capacity(rows * cols);
+            for r in 0..rows {
+                for c in 0..cols {
+                    let (col, row) = ((c as f64 + 0.5) * w / cols as f64, (r as f64 + 0.5) * h / rows as f64);
+                    let (x, y) = grid.at(col, row);
+                    let place = grid.lat_lon(x, y);
+                    bed.push(if place.is_some() { f64::from(grid.bilinear(col, row)) } else { f64::NAN });
+                    points.push(place.unwrap_or((0.0, 0.0)));
+                }
+            }
+            let Some(tris) = bathymetry::water_part(&bed, rows, cols, level) else {
+                continue;
+            };
+            let ecef: Vec<globe_core::DVec3> = points.iter().map(|(lat, lon)| ellipsoid.geodetic_to_ecef(*lat, *lon, level * scale)).collect();
+            let center = ecef.iter().fold(globe_core::DVec3::ZERO, |a, p| a + *p) / ecef.len().max(1) as f64;
+            out.push(render::FeatureMesh {
+                center,
+                offsets: ecef.iter().map(|p| (*p - center).as_vec3().to_array()).collect(),
+                lines: Vec::new(),
+                fill: tris.into_iter().flatten().collect(),
+                walls: Vec::new(),
+                line_color: [0, 0, 0, 0],
+                fill_color: Some(bathymetry::WATER_COLOR),
+                width: 0.0,
+            });
+        }
+        out
     }
 
     /// Убрать все растры. Высоты под ними вернутся с новыми тайлами.
@@ -204,7 +297,7 @@ mod tests {
         let k15 = key_at(MAX_LEVEL, cx, cy);
         store.add(HeightTile::new(k15.0, k15.1, k15.2, vec![1000.0; SIZE * SIZE]).unwrap());
         let mut relief = Relief::default();
-        relief.add("quarry_dem.tif", dem, &mut store);
+        relief.add("quarry_dem.tif", dem, Vec::new(), &mut store);
         // Уже загруженный тайл переписан: в середине высоты карьера,
         // 81-274 м, а не 1000.
         let t = store.tile(k15).unwrap();
@@ -221,5 +314,31 @@ mod tests {
         assert_eq!(ancestor(deep.key(), MAX_LEVEL), k15);
         assert!(deep.heights.iter().all(|h| (80.0..=275.0).contains(h)));
         assert!(!relief.busy());
+    }
+
+    #[test]
+    fn lake_bed_gets_water_at_level() {
+        // Отметки дна Бриенцского озера из демо модуля, уровень 564 м.
+        let Ok(bytes) = std::fs::read(r"C:\Dev\planetx\planetx\demo\brienz\brienzersee_bed.tif") else {
+            eprintln!("демо модуля нет, проверка пропущена");
+            return;
+        };
+        let name = "brienzersee_bed.tif";
+        let dem = Dem::new(Grid::read(bytes.clone(), name).unwrap(), inset::BAND_SHARE).unwrap();
+        let mut store = HeightStore::new();
+        let mut relief = Relief::default();
+        relief.add(name, dem, bytes, &mut store);
+        let earth = globe_core::ellipsoid::Ellipsoid::new(globe_core::ellipsoid::EARTH);
+        assert!(relief.water(&earth, 1.0).is_empty(), "без батиметрии воды нет");
+        relief.set_lake(name, Some((data::bathymetry::Kind::Bed, 564.0)), &mut store).unwrap();
+        let water = relief.water(&earth, 1.0);
+        assert_eq!(water.len(), 1);
+        assert!(water[0].fill.len() > 3000, "{}", water[0].fill.len());
+        // Вода на уровне 564 м над эллипсоидом.
+        let p = water[0].center + globe_core::DVec3::from_array(water[0].offsets[water[0].fill[0] as usize].map(f64::from));
+        let (_, _, h) = earth.ecef_to_geodetic(p);
+        assert!((h - 564.0).abs() < 1.0, "{h}");
+        relief.remove(name, &mut store);
+        assert!(relief.is_empty());
     }
 }

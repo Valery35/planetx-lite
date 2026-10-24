@@ -323,6 +323,17 @@ pub struct LiteApp {
     objects: Option<crate::identify::Objects>,
     /// Запрос значения карты под щелчком и его итог.
     map_ask: Option<(crate::mapvalue::Ask, crate::mapvalue::Answer)>,
+    /// Слои точек: землетрясения, вулканы, пожары.
+    dots: crate::dots::Dots,
+    /// Промежуток шкалы времени, по которому собраны точки.
+    dots_window: Option<(f64, f64)>,
+    /// Окно «Батиметрия водоёма».
+    bathy: Option<crate::bathymetry::Dialog>,
+    /// Вода растров с батиметрией и масштаб рельефа, по которому она
+    /// построена. None - строить заново.
+    water: Option<(Vec<render::FeatureMesh>, f64)>,
+    /// Сетки «Моих меток» прошлой сборки: к ним добавляется вода.
+    marks_meshes: Vec<render::FeatureMesh>,
     /// Копия строк KML для пункта «Вставить».
     clip_kml: Option<String>,
     /// Вопрос перед удалением: заголовок, текст, что удалить.
@@ -535,6 +546,7 @@ impl LiteApp {
             .into_iter()
             .filter_map(|(e, on)| on.then_some(e))
             .chain(settings.maps.iter().filter_map(|k| crate::maps::index(k)).map(crate::layers::Extra::Map))
+            .chain(settings.dots.iter().filter_map(|k| crate::dots::Layer::from_key(k)).map(crate::layers::Extra::Dots))
             .collect();
         // Тёмная тема в цветах модуля по умолчанию, решения автора
         // от 23 октября 2026 года.
@@ -636,6 +648,11 @@ impl LiteApp {
             was_moving: false,
             objects: None,
             map_ask: None,
+            dots: crate::dots::Dots::default(),
+            dots_window: None,
+            bathy: None,
+            water: None,
+            marks_meshes: Vec::new(),
             confirm: None,
             folder_props: None,
             recording: None,
@@ -658,7 +675,15 @@ impl LiteApp {
             app.places_dirty = false;
         }
         app.install_fonts(&cc.egui_ctx);
+        if let Some(g) = crate::glyphs::digits() {
+            app.vector.set_glyphs(Arc::new(g));
+        }
         app.sync_maps();
+        for layer in crate::dots::Layer::ALL {
+            if app.extras_on.contains(&crate::layers::Extra::Dots(layer)) {
+                app.dots.enable(layer, (app.loaders.request)());
+            }
+        }
         // Основа прошлого запуска. Самопроверка ставит свою.
         if app.check.is_none()
             && let Some(b) = Basemap::from_key(&app.settings.basemap)
@@ -1081,6 +1106,9 @@ impl LiteApp {
         };
         let places: Vec<&scene::kml::Place> = paths.iter().filter_map(|p| self.marks.place(p)).collect();
         groups.extend(crate::identify::places_group(self.lang, &places));
+        if let Some((px, py, ppp)) = pixel {
+            groups.extend(self.dots.identify(self.lang, &self.nav, px, py, crate::card::PICK_PIXELS * ppp * 2.0, self.timebar.window()));
+        }
         groups.push(crate::identify::place_group(self.lang, height.filter(|_| self.settings.relief), address));
         if let Some((ask, answer)) = &self.map_ask
             && ask.at == (lat, lon)
@@ -1095,6 +1123,24 @@ impl LiteApp {
     fn ask_map_value(&mut self, lat: f64, lon: f64) {
         let key = self.vector.map_keys().into_iter().find(|k| crate::maps::kind(k).and_then(|m| m.slot()) == Some(1));
         self.map_ask = key.and_then(|k| crate::mapvalue::Ask::start(k, lat, lon, (self.loaders.request)())).map(|a| (a, crate::mapvalue::Answer::Loading));
+    }
+
+    /// Уровень воды по умолчанию: высота рельефа у края растра name -
+    /// середина рамки каждой стороны и углы чуть снаружи, медиана.
+    fn shore_level(&self, name: &str) -> f64 {
+        let Some((w, s, e, n)) = self.relief.bounds(name) else {
+            return 0.0;
+        };
+        let (dx, dy) = ((e - w) * 0.02, (n - s) * 0.02);
+        let xs = [w - dx, (w + e) / 2.0, e + dx];
+        let ys = [s - dy, (s + n) / 2.0, n + dy];
+        let points: Vec<(f64, f64)> = xs.iter().flat_map(|x| ys.iter().map(move |y| (*x, *y))).filter(|(x, y)| (*x, *y) != ((w + e) / 2.0, (s + n) / 2.0)).map(|(x, y)| data::bathymetry::mercator_latlon(x, y)).collect();
+        let mut heights: Vec<f64> = self.heights.read().heights_at(&points, false).into_iter().filter(|h| h.is_finite()).collect();
+        if heights.is_empty() {
+            return 0.0;
+        }
+        heights.sort_by(f64::total_cmp);
+        (heights[heights.len() / 2] * 10.0).round() / 10.0
     }
 
     /// Удалить всё из «Моих меток» после вопроса.
@@ -1148,6 +1194,27 @@ impl LiteApp {
                     None => objects.groups.push(group),
                 }
             }
+        }
+        // Окно «Батиметрия водоёма».
+        if let Some(dialog) = &mut self.bathy
+            && let Some(answer) = dialog.show(ctx, lang)
+        {
+            let name = dialog.name.clone();
+            self.bathy = None;
+            let mut store = self.heights.write();
+            let result = match answer {
+                crate::bathymetry::Answer::Set(kind, level) => self.relief.set_lake(&name, Some((kind, level)), &mut store),
+                crate::bathymetry::Answer::Remove => {
+                    self.relief.remove(&name, &mut store);
+                    Ok(())
+                }
+                crate::bathymetry::Answer::Cancel => Ok(()),
+            };
+            drop(store);
+            if let Err(e) = result {
+                self.open_message = Some(trf(lang, "The raster did not open: {name}: {e}", &[("name", &name), ("e", &e)]));
+            }
+            self.water = None;
         }
         if let Some(objects) = &mut self.objects
             && !objects.window(ctx, lang)
@@ -1425,6 +1492,10 @@ impl LiteApp {
                 }
                 Action::Sources => self.credits.sources_open = true,
                 Action::Catalog => self.catalog.open = !self.catalog.open,
+                Action::Bathymetry(name) => {
+                    let level = self.shore_level(&name);
+                    self.bathy = Some(crate::bathymetry::Dialog::new(&name, self.relief.lake(&name), level));
+                }
             }
         }
     }
@@ -1437,12 +1508,23 @@ impl LiteApp {
             Extra::Sun => self.settings.sun = on,
             Extra::Grid => self.settings.grid = on,
             Extra::Map(_) => {}
+            Extra::Dots(layer) => {
+                if on {
+                    self.dots.enable(layer, (self.loaders.request)());
+                } else {
+                    self.dots.disable(layer);
+                }
+                self.settings.dots = crate::dots::Layer::ALL.into_iter().filter(|l| if *l == layer { on } else { self.extras_on.contains(&Extra::Dots(*l)) }).map(|l| l.key().to_string()).collect();
+            }
         }
         if on {
             // Карта значений или готовая карта на глобусе одна, как
             // у модуля: включение другой снимает прежнюю.
-            if let Some(slot) = extra.map().and_then(|e| crate::maps::kind(e.key)).and_then(|k| k.slot()) {
-                self.extras_on.retain(|e| e.map().and_then(|m| crate::maps::kind(m.key)).and_then(|k| k.slot()) != Some(slot));
+            if let Some(slot) = extra_slot(extra) {
+                let others: Vec<Extra> = self.extras_on.iter().copied().filter(|e| *e != extra && extra_slot(*e) == Some(slot)).collect();
+                for other in others {
+                    self.set_extra(other, false);
+                }
             }
             self.extras_on.insert(extra);
             self.extras.insert(extra);
@@ -1478,6 +1560,15 @@ impl LiteApp {
             }
         }
         on.retain(|(id, kind)| !matches!(kind, crate::maps::Kind::Theme(_)) || matches!(self.theme_days.get(id), Some(ThemeDay::Day(_))));
+        // Цвета горизонталей - по подложке: на снимке жёлтые, на карте
+        // коричневые, как у модуля.
+        let source = self.basemap.source();
+        let palette = if data::contours::is_imagery(self.basemap.key(), source.url, false) { data::contours::Palette::Imagery } else { data::contours::Palette::Map };
+        for (_, kind) in &mut on {
+            if let crate::maps::Kind::Contours(p) = kind {
+                *p = palette;
+            }
+        }
         on.sort_by_key(|(_, k)| !k.is_single());
         self.map_loaders.retain(|k, _| on.iter().any(|(id, _)| id == k));
         for (id, kind) in &on {
@@ -1528,7 +1619,14 @@ impl LiteApp {
 
     /// Состояние для раздела «Слои» и каталога.
     fn layers_state(&self) -> crate::layers::State<'_> {
-        crate::layers::State { basemap: self.basemap, relief: self.settings.relief, extras: &self.extras, on: &self.extras_on, vector: &self.vector }
+        crate::layers::State {
+            basemap: self.basemap,
+            relief: self.settings.relief,
+            extras: &self.extras,
+            on: &self.extras_on,
+            vector: &self.vector,
+            own: self.relief.names().into_iter().map(str::to_string).collect(),
+        }
     }
 
     /// Язык, которому нужны иероглифы: интерфейса, иначе подписей.
@@ -1900,9 +1998,10 @@ impl LiteApp {
         let e = Ellipsoid::wgs84();
         let xyz: Vec<DVec3> = cloud.points.iter().map(|p| e.geodetic_to_ecef(p[0], p[1], p[2])).collect();
         let (center, offsets) = scene::features::centered(&xyz);
-        self.clouds.push(render::PointsMesh { center, offsets, colors: cloud.colors.clone(), size: CLOUD_POINT_SIZE });
+        self.clouds.push(render::PointsMesh { center, offsets, colors: cloud.colors.clone(), size: CLOUD_POINT_SIZE, ..Default::default() });
         if let Some(globe) = &mut self.globe {
             globe.set_points(&self.clouds);
+            self.dots.dirty = true;
         }
         // Охват облака - углы его рамки.
         let (mut lat0, mut lon0, mut lat1, mut lon1) = (f64::MAX, f64::MAX, f64::MIN, f64::MIN);
@@ -1943,7 +2042,12 @@ impl LiteApp {
         let corners = dem.grid().corners();
         {
             let mut store = self.heights.write();
-            self.relief.add(name, dem, &mut store);
+            self.relief.add(name, dem, bytes.to_vec(), &mut store);
+            // Дно озера демо - сразу батиметрия, как у модуля.
+            if let Some(lake) = crate::demos::lake(name) {
+                let _ = self.relief.set_lake(name, Some(lake), &mut store);
+                self.water = None;
+            }
         }
         let camera = &self.nav.camera;
         let pose = corners.and_then(|c| marks::fit_points(&c, camera.fov_y, camera.aspect()));
@@ -2712,6 +2816,7 @@ impl LiteApp {
         }
         self.settings.basemap = basemap.key().to_string();
         self.settings_dirty = true;
+        self.sync_maps();
         if let Some(globe) = &mut self.globe {
             globe.clear_textures();
         }
@@ -2811,6 +2916,22 @@ impl LiteApp {
                 *state = ThemeScale::Ready(answer.ok().and_then(|b| data::gibs::parse_colormap(&String::from_utf8_lossy(&b))));
             }
         }
+        // Сводки слоёв точек и точки в видеокарту.
+        if let Some(message) = self.dots.poll(self.lang) {
+            self.open_message = Some(message);
+        }
+        let window = self.timebar.window();
+        if (self.dots.dirty || window != self.dots_window)
+            && let Some(globe) = &mut self.globe
+        {
+            self.dots.dirty = false;
+            self.dots_window = window;
+            let terrain = self.nav.pose.terrain.clone();
+            let height = move |lat: f64, lon: f64| terrain.as_ref().map_or(0.0, |t| t(lat, lon));
+            let mut all = self.clouds.clone();
+            all.extend(self.dots.meshes(&self.nav.camera.ellipsoid, &height, window));
+            globe.set_points(&all);
+        }
         // Тайлы карт картинками.
         for (id, loaders) in &self.map_loaders {
             for (_, loader) in loaders {
@@ -2875,6 +2996,7 @@ impl LiteApp {
         let mut parts = vec![self.basemap.attribution(self.lang), credits::TERRAIN, labels::ATTRIBUTION];
         // Подписи включённых карт картинками.
         parts.extend(self.vector.map_keys().into_iter().filter_map(crate::maps::kind).map(|k| (k.attribution(), k.link())));
+        parts.extend(self.dots.keys().into_iter().map(|l| l.attribution()));
         self.credits.show(ctx, view, self.lang, &parts, 2);
     }
 
@@ -3239,6 +3361,7 @@ impl eframe::App for LiteApp {
             || !self.pending.is_empty()
             || self.map_loaders.values().flatten().any(|(_, l)| l.busy())
             || self.theme_days.values().any(|d| matches!(d, ThemeDay::Asking(_)))
+            || self.dots.busy()
             || self.loaders.terrain.busy()
             || self.loaders.places.busy()
             || self.labels.pending
@@ -3404,6 +3527,21 @@ impl eframe::App for LiteApp {
         let asked = self.label_keys.clone();
         vector_tiles.extend(self.vector.wanted(&selection.draw).into_iter().filter(|(k, _)| !asked.contains(k)));
         self.loaders.places.want(&vector_tiles);
+        // Уровень высот горизонталей: открытое море - глубины с уровня
+        // contours::SEA_LEVEL, как sea_high модуля.
+        let sea = |key: TileKey| -> Option<f64> {
+            if key.0 < data::contours::SEA_LEVEL {
+                return None;
+            }
+            (5..=data::contours::SEA_LEVEL).rev().find_map(|level| {
+                let parent = data::contours::ancestor(key, level);
+                let tile = store.tile(parent)?;
+                let side = (tile.heights.len() as f64).sqrt() as usize;
+                let grid = data::contours::Grid { rows: side, cols: side, data: tile.heights.iter().map(|h| f64::from(*h)).collect() };
+                Some(data::contours::footprint_high(&grid, parent, key))
+            })
+        };
+        self.vector.note_contour_levels(&selection.draw, &sea);
         // Тайлы карт: каждому источнику - его уровни.
         let map_tiles = self.vector.maps_wanted(&selection.draw);
         for (id, loaders) in &self.map_loaders {
@@ -3422,16 +3560,30 @@ impl eframe::App for LiteApp {
                 globe.set_picture_image(&key, image.width, image.height, &image.rgba);
             }
         }
-        if let Some(meshes) = self.marks.meshes(&store, now) {
-            globe.set_features(&meshes);
-            if self.overlays_built != Some(self.marks.overlays_version()) {
-                self.overlays_built = Some(self.marks.overlays_version());
-                globe.set_pictures(&self.marks.picture_meshes(&store));
-                let built = self.models.meshes(self.marks.overlays(), &store, now);
-                globe.set_models(&built.meshes);
-                self.movers = built.movers;
-                self.animated = built.animated;
+        // Вода растров с батиметрией - вместе с сетками меток. Без рельефа
+        // воды нет: дно и вода легли бы в одну плоскость, как у модуля.
+        let scale = store.scale();
+        let water_stale = self.water.as_ref().is_none_or(|(_, s)| *s != scale);
+        if water_stale {
+            let water = if scale > 0.0 { self.relief.water(&self.nav.camera.ellipsoid, scale) } else { Vec::new() };
+            self.water = Some((water, scale));
+        }
+        let fresh = self.marks.meshes(&store, now);
+        if fresh.is_some() || water_stale {
+            if let Some(meshes) = &fresh {
+                self.marks_meshes = meshes.clone();
             }
+            let mut all = self.marks_meshes.clone();
+            all.extend(self.water.iter().flat_map(|(w, _)| w.iter().cloned()));
+            globe.set_features(&all);
+        }
+        if fresh.is_some() && self.overlays_built != Some(self.marks.overlays_version()) {
+            self.overlays_built = Some(self.marks.overlays_version());
+            globe.set_pictures(&self.marks.picture_meshes(&store));
+            let built = self.models.meshes(self.marks.overlays(), &store, now);
+            globe.set_models(&built.meshes);
+            self.movers = built.movers;
+            self.animated = built.animated;
         }
         let window = self.timebar.window();
         for mover in &self.movers {
@@ -3498,7 +3650,7 @@ impl eframe::App for LiteApp {
         }
         self.attribution(&ctx, rect);
         // Шкалы карт над подписью источников, крестик убирает карту.
-        let maps: Vec<(&'static str, crate::maps::Kind)> = self.vector.map_keys().into_iter().filter_map(|k| crate::maps::kind(k).map(|m| (k, m))).collect();
+        let maps: Vec<(&'static str, crate::maps::Kind)> = self.vector.map_list().to_vec();
         let theme = maps.iter().find_map(|(k, m)| match (m, self.theme_days.get(k)) {
             (crate::maps::Kind::Theme(_), Some(ThemeDay::Day(day))) => {
                 let name = crate::maps::ALL.iter().find(|e| e.key == *k).map_or("", |e| tr(self.lang, e.name));
@@ -3516,10 +3668,26 @@ impl eframe::App for LiteApp {
             }
             _ => None,
         });
-        if let Some(key) = crate::legend::show(&ctx, self.lang, rect, self.credits.rect, &maps, theme)
-            && let Some(n) = crate::maps::index(key)
-        {
-            self.set_extra(crate::layers::Extra::Map(n), false);
+        let dot_layers = self.dots.keys();
+        // Шкала горизонталей: сечение в середине вида, цвет - по подложке.
+        let contours = maps.iter().find_map(|(_, k)| match k {
+            crate::maps::Kind::Contours(palette) => {
+                let ppp = f64::from(ctx.pixels_per_point());
+                let pose = &self.nav.pose;
+                let step = data::contours::view_step(pose.distance, pose.lat, self.nav.camera.fov_y.to_radians(), f64::from(rect.height()) * ppp, globe_core::ellipsoid::EARTH.a, data::contours::LEVEL);
+                let color = if *palette == data::contours::Palette::Imagery { [255, 214, 0] } else { data::contours::LAND };
+                Some((step, color))
+            }
+            _ => None,
+        });
+        match crate::legend::show(&ctx, self.lang, rect, self.credits.rect, crate::legend::Shown { maps: &maps, theme, dots: &dot_layers, contours }) {
+            Some(crate::legend::Closed::Map(key)) => {
+                if let Some(n) = crate::maps::index(key) {
+                    self.set_extra(crate::layers::Extra::Map(n), false);
+                }
+            }
+            Some(crate::legend::Closed::Dots(layer)) => self.set_extra(crate::layers::Extra::Dots(layer), false),
+            None => {}
         }
         if let Some(Snapshot::Hide(to)) = self.snapshot {
             // Окна скрыты в этом кадре: снимок - глобус с подписью
@@ -3575,4 +3743,15 @@ fn lasting(cache: &mut HashMap<String, &'static str>, text: String) -> &'static 
     let s: &'static str = Box::leak(text.clone().into_boxed_str());
     cache.insert(text, s);
     s
+}
+
+/// Место слоя каталога на глобусе, на месте бывает один слой: темы GIBS
+/// и пожары - одна карта витрины, карта значений или готовая карта -
+/// одна карта слоя вида. None - слоёв сколько угодно.
+fn extra_slot(extra: crate::layers::Extra) -> Option<u8> {
+    match extra {
+        crate::layers::Extra::Map(_) => extra.map().and_then(|e| crate::maps::kind(e.key)).and_then(|k| k.slot()),
+        crate::layers::Extra::Dots(crate::dots::Layer::Fires) => Some(0),
+        _ => None,
+    }
 }

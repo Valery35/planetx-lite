@@ -27,8 +27,10 @@ pub enum Extra {
     Air,
     Sun,
     Grid,
-    /// Карта картинками, номер строки [crate::maps::ALL].
+    /// Карта картинками, номер строки [`crate::maps::ALL`].
     Map(usize),
+    /// Слой точек: землетрясения, вулканы, пожары.
+    Dots(crate::dots::Layer),
 }
 
 impl Extra {
@@ -39,6 +41,7 @@ impl Extra {
     pub fn all() -> Vec<Extra> {
         let mut out = Self::ALL.to_vec();
         out.extend((0..crate::maps::ALL.len()).map(Extra::Map));
+        out.extend(crate::dots::Layer::ALL.map(Extra::Dots));
         out
     }
 
@@ -56,6 +59,7 @@ impl Extra {
             Extra::Sun => "Sun",
             Extra::Grid => "Grid",
             Extra::Map(_) => self.map().map_or("", |e| e.name),
+            Extra::Dots(l) => l.name(),
         }
     }
 
@@ -71,6 +75,7 @@ impl Extra {
                 "Parallels and meridians with degree labels, the equator, the tropics and the polar circles. The step of the grid changes with the camera height."
             }
             Extra::Map(_) => self.map().map_or("", |e| e.tip),
+            Extra::Dots(l) => l.tip(),
         }
     }
 
@@ -80,6 +85,7 @@ impl Extra {
             Extra::Grid => Category::Map,
             Extra::Air | Extra::Sun => Category::Sky,
             Extra::Map(_) => match self.map().map(|e| e.group) {
+                Some(crate::maps::Group::Map) => Category::Map,
                 Some(crate::maps::Group::Fire) => Category::Fire,
                 Some(crate::maps::Group::Gases) => Category::Gases,
                 Some(crate::maps::Group::Water) => Category::Water,
@@ -88,6 +94,8 @@ impl Extra {
                 Some(crate::maps::Group::Tiles) => Category::Tiles,
                 _ => Category::Depths,
             },
+            Extra::Dots(crate::dots::Layer::Fires) => Category::Fire,
+            Extra::Dots(_) => Category::Depths,
         }
     }
 
@@ -98,6 +106,7 @@ impl Extra {
             Extra::Sun => "sun",
             Extra::Grid => "grid",
             Extra::Map(_) => self.map().map_or("", |e| e.key),
+            Extra::Dots(l) => l.key(),
         }
     }
 
@@ -116,6 +125,8 @@ pub struct State<'a> {
     /// Включённые слои каталога.
     pub on: &'a BTreeSet<Extra>,
     pub vector: &'a VectorBase,
+    /// Свои растры рельефа.
+    pub own: Vec<String>,
 }
 
 /// Что попросили строки раздела или каталог.
@@ -136,6 +147,8 @@ pub enum Action {
     Sources,
     /// Открыть каталог «Добавить данные».
     Catalog,
+    /// Окно «Батиметрия водоёма» своего растра.
+    Bathymetry(String),
 }
 
 /// Название основы в строке и меню, как в списке подложек модуля: Esri
@@ -263,6 +276,20 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
     }
     popup(ui, menu_open, "relief", hit.rect, |ui| {
         let _ = ui.radio(true, tr(lang, "No - height tiles only"));
+        // Свои растры рельефа: у каждого - батиметрия водоёма, как пункт
+        // меню растра «Слоёв проекта» модуля.
+        let mut chosen = false;
+        for name in &state.own {
+            ui.menu_button(name.as_str(), |ui| {
+                if ui.button(tr(lang, "Water body bathymetry…")).clicked() {
+                    out.push(Action::Bathymetry(name.clone()));
+                    chosen = true;
+                }
+            });
+        }
+        if chosen {
+            return true;
+        }
         ui.separator();
         if ui.button(tr(lang, "Data sources…")).clicked() {
             out.push(Action::Sources);
@@ -455,6 +482,7 @@ impl Item {
             Item::Base(Basemap::Osm) => "OpenStreetMap",
             Item::Base(b) => b.ready().map_or("", |r| r.group.name()),
             Item::Group(_) => "OpenFreeMap",
+            Item::Extra(Extra::Dots(l)) => l.source(),
             Item::Extra(e) => e.map().map_or("", |m| m.source),
         }
     }
@@ -474,7 +502,10 @@ fn items() -> Vec<Item> {
     out.push(Item::Extra(Extra::Grid));
     out.push(Item::Extra(Extra::Air));
     out.push(Item::Extra(Extra::Sun));
+    // Пожары - карта витрины группы «Планета огня», перед темами огня.
+    out.push(Item::Extra(Extra::Dots(crate::dots::Layer::Fires)));
     out.extend((0..crate::maps::ALL.len()).map(|n| Item::Extra(Extra::Map(n))));
+    out.extend([crate::dots::Layer::Quakes, crate::dots::Layer::Volcanoes].map(|l| Item::Extra(Extra::Dots(l))));
     out
 }
 

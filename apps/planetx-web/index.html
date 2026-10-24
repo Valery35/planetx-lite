@@ -27,12 +27,22 @@
     html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
     #globe { width: 100%; height: 100%; display: block; touch-action: none; }
     #report { position: fixed; left: 8px; top: 8px; margin: 0; color: #7f7; font: 12px monospace; white-space: pre; }
+    /* Значок загрузки: виден, пока скачивается и запускается программа
+       страницы. Его убирает main.rs после запуска. Цвета - тёмной темы
+       Lite. */
+    #loading { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #000; color: #c8ccd2; font: 15px system-ui, sans-serif; }
+    #loading .ring { width: 44px; height: 44px; border: 4px solid #3a4048; border-top-color: #4aa3ff; border-radius: 50%; animation: spin 0.9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
   <canvas id="globe"></canvas>
+  <div id="loading"><div class="ring"></div><div id="loading-text">PlanetX Lite</div></div>
   <pre id="report"></pre>
   <script>
+    // Подпись значка на языке браузера: русский или английский.
+    document.getElementById('loading-text').textContent =
+      (navigator.language || '').startsWith('ru') ? 'PlanetX Lite загружается…' : 'PlanetX Lite is loading…';
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch((e) => console.log('PlanetX Lite: service worker', e));
     }

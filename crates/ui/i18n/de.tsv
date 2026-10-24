@@ -580,3 +580,52 @@ Class	Klasse
 Click - the class at the point	Klick - die Klasse am Punkt
 {name} · {day}	{name} · {day}
 {name}, {units} · {day}	{name}, {units} · {day}
+Earthquakes	Erdbeben
+Earthquakes of magnitude 4.5 and above over the last 30 days from the USGS feed. A circle marks the epicentre on the surface. The focus is seen at its depth in the removed sector of the Earth cutaway row. The colour shows the focus depth, the size shows the magnitude. The feed is loaded when the row is switched on.	Erdbeben ab Magnitude 4.5 in den letzten 30 Tagen nach den Daten des USGS. Ein Kreis steht im Epizentrum an der Oberfläche. In seiner Tiefe ist der Herd im entnommenen Sektor der Zeile „Erdschnitt“ zu sehen. Die Farbe zeigt die Herdtiefe, die Größe zeigt die Magnitude. Die Daten werden beim Einschalten der Zeile geladen.
+Volcanoes	Vulkane
+About 1200 volcanoes that erupted in the last 12 thousand years after the Global Volcanism Program list of the Smithsonian Institution. The colour is the time of the last eruption, the size is the volcano height. A click on a dot shows the volcano type, the year of the last eruption, the tectonic setting and the volcano page on the GVP site. The first switch-on downloads about 2 MB.	Etwa 1200 Vulkane mit Ausbrüchen in den letzten 12 Jahrtausenden nach der Liste des Global Volcanism Program der Smithsonian Institution. Die Farbe ist die Zeit des letzten Ausbruchs, die Größe ist die Höhe des Vulkans. Ein Klick auf einen Punkt zeigt den Vulkantyp, das Jahr des letzten Ausbruchs, die tektonische Lage und die Seite des Vulkans auf der GVP-Website. Das erste Einschalten lädt etwa 2 MB herunter.
+Fires	Brände
+Fire spots of the last 24 hours from VIIRS images of the NOAA-20 satellite, the NASA FIRMS feed. The color and size of a dot show the radiative power.	Brandherde der letzten 24 Stunden nach VIIRS-Aufnahmen des Satelliten NOAA-20, Daten von NASA FIRMS. Farbe und Größe eines Punktes zeigen die Strahlungsleistung.
+NASA FIRMS, 24 hours	NASA FIRMS, 24 Stunden
+Magnitude	Magnitude
+Focus depth	Herdtiefe
+{value} km	{value} km
+Time, UTC	Zeit, UTC
+USGS page	USGS-Seite
+Last eruption	Letzter Ausbruch
+date unknown	Datum unbekannt
+{year} BCE	{year} v. Chr.
+{value} m	{value} m
+Country	Land
+Setting	Tektonische Lage
+Confidence	Konfidenz
+Source	Quelle
+Radiative power	Strahlungsleistung
+{value} MW	{value} MW
+Image time, UTC	Aufnahmezeit, UTC
+Image	Aufnahme
+night	Nacht
+day	Tag
+Focus depth, km	Herdtiefe, km
+Fire power, MW	Brandleistung, MW
+Holocene volcanoes, GVP	Holozäne Vulkane, GVP
+Dot size - volcano height	Punktgröße - Vulkanhöhe
+Erupted since 1900	Ausbruch seit 1900
+Erupted in 1500-1899	Ausbruch 1500-1899
+Erupted before 1500	Ausbruch vor 1500
+Eruption date unknown	Ausbruchsdatum unbekannt
+{layer}: not received: {error}	{layer}: nicht erhalten: {error}
+Contours	Höhenlinien
+Lines of equal terrain height, as on a topographic map. The interval follows the view scale - hundreds of metres from afar, 5-10 m close up, every fifth contour is thicker and labelled with its height. Below sea level they are blue isobaths. They are built from the globe heights and from an own terrain raster of the project.	Linien gleicher Geländehöhe wie auf einer topographischen Karte. Der Abstand richtet sich nach dem Maßstab der Ansicht - Hunderte Meter aus der Ferne, 5-10 m aus der Nähe. Jede fünfte Höhenlinie ist verstärkt und mit ihrer Höhe beschriftet. Unter dem Meeresspiegel sind es blaue Tiefenlinien. Sie werden aus den Höhen des Globus und aus einem eigenen Geländeraster des Projekts erzeugt.
+every {step} m, thicker every {index} m	alle {step} m, verstärkt alle {index} m
+Water body bathymetry	Gewässerbathymetrie
+Water body bathymetry…	Gewässerbathymetrie…
+The raster "{name}" goes into the globe terrain as the bed of the water body, water is drawn above it at the water body level. The default level is the terrain height at the edge of the raster, for a lake it is usually the water surface.	Das Raster „{name}“ geht als Gewässergrund in das Gelände des Globus ein, darüber wird Wasser auf Höhe des Wasserspiegels gezeichnet. Der Standardwert ist die Geländehöhe am Rand des Rasters, bei einem See ist das meist die Wasseroberfläche.
+Values are depths	Werte sind Tiefen
+The depth below the water surface, with a plus or minus sign. The bed elevation is the water level minus the depth.	Die Tiefe unter der Wasseroberfläche, mit Plus- oder Minuszeichen. Die Höhe des Grundes ist der Wasserspiegel minus die Tiefe.
+Values are bed elevations	Werte sind Grundhöhen
+The bed height above sea level, like the terrain. The water level is needed only for the water surface.	Die Höhe des Grundes über dem Meeresspiegel, wie beim Gelände. Der Wasserspiegel wird nur für die Wasseroberfläche benötigt.
+Water level	Wasserspiegel
+The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	Die Höhe der Wasseroberfläche über dem Meeresspiegel. Das Wasser wird auf dieser Höhe über allen Punkten gezeichnet, an denen der Grund tiefer liegt.
+Remove bathymetry	Bathymetrie entfernen
+The raster is no longer the globe terrain, no water is drawn over it.	Das Raster ist nicht mehr Teil des Globusgeländes, darüber wird kein Wasser gezeichnet.

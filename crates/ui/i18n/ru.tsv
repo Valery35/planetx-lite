@@ -580,3 +580,52 @@ Class	Класс
 Click - the class at the point	Щелчок - класс в точке
 {name} · {day}	{name} · {day}
 {name}, {units} · {day}	{name}, {units} · {day}
+Earthquakes	Землетрясения
+Earthquakes of magnitude 4.5 and above over the last 30 days from the USGS feed. A circle marks the epicentre on the surface. The focus is seen at its depth in the removed sector of the Earth cutaway row. The colour shows the focus depth, the size shows the magnitude. The feed is loaded when the row is switched on.	Землетрясения магнитудой от 4.5 за последние 30 суток по сводке USGS. Кружок стоит в эпицентре на поверхности. На своей глубине очаг виден в вынутом секторе строки «Разрез Земли». Цвет показывает глубину очага, размер - магнитуду. Сводка загружается при включении строки.
+Volcanoes	Вулканы
+About 1200 volcanoes that erupted in the last 12 thousand years after the Global Volcanism Program list of the Smithsonian Institution. The colour is the time of the last eruption, the size is the volcano height. A click on a dot shows the volcano type, the year of the last eruption, the tectonic setting and the volcano page on the GVP site. The first switch-on downloads about 2 MB.	Около 1200 вулканов, извергавшихся за последние 12 тысяч лет, по списку Global Volcanism Program Смитсоновского института. Цвет - время последнего извержения, размер - высота вулкана. Щелчок по точке показывает тип вулкана, год последнего извержения, тектоническую обстановку и страницу вулкана на сайте GVP. Первое включение скачивает около 2 МБ.
+Fires	Пожары
+Fire spots of the last 24 hours from VIIRS images of the NOAA-20 satellite, the NASA FIRMS feed. The color and size of a dot show the radiative power.	Очаги пожаров за последние 24 часа по снимкам VIIRS спутника NOAA-20, сводка NASA FIRMS. Цвет и размер точки показывают мощность излучения.
+NASA FIRMS, 24 hours	NASA FIRMS, 24 часа
+Magnitude	Магнитуда
+Focus depth	Глубина очага
+{value} km	{value} км
+Time, UTC	Время, UTC
+USGS page	Страница USGS
+Last eruption	Последнее извержение
+date unknown	дата неизвестна
+{year} BCE	{year} до н. э.
+{value} m	{value} м
+Country	Страна
+Setting	Обстановка
+Confidence	Достоверность
+Source	Источник
+Radiative power	Мощность излучения
+{value} MW	{value} МВт
+Image time, UTC	Время снимка, UTC
+Image	Снимок
+night	ночной
+day	дневной
+Focus depth, km	Глубина очага, км
+Fire power, MW	Мощность пожара, МВт
+Holocene volcanoes, GVP	Вулканы голоцена GVP
+Dot size - volcano height	Размер точки - высота вулкана
+Erupted since 1900	Извергался с 1900 года
+Erupted in 1500-1899	Извергался в 1500-1899 годах
+Erupted before 1500	Извергался до 1500 года
+Eruption date unknown	Дата извержения неизвестна
+{layer}: not received: {error}	{layer}: не получено: {error}
+Contours	Горизонтали
+Lines of equal terrain height, as on a topographic map. The interval follows the view scale - hundreds of metres from afar, 5-10 m close up, every fifth contour is thicker and labelled with its height. Below sea level they are blue isobaths. They are built from the globe heights and from an own terrain raster of the project.	Линии равных высот рельефа, как на топографической карте. Сечение подбирается по масштабу вида - от сотен метров издалека до 5-10 м вблизи, каждая пятая горизонталь утолщённая и подписана отметкой. Ниже уровня моря - синие изобаты. Строятся по высотам глобуса и по своему рельефу растром проекта.
+every {step} m, thicker every {index} m	через {step} м, утолщённые через {index} м
+Water body bathymetry	Батиметрия водоёма
+Water body bathymetry…	Батиметрия водоёма…
+The raster "{name}" goes into the globe terrain as the bed of the water body, water is drawn above it at the water body level. The default level is the terrain height at the edge of the raster, for a lake it is usually the water surface.	Растр «{name}» ложится в рельеф глобуса дном водоёма, над ним рисуется вода на уровне водоёма. Уровень по умолчанию - высота рельефа у края растра, у озера это обычно поверхность воды.
+Values are depths	Значения - глубины
+The depth below the water surface, with a plus or minus sign. The bed elevation is the water level minus the depth.	Глубина под поверхностью воды, со знаком плюс или минус. Отметка дна - уровень воды минус глубина.
+Values are bed elevations	Значения - отметки дна
+The bed height above sea level, like the terrain. The water level is needed only for the water surface.	Высота дна над уровнем моря, как у рельефа. Уровень воды нужен только для поверхности воды.
+Water level	Уровень воды
+The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	Высота поверхности воды над уровнем моря. Вода рисуется на этой высоте над всеми точками, где дно ниже.
+Remove bathymetry	Убрать батиметрию
+The raster is no longer the globe terrain, no water is drawn over it.	Растр перестаёт быть рельефом глобуса, вода над ним не рисуется.

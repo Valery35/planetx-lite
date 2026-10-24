@@ -19,6 +19,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::sync::Arc;
 
 use data::lines::{self, Group};
+use data::contours;
 use data::rastermaps;
 use data::places::Kind;
 use crate::maps::Kind as MapKind;
@@ -175,6 +176,13 @@ pub struct VectorBase {
     maps: Vec<(&'static str, MapKind)>,
     /// Тайлы карт: пришедшие и уже раскрашенные.
     rasters: HashMap<(&'static str, TileKey), Raster>,
+    /// Картинки горизонталей по тайлам уровней до `contours::LEVEL`.
+    contour_pics: HashMap<TileKey, Option<Picture>>,
+    /// Уровень тайла высот горизонталей тайла, решённый при первом
+    /// запросе, как `ContourSource.levels` модуля.
+    contour_levels: HashMap<TileKey, u32>,
+    /// Цифры подписей горизонталей.
+    glyphs: Option<Arc<contours::Glyphs>>,
     #[cfg(not(target_arch = "wasm32"))]
     pool: Option<Pool>,
 }
@@ -226,6 +234,17 @@ struct MapPart {
     depth: u32,
     cell: Cell,
     raster: Raster,
+    /// Горизонтали: тайл картинки и соседи тайла высот.
+    contour: Option<ContourPart>,
+}
+
+/// Задание горизонталей: тайл картинки, тайл высот, пришедшие соседи
+/// тайла высот, цифры подписей, цвета.
+struct ContourPart {
+    key: TileKey,
+    around: Vec<(TileKey, Arc<Vec<u8>>)>,
+    glyphs: Option<Arc<contours::Glyphs>>,
+    palette: contours::Palette,
 }
 
 /// Готовая картинка и разобранные по дороге тайлы.
@@ -238,6 +257,8 @@ struct Done {
     decoded: Vec<(TileKey, Arc<lines::Tile>)>,
     /// Раскрашенные по дороге тайлы карт.
     painted: Vec<Painted>,
+    /// Картинки горизонталей по тайлам.
+    contours: Vec<(TileKey, Option<Picture>)>,
     picture: Option<Vec<u8>>,
 }
 
@@ -258,14 +279,20 @@ fn work(job: Job) -> Done {
     }
     let top = if job.groups.is_empty() { None } else { lines::draw(job.key, &|k| tiles.get(&k).cloned(), &job.groups) };
     if job.maps.is_empty() {
-        return Done { generation: job.generation, key: job.key, decoded, painted: Vec::new(), picture: top };
+        return Done { generation: job.generation, key: job.key, decoded, painted: Vec::new(), contours: Vec::new(), picture: top };
     }
     let mut painted = Vec::new();
+    let mut drawn_contours = Vec::new();
     let mut layers: Vec<(Picture, u32, Cell)> = Vec::new();
-    for MapPart { id, kind, source, depth, cell, raster } in job.maps {
-        let ready = match raster {
-            Raster::Ready(r) => r,
-            Raster::Raw(rgba) => {
+    for MapPart { id, kind, source, depth, cell, raster, contour } in job.maps {
+        let ready = match (raster, contour) {
+            (Raster::Ready(r), _) => r,
+            (Raster::Raw(rgba), Some(c)) => {
+                let r = contour_picture(&rgba, source, &c).map(Arc::new);
+                drawn_contours.push((c.key, r.clone()));
+                r
+            }
+            (Raster::Raw(rgba), None) => {
                 let r = kind.picture(&rgba).map(Arc::new);
                 painted.push(((id, source), r.clone()));
                 r
@@ -280,7 +307,21 @@ fn work(job: Job) -> Done {
         pieces.push(rastermaps::Piece { rgba: t, depth: 0, cell: (0, 0) });
     }
     let picture = rastermaps::compose(&pieces);
-    Done { generation: job.generation, key: job.key, decoded, painted, picture }
+    Done { generation: job.generation, key: job.key, decoded, painted, contours: drawn_contours, picture }
+}
+
+/// Картинка горизонталей тайла c.key по тайлу высот source в записи
+/// Terrarium, как `contours_prepare` модуля: глубже уровня тайла высот -
+/// сглаженный предок, пересчитанный кубически, соседи - пришедшие тайлы.
+fn contour_picture(rgba: &[u8], source: TileKey, c: &ContourPart) -> Option<Vec<u8>> {
+    let mut heights = contours::terrarium(rgba);
+    if c.key.0 > source.0 {
+        let around: HashMap<TileKey, &Arc<Vec<u8>>> = c.around.iter().map(|(k, v)| (*k, v)).collect();
+        let neighbor = |k: TileKey| around.get(&k).map(|v| contours::terrarium(v));
+        heights = contours::upsample(&heights, source, c.key, Some(&neighbor), true);
+    }
+    let out = contours::contour_rgba(&heights, c.key.0, c.key.2, globe_core::ellipsoid::EARTH.a, None, c.glyphs.as_deref(), c.palette, true);
+    out.as_chunks::<4>().0.iter().any(|p| p[3] > 0).then_some(out)
 }
 
 /// Заданий у рабочих потоков сразу, как `MAX_JOBS` наложения модуля.
@@ -346,6 +387,9 @@ impl VectorBase {
             generation: 0,
             maps: Vec::new(),
             rasters: HashMap::new(),
+            contour_pics: HashMap::new(),
+            contour_levels: HashMap::new(),
+            glyphs: None,
             #[cfg(not(target_arch = "wasm32"))]
             pool: Pool::new(),
         };
@@ -396,12 +440,46 @@ impl VectorBase {
         }
         let keep: HashSet<&'static str> = maps.iter().map(|(k, _)| *k).collect();
         self.rasters.retain(|(k, _), _| keep.contains(k));
+        self.contour_pics.clear();
         self.maps = maps;
         self.drawn.clear();
         self.pending.clear();
         self.ready.clear();
         self.generation += 1;
         true
+    }
+
+    /// Цифры подписей горизонталей.
+    pub fn set_glyphs(&mut self, glyphs: Arc<contours::Glyphs>) {
+        self.glyphs = Some(glyphs);
+    }
+
+    /// Тайл высот горизонталей тайла pkey: уровень решён при первом
+    /// запросе (note_contour_levels), без решения - уровень съёмки.
+    fn contour_source(&self, pkey: TileKey) -> TileKey {
+        let level = self.contour_levels.get(&pkey).copied().unwrap_or(contours::SOURCE_LEVEL.min(pkey.0));
+        contours::ancestor(pkey, level)
+    }
+
+    /// Решить уровень тайла высот горизонталей тайлов кадра draw, как
+    /// `ContourSource.level_of` модуля. sea - наибольшая высота под тайлом
+    /// по тайлу уровня `contours::SEA_LEVEL` и мельче, если он есть.
+    pub fn note_contour_levels(&mut self, draw: &[TileKey], sea: &dyn Fn(TileKey) -> Option<f64>) {
+        if !self.maps.iter().any(|(_, k)| matches!(k, MapKind::Contours(_))) {
+            return;
+        }
+        for key in draw {
+            let (pkey, _, _) = raster_of(*key, contours::LEVEL);
+            self.contour_levels.entry(pkey).or_insert_with(|| contours::source_level(pkey, sea(pkey), contours::SOURCE_LEVEL));
+        }
+        if self.contour_levels.len() > KEEP_TILES {
+            self.contour_levels.clear();
+        }
+    }
+
+    /// Карты под линиями с видом, как они на глобусе.
+    pub fn map_list(&self) -> &[(&'static str, MapKind)] {
+        &self.maps
     }
 
     /// Ключи карт под линиями.
@@ -424,6 +502,20 @@ impl VectorBase {
                 continue;
             }
             for (id, kind) in &self.maps {
+                if let MapKind::Contours(_) = kind {
+                    let (pkey, _, _) = raster_of(*key, contours::LEVEL);
+                    if self.contour_pics.contains_key(&pkey) {
+                        continue;
+                    }
+                    let source = self.contour_source(pkey);
+                    // Сам тайл высот, за ним - его соседи для шва.
+                    for (n, near) in std::iter::once(source).chain(neighbours(source)).enumerate() {
+                        if !self.rasters.contains_key(&(*id, near)) && seen.insert((*id, near)) {
+                            out.push((*id, near, 50.0 - f64::from(near.0) - if n == 0 { 0.0 } else { 0.5 }));
+                        }
+                    }
+                    continue;
+                }
                 let (source, _, _) = raster_of(*key, kind.max_level());
                 if !self.rasters.contains_key(&(*id, source)) && seen.insert((*id, source)) {
                     out.push((*id, source, 50.0 - f64::from(source.0)));
@@ -512,6 +604,7 @@ impl VectorBase {
                 for (k, r) in done.painted {
                     self.rasters.insert(k, Raster::Ready(r));
                 }
+                self.contour_pics.extend(done.contours);
                 self.finish(globe, done.key, done.picture);
             }
         }
@@ -527,9 +620,26 @@ impl VectorBase {
             }
             let mut maps = Vec::with_capacity(self.maps.len());
             for (id, kind) in &self.maps {
+                if let MapKind::Contours(palette) = kind {
+                    let (pkey, depth, cell) = raster_of(*key, contours::LEVEL);
+                    let source = self.contour_source(pkey);
+                    if let Some(pic) = self.contour_pics.get(&pkey) {
+                        maps.push(MapPart { id, kind: *kind, source, depth, cell, raster: Raster::Ready(pic.clone()), contour: None });
+                    } else if let Some(r) = self.rasters.get(&(*id, source)) {
+                        let around = neighbours(source)
+                            .filter_map(|k| match self.rasters.get(&(*id, k)) {
+                                Some(Raster::Raw(b)) => Some((k, b.clone())),
+                                _ => None,
+                            })
+                            .collect();
+                        let contour = Some(ContourPart { key: pkey, around, glyphs: self.glyphs.clone(), palette: *palette });
+                        maps.push(MapPart { id, kind: *kind, source, depth, cell, raster: r.clone(), contour });
+                    }
+                    continue;
+                }
                 let (source, depth, cell) = raster_of(*key, kind.max_level());
                 if let Some(r) = self.rasters.get(&(*id, source)) {
-                    maps.push(MapPart { id, kind: *kind, source, depth, cell, raster: r.clone() });
+                    maps.push(MapPart { id, kind: *kind, source, depth, cell, raster: r.clone(), contour: None });
                 }
             }
             if maps.len() < self.maps.len() {
@@ -570,6 +680,7 @@ impl VectorBase {
             for (k, r) in done.painted {
                 self.rasters.insert(k, Raster::Ready(r));
             }
+            self.contour_pics.extend(done.contours);
             self.finish(globe, done.key, done.picture);
             if start.elapsed().as_secs_f64() > budget {
                 break;
@@ -579,6 +690,10 @@ impl VectorBase {
             let keep: HashSet<TileKey> = draw.iter().flat_map(|k| lines::sources(*k, &groups)).collect();
             self.tiles.retain(|k, _| keep.contains(k));
             self.raw.retain(|k, _| keep.contains(k));
+        }
+        if self.contour_pics.len() > KEEP_TILES {
+            let keep: HashSet<TileKey> = draw.iter().map(|k| raster_of(*k, contours::LEVEL).0).collect();
+            self.contour_pics.retain(|k, _| keep.contains(k));
         }
         if self.rasters.len() > KEEP_TILES {
             let keep: HashSet<(&'static str, TileKey)> =
@@ -614,6 +729,16 @@ impl VectorBase {
         out.seen.extend(seen.split(',').filter_map(|s| s.parse::<usize>().ok()).filter(|n| *n < TREE.len()));
         out
     }
+}
+
+/// Восемь соседей тайла key того же уровня, по долготе через край.
+fn neighbours(key: TileKey) -> impl Iterator<Item = TileKey> {
+    let (z, x, y) = key;
+    let n = 1i64 << z.min(30);
+    (-1i64..=1).flat_map(move |dy| (-1i64..=1).map(move |dx| (dx, dy))).filter(|d| *d != (0, 0)).filter_map(move |(dx, dy)| {
+        let yy = i64::from(y) + dy;
+        (0..n).contains(&yy).then(|| (z, (i64::from(x) + dx).rem_euclid(n) as u32, yy as u32))
+    })
 }
 
 #[cfg(test)]

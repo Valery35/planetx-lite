@@ -8,6 +8,11 @@
 //! и цвета. Точка - квадрат размера [`PointsMesh::size`] логических
 //! пикселей, с проверкой и записью глубины: ближние точки закрывают
 //! дальние. Облака рисуются после тайлов, до своих объектов.
+//!
+//! Те же облака рисуют слои точек каталога - землетрясения, вулканы,
+//! пожары: круг с тёмным ободком, как шейдер `render/quakes.py` модуля,
+//! размер у каждой точки свой, глубина чуть ближе к глазу, чтобы точка
+//! на рельефе не уходила в него.
 
 use bytemuck::{Pod, Zeroable};
 use globe_core::DVec3;
@@ -24,6 +29,18 @@ pub struct PointsMesh {
     pub offsets: Vec<[f32; 3]>,
     pub colors: Vec<[u8; 3]>,
     pub size: f32,
+    /// Размеры точек в логических пикселях. Пусто - у всех size.
+    pub sizes: Vec<f32>,
+    /// Круг с тёмным ободком и непрозрачность вместо квадрата.
+    pub dot: Option<Dot>,
+}
+
+/// Вид точек слоя: непрозрачность от 0 до 1 и сдвиг глубины к глазу
+/// в долях глубины кадра.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Dot {
+    pub alpha: f32,
+    pub lift: f32,
 }
 
 #[repr(C)]
@@ -32,6 +49,7 @@ struct PointsUniform {
     mv: [f32; 16],
     projection: [f32; 16],
     params: [f32; 4],
+    style: [f32; 4],
 }
 
 #[repr(C)]
@@ -39,13 +57,14 @@ struct PointsUniform {
 struct Instance {
     offset: [f32; 3],
     color: [u8; 4],
+    size: f32,
 }
 
 struct GpuCloud {
     center: DVec3,
     instances: wgpu::Buffer,
     count: u32,
-    size: f32,
+    dot: Option<Dot>,
 }
 
 /// Облака и их конвейер.
@@ -70,7 +89,7 @@ impl Points {
             label: Some("points"),
             entries: &[wgpu::BindGroupLayoutEntry {
                 binding: 0,
-                visibility: wgpu::ShaderStages::VERTEX,
+                visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
                 ty: wgpu::BindingType::Buffer {
                     ty: wgpu::BufferBindingType::Uniform,
                     has_dynamic_offset: true,
@@ -94,7 +113,7 @@ impl Points {
                 buffers: &[Some(wgpu::VertexBufferLayout {
                     array_stride: std::mem::size_of::<Instance>() as u64,
                     step_mode: wgpu::VertexStepMode::Instance,
-                    attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Unorm8x4],
+                    attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Unorm8x4, 2 => Float32],
                 })],
             },
             primitive: wgpu::PrimitiveState::default(),
@@ -112,7 +131,7 @@ impl Points {
                 compilation_options: Default::default(),
                 targets: &[Some(wgpu::ColorTargetState {
                     format: COLOR_FORMAT,
-                    blend: None,
+                    blend: Some(wgpu::BlendState::ALPHA_BLENDING),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
             }),
@@ -153,8 +172,14 @@ impl Points {
         self.items = clouds
             .iter()
             .filter_map(|c| {
-                let instances: Vec<Instance> =
-                    c.offsets.iter().zip(&c.colors).map(|(o, [r, g, b])| Instance { offset: *o, color: [*r, *g, *b, 255] }).collect();
+                let alpha = c.dot.map_or(255, |d| (d.alpha.clamp(0.0, 1.0) * 255.0).round() as u8);
+                let instances: Vec<Instance> = c
+                    .offsets
+                    .iter()
+                    .zip(&c.colors)
+                    .enumerate()
+                    .map(|(n, (o, [r, g, b]))| Instance { offset: *o, color: [*r, *g, *b, alpha], size: c.sizes.get(n).copied().unwrap_or(c.size) })
+                    .collect();
                 let count = u32::try_from(instances.len()).ok().filter(|n| *n > 0)?;
                 Some(GpuCloud {
                     center: c.center,
@@ -164,7 +189,7 @@ impl Points {
                         usage: wgpu::BufferUsages::VERTEX,
                     }),
                     count,
-                    size: c.size,
+                    dot: c.dot,
                 })
             })
             .collect();
@@ -188,7 +213,8 @@ impl Points {
             let u = PointsUniform {
                 mv: camera.tile_model_view(item.center, 1.0).as_mat4().to_cols_array(),
                 projection,
-                params: [item.size * ratio, 0.0, camera.width as f32, camera.height as f32],
+                params: [ratio, item.dot.map_or(0.0, |d| d.lift), camera.width as f32, camera.height as f32],
+                style: [f32::from(item.dot.is_some()), 0.0, 0.0, 0.0],
             };
             let raw = bytemuck::bytes_of(&u);
             chunk[..raw.len()].copy_from_slice(raw);

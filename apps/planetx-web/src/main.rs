@@ -115,6 +115,10 @@ fn main() {
                 }),
             )
             .await;
+        // Программа запущена или не запустилась: значок загрузки не нужен.
+        if let Some(loading) = web_sys::window().and_then(|w| w.document()).and_then(|d| d.get_element_by_id("loading")) {
+            loading.remove();
+        }
         if let Err(e) = started {
             show(&format!("PlanetX Lite, ошибка запуска: {e:?}"));
         }

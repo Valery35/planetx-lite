@@ -580,3 +580,52 @@ Class	Classe
 Click - the class at the point	Clique - a classe no ponto
 {name} · {day}	{name} · {day}
 {name}, {units} · {day}	{name}, {units} · {day}
+Earthquakes	Sismos
+Earthquakes of magnitude 4.5 and above over the last 30 days from the USGS feed. A circle marks the epicentre on the surface. The focus is seen at its depth in the removed sector of the Earth cutaway row. The colour shows the focus depth, the size shows the magnitude. The feed is loaded when the row is switched on.	Sismos de magnitude 4.5 ou superior nos últimos 30 dias segundo os dados do USGS. Um círculo marca o epicentro na superfície. À sua profundidade o foco vê-se no setor retirado da linha «Corte da Terra». A cor mostra a profundidade do foco, o tamanho mostra a magnitude. Os dados carregam-se ao ligar a linha.
+Volcanoes	Vulcões
+About 1200 volcanoes that erupted in the last 12 thousand years after the Global Volcanism Program list of the Smithsonian Institution. The colour is the time of the last eruption, the size is the volcano height. A click on a dot shows the volcano type, the year of the last eruption, the tectonic setting and the volcano page on the GVP site. The first switch-on downloads about 2 MB.	Cerca de 1200 vulcões com erupções nos últimos 12 mil anos segundo a lista do Global Volcanism Program da Smithsonian Institution. A cor é a época da última erupção, o tamanho é a altura do vulcão. Um clique num ponto mostra o tipo de vulcão, o ano da última erupção, o contexto tectónico e a página do vulcão no sítio do GVP. A primeira ativação descarrega cerca de 2 MB.
+Fires	Incêndios
+Fire spots of the last 24 hours from VIIRS images of the NOAA-20 satellite, the NASA FIRMS feed. The color and size of a dot show the radiative power.	Focos de incêndio das últimas 24 horas segundo imagens VIIRS do satélite NOAA-20, dados NASA FIRMS. A cor e o tamanho de um ponto mostram a potência radiativa.
+NASA FIRMS, 24 hours	NASA FIRMS, 24 horas
+Magnitude	Magnitude
+Focus depth	Profundidade do foco
+{value} km	{value} km
+Time, UTC	Hora, UTC
+USGS page	Página do USGS
+Last eruption	Última erupção
+date unknown	data desconhecida
+{year} BCE	{year} a.C.
+{value} m	{value} m
+Country	País
+Setting	Contexto tectónico
+Confidence	Confiança
+Source	Fonte
+Radiative power	Potência radiativa
+{value} MW	{value} MW
+Image time, UTC	Hora da imagem, UTC
+Image	Imagem
+night	noturna
+day	diurna
+Focus depth, km	Profundidade do foco, km
+Fire power, MW	Potência do incêndio, MW
+Holocene volcanoes, GVP	Vulcões do Holocénico, GVP
+Dot size - volcano height	Tamanho do ponto - altura do vulcão
+Erupted since 1900	Erupção desde 1900
+Erupted in 1500-1899	Erupção em 1500-1899
+Erupted before 1500	Erupção antes de 1500
+Eruption date unknown	Data da erupção desconhecida
+{layer}: not received: {error}	{layer}: não recebido: {error}
+Contours	Curvas de nível
+Lines of equal terrain height, as on a topographic map. The interval follows the view scale - hundreds of metres from afar, 5-10 m close up, every fifth contour is thicker and labelled with its height. Below sea level they are blue isobaths. They are built from the globe heights and from an own terrain raster of the project.	Linhas de igual altura do relevo, como num mapa topográfico. A equidistância segue a escala da vista - centenas de metros ao longe, 5-10 m de perto. Cada quinta curva é mais grossa e tem a sua cota. Abaixo do nível do mar são isóbatas azuis. São construídas a partir das altitudes do globo e de um raster de relevo próprio do projeto.
+every {step} m, thicker every {index} m	a cada {step} m, grossas a cada {index} m
+Water body bathymetry	Batimetria da massa de água
+Water body bathymetry…	Batimetria da massa de água…
+The raster "{name}" goes into the globe terrain as the bed of the water body, water is drawn above it at the water body level. The default level is the terrain height at the edge of the raster, for a lake it is usually the water surface.	O raster «{name}» entra no relevo do globo como fundo da massa de água, por cima é desenhada a água ao nível da massa de água. O nível predefinido é a altitude do relevo na borda do raster, num lago é normalmente a superfície da água.
+Values are depths	Os valores são profundidades
+The depth below the water surface, with a plus or minus sign. The bed elevation is the water level minus the depth.	A profundidade abaixo da superfície da água, com sinal mais ou menos. A cota do fundo é o nível da água menos a profundidade.
+Values are bed elevations	Os valores são cotas do fundo
+The bed height above sea level, like the terrain. The water level is needed only for the water surface.	A altitude do fundo acima do nível do mar, como no relevo. O nível da água só é necessário para a superfície da água.
+Water level	Nível da água
+The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	A altitude da superfície da água acima do nível do mar. A água é desenhada a esta altitude sobre todos os pontos onde o fundo está mais baixo.
+Remove bathymetry	Retirar a batimetria
+The raster is no longer the globe terrain, no water is drawn over it.	O raster deixa de ser relevo do globo, não é desenhada água por cima.

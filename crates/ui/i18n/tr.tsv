@@ -580,3 +580,52 @@ Class	Sınıf
 Click - the class at the point	Tıklama - noktadaki sınıf
 {name} · {day}	{name} · {day}
 {name}, {units} · {day}	{name}, {units} · {day}
+Earthquakes	Depremler
+Earthquakes of magnitude 4.5 and above over the last 30 days from the USGS feed. A circle marks the epicentre on the surface. The focus is seen at its depth in the removed sector of the Earth cutaway row. The colour shows the focus depth, the size shows the magnitude. The feed is loaded when the row is switched on.	USGS verilerine göre son 30 gündeki 4.5 ve üzeri büyüklükteki depremler. Daire yüzeydeki dış merkezi gösterir. Odak kendi derinliğinde "Dünya kesiti" satırının çıkarılmış diliminde görünür. Renk odak derinliğini, boyut büyüklüğü gösterir. Veriler satır açıldığında yüklenir.
+Volcanoes	Volkanlar
+About 1200 volcanoes that erupted in the last 12 thousand years after the Global Volcanism Program list of the Smithsonian Institution. The colour is the time of the last eruption, the size is the volcano height. A click on a dot shows the volcano type, the year of the last eruption, the tectonic setting and the volcano page on the GVP site. The first switch-on downloads about 2 MB.	Smithsonian Institution'ın Global Volcanism Program listesine göre son 12 bin yılda püskürmüş yaklaşık 1200 volkan. Renk son püskürmenin zamanını, boyut volkanın yüksekliğini gösterir. Noktaya tıklama volkan türünü, son püskürme yılını, tektonik ortamı ve volkanın GVP sitesindeki sayfasını gösterir. İlk açılış yaklaşık 2 MB indirir.
+Fires	Yangınlar
+Fire spots of the last 24 hours from VIIRS images of the NOAA-20 satellite, the NASA FIRMS feed. The color and size of a dot show the radiative power.	NOAA-20 uydusunun VIIRS görüntülerine göre son 24 saatteki yangın noktaları, NASA FIRMS verileri. Noktanın rengi ve boyutu ışınım gücünü gösterir.
+NASA FIRMS, 24 hours	NASA FIRMS, 24 saat
+Magnitude	Büyüklük
+Focus depth	Odak derinliği
+{value} km	{value} km
+Time, UTC	Zaman, UTC
+USGS page	USGS sayfası
+Last eruption	Son püskürme
+date unknown	tarih bilinmiyor
+{year} BCE	MÖ {year}
+{value} m	{value} m
+Country	Ülke
+Setting	Tektonik ortam
+Confidence	Güvenilirlik
+Source	Kaynak
+Radiative power	Işınım gücü
+{value} MW	{value} MW
+Image time, UTC	Görüntü zamanı, UTC
+Image	Görüntü
+night	gece
+day	gündüz
+Focus depth, km	Odak derinliği, km
+Fire power, MW	Yangın gücü, MW
+Holocene volcanoes, GVP	Holosen volkanları, GVP
+Dot size - volcano height	Nokta boyutu - volkan yüksekliği
+Erupted since 1900	1900'den beri püskürmüş
+Erupted in 1500-1899	1500-1899 arasında püskürmüş
+Erupted before 1500	1500'den önce püskürmüş
+Eruption date unknown	Püskürme tarihi bilinmiyor
+{layer}: not received: {error}	{layer}: alınamadı: {error}
+Contours	Eş yükselti eğrileri
+Lines of equal terrain height, as on a topographic map. The interval follows the view scale - hundreds of metres from afar, 5-10 m close up, every fifth contour is thicker and labelled with its height. Below sea level they are blue isobaths. They are built from the globe heights and from an own terrain raster of the project.	Topografik haritadaki gibi eşit arazi yüksekliği çizgileri. Aralık görünüm ölçeğine göre seçilir - uzaktan yüzlerce metre, yakından 5-10 m. Her beşinci eğri kalındır ve yüksekliğiyle etiketlenir. Deniz seviyesinin altında mavi eş derinlik eğrileridir. Kürenin yüksekliklerinden ve projenin kendi arazi rasterinden oluşturulur.
+every {step} m, thicker every {index} m	her {step} m, kalın her {index} m
+Water body bathymetry	Su kütlesi batimetrisi
+Water body bathymetry…	Su kütlesi batimetrisi…
+The raster "{name}" goes into the globe terrain as the bed of the water body, water is drawn above it at the water body level. The default level is the terrain height at the edge of the raster, for a lake it is usually the water surface.	"{name}" rasteri kürenin arazisine su kütlesinin tabanı olarak girer, üzerinde su kütlesi seviyesinde su çizilir. Varsayılan seviye rasterin kenarındaki arazi yüksekliğidir, gölde bu genellikle su yüzeyidir.
+Values are depths	Değerler derinliktir
+The depth below the water surface, with a plus or minus sign. The bed elevation is the water level minus the depth.	Su yüzeyinin altındaki derinlik, artı veya eksi işaretli. Taban yüksekliği su seviyesi eksi derinliktir.
+Values are bed elevations	Değerler taban yükseklikleridir
+The bed height above sea level, like the terrain. The water level is needed only for the water surface.	Arazide olduğu gibi tabanın deniz seviyesinden yüksekliği. Su seviyesi yalnızca su yüzeyi için gerekir.
+Water level	Su seviyesi
+The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	Su yüzeyinin deniz seviyesinden yüksekliği. Su, tabanın daha alçak olduğu tüm noktaların üzerinde bu yükseklikte çizilir.
+Remove bathymetry	Batimetriyi kaldır
+The raster is no longer the globe terrain, no water is drawn over it.	Raster artık kürenin arazisi değildir, üzerinde su çizilmez.

@@ -580,3 +580,52 @@ Class	등급
 Click - the class at the point	클릭 - 지점의 등급
 {name} · {day}	{name} · {day}
 {name}, {units} · {day}	{name}, {units} · {day}
+Earthquakes	지진
+Earthquakes of magnitude 4.5 and above over the last 30 days from the USGS feed. A circle marks the epicentre on the surface. The focus is seen at its depth in the removed sector of the Earth cutaway row. The colour shows the focus depth, the size shows the magnitude. The feed is loaded when the row is switched on.	USGS 데이터에 따른 최근 30일간 규모 4.5 이상의 지진. 원은 지표면의 진앙을 표시합니다. 진원은 해당 깊이에서 "지구 단면" 행의 잘라낸 부분에 보입니다. 색은 진원 깊이를, 크기는 규모를 나타냅니다. 데이터는 행을 켜면 불러옵니다.
+Volcanoes	화산
+About 1200 volcanoes that erupted in the last 12 thousand years after the Global Volcanism Program list of the Smithsonian Institution. The colour is the time of the last eruption, the size is the volcano height. A click on a dot shows the volcano type, the year of the last eruption, the tectonic setting and the volcano page on the GVP site. The first switch-on downloads about 2 MB.	Smithsonian Institution의 Global Volcanism Program 목록에 따른, 최근 1만 2천 년 동안 분화한 약 1200개의 화산. 색은 마지막 분화 시기, 크기는 화산 높이입니다. 점을 클릭하면 화산 유형, 마지막 분화 연도, 지체구조 환경, GVP 사이트의 화산 페이지를 표시합니다. 처음 켤 때 약 2 MB를 내려받습니다.
+Fires	화재
+Fire spots of the last 24 hours from VIIRS images of the NOAA-20 satellite, the NASA FIRMS feed. The color and size of a dot show the radiative power.	NOAA-20 위성의 VIIRS 영상에 따른 최근 24시간의 화재 지점, NASA FIRMS 데이터. 점의 색과 크기는 복사 강도를 나타냅니다.
+NASA FIRMS, 24 hours	NASA FIRMS, 24시간
+Magnitude	규모
+Focus depth	진원 깊이
+{value} km	{value} km
+Time, UTC	시간, UTC
+USGS page	USGS 페이지
+Last eruption	마지막 분화
+date unknown	날짜 미상
+{year} BCE	기원전 {year}년
+{value} m	{value} m
+Country	국가
+Setting	지체구조 환경
+Confidence	신뢰도
+Source	출처
+Radiative power	복사 강도
+{value} MW	{value} MW
+Image time, UTC	촬영 시간, UTC
+Image	영상
+night	야간
+day	주간
+Focus depth, km	진원 깊이, km
+Fire power, MW	화재 강도, MW
+Holocene volcanoes, GVP	홀로세 화산, GVP
+Dot size - volcano height	점 크기 - 화산 높이
+Erupted since 1900	1900년 이후 분화
+Erupted in 1500-1899	1500-1899년 분화
+Erupted before 1500	1500년 이전 분화
+Eruption date unknown	분화 날짜 미상
+{layer}: not received: {error}	{layer}: 받지 못함: {error}
+Contours	등고선
+Lines of equal terrain height, as on a topographic map. The interval follows the view scale - hundreds of metres from afar, 5-10 m close up, every fifth contour is thicker and labelled with its height. Below sea level they are blue isobaths. They are built from the globe heights and from an own terrain raster of the project.	지형도처럼 지형 높이가 같은 선. 간격은 화면 축척에 맞춰 정해지며 멀리서는 수백 m, 가까이서는 5-10 m입니다. 다섯 번째 등고선마다 굵게 그리고 높이를 표시합니다. 해수면 아래는 파란 등심선입니다. 지구본의 고도와 프로젝트 자체의 지형 래스터로 만듭니다.
+every {step} m, thicker every {index} m	{step} m마다, 굵은 선은 {index} m마다
+Water body bathymetry	수역 수심
+Water body bathymetry…	수역 수심…
+The raster "{name}" goes into the globe terrain as the bed of the water body, water is drawn above it at the water body level. The default level is the terrain height at the edge of the raster, for a lake it is usually the water surface.	래스터 "{name}"는 수역의 바닥으로 지구본 지형에 들어가고 그 위에 수역 수위로 물이 그려집니다. 기본 수위는 래스터 가장자리의 지형 높이이며 호수에서는 보통 수면입니다.
+Values are depths	값은 수심
+The depth below the water surface, with a plus or minus sign. The bed elevation is the water level minus the depth.	수면 아래의 깊이이며 플러스 또는 마이너스 부호가 붙습니다. 바닥 표고는 수위에서 수심을 뺀 값입니다.
+Values are bed elevations	값은 바닥 표고
+The bed height above sea level, like the terrain. The water level is needed only for the water surface.	지형처럼 해수면 기준 바닥의 높이입니다. 수위는 수면에만 필요합니다.
+Water level	수위
+The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	해수면 기준 수면의 높이. 바닥이 더 낮은 모든 지점 위에 이 높이로 물이 그려집니다.
+Remove bathymetry	수심 제거
+The raster is no longer the globe terrain, no water is drawn over it.	래스터는 더 이상 지구본 지형이 아니며 그 위에 물이 그려지지 않습니다.

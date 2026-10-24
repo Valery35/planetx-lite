@@ -22,11 +22,14 @@ pub enum Kind {
     Overlay(&'static Overlay),
     /// Тема GIBS: адрес тайла - на день ряда, его даёт запрос ряда дат.
     Theme(&'static Theme),
+    /// Горизонтали рельефа по высотам Terrarium, цвета - по подложке.
+    Contours(data::contours::Palette),
 }
 
 /// Группа каталога, как у модуля.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Group {
+    Map,
     Fire,
     Gases,
     Water,
@@ -50,7 +53,14 @@ pub struct Entry {
 /// Строки: темы GIBS в порядке `gallery_items` модуля, за ними слои
 /// в порядке `LAYERS`. «Повторяемости воды» в списке
 /// каталога модуля нет, её нет и здесь.
-pub const ALL: [Entry; 37] = [
+pub const ALL: [Entry; 38] = [
+    Entry {
+        key: "contours",
+        name: "Contours",
+        tip: "Lines of equal terrain height, as on a topographic map. The interval follows the view scale - hundreds of metres from afar, 5-10 m close up, every fifth contour is thicker and labelled with its height. Below sea level they are blue isobaths. They are built from the globe heights and from an own terrain raster of the project.",
+        group: Group::Map,
+        source: "Terrarium",
+    },
     Entry {
         key: "smoke",
         name: "Smoke, aerosol index",
@@ -319,6 +329,9 @@ pub fn index(key: &str) -> Option<usize> {
 
 /// Вид карты строки.
 pub fn kind(key: &str) -> Option<Kind> {
+    if key == "contours" {
+        return Some(Kind::Contours(data::contours::Palette::Map));
+    }
     if let Some(t) = gibs::theme_of(key) {
         return Some(Kind::Theme(t));
     }
@@ -339,7 +352,7 @@ impl Kind {
         match self {
             Kind::Theme(_) => Some(0),
             Kind::Field(_) | Kind::Map(_) => Some(1),
-            Kind::Overlay(_) => None,
+            Kind::Overlay(_) | Kind::Contours(_) => None,
         }
     }
 
@@ -355,6 +368,7 @@ impl Kind {
             Kind::Map(m) => m.max_level,
             Kind::Overlay(o) => o.max_level,
             Kind::Theme(t) => t.level,
+            Kind::Contours(_) => data::contours::LEVEL,
         }
     }
 
@@ -365,6 +379,8 @@ impl Kind {
             Kind::Map(m) => m.attribution.0,
             Kind::Overlay(o) => o.attribution,
             Kind::Theme(_) => gibs::ATTRIBUTION.0,
+            // Подпись высот Terrarium и так стоит на экране.
+            Kind::Contours(_) => "",
         }
     }
 
@@ -375,6 +391,7 @@ impl Kind {
             Kind::Map(m) => m.attribution.1,
             Kind::Overlay(o) => o.terms,
             Kind::Theme(_) => gibs::ATTRIBUTION.1,
+            Kind::Contours(_) => "",
         }
     }
 
@@ -386,6 +403,8 @@ impl Kind {
             Kind::Map(m) => rastermaps::map_rgba(m, rgba, m.opacity),
             Kind::Overlay(_) => rastermaps::overlay_rgba(rgba),
             Kind::Theme(t) => gibs::overlay_rgba(rgba, gibs::OPACITY, t.clear),
+            // Картинку горизонталей рисует задание по тайлу высот.
+            Kind::Contours(_) => None,
         }
     }
 
@@ -411,6 +430,8 @@ impl Kind {
             Kind::Map(m) => vec![(0, source(key, m.url, m.max_level))],
             // Адрес темы - на день, источник заводит окно по ряду дат.
             Kind::Theme(_) => Vec::new(),
+            // Высоты Terrarium до уровня съёмки, кэш - общий с рельефом.
+            Kind::Contours(_) => vec![(0, net::Source { max_level: data::contours::SOURCE_LEVEL, ..net::TERRARIUM })],
         }
     }
 }

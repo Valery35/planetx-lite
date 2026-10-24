@@ -111,7 +111,32 @@ fn layer_words(extra: Extra) -> &'static [&'static str] {
         Extra::Air => &["атмосфера", "воздух", "дымка", "гало", "atmosphere", "haze", "air"],
         Extra::Sun => &["ночь", "день", "освещение", "тень", "огни городов", "sun", "night", "city lights"],
         Extra::Grid => &["сетка", "градусы", "экватор", "graticule", "grid"],
-        Extra::Map(_) => &[],
+        Extra::Map(_) | Extra::Dots(_) => key_words(extra.key()),
+    }
+}
+
+/// Слова слоёв каталога по ключу, `WORDS` модуля.
+fn key_words(key: &str) -> &'static [&'static str] {
+    match key {
+        "glim" => &["литология", "литологическая карта", "породы", "типы пород", "glim", "lithology", "rock types"],
+        "emag" => &["магнитные аномалии", "магнитка", "аэромагнитка", "магниторазведка", "emag", "magnetic anomaly"],
+        "gravity" => &["сила тяжести", "гравитация", "гравиметрия", "аномалии силы тяжести", "xgm2019e", "gravity", "free-air"],
+        "bouguer" => &["буге", "аномалия буге", "аномалии буге", "bouguer"],
+        "seafloor_age" => &["возраст дна", "возраст океанического дна", "возраст коры", "спрединг", "seafloor age", "ocean age"],
+        "heatflow" => &["тепловой поток", "геотермия", "теплопоток", "heat flow", "geothermal"],
+        "worldcover" => &["покрытие земель", "растительность", "лес", "пашня", "застройка", "землепользование", "worldcover", "land cover"],
+        "water_transitions" => &["изменения воды", "исчезнувшие озёра", "новые водохранилища", "обмеление", "water change", "water transitions"],
+        "soil_clay" => &["глина", "почвы", "почва", "гранулометрия", "soilgrids", "clay", "soil"],
+        "soil_sand" => &["песок", "песчаные почвы", "sand"],
+        "soil_soc" => &["органический углерод", "гумус", "углерод почвы", "soil carbon", "soc"],
+        "soil_ph" => &["кислотность", "ph", "кислые почвы", "soil ph", "acidity"],
+        "sea_marks" => &["морские знаки", "буи", "маяки", "фарватер", "openseamap", "sea marks", "buoys"],
+        "hiking" => &["пешие маршруты", "тропы", "туризм", "походы", "hiking", "trails"],
+        "cycling" => &["велосипед", "веломаршруты", "cycling", "bike routes"],
+        "quakes" => &["землетрясения", "сейсмика", "очаги", "earthquakes"],
+        "volcanoes" => &["вулканы", "вулкан", "извержения", "gvp", "volcanoes", "volcano"],
+        "fires" => &["пожары", "огонь", "fires", "firms"],
+        _ => &[],
     }
 }
 

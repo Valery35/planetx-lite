@@ -580,3 +580,52 @@ Class	类别
 Click - the class at the point	单击 - 该点的类别
 {name} · {day}	{name} · {day}
 {name}, {units} · {day}	{name}, {units} · {day}
+Earthquakes	地震
+Earthquakes of magnitude 4.5 and above over the last 30 days from the USGS feed. A circle marks the epicentre on the surface. The focus is seen at its depth in the removed sector of the Earth cutaway row. The colour shows the focus depth, the size shows the magnitude. The feed is loaded when the row is switched on.	根据 USGS 数据，过去 30 天内震级 4.5 及以上的地震。圆圈标出地表的震中。震源在其深度处显示于“地球剖面”行的移除扇区中。颜色表示震源深度，大小表示震级。打开该行时加载数据。
+Volcanoes	火山
+About 1200 volcanoes that erupted in the last 12 thousand years after the Global Volcanism Program list of the Smithsonian Institution. The colour is the time of the last eruption, the size is the volcano height. A click on a dot shows the volcano type, the year of the last eruption, the tectonic setting and the volcano page on the GVP site. The first switch-on downloads about 2 MB.	根据 Smithsonian Institution 的 Global Volcanism Program 名录，过去 1.2 万年内喷发过的约 1200 座火山。颜色表示最近一次喷发的时间，大小表示火山高度。单击点显示火山类型、最近一次喷发年份、构造环境以及 GVP 网站上的火山页面。首次打开下载约 2 MB。
+Fires	火灾
+Fire spots of the last 24 hours from VIIRS images of the NOAA-20 satellite, the NASA FIRMS feed. The color and size of a dot show the radiative power.	根据 NOAA-20 卫星的 VIIRS 影像，过去 24 小时的火点，NASA FIRMS 数据。点的颜色和大小表示辐射功率。
+NASA FIRMS, 24 hours	NASA FIRMS，24 小时
+Magnitude	震级
+Focus depth	震源深度
+{value} km	{value} 公里
+Time, UTC	时间，UTC
+USGS page	USGS 页面
+Last eruption	最近一次喷发
+date unknown	日期不详
+{year} BCE	公元前 {year} 年
+{value} m	{value} 米
+Country	国家
+Setting	构造环境
+Confidence	置信度
+Source	来源
+Radiative power	辐射功率
+{value} MW	{value} MW
+Image time, UTC	成像时间，UTC
+Image	影像
+night	夜间
+day	白天
+Focus depth, km	震源深度，公里
+Fire power, MW	火灾功率，MW
+Holocene volcanoes, GVP	全新世火山，GVP
+Dot size - volcano height	点大小 - 火山高度
+Erupted since 1900	1900 年以来喷发
+Erupted in 1500-1899	1500-1899 年喷发
+Erupted before 1500	1500 年以前喷发
+Eruption date unknown	喷发日期不详
+{layer}: not received: {error}	{layer}：未收到：{error}
+Contours	等高线
+Lines of equal terrain height, as on a topographic map. The interval follows the view scale - hundreds of metres from afar, 5-10 m close up, every fifth contour is thicker and labelled with its height. Below sea level they are blue isobaths. They are built from the globe heights and from an own terrain raster of the project.	地形高度相等的线，如同地形图上一样。等高距随视图比例尺选择 - 远看为数百米，近看为 5-10 米。每第五条等高线加粗并标注高程。海平面以下为蓝色等深线。根据地球高程和项目自有的地形栅格生成。
+every {step} m, thicker every {index} m	每 {step} 米，每 {index} 米加粗
+Water body bathymetry	水体水深
+Water body bathymetry…	水体水深…
+The raster "{name}" goes into the globe terrain as the bed of the water body, water is drawn above it at the water body level. The default level is the terrain height at the edge of the raster, for a lake it is usually the water surface.	栅格“{name}”作为水体底部进入地球地形，其上按水体水位绘制水面。默认水位为栅格边缘处的地形高度，对湖泊而言通常就是水面。
+Values are depths	数值为水深
+The depth below the water surface, with a plus or minus sign. The bed elevation is the water level minus the depth.	水面以下的深度，带正号或负号。水底高程等于水位减去水深。
+Values are bed elevations	数值为水底高程
+The bed height above sea level, like the terrain. The water level is needed only for the water surface.	水底相对海平面的高度，与地形相同。水位仅用于水面。
+Water level	水位
+The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	水面相对海平面的高度。在水底低于此高度的所有点上方，按此高度绘制水面。
+Remove bathymetry	移除水深
+The raster is no longer the globe terrain, no water is drawn over it.	栅格不再作为地球地形，其上不绘制水面。

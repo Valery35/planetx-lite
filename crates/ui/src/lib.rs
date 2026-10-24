@@ -9,16 +9,19 @@
 
 pub mod app;
 pub mod basemap;
+pub mod bathymetry;
 pub mod card;
 pub mod check;
 pub mod commands;
 pub mod coords_text;
 pub mod credits;
 pub mod demos;
+pub mod dots;
 pub mod export;
 pub mod folderprops;
 pub mod fonts;
 pub mod gpkg;
+pub mod glyphs;
 pub mod grid;
 pub mod i18n;
 pub mod identify;

@@ -580,3 +580,52 @@ Class	Classe
 Click - the class at the point	Clic - la classe au point
 {name} · {day}	{name} · {day}
 {name}, {units} · {day}	{name}, {units} · {day}
+Earthquakes	Séismes
+Earthquakes of magnitude 4.5 and above over the last 30 days from the USGS feed. A circle marks the epicentre on the surface. The focus is seen at its depth in the removed sector of the Earth cutaway row. The colour shows the focus depth, the size shows the magnitude. The feed is loaded when the row is switched on.	Séismes de magnitude 4.5 et plus sur les 30 derniers jours d’après les données de l’USGS. Un cercle marque l’épicentre en surface. À sa profondeur, le foyer se voit dans le secteur retiré de la ligne « Coupe de la Terre ». La couleur montre la profondeur du foyer, la taille montre la magnitude. Les données se chargent à l’activation de la ligne.
+Volcanoes	Volcans
+About 1200 volcanoes that erupted in the last 12 thousand years after the Global Volcanism Program list of the Smithsonian Institution. The colour is the time of the last eruption, the size is the volcano height. A click on a dot shows the volcano type, the year of the last eruption, the tectonic setting and the volcano page on the GVP site. The first switch-on downloads about 2 MB.	Environ 1200 volcans entrés en éruption au cours des 12 derniers millénaires, d’après la liste du Global Volcanism Program de la Smithsonian Institution. La couleur indique la date de la dernière éruption, la taille indique la hauteur du volcan. Un clic sur un point montre le type de volcan, l’année de la dernière éruption, le contexte tectonique et la page du volcan sur le site du GVP. La première activation télécharge environ 2 Mo.
+Fires	Incendies
+Fire spots of the last 24 hours from VIIRS images of the NOAA-20 satellite, the NASA FIRMS feed. The color and size of a dot show the radiative power.	Foyers d’incendie des dernières 24 heures d’après les images VIIRS du satellite NOAA-20, données NASA FIRMS. La couleur et la taille d’un point montrent la puissance radiative.
+NASA FIRMS, 24 hours	NASA FIRMS, 24 heures
+Magnitude	Magnitude
+Focus depth	Profondeur du foyer
+{value} km	{value} km
+Time, UTC	Heure, UTC
+USGS page	Page de l’USGS
+Last eruption	Dernière éruption
+date unknown	date inconnue
+{year} BCE	{year} av. J.-C.
+{value} m	{value} m
+Country	Pays
+Setting	Contexte tectonique
+Confidence	Confiance
+Source	Source
+Radiative power	Puissance radiative
+{value} MW	{value} MW
+Image time, UTC	Heure de l’image, UTC
+Image	Image
+night	de nuit
+day	de jour
+Focus depth, km	Profondeur du foyer, km
+Fire power, MW	Puissance de l’incendie, MW
+Holocene volcanoes, GVP	Volcans de l’Holocène, GVP
+Dot size - volcano height	Taille du point - hauteur du volcan
+Erupted since 1900	Éruption depuis 1900
+Erupted in 1500-1899	Éruption en 1500-1899
+Erupted before 1500	Éruption avant 1500
+Eruption date unknown	Date d’éruption inconnue
+{layer}: not received: {error}	{layer} : non reçu : {error}
+Contours	Courbes de niveau
+Lines of equal terrain height, as on a topographic map. The interval follows the view scale - hundreds of metres from afar, 5-10 m close up, every fifth contour is thicker and labelled with its height. Below sea level they are blue isobaths. They are built from the globe heights and from an own terrain raster of the project.	Lignes d’égale altitude du relief, comme sur une carte topographique. L’équidistance suit l’échelle de la vue - des centaines de mètres de loin, 5-10 m de près. Une courbe sur cinq est plus épaisse et porte sa cote. Sous le niveau de la mer, ce sont des isobathes bleues. Elles sont construites à partir des altitudes du globe et d’un raster de relief propre au projet.
+every {step} m, thicker every {index} m	tous les {step} m, épaisses tous les {index} m
+Water body bathymetry	Bathymétrie du plan d’eau
+Water body bathymetry…	Bathymétrie du plan d’eau…
+The raster "{name}" goes into the globe terrain as the bed of the water body, water is drawn above it at the water body level. The default level is the terrain height at the edge of the raster, for a lake it is usually the water surface.	Le raster « {name} » entre dans le relief du globe comme fond du plan d’eau, l’eau est dessinée au-dessus au niveau du plan d’eau. Le niveau par défaut est l’altitude du relief au bord du raster, pour un lac c’est en général la surface de l’eau.
+Values are depths	Les valeurs sont des profondeurs
+The depth below the water surface, with a plus or minus sign. The bed elevation is the water level minus the depth.	La profondeur sous la surface de l’eau, avec un signe plus ou moins. La cote du fond est le niveau de l’eau moins la profondeur.
+Values are bed elevations	Les valeurs sont des cotes du fond
+The bed height above sea level, like the terrain. The water level is needed only for the water surface.	L’altitude du fond au-dessus du niveau de la mer, comme pour le relief. Le niveau de l’eau ne sert qu’à la surface de l’eau.
+Water level	Niveau de l’eau
+The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	L’altitude de la surface de l’eau au-dessus du niveau de la mer. L’eau est dessinée à cette altitude sur tous les points où le fond est plus bas.
+Remove bathymetry	Retirer la bathymétrie
+The raster is no longer the globe terrain, no water is drawn over it.	Le raster cesse d’être le relief du globe, aucune eau n’est dessinée au-dessus.

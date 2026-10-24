@@ -580,3 +580,52 @@ Class	分類
 Click - the class at the point	クリック - 地点の分類
 {name} · {day}	{name} · {day}
 {name}, {units} · {day}	{name}, {units} · {day}
+Earthquakes	地震
+Earthquakes of magnitude 4.5 and above over the last 30 days from the USGS feed. A circle marks the epicentre on the surface. The focus is seen at its depth in the removed sector of the Earth cutaway row. The colour shows the focus depth, the size shows the magnitude. The feed is loaded when the row is switched on.	USGS のデータによる過去 30 日間のマグニチュード 4.5 以上の地震。円は地表の震央を示します。震源はその深さで「地球の断面」行の取り除かれた扇形部分に見えます。色は震源の深さ、大きさはマグニチュードを示します。データは行をオンにすると読み込まれます。
+Volcanoes	火山
+About 1200 volcanoes that erupted in the last 12 thousand years after the Global Volcanism Program list of the Smithsonian Institution. The colour is the time of the last eruption, the size is the volcano height. A click on a dot shows the volcano type, the year of the last eruption, the tectonic setting and the volcano page on the GVP site. The first switch-on downloads about 2 MB.	Smithsonian Institution の Global Volcanism Program のリストによる、過去 12000 年間に噴火した約 1200 の火山。色は最後の噴火の時期、大きさは火山の高さを示します。点をクリックすると、火山の種類、最後の噴火の年、テクトニック環境、GVP サイトの火山のページを表示します。最初にオンにすると約 2 MB をダウンロードします。
+Fires	火災
+Fire spots of the last 24 hours from VIIRS images of the NOAA-20 satellite, the NASA FIRMS feed. The color and size of a dot show the radiative power.	NOAA-20 衛星の VIIRS 画像による過去 24 時間の火災地点、NASA FIRMS のデータ。点の色と大きさは放射強度を示します。
+NASA FIRMS, 24 hours	NASA FIRMS、24 時間
+Magnitude	マグニチュード
+Focus depth	震源の深さ
+{value} km	{value} km
+Time, UTC	時刻、UTC
+USGS page	USGS のページ
+Last eruption	最後の噴火
+date unknown	日付不明
+{year} BCE	紀元前 {year} 年
+{value} m	{value} m
+Country	国
+Setting	テクトニック環境
+Confidence	信頼度
+Source	ソース
+Radiative power	放射強度
+{value} MW	{value} MW
+Image time, UTC	撮影時刻、UTC
+Image	画像
+night	夜間
+day	昼間
+Focus depth, km	震源の深さ、km
+Fire power, MW	火災強度、MW
+Holocene volcanoes, GVP	完新世の火山、GVP
+Dot size - volcano height	点の大きさ - 火山の高さ
+Erupted since 1900	1900 年以降に噴火
+Erupted in 1500-1899	1500-1899 年に噴火
+Erupted before 1500	1500 年より前に噴火
+Eruption date unknown	噴火日不明
+{layer}: not received: {error}	{layer}：受信できません：{error}
+Contours	等高線
+Lines of equal terrain height, as on a topographic map. The interval follows the view scale - hundreds of metres from afar, 5-10 m close up, every fifth contour is thicker and labelled with its height. Below sea level they are blue isobaths. They are built from the globe heights and from an own terrain raster of the project.	地形図と同じく、地形の高さが等しい線。間隔は表示の縮尺に合わせて選ばれ、遠くからは数百 m、近くでは 5-10 m になります。5 本ごとの計曲線は太く、標高が表示されます。海面より下は青い等深線です。地球儀の標高とプロジェクト独自の地形ラスターから作成されます。
+every {step} m, thicker every {index} m	{step} m ごと、太線は {index} m ごと
+Water body bathymetry	水域の水深
+Water body bathymetry…	水域の水深…
+The raster "{name}" goes into the globe terrain as the bed of the water body, water is drawn above it at the water body level. The default level is the terrain height at the edge of the raster, for a lake it is usually the water surface.	ラスター「{name}」は水域の底として地球儀の地形に入り、その上に水域の水位で水が描かれます。既定の水位はラスターの縁の地形の高さで、湖では通常は水面です。
+Values are depths	値は水深
+The depth below the water surface, with a plus or minus sign. The bed elevation is the water level minus the depth.	水面からの深さで、プラスまたはマイナスの符号付きです。底の標高は水位から水深を引いた値です。
+Values are bed elevations	値は底の標高
+The bed height above sea level, like the terrain. The water level is needed only for the water surface.	地形と同じく、海面からの底の高さです。水位は水面にのみ必要です。
+Water level	水位
+The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	海面からの水面の高さ。底がこれより低いすべての点の上に、この高さで水が描かれます。
+Remove bathymetry	水深を削除
+The raster is no longer the globe terrain, no water is drawn over it.	ラスターは地球儀の地形ではなくなり、その上に水は描かれません。

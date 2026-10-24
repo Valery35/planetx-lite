@@ -580,3 +580,52 @@ Class	Klasse
 Click - the class at the point	Klik - de klasse op het punt
 {name} · {day}	{name} · {day}
 {name}, {units} · {day}	{name}, {units} · {day}
+Earthquakes	Aardbevingen
+Earthquakes of magnitude 4.5 and above over the last 30 days from the USGS feed. A circle marks the epicentre on the surface. The focus is seen at its depth in the removed sector of the Earth cutaway row. The colour shows the focus depth, the size shows the magnitude. The feed is loaded when the row is switched on.	Aardbevingen met magnitude 4.5 en hoger in de laatste 30 dagen volgens de gegevens van de USGS. Een cirkel markeert het epicentrum aan het oppervlak. Op zijn diepte is de haard te zien in de weggenomen sector van de regel ‘Doorsnede van de aarde’. De kleur toont de diepte van de haard, de grootte toont de magnitude. De gegevens worden geladen bij het aanzetten van de regel.
+Volcanoes	Vulkanen
+About 1200 volcanoes that erupted in the last 12 thousand years after the Global Volcanism Program list of the Smithsonian Institution. The colour is the time of the last eruption, the size is the volcano height. A click on a dot shows the volcano type, the year of the last eruption, the tectonic setting and the volcano page on the GVP site. The first switch-on downloads about 2 MB.	Ongeveer 1200 vulkanen die in de laatste 12 duizend jaar zijn uitgebarsten, volgens de lijst van het Global Volcanism Program van de Smithsonian Institution. De kleur is de tijd van de laatste uitbarsting, de grootte is de hoogte van de vulkaan. Een klik op een punt toont het type vulkaan, het jaar van de laatste uitbarsting, de tektonische omgeving en de pagina van de vulkaan op de GVP-site. Het eerste aanzetten downloadt ongeveer 2 MB.
+Fires	Branden
+Fire spots of the last 24 hours from VIIRS images of the NOAA-20 satellite, the NASA FIRMS feed. The color and size of a dot show the radiative power.	Brandhaarden van de laatste 24 uur volgens VIIRS-beelden van de satelliet NOAA-20, gegevens van NASA FIRMS. De kleur en de grootte van een punt tonen het stralingsvermogen.
+NASA FIRMS, 24 hours	NASA FIRMS, 24 uur
+Magnitude	Magnitude
+Focus depth	Diepte van de haard
+{value} km	{value} km
+Time, UTC	Tijd, UTC
+USGS page	USGS-pagina
+Last eruption	Laatste uitbarsting
+date unknown	datum onbekend
+{year} BCE	{year} v.Chr.
+{value} m	{value} m
+Country	Land
+Setting	Tektonische omgeving
+Confidence	Betrouwbaarheid
+Source	Bron
+Radiative power	Stralingsvermogen
+{value} MW	{value} MW
+Image time, UTC	Opnametijd, UTC
+Image	Opname
+night	nacht
+day	dag
+Focus depth, km	Diepte van de haard, km
+Fire power, MW	Brandvermogen, MW
+Holocene volcanoes, GVP	Holocene vulkanen, GVP
+Dot size - volcano height	Puntgrootte - hoogte van de vulkaan
+Erupted since 1900	Uitgebarsten sinds 1900
+Erupted in 1500-1899	Uitgebarsten in 1500-1899
+Erupted before 1500	Uitgebarsten voor 1500
+Eruption date unknown	Datum van uitbarsting onbekend
+{layer}: not received: {error}	{layer}: niet ontvangen: {error}
+Contours	Hoogtelijnen
+Lines of equal terrain height, as on a topographic map. The interval follows the view scale - hundreds of metres from afar, 5-10 m close up, every fifth contour is thicker and labelled with its height. Below sea level they are blue isobaths. They are built from the globe heights and from an own terrain raster of the project.	Lijnen van gelijke hoogte van het reliëf, zoals op een topografische kaart. Het interval volgt de schaal van de weergave - honderden meters van ver, 5-10 m van dichtbij. Elke vijfde hoogtelijn is dikker en heeft een hoogtelabel. Onder zeeniveau zijn het blauwe dieptelijnen. Ze worden gemaakt uit de hoogten van de globe en uit een eigen reliëfraster van het project.
+every {step} m, thicker every {index} m	elke {step} m, dikker elke {index} m
+Water body bathymetry	Bathymetrie van het water
+Water body bathymetry…	Bathymetrie van het water…
+The raster "{name}" goes into the globe terrain as the bed of the water body, water is drawn above it at the water body level. The default level is the terrain height at the edge of the raster, for a lake it is usually the water surface.	Het raster ‘{name}’ wordt de bodem van het water in het reliëf van de globe, erboven wordt water getekend op het waterniveau. Het standaardniveau is de reliëfhoogte aan de rand van het raster, bij een meer is dat meestal het wateroppervlak.
+Values are depths	Waarden zijn diepten
+The depth below the water surface, with a plus or minus sign. The bed elevation is the water level minus the depth.	De diepte onder het wateroppervlak, met plus- of minteken. De bodemhoogte is het waterniveau min de diepte.
+Values are bed elevations	Waarden zijn bodemhoogten
+The bed height above sea level, like the terrain. The water level is needed only for the water surface.	De hoogte van de bodem boven zeeniveau, zoals bij het reliëf. Het waterniveau is alleen nodig voor het wateroppervlak.
+Water level	Waterniveau
+The height of the water surface above sea level. The water is drawn at this height over all points where the bed is lower.	De hoogte van het wateroppervlak boven zeeniveau. Het water wordt op deze hoogte getekend boven alle punten waar de bodem lager ligt.
+Remove bathymetry	Bathymetrie verwijderen
+The raster is no longer the globe terrain, no water is drawn over it.	Het raster is geen reliëf van de globe meer, erboven wordt geen water getekend.

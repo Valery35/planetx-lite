@@ -303,7 +303,7 @@ fn points_are_drawn_in_their_color() {
         }
     }
     let colors = vec![[255, 0, 0]; offsets.len()];
-    globe.set_points(&[render::PointsMesh { center, offsets, colors, size: 4.0 }]);
+    globe.set_points(&[render::PointsMesh { center, offsets, colors, size: 4.0, ..Default::default() }]);
     let frame = grab(&mut globe, &cam, false);
     let c = rgb(&frame, f64::from(cam.width) / 2.0, f64::from(cam.height) / 2.0);
     assert!(c[0] > 200 && c[1] < 60 && c[2] < 60, "{c:?}");

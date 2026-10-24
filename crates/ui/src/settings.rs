@@ -55,11 +55,13 @@ pub struct Settings {
     pub maps: Vec<String>,
     /// Ключ основы, `Basemap::key`.
     pub basemap: String,
+    /// Включённые слои точек, ключи `crate::dots::Layer`.
+    pub dots: Vec<String>,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into() }
+        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new() }
     }
 }
 
@@ -71,7 +73,7 @@ impl Settings {
 
     pub fn to_text(&self) -> String {
         format!(
-            "language={}\nlabels={}\ntheme={}\nscale={}\nsun={}\ngrid={}\nair={}\nrelief={}\nvector={}\ncoords={}\nplaces_height={}\nmaps={}\nbasemap={}\n",
+            "language={}\nlabels={}\ntheme={}\nscale={}\nsun={}\ngrid={}\nair={}\nrelief={}\nvector={}\ncoords={}\nplaces_height={}\nmaps={}\nbasemap={}\ndots={}\n",
             self.language.as_deref().unwrap_or(""),
             self.labels,
             if self.dark { "dark" } else { "light" },
@@ -84,7 +86,8 @@ impl Settings {
             self.coords,
             self.places_height,
             self.maps.join(","),
-            self.basemap
+            self.basemap,
+            self.dots.join(",")
         ) + &self.history.iter().map(|h| format!("history={h}\n")).collect::<String>()
     }
 
@@ -110,6 +113,9 @@ impl Settings {
                 "vector" => s.vector = crate::vector::VectorBase::from_text(value).to_text(),
                 "history" if !value.is_empty() && s.history.len() < scene::searchbar::HISTORY => s.history.push(value.to_string()),
                 "basemap" if Basemap::from_key(value).is_some() => s.basemap = value.to_string(),
+                "dots" => {
+                    s.dots = value.split(',').filter(|k| crate::dots::Layer::from_key(k).is_some()).map(str::to_string).collect();
+                }
                 "maps" => {
                     s.maps = value.split(',').filter(|k| crate::maps::index(k).is_some()).map(str::to_string).collect();
                 }
@@ -262,7 +268,7 @@ mod tests {
 
     #[test]
     fn settings_round_trip_and_hostile_text() {
-        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into() };
+        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()] };
         assert_eq!(Settings::from_text(&s.to_text()), s);
         let bad = Settings::from_text("language=xx\nlabels=../x\ntheme=dark\nscale=1e9\nscale=NaN\nfoo=bar\nno equals\nplaces_height=-5\nplaces_height=NaN\nmaps=emag,../x");
         assert_eq!(bad.maps, ["emag"]);
