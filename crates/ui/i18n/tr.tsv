@@ -1147,3 +1147,29 @@ Wikipedia	Vikipedi
 Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	Bakış noktasının yakınındaki koordinatlı Vikipedi maddeleri. Bir maddeye tıklama bağlantısını ve ilk paragrafını verir.
 Wikipedia did not answer, retry in 30 s.	Vikipedi yanıt vermedi, 30 sn sonra yeniden denenecek.
 Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	Bakış noktasının yakınındaki koordinatlı Vikipedi maddeleri, önce önemli ve yakın olanlar. Kamera yüksekliği 40 km'nin altındayken görünürler. Bir maddeye tıklama bağlantısını ve ilk paragrafını "Nesneler" penceresinde verir.
+CelesTrak refused the group, a new request goes 2 hours after the refusal.	CelesTrak grubu reddetti, yeni istek retten 2 saat sonra gönderilir.
+Elements age	Öğelerin yaşı
+Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.	CelesTrak yapay uydu grupları. Bir gruba tıklama onu kürede gösterir veya kaldırır.
+NORAD number	NORAD numarası
+Orbit and ground track	Yörünge ve yer izi
+The answer has no orbital elements.	Yanıtta yörünge öğeleri yok.
+{value} d	{value} gün
+{value} km/s	{value} km/sn
+Space stations	Uzay istasyonları
+The International Space Station, the Chinese Tiangong station and the spacecraft docked to them.	Uluslararası Uzay İstasyonu, Çin'in Tiangong istasyonu ve onlara kenetlenmiş araçlar.
+Bright satellites	Parlak uydular
+About a hundred satellites and rocket stages visible from the Earth without binoculars.	Dünya'dan dürbünsüz görülebilen yaklaşık yüz uydu ve roket kademesi.
+Navigation	Seyrüsefer
+GPS, GLONASS, Galileo and BeiDou satellites on medium orbits of about 20 000 km and geosynchronous ones.	Yaklaşık 20 000 km'lik orta yörüngelerde ve yer eşzamanlı yörüngelerde GPS, GLONASS, Galileo ve BeiDou uyduları.
+Weather satellites	Meteoroloji uyduları
+Weather satellites on polar and geostationary orbits.	Kutupsal ve yer durağan yörüngelerdeki meteoroloji uyduları.
+Earth observation	Yer gözlemi
+Earth imaging satellites, Landsat and Sentinel among them.	Aralarında Landsat ve Sentinel'in de bulunduğu yer görüntüleme uyduları.
+Science	Bilim
+Science satellites and observatories on Earth orbits.	Yer yörüngelerindeki bilim uyduları ve gözlemevleri.
+Geostationary	Yer durağan
+Active satellites on the geosynchronous orbit, about 36 000 km above the equator. They stay almost still over the Earth.	Ekvatorun yaklaşık 36 000 km üzerindeki yer eşzamanlı yörüngede etkin uydular. Dünya'nın üzerinde neredeyse hareketsiz dururlar.
+Starlink	Starlink
+SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	340-570 km'deki SpaceX haberleşme uyduları, binlerce. Yükleme ve ilk hesap diğer gruplardan uzun sürer.
+OneWeb	OneWeb
+OneWeb communication satellites at about 1200 km.	Yaklaşık 1200 km'deki OneWeb haberleşme uyduları.

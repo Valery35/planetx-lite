@@ -1147,3 +1147,29 @@ Wikipedia	Wikipédia
 Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	Artigos da Wikipédia com coordenadas perto do ponto de vista. Um clique num artigo dá a sua ligação e o primeiro parágrafo.
 Wikipedia did not answer, retry in 30 s.	A Wikipédia não respondeu, nova tentativa dentro de 30 s.
 Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	Artigos da Wikipédia com coordenadas perto do ponto de vista, primeiro os importantes e os próximos. Veem-se abaixo de 40 km de altura da câmara. Um clique num artigo dá a sua ligação e o primeiro parágrafo na janela «Objetos».
+CelesTrak refused the group, a new request goes 2 hours after the refusal.	A CelesTrak recusou o grupo, um novo pedido segue 2 horas após a recusa.
+Elements age	Idade dos elementos
+Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.	Grupos de satélites artificiais da CelesTrak. Um clique num grupo mostra-o no globo ou retira-o.
+NORAD number	Número NORAD
+Orbit and ground track	Órbita e traço no solo
+The answer has no orbital elements.	A resposta não tem elementos orbitais.
+{value} d	{value} d
+{value} km/s	{value} km/s
+Space stations	Estações espaciais
+The International Space Station, the Chinese Tiangong station and the spacecraft docked to them.	A Estação Espacial Internacional, a estação chinesa Tiangong e as naves acopladas a elas.
+Bright satellites	Satélites brilhantes
+About a hundred satellites and rocket stages visible from the Earth without binoculars.	Cerca de cem satélites e andares de foguetões visíveis da Terra sem binóculos.
+Navigation	Navegação
+GPS, GLONASS, Galileo and BeiDou satellites on medium orbits of about 20 000 km and geosynchronous ones.	Satélites GPS, GLONASS, Galileo e BeiDou em órbitas médias de cerca de 20 000 km e geossíncronas.
+Weather satellites	Satélites meteorológicos
+Weather satellites on polar and geostationary orbits.	Satélites meteorológicos em órbitas polares e geoestacionárias.
+Earth observation	Observação da Terra
+Earth imaging satellites, Landsat and Sentinel among them.	Satélites de imagem da Terra, entre eles Landsat e Sentinel.
+Science	Ciência
+Science satellites and observatories on Earth orbits.	Satélites científicos e observatórios em órbitas terrestres.
+Geostationary	Geoestacionários
+Active satellites on the geosynchronous orbit, about 36 000 km above the equator. They stay almost still over the Earth.	Satélites ativos na órbita geossíncrona, a cerca de 36 000 km acima do equador. Sobre a Terra estão quase imóveis.
+Starlink	Starlink
+SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	Satélites de comunicações da SpaceX a 340-570 km, aos milhares. O carregamento e o primeiro cálculo demoram mais do que nos outros grupos.
+OneWeb	OneWeb
+OneWeb communication satellites at about 1200 km.	Satélites de comunicações da OneWeb a cerca de 1200 km.

@@ -1147,3 +1147,29 @@ Wikipedia	ウィキペディア
 Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	注視点の近くにある座標付きのウィキペディア記事。記事をクリックすると、リンクと最初の段落が表示されます。
 Wikipedia did not answer, retry in 30 s.	ウィキペディアが応答しません。30 秒後に再試行します。
 Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	注視点の近くにある座標付きのウィキペディア記事で、重要なものと近いものが先に表示されます。カメラの高さが 40 km より低いときに見えます。記事をクリックすると、「オブジェクト」ウィンドウにリンクと最初の段落が表示されます。
+CelesTrak refused the group, a new request goes 2 hours after the refusal.	CelesTrak がグループを拒否しました。拒否から 2 時間後に再要求します。
+Elements age	要素の経過時間
+Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.	CelesTrak の人工衛星グループ。グループをクリックすると地球儀に表示するか、取り除きます。
+NORAD number	NORAD 番号
+Orbit and ground track	軌道と地上軌跡
+The answer has no orbital elements.	応答に軌道要素がありません。
+{value} d	{value} 日
+{value} km/s	{value} km/s
+Space stations	宇宙ステーション
+The International Space Station, the Chinese Tiangong station and the spacecraft docked to them.	国際宇宙ステーション、中国の宇宙ステーション「天宮」と、それらにドッキングした宇宙船。
+Bright satellites	明るい衛星
+About a hundred satellites and rocket stages visible from the Earth without binoculars.	地球から双眼鏡なしで見える約 100 の衛星とロケットの段。
+Navigation	測位
+GPS, GLONASS, Galileo and BeiDou satellites on medium orbits of about 20 000 km and geosynchronous ones.	高度約 20 000 km の中軌道と対地同期軌道の GPS、グロナス、Galileo、BeiDou の衛星。
+Weather satellites	気象衛星
+Weather satellites on polar and geostationary orbits.	極軌道と静止軌道の気象衛星。
+Earth observation	地球観測
+Earth imaging satellites, Landsat and Sentinel among them.	Landsat や Sentinel を含む地球撮影衛星。
+Science	科学
+Science satellites and observatories on Earth orbits.	地球周回軌道の科学衛星と観測衛星。
+Geostationary	静止衛星
+Active satellites on the geosynchronous orbit, about 36 000 km above the equator. They stay almost still over the Earth.	赤道上空約 36 000 km の対地同期軌道にある運用中の衛星。地球の上でほとんど動きません。
+Starlink	Starlink
+SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	高度 340-570 km の SpaceX の通信衛星で、数千機あります。読み込みと最初の計算は他のグループより時間がかかります。
+OneWeb	OneWeb
+OneWeb communication satellites at about 1200 km.	高度約 1200 km の OneWeb の通信衛星。

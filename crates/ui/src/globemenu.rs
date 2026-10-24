@@ -52,6 +52,10 @@ pub enum Choice {
     Insolation,
     /// «Старые карты «Это Место» здесь…».
     Etomesto,
+    /// «Орбита и след» спутника: номер NORAD или None - снять.
+    SatPath(Option<i64>),
+    /// «Камера следом» за спутником: номер NORAD или None - отпустить.
+    SatFollow(Option<i64>),
 }
 
 /// Рисование под меню: вершина под курсором, завершено ли, можно ли
@@ -83,6 +87,10 @@ pub struct GlobeMenu {
     pub sheets: Vec<(String, String)>,
     /// Свои пункты «Открыть в браузере»: название и шаблон, link_items.
     pub links: Vec<(String, String)>,
+    /// Спутник под курсором или выбранный: номер NORAD, название,
+    /// показаны ли виток и след, идёт ли камера следом,
+    /// satellite_items модуля.
+    pub satellite: Option<(i64, String, bool, bool)>,
 }
 
 impl GlobeMenu {
@@ -121,6 +129,20 @@ impl GlobeMenu {
                 } else if let Some((path, name)) = &self.place {
                     ui.add_enabled(false, egui::Button::new(name.as_str()));
                     pick(ui, tr(lang, "Properties…"), Choice::Properties(path.clone()));
+                }
+                if self.drawing.is_none()
+                    && let Some((number, name, path, followed)) = &self.satellite
+                {
+                    ui.separator();
+                    ui.add_enabled(false, egui::Button::new(name.as_str()));
+                    let mut on = *path;
+                    if ui.checkbox(&mut on, tr(lang, "Orbit and ground track")).clicked() {
+                        follow = Some(Choice::SatPath(on.then_some(*number)));
+                    }
+                    let mut on = *followed;
+                    if ui.checkbox(&mut on, tr(lang, "Camera follows")).clicked() {
+                        follow = Some(Choice::SatFollow(on.then_some(*number)));
+                    }
                 }
                 if self.drawing.is_none()
                     && let Some((kind, key, label, followed)) = &self.live

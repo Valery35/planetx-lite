@@ -716,7 +716,7 @@ impl Dots {
                     colors: dots.iter().map(|d| d.color).collect(),
                     size: 4.0,
                     sizes: dots.iter().map(|d| d.size).collect(),
-                    dot: Some(render::Dot { alpha: ALPHA, lift: LIFT }),
+                    dot: Some(render::Dot { alpha: ALPHA, lift: LIFT, space: false }),
                 })
             })
             .collect()

@@ -1147,3 +1147,29 @@ Wikipedia	위키백과
 Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	바라보는 점 근처의 좌표가 있는 위키백과 문서. 문서를 클릭하면 링크와 첫 문단이 나옵니다.
 Wikipedia did not answer, retry in 30 s.	위키백과가 응답하지 않았습니다. 30초 후 다시 시도합니다.
 Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	바라보는 점 근처의 좌표가 있는 위키백과 문서로, 중요한 문서와 가까운 문서가 먼저 나옵니다. 카메라 높이가 40 km 아래일 때 보입니다. 문서를 클릭하면 ‘객체’ 창에 링크와 첫 문단이 나옵니다.
+CelesTrak refused the group, a new request goes 2 hours after the refusal.	CelesTrak이 그룹을 거부했습니다. 거부 2시간 뒤에 다시 요청합니다.
+Elements age	요소 경과 시간
+Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.	CelesTrak 인공위성 그룹. 그룹을 클릭하면 지구본에 표시하거나 제거합니다.
+NORAD number	NORAD 번호
+Orbit and ground track	궤도와 지상 궤적
+The answer has no orbital elements.	응답에 궤도 요소가 없습니다.
+{value} d	{value}일
+{value} km/s	{value} km/s
+Space stations	우주 정거장
+The International Space Station, the Chinese Tiangong station and the spacecraft docked to them.	국제우주정거장, 중국 톈궁 우주정거장과 여기에 도킹한 우주선.
+Bright satellites	밝은 위성
+About a hundred satellites and rocket stages visible from the Earth without binoculars.	지구에서 쌍안경 없이 보이는 약 100개의 위성과 로켓 단.
+Navigation	항법
+GPS, GLONASS, Galileo and BeiDou satellites on medium orbits of about 20 000 km and geosynchronous ones.	고도 약 20 000 km 중궤도와 지구 동기 궤도의 GPS, 글로나스, Galileo, BeiDou 위성.
+Weather satellites	기상 위성
+Weather satellites on polar and geostationary orbits.	극궤도와 정지 궤도의 기상 위성.
+Earth observation	지구 관측
+Earth imaging satellites, Landsat and Sentinel among them.	Landsat과 Sentinel을 포함한 지구 촬영 위성.
+Science	과학
+Science satellites and observatories on Earth orbits.	지구 궤도의 과학 위성과 관측 위성.
+Geostationary	정지 궤도
+Active satellites on the geosynchronous orbit, about 36 000 km above the equator. They stay almost still over the Earth.	적도 위 약 36 000 km 지구 동기 궤도의 운용 중인 위성. 지구 위에서 거의 움직이지 않습니다.
+Starlink	Starlink
+SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	고도 340-570 km의 SpaceX 통신 위성으로 수천 기입니다. 불러오기와 첫 계산이 다른 그룹보다 오래 걸립니다.
+OneWeb	OneWeb
+OneWeb communication satellites at about 1200 km.	고도 약 1200 km의 OneWeb 통신 위성.

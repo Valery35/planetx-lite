@@ -13,7 +13,8 @@ struct PointsDraw {
     // x - пикселей кадра на логический пиксель, y - сдвиг глубины
     // к глазу, zw - кадр.
     params: vec4<f32>,
-    // x - 1: круг с тёмным ободком.
+    // x - 1: круг с тёмным ободком. y - 1: точки в космосе, глубина
+    // не дальше дальней плоскости.
     style: vec4<f32>,
 };
 
@@ -39,7 +40,11 @@ fn points_vs(
     var ys = array<f32, 6>(-1.0, -1.0, 1.0, -1.0, 1.0, 1.0);
     let half = 0.5 * size * cloud.params.x;
     let corner = vec2<f32>(xs[index % 6u], ys[index % 6u]) * half / (0.5 * cloud.params.zw);
-    out.position = vec4<f32>(clip.xy + corner * clip.w, clip.z - cloud.params.y * clip.w, clip.w);
+    var z = clip.z - cloud.params.y * clip.w;
+    if cloud.style.y > 0.5 {
+        z = min(z, clip.w * 0.99999);
+    }
+    out.position = vec4<f32>(clip.xy + corner * clip.w, z, clip.w);
     out.color = color;
     out.local = vec2<f32>(xs[index % 6u], ys[index % 6u]);
     return out;

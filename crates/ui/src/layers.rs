@@ -43,6 +43,8 @@ pub enum Extra {
     Live(crate::live::Kind),
     /// Википедия рядом: статьи у точки взгляда.
     Wiki,
+    /// Спутники CelesTrak выбранных групп.
+    Satellites,
 }
 
 impl Extra {
@@ -59,6 +61,7 @@ impl Extra {
         out.push(Extra::Geoid);
         out.extend(crate::live::Kind::ALL.map(Extra::Live));
         out.push(Extra::Wiki);
+        out.push(Extra::Satellites);
         out
     }
 
@@ -83,6 +86,7 @@ impl Extra {
             Extra::Geoid => "Geoid",
             Extra::Live(k) => k.name(),
             Extra::Wiki => "Wikipedia nearby",
+            Extra::Satellites => "Satellites",
         }
     }
 
@@ -103,6 +107,7 @@ impl Extra {
             Extra::Map(_) => self.map().map_or("", |e| e.tip),
             Extra::Dots(l) => l.tip(),
             Extra::Live(k) => k.tip(),
+            Extra::Satellites => "Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.",
             Extra::Wiki => "Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.",
             Extra::Geoid => "The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.",
             Extra::Paleo => "Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.",
@@ -134,6 +139,7 @@ impl Extra {
             Extra::Dots(_) | Extra::Cutaway | Extra::Paleo | Extra::Geoid => Category::Depths,
             Extra::Live(_) => Category::Transport,
             Extra::Wiki => Category::Wiki,
+            Extra::Satellites => Category::Sky,
         }
     }
 
@@ -151,6 +157,7 @@ impl Extra {
             Extra::Geoid => "geoid",
             Extra::Live(k) => k.key(),
             Extra::Wiki => "wiki",
+            Extra::Satellites => "satellites",
         }
     }
 
@@ -181,6 +188,8 @@ pub struct State<'a> {
     pub stretch: bool,
     /// Масштаб режима «Геоид».
     pub geoid_scale: f64,
+    /// Выбранные группы спутников.
+    pub sat_groups: &'a [String],
 }
 
 /// Что попросили строки раздела или каталог.
@@ -199,6 +208,8 @@ pub enum Action {
     RemoveGroup(usize),
     /// Открыть окно «Источники данных».
     Sources,
+    /// Новые группы спутников.
+    SatGroups(Vec<String>),
     /// Открыть каталог «Добавить данные».
     Catalog,
     /// Окно «Батиметрия водоёма» своего растра.
@@ -571,6 +582,7 @@ enum Category {
     Infra,
     Transport,
     Wiki,
+    Satellites,
 }
 
 /// Окно каталога «Добавить данные»: открыто ли, категория, поиск,
@@ -589,6 +601,8 @@ enum Item {
     Base(Basemap),
     Group(usize),
     Extra(Extra),
+    /// Группа спутников CelesTrak, номер в satellites::GROUPS.
+    Sat(usize),
 }
 
 impl Item {
@@ -597,6 +611,7 @@ impl Item {
             Item::Base(b) => format!("base:{}", b.key()),
             Item::Group(n) => format!("vector:{n}"),
             Item::Extra(e) => e.key().to_string(),
+            Item::Sat(n) => format!("sat:{}", sat_key(n)),
         }
     }
 
@@ -605,6 +620,7 @@ impl Item {
             Item::Base(_) => Category::Base,
             Item::Group(_) => Category::Map,
             Item::Extra(e) => e.category(),
+            Item::Sat(_) => Category::Satellites,
         }
     }
 
@@ -613,6 +629,7 @@ impl Item {
             Item::Base(b) => basemap_title(lang, b).to_string(),
             Item::Group(n) => tr(lang, TREE[n].0).to_string(),
             Item::Extra(e) => tr(lang, e.name()).to_string(),
+            Item::Sat(n) => crate::satellites::group_names(lang).get(n).map_or(String::new(), |g| g.1.to_string()),
         }
     }
 
@@ -623,6 +640,7 @@ impl Item {
             Item::Base(b) => b.attribution(lang).0.to_string(),
             Item::Group(n) => tr(lang, TREE[n].1).to_string(),
             Item::Extra(e) => tr(lang, e.tip()).to_string(),
+            Item::Sat(n) => crate::satellites::group_names(lang).get(n).map_or(String::new(), |g| g.2.to_string()),
         }
     }
 
@@ -636,6 +654,7 @@ impl Item {
             Item::Extra(Extra::Dots(l)) => l.source(),
             Item::Extra(Extra::Live(k)) => k.source(),
             Item::Extra(Extra::Wiki) => "Wikipedia",
+            Item::Extra(Extra::Satellites) | Item::Sat(_) => "CelesTrak",
             Item::Extra(Extra::Cutaway) => "PREM, CRUST1.0, Slab2",
             Item::Extra(Extra::Paleo) => "PALEOMAP",
             Item::Extra(Extra::Geoid) => "EGM2008, NGA",
@@ -648,8 +667,14 @@ impl Item {
             Item::Base(b) => state.basemap == b,
             Item::Group(n) => TREE[n].2.iter().any(|(r, _, _)| state.vector.rows.contains(r)),
             Item::Extra(e) => state.on.contains(&e),
+            Item::Sat(n) => state.on.contains(&Extra::Satellites) && state.sat_groups.iter().any(|g| g == sat_key(n)),
         }
     }
+}
+
+/// Ключ группы спутников по номеру.
+fn sat_key(n: usize) -> &'static str {
+    data::satellites::GROUPS.get(n).map_or("", |g| g.0)
 }
 
 fn items() -> Vec<Item> {
@@ -659,6 +684,7 @@ fn items() -> Vec<Item> {
     out.push(Item::Extra(Extra::Stars));
     out.push(Item::Extra(Extra::Air));
     out.push(Item::Extra(Extra::Sun));
+    out.push(Item::Extra(Extra::Satellites));
     // Пожары - карта витрины группы «Планета огня», перед темами огня.
     out.push(Item::Extra(Extra::Dots(crate::dots::Layer::Fires)));
     out.extend((0..crate::maps::ALL.len()).map(|n| Item::Extra(Extra::Map(n))));
@@ -673,6 +699,7 @@ fn items() -> Vec<Item> {
     out.push(Item::Extra(Extra::Cutaway));
     out.push(Item::Extra(Extra::Paleo));
     out.push(Item::Extra(Extra::Wiki));
+    out.extend((0..data::satellites::GROUPS.len()).map(Item::Sat));
     out
 }
 
@@ -711,6 +738,7 @@ impl Catalog {
             (Category::Soil, tr(lang, "Soils"), tr(lang, "Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.")),
             (Category::Terrain, tr(lang, "Terrain analysis"), tr(lang, "Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.")),
             (Category::Tiles, tr(lang, "Map overlays"), tr(lang, "Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.")),
+            (Category::Satellites, tr(lang, "Satellites"), tr(lang, "Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.")),
             (Category::Wiki, tr(lang, "Encyclopedia"), tr(lang, "Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.")),
         ];
         egui::Window::new(tr(lang, "Add data")).open(&mut open).default_size([780.0, 520.0]).show(ctx, |ui| {
@@ -808,6 +836,23 @@ fn click(item: Item, state: &State<'_>, out: &mut Vec<Action>) {
             }
         }
         Item::Group(n) => out.push(Action::Rows(toggle_group(state.vector, n))),
+        // Группа спутников: щелчок показывает её или убирает, строка
+        // «Спутники» включается вместе с группой.
+        Item::Sat(n) => {
+            let key = sat_key(n).to_string();
+            let mut groups: Vec<String> = state.sat_groups.to_vec();
+            if item.is_on(state) {
+                groups.retain(|g| *g != key);
+            } else {
+                if !groups.contains(&key) {
+                    groups.push(key);
+                }
+                if !state.on.contains(&Extra::Satellites) {
+                    out.push(Action::Extra(Extra::Satellites, true));
+                }
+            }
+            out.push(Action::SatGroups(groups));
+        }
         Item::Extra(e) => {
             if state.on.contains(&e) {
                 out.push(Action::RemoveExtra(e));

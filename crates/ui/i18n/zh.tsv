@@ -1147,3 +1147,29 @@ Wikipedia	维基百科
 Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	注视点附近带坐标的维基百科条目。单击条目可获得其链接和第一段。
 Wikipedia did not answer, retry in 30 s.	维基百科未响应，30 秒后重试。
 Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	注视点附近带坐标的维基百科条目，重要和较近的条目优先。相机高度低于 40 公里时可见。单击条目可在“对象”窗口中获得其链接和第一段。
+CelesTrak refused the group, a new request goes 2 hours after the refusal.	CelesTrak 拒绝了该分组，拒绝 2 小时后发出新请求。
+Elements age	根数时效
+Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.	CelesTrak 的人造卫星分组。单击分组可在地球上显示或移除它。
+NORAD number	NORAD 编号
+Orbit and ground track	轨道和星下点轨迹
+The answer has no orbital elements.	回复中没有轨道根数。
+{value} d	{value} 天
+{value} km/s	{value} 公里/秒
+Space stations	空间站
+The International Space Station, the Chinese Tiangong station and the spacecraft docked to them.	国际空间站、中国天宫空间站以及与它们对接的飞船。
+Bright satellites	亮星卫星
+About a hundred satellites and rocket stages visible from the Earth without binoculars.	约一百颗无需望远镜即可从地球上看到的卫星和火箭末级。
+Navigation	导航
+GPS, GLONASS, Galileo and BeiDou satellites on medium orbits of about 20 000 km and geosynchronous ones.	位于约 20 000 公里中轨道和地球同步轨道上的 GPS、格洛纳斯、Galileo 和 BeiDou 卫星。
+Weather satellites	气象卫星
+Weather satellites on polar and geostationary orbits.	位于极地轨道和地球静止轨道上的气象卫星。
+Earth observation	对地观测
+Earth imaging satellites, Landsat and Sentinel among them.	对地成像卫星，包括 Landsat 和 Sentinel。
+Science	科学
+Science satellites and observatories on Earth orbits.	位于地球轨道上的科学卫星和天文台。
+Geostationary	地球静止
+Active satellites on the geosynchronous orbit, about 36 000 km above the equator. They stay almost still over the Earth.	位于赤道上空约 36 000 公里地球同步轨道上的在役卫星。它们在地球上方几乎静止不动。
+Starlink	Starlink
+SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	位于 340-570 公里高度的 SpaceX 通信卫星，数以千计。加载和首次计算比其他分组耗时更长。
+OneWeb	OneWeb
+OneWeb communication satellites at about 1200 km.	位于约 1200 公里高度的 OneWeb 通信卫星。

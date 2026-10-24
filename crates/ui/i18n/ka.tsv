@@ -1147,3 +1147,29 @@ Wikipedia	ვიკიპედია
 Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	ვიკიპედიის სტატიები კოორდინატებით ხედვის წერტილთან. სტატიაზე დაწკაპუნება იძლევა მის ბმულს და პირველ აბზაცს.
 Wikipedia did not answer, retry in 30 s.	ვიკიპედიამ არ უპასუხა, გამეორება 30 წმ-ში.
 Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	ვიკიპედიის სტატიები კოორდინატებით ხედვის წერტილთან, მნიშვნელოვანი და ახლოს მყოფი პირველ რიგში. ისინი ჩანს კამერის 40 კმ-ზე დაბალი სიმაღლიდან. სტატიაზე დაწკაპუნება იძლევა მის ბმულს და პირველ აბზაცს ფანჯარაში „ობიექტები“.
+CelesTrak refused the group, a new request goes 2 hours after the refusal.	CelesTrak-მა ჯგუფზე უარი თქვა, ახალი მოთხოვნა - უარიდან 2 საათის შემდეგ.
+Elements age	ელემენტების ასაკი
+Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.	CelesTrak-ის ხელოვნური თანამგზავრების ჯგუფები. ჯგუფზე დაწკაპუნება მას გლობუსზე აჩვენებს ან აშორებს.
+NORAD number	NORAD-ის ნომერი
+Orbit and ground track	ორბიტა და კვალი
+The answer has no orbital elements.	პასუხში ორბიტის ელემენტები არ არის.
+{value} d	{value} დღ.
+{value} km/s	{value} კმ/წმ
+Space stations	კოსმოსური სადგურები
+The International Space Station, the Chinese Tiangong station and the spacecraft docked to them.	საერთაშორისო კოსმოსური სადგური, ჩინური სადგური „ტიანგუნი“ და მათთან მიერთებული ხომალდები.
+Bright satellites	კაშკაშა თანამგზავრები
+About a hundred satellites and rocket stages visible from the Earth without binoculars.	დაახლოებით ასი თანამგზავრი და რაკეტის საფეხური, რომლებიც დედამიწიდან ბინოკლის გარეშე ჩანს.
+Navigation	ნავიგაცია
+GPS, GLONASS, Galileo and BeiDou satellites on medium orbits of about 20 000 km and geosynchronous ones.	GPS-ის, გლონასის, Galileo-ს და BeiDou-ს თანამგზავრები დაახლოებით 20 000 კმ საშუალო ორბიტებზე და გეოსინქრონულ ორბიტებზე.
+Weather satellites	მეტეოთანამგზავრები
+Weather satellites on polar and geostationary orbits.	მეტეოროლოგიური თანამგზავრები პოლარულ და გეოსტაციონარულ ორბიტებზე.
+Earth observation	დედამიწაზე დაკვირვება
+Earth imaging satellites, Landsat and Sentinel among them.	დედამიწის გადაღების თანამგზავრები, მათ შორის Landsat და Sentinel.
+Science	სამეცნიერო
+Science satellites and observatories on Earth orbits.	სამეცნიერო თანამგზავრები და ობსერვატორიები დედამიწის ორბიტებზე.
+Geostationary	გეოსტაციონარული
+Active satellites on the geosynchronous orbit, about 36 000 km above the equator. They stay almost still over the Earth.	მოქმედი თანამგზავრები გეოსინქრონულ ორბიტაზე, ეკვატორიდან დაახლოებით 36 000 კმ სიმაღლეზე. დედამიწის თავზე ისინი თითქმის უძრავია.
+Starlink	Starlink
+SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	SpaceX-ის კავშირგაბმულობის თანამგზავრები 340-570 კმ სიმაღლეზე, ათასობით. ჩატვირთვა და პირველი გამოთვლა სხვა ჯგუფებზე დიდხანს გრძელდება.
+OneWeb	OneWeb
+OneWeb communication satellites at about 1200 km.	OneWeb-ის კავშირგაბმულობის თანამგზავრები დაახლოებით 1200 კმ სიმაღლეზე.

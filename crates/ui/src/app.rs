@@ -317,6 +317,10 @@ pub struct LiteApp {
 
     wiki_labels: Vec<(String, DVec3)>,
     wiki_built: f64,
+    /// Спутники: группы, точки кадра, показанные спутники с местом.
+    satellites: Option<crate::satellites::Satellites>,
+    sat_points: Vec<render::PointsMesh>,
+    sat_shown: Vec<(usize, DVec3)>,
     /// Объекты живых строк на этот кадр, для окна «Объекты» и меню.
     live_objects: Vec<(crate::live::Kind, crate::live::Object)>,
     /// Камера следом за живым объектом: строка и ключ.
@@ -851,6 +855,9 @@ impl LiteApp {
 
             wiki_labels: Vec::new(),
             wiki_built: f64::NEG_INFINITY,
+            satellites: None,
+            sat_points: Vec::new(),
+            sat_shown: Vec::new(),
             live_objects: Vec::new(),
             live_follow: None,
             followed: None,
@@ -1335,7 +1342,13 @@ impl LiteApp {
             });
         let sheets = point.map_or(Vec::new(), |(lat, lon)| crate::sheets::items(self.lang, lat, lon));
         let links = self.settings.links.clone();
-        crate::globemenu::GlobeMenu { at: pos, point, coords, place, drawing, mover, live, sheets, links }
+        // Спутник под курсором, иначе выбранный.
+        let satellite = self.satellites.as_ref().and_then(|s| {
+            let number = self.satellite_under(px, py, ppp).or(s.selected)?;
+            let name = s.name_of(number).unwrap_or_else(|| number.to_string());
+            Some((number, name, s.selected == Some(number), s.follow && s.selected == Some(number)))
+        });
+        crate::globemenu::GlobeMenu { at: pos, point, coords, place, drawing, mover, live, sheets, links, satellite }
     }
 
     /// Выбор в меню на глобусе.
@@ -1463,6 +1476,23 @@ impl LiteApp {
                     }
                 }
             }
+            Choice::SatPath(number) => {
+                if let Some(s) = &mut self.satellites {
+                    s.select(number);
+                }
+            }
+            Choice::SatFollow(number) => {
+                if let Some(s) = &mut self.satellites {
+                    if let Some(n) = number {
+                        s.select(Some(n));
+                        s.follow = true;
+                        self.live_follow = None;
+                        self.followed = None;
+                    } else {
+                        s.follow = false;
+                    }
+                }
+            }
             Choice::Etomesto => {
                 if let Some((lat, lon)) = point {
                     let loaders = &self.loaders;
@@ -1530,6 +1560,14 @@ impl LiteApp {
                     groups.push((tr(self.lang, kind.name()).to_string(), features));
                 }
             }
+        }
+        // Спутник у пикселя, SatelliteManager.identify модуля.
+        if let (Some((px, py, ppp)), Some(sats)) = (pixel, &self.satellites)
+            && let Some(number) = self.satellite_under(px, py, ppp)
+            && let Some(index) = sats.swarm.index_of(number)
+            && let Some(feature) = sats.values(self.lang, index, self.satellite_moment())
+        {
+            groups.push((tr(self.lang, "Satellites").to_string(), vec![feature]));
         }
         // Статьи Википедии у пикселя, _identify_wiki модуля.
         if let (Some((px, py, ppp)), Some(wiki)) = (pixel, &self.wiki) {
@@ -2063,6 +2101,13 @@ impl LiteApp {
                     self.set_vector_rows(rows);
                 }
                 Action::Sources => self.credits.sources_open = true,
+            Action::SatGroups(groups) => {
+                self.settings.sat_groups = groups.clone();
+                self.settings_dirty = true;
+                if let Some(s) = &mut self.satellites {
+                    s.set_groups(groups.into_iter().collect());
+                }
+            }
                 Action::Catalog => self.catalog.open = !self.catalog.open,
                 Action::Bathymetry(name) => {
                     self.close_side();
@@ -2095,6 +2140,18 @@ impl LiteApp {
                     }
                     self.live_points.clear();
                     self.live_labels.clear();
+                    self.dots.dirty = true;
+                }
+            }
+            Extra::Satellites => {
+                if on {
+                    if self.satellites.is_none() {
+                        self.satellites = Some(crate::satellites::Satellites::new(&self.settings.sat_groups, self.satellite_dir()));
+                    }
+                } else {
+                    self.satellites = None;
+                    self.sat_points.clear();
+                    self.sat_shown.clear();
                     self.dots.dirty = true;
                 }
             }
@@ -2284,6 +2341,7 @@ impl LiteApp {
             opacity: &self.map_opacity,
             stretch: self.settings.stretch,
             geoid_scale: self.settings.geoid_scale,
+            sat_groups: &self.settings.sat_groups,
         }
     }
 
@@ -2838,6 +2896,88 @@ impl LiteApp {
             let age = ages[state.index.min(last)];
             self.set_basemap(Basemap::Paleo(age));
         }
+    }
+
+    /// Папка файлов групп спутников, у страницы None.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn satellite_dir(&self) -> Option<std::path::PathBuf> {
+        Some(self.demo_cache.as_ref()?.parent()?.join("satellites"))
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    fn satellite_dir(&self) -> Option<std::path::PathBuf> {
+        None
+    }
+
+    /// Момент спутников: правый бегунок открытой шкалы времени, иначе
+    /// часы, moment модуля.
+    fn satellite_moment(&self) -> f64 {
+        match self.timebar.window() {
+            Some((_, hi)) if hi.is_finite() => hi,
+            _ => web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64()),
+        }
+    }
+
+    /// Шаг спутников: загрузка групп, точки по такту, камера следом.
+    fn step_satellites(&mut self, now: f64) {
+        let moment = self.satellite_moment();
+        let lang = self.lang;
+        let Some(sats) = &mut self.satellites else {
+            return;
+        };
+        {
+            let loaders = &self.loaders;
+            sats.step(lang, moment, &|limit: u64| (loaders.request)(limit));
+        }
+        let tick = if sats.follow { crate::satellites::FOLLOW_TICK } else { crate::satellites::TICK };
+        if now - sats.shown_at < tick && !self.sat_points.is_empty() {
+            return;
+        }
+        sats.shown_at = now;
+        let eye = self.nav.camera.eye;
+        let shown = sats.points(moment, eye.to_array());
+        let colors: Vec<[u8; 3]> = shown.iter().map(|(i, _)| sats.swarm.colors.get(*i).map_or([255; 3], |c| [(c[0] * 255.0) as u8, (c[1] * 255.0) as u8, (c[2] * 255.0) as u8])).collect();
+        let sizes: Vec<f32> = shown.iter().map(|(i, _)| sats.swarm.sizes.get(*i).copied().unwrap_or(data::satellites::SIZE)).collect();
+        self.sat_shown = shown.iter().map(|(i, p)| (*i, DVec3::from_array(*p))).collect();
+        self.sat_points.clear();
+        if !self.sat_shown.is_empty() {
+            let center = self.sat_shown.iter().fold(DVec3::ZERO, |a, (_, p)| a + *p) / self.sat_shown.len() as f64;
+            self.sat_points.push(render::PointsMesh {
+                center,
+                offsets: self.sat_shown.iter().map(|(_, p)| (*p - center).as_vec3().to_array()).collect(),
+                colors,
+                size: data::satellites::SIZE,
+                sizes,
+                dot: Some(render::Dot { alpha: 1.0, lift: 0.0, space: true }),
+            });
+        }
+        self.dots.dirty = true;
+        // Камера следом: точка под спутником, азимут по курсу, расстояние
+        // и наклон остаются у пользователя.
+        if sats.follow
+            && let Some(index) = sats.selected.and_then(|n| sats.swarm.index_of(n))
+            && let Some((point, velocity)) = sats.swarm.motion(index, moment)
+        {
+            let (lat, lon, _) = self.nav.camera.ellipsoid.ecef_to_geodetic(DVec3::from_array(point));
+            let heading = data::satellites::heading(point, velocity);
+            let (distance, tilt) = (self.nav.pose.distance, self.nav.pose.tilt);
+            self.nav.show(Pose::new(lat, lon, distance, heading, tilt));
+        }
+    }
+
+    /// Спутник под пикселем кадра: номер NORAD.
+    fn satellite_under(&self, px: f64, py: f64, ppp: f64) -> Option<i64> {
+        let sats = self.satellites.as_ref()?;
+        let radius = crate::satellites::PICK_PIXELS * ppp;
+        self.sat_shown
+            .iter()
+            .filter_map(|(i, p)| {
+                let (q, front) = self.nav.camera.project(*p);
+                let gap = (q.x - px).hypot(q.y - py);
+                (front && gap <= radius).then_some((gap, *i))
+            })
+            .min_by(|a, b| a.0.total_cmp(&b.0))
+            .and_then(|(_, i)| sats.swarm.numbers.get(i).copied())
     }
 
     /// «Википедия рядом»: запросы тайлов у точки взгляда, точки и подписи
@@ -4249,7 +4389,7 @@ impl LiteApp {
                     colors,
                     size: crate::live::POINT_SIZE,
                     sizes: Vec::new(),
-                    dot: Some(render::Dot { alpha: 1.0, lift: crate::dots::LIFT }),
+                    dot: Some(render::Dot { alpha: 1.0, lift: crate::dots::LIFT, space: false }),
                 });
             }
             self.live_labels = labels;
@@ -4560,6 +4700,7 @@ impl LiteApp {
             let height = move |lat: f64, lon: f64| terrain.as_ref().map_or(0.0, |t| t(lat, lon));
             let mut all = self.clouds.clone();
             all.extend(self.live_points.iter().cloned());
+            all.extend(self.sat_points.iter().cloned());
 
             all.extend(self.dots.meshes(&self.nav.camera.ellipsoid, &height, window));
             let poles = self.geo.points();
@@ -4572,7 +4713,7 @@ impl LiteApp {
                     colors: poles.iter().map(|p| p.2).collect(),
                     size: crate::geophysics::POLE_DOT,
                     sizes: Vec::new(),
-                    dot: Some(render::Dot { alpha: 1.0, lift: crate::dots::LIFT }),
+                    dot: Some(render::Dot { alpha: 1.0, lift: crate::dots::LIFT, space: false }),
                 });
             }
             globe.set_points(&all);
@@ -4743,6 +4884,9 @@ impl LiteApp {
             parts.push(data::stars::ATTRIBUTION);
         }
         parts.extend(self.live.keys().map(|k| k.attribution()));
+        if self.satellites.is_some() {
+            parts.push(data::satellites::ATTRIBUTION);
+        }
         if !self.wiki_labels.is_empty() {
             parts.push(data::wikipedia::ATTRIBUTION);
         }
@@ -5136,6 +5280,7 @@ impl eframe::App for LiteApp {
             || self.pictures.busy()
             || self.fetching.is_some()
             || self.wiki.as_ref().is_some_and(crate::wiki::Wiki::busy)
+            || self.satellites.as_ref().is_some_and(crate::satellites::Satellites::busy)
             || self.viewshed.as_ref().is_some_and(crate::pointcalc::Calc::busy)
             || self.insolation.as_ref().is_some_and(crate::pointcalc::Calc::busy)
             || self.relief.busy();
@@ -5224,6 +5369,12 @@ impl eframe::App for LiteApp {
                     let (lat, lon, _) = self.nav.camera.ellipsoid.ecef_to_geodetic(p);
                     self.ask_map_value(lat, lon);
                     self.objects = Some(self.make_objects(lat, lon, Some((px, py, ppp)), None));
+                    // Найденный щелчком спутник становится выбранным.
+                    if let Some(number) = self.satellite_under(px, py, ppp)
+                        && let Some(s) = &mut self.satellites
+                    {
+                        s.select(Some(number));
+                    }
                     // Первый абзац ближней статьи у щелчка.
                     let first = self.objects.as_ref().and_then(|o| o.groups.iter().find(|(g, _)| g == tr(self.lang, "Wikipedia"))).and_then(|(_, f)| f.first()).map(|(t, _)| t.clone());
                     if let (Some(title), Some(wiki)) = (first, &mut self.wiki) {
@@ -5277,6 +5428,7 @@ impl eframe::App for LiteApp {
         self.point_windows(&ctx);
         self.step_calcs(&ctx, now);
         self.step_wiki(now);
+        self.step_satellites(now);
         self.paleo_bar(&ctx, now);
         self.step_cutaway();
         self.check_linked_models(now);
@@ -5551,6 +5703,32 @@ impl eframe::App for LiteApp {
             }
             painter.text(at + egui::vec2(1.0, 1.0), egui::Align2::LEFT_BOTTOM, text, font.clone(), egui::Color32::from_black_alpha(200));
             painter.text(at, egui::Align2::LEFT_BOTTOM, text, font, egui::Color32::WHITE);
+        }
+        // Виток орбиты и след выбранного спутника, цвет группы.
+        let moment = self.satellite_moment();
+        if let Some(sats) = &mut self.satellites {
+            let color = sats.selected.and_then(|n| sats.swarm.index_of(n)).and_then(|i| sats.swarm.group_of.get(i)).map_or([255; 3], |g| data::satellites::color(g));
+            if let Some(path) = sats.path(moment) {
+                let e = self.nav.camera.ellipsoid;
+                let eye = self.nav.camera.eye;
+                let orbit: Vec<DVec3> = path.lat.iter().zip(&path.lon).zip(&path.h).map(|((la, lo), h)| e.geodetic_to_ecef(*la, *lo, *h)).collect();
+                let track: Vec<DVec3> = path.tlat.iter().zip(&path.tlon).map(|(la, lo)| e.geodetic_to_ecef(*la, *lo, crate::satellites::TRACK_LIFT)).collect();
+                for (points, alpha) in [(orbit, 255u8), (track, crate::satellites::TRACK_ALPHA)] {
+                    let raw: Vec<[f64; 3]> = points.iter().map(|p| p.to_array()).collect();
+                    let hidden = data::satellites::hidden(eye.to_array(), &raw);
+                    let stroke = egui::Stroke::new(crate::satellites::PATH_WIDTH, egui::Color32::from_rgba_unmultiplied(color[0], color[1], color[2], alpha));
+                    for (k, pair) in points.windows(2).enumerate() {
+                        if hidden.get(k).copied().unwrap_or(true) || hidden.get(k + 1).copied().unwrap_or(true) {
+                            continue;
+                        }
+                        let (a, fa) = self.nav.camera.project(pair[0]);
+                        let (b, fb) = self.nav.camera.project(pair[1]);
+                        if fa && fb {
+                            painter.line_segment([rect.min + egui::vec2((a.x / ppp) as f32, (a.y / ppp) as f32), rect.min + egui::vec2((b.x / ppp) as f32, (b.y / ppp) as f32)], stroke);
+                        }
+                    }
+                }
+            }
         }
         if self.settings.grid {
             crate::grid::paint(&painter, rect, ppp, &self.nav, self.lang);

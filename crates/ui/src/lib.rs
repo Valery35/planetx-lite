@@ -51,6 +51,7 @@ pub mod profile;
 pub mod relief;
 pub mod route;
 pub mod ruler;
+pub mod satellites;
 pub mod search;
 pub mod settings;
 pub mod share;

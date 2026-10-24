@@ -1147,3 +1147,29 @@ Wikipedia	Wikipedia
 Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	Wikipedia-artikelen met coördinaten bij het kijkpunt. Een klik op een artikel geeft de link en de eerste alinea.
 Wikipedia did not answer, retry in 30 s.	Wikipedia antwoordde niet, nieuwe poging over 30 s.
 Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	Wikipedia-artikelen met coördinaten bij het kijkpunt, belangrijke en nabije eerst. Ze zijn zichtbaar onder 40 km camerahoogte. Een klik op een artikel geeft de link en de eerste alinea in het venster ‘Objecten’.
+CelesTrak refused the group, a new request goes 2 hours after the refusal.	CelesTrak weigerde de groep, een nieuw verzoek volgt 2 uur na de weigering.
+Elements age	Ouderdom van de elementen
+Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.	Groepen kunstmatige satellieten van CelesTrak. Een klik op een groep toont die op de globe of haalt die weg.
+NORAD number	NORAD-nummer
+Orbit and ground track	Baan en grondspoor
+The answer has no orbital elements.	Het antwoord bevat geen baanelementen.
+{value} d	{value} d
+{value} km/s	{value} km/s
+Space stations	Ruimtestations
+The International Space Station, the Chinese Tiangong station and the spacecraft docked to them.	Het Internationaal Ruimtestation, het Chinese station Tiangong en de ruimteschepen die eraan gekoppeld zijn.
+Bright satellites	Heldere satellieten
+About a hundred satellites and rocket stages visible from the Earth without binoculars.	Ongeveer honderd satellieten en rakettrappen die vanaf de aarde zonder verrekijker zichtbaar zijn.
+Navigation	Navigatie
+GPS, GLONASS, Galileo and BeiDou satellites on medium orbits of about 20 000 km and geosynchronous ones.	Satellieten van GPS, GLONASS, Galileo en BeiDou in middelhoge banen van ongeveer 20 000 km en geosynchrone banen.
+Weather satellites	Weersatellieten
+Weather satellites on polar and geostationary orbits.	Weersatellieten in polaire en geostationaire banen.
+Earth observation	Aardobservatie
+Earth imaging satellites, Landsat and Sentinel among them.	Satellieten voor aardopnamen, waaronder Landsat en Sentinel.
+Science	Wetenschap
+Science satellites and observatories on Earth orbits.	Wetenschappelijke satellieten en observatoria in banen om de aarde.
+Geostationary	Geostationair
+Active satellites on the geosynchronous orbit, about 36 000 km above the equator. They stay almost still over the Earth.	Actieve satellieten in de geosynchrone baan, ongeveer 36 000 km boven de evenaar. Boven de aarde staan ze bijna stil.
+Starlink	Starlink
+SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	Communicatiesatellieten van SpaceX op 340-570 km, duizenden. Laden en de eerste berekening duren langer dan bij andere groepen.
+OneWeb	OneWeb
+OneWeb communication satellites at about 1200 km.	Communicatiesatellieten van OneWeb op ongeveer 1200 km.

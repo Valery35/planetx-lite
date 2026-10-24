@@ -457,10 +457,16 @@ fn cut_opens_the_surface_and_glass_does_not() {
 fn wedge_removes_the_surface() {
     // Разрез Земли: внутри сектора поверхности нет, под ней видна
     // подстилка, вне сектора всё как было.
-    let Some((device, queue, _, _gpu)) = device() else {
+    let Some((device, queue, exact, _gpu)) = device() else {
         eprintln!("видеокарты нет, проверка пропущена");
         return;
     };
+    // На OpenGL счётчик говорит только, что подстилка видна, а она видна
+    // и без разреза: сравнивать количество там нельзя.
+    if !exact {
+        eprintln!("счётчик OpenGL не считает пиксели, проверка пропущена");
+        return;
+    }
     let mut globe = Globe::new(&device, &queue);
     let cam = view(PERM.0, PERM.1, 2.0e7, 0.0, 0.0);
     let sel = lod::select(&cam, &|k: TileKey| k.0 <= 3, Options::default());

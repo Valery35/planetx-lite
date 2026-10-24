@@ -1147,3 +1147,29 @@ Wikipedia	Vikipediya
 Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	Baxış nöqtəsinin yaxınlığında koordinatlı Vikipediya məqalələri. Məqaləyə klik onun keçidini və birinci abzasını verir.
 Wikipedia did not answer, retry in 30 s.	Vikipediya cavab vermədi, 30 san sonra təkrar.
 Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	Baxış nöqtəsinin yaxınlığında koordinatlı Vikipediya məqalələri, əvvəlcə vacib və yaxın olanlar. Kamera hündürlüyü 40 km-dən aşağı olanda görünürlər. Məqaləyə klik onun keçidini və birinci abzasını "Obyektlər" pəncərəsində verir.
+CelesTrak refused the group, a new request goes 2 hours after the refusal.	CelesTrak qrupdan imtina etdi, yeni sorğu imtinadan 2 saat sonra gedir.
+Elements age	Elementlərin yaşı
+Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.	CelesTrak süni peyk qrupları. Qrupa klik onu qlobusda göstərir və ya götürür.
+NORAD number	NORAD nömrəsi
+Orbit and ground track	Orbit və yer izi
+The answer has no orbital elements.	Cavabda orbit elementləri yoxdur.
+{value} d	{value} gün
+{value} km/s	{value} km/san
+Space stations	Kosmik stansiyalar
+The International Space Station, the Chinese Tiangong station and the spacecraft docked to them.	Beynəlxalq Kosmik Stansiya, Çinin Tiangong stansiyası və onlara birləşdirilmiş gəmilər.
+Bright satellites	Parlaq peyklər
+About a hundred satellites and rocket stages visible from the Earth without binoculars.	Yerdən durbinsiz görünən təxminən yüz peyk və raket pilləsi.
+Navigation	Naviqasiya
+GPS, GLONASS, Galileo and BeiDou satellites on medium orbits of about 20 000 km and geosynchronous ones.	Təxminən 20 000 km orta orbitlərdə və geosinxron orbitlərdə GPS, QLONASS, Galileo və BeiDou peykləri.
+Weather satellites	Meteoroloji peyklər
+Weather satellites on polar and geostationary orbits.	Qütb və geostasionar orbitlərdə meteoroloji peyklər.
+Earth observation	Yerin müşahidəsi
+Earth imaging satellites, Landsat and Sentinel among them.	Yeri çəkən peyklər, o cümlədən Landsat və Sentinel.
+Science	Elmi
+Science satellites and observatories on Earth orbits.	Yer ətrafı orbitlərdə elmi peyklər və rəsədxanalar.
+Geostationary	Geostasionar
+Active satellites on the geosynchronous orbit, about 36 000 km above the equator. They stay almost still over the Earth.	Ekvatordan təxminən 36 000 km yuxarıda geosinxron orbitdə fəal peyklər. Yerin üzərində onlar demək olar ki, hərəkətsizdir.
+Starlink	Starlink
+SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	340-570 km hündürlükdə SpaceX rabitə peykləri, minlərlə. Yükləmə və ilk hesablama digər qruplardan uzun çəkir.
+OneWeb	OneWeb
+OneWeb communication satellites at about 1200 km.	Təxminən 1200 km hündürlükdə OneWeb rabitə peykləri.

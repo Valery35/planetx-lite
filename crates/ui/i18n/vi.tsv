@@ -1147,3 +1147,29 @@ Wikipedia	Wikipedia
 Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	Các bài Wikipedia có tọa độ gần điểm nhìn. Nhấp vào bài viết sẽ cho liên kết và đoạn đầu của bài.
 Wikipedia did not answer, retry in 30 s.	Wikipedia không trả lời, thử lại sau 30 giây.
 Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	Các bài Wikipedia có tọa độ gần điểm nhìn, bài quan trọng và gần trước. Các bài hiển thị khi độ cao máy quay dưới 40 km. Nhấp vào bài viết sẽ cho liên kết và đoạn đầu của bài trong cửa sổ "Các đối tượng".
+CelesTrak refused the group, a new request goes 2 hours after the refusal.	CelesTrak từ chối nhóm, yêu cầu mới được gửi 2 giờ sau khi bị từ chối.
+Elements age	Tuổi tham số
+Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.	Các nhóm vệ tinh nhân tạo từ CelesTrak. Nhấp vào một nhóm để hiển thị nhóm trên quả địa cầu hoặc gỡ nhóm.
+NORAD number	Số NORAD
+Orbit and ground track	Quỹ đạo và vết chiếu
+The answer has no orbital elements.	Câu trả lời không có tham số quỹ đạo.
+{value} d	{value} ngày
+{value} km/s	{value} km/s
+Space stations	Trạm vũ trụ
+The International Space Station, the Chinese Tiangong station and the spacecraft docked to them.	Trạm Vũ trụ Quốc tế, trạm Thiên Cung của Trung Quốc và các tàu ghép nối với chúng.
+Bright satellites	Vệ tinh sáng
+About a hundred satellites and rocket stages visible from the Earth without binoculars.	Khoảng một trăm vệ tinh và tầng tên lửa có thể nhìn thấy từ Trái Đất mà không cần ống nhòm.
+Navigation	Định vị
+GPS, GLONASS, Galileo and BeiDou satellites on medium orbits of about 20 000 km and geosynchronous ones.	Vệ tinh GPS, GLONASS, Galileo và BeiDou trên quỹ đạo trung bình khoảng 20 000 km và quỹ đạo địa đồng bộ.
+Weather satellites	Vệ tinh khí tượng
+Weather satellites on polar and geostationary orbits.	Vệ tinh khí tượng trên quỹ đạo cực và quỹ đạo địa tĩnh.
+Earth observation	Quan sát Trái Đất
+Earth imaging satellites, Landsat and Sentinel among them.	Vệ tinh chụp ảnh Trái Đất, trong đó có Landsat và Sentinel.
+Science	Khoa học
+Science satellites and observatories on Earth orbits.	Vệ tinh khoa học và đài quan sát trên quỹ đạo quanh Trái Đất.
+Geostationary	Địa tĩnh
+Active satellites on the geosynchronous orbit, about 36 000 km above the equator. They stay almost still over the Earth.	Vệ tinh đang hoạt động trên quỹ đạo địa đồng bộ, khoảng 36 000 km trên xích đạo. Trên Trái Đất chúng gần như đứng yên.
+Starlink	Starlink
+SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	Vệ tinh liên lạc của SpaceX ở độ cao 340-570 km, hàng nghìn chiếc. Tải và lần tính đầu tiên lâu hơn các nhóm khác.
+OneWeb	OneWeb
+OneWeb communication satellites at about 1200 km.	Vệ tinh liên lạc của OneWeb ở độ cao khoảng 1200 km.

@@ -41,6 +41,10 @@ pub struct PointsMesh {
 pub struct Dot {
     pub alpha: f32,
     pub lift: f32,
+    /// Точки в космосе, спутники: глубина не дальше дальней плоскости,
+    /// иначе спутник за ней обрезается. Закрытые Землёй точки убирает
+    /// вызывающий.
+    pub space: bool,
 }
 
 #[repr(C)]
@@ -214,7 +218,7 @@ impl Points {
                 mv: camera.tile_model_view(item.center, 1.0).as_mat4().to_cols_array(),
                 projection,
                 params: [ratio, item.dot.map_or(0.0, |d| d.lift), camera.width as f32, camera.height as f32],
-                style: [f32::from(item.dot.is_some()), 0.0, 0.0, 0.0],
+                style: [f32::from(item.dot.is_some()), f32::from(item.dot.is_some_and(|d| d.space)), 0.0, 0.0],
             };
             let raw = bytemuck::bytes_of(&u);
             chunk[..raw.len()].copy_from_slice(raw);

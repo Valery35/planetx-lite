@@ -1147,3 +1147,29 @@ Wikipedia	Википедия
 Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	Статьи Википедии с координатами у точки взгляда. Щелчок по статье даёт её ссылку и первый абзац.
 Wikipedia did not answer, retry in 30 s.	Википедия не ответила, повтор через 30 с.
 Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	Статьи Википедии с координатами у точки взгляда, важные и ближние первыми. Они видны ниже 40 км высоты камеры. Щелчок по статье даёт её ссылку и первый абзац в окне «Объекты».
+CelesTrak refused the group, a new request goes 2 hours after the refusal.	CelesTrak отказал в группе, новый запрос - через 2 часа после отказа.
+Elements age	Возраст элементов
+Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.	Группы искусственных спутников CelesTrak. Щелчок по группе показывает её на глобусе или убирает.
+NORAD number	Номер NORAD
+Orbit and ground track	Орбита и след
+The answer has no orbital elements.	Ответ без элементов орбит.
+{value} d	{value} сут
+{value} km/s	{value} км/с
+Space stations	Космические станции
+The International Space Station, the Chinese Tiangong station and the spacecraft docked to them.	Международная космическая станция, китайская станция «Тяньгун» и пристыкованные к ним корабли.
+Bright satellites	Яркие спутники
+About a hundred satellites and rocket stages visible from the Earth without binoculars.	Около ста спутников и ступеней ракет, которые видны с Земли без бинокля.
+Navigation	Навигация
+GPS, GLONASS, Galileo and BeiDou satellites on medium orbits of about 20 000 km and geosynchronous ones.	Спутники GPS, ГЛОНАСС, Galileo и BeiDou на средних орбитах около 20 000 км и геосинхронных.
+Weather satellites	Метеоспутники
+Weather satellites on polar and geostationary orbits.	Метеорологические спутники на полярных и геостационарных орбитах.
+Earth observation	Наблюдение Земли
+Earth imaging satellites, Landsat and Sentinel among them.	Спутники съёмки Земли, в том числе Landsat и Sentinel.
+Science	Научные
+Science satellites and observatories on Earth orbits.	Научные спутники и обсерватории на околоземных орбитах.
+Geostationary	Геостационарные
+Active satellites on the geosynchronous orbit, about 36 000 km above the equator. They stay almost still over the Earth.	Действующие спутники на геосинхронной орбите, около 36 000 км над экватором. Над Землёй они почти неподвижны.
+Starlink	Starlink
+SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	Спутники связи SpaceX на высоте 340-570 км, их тысячи. Загрузка и первый расчёт идут дольше прочих групп.
+OneWeb	OneWeb
+OneWeb communication satellites at about 1200 km.	Спутники связи OneWeb на высоте около 1200 км.

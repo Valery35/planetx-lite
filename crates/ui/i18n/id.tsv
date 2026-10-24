@@ -1147,3 +1147,29 @@ Wikipedia	Wikipedia
 Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	Artikel Wikipedia dengan koordinat di dekat titik pandang. Klik pada artikel memberikan tautan dan paragraf pertamanya.
 Wikipedia did not answer, retry in 30 s.	Wikipedia tidak menjawab, dicoba lagi dalam 30 dtk.
 Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	Artikel Wikipedia dengan koordinat di dekat titik pandang, yang penting dan yang dekat lebih dulu. Artikel terlihat di bawah ketinggian kamera 40 km. Klik pada artikel memberikan tautan dan paragraf pertamanya di jendela "Objek".
+CelesTrak refused the group, a new request goes 2 hours after the refusal.	CelesTrak menolak grup, permintaan baru dikirim 2 jam setelah penolakan.
+Elements age	Umur elemen
+Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.	Grup satelit buatan dari CelesTrak. Klik pada grup menampilkannya di globe atau menghapusnya.
+NORAD number	Nomor NORAD
+Orbit and ground track	Orbit dan jejak tanah
+The answer has no orbital elements.	Jawaban tidak berisi elemen orbit.
+{value} d	{value} hari
+{value} km/s	{value} km/dtk
+Space stations	Stasiun antariksa
+The International Space Station, the Chinese Tiangong station and the spacecraft docked to them.	Stasiun Antariksa Internasional, stasiun Tiongkok Tiangong, dan wahana yang tertambat padanya.
+Bright satellites	Satelit terang
+About a hundred satellites and rocket stages visible from the Earth without binoculars.	Sekitar seratus satelit dan tingkat roket yang terlihat dari Bumi tanpa teropong.
+Navigation	Navigasi
+GPS, GLONASS, Galileo and BeiDou satellites on medium orbits of about 20 000 km and geosynchronous ones.	Satelit GPS, GLONASS, Galileo, dan BeiDou pada orbit menengah sekitar 20 000 km dan orbit geosinkron.
+Weather satellites	Satelit cuaca
+Weather satellites on polar and geostationary orbits.	Satelit cuaca pada orbit polar dan geostasioner.
+Earth observation	Pengamatan Bumi
+Earth imaging satellites, Landsat and Sentinel among them.	Satelit pencitraan Bumi, di antaranya Landsat dan Sentinel.
+Science	Sains
+Science satellites and observatories on Earth orbits.	Satelit sains dan observatorium pada orbit Bumi.
+Geostationary	Geostasioner
+Active satellites on the geosynchronous orbit, about 36 000 km above the equator. They stay almost still over the Earth.	Satelit aktif pada orbit geosinkron, sekitar 36 000 km di atas khatulistiwa. Di atas Bumi satelit ini hampir diam.
+Starlink	Starlink
+SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	Satelit komunikasi SpaceX pada ketinggian 340-570 km, jumlahnya ribuan. Pemuatan dan perhitungan pertama lebih lama daripada grup lain.
+OneWeb	OneWeb
+OneWeb communication satellites at about 1200 km.	Satelit komunikasi OneWeb pada ketinggian sekitar 1200 km.
