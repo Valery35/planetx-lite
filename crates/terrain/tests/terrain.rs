@@ -37,6 +37,27 @@ fn sea_floor_is_sea_level() {
 }
 
 #[test]
+fn sea_depths_kept_for_profile() {
+    // Море на глобусе ровное, профиль и окно «Объекты» видят дно.
+    let mut heights = vec![-3000.0; SIZE * SIZE];
+    heights[..SIZE * SIZE / 2].fill(200.0);
+    let made = tr::make_tile_depths(0, 0, 0, &encode(&heights), 0.0, Encoding::Terrarium);
+    let (tile, depths) = made.expect("tile");
+    assert!(tile.heights.iter().all(|h| *h >= 0.0));
+    let mut store = HeightStore::new();
+    store.add(tile);
+    store.add_depths((0, 0, 0), depths.expect("depths"));
+    // Юг тайла - море, север - суша.
+    let got = store.floor_heights_at(&[(-40.0, 10.0), (40.0, 10.0)]);
+    assert!((got[0] + 3000.0).abs() < 1.0, "{got:?}");
+    assert!((got[1] - 200.0).abs() < 1.0, "{got:?}");
+    assert_eq!(store.heights_at(&[(-40.0, 10.0)], false), [0.0]);
+    // Тайл без глубин ниже нуля глубин не несёт.
+    let dry = tr::make_tile_depths(0, 0, 0, &encode(&[5.0; SIZE * SIZE]), 0.0, Encoding::Terrarium);
+    assert!(dry.expect("dry").1.is_none());
+}
+
+#[test]
 fn mapbox_encoding() {
     // -10000 + (R·65536 + G·256 + B)·0.1: 1000 м = 110000 = (1, 173, 176).
     let got = tr::decode(&[1, 173, 176], 3, None, Encoding::Mapbox);

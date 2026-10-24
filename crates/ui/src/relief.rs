@@ -89,6 +89,12 @@ impl Relief {
         self.entries.iter().find(|e| e.name == name).and_then(|e| e.lake)
     }
 
+    /// Водоёмы растров с батиметрией: рамка и уровень, для воды
+    /// в профиле высот, как `_profile_water` модуля.
+    pub fn lakes(&self) -> Vec<bathymetry::Lake> {
+        self.entries.iter().filter_map(|e| e.lake.map(|(_, level)| (e.bounds, level))).collect()
+    }
+
     /// Рамка растра name в метрах EPSG:3857.
     pub fn bounds(&self, name: &str) -> Option<Bounds> {
         self.entries.iter().find(|e| e.name == name).map(|e| e.bounds)

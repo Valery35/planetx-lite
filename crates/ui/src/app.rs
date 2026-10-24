@@ -44,7 +44,7 @@ pub const CLOUD_POINT_SIZE: f32 = 2.0;
 /// Решение автора от 22 октября 2026 года.
 pub const START: (f64, f64, f64) = (check::PERM.0, check::PERM.1, check::SPACE_DISTANCE);
 /// Пол высот Земли: дно моря прижато к уровню моря, подложка рисует воду.
-pub const EARTH_FLOOR: Option<f32> = Some(0.0);
+pub const EARTH_FLOOR: f32 = 0.0;
 
 /// Куда отдать отчёт самопроверки: текст и итог, true - пройдена.
 pub type Report = Box<dyn FnMut(&str, bool)>;
@@ -1365,9 +1365,9 @@ impl LiteApp {
     fn true_heights(&self) -> impl Fn(&[(f64, f64)]) -> Vec<f64> + use<> {
         let source = self.heights.clone();
         move |points: &[(f64, f64)]| -> Vec<f64> {
-            let store = source.read();
-            let k = store.scale().max(1e-9);
-            points.iter().map(|(lat, lon)| store.height_at(*lat, *lon) / k).collect()
+            // Без масштаба и с дном моря, как высоты профиля модуля
+            // с глубинами морей.
+            source.read().floor_heights_at(points)
         }
     }
 
@@ -1375,6 +1375,7 @@ impl LiteApp {
     fn profile_window(&mut self, ctx: &egui::Context) {
         let heights_at = self.true_heights();
         let ready = !self.loaders.terrain.busy();
+        let lakes = self.relief.lakes();
         let ruler_points = self.tool.as_ref().filter(|t| t.purpose == crate::tool::Purpose::Ruler).map(|t| t.ruler.points(true));
         let Some(profile) = &mut self.profile else {
             return;
@@ -1389,7 +1390,7 @@ impl LiteApp {
             }
         }
         let mut open = true;
-        profile.window(ctx, self.lang, &heights_at, ready, &mut open);
+        profile.window(ctx, self.lang, &heights_at, &lakes, ready, &mut open);
         if !open {
             self.profile = None;
         }
@@ -3028,9 +3029,13 @@ impl LiteApp {
             for loaded in arrived {
                 let (z, x, y) = loaded.key;
                 if let Ok(net::Content::Image(img)) = loaded.content
-                    && let Some(tile) = terrain::make_tile(z, x, y, &img.rgba, EARTH_FLOOR, Encoding::Terrarium)
+                    && let Some((tile, depths)) = terrain::make_tile_depths(z, x, y, &img.rgba, EARTH_FLOOR, Encoding::Terrarium)
                 {
-                    // Свой рельеф врезается в тайл до хранилища.
+                    // Свой рельеф врезается в тайл до хранилища. Глубины
+                    // моря - для профиля высот и окна «Объекты».
+                    if let Some(d) = depths {
+                        store.add_depths(loaded.key, d);
+                    }
                     store.add(self.relief.patch(tile));
                 }
             }

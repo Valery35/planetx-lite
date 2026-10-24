@@ -124,22 +124,41 @@ pub fn ancestor(key: TileKey, level: u32) -> TileKey {
     (level.min(z), x >> shift, y >> shift)
 }
 
+/// Тайл высот из картинки RGBA и глубины моря того же тайла: высоты
+/// ниже floor обрезаются до floor, как у [`make_tile`], глубины - высоты
+/// без обрезки. Глубин нет (None), если ниже floor ничего нет.
+pub fn make_tile_depths(z: u32, x: u32, y: u32, rgba: &[u8], floor: f32, encoding: Encoding) -> Option<(HeightTile, Option<Vec<i16>>)> {
+    if rgba.len() != SIZE * SIZE * 4 {
+        return None;
+    }
+    let raw = decode(rgba, 4, None, encoding);
+    let depths = raw.iter().any(|h| *h < floor).then(|| raw.iter().map(|h| h.round().clamp(-32768.0, 32767.0) as i16).collect());
+    let tile = HeightTile::new(z, x, y, raw.into_iter().map(|h| h.max(floor)).collect())?;
+    Some((tile, depths))
+}
+
 /// Высота в точке с долями мира u (запад - восток) и v (север - юг).
 ///
 /// Выборка билинейная по центрам пикселей, за краем тайла берётся
 /// крайний пиксель.
 pub fn sample(tile: &HeightTile, u: f64, v: f64) -> f64 {
-    let n = f64::from(1u32 << tile.z.min(31));
+    sample_grid((tile.z, tile.x, tile.y), &|row, col| tile.at(row, col), u, v)
+}
+
+/// Билинейная выборка сетки SIZE × SIZE тайла key, значение узла - at.
+fn sample_grid(key: TileKey, at: &dyn Fn(usize, usize) -> f64, u: f64, v: f64) -> f64 {
+    let (z, x, y) = key;
+    let n = f64::from(1u32 << z.min(31));
     let size = SIZE as f64;
-    let px = ((u * n - f64::from(tile.x)) * size - 0.5).clamp(0.0, size - 1.0);
-    let py = ((v * n - f64::from(tile.y)) * size - 0.5).clamp(0.0, size - 1.0);
+    let px = ((u * n - f64::from(x)) * size - 0.5).clamp(0.0, size - 1.0);
+    let py = ((v * n - f64::from(y)) * size - 0.5).clamp(0.0, size - 1.0);
     // NaN доли прижимаются к краю, приведение к целому насыщается.
     let x0 = (px.floor() as usize).min(SIZE - 2);
     let y0 = (py.floor() as usize).min(SIZE - 2);
     let fx = px - x0 as f64;
     let fy = py - y0 as f64;
-    let top = tile.at(y0, x0) * (1.0 - fx) + tile.at(y0, x0 + 1) * fx;
-    let bottom = tile.at(y0 + 1, x0) * (1.0 - fx) + tile.at(y0 + 1, x0 + 1) * fx;
+    let top = at(y0, x0) * (1.0 - fx) + at(y0, x0 + 1) * fx;
+    let bottom = at(y0 + 1, x0) * (1.0 - fx) + at(y0 + 1, x0 + 1) * fx;
     top * (1.0 - fy) + bottom * fy
 }
 
@@ -216,6 +235,10 @@ struct Ranges {
 #[derive(Debug)]
 pub struct HeightStore {
     tiles: HashMap<TileKey, Arc<HeightTile>>,
+    /// Глубины моря тайлов, где высоты обрезаны до уровня моря: глобус
+    /// показывает море ровным, профиль высот - с дном, как модуль
+    /// с глубинами морей.
+    depths: HashMap<TileKey, Arc<Vec<i16>>>,
     ranges: Mutex<Ranges>,
     /// Ключи последних добавленных тайлов высот.
     added_log: Vec<TileKey>,
@@ -248,6 +271,7 @@ impl HeightStore {
     pub fn new() -> Self {
         Self {
             tiles: HashMap::new(),
+            depths: HashMap::new(),
             ranges: Mutex::new(Ranges::default()),
             added_log: Vec::new(),
             adds: 0,
@@ -284,6 +308,7 @@ impl HeightStore {
     /// никакого.
     pub fn clear(&mut self) {
         self.tiles.clear();
+        self.depths.clear();
         *self.ranges() = Ranges::default();
         self.added.clear();
         self.low = 0.0;
@@ -396,6 +421,39 @@ impl HeightStore {
             }
         }
         0.0
+    }
+
+    /// Глубины моря тайла key ([`make_tile_depths`]).
+    pub fn add_depths(&mut self, key: TileKey, depths: Vec<i16>) {
+        if depths.len() == SIZE * SIZE {
+            self.depths.insert(key, Arc::new(depths));
+        }
+    }
+
+    /// Настоящие высоты в точках без масштаба, с дном моря: где высота
+    /// тайла на уровне моря или ниже, а у тайла есть глубины, берётся
+    /// глубина. Свой рельеф поверх моря остаётся своим.
+    pub fn floor_heights_at(&self, points: &[(f64, f64)]) -> Vec<f64> {
+        points
+            .iter()
+            .map(|(lat, lon)| {
+                let (u, v) = mercator_share(*lat, *lon);
+                for zh in (0..=DEEP_LEVEL).rev() {
+                    let n = 1u32 << zh;
+                    let nf = f64::from(n);
+                    let key = (zh, ((u * nf) as u32).min(n - 1), ((v * nf) as u32).min(n - 1));
+                    let Some(tile) = self.tiles.get(&key) else {
+                        continue;
+                    };
+                    let h = sample(tile, u, v);
+                    return match self.depths.get(&key) {
+                        Some(d) if h <= 0.0 => sample_grid(key, &|row, col| f64::from(d.get(row * SIZE + col).copied().unwrap_or(0)), u, v).min(0.0),
+                        _ => h,
+                    };
+                }
+                0.0
+            })
+            .collect()
     }
 
     /// Высота рельефа в точке по самому точному готовому тайлу,

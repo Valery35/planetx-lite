@@ -8,8 +8,10 @@
 //! Точки вдоль линии и высоты - `scene::measure` (`sample_line`,
 //! `profile`), уклон меряется на отрезке [`measure::SLOPE_PIXELS`]
 //! пикселей тайла высот, как у модуля. Высоты - настоящие, без масштаба
-//! рельефа. Курсор над графиком показывает точку пути на глобусе.
-//! Вода ниже уровня моря закрашивается синим.
+//! рельефа, ниже уровня моря - дно ([`terrain::HeightStore::floor_heights_at`]).
+//! Курсор над графиком показывает точку пути на глобусе. Вода ниже
+//! уровня моря - от кривой дна до нуля, пунктир уровня моря с подписью,
+//! вода своих водоёмов - до их уровня, как у модуля.
 
 use eframe::egui;
 use scene::measure::{self, Profile};
@@ -20,6 +22,8 @@ use crate::i18n::{Lang, tr, trf};
 pub const LINE: egui::Color32 = egui::Color32::from_rgb(255, 214, 0);
 pub const FILL: egui::Color32 = egui::Color32::from_rgba_premultiplied(70, 60, 0, 70);
 pub const WATER: egui::Color32 = egui::Color32::from_rgba_premultiplied(14, 42, 74, 90);
+/// Линия уровня воды.
+pub const WATER_LINE: egui::Color32 = egui::Color32::from_rgb(30, 90, 170);
 /// Число и единица не разрываются переносом.
 const NBSP: char = '\u{a0}';
 
@@ -99,7 +103,8 @@ pub struct ProfileWindow {
 
 impl ProfileWindow {
     /// Окно. ready - все тайлы высот на месте. false в open - закрыли.
-    pub fn window(&mut self, ctx: &egui::Context, lang: Lang, heights_at: &measure::HeightsAt<'_>, ready: bool, open: &mut bool) {
+    /// lakes - свои водоёмы с батиметрией.
+    pub fn window(&mut self, ctx: &egui::Context, lang: Lang, heights_at: &measure::HeightsAt<'_>, lakes: &[data::bathymetry::Lake], ready: bool, open: &mut bool) {
         let title = if self.title.is_empty() {
             tr(lang, "Elevation profile").to_string()
         } else {
@@ -119,7 +124,8 @@ impl ProfileWindow {
                     ui.label(tr(lang, "Mark at least two points on the globe."));
                     return;
                 };
-                self.hovered = chart(ui, lang, p);
+                let water = data::bathymetry::profile_water(&p.latlon, &p.height, lakes);
+                self.hovered = chart(ui, lang, p, &water);
                 let mut text = trf(
                     lang,
                     "Map length {flat}, ground length {ground}. Lowest height {low}, highest {high}. Gain {gain}, loss {loss}. Mean slope {mean}, steepest {max}.",
@@ -143,8 +149,30 @@ impl ProfileWindow {
     }
 }
 
-/// График профиля. Возвращает точку пути под курсором.
-fn chart(ui: &mut egui::Ui, lang: Lang, p: &Profile) -> Option<(f64, f64)> {
+/// Область между кривой профиля и уровнем level на точках from..=to:
+/// вершины кривой не выше уровня, как вода модуля.
+fn water_mesh(line: &[egui::Pos2], level_y: f32, from: usize, to: usize, color: egui::Color32) -> egui::Mesh {
+    let mut mesh = egui::Mesh::default();
+    for point in &line[from..=to] {
+        mesh.colored_vertex(egui::pos2(point.x, point.y.max(level_y)), color);
+        mesh.colored_vertex(egui::pos2(point.x, level_y), color);
+    }
+    for i in 0..(to - from) as u32 {
+        let k = 2 * i;
+        mesh.add_triangle(k, k + 1, k + 2);
+        mesh.add_triangle(k + 1, k + 3, k + 2);
+    }
+    mesh
+}
+
+/// Пунктир от a до b.
+fn dashed(painter: &egui::Painter, a: egui::Pos2, b: egui::Pos2) {
+    painter.extend(egui::Shape::dashed_line(&[a, b], egui::Stroke::new(1.2, WATER_LINE), 6.0, 4.0));
+}
+
+/// График профиля. water - уровень своих водоёмов в точках или NaN.
+/// Возвращает точку пути под курсором.
+fn chart(ui: &mut egui::Ui, lang: Lang, p: &Profile, water: &[f64]) -> Option<(f64, f64)> {
     let width = ui.available_width().max(200.0);
     let (rect, response) = ui.allocate_exact_size(egui::vec2(width, 180.0), egui::Sense::hover());
     let painter = ui.painter_at(rect);
@@ -152,8 +180,12 @@ fn chart(ui: &mut egui::Ui, lang: Lang, p: &Profile) -> Option<(f64, f64)> {
     let font = egui::FontId::proportional(11.0);
     let plot = egui::Rect::from_min_max(rect.min + egui::vec2(52.0, 8.0), rect.max - egui::vec2(8.0, 20.0));
     let (x0, x1) = (0.0, p.flat.max(1.0));
-    let span = (p.high - p.low).max(1.0);
-    let (y0, y1) = (p.low - span * 0.08, p.high + span * 0.08);
+    // Ниже уровня моря в шкалу входит ноль - видна вода над дном,
+    // уровень своего водоёма тоже входит.
+    let mut high = if p.low < 0.0 { p.high.max(0.0) } else { p.high };
+    high = water.iter().copied().filter(|w| w.is_finite()).fold(high, f64::max);
+    let pad = ((high - p.low) * 0.08).max(1.0);
+    let (y0, y1) = (p.low - pad, high + pad);
     let to_screen = |d: f64, h: f64| {
         egui::pos2(
             plot.left() + ((d - x0) / (x1 - x0)) as f32 * plot.width(),
@@ -177,11 +209,6 @@ fn chart(ui: &mut egui::Ui, lang: Lang, p: &Profile) -> Option<(f64, f64)> {
         painter.text(egui::pos2(x, plot.bottom() + 2.0), egui::Align2::CENTER_TOP, axis_text(lang, d, step), font.clone(), text_color);
         d += step;
     }
-    // Вода ниже уровня моря.
-    if p.low < 0.0 {
-        let sea = to_screen(x0, 0.0).y.clamp(plot.top(), plot.bottom());
-        painter.rect_filled(egui::Rect::from_min_max(egui::pos2(plot.left(), sea), plot.right_bottom()), 0.0, WATER);
-    }
     let line: Vec<egui::Pos2> = p.distance.iter().zip(&p.height).map(|(d, h)| to_screen(*d, *h)).collect();
     let mut mesh = egui::Mesh::default();
     for point in &line {
@@ -194,6 +221,35 @@ fn chart(ui: &mut egui::Ui, lang: Lang, p: &Profile) -> Option<(f64, f64)> {
         mesh.add_triangle(k + 1, k + 3, k + 2);
     }
     painter.add(egui::Shape::mesh(mesh));
+    if p.low < 0.0 && line.len() >= 2 {
+        // Ниже уровня моря - вода от кривой до нуля. Сухие впадины ниже
+        // нуля тоже заливаются, высоты не отличают их от моря.
+        let sea = to_screen(x0, 0.0).y;
+        painter.add(egui::Shape::mesh(water_mesh(&line, sea, 0, line.len() - 1, WATER)));
+        dashed(&painter, egui::pos2(plot.left(), sea), egui::pos2(plot.right(), sea));
+        painter.text(egui::pos2(plot.right() - 4.0, sea - 2.0), egui::Align2::RIGHT_BOTTOM, tr(lang, "sea level"), font.clone(), WATER_LINE);
+    }
+    // Свои водоёмы - на каждом отрезке подряд мокрых точек.
+    let mut start: Option<usize> = None;
+    for i in 0..=water.len().min(line.len()) {
+        let wet = water.get(i).is_some_and(|w| w.is_finite()) && i < line.len();
+        if wet {
+            start.get_or_insert(i);
+            continue;
+        }
+        let Some(first) = start.take() else {
+            continue;
+        };
+        let last = i - 1;
+        let level = water[first..=last].iter().copied().fold(f64::NEG_INFINITY, f64::max);
+        let y = to_screen(x0, level).y;
+        painter.add(egui::Shape::mesh(water_mesh(&line, y, first, last, WATER)));
+        let (a, b) = (egui::pos2(line[first].x, y), egui::pos2(line[last].x, y));
+        dashed(&painter, a, b);
+        if b.x - a.x > 120.0 {
+            painter.text(egui::pos2(b.x - 4.0, y - 2.0), egui::Align2::RIGHT_BOTTOM, trf(lang, "water level {level}", &[("level", &height_text(lang, level))]), font.clone(), WATER_LINE);
+        }
+    }
     painter.add(egui::Shape::line(line, egui::Stroke::new(1.6, LINE)));
     let pos = response.hover_pos().filter(|p| plot.contains(*p))?;
     let target = x0 + f64::from((pos.x - plot.left()) / plot.width()) * (x1 - x0);
