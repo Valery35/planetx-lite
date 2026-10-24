@@ -1140,3 +1140,10 @@ This body has no heights.	この天体には高さのデータがありません
 Viewshed from a point	地点からの可視域
 Viewshed from here…	ここからの可視域…
 {share} of the circle area is visible. The computation step is {step} m.	円の面積の {share} が見えます。計算の間隔は {step} m です。
+Article	記事
+Encyclopedia	百科事典
+Summary	最初の段落
+Wikipedia	ウィキペディア
+Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	注視点の近くにある座標付きのウィキペディア記事。記事をクリックすると、リンクと最初の段落が表示されます。
+Wikipedia did not answer, retry in 30 s.	ウィキペディアが応答しません。30 秒後に再試行します。
+Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	注視点の近くにある座標付きのウィキペディア記事で、重要なものと近いものが先に表示されます。カメラの高さが 40 km より低いときに見えます。記事をクリックすると、「オブジェクト」ウィンドウにリンクと最初の段落が表示されます。

@@ -997,8 +997,8 @@ Credit of the source on the screen, as its terms of use require.	Kullanım koşu
 The address must begin with https:// or http://.	Adres https:// veya http:// ile başlamalıdır.
 The address needs the places {z}, {x} and {y} or {-y}.	Adreste {z}, {x} ve {y} veya {-y} yerleri gerekir.
 The address must not contain spaces.	Adres boşluk içermemelidir.
-Wikipedia nearby	Yakındaki Wikipedia
-Wikipedia articles with coordinates - cities, monuments, rivers, peaks - as labels with a blue dot. The articles are requested when the camera is below 40 km, in the language of the QGIS interface. A click on a label opens the article card - the first paragraph, a link to the article and the Explain this button. Wikipedia texts are under CC BY-SA 4.0.	Koordinatlı Wikipedia maddeleri - şehirler, anıtlar, nehirler, zirveler - mavi noktalı etiketler olarak. Maddeler kamera 40 km'nin altındayken QGIS arayüzünün dilinde istenir. Bir etikete tıklama madde kartını açar - ilk paragraf, maddenin bağlantısı ve "Bunu açıkla" düğmesi. Wikipedia metinleri CC BY-SA 4.0 altındadır.
+Wikipedia nearby	Yakındaki Vikipedi
+Wikipedia articles with coordinates - cities, monuments, rivers, peaks - as labels with a blue dot. The articles are requested when the camera is below 40 km, in the language of the QGIS interface. A click on a label opens the article card - the first paragraph, a link to the article and the Explain this button. Wikipedia texts are under CC BY-SA 4.0.	Koordinatlı Vikipedi maddeleri - şehirler, anıtlar, nehirler, zirveler - mavi noktalı etiketler olarak. Maddeler kamera 40 km'nin altındayken QGIS arayüzünün dilinde istenir. Bir etikete tıklama madde kartını açar - ilk paragraf, maddenin bağlantısı ve "Bunu açıkla" düğmesi. Vikipedi metinleri CC BY-SA 4.0 altındadır.
 Clouds	Bulutlar
 Clouds from NASA GIBS VIIRS imagery of the last complete day. They lie as a translucent veil over the imagery. Snow and ice are white too and stay visible.	Son tam günün NASA GIBS VIIRS görüntülerinden bulutlar. Görüntünün üzerinde yarı saydam bir örtü gibi dururlar. Kar ve buz da beyazdır ve görünür kalır.
 Satellites	Uydular
@@ -1140,3 +1140,10 @@ This body has no heights.	Bu gök cisminin yükseklikleri yok.
 Viewshed from a point	Bir noktadan görünürlük
 Viewshed from here…	Buradan görünürlük…
 {share} of the circle area is visible. The computation step is {step} m.	Daire alanının {share} kadarı görünür. Hesap adımı {step} m.
+Article	Madde
+Encyclopedia	Ansiklopedi
+Summary	İlk paragraf
+Wikipedia	Vikipedi
+Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	Bakış noktasının yakınındaki koordinatlı Vikipedi maddeleri. Bir maddeye tıklama bağlantısını ve ilk paragrafını verir.
+Wikipedia did not answer, retry in 30 s.	Vikipedi yanıt vermedi, 30 sn sonra yeniden denenecek.
+Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	Bakış noktasının yakınındaki koordinatlı Vikipedi maddeleri, önce önemli ve yakın olanlar. Kamera yüksekliği 40 km'nin altındayken görünürler. Bir maddeye tıklama bağlantısını ve ilk paragrafını "Nesneler" penceresinde verir.

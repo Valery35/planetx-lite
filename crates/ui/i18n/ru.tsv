@@ -1140,3 +1140,10 @@ This body has no heights.	Для этого тела высот нет.
 Viewshed from a point	Видимость из точки
 Viewshed from here…	Видимость отсюда…
 {share} of the circle area is visible. The computation step is {step} m.	Видно {share} площади круга. Шаг расчёта {step} м.
+Article	Статья
+Encyclopedia	Энциклопедия
+Summary	Первый абзац
+Wikipedia	Википедия
+Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	Статьи Википедии с координатами у точки взгляда. Щелчок по статье даёт её ссылку и первый абзац.
+Wikipedia did not answer, retry in 30 s.	Википедия не ответила, повтор через 30 с.
+Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	Статьи Википедии с координатами у точки взгляда, важные и ближние первыми. Они видны ниже 40 км высоты камеры. Щелчок по статье даёт её ссылку и первый абзац в окне «Объекты».

@@ -1140,3 +1140,10 @@ This body has no heights.	ამ სხეულისთვის სიმა�
 Viewshed from a point	ხილვადობა წერტილიდან
 Viewshed from here…	ხილვადობა აქედან…
 {share} of the circle area is visible. The computation step is {step} m.	ჩანს წრის ფართობის {share}. გამოთვლის ბიჯი {step} მ.
+Article	სტატია
+Encyclopedia	ენციკლოპედია
+Summary	პირველი აბზაცი
+Wikipedia	ვიკიპედია
+Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	ვიკიპედიის სტატიები კოორდინატებით ხედვის წერტილთან. სტატიაზე დაწკაპუნება იძლევა მის ბმულს და პირველ აბზაცს.
+Wikipedia did not answer, retry in 30 s.	ვიკიპედიამ არ უპასუხა, გამეორება 30 წმ-ში.
+Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	ვიკიპედიის სტატიები კოორდინატებით ხედვის წერტილთან, მნიშვნელოვანი და ახლოს მყოფი პირველ რიგში. ისინი ჩანს კამერის 40 კმ-ზე დაბალი სიმაღლიდან. სტატიაზე დაწკაპუნება იძლევა მის ბმულს და პირველ აბზაცს ფანჯარაში „ობიექტები“.

@@ -1140,3 +1140,10 @@ This body has no heights.	Ce corps n’a pas d’altitudes.
 Viewshed from a point	Visibilité depuis un point
 Viewshed from here…	Visibilité depuis ici…
 {share} of the circle area is visible. The computation step is {step} m.	{share} de la surface du cercle est visible. Le pas de calcul est de {step} m.
+Article	Article
+Encyclopedia	Encyclopédie
+Summary	Premier paragraphe
+Wikipedia	Wikipédia
+Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	Articles de Wikipédia avec coordonnées près du point visé. Un clic sur un article donne son lien et son premier paragraphe.
+Wikipedia did not answer, retry in 30 s.	Wikipédia n’a pas répondu, nouvel essai dans 30 s.
+Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	Articles de Wikipédia avec coordonnées près du point visé, les importants et les proches d’abord. Ils sont visibles sous 40 km d’altitude de la caméra. Un clic sur un article donne son lien et son premier paragraphe dans la fenêtre « Objets ».

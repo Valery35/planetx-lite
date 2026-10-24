@@ -1140,3 +1140,10 @@ This body has no heights.	이 천체에는 높이 자료가 없습니다.
 Viewshed from a point	지점의 가시권
 Viewshed from here…	여기서의 가시권…
 {share} of the circle area is visible. The computation step is {step} m.	원 면적의 {share}가 보입니다. 계산 간격은 {step} m입니다.
+Article	문서
+Encyclopedia	백과사전
+Summary	첫 문단
+Wikipedia	위키백과
+Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	바라보는 점 근처의 좌표가 있는 위키백과 문서. 문서를 클릭하면 링크와 첫 문단이 나옵니다.
+Wikipedia did not answer, retry in 30 s.	위키백과가 응답하지 않았습니다. 30초 후 다시 시도합니다.
+Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	바라보는 점 근처의 좌표가 있는 위키백과 문서로, 중요한 문서와 가까운 문서가 먼저 나옵니다. 카메라 높이가 40 km 아래일 때 보입니다. 문서를 클릭하면 ‘객체’ 창에 링크와 첫 문단이 나옵니다.

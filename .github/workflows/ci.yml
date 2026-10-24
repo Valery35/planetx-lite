@@ -61,7 +61,11 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ env.RUST_VERSION }}-
 
       - name: Тесты
-        run: cargo test --workspace --locked
+        # Строки упавших тестов - в аннотации: журнал прогона открыт только
+        # после входа на GitHub, аннотации видны всем.
+        run: |
+          set -o pipefail
+          cargo test --workspace --locked 2>&1 | tee test.log || { grep -E "panicked|FAILED|^error" test.log | head -n 20 | sed 's/^/::error::/'; exit 1; }
 
       - name: Clippy
         run: cargo clippy --workspace --all-targets --locked -- -D warnings

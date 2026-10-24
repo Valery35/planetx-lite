@@ -61,6 +61,7 @@ pub mod timeline;
 pub mod tool;
 pub mod tours;
 pub mod vector;
+pub mod wiki;
 
 pub use app::{LiteApp, Loaders, Report, ShotSink};
 pub use check::Scenario;

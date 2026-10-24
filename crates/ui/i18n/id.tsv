@@ -1140,3 +1140,10 @@ This body has no heights.	Benda ini tidak memiliki data ketinggian.
 Viewshed from a point	Visibilitas dari titik
 Viewshed from here…	Visibilitas dari sini…
 {share} of the circle area is visible. The computation step is {step} m.	Terlihat {share} dari luas lingkaran. Langkah perhitungan {step} m.
+Article	Artikel
+Encyclopedia	Ensiklopedia
+Summary	Paragraf pertama
+Wikipedia	Wikipedia
+Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	Artikel Wikipedia dengan koordinat di dekat titik pandang. Klik pada artikel memberikan tautan dan paragraf pertamanya.
+Wikipedia did not answer, retry in 30 s.	Wikipedia tidak menjawab, dicoba lagi dalam 30 dtk.
+Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	Artikel Wikipedia dengan koordinat di dekat titik pandang, yang penting dan yang dekat lebih dulu. Artikel terlihat di bawah ketinggian kamera 40 km. Klik pada artikel memberikan tautan dan paragraf pertamanya di jendela "Objek".

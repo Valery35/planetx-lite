@@ -312,6 +312,11 @@ pub struct LiteApp {
     /// Точки и подписи живых объектов.
     live_points: Vec<render::PointsMesh>,
     live_labels: Vec<(String, DVec3)>,
+    /// «Википедия рядом»: статьи, точки и подписи, время сборки.
+    wiki: Option<crate::wiki::Wiki>,
+
+    wiki_labels: Vec<(String, DVec3)>,
+    wiki_built: f64,
     /// Объекты живых строк на этот кадр, для окна «Объекты» и меню.
     live_objects: Vec<(crate::live::Kind, crate::live::Object)>,
     /// Камера следом за живым объектом: строка и ключ.
@@ -842,6 +847,10 @@ impl LiteApp {
             live_keys: Vec::new(),
             live_points: Vec::new(),
             live_labels: Vec::new(),
+            wiki: None,
+
+            wiki_labels: Vec::new(),
+            wiki_built: f64::NEG_INFINITY,
             live_objects: Vec::new(),
             live_follow: None,
             followed: None,
@@ -1522,6 +1531,34 @@ impl LiteApp {
                 }
             }
         }
+        // Статьи Википедии у пикселя, _identify_wiki модуля.
+        if let (Some((px, py, ppp)), Some(wiki)) = (pixel, &self.wiki) {
+            let radius = crate::wiki::PICK_PIXELS * ppp;
+            let mut near: Vec<(f64, &String)> = self
+                .wiki_labels
+                .iter()
+                .filter_map(|(title, p)| {
+                    let (q, front) = self.nav.camera.project(*p);
+                    let gap = (q.x - px).hypot(q.y - py);
+                    (front && gap <= radius).then_some((gap, title))
+                })
+                .collect();
+            near.sort_by(|a, b| a.0.total_cmp(&b.0));
+            let features: Vec<crate::identify::Feature> = near
+                .iter()
+                .take(10)
+                .map(|(_, title)| {
+                    let mut fields = vec![(tr(self.lang, "Article").to_string(), data::wikipedia::page_url(wiki.lang(), title))];
+                    if let Some(text) = wiki.summary_of(title).filter(|t| !t.is_empty()) {
+                        fields.insert(0, (tr(self.lang, "Summary").to_string(), text.to_string()));
+                    }
+                    ((*title).clone(), fields)
+                })
+                .collect();
+            if !features.is_empty() {
+                groups.push((tr(self.lang, "Wikipedia").to_string(), features));
+            }
+        }
         groups.push(crate::identify::place_group(self.lang, height.filter(|_| self.settings.relief), address));
         if let Some((ask, answer)) = &self.map_ask
             && ask.at == (lat, lon)
@@ -2059,6 +2096,14 @@ impl LiteApp {
                     self.live_points.clear();
                     self.live_labels.clear();
                     self.dots.dirty = true;
+                }
+            }
+            Extra::Wiki => {
+                if on {
+                    self.wiki.get_or_insert_with(crate::wiki::Wiki::default);
+                } else {
+                    self.wiki = None;
+                    self.wiki_labels.clear();
                 }
             }
             Extra::Geoid => {
@@ -2793,6 +2838,54 @@ impl LiteApp {
             let age = ages[state.index.min(last)];
             self.set_basemap(Basemap::Paleo(age));
         }
+    }
+
+    /// «Википедия рядом»: запросы тайлов у точки взгляда, точки и подписи
+    /// статей, первый абзац статьи в окне «Объекты».
+    fn step_wiki(&mut self, now: f64) {
+        let Some(wiki) = &mut self.wiki else {
+            return;
+        };
+        let e = self.nav.camera.ellipsoid;
+        let altitude = e.ecef_to_geodetic(self.nav.camera.eye).2;
+        let (lat, lon) = (self.nav.pose.lat, self.nav.pose.lon);
+        {
+            let loaders = &self.loaders;
+            let request = |limit: u64| (loaders.request)(limit);
+            wiki.step(now, (lat, lon, altitude), self.lang.code(), &request);
+        }
+        if wiki.failed {
+            self.open_message = Some(tr(self.lang, "Wikipedia did not answer, retry in 30 s.").to_string());
+        }
+        // Первый абзац пришёл - в группу «Википедия» окна «Объекты».
+        if let Some(objects) = &mut self.objects {
+            let wiki_name = tr(self.lang, "Wikipedia");
+            let summary = tr(self.lang, "Summary");
+            for (group, features) in &mut objects.groups {
+                if group != wiki_name {
+                    continue;
+                }
+                for (title, fields) in features.iter_mut() {
+                    if let Some(text) = wiki.summary_of(title).filter(|t| !t.is_empty())
+                        && !fields.iter().any(|(k, _)| k == summary)
+                    {
+                        fields.insert(0, (summary.to_string(), text.to_string()));
+                    }
+                }
+            }
+        }
+        // Набор и порядок подписей - по приходу статей и движению вида.
+        if !wiki.dirty && now - self.wiki_built < 0.5 {
+            return;
+        }
+        wiki.dirty = false;
+        self.wiki_built = now;
+        let shown = altitude <= data::wikipedia::MAX_ALTITUDE;
+        let articles = if shown { wiki.articles(lat, lon) } else { Vec::new() };
+        let store = self.heights.read();
+        let points: Vec<DVec3> = articles.iter().take(crate::wiki::LABELS).map(|a| e.geodetic_to_ecef(a.lat, a.lon, store.height_at(a.lat, a.lon))).collect();
+        drop(store);
+        self.wiki_labels = articles.iter().zip(&points).take(crate::wiki::LABELS).map(|(a, p)| (a.title.clone(), *p)).collect();
     }
 
     /// Расчёты у точки: окна, шаги, тайлы высот, слои над картами,
@@ -4467,6 +4560,7 @@ impl LiteApp {
             let height = move |lat: f64, lon: f64| terrain.as_ref().map_or(0.0, |t| t(lat, lon));
             let mut all = self.clouds.clone();
             all.extend(self.live_points.iter().cloned());
+
             all.extend(self.dots.meshes(&self.nav.camera.ellipsoid, &height, window));
             let poles = self.geo.points();
             if !poles.is_empty() {
@@ -4649,6 +4743,9 @@ impl LiteApp {
             parts.push(data::stars::ATTRIBUTION);
         }
         parts.extend(self.live.keys().map(|k| k.attribution()));
+        if !self.wiki_labels.is_empty() {
+            parts.push(data::wikipedia::ATTRIBUTION);
+        }
         if self.cutaway.is_some() {
             parts.push(data::crust::CITATION);
             parts.push(data::slabs::ATTRIBUTION);
@@ -5038,6 +5135,7 @@ impl eframe::App for LiteApp {
             || self.search.busy()
             || self.pictures.busy()
             || self.fetching.is_some()
+            || self.wiki.as_ref().is_some_and(crate::wiki::Wiki::busy)
             || self.viewshed.as_ref().is_some_and(crate::pointcalc::Calc::busy)
             || self.insolation.as_ref().is_some_and(crate::pointcalc::Calc::busy)
             || self.relief.busy();
@@ -5126,6 +5224,12 @@ impl eframe::App for LiteApp {
                     let (lat, lon, _) = self.nav.camera.ellipsoid.ecef_to_geodetic(p);
                     self.ask_map_value(lat, lon);
                     self.objects = Some(self.make_objects(lat, lon, Some((px, py, ppp)), None));
+                    // Первый абзац ближней статьи у щелчка.
+                    let first = self.objects.as_ref().and_then(|o| o.groups.iter().find(|(g, _)| g == tr(self.lang, "Wikipedia"))).and_then(|(_, f)| f.first()).map(|(t, _)| t.clone());
+                    if let (Some(title), Some(wiki)) = (first, &mut self.wiki) {
+                        let loaders = &self.loaders;
+                        wiki.ask_summary(&title, &|limit: u64| (loaders.request)(limit));
+                    }
                 }
             }
             // Щелчок по метке без инструмента - её карточка, как у модуля.
@@ -5172,6 +5276,7 @@ impl eframe::App for LiteApp {
         self.own_window(&ctx);
         self.point_windows(&ctx);
         self.step_calcs(&ctx, now);
+        self.step_wiki(now);
         self.paleo_bar(&ctx, now);
         self.step_cutaway();
         self.check_linked_models(now);
@@ -5418,10 +5523,11 @@ impl eframe::App for LiteApp {
                 y += h;
             }
         }
-        // Подписи живых объектов у их точек, на обращённой к глазу стороне,
-        // без наложения: ближние к точке взгляда первыми.
+        // Подписи живых объектов и статей у их точек, на обращённой к глазу
+        // стороне, без наложения: ближние к точке взгляда первыми.
         let mut taken: Vec<egui::Rect> = blocked.clone();
-        for (text, p) in &self.live_labels {
+        let wiki_from = self.live_labels.len();
+        for (n, (text, p)) in self.live_labels.iter().chain(&self.wiki_labels).enumerate() {
             let (q, front) = self.nav.camera.project(*p);
             let facing = (*p - self.nav.camera.eye).dot(p.normalize_or_zero()) < 0.0;
             if !front || !facing {
@@ -5438,6 +5544,11 @@ impl eframe::App for LiteApp {
                 continue;
             }
             taken.push(place);
+            // Статья Википедии - точка у подписи, как пункт подписей модуля.
+            if n >= wiki_from {
+                let [r, g, b] = crate::wiki::COLOR;
+                painter.circle(at - egui::vec2(6.0, -6.0), crate::wiki::POINT_SIZE / 2.0, egui::Color32::from_rgb(r, g, b), egui::Stroke::new(1.0, egui::Color32::WHITE));
+            }
             painter.text(at + egui::vec2(1.0, 1.0), egui::Align2::LEFT_BOTTOM, text, font.clone(), egui::Color32::from_black_alpha(200));
             painter.text(at, egui::Align2::LEFT_BOTTOM, text, font, egui::Color32::WHITE);
         }

@@ -1140,3 +1140,10 @@ This body has no heights.	Bu cisim üçün hündürlüklər yoxdur.
 Viewshed from a point	Nöqtədən görünmə
 Viewshed from here…	Buradan görünmə…
 {share} of the circle area is visible. The computation step is {step} m.	Dairə sahəsinin {share} hissəsi görünür. Hesablama addımı {step} m.
+Article	Məqalə
+Encyclopedia	Ensiklopediya
+Summary	Birinci abzas
+Wikipedia	Vikipediya
+Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	Baxış nöqtəsinin yaxınlığında koordinatlı Vikipediya məqalələri. Məqaləyə klik onun keçidini və birinci abzasını verir.
+Wikipedia did not answer, retry in 30 s.	Vikipediya cavab vermədi, 30 san sonra təkrar.
+Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	Baxış nöqtəsinin yaxınlığında koordinatlı Vikipediya məqalələri, əvvəlcə vacib və yaxın olanlar. Kamera hündürlüyü 40 km-dən aşağı olanda görünürlər. Məqaləyə klik onun keçidini və birinci abzasını "Obyektlər" pəncərəsində verir.

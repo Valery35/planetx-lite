@@ -41,6 +41,8 @@ pub enum Extra {
     Geoid,
     /// Живые объекты: суда, самолёты, поезда.
     Live(crate::live::Kind),
+    /// Википедия рядом: статьи у точки взгляда.
+    Wiki,
 }
 
 impl Extra {
@@ -56,6 +58,7 @@ impl Extra {
         out.push(Extra::Paleo);
         out.push(Extra::Geoid);
         out.extend(crate::live::Kind::ALL.map(Extra::Live));
+        out.push(Extra::Wiki);
         out
     }
 
@@ -79,6 +82,7 @@ impl Extra {
             Extra::Paleo => "Paleogeography",
             Extra::Geoid => "Geoid",
             Extra::Live(k) => k.name(),
+            Extra::Wiki => "Wikipedia nearby",
         }
     }
 
@@ -99,6 +103,7 @@ impl Extra {
             Extra::Map(_) => self.map().map_or("", |e| e.tip),
             Extra::Dots(l) => l.tip(),
             Extra::Live(k) => k.tip(),
+            Extra::Wiki => "Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.",
             Extra::Geoid => "The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.",
             Extra::Paleo => "Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.",
             Extra::Cutaway => {
@@ -128,6 +133,7 @@ impl Extra {
             Extra::Dots(crate::dots::Layer::Cables | crate::dots::Layer::Plants) => Category::Infra,
             Extra::Dots(_) | Extra::Cutaway | Extra::Paleo | Extra::Geoid => Category::Depths,
             Extra::Live(_) => Category::Transport,
+            Extra::Wiki => Category::Wiki,
         }
     }
 
@@ -144,6 +150,7 @@ impl Extra {
             Extra::Paleo => "paleo",
             Extra::Geoid => "geoid",
             Extra::Live(k) => k.key(),
+            Extra::Wiki => "wiki",
         }
     }
 
@@ -563,6 +570,7 @@ enum Category {
     Tiles,
     Infra,
     Transport,
+    Wiki,
 }
 
 /// Окно каталога «Добавить данные»: открыто ли, категория, поиск,
@@ -626,6 +634,11 @@ impl Item {
             Item::Base(b) => b.ready().map_or("", |r| r.group.name()),
             Item::Group(_) => "OpenFreeMap",
             Item::Extra(Extra::Dots(l)) => l.source(),
+            Item::Extra(Extra::Live(k)) => k.source(),
+            Item::Extra(Extra::Wiki) => "Wikipedia",
+            Item::Extra(Extra::Cutaway) => "PREM, CRUST1.0, Slab2",
+            Item::Extra(Extra::Paleo) => "PALEOMAP",
+            Item::Extra(Extra::Geoid) => "EGM2008, NGA",
             Item::Extra(e) => e.map().map_or("", |m| m.source),
         }
     }
@@ -651,9 +664,15 @@ fn items() -> Vec<Item> {
     out.extend((0..crate::maps::ALL.len()).map(|n| Item::Extra(Extra::Map(n))));
     use crate::dots::Layer;
     out.extend(
-        [Layer::Quakes, Layer::Plates, Layer::Faults, Layer::PlateMotion, Layer::Volcanoes, Layer::MagPoles, Layer::MagDecl, Layer::Deposits, Layer::Plants, Layer::Cables]
+        [Layer::Quakes, Layer::Iscgem, Layer::Plates, Layer::Faults, Layer::PlateMotion, Layer::Volcanoes, Layer::MagPoles, Layer::MagDecl, Layer::Deposits, Layer::Plants, Layer::Cables]
             .map(|l| Item::Extra(Extra::Dots(l))),
     );
+    // Порядок LAYERS витрины модуля.
+    out.push(Item::Extra(Extra::Geoid));
+    out.extend(crate::live::Kind::ALL.map(|k| Item::Extra(Extra::Live(k))));
+    out.push(Item::Extra(Extra::Cutaway));
+    out.push(Item::Extra(Extra::Paleo));
+    out.push(Item::Extra(Extra::Wiki));
     out
 }
 
@@ -692,6 +711,7 @@ impl Catalog {
             (Category::Soil, tr(lang, "Soils"), tr(lang, "Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.")),
             (Category::Terrain, tr(lang, "Terrain analysis"), tr(lang, "Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.")),
             (Category::Tiles, tr(lang, "Map overlays"), tr(lang, "Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.")),
+            (Category::Wiki, tr(lang, "Encyclopedia"), tr(lang, "Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.")),
         ];
         egui::Window::new(tr(lang, "Add data")).open(&mut open).default_size([780.0, 520.0]).show(ctx, |ui| {
             ui.add(egui::TextEdit::singleline(&mut self.search).hint_text(tr(lang, "snow, mines, wind")).desired_width(f32::INFINITY));

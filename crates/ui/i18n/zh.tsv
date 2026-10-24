@@ -1140,3 +1140,10 @@ This body has no heights.	该天体没有高度数据。
 Viewshed from a point	从一点出发的可视域
 Viewshed from here…	从这里看的可视域…
 {share} of the circle area is visible. The computation step is {step} m.	可见圆面积的 {share}。计算步长为 {step} 米。
+Article	条目
+Encyclopedia	百科全书
+Summary	第一段
+Wikipedia	维基百科
+Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.	注视点附近带坐标的维基百科条目。单击条目可获得其链接和第一段。
+Wikipedia did not answer, retry in 30 s.	维基百科未响应，30 秒后重试。
+Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.	注视点附近带坐标的维基百科条目，重要和较近的条目优先。相机高度低于 40 公里时可见。单击条目可在“对象”窗口中获得其链接和第一段。
