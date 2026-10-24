@@ -986,3 +986,157 @@ Earth cutaway	地球剖面
 Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on.	从注视点下方的地球中移除一个扇区 - 经度宽 90° 的四分之一半球。其剖面按 PREM 模型的半径显示地壳、地幔和地核，按 CRUST1.0 模型显示地壳。剖面穿过俯冲带的地方可见俯冲板块。每次开启该行时扇区都会重新放置。
 Stretch the crust	拉伸地壳
 Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.	相机越远，对 400 公里以内深度的拉伸越强，从远处也能看到地壳和上地幔。不勾选时所有深度均为真实比例。
+Camera follows	相机跟随
+Add tile source…	添加瓦片来源…
+Remove this tile source from the list.	从列表中移除此瓦片来源。
+New tile source	新瓦片来源
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS.	含 {z}、{x} 和 {y} 占位的瓦片地址模板。{-y} 表示行自下而上，与 TMS 相同。
+Levels up to	级别上限
+Credit	署名
+Credit of the source on the screen, as its terms of use require.	按其使用条件要求在屏幕上显示的来源署名。
+The address must begin with https:// or http://.	地址必须以 https:// 或 http:// 开头。
+The address needs the places {z}, {x} and {y} or {-y}.	地址需要 {z}、{x} 和 {y} 或 {-y} 占位。
+The address must not contain spaces.	地址不能包含空格。
+Wikipedia nearby	附近的维基百科
+Wikipedia articles with coordinates - cities, monuments, rivers, peaks - as labels with a blue dot. The articles are requested when the camera is below 40 km, in the language of the QGIS interface. A click on a label opens the article card - the first paragraph, a link to the article and the Explain this button. Wikipedia texts are under CC BY-SA 4.0.	带坐标的维基百科条目 - 城市、纪念物、河流、山峰 - 以带蓝点的标注显示。相机低于 40 公里时，以 QGIS 界面语言请求条目。单击标注打开条目卡片 - 第一段、条目链接和“解释一下”按钮。维基百科文本采用 CC BY-SA 4.0。
+Clouds	云层
+Clouds from NASA GIBS VIIRS imagery of the last complete day. They lie as a translucent veil over the imagery. Snow and ice are white too and stay visible.	根据 NASA GIBS 最近一整天 VIIRS 影像的云层。云层以半透明薄纱覆盖在影像之上。雪和冰同样为白色，仍然可见。
+Satellites	卫星
+Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.	根据 CelesTrak 轨道根数的人造卫星，位置按 SGP4 模型计算。时间为时间条的右滑块，没有时间条时为计算机时钟。分组在图库的“卫星”选项卡中选择。分组的根数最多每 2 小时更新一次。
+Mining areas	采矿区
+Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.	根据 2019 年 Sentinel-2 影像的世界露天矿、排土场、尾矿库和工业场地轮廓 - 约 4.5 万处，Maus 等，2022。单击轮廓显示国家和面积。首次打开下载约 25 MB。
+OSM mines and quarries	OSM 矿山和采石场
+Mines, shafts and quarries from OpenStreetMap with names and the commodity. They load for the place of the view when the camera is below 150 km. The colour is the commodity group, as for the deposits. A click on a point shows the name, operator and a link to the OpenStreetMap object.	OpenStreetMap 中带名称和矿种的矿山、竖井和采石场。相机低于 150 公里时按视图位置加载。颜色为矿种组，与矿床相同。单击点显示名称、运营方和 OpenStreetMap 对象的链接。
+Trains of Finland	芬兰列车
+Trains of Finland in real time from Fintraffic Digitraffic open data, the positions are updated every 10 s. From afar a train is a dot in the colour of its category with its number, close up it is a car model that moves along OpenStreetMap rails between updates. A click on a train shows its type, number and speed.	根据 Fintraffic Digitraffic 开放数据的芬兰实时列车，位置每 10 秒更新一次。远看列车是带车次的类别颜色点，近看则是在两次更新之间沿 OpenStreetMap 铁轨行驶的车厢模型。单击列车显示类型、车次和速度。
+Baltic ships	波罗的海船舶
+Ships of the Gulfs of Finland and Bothnia and the Baltic near Finland by AIS signals, Fintraffic Digitraffic open data, the positions every 20 s. From afar a ship is a dot in the colour of its type with its name, close up a schematic model of its length that keeps its course. A click shows the type, call sign, destination, size and speed.	根据 AIS 信号的芬兰湾、波的尼亚湾和芬兰附近波罗的海的船舶，Fintraffic Digitraffic 开放数据，位置每 20 秒更新。远看船舶是带船名的类型颜色点，近看则是保持航向、与船长相符的示意模型。单击显示类型、呼号、目的地、尺寸和速度。
+Aircraft	飞机
+Aircraft by ADS-B signals of the adsb.lol volunteer network in a circle around the point of view, every 10 s. An aircraft in the air is shown at its altitude, close up as a schematic model of the size of its category with its bank. A click shows the call sign, type, registration, altitude and speed. The network has almost no receivers over Russia.	根据 adsb.lol 志愿者网络 ADS-B 信号的视点周围圆形范围内的飞机，每 10 秒更新。空中飞机显示在其高度上，近看为与其类别大小相符、带坡度的示意模型。单击显示呼号、机型、注册号、高度和速度。该网络在俄罗斯上空几乎没有接收器。
+Currents	洋流
+Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.	以速度着色之上流动的白色细线表示的海洋表层流。根据卫星测高的 NOAA CoastWatch 地转流，最近完成的一天，0.5° 格网。会话中首次打开下载约 4 MB。
+OSM power lines, cables and pipelines	OSM 输电线、电缆和管道
+Power lines by voltage, substations, cables and gas, oil and water pipelines from OpenStreetMap. They load for the place in view when the camera is below 150 km. A click on a line shows the voltage, substance, operator and a link to the OpenStreetMap object.	OpenStreetMap 中按电压分的输电线、变电站、电缆以及燃气、石油和水管道。相机低于 150 公里时按视图位置加载。单击线条显示电压、输送物、运营方和 OpenStreetMap 对象的链接。
+Historical earthquakes	历史地震
+Strong earthquakes of the world from 1904 to 2024 from the ISC-GEM catalogue - about 74 thousand events of magnitude 5 and above, with locations, depths and magnitudes recomputed in one way. A circle sits at the epicentre, at its depth - in the removed sector of the Earth cutaway, the colour shows the depth and the size the magnitude. The time slider range selects the events. A click on a circle shows the place, date, magnitude and the USGS event page. The first use downloads the catalogue in parts, about 13 MB.	根据 ISC-GEM 目录的 1904 年至 2024 年世界强震 - 约 7.4 万次 5 级及以上事件，位置、深度和震级按统一方法重新计算。圆圈位于震中，在其深度处 - 位于地球剖面的移除扇区中，颜色表示深度，大小表示震级。时间条的时间段筛选事件。单击圆圈显示地点、日期、震级和 USGS 事件页面。首次打开分批下载目录，约 13 MB。
+Geoid	大地水准面
+The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.	根据 NGA EGM2008 模型的地球等位面 - 大地水准面 - 的形状。该行开启期间，地球高度为大地水准面相对椭球的高度，从 -107 到 +86 米，拉伸 10 000 倍，地球看起来“皱巴巴”的。隆起位于重力较强处，例如新几内亚附近，凹陷位于重力较弱处，最深的在印度洋。此期间地形和水被移除，关闭该行即可恢复。
+Paleogeography	古地理
+Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.	根据 PALEOMAP PaleoDEM 地图的过去陆地地形和海洋深度，最远至 5.4 亿年前。年代由视图底部的滑块设置。此期间影像、边界和标注被移除。
+3D buildings	3D 建筑
+3D buildings from OpenStreetMap in OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM or from the number of floors. A building without either gets a height of 5 m.	OpenFreeMap 矢量瓦片中的 OpenStreetMap 3D 建筑。相机距地面不到 6 公里时可见。高度取自 OSM 或楼层数。两者均无的建筑高度为 5 米。
+Rosreestr cadastre	俄罗斯国家登记局地籍
+Land parcels from the National spatial data system of Rosreestr over the imagery, for Russia only. They are seen up close, from about 10 km and lower. The service answers slowly and refuses frequent requests, so the parcels come one tile at a time.	俄罗斯国家登记局国家空间数据系统中的地块，叠加在影像上，仅限俄罗斯。近处可见，自约 10 公里高度及以下。该服务响应缓慢并拒绝频繁请求，因此地块逐个瓦片到达。
+Age in millions of years ago. The map of relief and depths for this age - PaleoDEM PALEOMAP, Scotese and Wright 2018.	以百万年前为单位的年代。此年代的地形和深度地图 - PaleoDEM PALEOMAP，Scotese 和 Wright 2018。
+Quaternary	第四纪
+Neogene	新近纪
+Paleogene	古近纪
+Cretaceous	白垩纪
+Jurassic	侏罗纪
+Triassic	三叠纪
+Permian	二叠纪
+Carboniferous	石炭纪
+Devonian	泥盆纪
+Silurian	志留纪
+Ordovician	奥陶纪
+Cambrian	寒武纪
+Precambrian	前寒武纪
+Present	现今
+{age} million years ago, {period}	{age} 百万年前，{period}
+Show from the chosen age to the present through all maps of the set.	从所选年代到现今依次播放该组的所有地图。
+How many times the geoid heights above the ellipsoid are stretched. To the right the bulges and hollows are deeper, to the left the Earth is rounder.	大地水准面相对椭球的高度拉伸的倍数。向右隆起和凹陷更深，向左地球更圆。
+Trains of Finland, Baltic ships and aircraft in real time from Fintraffic open data and the adsb.lol ADS-B network.	根据 Fintraffic 开放数据和 adsb.lol ADS-B 网络的实时芬兰列车、波罗的海船舶和飞机。
+on the ground	地面
+{length} × {width} m	{length} × {width} 米
+{metres} m ({feet} ft)	{metres} 米（{feet} 英尺）
+{value} km/h	{value} 公里/小时
+{value} kn	{value} 节
+Call sign	呼号
+IMO	IMO
+Destination	目的地
+Size	尺寸
+MMSI	MMSI
+Course	航向
+Position, UTC	位置，UTC
+Registration	注册号
+ICAO code	ICAO 代码
+Altitude	高度
+Number	编号
+Close	关闭
+None	无
+turn on	开启
+turn off	关闭
+Above ground {height} m	离地 {height} 米
+Climb {climb} m/s	爬升 {climb} 米/秒
+Fighter	战斗机
+Fly from here	从这里起飞
+Propeller plane	螺旋桨飞机
+Throttle {throttle} %	推力 {throttle} %
+Touched the ground - the flight is over.	触地 - 飞行结束。
+Up to 2000 km/h, start at 900 km/h, sharp bank.	最高 2000 公里/小时，以 900 公里/小时起飞，急剧倾斜。
+Up to 340 km/h, start at 250 km/h, smooth.	最高 340 公里/小时，以 250 公里/小时起飞，平稳。
+km/h	公里/小时
+{speed} km/h · altitude {alt} m, above ground {height} m · heading {heading}° · climb {climb} m/s · throttle {throttle} %	{speed} 公里/小时 · 高度 {alt} 米，离地 {height} 米 · 航向 {heading}° · 爬升 {climb} 米/秒 · 推力 {throttle} %
+↑ ↓ - nose down and up · ← → - bank · PageUp, PageDown - throttle · V - cockpit view · H - instruments · Esc - exit	↑ ↓ - 机头向下和向上 · ← → - 倾斜 · PageUp, PageDown - 推力 · V - 座舱视角 · H - 仪表 · Esc - 退出
+A click on a row copies the sheet number to the clipboard.	单击某行可将图幅编号复制到剪贴板。
+A click on a row copies the sheet number. Sheets of the Russian State Geological Map at 1:1,000,000 and 1:200,000 use the Russian designation too.	单击某行可复制图幅编号。俄罗斯国家地质图 1:1 000 000 和 1:200 000 的图幅也采用俄罗斯图幅编号。
+A ready site from the list or an empty row for your own address.	列表中的现成网站，或用于自定义地址的空行。
+Add or edit sites…	添加或修改网站…
+Add site	添加网站
+All numbers in a window…	在窗口中显示全部编号…
+Delete the selected rows.	删除选中的行。
+Each row is an item of the Open in browser submenu of the globe menu. The item opens the site at the point under the cursor. Add site puts a ready site or an empty row for your own address. In the address {lat} and {lon} are the latitude and longitude in degrees, {zoom} is the map scale by the view.	每一行都是地球菜单中“在浏览器中打开”子菜单的一项。该项在光标下的点打开网站。“添加网站”添加现成网站或用于自定义地址的空行。地址中的 {lat} 和 {lon} 是以度为单位的纬度和经度，{zoom} 是按视图确定的地图比例。
+International Map of the World (IMW)	国际百万分之一世界地图 (IMW)
+MGRS, 100 km square	MGRS，100 公里方格
+Map sheet designation	图幅编号
+NATO, JOG	NATO, JOG
+Open in browser	在浏览器中打开
+Own address	自定义地址
+Row {n}: {reason}	第 {n} 行：{reason}
+Russian sheet designation	俄罗斯图幅编号
+S. H.	南半球
+Sheet number	图幅编号
+Sites of the Open in browser menu	“在浏览器中打开”菜单的网站
+System	系统
+The address does not start with https:// or http://.	地址不是以 https:// 或 http:// 开头。
+The address has extra braces or places other than {lat}, {lon} and {zoom}.	地址中有多余的花括号或 {lat}、{lon} 和 {zoom} 以外的占位。
+The address has no {lat} or {lon}.	地址中没有 {lat} 或 {lon}。
+The item has no name.	该项没有名称。
+no sheet	无图幅
+Asking Eto Mesto…	正在请求“埃托·梅斯托”…
+Build	生成
+Computing insolation: {share}	正在计算日照：{share}
+Direct sun, h per day	直射阳光，每天小时数
+Eto Mesto old maps	“埃托·梅斯托”旧地图
+Eto Mesto old maps here…	此处的“埃托·梅斯托”旧地图…
+First day	第一天
+Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	需要看到的目标（如桅杆或建筑物）高出地形的高度。为零时检查地面本身。
+Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	该点处眼睛或桅杆高出地形的高度。越高看得越远，被地形遮挡的地方越少。
+Heights of the grid nodes: {share}	网格节点高度：{share}
+Insolation	日照
+Insolation here…	此处的日照…
+Keeps the maps whose title or year holds all the words.	保留标题或年份包含所有词语的地图。
+Last day	最后一天
+Loading heights: {done} of {total}	正在加载高度：{done} / {total}
+Maps at the point {total}, shown {shown}. A click on a title opens the map on the site.	该点的地图 {total} 幅，已显示 {shown} 幅。单击标题在网站上打开地图。
+Maps of the Eto Mesto site (etomesto.com) that cover the point. A map opens on the site, where it can be overlaid on a modern map and downloaded under the site rules.	覆盖该点的“埃托·梅斯托”网站 (etomesto.com) 地图。地图在网站上打开，可在网站上叠加到现代地图上，并按网站规则下载。
+Not all heights are loaded, the computation used less detailed ones.	未加载全部高度，计算使用了较粗的高度。
+Observer height	观察者高度
+Opens the page of the chosen map on etomesto.com in the browser.	在浏览器中打开所选地图在 etomesto.com 上的页面。
+Over {days} days direct sun shines from {low} to {high} h per day. The grid step is {step} m.	在 {days} 天内，直射阳光每天照射 {low} 至 {high} 小时。网格步长为 {step} 米。
+Point	点
+Radius of the computed circle. A larger radius gives a coarser grid. Mountain shadows are taken from a distance of at least the radius and at least 5 km.	计算圆的半径。越大网格越粗。山体阴影从不小于半径且不小于 5 公里的距离起计入。
+Radius of the computed circle. A larger radius gives a coarser step, the step is about one five-hundredth of the radius.	计算圆的半径。越大步长越粗，步长约为半径的五百分之一。
+Remove	移除
+Remove the insolation layer from the globe.	从地球上移除日照图层。
+Remove the viewshed layer from the globe.	从地球上移除可视域图层。
+Search by title or year	按标题或年份搜索
+Target height	目标高度
+The first day of the period. The result is the mean number of hours of direct sunlight per day over the period.	时段的第一天。结果是时段内每天直射阳光的平均小时数。
+The last day of the period, inclusive. A long period is computed over 15 evenly spaced days.	时段的最后一天（含）。较长时段按均匀选取的 15 天计算。
+The site did not answer: {error}	网站未响应：{error}
+The site has no maps at this point.	网站在此点没有地图。
+This body has no heights.	该天体没有高度数据。
+Viewshed from a point	从一点出发的可视域
+Viewshed from here…	从这里看的可视域…
+{share} of the circle area is visible. The computation step is {step} m.	可见圆面积的 {share}。计算步长为 {step} 米。

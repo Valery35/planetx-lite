@@ -986,3 +986,157 @@ Earth cutaway	Penampang Bumi
 Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on.	Mengambil sektor Bumi di bawah titik pandang - seperempat belahan bumi selebar 90° bujur. Bidang-bidangnya menampilkan kerak, mantel, dan inti menurut jari-jari model PREM, kerak menurut model CRUST1.0. Di tempat bidang melintasi zona subduksi, lempeng yang menunjam terlihat di sana. Sektor dipasang ulang setiap kali baris dinyalakan.
 Stretch the crust	Regangkan kerak
 Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.	Meregangkan kedalaman hingga 400 km makin kuat makin jauh kamera, sehingga kerak dan mantel atas terlihat dari jauh. Tanpa centang semua kedalaman dalam skala sebenarnya.
+Camera follows	Kamera mengikuti
+Add tile source…	Tambah sumber ubin…
+Remove this tile source from the list.	Hapus sumber ubin ini dari daftar.
+New tile source	Sumber ubin baru
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS.	Templat alamat ubin dengan tempat {z}, {x} dan {y}. {-y} - baris dari bawah ke atas, seperti pada TMS.
+Levels up to	Tingkat hingga
+Credit	Atribusi
+Credit of the source on the screen, as its terms of use require.	Atribusi sumber di layar, sesuai syarat penggunaannya.
+The address must begin with https:// or http://.	Alamat harus diawali https:// atau http://.
+The address needs the places {z}, {x} and {y} or {-y}.	Alamat memerlukan tempat {z}, {x} dan {y} atau {-y}.
+The address must not contain spaces.	Alamat tidak boleh berisi spasi.
+Wikipedia nearby	Wikipedia di sekitar
+Wikipedia articles with coordinates - cities, monuments, rivers, peaks - as labels with a blue dot. The articles are requested when the camera is below 40 km, in the language of the QGIS interface. A click on a label opens the article card - the first paragraph, a link to the article and the Explain this button. Wikipedia texts are under CC BY-SA 4.0.	Artikel Wikipedia dengan koordinat - kota, monumen, sungai, puncak - sebagai label dengan titik biru. Artikel diminta saat kamera di bawah 40 km, dalam bahasa antarmuka QGIS. Klik pada label membuka kartu artikel - paragraf pertama, tautan ke artikel, dan tombol "Jelaskan ini". Teks Wikipedia berlisensi CC BY-SA 4.0.
+Clouds	Awan
+Clouds from NASA GIBS VIIRS imagery of the last complete day. They lie as a translucent veil over the imagery. Snow and ice are white too and stay visible.	Awan dari citra VIIRS NASA GIBS untuk hari penuh terakhir. Awan terletak sebagai selubung tembus cahaya di atas citra. Salju dan es juga putih dan tetap terlihat.
+Satellites	Satelit
+Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.	Satelit buatan menurut elemen orbit CelesTrak, posisi menurut model SGP4. Waktunya adalah penggeser kanan bilah waktu, tanpa bilah waktu jam komputer. Grup dipilih di tab "Satelit" galeri. Elemen grup diperbarui paling sering sekali dalam 2 jam.
+Mining areas	Wilayah tambang
+Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.	Garis batas tambang terbuka, timbunan, bendungan tailing, dan lokasi industri dunia dari citra Sentinel-2 tahun 2019 - sekitar 45 ribu wilayah, Maus dkk., 2022. Klik pada garis batas menampilkan negara dan luas. Penyalaan pertama mengunduh sekitar 25 MB.
+OSM mines and quarries	Tambang dan galian OSM
+Mines, shafts and quarries from OpenStreetMap with names and the commodity. They load for the place of the view when the camera is below 150 km. The colour is the commodity group, as for the deposits. A click on a point shows the name, operator and a link to the OpenStreetMap object.	Tambang, sumuran, dan galian dari OpenStreetMap dengan nama dan komoditasnya. Dimuat untuk tempat tampilan saat kamera di bawah 150 km. Warna menunjukkan kelompok komoditas, seperti pada endapan mineral. Klik pada titik menampilkan nama, operator, dan tautan ke objek OpenStreetMap.
+Trains of Finland	Kereta Finlandia
+Trains of Finland in real time from Fintraffic Digitraffic open data, the positions are updated every 10 s. From afar a train is a dot in the colour of its category with its number, close up it is a car model that moves along OpenStreetMap rails between updates. A click on a train shows its type, number and speed.	Kereta Finlandia secara waktu nyata dari data terbuka Fintraffic Digitraffic, posisi diperbarui setiap 10 dtk. Dari jauh kereta adalah titik berwarna kategorinya dengan nomornya, dari dekat model gerbong yang bergerak di rel OpenStreetMap di antara pembaruan. Klik pada kereta menampilkan jenis, nomor, dan kecepatan.
+Baltic ships	Kapal Baltik
+Ships of the Gulfs of Finland and Bothnia and the Baltic near Finland by AIS signals, Fintraffic Digitraffic open data, the positions every 20 s. From afar a ship is a dot in the colour of its type with its name, close up a schematic model of its length that keeps its course. A click shows the type, call sign, destination, size and speed.	Kapal di Teluk Finlandia dan Teluk Bothnia serta Baltik dekat Finlandia menurut sinyal AIS, data terbuka Fintraffic Digitraffic, posisi setiap 20 dtk. Dari jauh kapal adalah titik berwarna jenisnya dengan namanya, dari dekat model skematis sepanjang kapal yang mempertahankan haluannya. Klik menampilkan jenis, tanda panggil, tujuan, ukuran, dan kecepatan.
+Aircraft	Pesawat
+Aircraft by ADS-B signals of the adsb.lol volunteer network in a circle around the point of view, every 10 s. An aircraft in the air is shown at its altitude, close up as a schematic model of the size of its category with its bank. A click shows the call sign, type, registration, altitude and speed. The network has almost no receivers over Russia.	Pesawat menurut sinyal ADS-B jaringan sukarelawan adsb.lol dalam lingkaran di sekitar titik pandang, setiap 10 dtk. Pesawat di udara ditampilkan pada ketinggiannya, dari dekat sebagai model skematis seukuran kategorinya dengan kemiringannya. Klik menampilkan tanda panggil, jenis, registrasi, ketinggian, dan kecepatan. Jaringan hampir tidak punya penerima di atas Rusia.
+Currents	Arus
+Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.	Arus permukaan samudra sebagai goresan putih bergerak di atas pewarnaan kecepatan. Arus geostrofik NOAA CoastWatch dari altimetri satelit untuk hari siap terakhir, grid 0.5°. Penyalaan pertama dalam satu sesi mengunduh sekitar 4 MB.
+OSM power lines, cables and pipelines	Saluran listrik, kabel, dan pipa OSM
+Power lines by voltage, substations, cables and gas, oil and water pipelines from OpenStreetMap. They load for the place in view when the camera is below 150 km. A click on a line shows the voltage, substance, operator and a link to the OpenStreetMap object.	Saluran listrik menurut tegangan, gardu induk, kabel, serta pipa gas, minyak, dan air dari OpenStreetMap. Dimuat untuk tempat tampilan saat kamera di bawah 150 km. Klik pada garis menampilkan tegangan, zat, operator, dan tautan ke objek OpenStreetMap.
+Historical earthquakes	Gempa bumi historis
+Strong earthquakes of the world from 1904 to 2024 from the ISC-GEM catalogue - about 74 thousand events of magnitude 5 and above, with locations, depths and magnitudes recomputed in one way. A circle sits at the epicentre, at its depth - in the removed sector of the Earth cutaway, the colour shows the depth and the size the magnitude. The time slider range selects the events. A click on a circle shows the place, date, magnitude and the USGS event page. The first use downloads the catalogue in parts, about 13 MB.	Gempa bumi kuat dunia dari 1904 hingga 2024 menurut katalog ISC-GEM - sekitar 74 ribu peristiwa bermagnitudo 5 ke atas, dengan lokasi, kedalaman, dan magnitudo yang dihitung ulang dengan satu cara. Lingkaran berada di episentrum, pada kedalamannya - di sektor yang diangkat dari penampang Bumi, warna menunjukkan kedalaman dan ukuran menunjukkan magnitudo. Rentang bilah waktu memilih peristiwa. Klik pada lingkaran menampilkan tempat, tanggal, magnitudo, dan halaman peristiwa USGS. Penyalaan pertama mengunduh katalog per bagian, sekitar 13 MB.
+Geoid	Geoid
+The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.	Bentuk permukaan ekuipotensial Bumi - geoid - menurut model EGM2008 NGA. Selama baris menyala, ketinggian globe adalah tinggi geoid di atas elipsoid, dari -107 hingga +86 m, diregangkan 10 000 kali, dan Bumi tampak "kusut". Tonjolan berada di tempat gravitasi lebih kuat, misalnya dekat Papua Nugini, cekungan di tempat gravitasi lebih lemah, yang terdalam di Samudra Hindia. Relief dan air dihilangkan selama itu, mematikan baris mengembalikannya.
+Paleogeography	Paleogeografi
+Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.	Relief daratan dan kedalaman laut pada masa lalu, hingga 540 juta tahun lalu, menurut peta PaleoDEM PALEOMAP. Penggeser di bagian bawah tampilan mengatur umur. Citra, batas, dan label dihilangkan selama itu.
+3D buildings	Bangunan 3D
+3D buildings from OpenStreetMap in OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM or from the number of floors. A building without either gets a height of 5 m.	Bangunan 3D dari OpenStreetMap dalam ubin vektor OpenFreeMap. Bangunan terlihat saat kamera lebih dekat dari 6 km ke tanah. Tinggi diambil dari OSM atau dari jumlah lantai. Bangunan tanpa keduanya mendapat tinggi 5 m.
+Rosreestr cadastre	Kadaster Rosreestr
+Land parcels from the National spatial data system of Rosreestr over the imagery, for Russia only. They are seen up close, from about 10 km and lower. The service answers slowly and refuses frequent requests, so the parcels come one tile at a time.	Bidang tanah dari Sistem data spasial nasional Rosreestr di atas citra, hanya untuk Rusia. Terlihat dari dekat, dari ketinggian sekitar 10 km ke bawah. Layanan menjawab lambat dan menolak permintaan yang sering, sehingga bidang tanah datang satu ubin demi satu ubin.
+Age in millions of years ago. The map of relief and depths for this age - PaleoDEM PALEOMAP, Scotese and Wright 2018.	Umur dalam juta tahun lalu. Peta relief dan kedalaman untuk umur ini - PaleoDEM PALEOMAP, Scotese dan Wright 2018.
+Quaternary	Kuarter
+Neogene	Neogen
+Paleogene	Paleogen
+Cretaceous	Kapur
+Jurassic	Jura
+Triassic	Trias
+Permian	Perm
+Carboniferous	Karbon
+Devonian	Devon
+Silurian	Silur
+Ordovician	Ordovisium
+Cambrian	Kambrium
+Precambrian	Prakambrium
+Present	Masa kini
+{age} million years ago, {period}	{age} juta tahun lalu, {period}
+Show from the chosen age to the present through all maps of the set.	Pemutaran dari umur yang dipilih hingga masa kini melalui semua peta set.
+How many times the geoid heights above the ellipsoid are stretched. To the right the bulges and hollows are deeper, to the left the Earth is rounder.	Berapa kali tinggi geoid di atas elipsoid diregangkan. Ke kanan tonjolan dan cekungan lebih dalam, ke kiri Bumi lebih bulat.
+Trains of Finland, Baltic ships and aircraft in real time from Fintraffic open data and the adsb.lol ADS-B network.	Kereta Finlandia, kapal Baltik, dan pesawat secara waktu nyata dari data terbuka Fintraffic dan jaringan ADS-B adsb.lol.
+on the ground	di darat
+{length} × {width} m	{length} × {width} m
+{metres} m ({feet} ft)	{metres} m ({feet} kaki)
+{value} km/h	{value} km/jam
+{value} kn	{value} knot
+Call sign	Tanda panggil
+IMO	IMO
+Destination	Tujuan
+Size	Ukuran
+MMSI	MMSI
+Course	Haluan
+Position, UTC	Posisi, UTC
+Registration	Registrasi
+ICAO code	Kode ICAO
+Altitude	Ketinggian
+Number	Nomor
+Close	Tutup
+None	Tidak ada
+turn on	nyalakan
+turn off	matikan
+Above ground {height} m	Di atas tanah {height} m
+Climb {climb} m/s	Naik {climb} m/dtk
+Fighter	Pesawat tempur
+Fly from here	Terbang dari sini
+Propeller plane	Pesawat baling-baling
+Throttle {throttle} %	Daya dorong {throttle} %
+Touched the ground - the flight is over.	Menyentuh tanah - penerbangan selesai.
+Up to 2000 km/h, start at 900 km/h, sharp bank.	Hingga 2000 km/jam, mulai pada 900 km/jam, kemiringan tajam.
+Up to 340 km/h, start at 250 km/h, smooth.	Hingga 340 km/jam, mulai pada 250 km/jam, halus.
+km/h	km/jam
+{speed} km/h · altitude {alt} m, above ground {height} m · heading {heading}° · climb {climb} m/s · throttle {throttle} %	{speed} km/jam · ketinggian {alt} m, di atas tanah {height} m · arah {heading}° · naik {climb} m/dtk · daya dorong {throttle} %
+↑ ↓ - nose down and up · ← → - bank · PageUp, PageDown - throttle · V - cockpit view · H - instruments · Esc - exit	↑ ↓ - hidung turun dan naik · ← → - kemiringan · PageUp, PageDown - daya dorong · V - tampilan kokpit · H - instrumen · Esc - keluar
+A click on a row copies the sheet number to the clipboard.	Klik pada baris menyalin nomor lembar ke papan klip.
+A click on a row copies the sheet number. Sheets of the Russian State Geological Map at 1:1,000,000 and 1:200,000 use the Russian designation too.	Klik pada baris menyalin nomor lembar. Lembar Peta Geologi Negara Rusia skala 1:1 000 000 dan 1:200 000 juga memakai penomoran Rusia.
+A ready site from the list or an empty row for your own address.	Situs siap pakai dari daftar atau baris kosong untuk alamat sendiri.
+Add or edit sites…	Tambah atau ubah situs…
+Add site	Tambah situs
+All numbers in a window…	Semua nomor dalam satu jendela…
+Delete the selected rows.	Hapus baris yang ditandai.
+Each row is an item of the Open in browser submenu of the globe menu. The item opens the site at the point under the cursor. Add site puts a ready site or an empty row for your own address. In the address {lat} and {lon} are the latitude and longitude in degrees, {zoom} is the map scale by the view.	Setiap baris adalah item submenu "Buka di peramban" pada menu globe. Item ini membuka situs di titik di bawah kursor. "Tambah situs" memasang situs siap pakai atau baris kosong untuk alamat sendiri. Di alamat, {lat} dan {lon} adalah lintang dan bujur dalam derajat, {zoom} adalah skala peta menurut tampilan.
+International Map of the World (IMW)	Peta Dunia Internasional (IMW)
+MGRS, 100 km square	MGRS, bujur sangkar 100 km
+Map sheet designation	Nomor lembar peta
+NATO, JOG	NATO, JOG
+Open in browser	Buka di peramban
+Own address	Alamat sendiri
+Row {n}: {reason}	Baris {n}: {reason}
+Russian sheet designation	Penomoran lembar Rusia
+S. H.	B. S.
+Sheet number	Nomor lembar
+Sites of the Open in browser menu	Situs menu "Buka di peramban"
+System	Sistem
+The address does not start with https:// or http://.	Alamat tidak diawali https:// atau http://.
+The address has extra braces or places other than {lat}, {lon} and {zoom}.	Alamat berisi kurung kurawal berlebih atau tempat selain {lat}, {lon} dan {zoom}.
+The address has no {lat} or {lon}.	Alamat tidak berisi {lat} atau {lon}.
+The item has no name.	Item tidak punya nama.
+no sheet	tidak ada lembar
+Asking Eto Mesto…	Menghubungi "Eto Mesto"…
+Build	Hitung
+Computing insolation: {share}	Menghitung insolasi: {share}
+Direct sun, h per day	Sinar matahari langsung, jam per hari
+Eto Mesto old maps	Peta lama "Eto Mesto"
+Eto Mesto old maps here…	Peta lama "Eto Mesto" di sini…
+First day	Hari pertama
+Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Ketinggian di atas relief dari yang harus terlihat, misalnya tiang atau bangunan. Pada nol tanah itu sendiri yang diperiksa.
+Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Ketinggian mata atau tiang di atas relief di titik. Lebih tinggi - terlihat lebih jauh dan lebih sedikit tempat tersembunyi di balik relief.
+Heights of the grid nodes: {share}	Ketinggian simpul grid: {share}
+Insolation	Insolasi
+Insolation here…	Insolasi di sini…
+Keeps the maps whose title or year holds all the words.	Menyisakan peta yang judul atau tahunnya memuat semua kata.
+Last day	Hari terakhir
+Loading heights: {done} of {total}	Memuat ketinggian: {done} dari {total}
+Maps at the point {total}, shown {shown}. A click on a title opens the map on the site.	Peta di titik {total}, ditampilkan {shown}. Klik pada judul membuka peta di situs.
+Maps of the Eto Mesto site (etomesto.com) that cover the point. A map opens on the site, where it can be overlaid on a modern map and downloaded under the site rules.	Peta situs "Eto Mesto" (etomesto.com) yang mencakup titik ini. Peta terbuka di situs, di sana peta dapat ditumpangkan pada peta modern dan diunduh sesuai aturan situs.
+Not all heights are loaded, the computation used less detailed ones.	Tidak semua ketinggian dimuat, perhitungan memakai ketinggian yang kurang rinci.
+Observer height	Tinggi pengamat
+Opens the page of the chosen map on etomesto.com in the browser.	Membuka halaman peta yang dipilih di etomesto.com di peramban.
+Over {days} days direct sun shines from {low} to {high} h per day. The grid step is {step} m.	Selama {days} hari sinar matahari langsung bersinar {low} hingga {high} jam per hari. Langkah grid {step} m.
+Point	Titik
+Radius of the computed circle. A larger radius gives a coarser grid. Mountain shadows are taken from a distance of at least the radius and at least 5 km.	Jari-jari lingkaran yang dihitung. Lebih besar - grid lebih kasar. Bayangan gunung diambil dari jarak paling sedikit sebesar jari-jari dan paling sedikit 5 km.
+Radius of the computed circle. A larger radius gives a coarser step, the step is about one five-hundredth of the radius.	Jari-jari lingkaran yang dihitung. Lebih besar - langkah lebih kasar, langkahnya sekitar seperlima ratus jari-jari.
+Remove	Hapus
+Remove the insolation layer from the globe.	Hapus lapisan insolasi dari globe.
+Remove the viewshed layer from the globe.	Hapus lapisan visibilitas dari globe.
+Search by title or year	Cari menurut judul atau tahun
+Target height	Tinggi sasaran
+The first day of the period. The result is the mean number of hours of direct sunlight per day over the period.	Hari pertama periode. Hasilnya adalah rata-rata jumlah jam sinar matahari langsung per hari selama periode.
+The last day of the period, inclusive. A long period is computed over 15 evenly spaced days.	Hari terakhir periode, termasuk. Periode panjang dihitung dari 15 hari yang diambil merata.
+The site did not answer: {error}	Situs tidak menjawab: {error}
+The site has no maps at this point.	Situs tidak memiliki peta di titik ini.
+This body has no heights.	Benda ini tidak memiliki data ketinggian.
+Viewshed from a point	Visibilitas dari titik
+Viewshed from here…	Visibilitas dari sini…
+{share} of the circle area is visible. The computation step is {step} m.	Terlihat {share} dari luas lingkaran. Langkah perhitungan {step} m.

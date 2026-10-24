@@ -986,3 +986,157 @@ Earth cutaway	地球の断面
 Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on.	注視点の下の地球から扇形部分を取り除きます。経度方向に幅 90° の半球の 4 分の 1 です。その断面には PREM モデルの半径による地殻、マントル、核と、CRUST1.0 モデルによる地殻が表示されます。断面が沈み込み帯を通る所では、沈み込むプレートが見えます。扇形部分は行をオンにするたびに置き直されます。
 Stretch the crust	地殻を引き伸ばす
 Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.	深さ 400 km までを、カメラが遠いほど強く引き伸ばし、地殻と上部マントルが遠くから見えるようにします。チェックを外すと、すべての深さが実際の縮尺になります。
+Camera follows	カメラ追従
+Add tile source…	タイルソースを追加…
+Remove this tile source from the list.	このタイルソースをリストから削除します。
+New tile source	新しいタイルソース
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS.	{z}、{x}、{y} の位置を含むタイルのアドレステンプレート。{-y} は TMS と同じく下から上への行です。
+Levels up to	レベル上限
+Credit	クレジット
+Credit of the source on the screen, as its terms of use require.	利用条件に従って画面に表示するソースのクレジット。
+The address must begin with https:// or http://.	アドレスは https:// または http:// で始める必要があります。
+The address needs the places {z}, {x} and {y} or {-y}.	アドレスには {z}、{x}、{y} または {-y} の位置が必要です。
+The address must not contain spaces.	アドレスに空白を含めることはできません。
+Wikipedia nearby	近くのウィキペディア
+Wikipedia articles with coordinates - cities, monuments, rivers, peaks - as labels with a blue dot. The articles are requested when the camera is below 40 km, in the language of the QGIS interface. A click on a label opens the article card - the first paragraph, a link to the article and the Explain this button. Wikipedia texts are under CC BY-SA 4.0.	座標付きのウィキペディア記事 - 都市、記念碑、川、山頂 - を青い点付きのラベルで表示します。記事はカメラが 40 km より低いとき、QGIS の表示言語で取得されます。ラベルをクリックすると記事カードが開き、最初の段落、記事へのリンク、「これを説明」ボタンが表示されます。ウィキペディアの文章は CC BY-SA 4.0 です。
+Clouds	雲
+Clouds from NASA GIBS VIIRS imagery of the last complete day. They lie as a translucent veil over the imagery. Snow and ice are white too and stay visible.	直近の 1 日分の NASA GIBS VIIRS 画像による雲。画像の上に半透明のベールとして重なります。雪や氷も白く、見えたままです。
+Satellites	人工衛星
+Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.	CelesTrak の軌道要素による人工衛星で、位置は SGP4 モデルで求めます。時刻はタイムバーの右のつまみで、タイムバーがなければコンピューターの時計です。グループはギャラリーの「人工衛星」タブで選びます。グループの要素の更新は 2 時間に 1 回までです。
+Mining areas	鉱山地域
+Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.	2019 年の Sentinel-2 画像による世界の露天掘り、捨石堆積場、鉱滓ダム、工業用地の輪郭 - 約 4万5000 か所、Maus ほか、2022。輪郭をクリックすると国と面積が表示されます。最初にオンにすると約 25 MB をダウンロードします。
+OSM mines and quarries	OSM の鉱山と採石場
+Mines, shafts and quarries from OpenStreetMap with names and the commodity. They load for the place of the view when the camera is below 150 km. The colour is the commodity group, as for the deposits. A click on a point shows the name, operator and a link to the OpenStreetMap object.	OpenStreetMap の鉱山、立坑、採石場を名前と鉱種付きで表示します。カメラが 150 km より低いとき、表示中の場所について読み込みます。色は鉱床と同じく鉱種グループです。点をクリックすると、名前、運営者、OpenStreetMap オブジェクトへのリンクが表示されます。
+Trains of Finland	フィンランドの列車
+Trains of Finland in real time from Fintraffic Digitraffic open data, the positions are updated every 10 s. From afar a train is a dot in the colour of its category with its number, close up it is a car model that moves along OpenStreetMap rails between updates. A click on a train shows its type, number and speed.	Fintraffic Digitraffic のオープンデータによるフィンランドのリアルタイムの列車で、位置は 10 秒ごとに更新されます。遠くからは種別の色の点と列車番号、近くでは更新の合間に OpenStreetMap の線路を走る車両モデルになります。列車をクリックすると種類、番号、速度が表示されます。
+Baltic ships	バルト海の船舶
+Ships of the Gulfs of Finland and Bothnia and the Baltic near Finland by AIS signals, Fintraffic Digitraffic open data, the positions every 20 s. From afar a ship is a dot in the colour of its type with its name, close up a schematic model of its length that keeps its course. A click shows the type, call sign, destination, size and speed.	AIS 信号によるフィンランド湾、ボスニア湾、フィンランド近海のバルト海の船舶で、Fintraffic Digitraffic のオープンデータ、位置は 20 秒ごとです。遠くからは種類の色の点と船名、近くでは針路を保つ全長に合わせた模式モデルになります。クリックすると種類、呼出符号、目的地、寸法、速度が表示されます。
+Aircraft	航空機
+Aircraft by ADS-B signals of the adsb.lol volunteer network in a circle around the point of view, every 10 s. An aircraft in the air is shown at its altitude, close up as a schematic model of the size of its category with its bank. A click shows the call sign, type, registration, altitude and speed. The network has almost no receivers over Russia.	adsb.lol ボランティアネットワークの ADS-B 信号による、視点の周りの円内の航空機で、10 秒ごとに更新されます。飛行中の航空機はその高度に表示され、近くではカテゴリーの大きさの模式モデルがバンク角付きで表示されます。クリックすると呼出符号、機種、登録記号、高度、速度が表示されます。ロシア上空にはネットワークの受信機がほとんどありません。
+Currents	海流
+Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.	速度の色分けの上を流れる白い線で示す海洋の表層流。衛星高度計による NOAA CoastWatch の地衡流で、直近の完成した日、0.5° グリッド。セッションで最初にオンにすると約 4 MB をダウンロードします。
+OSM power lines, cables and pipelines	OSM の送電線、ケーブル、パイプライン
+Power lines by voltage, substations, cables and gas, oil and water pipelines from OpenStreetMap. They load for the place in view when the camera is below 150 km. A click on a line shows the voltage, substance, operator and a link to the OpenStreetMap object.	OpenStreetMap の電圧別の送電線、変電所、ケーブル、ガス・石油・水のパイプライン。カメラが 150 km より低いとき、表示中の場所について読み込みます。線をクリックすると、電圧、輸送物、運営者、OpenStreetMap オブジェクトへのリンクが表示されます。
+Historical earthquakes	歴史地震
+Strong earthquakes of the world from 1904 to 2024 from the ISC-GEM catalogue - about 74 thousand events of magnitude 5 and above, with locations, depths and magnitudes recomputed in one way. A circle sits at the epicentre, at its depth - in the removed sector of the Earth cutaway, the colour shows the depth and the size the magnitude. The time slider range selects the events. A click on a circle shows the place, date, magnitude and the USGS event page. The first use downloads the catalogue in parts, about 13 MB.	ISC-GEM カタログによる 1904 年から 2024 年までの世界の強い地震 - マグニチュード 5 以上の約 7万4000 件で、位置、深さ、マグニチュードは同じ方法で再計算されています。円は震央に置かれ、その深さでは地球の断面の取り除かれた扇形部分に置かれます。色は深さ、大きさはマグニチュードを示します。タイムバーの期間でイベントを選びます。円をクリックすると、場所、日付、マグニチュード、USGS のイベントページが表示されます。最初にオンにするとカタログを分割してダウンロードします (約 13 MB)。
+Geoid	ジオイド
+The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.	NGA の EGM2008 モデルによる地球の等ポテンシャル面 - ジオイド - の形。行がオンの間、地球儀の高さは楕円体からのジオイド高 (-107 から +86 m) を 10 000 倍に引き伸ばしたもので、地球は「しわくちゃ」に見えます。高まりは重力が強い所、たとえばニューギニア付近にあり、くぼみは重力が弱い所にあり、最も深いのはインド洋です。その間、地形と水は取り除かれ、行をオフにすると元に戻ります。
+Paleogeography	古地理
+Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.	PALEOMAP の PaleoDEM 地図による、5 億 4000 万年前までの過去の陸の起伏と海の深さ。年代は表示の下部のスライダーで設定します。その間、画像、境界、ラベルは取り除かれます。
+3D buildings	3D 建物
+3D buildings from OpenStreetMap in OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM or from the number of floors. A building without either gets a height of 5 m.	OpenFreeMap のベクトルタイルに含まれる OpenStreetMap の 3D 建物。カメラが地面から 6 km より近いときに表示されます。高さは OSM から、なければ階数から求めます。どちらもない建物の高さは 5 m になります。
+Rosreestr cadastre	ロスレエストルの地籍
+Land parcels from the National spatial data system of Rosreestr over the imagery, for Russia only. They are seen up close, from about 10 km and lower. The service answers slowly and refuses frequent requests, so the parcels come one tile at a time.	ロスレエストルの国家空間データシステムによる土地区画を画像の上に表示します。ロシアのみです。近くで、高度約 10 km 以下から見えます。サービスの応答は遅く、頻繁な要求は拒否されるため、区画はタイルごとに届きます。
+Age in millions of years ago. The map of relief and depths for this age - PaleoDEM PALEOMAP, Scotese and Wright 2018.	百万年前単位の年代。この年代の起伏と深さの地図 - PaleoDEM PALEOMAP、Scotese と Wright 2018。
+Quaternary	第四紀
+Neogene	新第三紀
+Paleogene	古第三紀
+Cretaceous	白亜紀
+Jurassic	ジュラ紀
+Triassic	三畳紀
+Permian	ペルム紀
+Carboniferous	石炭紀
+Devonian	デボン紀
+Silurian	シルル紀
+Ordovician	オルドビス紀
+Cambrian	カンブリア紀
+Precambrian	先カンブリア時代
+Present	現在
+{age} million years ago, {period}	{age} 百万年前、{period}
+Show from the chosen age to the present through all maps of the set.	選んだ年代から現在まで、セットのすべての地図を順に表示します。
+How many times the geoid heights above the ellipsoid are stretched. To the right the bulges and hollows are deeper, to the left the Earth is rounder.	楕円体からのジオイド高を何倍に引き伸ばすか。右へ動かすと高まりとくぼみが深くなり、左へ動かすと地球が丸くなります。
+Trains of Finland, Baltic ships and aircraft in real time from Fintraffic open data and the adsb.lol ADS-B network.	Fintraffic のオープンデータと adsb.lol の ADS-B ネットワークによる、リアルタイムのフィンランドの列車、バルト海の船舶、航空機。
+on the ground	地上
+{length} × {width} m	{length} × {width} m
+{metres} m ({feet} ft)	{metres} m ({feet} フィート)
+{value} km/h	{value} km/h
+{value} kn	{value} ノット
+Call sign	呼出符号
+IMO	IMO
+Destination	目的地
+Size	寸法
+MMSI	MMSI
+Course	針路
+Position, UTC	位置、UTC
+Registration	登録記号
+ICAO code	ICAO コード
+Altitude	高度
+Number	番号
+Close	閉じる
+None	なし
+turn on	オンにする
+turn off	オフにする
+Above ground {height} m	対地高度 {height} m
+Climb {climb} m/s	上昇率 {climb} m/s
+Fighter	戦闘機
+Fly from here	ここから飛行
+Propeller plane	プロペラ機
+Throttle {throttle} %	推力 {throttle} %
+Touched the ground - the flight is over.	地面に接触しました - 飛行は終了です。
+Up to 2000 km/h, start at 900 km/h, sharp bank.	最大 2000 km/h、900 km/h で開始、急なバンク。
+Up to 340 km/h, start at 250 km/h, smooth.	最大 340 km/h、250 km/h で開始、穏やか。
+km/h	km/h
+{speed} km/h · altitude {alt} m, above ground {height} m · heading {heading}° · climb {climb} m/s · throttle {throttle} %	{speed} km/h · 高度 {alt} m、対地 {height} m · 方位 {heading}° · 上昇率 {climb} m/s · 推力 {throttle} %
+↑ ↓ - nose down and up · ← → - bank · PageUp, PageDown - throttle · V - cockpit view · H - instruments · Esc - exit	↑ ↓ - 機首下げと上げ · ← → - バンク · PageUp, PageDown - 推力 · V - コックピット視点 · H - 計器 · Esc - 終了
+A click on a row copies the sheet number to the clipboard.	行をクリックすると図葉番号をクリップボードにコピーします。
+A click on a row copies the sheet number. Sheets of the Russian State Geological Map at 1:1,000,000 and 1:200,000 use the Russian designation too.	行をクリックすると図葉番号をコピーします。ロシア国家地質図の 1:1 000 000 と 1:200 000 の図葉もロシアの図葉番号を使います。
+A ready site from the list or an empty row for your own address.	リストにある既成のサイト、または独自のアドレス用の空の行。
+Add or edit sites…	サイトを追加または変更…
+Add site	サイトを追加
+All numbers in a window…	すべての番号をウィンドウで表示…
+Delete the selected rows.	選択した行を削除します。
+Each row is an item of the Open in browser submenu of the globe menu. The item opens the site at the point under the cursor. Add site puts a ready site or an empty row for your own address. In the address {lat} and {lon} are the latitude and longitude in degrees, {zoom} is the map scale by the view.	各行は地球儀のメニューの「ブラウザーで開く」サブメニューの項目です。項目はカーソルの下の地点でサイトを開きます。「サイトを追加」は既成のサイトまたは独自のアドレス用の空の行を追加します。アドレス内の {lat} と {lon} は度単位の緯度と経度、{zoom} は表示に応じた地図の縮尺です。
+International Map of the World (IMW)	国際百万分の一世界図 (IMW)
+MGRS, 100 km square	MGRS、100 km 区画
+Map sheet designation	図葉番号
+NATO, JOG	NATO, JOG
+Open in browser	ブラウザーで開く
+Own address	独自のアドレス
+Row {n}: {reason}	行 {n}：{reason}
+Russian sheet designation	ロシアの図葉番号
+S. H.	南半球
+Sheet number	図葉番号
+Sites of the Open in browser menu	「ブラウザーで開く」メニューのサイト
+System	系
+The address does not start with https:// or http://.	アドレスが https:// または http:// で始まっていません。
+The address has extra braces or places other than {lat}, {lon} and {zoom}.	アドレスに余分な波かっこ、または {lat}、{lon}、{zoom} 以外の位置があります。
+The address has no {lat} or {lon}.	アドレスに {lat} または {lon} がありません。
+The item has no name.	項目に名前がありません。
+no sheet	図葉なし
+Asking Eto Mesto…	「エト・メスト」に問い合わせ中…
+Build	作成
+Computing insolation: {share}	日照を計算中：{share}
+Direct sun, h per day	直射日光、1 日あたりの時間
+Eto Mesto old maps	「エト・メスト」の古地図
+Eto Mesto old maps here…	ここの「エト・メスト」の古地図…
+First day	最初の日
+Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	見えるべきもの (たとえばマストや建物) の地形からの高さ。ゼロでは地面そのものを確認します。
+Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	地点での目またはマストの地形からの高さ。高いほど遠くまで見え、地形の陰に隠れる場所が少なくなります。
+Heights of the grid nodes: {share}	グリッド節点の高さ：{share}
+Insolation	日照
+Insolation here…	ここの日照…
+Keeps the maps whose title or year holds all the words.	タイトルまたは年にすべての語を含む地図を残します。
+Last day	最後の日
+Loading heights: {done} of {total}	高さを読み込み中：{done} / {total}
+Maps at the point {total}, shown {shown}. A click on a title opens the map on the site.	地点の地図 {total} 件、表示 {shown} 件。タイトルをクリックするとサイトで地図が開きます。
+Maps of the Eto Mesto site (etomesto.com) that cover the point. A map opens on the site, where it can be overlaid on a modern map and downloaded under the site rules.	地点を含む「エト・メスト」サイト (etomesto.com) の地図。地図はサイトで開き、そこで現代の地図に重ねたり、サイトの規則に従ってダウンロードしたりできます。
+Not all heights are loaded, the computation used less detailed ones.	すべての高さが読み込まれていないため、より粗い高さで計算しました。
+Observer height	観測者の高さ
+Opens the page of the chosen map on etomesto.com in the browser.	選んだ地図の etomesto.com のページをブラウザーで開きます。
+Over {days} days direct sun shines from {low} to {high} h per day. The grid step is {step} m.	{days} 日間で直射日光は 1 日 {low} から {high} 時間当たります。グリッドの間隔は {step} m です。
+Point	地点
+Radius of the computed circle. A larger radius gives a coarser grid. Mountain shadows are taken from a distance of at least the radius and at least 5 km.	計算する円の半径。大きいほどグリッドが粗くなります。山の影は、半径以上かつ 5 km 以上の距離から考慮されます。
+Radius of the computed circle. A larger radius gives a coarser step, the step is about one five-hundredth of the radius.	計算する円の半径。大きいほど間隔が粗くなり、間隔は半径の約 500 分の 1 です。
+Remove	取り除く
+Remove the insolation layer from the globe.	日照レイヤーを地球儀から取り除きます。
+Remove the viewshed layer from the globe.	可視域レイヤーを地球儀から取り除きます。
+Search by title or year	タイトルまたは年で検索
+Target height	対象の高さ
+The first day of the period. The result is the mean number of hours of direct sunlight per day over the period.	期間の最初の日。結果は期間中の 1 日あたりの直射日光の平均時間数です。
+The last day of the period, inclusive. A long period is computed over 15 evenly spaced days.	期間の最後の日 (この日を含む)。長い期間は均等に選んだ 15 日で計算します。
+The site did not answer: {error}	サイトが応答しません：{error}
+The site has no maps at this point.	この地点にはサイトの地図がありません。
+This body has no heights.	この天体には高さのデータがありません。
+Viewshed from a point	地点からの可視域
+Viewshed from here…	ここからの可視域…
+{share} of the circle area is visible. The computation step is {step} m.	円の面積の {share} が見えます。計算の間隔は {step} m です。

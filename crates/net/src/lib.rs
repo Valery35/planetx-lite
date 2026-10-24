@@ -91,6 +91,13 @@ pub trait Request {
     /// Начать запрос. Прежний запрос, если он идёт, продолжается, его
     /// ответ тоже придёт.
     fn start(&self, url: &str);
+    /// Начать запрос со своими заголовками и телом: тело есть - POST,
+    /// нет - GET. Ответ приходит так же, как у [`Request::start`].
+    /// Без своей реализации заголовки и тело не уходят.
+    fn send(&self, url: &str, headers: &[(&str, &str)], body: Option<&[u8]>) {
+        let _ = (headers, body);
+        self.start(url);
+    }
     /// Пришедший ответ: байты или ошибка.
     fn take(&self) -> Option<Result<Vec<u8>, String>>;
     fn stats(&self) -> &Stats;
@@ -200,10 +207,12 @@ pub fn tile_url(source: &Source, key: TileKey) -> String {
 }
 
 /// Адрес тайла key по шаблону с местами {z}, {x}, {y} или {bbox} - рамкой
-/// тайла WMS в метрах EPSG:3857, как `WmsSource` модуля.
+/// тайла WMS в метрах EPSG:3857, как `WmsSource` модуля. {-y} - ряд снизу
+/// вверх, как у TMS.
 pub fn template_url(template: &str, key: TileKey) -> String {
     let (z, x, y) = key;
-    let out = template.replace("{z}", &z.to_string()).replace("{x}", &x.to_string()).replace("{y}", &y.to_string());
+    let flipped = (1u64 << z.min(31)).saturating_sub(1).saturating_sub(u64::from(y));
+    let out = template.replace("{z}", &z.to_string()).replace("{x}", &x.to_string()).replace("{-y}", &flipped.to_string()).replace("{y}", &y.to_string());
     if out.contains("{bbox}") {
         let b = tile_bbox(key);
         return out.replace("{bbox}", &format!("{:.2},{:.2},{:.2},{:.2}", b[0], b[1], b[2], b[3]));

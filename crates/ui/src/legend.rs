@@ -81,7 +81,7 @@ fn scale_of(key: &str, kind: Kind) -> Option<Scale> {
 /// `FireLegend` и `FaultLegend` модуля. У границ плит и кабелей шкалы нет.
 fn dots_scale(layer: Layer) -> Option<Scale> {
     Some(match layer {
-        Layer::Quakes => Scale::Bar { title: "Focus depth, km", stops: &data::quakes::DEPTH_STOPS, ticks: &data::quakes::DEPTH_TICKS, log: false },
+        Layer::Quakes | Layer::Iscgem => Scale::Bar { title: "Focus depth, km", stops: &data::quakes::DEPTH_STOPS, ticks: &data::quakes::DEPTH_TICKS, log: false },
         Layer::Fires => Scale::Bar { title: "Fire power, MW", stops: &data::fires::FRP_STOPS, ticks: &data::fires::FRP_TICKS, log: true },
         Layer::Volcanoes => {
             let names = ["Erupted since 1900", "Erupted in 1500-1899", "Erupted before 1500", "Eruption date unknown"];

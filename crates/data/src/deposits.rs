@@ -121,13 +121,15 @@ impl Deposit {
     }
 }
 
+/// Сборщик записей: место вне широт и долгот Земли отбрасывается. Его
+/// берёт и [`crate::mining`] для шахт и карьеров OSM.
 #[derive(Default)]
-struct Builder {
-    out: Vec<Deposit>,
+pub(crate) struct Builder {
+    pub(crate) out: Vec<Deposit>,
 }
 
 impl Builder {
-    fn add(&mut self, at: (Option<f64>, Option<f64>), commodities: &str, kind: (bool, usize, bool), fields: &[String]) {
+    pub(crate) fn add(&mut self, at: (Option<f64>, Option<f64>), commodities: &str, kind: (bool, usize, bool), fields: &[String]) {
         let (Some(lat), Some(lon)) = at else {
             return;
         };

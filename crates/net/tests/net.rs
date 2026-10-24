@@ -381,3 +381,12 @@ fn wms_bbox_is_tile_frame_in_metres() {
     let b = net::tile_bbox((0, 0, 0));
     assert!((b[2] - net::MERCATOR_HALF).abs() < 1e-6 && (b[1] + net::MERCATOR_HALF).abs() < 1e-6);
 }
+
+#[test]
+fn tms_rows_flip() {
+    // {-y} - ряд снизу вверх, как у TMS: на уровне 2 ряд 0 - это ряд 3.
+    assert_eq!(net::template_url("https://t/{z}/{x}/{-y}.png", (2, 1, 0)), "https://t/2/1/3.png");
+    assert_eq!(net::template_url("https://t/{z}/{x}/{y}.png", (2, 1, 0)), "https://t/2/1/0.png");
+    // Ряд за краем уровня не уходит в минус.
+    assert_eq!(net::template_url("{-y}", (1, 0, 9)), "0");
+}

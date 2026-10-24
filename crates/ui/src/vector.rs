@@ -188,9 +188,16 @@ pub struct VectorBase {
     glyphs: Option<Arc<contours::Glyphs>>,
     /// Наборы линий слоёв каталога над картами, под линиями основы.
     sets: Vec<Arc<Vec<Line>>>,
+    /// Слои расчёта над картами: картинка тайла считается по готовому
+    /// результату без сети, как ResultTiles модуля.
+    painters: Vec<(&'static str, Painter)>,
     #[cfg(not(target_arch = "wasm32"))]
     pool: Option<Pool>,
 }
+
+/// Картинка тайла глобуса по результату расчёта: RGBA 256 × 256
+/// с премноженной альфой или None - тайл вне результата.
+pub type Painter = Arc<dyn Fn(TileKey) -> Option<Vec<u8>> + Send + Sync>;
 
 /// Тайл карты: пришедший RGBA или картинка слоя, None - рисовать нечего.
 #[derive(Clone)]
@@ -224,6 +231,8 @@ struct Job {
     maps: Vec<MapPart>,
     /// Наборы линий слоёв каталога.
     sets: Vec<Arc<Vec<Line>>>,
+    /// Слои расчёта.
+    painters: Vec<Painter>,
 }
 
 /// Картинка слоя RGBA 256 × 256 с премноженной альфой.
@@ -289,7 +298,8 @@ fn work(job: Job) -> Done {
     let top = if job.groups.is_empty() { None } else { lines::draw(job.key, &|k| tiles.get(&k).cloned(), &job.groups) };
     let refs: Vec<&[Line]> = job.sets.iter().map(|s| s.as_slice()).collect();
     let middle = if refs.is_empty() { None } else { linesets::draw(job.key, &refs) };
-    if job.maps.is_empty() && middle.is_none() {
+    let computed: Vec<Vec<u8>> = job.painters.iter().filter_map(|p| p(job.key)).filter(|r| r.len() == (lines::TILE_SIZE * lines::TILE_SIZE * 4) as usize).collect();
+    if job.maps.is_empty() && middle.is_none() && computed.is_empty() {
         return Done { generation: job.generation, key: job.key, decoded, painted: Vec::new(), contours: Vec::new(), picture: top };
     }
     let mut painted = Vec::new();
@@ -314,6 +324,9 @@ fn work(job: Job) -> Done {
         }
     }
     let mut pieces: Vec<rastermaps::Piece<'_>> = layers.iter().map(|(r, depth, cell, opacity)| rastermaps::Piece { rgba: r, depth: *depth, cell: *cell, opacity: *opacity }).collect();
+    for r in &computed {
+        pieces.push(rastermaps::Piece { rgba: r, depth: 0, cell: (0, 0), opacity: 1.0 });
+    }
     for t in [&middle, &top].into_iter().flatten() {
         pieces.push(rastermaps::Piece { rgba: t, depth: 0, cell: (0, 0), opacity: 1.0 });
     }
@@ -403,6 +416,7 @@ impl VectorBase {
             contour_levels: HashMap::new(),
             glyphs: None,
             sets: Vec::new(),
+            painters: Vec::new(),
             #[cfg(not(target_arch = "wasm32"))]
             pool: Pool::new(),
         };
@@ -476,6 +490,21 @@ impl VectorBase {
         true
     }
 
+    /// Новые слои расчёта. Картинки тайлов рисуются заново. Возвращает,
+    /// сменился ли набор.
+    pub fn set_painters(&mut self, painters: Vec<(&'static str, Painter)>) -> bool {
+        let same = painters.len() == self.painters.len() && painters.iter().zip(&self.painters).all(|(a, b)| a.0 == b.0 && Arc::ptr_eq(&a.1, &b.1));
+        if same {
+            return false;
+        }
+        self.painters = painters;
+        self.drawn.clear();
+        self.pending.clear();
+        self.ready.clear();
+        self.generation += 1;
+        true
+    }
+
     /// Цифры подписей горизонталей.
     pub fn set_glyphs(&mut self, glyphs: Arc<contours::Glyphs>) {
         self.glyphs = Some(glyphs);
@@ -534,7 +563,7 @@ impl VectorBase {
 
     /// Есть что рисовать: линии или карты.
     fn active(&self) -> bool {
-        !self.maps.is_empty() || !self.sets.is_empty() || !self.line_groups().is_empty()
+        !self.maps.is_empty() || !self.sets.is_empty() || !self.painters.is_empty() || !self.line_groups().is_empty()
     }
 
     /// Тайлы карт, нужные картинкам тайлов кадра draw: ключ карты, тайл,
@@ -693,6 +722,7 @@ impl VectorBase {
             let job = Job {
                 maps,
                 sets: self.sets.clone(),
+                painters: self.painters.iter().map(|(_, p)| p.clone()).collect(),
                 generation: self.generation,
                 key: *key,
                 groups: groups.clone(),

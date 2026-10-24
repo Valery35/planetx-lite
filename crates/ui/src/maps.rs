@@ -26,6 +26,8 @@ pub enum Kind {
     Contours(data::contours::Palette),
     /// Уклон или экспозиция по высотам Terrarium.
     Terrain(Analysis),
+    /// Облака по снимкам VIIRS прошлых суток, `core/clouds.py` модуля.
+    Clouds,
 }
 
 /// Анализ рельефа: на глобусе одна из двух раскрасок, как у модуля.
@@ -39,6 +41,7 @@ pub enum Analysis {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Group {
     Map,
+    Sky,
     Terrain,
     Fire,
     Gases,
@@ -63,7 +66,14 @@ pub struct Entry {
 /// Строки: темы GIBS в порядке `gallery_items` модуля, за ними слои
 /// в порядке `LAYERS`. «Повторяемости воды» в списке
 /// каталога модуля нет, её нет и здесь.
-pub const ALL: [Entry; 41] = [
+pub const ALL: [Entry; 42] = [
+    Entry {
+        key: "clouds",
+        name: "Clouds",
+        tip: "Clouds from NASA GIBS VIIRS imagery of the last complete day. They lie as a translucent veil over the imagery. Snow and ice are white too and stay visible.",
+        group: Group::Sky,
+        source: "NASA GIBS, VIIRS",
+    },
     Entry {
         key: "contours",
         name: "Contours",
@@ -368,6 +378,9 @@ pub fn kind(key: &str) -> Option<Kind> {
     if key == "contours" {
         return Some(Kind::Contours(data::contours::Palette::Map));
     }
+    if key == "clouds" {
+        return Some(Kind::Clouds);
+    }
     if let Some(t) = gibs::theme_of(key) {
         return Some(Kind::Theme(t));
     }
@@ -389,7 +402,7 @@ impl Kind {
             Kind::Theme(_) => Some(0),
             Kind::Field(_) | Kind::Map(_) => Some(1),
             Kind::Terrain(_) => Some(2),
-            Kind::Overlay(_) | Kind::Contours(_) => None,
+            Kind::Overlay(_) | Kind::Contours(_) | Kind::Clouds => None,
         }
     }
 
@@ -407,6 +420,7 @@ impl Kind {
             Kind::Theme(t) => t.level,
             Kind::Contours(_) => data::contours::LEVEL,
             Kind::Terrain(_) => net::TERRARIUM.max_level,
+            Kind::Clouds => data::clouds::MAX_LEVEL,
         }
     }
 
@@ -417,6 +431,7 @@ impl Kind {
             Kind::Map(m) => m.attribution.0,
             Kind::Overlay(o) => o.attribution,
             Kind::Theme(_) => gibs::ATTRIBUTION.0,
+            Kind::Clouds => data::clouds::ATTRIBUTION.0,
             // Подпись высот Terrarium и так стоит на экране.
             Kind::Contours(_) | Kind::Terrain(_) => "",
         }
@@ -429,6 +444,7 @@ impl Kind {
             Kind::Map(m) => m.attribution.1,
             Kind::Overlay(o) => o.terms,
             Kind::Theme(_) => gibs::ATTRIBUTION.1,
+            Kind::Clouds => data::clouds::ATTRIBUTION.1,
             Kind::Contours(_) | Kind::Terrain(_) => "",
         }
     }
@@ -443,6 +459,8 @@ impl Kind {
             Kind::Theme(t) => gibs::overlay_rgba(rgba, gibs::OPACITY, t.clear),
             // Картинку горизонталей рисует задание по тайлу высот.
             Kind::Contours(_) => None,
+            // Облака - белое и серое снимка, по широте рядов.
+            Kind::Clouds => data::clouds::cloud_rgba(rgba, 256, Some(key)),
             // Уклон - по высотам самого тайла, как slope_prepare модуля.
             Kind::Terrain(a) => {
                 let heights = data::contours::terrarium(rgba);
@@ -480,6 +498,12 @@ impl Kind {
             // Высоты Terrarium до уровня съёмки, кэш - общий с рельефом.
             Kind::Contours(_) => vec![(0, net::Source { max_level: data::contours::SOURCE_LEVEL, ..net::TERRARIUM })],
             Kind::Terrain(_) => vec![(0, net::TERRARIUM)],
+            // Снимок прошлых суток, адрес на дату запуска.
+            Kind::Clouds => {
+                let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64());
+                let url: &'static str = Box::leak(data::clouds::url_template(now).into_boxed_str());
+                vec![(0, net::Source { ext: "jpg", ..source(key, url, data::clouds::MAX_LEVEL) })]
+            }
         }
     }
 }

@@ -324,15 +324,33 @@ impl Requests {
 
 impl Request for Requests {
     fn start(&self, url: &str) {
+        self.send(url, &[], None);
+    }
+
+    fn send(&self, url: &str, headers: &[(&str, &str)], body: Option<&[u8]>) {
         let (agent, sender, stats, on_ready, url, limit) =
             (self.agent.clone(), self.sender.clone(), self.stats.clone(), self.on_ready.clone(), url.to_string(), self.limit);
+        let headers: Vec<(String, String)> = headers.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect();
+        let body = body.map(<[u8]>::to_vec);
         let spawned = std::thread::Builder::new().name("request".into()).spawn(move || {
             stats.request_started();
-            let result = agent
-                .get(&url)
-                .call()
-                .and_then(|mut r| r.body_mut().with_config().limit(limit).read_to_vec())
-                .map_err(|e| e.to_string());
+            let answer = match body {
+                Some(b) => {
+                    let mut request = agent.post(&url);
+                    for (k, v) in &headers {
+                        request = request.header(k.as_str(), v.as_str());
+                    }
+                    request.send(&b[..])
+                }
+                None => {
+                    let mut request = agent.get(&url);
+                    for (k, v) in &headers {
+                        request = request.header(k.as_str(), v.as_str());
+                    }
+                    request.call()
+                }
+            };
+            let result = answer.and_then(|mut r| r.body_mut().with_config().limit(limit).read_to_vec()).map_err(|e| e.to_string());
             stats.request_finished();
             let _ = sender.send(result);
             on_ready();

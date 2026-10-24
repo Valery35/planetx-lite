@@ -986,3 +986,157 @@ Earth cutaway	지구 단면
 Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on.	바라보는 점 아래에서 지구의 한 부채꼴 부분을 떼어 냅니다. 경도로 폭 90°인 반구의 4분의 1입니다. 그 단면에는 PREM 모델의 반지름에 따른 지각, 맨틀, 핵과 CRUST1.0 모델에 따른 지각이 보입니다. 단면이 섭입대를 지나는 곳에서는 가라앉는 판이 보입니다. 부채꼴 부분은 행을 켤 때마다 새로 놓입니다.
 Stretch the crust	지각 늘이기
 Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.	깊이 400 km까지를 카메라가 멀수록 더 많이 늘여 멀리서도 지각과 상부 맨틀이 보이게 합니다. 확인란을 끄면 모든 깊이가 실제 축척입니다.
+Camera follows	카메라 따라가기
+Add tile source…	타일 출처 추가…
+Remove this tile source from the list.	이 타일 출처를 목록에서 제거합니다.
+New tile source	새 타일 출처
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS.	{z}, {x}, {y} 자리가 있는 타일 주소 템플릿. {-y}는 TMS처럼 아래에서 위로 가는 행입니다.
+Levels up to	최대 수준
+Credit	출처 표기
+Credit of the source on the screen, as its terms of use require.	출처의 이용 조건에 따라 화면에 표시하는 출처 표기.
+The address must begin with https:// or http://.	주소는 https:// 또는 http://로 시작해야 합니다.
+The address needs the places {z}, {x} and {y} or {-y}.	주소에 {z}, {x}, {y} 또는 {-y} 자리가 필요합니다.
+The address must not contain spaces.	주소에 공백이 있으면 안 됩니다.
+Wikipedia nearby	근처의 위키백과
+Wikipedia articles with coordinates - cities, monuments, rivers, peaks - as labels with a blue dot. The articles are requested when the camera is below 40 km, in the language of the QGIS interface. A click on a label opens the article card - the first paragraph, a link to the article and the Explain this button. Wikipedia texts are under CC BY-SA 4.0.	좌표가 있는 위키백과 문서 - 도시, 기념물, 강, 봉우리 - 를 파란 점이 있는 레이블로 표시합니다. 문서는 카메라가 40 km 아래에 있을 때 QGIS 인터페이스 언어로 요청합니다. 레이블을 클릭하면 문서 카드가 열리며 첫 문단, 문서 링크, ‘이것 설명’ 버튼이 표시됩니다. 위키백과 글은 CC BY-SA 4.0입니다.
+Clouds	구름
+Clouds from NASA GIBS VIIRS imagery of the last complete day. They lie as a translucent veil over the imagery. Snow and ice are white too and stay visible.	최근 하루치 NASA GIBS VIIRS 영상의 구름. 영상 위에 반투명한 막처럼 놓입니다. 눈과 얼음도 흰색이어서 그대로 보입니다.
+Satellites	인공위성
+Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.	CelesTrak 궤도 요소에 따른 인공위성이며 위치는 SGP4 모델로 계산합니다. 시간은 시간 막대의 오른쪽 손잡이이며 시간 막대가 없으면 컴퓨터 시계입니다. 그룹은 갤러리의 ‘인공위성’ 탭에서 고릅니다. 그룹의 요소는 최대 2시간에 한 번 갱신됩니다.
+Mining areas	광산 지역
+Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.	2019년 Sentinel-2 영상에 따른 세계 노천광, 폐석장, 광미 댐, 산업 부지의 윤곽 - 약 4만 5천 곳, Maus 외, 2022. 윤곽을 클릭하면 국가와 면적이 표시됩니다. 처음 켤 때 약 25 MB를 내려받습니다.
+OSM mines and quarries	OSM 광산과 채석장
+Mines, shafts and quarries from OpenStreetMap with names and the commodity. They load for the place of the view when the camera is below 150 km. The colour is the commodity group, as for the deposits. A click on a point shows the name, operator and a link to the OpenStreetMap object.	이름과 광종이 있는 OpenStreetMap의 광산, 수갱, 채석장. 카메라가 150 km 아래에 있을 때 화면 위치에 대해 불러옵니다. 색은 광상과 같이 광종 그룹입니다. 점을 클릭하면 이름, 운영자, OpenStreetMap 객체 링크가 표시됩니다.
+Trains of Finland	핀란드 열차
+Trains of Finland in real time from Fintraffic Digitraffic open data, the positions are updated every 10 s. From afar a train is a dot in the colour of its category with its number, close up it is a car model that moves along OpenStreetMap rails between updates. A click on a train shows its type, number and speed.	Fintraffic Digitraffic 공개 데이터에 따른 핀란드의 실시간 열차이며 위치는 10초마다 갱신됩니다. 멀리서는 열차가 종류 색의 점과 번호로, 가까이서는 갱신 사이에 OpenStreetMap 선로를 달리는 객차 모델로 보입니다. 열차를 클릭하면 종류, 번호, 속도가 표시됩니다.
+Baltic ships	발트해 선박
+Ships of the Gulfs of Finland and Bothnia and the Baltic near Finland by AIS signals, Fintraffic Digitraffic open data, the positions every 20 s. From afar a ship is a dot in the colour of its type with its name, close up a schematic model of its length that keeps its course. A click shows the type, call sign, destination, size and speed.	AIS 신호에 따른 핀란드만, 보트니아만, 핀란드 인근 발트해의 선박이며 Fintraffic Digitraffic 공개 데이터, 위치는 20초마다입니다. 멀리서는 선박이 종류 색의 점과 이름으로, 가까이서는 침로를 유지하는 길이에 맞춘 모식 모델로 보입니다. 클릭하면 종류, 호출 부호, 목적지, 크기, 속도가 표시됩니다.
+Aircraft	항공기
+Aircraft by ADS-B signals of the adsb.lol volunteer network in a circle around the point of view, every 10 s. An aircraft in the air is shown at its altitude, close up as a schematic model of the size of its category with its bank. A click shows the call sign, type, registration, altitude and speed. The network has almost no receivers over Russia.	adsb.lol 자원봉사 네트워크의 ADS-B 신호에 따른, 시점 주위 원 안의 항공기이며 10초마다 갱신됩니다. 비행 중인 항공기는 해당 고도에 표시되며 가까이서는 범주 크기의 모식 모델이 경사와 함께 보입니다. 클릭하면 호출 부호, 기종, 등록 부호, 고도, 속도가 표시됩니다. 러시아 상공에는 네트워크 수신기가 거의 없습니다.
+Currents	해류
+Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.	속도 색칠 위를 흐르는 흰 줄로 나타낸 해양 표층 해류. 위성 고도계에 따른 NOAA CoastWatch 지형류이며 최근 완성된 하루, 0.5° 격자입니다. 세션에서 처음 켤 때 약 4 MB를 내려받습니다.
+OSM power lines, cables and pipelines	OSM 송전선, 케이블, 파이프라인
+Power lines by voltage, substations, cables and gas, oil and water pipelines from OpenStreetMap. They load for the place in view when the camera is below 150 km. A click on a line shows the voltage, substance, operator and a link to the OpenStreetMap object.	OpenStreetMap의 전압별 송전선, 변전소, 케이블, 가스·석유·물 파이프라인. 카메라가 150 km 아래에 있을 때 화면 위치에 대해 불러옵니다. 선을 클릭하면 전압, 운송 물질, 운영자, OpenStreetMap 객체 링크가 표시됩니다.
+Historical earthquakes	역사 지진
+Strong earthquakes of the world from 1904 to 2024 from the ISC-GEM catalogue - about 74 thousand events of magnitude 5 and above, with locations, depths and magnitudes recomputed in one way. A circle sits at the epicentre, at its depth - in the removed sector of the Earth cutaway, the colour shows the depth and the size the magnitude. The time slider range selects the events. A click on a circle shows the place, date, magnitude and the USGS event page. The first use downloads the catalogue in parts, about 13 MB.	ISC-GEM 목록에 따른 1904년부터 2024년까지의 세계 강진 - 규모 5 이상의 약 7만 4천 건이며 위치, 깊이, 규모를 한 가지 방법으로 다시 계산했습니다. 원은 진앙에 놓이고 그 깊이에서는 지구 단면의 잘라낸 부분에 놓이며, 색은 깊이를, 크기는 규모를 나타냅니다. 시간 막대의 기간이 사건을 고릅니다. 원을 클릭하면 장소, 날짜, 규모, USGS 사건 페이지가 표시됩니다. 처음 켤 때 목록을 나누어 약 13 MB를 내려받습니다.
+Geoid	지오이드
+The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.	NGA EGM2008 모델에 따른 지구 등퍼텐셜면 - 지오이드 - 의 모양. 행이 켜져 있는 동안 지구본의 높이는 타원체 위 지오이드고(-107 ~ +86 m)를 10 000배로 늘인 것이며 지구는 ‘구겨진’ 모양으로 보입니다. 솟은 곳은 중력이 더 센 곳, 예를 들어 뉴기니 근처이고 꺼진 곳은 더 약한 곳이며 가장 깊은 곳은 인도양에 있습니다. 그동안 지형과 물은 제거되며 행을 끄면 되돌아옵니다.
+Paleogeography	고지리
+Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.	PALEOMAP PaleoDEM 지도에 따른 5억 4천만 년 전까지의 과거 육지 기복과 바다 깊이. 연대는 화면 아래 슬라이더로 정합니다. 그동안 영상, 경계, 레이블은 제거됩니다.
+3D buildings	3D 건물
+3D buildings from OpenStreetMap in OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM or from the number of floors. A building without either gets a height of 5 m.	OpenFreeMap 벡터 타일의 OpenStreetMap 3D 건물. 카메라가 지면에서 6 km보다 가까울 때 보입니다. 높이는 OSM에서, 없으면 층수에서 가져옵니다. 둘 다 없는 건물은 높이 5 m가 됩니다.
+Rosreestr cadastre	로스레예스트르 지적도
+Land parcels from the National spatial data system of Rosreestr over the imagery, for Russia only. They are seen up close, from about 10 km and lower. The service answers slowly and refuses frequent requests, so the parcels come one tile at a time.	로스레예스트르 국가 공간 데이터 시스템의 토지 필지를 영상 위에 표시하며 러시아만 해당합니다. 가까이서, 고도 약 10 km 이하에서 보입니다. 서비스는 응답이 느리고 잦은 요청을 거부하므로 필지는 타일 하나씩 들어옵니다.
+Age in millions of years ago. The map of relief and depths for this age - PaleoDEM PALEOMAP, Scotese and Wright 2018.	백만 년 전 단위의 연대. 이 연대의 기복과 깊이 지도 - PaleoDEM PALEOMAP, Scotese와 Wright 2018.
+Quaternary	제4기
+Neogene	신진기
+Paleogene	고진기
+Cretaceous	백악기
+Jurassic	쥐라기
+Triassic	트라이아스기
+Permian	페름기
+Carboniferous	석탄기
+Devonian	데본기
+Silurian	실루리아기
+Ordovician	오르도비스기
+Cambrian	캄브리아기
+Precambrian	선캄브리아대
+Present	현재
+{age} million years ago, {period}	{age}백만 년 전, {period}
+Show from the chosen age to the present through all maps of the set.	선택한 연대부터 현재까지 세트의 모든 지도로 보여 줍니다.
+How many times the geoid heights above the ellipsoid are stretched. To the right the bulges and hollows are deeper, to the left the Earth is rounder.	타원체 위 지오이드고를 몇 배로 늘일지. 오른쪽으로 갈수록 솟은 곳과 꺼진 곳이 깊어지고 왼쪽으로 갈수록 지구가 둥글어집니다.
+Trains of Finland, Baltic ships and aircraft in real time from Fintraffic open data and the adsb.lol ADS-B network.	Fintraffic 공개 데이터와 adsb.lol ADS-B 네트워크에 따른 실시간 핀란드 열차, 발트해 선박, 항공기.
+on the ground	지상
+{length} × {width} m	{length} × {width} m
+{metres} m ({feet} ft)	{metres} m ({feet} 피트)
+{value} km/h	{value} km/h
+{value} kn	{value} 노트
+Call sign	호출 부호
+IMO	IMO
+Destination	목적지
+Size	크기
+MMSI	MMSI
+Course	침로
+Position, UTC	위치, UTC
+Registration	등록 부호
+ICAO code	ICAO 코드
+Altitude	고도
+Number	번호
+Close	닫기
+None	없음
+turn on	켜기
+turn off	끄기
+Above ground {height} m	지면 위 {height} m
+Climb {climb} m/s	상승률 {climb} m/s
+Fighter	전투기
+Fly from here	여기서 비행
+Propeller plane	프로펠러기
+Throttle {throttle} %	추력 {throttle} %
+Touched the ground - the flight is over.	지면에 닿았습니다 - 비행이 끝났습니다.
+Up to 2000 km/h, start at 900 km/h, sharp bank.	최대 2000 km/h, 900 km/h로 출발, 급한 경사.
+Up to 340 km/h, start at 250 km/h, smooth.	최대 340 km/h, 250 km/h로 출발, 부드러움.
+km/h	km/h
+{speed} km/h · altitude {alt} m, above ground {height} m · heading {heading}° · climb {climb} m/s · throttle {throttle} %	{speed} km/h · 고도 {alt} m, 지면 위 {height} m · 방위 {heading}° · 상승률 {climb} m/s · 추력 {throttle} %
+↑ ↓ - nose down and up · ← → - bank · PageUp, PageDown - throttle · V - cockpit view · H - instruments · Esc - exit	↑ ↓ - 기수 내리기와 올리기 · ← → - 경사 · PageUp, PageDown - 추력 · V - 조종석 시점 · H - 계기 · Esc - 끝내기
+A click on a row copies the sheet number to the clipboard.	행을 클릭하면 도엽 번호가 클립보드에 복사됩니다.
+A click on a row copies the sheet number. Sheets of the Russian State Geological Map at 1:1,000,000 and 1:200,000 use the Russian designation too.	행을 클릭하면 도엽 번호가 복사됩니다. 러시아 국가 지질도 1:1 000 000 및 1:200 000 도엽도 러시아식 도엽 번호를 씁니다.
+A ready site from the list or an empty row for your own address.	목록의 준비된 사이트 또는 자체 주소를 위한 빈 행.
+Add or edit sites…	사이트 추가 또는 변경…
+Add site	사이트 추가
+All numbers in a window…	모든 번호를 창에서 보기…
+Delete the selected rows.	선택한 행을 삭제합니다.
+Each row is an item of the Open in browser submenu of the globe menu. The item opens the site at the point under the cursor. Add site puts a ready site or an empty row for your own address. In the address {lat} and {lon} are the latitude and longitude in degrees, {zoom} is the map scale by the view.	각 행은 지구본 메뉴의 ‘브라우저에서 열기’ 하위 메뉴 항목입니다. 항목은 커서 아래 지점에서 사이트를 엽니다. ‘사이트 추가’는 준비된 사이트 또는 자체 주소를 위한 빈 행을 넣습니다. 주소에서 {lat}와 {lon}은 도 단위 위도와 경도, {zoom}은 화면에 따른 지도 축척입니다.
+International Map of the World (IMW)	국제 세계 지도 (IMW)
+MGRS, 100 km square	MGRS, 100 km 정사각형
+Map sheet designation	도엽 번호 체계
+NATO, JOG	NATO, JOG
+Open in browser	브라우저에서 열기
+Own address	자체 주소
+Row {n}: {reason}	행 {n}: {reason}
+Russian sheet designation	러시아식 도엽 번호
+S. H.	남반구
+Sheet number	도엽 번호
+Sites of the Open in browser menu	‘브라우저에서 열기’ 메뉴의 사이트
+System	체계
+The address does not start with https:// or http://.	주소가 https:// 또는 http://로 시작하지 않습니다.
+The address has extra braces or places other than {lat}, {lon} and {zoom}.	주소에 불필요한 중괄호나 {lat}, {lon}, {zoom} 외의 자리가 있습니다.
+The address has no {lat} or {lon}.	주소에 {lat} 또는 {lon}이 없습니다.
+The item has no name.	항목에 이름이 없습니다.
+no sheet	도엽 없음
+Asking Eto Mesto…	‘에토 메스토’에 요청 중…
+Build	만들기
+Computing insolation: {share}	일조 계산 중: {share}
+Direct sun, h per day	직사광선, 하루 시간
+Eto Mesto old maps	‘에토 메스토’ 옛 지도
+Eto Mesto old maps here…	여기의 ‘에토 메스토’ 옛 지도…
+First day	첫날
+Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	보여야 할 대상(예: 철탑이나 건물)의 지형 위 높이. 0이면 지면 자체를 확인합니다.
+Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	지점에서 눈이나 철탑의 지형 위 높이. 높을수록 더 멀리 보이고 지형 뒤에 가려지는 곳이 줄어듭니다.
+Heights of the grid nodes: {share}	격자 절점의 높이: {share}
+Insolation	일조
+Insolation here…	여기의 일조…
+Keeps the maps whose title or year holds all the words.	제목이나 연도에 모든 단어가 있는 지도만 남깁니다.
+Last day	마지막 날
+Loading heights: {done} of {total}	높이 불러오는 중: {done} / {total}
+Maps at the point {total}, shown {shown}. A click on a title opens the map on the site.	지점의 지도 {total}개, 표시 {shown}개. 제목을 클릭하면 사이트에서 지도가 열립니다.
+Maps of the Eto Mesto site (etomesto.com) that cover the point. A map opens on the site, where it can be overlaid on a modern map and downloaded under the site rules.	지점을 덮는 ‘에토 메스토’ 사이트(etomesto.com)의 지도. 지도는 사이트에서 열리며 그곳에서 현대 지도에 겹치거나 사이트 규칙에 따라 내려받을 수 있습니다.
+Not all heights are loaded, the computation used less detailed ones.	모든 높이를 불러오지 못해 덜 자세한 높이로 계산했습니다.
+Observer height	관측자 높이
+Opens the page of the chosen map on etomesto.com in the browser.	선택한 지도의 etomesto.com 페이지를 브라우저에서 엽니다.
+Over {days} days direct sun shines from {low} to {high} h per day. The grid step is {step} m.	{days}일 동안 직사광선은 하루 {low}~{high}시간 비칩니다. 격자 간격은 {step} m입니다.
+Point	지점
+Radius of the computed circle. A larger radius gives a coarser grid. Mountain shadows are taken from a distance of at least the radius and at least 5 km.	계산하는 원의 반지름. 클수록 격자가 거칠어집니다. 산 그림자는 반지름 이상이면서 5 km 이상인 거리에서 고려합니다.
+Radius of the computed circle. A larger radius gives a coarser step, the step is about one five-hundredth of the radius.	계산하는 원의 반지름. 클수록 간격이 거칠어지며 간격은 반지름의 약 500분의 1입니다.
+Remove	제거
+Remove the insolation layer from the globe.	일조 레이어를 지구본에서 제거합니다.
+Remove the viewshed layer from the globe.	가시권 레이어를 지구본에서 제거합니다.
+Search by title or year	제목이나 연도로 검색
+Target height	대상 높이
+The first day of the period. The result is the mean number of hours of direct sunlight per day over the period.	기간의 첫날. 결과는 기간 동안 하루 평균 직사광선 시간입니다.
+The last day of the period, inclusive. A long period is computed over 15 evenly spaced days.	기간의 마지막 날(포함). 긴 기간은 고르게 고른 15일로 계산합니다.
+The site did not answer: {error}	사이트가 응답하지 않았습니다: {error}
+The site has no maps at this point.	이 지점에는 사이트의 지도가 없습니다.
+This body has no heights.	이 천체에는 높이 자료가 없습니다.
+Viewshed from a point	지점의 가시권
+Viewshed from here…	여기서의 가시권…
+{share} of the circle area is visible. The computation step is {step} m.	원 면적의 {share}가 보입니다. 계산 간격은 {step} m입니다.

@@ -986,3 +986,157 @@ Earth cutaway	დედამიწის ჭრილი
 Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on.	ხედვის წერტილის ქვეშ დედამიწიდან ამოიღებს სექტორს - ნახევარსფეროს მეოთხედს 90° სიგანით გრძედის მიხედვით. მის წახნაგებზე ჩანს ქერქი, მანტია და ბირთვი PREM მოდელის რადიუსებით, ქერქი - CRUST1.0 მოდელით. სადაც წახნაგი სუბდუქციის ზონას კვეთს, მასზე ჩანს ჩაძირვადი ფილა. სექტორი ხელახლა დგება სტრიქონის ყოველი ჩართვისას.
 Stretch the crust	ქერქის გაწელვა
 Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.	400 კმ-მდე სიღრმეებს მით უფრო წელავს, რაც უფრო შორსაა კამერა, და შორიდან ჩანს ქერქი და ზედა მანტია. ალმის გარეშე ყველა სიღრმე ნამდვილ მასშტაბშია.
+Camera follows	კამერა მიჰყვება
+Add tile source…	ფილების წყაროს დამატება…
+Remove this tile source from the list.	ამ ფილების წყაროს სიიდან მოშორება.
+New tile source	ფილების ახალი წყარო
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS.	ფილების მისამართის შაბლონი ადგილებით {z}, {x} და {y}. {-y} - რიგები ქვემოდან ზემოთ, როგორც TMS-ში.
+Levels up to	დონეები -მდე
+Credit	წარწერა
+Credit of the source on the screen, as its terms of use require.	წყაროს წარწერა ეკრანზე, როგორც ამას მისი გამოყენების პირობები მოითხოვს.
+The address must begin with https:// or http://.	მისამართი უნდა იწყებოდეს https:// ან http://-ით.
+The address needs the places {z}, {x} and {y} or {-y}.	მისამართში საჭიროა ადგილები {z}, {x} და {y} ან {-y}.
+The address must not contain spaces.	მისამართში არ უნდა იყოს ჰარები.
+Wikipedia nearby	ვიკიპედია ახლოს
+Wikipedia articles with coordinates - cities, monuments, rivers, peaks - as labels with a blue dot. The articles are requested when the camera is below 40 km, in the language of the QGIS interface. A click on a label opens the article card - the first paragraph, a link to the article and the Explain this button. Wikipedia texts are under CC BY-SA 4.0.	ვიკიპედიის სტატიები კოორდინატებით - ქალაქები, ძეგლები, მდინარეები, მწვერვალები - ლურჯწრიანი წარწერებით. სტატიები ითხოვება, როცა კამერა 40 კმ-ზე დაბლაა, QGIS-ის ინტერფეისის ენაზე. წარწერაზე დაწკაპუნება ხსნის სტატიის ბარათს - პირველ აბზაცს, სტატიის ბმულს და ღილაკს „ახსენი ეს“. ვიკიპედიის ტექსტები - CC BY-SA 4.0.
+Clouds	ღრუბლები
+Clouds from NASA GIBS VIIRS imagery of the last complete day. They lie as a translucent veil over the imagery. Snow and ice are white too and stay visible.	ღრუბლები NASA GIBS-ის VIIRS სურათებით ბოლო სრული დღე-ღამისთვის. ისინი სურათზე ნახევრად გამჭვირვალე ფარდად დევს. თოვლი და ყინულიც თეთრია და ჩანს.
+Satellites	თანამგზავრები
+Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.	ხელოვნური თანამგზავრები CelesTrak-ის ორბიტული ელემენტებით, მდებარეობა SGP4 მოდელით. დრო - დროის ზოლის მარჯვენა სახელური, ზოლის გარეშე - კომპიუტერის საათი. ჯგუფებს ირჩევს გალერეის ჩანართი „თანამგზავრები“. ჯგუფის ელემენტები ახლდება არაუმეტეს 2 საათში ერთხელ.
+Mining areas	სამთო სამუშაოები
+Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.	მსოფლიოს კარიერების, სანაყაროების, კუდსაცავებისა და სამრეწველო მოედნების კონტურები 2019 წლის Sentinel-2 სურათებით - დაახლოებით 45 ათასი უბანი, Maus და თანაავტორები, 2022. კონტურზე დაწკაპუნება აჩვენებს ქვეყანას და ფართობს. პირველი ჩართვა ჩამოტვირთავს დაახლოებით 25 მბ-ს.
+OSM mines and quarries	OSM-ის მაღაროები და კარიერები
+Mines, shafts and quarries from OpenStreetMap with names and the commodity. They load for the place of the view when the camera is below 150 km. The colour is the commodity group, as for the deposits. A click on a point shows the name, operator and a link to the OpenStreetMap object.	მაღაროები, შახტები და კარიერები OpenStreetMap-იდან სახელებითა და წიაღისეულით. იტვირთება ხედის ადგილისთვის, როცა კამერა 150 კმ-ზე დაბლაა. ფერი - წიაღისეულის ჯგუფი, როგორც საბადოებში. წერტილზე დაწკაპუნება აჩვენებს სახელს, ოპერატორს და ბმულს OpenStreetMap-ის ობიექტზე.
+Trains of Finland	ფინეთის მატარებლები
+Trains of Finland in real time from Fintraffic Digitraffic open data, the positions are updated every 10 s. From afar a train is a dot in the colour of its category with its number, close up it is a car model that moves along OpenStreetMap rails between updates. A click on a train shows its type, number and speed.	ფინეთის მატარებლები რეალურ დროში Fintraffic Digitraffic-ის ღია მონაცემებით, მდებარეობები ახლდება ყოველ 10 წმ-ში. შორიდან მატარებელი კატეგორიის ფერის წერტილია ნომრით, ახლოდან - ვაგონის მოდელი, რომელიც განახლებებს შორის OpenStreetMap-ის რელსებზე მოძრაობს. მატარებელზე დაწკაპუნება აჩვენებს სახეს, ნომერს და სიჩქარეს.
+Baltic ships	ბალტიის გემები
+Ships of the Gulfs of Finland and Bothnia and the Baltic near Finland by AIS signals, Fintraffic Digitraffic open data, the positions every 20 s. From afar a ship is a dot in the colour of its type with its name, close up a schematic model of its length that keeps its course. A click shows the type, call sign, destination, size and speed.	ფინეთისა და ბოტნიის ყურეების და ფინეთთან ბალტიის გემები AIS სიგნალებით, Fintraffic Digitraffic-ის ღია მონაცემები, მდებარეობები ყოველ 20 წმ-ში. შორიდან გემი ტიპის ფერის წერტილია სახელით, ახლოდან - თავისი სიგრძის პირობითი მოდელი, რომელიც თავის კურსს მიჰყვება. დაწკაპუნება აჩვენებს ტიპს, სახმობ ნიშანს, დანიშნულებას, ზომებს და სიჩქარეს.
+Aircraft	თვითმფრინავები
+Aircraft by ADS-B signals of the adsb.lol volunteer network in a circle around the point of view, every 10 s. An aircraft in the air is shown at its altitude, close up as a schematic model of the size of its category with its bank. A click shows the call sign, type, registration, altitude and speed. The network has almost no receivers over Russia.	თვითმფრინავები adsb.lol-ის მოხალისეთა ქსელის ADS-B სიგნალებით ხედვის წერტილის გარშემო წრეში, ყოველ 10 წმ-ში. ჰაერში მყოფი თვითმფრინავი თავის სიმაღლეზე დგას, ახლოდან - თავისი კატეგორიის ზომის პირობითი მოდელი დახრით. დაწკაპუნება აჩვენებს სახმობ ნიშანს, ტიპს, ბორტის ნომერს, სიმაღლეს და სიჩქარეს. რუსეთის თავზე ქსელს მიმღებები თითქმის არ აქვს.
+Currents	დინებები
+Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.	ოკეანის ზედაპირული დინებები თეთრი მორბენალი ჭავლებით სიჩქარის შეფერადების ზემოთ. NOAA CoastWatch-ის გეოსტროფიული დინებები თანამგზავრული ალტიმეტრიით ბოლო მზა დღე-ღამისთვის, ბადე 0.5°. სეანსში პირველი ჩართვა ჩამოტვირთავს დაახლოებით 4 მბ-ს.
+OSM power lines, cables and pipelines	OSM-ის ელექტროგადამცემი ხაზები, კაბელები და მილსადენები
+Power lines by voltage, substations, cables and gas, oil and water pipelines from OpenStreetMap. They load for the place in view when the camera is below 150 km. A click on a line shows the voltage, substance, operator and a link to the OpenStreetMap object.	ელექტროგადამცემი ხაზები ძაბვის მიხედვით, ქვესადგურები, კაბელები და აირის, ნავთობისა და წყლის მილსადენები OpenStreetMap-იდან. იტვირთება ხედის ადგილისთვის, როცა კამერა 150 კმ-ზე დაბლაა. ხაზზე დაწკაპუნება აჩვენებს ძაბვას, ნივთიერებას, ოპერატორს და ბმულს OpenStreetMap-ის ობიექტზე.
+Historical earthquakes	ისტორიული მიწისძვრები
+Strong earthquakes of the world from 1904 to 2024 from the ISC-GEM catalogue - about 74 thousand events of magnitude 5 and above, with locations, depths and magnitudes recomputed in one way. A circle sits at the epicentre, at its depth - in the removed sector of the Earth cutaway, the colour shows the depth and the size the magnitude. The time slider range selects the events. A click on a circle shows the place, date, magnitude and the USGS event page. The first use downloads the catalogue in parts, about 13 MB.	მსოფლიოს ძლიერი მიწისძვრები 1904 წლიდან 2024 წლამდე ISC-GEM-ის კატალოგით - დაახლოებით 74 ათასი მოვლენა 5 და მეტი მაგნიტუდით, ადგილები, სიღრმეები და მაგნიტუდები ერთი ხერხით გადათვლილია. წრე დგას ეპიცენტრში, თავის სიღრმეზე - დედამიწის ჭრილის ამოღებულ სექტორში, ფერი აჩვენებს სიღრმეს, ზომა - მაგნიტუდას. დროის ზოლის შუალედი არჩევს მოვლენებს. წრეზე დაწკაპუნება აჩვენებს ადგილს, თარიღს, მაგნიტუდას და მოვლენის USGS-ის გვერდს. პირველი ჩართვა ჩამოტვირთავს კატალოგს ნაწილ-ნაწილ, დაახლოებით 13 მბ-ს.
+Geoid	გეოიდი
+The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.	დედამიწის დონის ზედაპირის - გეოიდის - ფორმა NGA-ის EGM2008 მოდელით. სანამ სტრიქონი ჩართულია, გლობუსის სიმაღლეები გეოიდის სიმაღლეებია ელიფსოიდის ზემოთ, -107-დან +86 მ-მდე, 10 000-ჯერ გაწელილი, და დედამიწა „დაჭმუჭნილი“ ჩანს. ამობურცულობები იქაა, სადაც სიმძიმის ძალა მეტია, მაგალითად ახალ გვინეასთან, ჩაღრმავებები - სადაც ნაკლებია, ყველაზე ღრმა - ინდოეთის ოკეანეში. რელიეფი და წყალი ამ დროს მოშორებულია, სტრიქონის გამორთვა მათ აბრუნებს.
+Paleogeography	პალეოგეოგრაფია
+Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.	ხმელეთის რელიეფი და ზღვის სიღრმეები წარსულში, 540 მლნ წლის წინანდელამდე, PALEOMAP-ის PaleoDEM რუკებით. ასაკს აყენებს სლაიდერი ხედის ქვედა ნაწილში. სურათი, საზღვრები და წარწერები ამ დროს მოშორებულია.
+3D buildings	3D შენობები
+3D buildings from OpenStreetMap in OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM or from the number of floors. A building without either gets a height of 5 m.	3D შენობები OpenStreetMap-იდან OpenFreeMap-ის ვექტორულ ფილებში. ისინი ჩანს, როცა კამერა მიწასთან 6 კმ-ზე ახლოსაა. სიმაღლე აღებულია OSM-იდან, თუ არა - სართულიანობიდან. ამ ცნობების გარეშე შენობა იღებს 5 მ სიმაღლეს.
+Rosreestr cadastre	როსრეესტრის კადასტრი
+Land parcels from the National spatial data system of Rosreestr over the imagery, for Russia only. They are seen up close, from about 10 km and lower. The service answers slowly and refuses frequent requests, so the parcels come one tile at a time.	მიწის ნაკვეთები როსრეესტრის სივრცითი მონაცემების ეროვნული სისტემიდან სურათის ზემოთ, მხოლოდ რუსეთისთვის. ჩანს ახლოდან, დაახლოებით 10 კმ სიმაღლიდან და ქვემოთ. სამსახური ნელა პასუხობს და ხშირ მოთხოვნებზე უარს ამბობს, ამიტომ ნაკვეთები თითო ფილად მოდის.
+Age in millions of years ago. The map of relief and depths for this age - PaleoDEM PALEOMAP, Scotese and Wright 2018.	ასაკი მილიონი წლის წინ. რელიეფისა და სიღრმეების რუკა ამ ასაკისთვის - PaleoDEM PALEOMAP, Scotese და Wright 2018.
+Quaternary	მეოთხეული
+Neogene	ნეოგენი
+Paleogene	პალეოგენი
+Cretaceous	ცარცი
+Jurassic	იურა
+Triassic	ტრიასი
+Permian	პერმი
+Carboniferous	კარბონი
+Devonian	დევონი
+Silurian	სილური
+Ordovician	ორდოვიკი
+Cambrian	კამბრიუმი
+Precambrian	პრეკამბრიუმი
+Present	აწმყო
+{age} million years ago, {period}	{age} მლნ წლის წინ, {period}
+Show from the chosen age to the present through all maps of the set.	ჩვენება არჩეული ასაკიდან აწმყომდე ნაკრების ყველა რუკით.
+How many times the geoid heights above the ellipsoid are stretched. To the right the bulges and hollows are deeper, to the left the Earth is rounder.	რამდენჯერ არის გაწელილი გეოიდის სიმაღლეები ელიფსოიდის ზემოთ. მარჯვნივ ამობურცულობები და ჩაღრმავებები ღრმაა, მარცხნივ დედამიწა უფრო მრგვალია.
+Trains of Finland, Baltic ships and aircraft in real time from Fintraffic open data and the adsb.lol ADS-B network.	ფინეთის მატარებლები, ბალტიის გემები და თვითმფრინავები რეალურ დროში Fintraffic-ის ღია მონაცემებითა და adsb.lol-ის ADS-B ქსელით.
+on the ground	მიწაზე
+{length} × {width} m	{length} × {width} მ
+{metres} m ({feet} ft)	{metres} მ ({feet} ფუტი)
+{value} km/h	{value} კმ/სთ
+{value} kn	{value} კვანძი
+Call sign	სახმობი ნიშანი
+IMO	IMO
+Destination	დანიშნულება
+Size	ზომები
+MMSI	MMSI
+Course	კურსი
+Position, UTC	მდებარეობა, UTC
+Registration	ბორტის ნომერი
+ICAO code	ICAO კოდი
+Altitude	სიმაღლე
+Number	ნომერი
+Close	დახურვა
+None	არაფერი
+turn on	ჩართვა
+turn off	გამორთვა
+Above ground {height} m	მიწის ზემოთ {height} მ
+Climb {climb} m/s	აწევა {climb} მ/წმ
+Fighter	გამანადგურებელი
+Fly from here	ფრენა აქედან
+Propeller plane	ხრახნიანი თვითმფრინავი
+Throttle {throttle} %	წევა {throttle} %
+Touched the ground - the flight is over.	მიწასთან შეხება - ფრენა დასრულდა.
+Up to 2000 km/h, start at 900 km/h, sharp bank.	2000 კმ/სთ-მდე, სტარტი 900 კმ/სთ-ზე, მკვეთრი დახრა.
+Up to 340 km/h, start at 250 km/h, smooth.	340 კმ/სთ-მდე, სტარტი 250 კმ/სთ-ზე, მდორე.
+km/h	კმ/სთ
+{speed} km/h · altitude {alt} m, above ground {height} m · heading {heading}° · climb {climb} m/s · throttle {throttle} %	{speed} კმ/სთ · სიმაღლე {alt} მ, მიწის ზემოთ {height} მ · კურსი {heading}° · აწევა {climb} მ/წმ · წევა {throttle} %
+↑ ↓ - nose down and up · ← → - bank · PageUp, PageDown - throttle · V - cockpit view · H - instruments · Esc - exit	↑ ↓ - ცხვირი ქვემოთ და ზემოთ · ← → - დახრა · PageUp, PageDown - წევა · V - ხედი კაბინიდან · H - ხელსაწყოები · Esc - გასვლა
+A click on a row copies the sheet number to the clipboard.	სტრიქონზე დაწკაპუნება ფურცლის ნომერს აკოპირებს გაცვლის ბუფერში.
+A click on a row copies the sheet number. Sheets of the Russian State Geological Map at 1:1,000,000 and 1:200,000 use the Russian designation too.	სტრიქონზე დაწკაპუნება ფურცლის ნომერს აკოპირებს. რუსეთის სახელმწიფო გეოლოგიური რუკის 1:1 000 000 და 1:200 000 ფურცლებიც რუსული ნომენკლატურით ინომრება.
+A ready site from the list or an empty row for your own address.	მზა საიტი სიიდან ან ცარიელი სტრიქონი საკუთარი მისამართისთვის.
+Add or edit sites…	საიტების დამატება ან შეცვლა…
+Add site	საიტის დამატება
+All numbers in a window…	ყველა ნომერი ფანჯარაში…
+Delete the selected rows.	მონიშნული სტრიქონების წაშლა.
+Each row is an item of the Open in browser submenu of the globe menu. The item opens the site at the point under the cursor. Add site puts a ready site or an empty row for your own address. In the address {lat} and {lon} are the latitude and longitude in degrees, {zoom} is the map scale by the view.	ყოველი სტრიქონი გლობუსის მენიუს ქვემენიუს „ბრაუზერში გახსნა“ პუნქტია. პუნქტი ხსნის საიტს კურსორის ქვეშ მდებარე წერტილზე. „საიტის დამატება“ სვამს მზა საიტს ან ცარიელ სტრიქონს საკუთარი მისამართისთვის. მისამართში {lat} და {lon} - განედი და გრძედი გრადუსებში, {zoom} - რუკის მასშტაბი ხედის მიხედვით.
+International Map of the World (IMW)	მსოფლიოს საერთაშორისო რუკა (IMW)
+MGRS, 100 km square	MGRS, 100 კმ კვადრატი
+Map sheet designation	ფურცლის ნომენკლატურა
+NATO, JOG	NATO, JOG
+Open in browser	ბრაუზერში გახსნა
+Own address	საკუთარი მისამართი
+Row {n}: {reason}	სტრიქონი {n}: {reason}
+Russian sheet designation	რუსული ნომენკლატურა
+S. H.	ს. ნ.
+Sheet number	ფურცლის ნომერი
+Sites of the Open in browser menu	მენიუს „ბრაუზერში გახსნა“ საიტები
+System	სისტემა
+The address does not start with https:// or http://.	მისამართი არ იწყება https://-ით ან http://-ით.
+The address has extra braces or places other than {lat}, {lon} and {zoom}.	მისამართში ზედმეტი ფიგურული ფრჩხილებია ან ადგილები {lat}, {lon} და {zoom}-ის გარდა.
+The address has no {lat} or {lon}.	მისამართში არ არის {lat} ან {lon}.
+The item has no name.	პუნქტს სახელი არ აქვს.
+no sheet	ფურცელი არ არის
+Asking Eto Mesto…	მოთხოვნა „ეტო მესტოს“…
+Build	აგება
+Computing insolation: {share}	ინსოლაციის გამოთვლა: {share}
+Direct sun, h per day	პირდაპირი მზე, სთ დღე-ღამეში
+Eto Mesto old maps	„ეტო მესტოს“ ძველი რუკები
+Eto Mesto old maps here…	„ეტო მესტოს“ ძველი რუკები აქ…
+First day	პირველი დღე-ღამე
+Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	იმის სიმაღლე რელიეფის ზემოთ, რაც უნდა დავინახოთ, მაგალითად ანძის ან შენობის. ნულზე მოწმდება თავად მიწა.
+Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	თვალის ან ანძის სიმაღლე რელიეფის ზემოთ წერტილში. მაღლა - უფრო შორს ჩანს და ნაკლები ადგილია დამალული რელიეფის მიღმა.
+Heights of the grid nodes: {share}	ბადის კვანძების სიმაღლეები: {share}
+Insolation	ინსოლაცია
+Insolation here…	ინსოლაცია აქ…
+Keeps the maps whose title or year holds all the words.	ტოვებს რუკებს, რომელთა სათაურში ან წელში ყველა სიტყვაა.
+Last day	ბოლო დღე-ღამე
+Loading heights: {done} of {total}	სიმაღლეების ჩატვირთვა: {done} / {total}
+Maps at the point {total}, shown {shown}. A click on a title opens the map on the site.	რუკები წერტილთან {total}, ნაჩვენებია {shown}. სათაურზე დაწკაპუნება რუკას საიტზე ხსნის.
+Maps of the Eto Mesto site (etomesto.com) that cover the point. A map opens on the site, where it can be overlaid on a modern map and downloaded under the site rules.	საიტ „ეტო მესტოს“ (etomesto.com) რუკები, რომლებიც წერტილს ფარავს. რუკა საიტზე იხსნება, იქ მისი დადება შეიძლება თანამედროვე რუკაზე და ჩამოტვირთვა საიტის წესებით.
+Not all heights are loaded, the computation used less detailed ones.	ყველა სიმაღლე არ ჩაიტვირთა, გამოთვლა ნაკლებად დეტალურით მოხდა.
+Observer height	დამკვირვებლის სიმაღლე
+Opens the page of the chosen map on etomesto.com in the browser.	ხსნის არჩეული რუკის გვერდს etomesto.com-ზე ბრაუზერში.
+Over {days} days direct sun shines from {low} to {high} h per day. The grid step is {step} m.	{days} დღე-ღამის განმავლობაში პირდაპირი მზე ანათებს {low}-დან {high} სთ-მდე დღე-ღამეში. ბადის ბიჯი - {step} მ.
+Point	წერტილი
+Radius of the computed circle. A larger radius gives a coarser grid. Mountain shadows are taken from a distance of at least the radius and at least 5 km.	გამოთვლის წრის რადიუსი. მეტი - ბადის ბიჯი მსხვილია. მთების ჩრდილები აიღება მანძილიდან, რომელიც არანაკლებ რადიუსია და არანაკლებ 5 კმ.
+Radius of the computed circle. A larger radius gives a coarser step, the step is about one five-hundredth of the radius.	გამოთვლის წრის რადიუსი. მეტი - გამოთვლის ბიჯი მსხვილია, ის რადიუსის დაახლოებით ხუთასედი ნაწილია.
+Remove	მოშორება
+Remove the insolation layer from the globe.	ინსოლაციის ფენის მოშორება გლობუსიდან.
+Remove the viewshed layer from the globe.	ხილვადობის ფენის მოშორება გლობუსიდან.
+Search by title or year	ძიება სათაურით ან წლით
+Target height	სამიზნის სიმაღლე
+The first day of the period. The result is the mean number of hours of direct sunlight per day over the period.	შუალედის პირველი დღე-ღამე. შედეგი - პირდაპირი მზის საათების საშუალო რაოდენობა დღე-ღამეში შუალედის განმავლობაში.
+The last day of the period, inclusive. A long period is computed over 15 evenly spaced days.	შუალედის ბოლო დღე-ღამე, ჩათვლით. გრძელი შუალედი ითვლება თანაბრად აღებული 15 დღე-ღამით.
+The site did not answer: {error}	საიტმა არ უპასუხა: {error}
+The site has no maps at this point.	ამ წერტილთან საიტზე რუკები არ არის.
+This body has no heights.	ამ სხეულისთვის სიმაღლეები არ არის.
+Viewshed from a point	ხილვადობა წერტილიდან
+Viewshed from here…	ხილვადობა აქედან…
+{share} of the circle area is visible. The computation step is {step} m.	ჩანს წრის ფართობის {share}. გამოთვლის ბიჯი {step} მ.

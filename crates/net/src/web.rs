@@ -155,6 +155,11 @@ pub const TIMEOUT_MS: u32 = 20_000;
 
 /// Байты ответа сервера. Err(None) - ответ 404, тайла нет.
 async fn fetch(url: &str) -> Result<Vec<u8>, Option<String>> {
+    fetch_with(url, &[], None).await
+}
+
+/// Байты ответа с заголовками и телом: тело есть - POST.
+async fn fetch_with(url: &str, headers: &[(String, String)], body: Option<&[u8]>) -> Result<Vec<u8>, Option<String>> {
     let window = web_sys::window().ok_or_else(|| Some("нет окна браузера".to_string()))?;
     // У fetch браузера своего предела нет: медленный сервер высот держал
     // запрос минутами, загрузка не кончалась, 23 октября 2026 года.
@@ -165,6 +170,17 @@ async fn fetch(url: &str) -> Result<Vec<u8>, Option<String>> {
         .is_ok_and(|s| !s.is_undefined() && js_sys::Reflect::has(&s, &"timeout".into()).unwrap_or(false));
     if has_timeout {
         init.set_signal(Some(&web_sys::AbortSignal::timeout_with_u32(TIMEOUT_MS)));
+    }
+    if !headers.is_empty() {
+        let h = web_sys::Headers::new().map_err(|e| Some(format!("{e:?}")))?;
+        for (k, v) in headers {
+            h.set(k, v).map_err(|e| Some(format!("{e:?}")))?;
+        }
+        init.set_headers(&h);
+    }
+    if let Some(b) = body {
+        init.set_method("POST");
+        init.set_body(&js_sys::Uint8Array::from(b));
     }
     let response = JsFuture::from(window.fetch_with_str_and_init(url, &init)).await.map_err(|e| Some(format!("{e:?}")))?;
     let response: web_sys::Response = response.dyn_into().map_err(|_| Some("ответ не Response".to_string()))?;
@@ -242,11 +258,17 @@ impl Requests {
 
 impl Request for Requests {
     fn start(&self, url: &str) {
+        self.send(url, &[], None);
+    }
+
+    fn send(&self, url: &str, headers: &[(&str, &str)], body: Option<&[u8]>) {
         let (results, stats, on_ready, url) =
             (self.results.clone(), self.stats.clone(), self.on_ready.clone(), url.to_string());
+        let headers: Vec<(String, String)> = headers.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect();
+        let body = body.map(<[u8]>::to_vec);
         wasm_bindgen_futures::spawn_local(async move {
             stats.request_started();
-            let result = fetch(&url).await.map_err(|e| e.unwrap_or_else(|| "HTTP 404".to_string()));
+            let result = fetch_with(&url, &headers, body.as_deref()).await.map_err(|e| e.unwrap_or_else(|| "HTTP 404".to_string()));
             stats.request_finished();
             results.borrow_mut().push_back(result);
             on_ready();

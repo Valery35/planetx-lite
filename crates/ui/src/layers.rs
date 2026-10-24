@@ -35,6 +35,12 @@ pub enum Extra {
     Dots(crate::dots::Layer),
     /// Разрез Земли: сектор под точкой взгляда.
     Cutaway,
+    /// Палеогеография: основа - карта возраста.
+    Paleo,
+    /// Геоид: высоты Земли - геоид, растянутый.
+    Geoid,
+    /// Живые объекты: суда, самолёты, поезда.
+    Live(crate::live::Kind),
 }
 
 impl Extra {
@@ -47,6 +53,9 @@ impl Extra {
         out.extend((0..crate::maps::ALL.len()).map(Extra::Map));
         out.extend(crate::dots::Layer::ALL.map(Extra::Dots));
         out.push(Extra::Cutaway);
+        out.push(Extra::Paleo);
+        out.push(Extra::Geoid);
+        out.extend(crate::live::Kind::ALL.map(Extra::Live));
         out
     }
 
@@ -67,6 +76,9 @@ impl Extra {
             Extra::Map(_) => self.map().map_or("", |e| e.name),
             Extra::Dots(l) => l.name(),
             Extra::Cutaway => "Earth cutaway",
+            Extra::Paleo => "Paleogeography",
+            Extra::Geoid => "Geoid",
+            Extra::Live(k) => k.name(),
         }
     }
 
@@ -86,6 +98,9 @@ impl Extra {
             }
             Extra::Map(_) => self.map().map_or("", |e| e.tip),
             Extra::Dots(l) => l.tip(),
+            Extra::Live(k) => k.tip(),
+            Extra::Geoid => "The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.",
+            Extra::Paleo => "Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.",
             Extra::Cutaway => {
                 "Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on."
             }
@@ -99,6 +114,7 @@ impl Extra {
             Extra::Air | Extra::Stars | Extra::Sun => Category::Sky,
             Extra::Map(_) => match self.map().map(|e| e.group) {
                 Some(crate::maps::Group::Map) => Category::Map,
+                Some(crate::maps::Group::Sky) => Category::Sky,
                 Some(crate::maps::Group::Terrain) => Category::Terrain,
                 Some(crate::maps::Group::Fire) => Category::Fire,
                 Some(crate::maps::Group::Gases) => Category::Gases,
@@ -110,7 +126,8 @@ impl Extra {
             },
             Extra::Dots(crate::dots::Layer::Fires) => Category::Fire,
             Extra::Dots(crate::dots::Layer::Cables | crate::dots::Layer::Plants) => Category::Infra,
-            Extra::Dots(_) | Extra::Cutaway => Category::Depths,
+            Extra::Dots(_) | Extra::Cutaway | Extra::Paleo | Extra::Geoid => Category::Depths,
+            Extra::Live(_) => Category::Transport,
         }
     }
 
@@ -124,6 +141,9 @@ impl Extra {
             Extra::Map(_) => self.map().map_or("", |e| e.key),
             Extra::Dots(l) => l.key(),
             Extra::Cutaway => "cutaway",
+            Extra::Paleo => "paleo",
+            Extra::Geoid => "geoid",
+            Extra::Live(k) => k.key(),
         }
     }
 
@@ -152,6 +172,8 @@ pub struct State<'a> {
     pub opacity: &'a std::collections::HashMap<String, f32>,
     /// Пункт «Растягивать кору» меню строки разреза Земли.
     pub stretch: bool,
+    /// Масштаб режима «Геоид».
+    pub geoid_scale: f64,
 }
 
 /// Что попросили строки раздела или каталог.
@@ -184,6 +206,12 @@ pub enum Action {
     Opacity(&'static str, f32),
     /// «Растягивать кору» разреза Земли.
     Stretch(bool),
+    /// Масштаб режима «Геоид».
+    GeoidScale(f64),
+    /// Окно «Новый источник тайлов».
+    AddSource,
+    /// Свой источник убрать из списка основ.
+    RemoveOwn(Basemap),
 }
 
 /// Название основы в строке и меню, как в списке подложек модуля: Esri
@@ -192,7 +220,7 @@ pub fn basemap_title(lang: Lang, b: Basemap) -> &'static str {
     match b {
         Basemap::Esri => tr(lang, "Esri World Imagery - example"),
         Basemap::Osm => "OpenStreetMap",
-        Basemap::Ready(_) => b.name(lang),
+        Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_) => b.name(lang),
     }
 }
 
@@ -298,6 +326,27 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
                 }
             });
         }
+        // Свои источники тайлов, «Добавить источник тайлов…» модуля.
+        let owns = Basemap::owns();
+        if !owns.is_empty() {
+            ui.separator();
+        }
+        for b in owns {
+            ui.horizontal(|ui| {
+                if ui.radio(state.basemap == b, basemap_title(lang, b)).clicked() {
+                    out.push(Action::Basemap(b));
+                    chosen = true;
+                }
+                if ui.small_button("✕").on_hover_text(tr(lang, "Remove this tile source from the list.")).clicked() {
+                    out.push(Action::RemoveOwn(b));
+                    chosen = true;
+                }
+            });
+        }
+        if ui.button(tr(lang, "Add tile source…")).clicked() {
+            out.push(Action::AddSource);
+            chosen = true;
+        }
         chosen
     });
     // Рельеф: флажок - рельеф, текст - меню.
@@ -381,6 +430,19 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
                     let slider = ui.add(egui::Slider::new(&mut value, 0.0..=100.0).fixed_decimals(0).suffix(" %"));
                     if slider.on_hover_text(tr(lang, "Opacity of the layer. To the right the layer is opaque, to the left more transparent.")).changed() {
                         out.push(Action::Opacity(entry.key, value / 100.0));
+                    }
+                });
+            }
+            if extra == Extra::Geoid {
+                // Масштаб ступенями, `_geoid_scale_action` модуля.
+                let steps = data::geoid::SCALES;
+                let mut step = data::geoid::scale_step(state.geoid_scale);
+                ui.horizontal(|ui| {
+                    ui.label(tr(lang, "Scale"));
+                    let slider = ui.add(egui::Slider::new(&mut step, 0..=steps.len() - 1).show_value(false));
+                    ui.label(data::geoid::scale_text(steps[step.min(steps.len() - 1)]));
+                    if slider.on_hover_text(tr(lang, "How many times the geoid heights above the ellipsoid are stretched. To the right the bulges and hollows are deeper, to the left the Earth is rounder.")).changed() {
+                        out.push(Action::GeoidScale(steps[step.min(steps.len() - 1)]));
                     }
                 });
             }
@@ -500,6 +562,7 @@ enum Category {
     Terrain,
     Tiles,
     Infra,
+    Transport,
 }
 
 /// Окно каталога «Добавить данные»: открыто ли, категория, поиск,
@@ -625,6 +688,7 @@ impl Catalog {
             (Category::Sky, tr(lang, "Sky and light"), tr(lang, "The sun and the night side, the atmosphere.")),
             (Category::Depths, tr(lang, "Inside the Earth"), tr(lang, "The geological and lithological maps, earthquakes, plate boundaries and faults, mineral deposits and mining areas, the Earth cutaway and palaeogeography.")),
             (Category::Infra, tr(lang, "Energy"), tr(lang, "Power plants of the world, power lines, substations, pipelines and submarine cables.")),
+            (Category::Transport, tr(lang, "Transport"), tr(lang, "Trains of Finland, Baltic ships and aircraft in real time from Fintraffic open data and the adsb.lol ADS-B network.")),
             (Category::Soil, tr(lang, "Soils"), tr(lang, "Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.")),
             (Category::Terrain, tr(lang, "Terrain analysis"), tr(lang, "Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.")),
             (Category::Tiles, tr(lang, "Map overlays"), tr(lang, "Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.")),

@@ -20,6 +20,7 @@ use std::sync::Arc;
 use data::deposits::{self as deposit, Deposit};
 use data::faults::{self, Fault};
 use data::fires::{self, Fire};
+use data::iscgem;
 use data::linesets::Line;
 use data::plants::{self, Plant};
 use data::plates::{self, Boundary, Cable, Plate};
@@ -47,6 +48,8 @@ pub enum Layer {
     MagPoles,
     MagDecl,
     PlateMotion,
+    /// Исторические землетрясения каталога ISC-GEM, `core/iscgem.py`.
+    Iscgem,
 }
 
 /// Непрозрачность кругов, выбор помощника.
@@ -61,7 +64,7 @@ const FIRES_TIP: &str = "Fire spots of the last 24 hours from VIIRS images of th
 const NEAR: usize = 20;
 
 impl Layer {
-    pub const ALL: [Layer; 11] = [Layer::Quakes, Layer::Volcanoes, Layer::Fires, Layer::Faults, Layer::Plates, Layer::Cables, Layer::Plants, Layer::Deposits, Layer::MagPoles, Layer::MagDecl, Layer::PlateMotion];
+    pub const ALL: [Layer; 12] = [Layer::Quakes, Layer::Volcanoes, Layer::Fires, Layer::Faults, Layer::Plates, Layer::Cables, Layer::Plants, Layer::Deposits, Layer::MagPoles, Layer::MagDecl, Layer::PlateMotion, Layer::Iscgem];
 
     pub fn key(self) -> &'static str {
         match self {
@@ -76,6 +79,7 @@ impl Layer {
             Layer::MagPoles => "magpoles",
             Layer::MagDecl => "magdecl",
             Layer::PlateMotion => "platemotion",
+            Layer::Iscgem => "iscgem",
         }
     }
 
@@ -83,9 +87,21 @@ impl Layer {
         Self::ALL.into_iter().find(|l| l.key() == key)
     }
 
-    /// Адреса сводок слоя: у месторождений их три.
-    pub fn urls(self) -> &'static [&'static str] {
+    /// Адреса сводок слоя: у месторождений их три, у каталога ISC-GEM -
+    /// по одному на отрезок лет до прошлого года, как `periods` модуля.
+    pub fn urls(self) -> Vec<String> {
+        if self == Layer::Iscgem {
+            let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64());
+            let year = data::geomag::year_of(now).floor() as i32;
+            return iscgem::periods(year - 1).iter().map(|(a, b)| iscgem::query_url(a, b)).collect();
+        }
+        self.fixed_urls().iter().map(|u| u.to_string()).collect()
+    }
+
+    /// Постоянные адреса сводок слоя.
+    fn fixed_urls(self) -> &'static [&'static str] {
         match self {
+            Layer::Iscgem => &[],
             Layer::Quakes => &[quakes::FEED],
             Layer::Volcanoes => &[volcanoes::URL],
             Layer::Fires => &[fires::FEED],
@@ -119,6 +135,7 @@ impl Layer {
             Layer::MagPoles => ("Magnetic poles: NOAA NCEI, IGRF-14", "https://www.ncei.noaa.gov/products/wandering-geomagnetic-poles"),
             Layer::MagDecl => ("Declination: IGRF-14, IAGA", "https://www.ncei.noaa.gov/products/international-geomagnetic-reference-field"),
             Layer::PlateMotion => data::platemotion::ATTRIBUTION,
+            Layer::Iscgem => iscgem::ATTRIBUTION,
         }
     }
 
@@ -153,6 +170,7 @@ impl Layer {
             Layer::MagDecl => {
                 "Lines of equal magnetic declination, the angle between the compass needle and the north, every 10° for the year of the time scale after the IGRF-14 model from 1900 and the gufm1 model from 1590, gufm1 is downloaded on first display. Red lines are east declination, blue lines west, the green line zero. The lines meet at the magnetic poles."
             }
+            Layer::Iscgem => "Strong earthquakes of the world from 1904 to 2024 from the ISC-GEM catalogue - about 74 thousand events of magnitude 5 and above, with locations, depths and magnitudes recomputed in one way. A circle sits at the epicentre, at its depth - in the removed sector of the Earth cutaway, the colour shows the depth and the size the magnitude. The time slider range selects the events. A click on a circle shows the place, date, magnitude and the USGS event page. The first use downloads the catalogue in parts, about 13 MB.",
             Layer::PlateMotion => {
                 "Arrows of lithospheric plate motion after the NNR-MORVEL56 model, the speed relative to the mean motion of all plates. The arrow grows with the speed, the number at its start is mm/yr. The Pacific plate moves north-west at about 70 mm/yr, the Eurasian plate at about 25. The Features window shows the plate, speed and direction at the point."
             }
@@ -173,6 +191,7 @@ impl Layer {
             Layer::MagPoles => "NOAA NCEI, IGRF-14",
             Layer::MagDecl => "IGRF-14",
             Layer::PlateMotion => "NNR-MORVEL56",
+            Layer::Iscgem => "ISC-GEM, 1904-2024",
         }
     }
 
@@ -190,6 +209,7 @@ impl Layer {
             Layer::MagPoles => "Magnetic poles",
             Layer::MagDecl => "Declination lines",
             Layer::PlateMotion => "Plate motion",
+            Layer::Iscgem => "Historical earthquakes",
         }
     }
 
@@ -330,6 +350,8 @@ impl Data {
                 Data::Magnetic(Arc::new(model), poles)
             }
             Layer::PlateMotion => Data::Motion(Arc::new(data::platemotion::read(&String::from_utf8_lossy(bytes))?)),
+            // Части каталога по отрезкам лет - одним списком.
+            Layer::Iscgem => Data::Quakes(all.iter().flat_map(|b| iscgem::parse(b)).collect()),
         })
     }
 
@@ -523,7 +545,7 @@ impl Dots {
             .iter()
             .map(|url| {
                 let r = request();
-                r.start(url);
+                r.start(url.as_str());
                 (r, None)
             })
             .collect();

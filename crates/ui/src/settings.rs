@@ -68,11 +68,17 @@ pub struct Settings {
     pub opacity: Vec<(String, f32)>,
     /// «Растягивать кору» разреза Земли, у модуля включено.
     pub stretch: bool,
+    /// Свои источники тайлов основы.
+    pub own: Vec<crate::basemap::Own>,
+    /// Масштаб режима «Геоид», `geoid.SCALE` модуля.
+    pub geoid_scale: f64,
+    /// Свои пункты «Открыть в браузере»: название и адрес-шаблон.
+    pub links: Vec<(String, String)>,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, stars: true, sea: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new(), route: "car".into(), opacity: Vec::new(), stretch: true }
+        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, stars: true, sea: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new(), route: "car".into(), opacity: Vec::new(), stretch: true, own: Vec::new(), geoid_scale: data::geoid::SCALE, links: Vec::new() }
     }
 }
 
@@ -84,7 +90,7 @@ impl Settings {
 
     pub fn to_text(&self) -> String {
         format!(
-            "language={}\nlabels={}\ntheme={}\nscale={}\nsun={}\ngrid={}\nair={}\nstars={}\nsea={}\nrelief={}\nvector={}\ncoords={}\nplaces_height={}\nmaps={}\nbasemap={}\ndots={}\nroute={}\nopacity={}\nstretch={}\n",
+            "language={}\nlabels={}\ntheme={}\nscale={}\nsun={}\ngrid={}\nair={}\nstars={}\nsea={}\nrelief={}\nvector={}\ncoords={}\nplaces_height={}\nmaps={}\nbasemap={}\ndots={}\nroute={}\nopacity={}\nstretch={}\ngeoid_scale={}\n",
             self.language.as_deref().unwrap_or(""),
             self.labels,
             if self.dark { "dark" } else { "light" },
@@ -103,14 +109,27 @@ impl Settings {
             self.dots.join(","),
             self.route,
             self.opacity.iter().map(|(k, v)| format!("{k}:{v}")).collect::<Vec<_>>().join(","),
-            self.stretch
+            self.stretch,
+            self.geoid_scale
         ) + &self.history.iter().map(|h| format!("history={h}\n")).collect::<String>()
+            + &self.own.iter().map(|o| format!("own={}\t{}\t{}\t{}\n", o.name, o.url, o.max_level, o.credit)).collect::<String>()
+            + &if self.links.is_empty() { String::new() } else { format!("links={}\n", data::menulinks::dump(&self.links)) }
     }
 
     /// Настройки из строки хранилища. Строка считается враждебной:
     /// незнакомые ключи и значения вне пределов пропускаются.
     pub fn from_text(text: &str) -> Self {
         let mut s = Settings::default();
+        // Свои источники - раньше основы: основа может быть своей.
+        for value in text.lines().filter_map(|l| l.strip_prefix("own=")) {
+            let parts: Vec<&str> = value.split('\t').collect();
+            if let [name, url, level, credit] = parts.as_slice() {
+                let own = crate::basemap::Own { name: name.to_string(), url: url.to_string(), max_level: level.trim().parse().unwrap_or(19), credit: credit.to_string() };
+                if crate::basemap::register(&own).is_some() && !s.own.contains(&own) {
+                    s.own.push(own);
+                }
+            }
+        }
         for (key, value) in text.lines().filter_map(|l| l.split_once('=')) {
             let value = value.trim();
             match key.trim() {
@@ -127,7 +146,15 @@ impl Settings {
                 "stars" => s.stars = value != "false",
                 "sea" => s.sea = value != "false",
                 "stretch" => s.stretch = value != "false",
+                "geoid_scale" => {
+                    if let Ok(v) = value.parse::<f64>()
+                        && data::geoid::SCALES.contains(&v)
+                    {
+                        s.geoid_scale = v;
+                    }
+                }
                 "relief" => s.relief = value != "false",
+                "links" => s.links = data::menulinks::load(value),
                 "coords" if COORD_FORMATS.contains(&value) => s.coords = value.to_string(),
                 "vector" => s.vector = crate::vector::VectorBase::from_text(value).to_text(),
                 "history" if !value.is_empty() && s.history.len() < scene::searchbar::HISTORY => s.history.push(value.to_string()),
@@ -332,7 +359,7 @@ mod tests {
 
     #[test]
     fn settings_round_trip_and_hostile_text() {
-        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, stars: false, sea: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()], route: "foot".into(), opacity: vec![("emag".into(), 0.5)], stretch: false };
+        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, stars: false, sea: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()], route: "foot".into(), opacity: vec![("emag".into(), 0.5)], stretch: false, own: Vec::new(), geoid_scale: 2000.0, links: vec![("OSM".into(), "https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map={zoom}/{lat}/{lon}".into())] };
         assert_eq!(Settings::from_text(&s.to_text()), s);
         let bad = Settings::from_text("language=xx\nlabels=../x\ntheme=dark\nscale=1e9\nscale=NaN\nfoo=bar\nno equals\nplaces_height=-5\nplaces_height=NaN\nmaps=emag,../x");
         assert_eq!(bad.maps, ["emag"]);

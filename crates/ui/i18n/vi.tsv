@@ -986,3 +986,157 @@ Earth cutaway	Mặt cắt Trái Đất
 Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on.	Lấy ra khỏi Trái Đất một phần dưới điểm nhìn - một phần tư bán cầu rộng 90° theo kinh độ. Các mặt của nó cho thấy vỏ, manti và lõi theo bán kính của mô hình PREM, vỏ theo mô hình CRUST1.0. Nơi một mặt cắt qua đới hút chìm, trên mặt đó thấy mảng đang chìm xuống. Phần này được đặt lại mỗi lần bật dòng.
 Stretch the crust	Kéo giãn vỏ
 Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.	Kéo giãn độ sâu đến 400 km càng mạnh khi máy quay càng xa, nhờ đó vỏ và manti trên hiện rõ từ xa. Khi bỏ đánh dấu mọi độ sâu theo tỷ lệ thật.
+Camera follows	Máy quay đi theo
+Add tile source…	Thêm nguồn ô bản đồ…
+Remove this tile source from the list.	Gỡ nguồn ô bản đồ này khỏi danh sách.
+New tile source	Nguồn ô bản đồ mới
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS.	Mẫu địa chỉ ô bản đồ với các vị trí {z}, {x} và {y}. {-y} - hàng từ dưới lên trên, như ở TMS.
+Levels up to	Mức tới
+Credit	Ghi nguồn
+Credit of the source on the screen, as its terms of use require.	Ghi nguồn trên màn hình, theo yêu cầu điều kiện sử dụng của nguồn.
+The address must begin with https:// or http://.	Địa chỉ phải bắt đầu bằng https:// hoặc http://.
+The address needs the places {z}, {x} and {y} or {-y}.	Địa chỉ cần có các vị trí {z}, {x} và {y} hoặc {-y}.
+The address must not contain spaces.	Địa chỉ không được chứa khoảng trắng.
+Wikipedia nearby	Wikipedia lân cận
+Wikipedia articles with coordinates - cities, monuments, rivers, peaks - as labels with a blue dot. The articles are requested when the camera is below 40 km, in the language of the QGIS interface. A click on a label opens the article card - the first paragraph, a link to the article and the Explain this button. Wikipedia texts are under CC BY-SA 4.0.	Các bài Wikipedia có tọa độ - thành phố, di tích, sông, đỉnh núi - dưới dạng nhãn có chấm xanh. Các bài được yêu cầu khi máy quay ở dưới 40 km, theo ngôn ngữ giao diện QGIS. Nhấp vào nhãn sẽ mở thẻ bài viết - đoạn đầu, liên kết đến bài và nút "Giải thích điều này". Văn bản Wikipedia theo giấy phép CC BY-SA 4.0.
+Clouds	Mây
+Clouds from NASA GIBS VIIRS imagery of the last complete day. They lie as a translucent veil over the imagery. Snow and ice are white too and stay visible.	Mây theo ảnh VIIRS của NASA GIBS trong ngày trọn vẹn gần nhất. Mây nằm như một lớp màn mờ phía trên ảnh. Tuyết và băng cũng màu trắng và vẫn nhìn thấy.
+Satellites	Vệ tinh
+Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.	Vệ tinh nhân tạo theo các tham số quỹ đạo của CelesTrak, vị trí theo mô hình SGP4. Thời gian là con trượt phải của thanh thời gian, không có thanh thì là đồng hồ máy tính. Các nhóm được chọn ở thẻ "Vệ tinh" của thư viện. Tham số của một nhóm được cập nhật tối đa một lần trong 2 giờ.
+Mining areas	Khu khai thác mỏ
+Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.	Đường bao của mỏ lộ thiên, bãi thải, hồ chứa quặng đuôi và khu công nghiệp trên thế giới theo ảnh Sentinel-2 năm 2019 - khoảng 45 nghìn khu, Maus và cộng sự, 2022. Nhấp vào đường bao để xem quốc gia và diện tích. Lần bật đầu tiên tải về khoảng 25 MB.
+OSM mines and quarries	Mỏ và mỏ đá OSM
+Mines, shafts and quarries from OpenStreetMap with names and the commodity. They load for the place of the view when the camera is below 150 km. The colour is the commodity group, as for the deposits. A click on a point shows the name, operator and a link to the OpenStreetMap object.	Mỏ, giếng mỏ và mỏ đá từ OpenStreetMap kèm tên và khoáng sản. Được tải cho vị trí của khung nhìn khi máy quay ở dưới 150 km. Màu là nhóm khoáng sản, như ở các mỏ khoáng sản. Nhấp vào điểm để xem tên, đơn vị vận hành và liên kết đến đối tượng OpenStreetMap.
+Trains of Finland	Tàu hỏa Phần Lan
+Trains of Finland in real time from Fintraffic Digitraffic open data, the positions are updated every 10 s. From afar a train is a dot in the colour of its category with its number, close up it is a car model that moves along OpenStreetMap rails between updates. A click on a train shows its type, number and speed.	Tàu hỏa Phần Lan theo thời gian thực từ dữ liệu mở Fintraffic Digitraffic, vị trí cập nhật mỗi 10 giây. Từ xa tàu là một điểm màu theo loại kèm số hiệu, ở gần là mô hình toa chạy trên đường ray OpenStreetMap giữa các lần cập nhật. Nhấp vào tàu để xem loại, số hiệu và tốc độ.
+Baltic ships	Tàu thuyền Baltic
+Ships of the Gulfs of Finland and Bothnia and the Baltic near Finland by AIS signals, Fintraffic Digitraffic open data, the positions every 20 s. From afar a ship is a dot in the colour of its type with its name, close up a schematic model of its length that keeps its course. A click shows the type, call sign, destination, size and speed.	Tàu thuyền ở vịnh Phần Lan, vịnh Bothnia và biển Baltic gần Phần Lan theo tín hiệu AIS, dữ liệu mở Fintraffic Digitraffic, vị trí mỗi 20 giây. Từ xa tàu là một điểm màu theo loại kèm tên, ở gần là mô hình sơ lược theo chiều dài giữ nguyên hướng đi. Nhấp để xem loại, hô hiệu, nơi đến, kích thước và tốc độ.
+Aircraft	Máy bay
+Aircraft by ADS-B signals of the adsb.lol volunteer network in a circle around the point of view, every 10 s. An aircraft in the air is shown at its altitude, close up as a schematic model of the size of its category with its bank. A click shows the call sign, type, registration, altitude and speed. The network has almost no receivers over Russia.	Máy bay theo tín hiệu ADS-B của mạng tình nguyện adsb.lol trong vòng tròn quanh điểm nhìn, mỗi 10 giây. Máy bay trên không hiển thị ở độ cao của nó, ở gần là mô hình sơ lược theo cỡ hạng kèm độ nghiêng cánh. Nhấp để xem hô hiệu, loại, số đăng ký, độ cao và tốc độ. Mạng gần như không có máy thu trên lãnh thổ Nga.
+Currents	Hải lưu
+Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.	Dòng chảy bề mặt đại dương dưới dạng các vệt trắng chuyển động trên nền tô màu tốc độ. Dòng địa chuyển của NOAA CoastWatch theo đo cao vệ tinh cho ngày sẵn có gần nhất, lưới 0.5°. Lần bật đầu tiên trong phiên tải về khoảng 4 MB.
+OSM power lines, cables and pipelines	Đường dây điện, cáp và đường ống OSM
+Power lines by voltage, substations, cables and gas, oil and water pipelines from OpenStreetMap. They load for the place in view when the camera is below 150 km. A click on a line shows the voltage, substance, operator and a link to the OpenStreetMap object.	Đường dây điện theo điện áp, trạm biến áp, cáp và đường ống khí, dầu và nước từ OpenStreetMap. Được tải cho vị trí của khung nhìn khi máy quay ở dưới 150 km. Nhấp vào đường để xem điện áp, chất vận chuyển, đơn vị vận hành và liên kết đến đối tượng OpenStreetMap.
+Historical earthquakes	Động đất lịch sử
+Strong earthquakes of the world from 1904 to 2024 from the ISC-GEM catalogue - about 74 thousand events of magnitude 5 and above, with locations, depths and magnitudes recomputed in one way. A circle sits at the epicentre, at its depth - in the removed sector of the Earth cutaway, the colour shows the depth and the size the magnitude. The time slider range selects the events. A click on a circle shows the place, date, magnitude and the USGS event page. The first use downloads the catalogue in parts, about 13 MB.	Động đất mạnh trên thế giới từ 1904 đến 2024 theo danh mục ISC-GEM - khoảng 74 nghìn sự kiện có độ lớn từ 5, vị trí, độ sâu và độ lớn được tính lại theo một cách. Vòng tròn nằm tại tâm chấn, ở độ sâu của nó - trong phần cắt bỏ của mặt cắt Trái Đất, màu thể hiện độ sâu, kích thước thể hiện độ lớn. Khoảng của thanh thời gian chọn các sự kiện. Nhấp vào vòng tròn để xem nơi, ngày, độ lớn và trang sự kiện của USGS. Lần bật đầu tiên tải danh mục theo từng phần, khoảng 13 MB.
+Geoid	Geoid
+The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.	Hình dạng mặt đẳng thế của Trái Đất - geoid - theo mô hình EGM2008 của NGA. Khi dòng đang bật, độ cao của quả địa cầu là độ cao geoid trên ellipsoid, từ -107 đến +86 m, kéo giãn 10 000 lần, và Trái Đất trông "nhàu nát". Chỗ lồi ở nơi trọng lực mạnh hơn, chẳng hạn gần New Guinea, chỗ lõm ở nơi yếu hơn, sâu nhất ở Ấn Độ Dương. Địa hình và nước tạm thời được gỡ, tắt dòng sẽ trả lại chúng.
+Paleogeography	Cổ địa lý
+Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.	Địa hình đất liền và độ sâu biển trong quá khứ, đến 540 triệu năm trước, theo bản đồ PaleoDEM của PALEOMAP. Thanh trượt ở dưới khung nhìn đặt tuổi. Ảnh, biên giới và nhãn tạm thời được gỡ.
+3D buildings	Tòa nhà 3D
+3D buildings from OpenStreetMap in OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM or from the number of floors. A building without either gets a height of 5 m.	Tòa nhà 3D từ OpenStreetMap trong ô vector của OpenFreeMap. Chúng hiển thị khi máy quay gần mặt đất hơn 6 km. Chiều cao lấy từ OSM hoặc từ số tầng. Tòa nhà không có cả hai nhận chiều cao 5 m.
+Rosreestr cadastre	Địa chính Rosreestr
+Land parcels from the National spatial data system of Rosreestr over the imagery, for Russia only. They are seen up close, from about 10 km and lower. The service answers slowly and refuses frequent requests, so the parcels come one tile at a time.	Thửa đất từ Hệ thống dữ liệu không gian quốc gia của Rosreestr trên ảnh, chỉ cho Nga. Hiển thị ở gần, từ độ cao khoảng 10 km trở xuống. Dịch vụ trả lời chậm và từ chối yêu cầu dồn dập, nên các thửa đến từng ô một.
+Age in millions of years ago. The map of relief and depths for this age - PaleoDEM PALEOMAP, Scotese and Wright 2018.	Tuổi tính bằng triệu năm trước. Bản đồ địa hình và độ sâu cho tuổi này - PaleoDEM PALEOMAP, Scotese và Wright 2018.
+Quaternary	Kỷ Đệ Tứ
+Neogene	Kỷ Neogen
+Paleogene	Kỷ Paleogen
+Cretaceous	Kỷ Phấn Trắng
+Jurassic	Kỷ Jura
+Triassic	Kỷ Trias
+Permian	Kỷ Permi
+Carboniferous	Kỷ Than Đá
+Devonian	Kỷ Devon
+Silurian	Kỷ Silur
+Ordovician	Kỷ Ordovic
+Cambrian	Kỷ Cambri
+Precambrian	Tiền Cambri
+Present	Hiện tại
+{age} million years ago, {period}	{age} triệu năm trước, {period}
+Show from the chosen age to the present through all maps of the set.	Trình chiếu từ tuổi đã chọn đến hiện tại qua mọi bản đồ của bộ.
+How many times the geoid heights above the ellipsoid are stretched. To the right the bulges and hollows are deeper, to the left the Earth is rounder.	Độ cao geoid trên ellipsoid được kéo giãn bao nhiêu lần. Sang phải chỗ lồi và chỗ lõm sâu hơn, sang trái Trái Đất tròn hơn.
+Trains of Finland, Baltic ships and aircraft in real time from Fintraffic open data and the adsb.lol ADS-B network.	Tàu hỏa Phần Lan, tàu thuyền Baltic và máy bay theo thời gian thực từ dữ liệu mở Fintraffic và mạng ADS-B adsb.lol.
+on the ground	trên mặt đất
+{length} × {width} m	{length} × {width} m
+{metres} m ({feet} ft)	{metres} m ({feet} ft)
+{value} km/h	{value} km/h
+{value} kn	{value} hải lý/giờ
+Call sign	Hô hiệu
+IMO	IMO
+Destination	Nơi đến
+Size	Kích thước
+MMSI	MMSI
+Course	Hướng đi
+Position, UTC	Vị trí, UTC
+Registration	Số đăng ký
+ICAO code	Mã ICAO
+Altitude	Độ cao
+Number	Số hiệu
+Close	Đóng
+None	Không có
+turn on	bật
+turn off	tắt
+Above ground {height} m	Trên mặt đất {height} m
+Climb {climb} m/s	Lên cao {climb} m/s
+Fighter	Máy bay chiến đấu
+Fly from here	Bay từ đây
+Propeller plane	Máy bay cánh quạt
+Throttle {throttle} %	Lực đẩy {throttle} %
+Touched the ground - the flight is over.	Chạm đất - chuyến bay kết thúc.
+Up to 2000 km/h, start at 900 km/h, sharp bank.	Tới 2000 km/h, xuất phát ở 900 km/h, nghiêng gắt.
+Up to 340 km/h, start at 250 km/h, smooth.	Tới 340 km/h, xuất phát ở 250 km/h, êm.
+km/h	km/h
+{speed} km/h · altitude {alt} m, above ground {height} m · heading {heading}° · climb {climb} m/s · throttle {throttle} %	{speed} km/h · độ cao {alt} m, trên mặt đất {height} m · hướng {heading}° · lên cao {climb} m/s · lực đẩy {throttle} %
+↑ ↓ - nose down and up · ← → - bank · PageUp, PageDown - throttle · V - cockpit view · H - instruments · Esc - exit	↑ ↓ - chúc mũi xuống và ngóc lên · ← → - nghiêng · PageUp, PageDown - lực đẩy · V - nhìn từ buồng lái · H - đồng hồ · Esc - thoát
+A click on a row copies the sheet number to the clipboard.	Nhấp vào một dòng sẽ sao chép số hiệu tờ bản đồ vào bộ nhớ tạm.
+A click on a row copies the sheet number. Sheets of the Russian State Geological Map at 1:1,000,000 and 1:200,000 use the Russian designation too.	Nhấp vào một dòng sẽ sao chép số hiệu tờ bản đồ. Các tờ của Bản đồ địa chất Nhà nước Nga tỷ lệ 1:1 000 000 và 1:200 000 cũng dùng cách đánh số của Nga.
+A ready site from the list or an empty row for your own address.	Một trang web có sẵn trong danh sách hoặc một dòng trống cho địa chỉ riêng.
+Add or edit sites…	Thêm hoặc sửa trang web…
+Add site	Thêm trang web
+All numbers in a window…	Mọi số hiệu trong một cửa sổ…
+Delete the selected rows.	Xóa các dòng đã đánh dấu.
+Each row is an item of the Open in browser submenu of the globe menu. The item opens the site at the point under the cursor. Add site puts a ready site or an empty row for your own address. In the address {lat} and {lon} are the latitude and longitude in degrees, {zoom} is the map scale by the view.	Mỗi dòng là một mục của menu con "Mở trong trình duyệt" trong menu trên quả địa cầu. Mục này mở trang web tại điểm dưới con trỏ. "Thêm trang web" đặt một trang có sẵn hoặc một dòng trống cho địa chỉ riêng. Trong địa chỉ, {lat} và {lon} là vĩ độ và kinh độ tính bằng độ, {zoom} là tỷ lệ bản đồ theo khung nhìn.
+International Map of the World (IMW)	Bản đồ thế giới quốc tế (IMW)
+MGRS, 100 km square	MGRS, ô vuông 100 km
+Map sheet designation	Phiên hiệu tờ bản đồ
+NATO, JOG	NATO, JOG
+Open in browser	Mở trong trình duyệt
+Own address	Địa chỉ riêng
+Row {n}: {reason}	Dòng {n}: {reason}
+Russian sheet designation	Phiên hiệu tờ bản đồ của Nga
+S. H.	N. B.
+Sheet number	Số hiệu tờ bản đồ
+Sites of the Open in browser menu	Các trang web của menu "Mở trong trình duyệt"
+System	Hệ thống
+The address does not start with https:// or http://.	Địa chỉ không bắt đầu bằng https:// hoặc http://.
+The address has extra braces or places other than {lat}, {lon} and {zoom}.	Địa chỉ có dấu ngoặc nhọn thừa hoặc vị trí khác ngoài {lat}, {lon} và {zoom}.
+The address has no {lat} or {lon}.	Địa chỉ không có {lat} hoặc {lon}.
+The item has no name.	Mục không có tên.
+no sheet	không có tờ
+Asking Eto Mesto…	Đang truy vấn "Eto Mesto"…
+Build	Tính
+Computing insolation: {share}	Đang tính độ chiếu nắng: {share}
+Direct sun, h per day	Nắng trực tiếp, giờ mỗi ngày
+Eto Mesto old maps	Bản đồ cũ "Eto Mesto"
+Eto Mesto old maps here…	Bản đồ cũ "Eto Mesto" ở đây…
+First day	Ngày đầu
+Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Độ cao trên địa hình của vật cần nhìn thấy, ví dụ cột ăng-ten hoặc tòa nhà. Ở không chính mặt đất được kiểm tra.
+Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Độ cao của mắt hoặc cột ăng-ten trên địa hình tại điểm. Cao hơn - nhìn xa hơn và ít nơi bị địa hình che khuất hơn.
+Heights of the grid nodes: {share}	Độ cao các nút lưới: {share}
+Insolation	Độ chiếu nắng
+Insolation here…	Độ chiếu nắng ở đây…
+Keeps the maps whose title or year holds all the words.	Giữ lại các bản đồ có tiêu đề hoặc năm chứa tất cả các từ.
+Last day	Ngày cuối
+Loading heights: {done} of {total}	Đang tải độ cao: {done} / {total}
+Maps at the point {total}, shown {shown}. A click on a title opens the map on the site.	Bản đồ tại điểm {total}, đang hiển thị {shown}. Nhấp vào tiêu đề để mở bản đồ trên trang web.
+Maps of the Eto Mesto site (etomesto.com) that cover the point. A map opens on the site, where it can be overlaid on a modern map and downloaded under the site rules.	Bản đồ của trang "Eto Mesto" (etomesto.com) phủ điểm này. Bản đồ mở trên trang web, tại đó có thể chồng lên bản đồ hiện đại và tải về theo quy định của trang.
+Not all heights are loaded, the computation used less detailed ones.	Chưa tải hết độ cao, phép tính dùng dữ liệu kém chi tiết hơn.
+Observer height	Độ cao người quan sát
+Opens the page of the chosen map on etomesto.com in the browser.	Mở trang của bản đồ đã chọn trên etomesto.com trong trình duyệt.
+Over {days} days direct sun shines from {low} to {high} h per day. The grid step is {step} m.	Trong {days} ngày nắng trực tiếp chiếu từ {low} đến {high} giờ mỗi ngày. Bước lưới là {step} m.
+Point	Điểm
+Radius of the computed circle. A larger radius gives a coarser grid. Mountain shadows are taken from a distance of at least the radius and at least 5 km.	Bán kính vòng tròn tính toán. Lớn hơn - lưới thưa hơn. Bóng núi được tính từ khoảng cách ít nhất bằng bán kính và ít nhất 5 km.
+Radius of the computed circle. A larger radius gives a coarser step, the step is about one five-hundredth of the radius.	Bán kính vòng tròn tính toán. Lớn hơn - bước thưa hơn, bước bằng khoảng một phần năm trăm bán kính.
+Remove	Gỡ
+Remove the insolation layer from the globe.	Gỡ lớp độ chiếu nắng khỏi quả địa cầu.
+Remove the viewshed layer from the globe.	Gỡ lớp vùng nhìn thấy khỏi quả địa cầu.
+Search by title or year	Tìm theo tiêu đề hoặc năm
+Target height	Độ cao mục tiêu
+The first day of the period. The result is the mean number of hours of direct sunlight per day over the period.	Ngày đầu của khoảng thời gian. Kết quả là số giờ nắng trực tiếp trung bình mỗi ngày trong khoảng.
+The last day of the period, inclusive. A long period is computed over 15 evenly spaced days.	Ngày cuối của khoảng thời gian, tính cả ngày này. Khoảng dài được tính theo 15 ngày lấy đều.
+The site did not answer: {error}	Trang web không trả lời: {error}
+The site has no maps at this point.	Trang web không có bản đồ tại điểm này.
+This body has no heights.	Thiên thể này không có dữ liệu độ cao.
+Viewshed from a point	Vùng nhìn thấy từ một điểm
+Viewshed from here…	Vùng nhìn thấy từ đây…
+{share} of the circle area is visible. The computation step is {step} m.	Nhìn thấy {share} diện tích vòng tròn. Bước tính là {step} m.

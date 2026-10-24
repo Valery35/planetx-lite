@@ -986,3 +986,157 @@ Earth cutaway	Yerin kəsiyi
 Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on.	Baxış nöqtəsinin altında Yerdən bir sektor çıxarır - uzunluq üzrə 90° enində yarımkürənin dörddə biri. Onun üzlərində PREM modelinin radiuslarına görə qabıq, mantiya və nüvə, CRUST1.0 modelinə görə qabıq görünür. Üz subduksiya zonasından keçən yerdə onun üzərində batan lövhə görünür. Sektor sətir hər dəfə yandırılanda yenidən qoyulur.
 Stretch the crust	Qabığı dart
 Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.	400 km-ə qədər dərinlikləri kamera nə qədər uzaqdırsa, o qədər çox dartır, qabıq və üst mantiya uzaqdan görünür. Bayraqcıq olmadan bütün dərinliklər həqiqi miqyasdadır.
+Camera follows	Kamera izləyir
+Add tile source…	Kafel mənbəyi əlavə et…
+Remove this tile source from the list.	Bu kafel mənbəyini siyahıdan götür.
+New tile source	Yeni kafel mənbəyi
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS.	{z}, {x} və {y} yerləri olan kafel ünvanı şablonu. {-y} - TMS-də olduğu kimi aşağıdan yuxarı sıralar.
+Levels up to	Səviyyələr qədər
+Credit	İmza
+Credit of the source on the screen, as its terms of use require.	İstifadə şərtlərinin tələb etdiyi kimi mənbənin ekrandakı imzası.
+The address must begin with https:// or http://.	Ünvan https:// və ya http:// ilə başlamalıdır.
+The address needs the places {z}, {x} and {y} or {-y}.	Ünvanda {z}, {x} və {y} və ya {-y} yerləri lazımdır.
+The address must not contain spaces.	Ünvanda boşluq olmamalıdır.
+Wikipedia nearby	Yaxınlıqdakı Vikipediya
+Wikipedia articles with coordinates - cities, monuments, rivers, peaks - as labels with a blue dot. The articles are requested when the camera is below 40 km, in the language of the QGIS interface. A click on a label opens the article card - the first paragraph, a link to the article and the Explain this button. Wikipedia texts are under CC BY-SA 4.0.	Koordinatlı Vikipediya məqalələri - şəhərlər, abidələr, çaylar, zirvələr - mavi nöqtəli yazılar kimi. Məqalələr kamera 40 km-dən aşağı olanda QGIS interfeysinin dilində sorğulanır. Yazıya klik məqalə kartını açır - birinci abzas, məqaləyə keçid və "Bunu izah et" düyməsi. Vikipediya mətnləri CC BY-SA 4.0 altındadır.
+Clouds	Buludlar
+Clouds from NASA GIBS VIIRS imagery of the last complete day. They lie as a translucent veil over the imagery. Snow and ice are white too and stay visible.	Son tam sutkanın NASA GIBS VIIRS şəkillərinə görə buludlar. Onlar şəklin üzərində yarımşəffaf örtük kimi uzanır. Qar və buz da ağdır və görünən qalır.
+Satellites	Peyklər
+Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.	CelesTrak orbital elementlərinə görə süni peyklər, vəziyyət SGP4 modelinə görə. Vaxt zaman şkalasının sağ sürgüsüdür, şkala olmadan kompüterin saatıdır. Qrupları qalereyanın "Peyklər" vərəqi seçir. Qrupun elementləri ən çoxu 2 saatda bir dəfə yenilənir.
+Mining areas	Mədən sahələri
+Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.	2019-cu il Sentinel-2 şəkillərinə görə dünyanın karxanalarının, tullantı yığınlarının, şlam anbarlarının və sənaye meydançalarının konturları - təxminən 45 min sahə, Maus və həmmüəlliflər, 2022. Kontura klik ölkəni və sahəni göstərir. İlk yandırma təxminən 25 MB yükləyir.
+OSM mines and quarries	OSM mədənləri və karxanaları
+Mines, shafts and quarries from OpenStreetMap with names and the commodity. They load for the place of the view when the camera is below 150 km. The colour is the commodity group, as for the deposits. A click on a point shows the name, operator and a link to the OpenStreetMap object.	OpenStreetMap-dən adları və faydalı qazıntısı ilə mədənlər, şaxtalar və karxanalar. Kamera 150 km-dən aşağı olanda görünüşün yeri üzrə yüklənir. Rəng, yataqlarda olduğu kimi, faydalı qazıntı qrupudur. Nöqtəyə klik adı, operatoru və OpenStreetMap obyektinə keçidi göstərir.
+Trains of Finland	Finlandiya qatarları
+Trains of Finland in real time from Fintraffic Digitraffic open data, the positions are updated every 10 s. From afar a train is a dot in the colour of its category with its number, close up it is a car model that moves along OpenStreetMap rails between updates. A click on a train shows its type, number and speed.	Fintraffic Digitraffic açıq məlumatlarına görə real vaxtda Finlandiya qatarları, vəziyyətlər hər 10 san-dən bir yenilənir. Uzaqdan qatar kateqoriyasının rəngində nömrəsi ilə nöqtədir, yaxından yeniləmələr arasında OpenStreetMap relsləri ilə hərəkət edən vaqon modelidir. Qatara klik növünü, nömrəsini və sürətini göstərir.
+Baltic ships	Baltik gəmiləri
+Ships of the Gulfs of Finland and Bothnia and the Baltic near Finland by AIS signals, Fintraffic Digitraffic open data, the positions every 20 s. From afar a ship is a dot in the colour of its type with its name, close up a schematic model of its length that keeps its course. A click shows the type, call sign, destination, size and speed.	AIS siqnallarına görə Fin və Botnik körfəzlərinin və Finlandiya yaxınlığında Baltikin gəmiləri, Fintraffic Digitraffic açıq məlumatları, vəziyyətlər hər 20 san-dən bir. Uzaqdan gəmi tipinin rəngində adı ilə nöqtədir, yaxından öz kursunu saxlayan, uzunluğuna uyğun şərti modeldir. Klik tipi, çağırış işarəsini, təyinatı, ölçüləri və sürəti göstərir.
+Aircraft	Təyyarələr
+Aircraft by ADS-B signals of the adsb.lol volunteer network in a circle around the point of view, every 10 s. An aircraft in the air is shown at its altitude, close up as a schematic model of the size of its category with its bank. A click shows the call sign, type, registration, altitude and speed. The network has almost no receivers over Russia.	adsb.lol könüllü şəbəkəsinin ADS-B siqnallarına görə baxış nöqtəsi ətrafındakı dairədə təyyarələr, hər 10 san-dən bir. Havadakı təyyarə öz hündürlüyündə durur, yaxından kateqoriyasının ölçüsündə, öz krenı ilə şərti modeldir. Klik çağırış işarəsini, tipi, bort nömrəsini, hündürlüyü və sürəti göstərir. Rusiya üzərində şəbəkənin demək olar ki, qəbuledicisi yoxdur.
+Currents	Axınlar
+Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.	Sürət rəngləməsi üzərində qaçan ağ zolaqlar kimi okeanın səth axınları. Son hazır sutka üçün peyk altimetriyasına görə NOAA CoastWatch geostrofik axınları, şəbəkə 0.5°. Seansda ilk yandırma təxminən 4 MB yükləyir.
+OSM power lines, cables and pipelines	OSM elektrik xətləri, kabellər və boru kəmərləri
+Power lines by voltage, substations, cables and gas, oil and water pipelines from OpenStreetMap. They load for the place in view when the camera is below 150 km. A click on a line shows the voltage, substance, operator and a link to the OpenStreetMap object.	OpenStreetMap-dən gərginliyə görə elektrik xətləri, yarımstansiyalar, kabellər və qaz, neft və su boru kəmərləri. Kamera 150 km-dən aşağı olanda görünüşün yeri üzrə yüklənir. Xəttə klik gərginliyi, maddəni, operatoru və OpenStreetMap obyektinə keçidi göstərir.
+Historical earthquakes	Tarixi zəlzələlər
+Strong earthquakes of the world from 1904 to 2024 from the ISC-GEM catalogue - about 74 thousand events of magnitude 5 and above, with locations, depths and magnitudes recomputed in one way. A circle sits at the epicentre, at its depth - in the removed sector of the Earth cutaway, the colour shows the depth and the size the magnitude. The time slider range selects the events. A click on a circle shows the place, date, magnitude and the USGS event page. The first use downloads the catalogue in parts, about 13 MB.	ISC-GEM kataloquna görə 1904-cü ildən 2024-cü ilə qədər dünyanın güclü zəlzələləri - maqnitudu 5 və daha çox olan təxminən 74 min hadisə, yerləri, dərinlikləri və maqnitudları vahid üsulla yenidən hesablanmış. Dairə episentrdə, öz dərinliyində - Yerin kəsiyinin çıxarılmış sektorunda durur, rəng dərinliyi, ölçü maqnitudu göstərir. Zaman şkalasının aralığı hadisələri seçir. Dairəyə klik yeri, tarixi, maqnitudu və hadisənin USGS səhifəsini göstərir. İlk yandırma kataloqu hissə-hissə yükləyir, təxminən 13 MB.
+Geoid	Geoid
+The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.	NGA EGM2008 modelinə görə Yerin səviyyə səthinin - geoidin - forması. Sətir yandırıldıqca qlobusun hündürlükləri ellipsoid üzərində -107-dən +86 m-ə qədər geoid hündürlükləridir, 10 000 dəfə dartılıb, və Yer "əzilmiş" görünür. Qabarıqlar ağırlıq qüvvəsinin daha çox olduğu yerlərdə, məsələn Yeni Qvineya yaxınlığında, çökəkliklər daha az olduğu yerlərdədir, ən dərini Hind okeanındadır. Relyef və su bu müddətdə götürülür, sətrin söndürülməsi onları qaytarır.
+Paleogeography	Paleocoğrafiya
+Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.	PALEOMAP PaleoDEM xəritələrinə görə 540 milyon il əvvələ qədər keçmişdə quru relyefi və dəniz dərinlikləri. Yaşı görünüşün aşağısındakı sürgü təyin edir. Şəkil, sərhədlər və yazılar bu müddətdə götürülür.
+3D buildings	3D binalar
+3D buildings from OpenStreetMap in OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM or from the number of floors. A building without either gets a height of 5 m.	OpenFreeMap vektor kafellərində OpenStreetMap-dən 3D binalar. Kamera yerə 6 km-dən yaxın olanda görünürlər. Hündürlük OSM-dən, yoxdursa mərtəbə sayından götürülür. Bu məlumatlar olmayan bina 5 m hündürlük alır.
+Rosreestr cadastre	Rosreestr kadastrı
+Land parcels from the National spatial data system of Rosreestr over the imagery, for Russia only. They are seen up close, from about 10 km and lower. The service answers slowly and refuses frequent requests, so the parcels come one tile at a time.	Rosreestr-in Milli məkan məlumatları sistemindən torpaq sahələri, şəklin üzərində, yalnız Rusiya üzrə. Yaxından, təxminən 10 km hündürlükdən və aşağıdan görünür. Xidmət yavaş cavab verir və tez-tez sorğulardan imtina edir, buna görə sahələr bir-bir kafellə gəlir.
+Age in millions of years ago. The map of relief and depths for this age - PaleoDEM PALEOMAP, Scotese and Wright 2018.	Milyon il əvvəl ilə yaş. Bu yaş üçün relyef və dərinliklər xəritəsi - PaleoDEM PALEOMAP, Scotese və Wright 2018.
+Quaternary	Dördüncü dövr
+Neogene	Neogen
+Paleogene	Paleogen
+Cretaceous	Təbaşir
+Jurassic	Yura
+Triassic	Trias
+Permian	Perm
+Carboniferous	Karbon
+Devonian	Devon
+Silurian	Silur
+Ordovician	Ordovik
+Cambrian	Kembri
+Precambrian	Prekembri
+Present	İndiki dövr
+{age} million years ago, {period}	{age} milyon il əvvəl, {period}
+Show from the chosen age to the present through all maps of the set.	Seçilmiş yaşdan indiki dövrə qədər dəstin bütün xəritələri ilə nümayiş.
+How many times the geoid heights above the ellipsoid are stretched. To the right the bulges and hollows are deeper, to the left the Earth is rounder.	Ellipsoid üzərində geoid hündürlüklərinin neçə dəfə dartıldığı. Sağa doğru qabarıqlar və çökəkliklər dərinləşir, sola doğru Yer daha yumru olur.
+Trains of Finland, Baltic ships and aircraft in real time from Fintraffic open data and the adsb.lol ADS-B network.	Fintraffic açıq məlumatlarına və adsb.lol ADS-B şəbəkəsinə görə real vaxtda Finlandiya qatarları, Baltik gəmiləri və təyyarələr.
+on the ground	yerdə
+{length} × {width} m	{length} × {width} m
+{metres} m ({feet} ft)	{metres} m ({feet} fut)
+{value} km/h	{value} km/saat
+{value} kn	{value} düyün
+Call sign	Çağırış işarəsi
+IMO	IMO
+Destination	Təyinat
+Size	Ölçülər
+MMSI	MMSI
+Course	Kurs
+Position, UTC	Vəziyyət, UTC
+Registration	Bort nömrəsi
+ICAO code	ICAO kodu
+Altitude	Hündürlük
+Number	Nömrə
+Close	Bağla
+None	Yoxdur
+turn on	yandır
+turn off	söndür
+Above ground {height} m	Yerdən yuxarı {height} m
+Climb {climb} m/s	Qalxma {climb} m/san
+Fighter	Qırıcı
+Fly from here	Buradan uçuş
+Propeller plane	Pərli təyyarə
+Throttle {throttle} %	Dartı {throttle} %
+Touched the ground - the flight is over.	Yerə toxunma - uçuş bitdi.
+Up to 2000 km/h, start at 900 km/h, sharp bank.	2000 km/saat-a qədər, 900 km/saat ilə start, kəskin kren.
+Up to 340 km/h, start at 250 km/h, smooth.	340 km/saat-a qədər, 250 km/saat ilə start, rəvan.
+km/h	km/saat
+{speed} km/h · altitude {alt} m, above ground {height} m · heading {heading}° · climb {climb} m/s · throttle {throttle} %	{speed} km/saat · hündürlük {alt} m, yerdən yuxarı {height} m · kurs {heading}° · qalxma {climb} m/san · dartı {throttle} %
+↑ ↓ - nose down and up · ← → - bank · PageUp, PageDown - throttle · V - cockpit view · H - instruments · Esc - exit	↑ ↓ - burun aşağı və yuxarı · ← → - kren · PageUp, PageDown - dartı · V - kabinədən görünüş · H - cihazlar · Esc - çıxış
+A click on a row copies the sheet number to the clipboard.	Sətrə klik vərəqin nömrəsini mübadilə buferinə kopyalayır.
+A click on a row copies the sheet number. Sheets of the Russian State Geological Map at 1:1,000,000 and 1:200,000 use the Russian designation too.	Sətrə klik vərəqin nömrəsini kopyalayır. Rusiya Dövlət Geoloji Xəritəsinin 1:1 000 000 və 1:200 000 miqyaslı vərəqləri də Rusiya nomenklaturası ilə nömrələnir.
+A ready site from the list or an empty row for your own address.	Siyahıdan hazır sayt və ya öz ünvanınız üçün boş sətir.
+Add or edit sites…	Saytları əlavə et və ya dəyiş…
+Add site	Sayt əlavə et
+All numbers in a window…	Bütün nömrələr pəncərədə…
+Delete the selected rows.	Qeyd edilmiş sətirləri sil.
+Each row is an item of the Open in browser submenu of the globe menu. The item opens the site at the point under the cursor. Add site puts a ready site or an empty row for your own address. In the address {lat} and {lon} are the latitude and longitude in degrees, {zoom} is the map scale by the view.	Hər sətir qlobusdakı menyunun "Brauzerdə aç" alt menyusunun bəndidir. Bənd saytı kursorun altındakı nöqtədə açır. "Sayt əlavə et" hazır sayt və ya öz ünvanınız üçün boş sətir qoyur. Ünvanda {lat} və {lon} dərəcə ilə en və uzunluq dairəsi, {zoom} görünüşə görə xəritənin miqyasıdır.
+International Map of the World (IMW)	Beynəlxalq dünya xəritəsi (IMW)
+MGRS, 100 km square	MGRS, 100 km kvadrat
+Map sheet designation	Vərəqin nomenklaturası
+NATO, JOG	NATO, JOG
+Open in browser	Brauzerdə aç
+Own address	Öz ünvanı
+Row {n}: {reason}	Sətir {n}: {reason}
+Russian sheet designation	Rusiya nomenklaturası
+S. H.	C. Y.
+Sheet number	Vərəqin nömrəsi
+Sites of the Open in browser menu	"Brauzerdə aç" menyusunun saytları
+System	Sistem
+The address does not start with https:// or http://.	Ünvan https:// və ya http:// ilə başlamır.
+The address has extra braces or places other than {lat}, {lon} and {zoom}.	Ünvanda artıq fiqurlu mötərizələr və ya {lat}, {lon} və {zoom}-dan başqa yerlər var.
+The address has no {lat} or {lon}.	Ünvanda {lat} və ya {lon} yoxdur.
+The item has no name.	Bəndin adı yoxdur.
+no sheet	vərəq yoxdur
+Asking Eto Mesto…	"Eto Mesto"-ya sorğu…
+Build	Qur
+Computing insolation: {share}	İnsolyasiyanın hesablanması: {share}
+Direct sun, h per day	Birbaşa günəş, sutkada saat
+Eto Mesto old maps	"Eto Mesto"-nun köhnə xəritələri
+Eto Mesto old maps here…	"Eto Mesto"-nun köhnə xəritələri burada…
+First day	İlk sutka
+Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Görülməli olanın relyefdən hündürlüyü, məsələn dirək və ya bina. Sıfırda yerin özü yoxlanılır.
+Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Nöqtədə gözün və ya dirəyin relyefdən hündürlüyü. Yuxarı - daha uzaq görünür və relyefin arxasında daha az yer gizli qalır.
+Heights of the grid nodes: {share}	Şəbəkə düyünlərinin hündürlükləri: {share}
+Insolation	İnsolyasiya
+Insolation here…	Burada insolyasiya…
+Keeps the maps whose title or year holds all the words.	Adında və ya ilində bütün sözlər olan xəritələri saxlayır.
+Last day	Son sutka
+Loading heights: {done} of {total}	Hündürlüklər yüklənir: {done} / {total}
+Maps at the point {total}, shown {shown}. A click on a title opens the map on the site.	Nöqtədə xəritələr {total}, göstərilib {shown}. Ada klik xəritəni saytda açır.
+Maps of the Eto Mesto site (etomesto.com) that cover the point. A map opens on the site, where it can be overlaid on a modern map and downloaded under the site rules.	"Eto Mesto" saytının (etomesto.com) nöqtəni əhatə edən xəritələri. Xəritə saytda açılır, orada onu müasir xəritənin üzərinə qoymaq və saytın qaydalarına görə yükləmək olar.
+Not all heights are loaded, the computation used less detailed ones.	Bütün hündürlüklər yüklənməyib, hesablama daha az təfərrüatlılarla aparıldı.
+Observer height	Müşahidəçinin hündürlüyü
+Opens the page of the chosen map on etomesto.com in the browser.	Seçilmiş xəritənin etomesto.com-dakı səhifəsini brauzerdə açır.
+Over {days} days direct sun shines from {low} to {high} h per day. The grid step is {step} m.	{days} sutka ərzində birbaşa günəş sutkada {low}-dan {high} saata qədər işıq saçır. Şəbəkə addımı {step} m.
+Point	Nöqtə
+Radius of the computed circle. A larger radius gives a coarser grid. Mountain shadows are taken from a distance of at least the radius and at least 5 km.	Hesablanan dairənin radiusu. Böyük - şəbəkə daha iri. Dağ kölgələri ən azı radius və ən azı 5 km məsafədən götürülür.
+Radius of the computed circle. A larger radius gives a coarser step, the step is about one five-hundredth of the radius.	Hesablanan dairənin radiusu. Böyük - addım daha iri, addım radiusun təxminən beş yüzdə biridir.
+Remove	Götür
+Remove the insolation layer from the globe.	İnsolyasiya layını qlobusdan götür.
+Remove the viewshed layer from the globe.	Görünmə layını qlobusdan götür.
+Search by title or year	Ada və ya ilə görə axtarış
+Target height	Hədəfin hündürlüyü
+The first day of the period. The result is the mean number of hours of direct sunlight per day over the period.	Dövrün ilk sutkası. Nəticə dövr ərzində sutkada birbaşa günəş saatlarının orta sayıdır.
+The last day of the period, inclusive. A long period is computed over 15 evenly spaced days.	Dövrün son sutkası, daxil olmaqla. Uzun dövr bərabər götürülmüş 15 sutka üzrə hesablanır.
+The site did not answer: {error}	Sayt cavab vermədi: {error}
+The site has no maps at this point.	Saytda bu nöqtədə xəritə yoxdur.
+This body has no heights.	Bu cisim üçün hündürlüklər yoxdur.
+Viewshed from a point	Nöqtədən görünmə
+Viewshed from here…	Buradan görünmə…
+{share} of the circle area is visible. The computation step is {step} m.	Dairə sahəsinin {share} hissəsi görünür. Hesablama addımı {step} m.

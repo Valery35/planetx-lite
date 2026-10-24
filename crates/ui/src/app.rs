@@ -4,7 +4,7 @@
 
 //! Окно: глобус с подложкой и рельефом, навигация мышью и пальцами.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
@@ -151,8 +151,65 @@ impl Loaders {
         match basemap {
             Basemap::Esri => Some(self.esri.as_ref()),
             Basemap::Osm => Some(self.osm.as_ref()),
-            Basemap::Ready(_) => None,
+            Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_) => None,
         }
+    }
+}
+
+/// Режим «Геоид», `geoid` модуля: высоты Земли - геоид EGM2008 над
+/// эллипсоидом, растянутый scale раз.
+struct GeoidState {
+    loader: Box<dyn TileLoader>,
+    scale: f64,
+}
+
+/// Подписей живых объектов не больше, ближайших к точке взгляда.
+const LIVE_LABELS: usize = 60;
+
+/// Палеогеография, `PaleoBar` модуля: номер возраста в `AGES`, показ,
+/// время прошлого шага, основа и строки векторной основы до неё.
+struct PaleoState {
+    index: usize,
+    playing: bool,
+    last: f64,
+    before: Basemap,
+    rows: std::collections::BTreeSet<crate::vector::Row>,
+}
+
+/// Секунд на шаг возраста при показе, `PLAY_PERIOD` модуля.
+const PALEO_STEP: f64 = 0.9;
+
+/// Название периода по ключу `data::paleo::period`.
+fn period_name(lang: Lang, key: &str) -> &'static str {
+    match key {
+        "quaternary" => tr(lang, "Quaternary"),
+        "neogene" => tr(lang, "Neogene"),
+        "paleogene" => tr(lang, "Paleogene"),
+        "cretaceous" => tr(lang, "Cretaceous"),
+        "jurassic" => tr(lang, "Jurassic"),
+        "triassic" => tr(lang, "Triassic"),
+        "permian" => tr(lang, "Permian"),
+        "carboniferous" => tr(lang, "Carboniferous"),
+        "devonian" => tr(lang, "Devonian"),
+        "silurian" => tr(lang, "Silurian"),
+        "ordovician" => tr(lang, "Ordovician"),
+        "cambrian" => tr(lang, "Cambrian"),
+        _ => tr(lang, "Precambrian"),
+    }
+}
+
+/// Поля окна «Новый источник тайлов», `TileSourceDialog` модуля.
+#[derive(Debug, Clone)]
+struct OwnDialog {
+    name: String,
+    url: String,
+    max_level: u32,
+    credit: String,
+}
+
+impl Default for OwnDialog {
+    fn default() -> Self {
+        OwnDialog { name: String::new(), url: String::new(), max_level: 19, credit: String::new() }
     }
 }
 
@@ -235,6 +292,38 @@ pub struct LiteApp {
     route: crate::route::Router,
     /// Непрозрачность карт картинками по ключу, меню «⋯» строки.
     map_opacity: HashMap<String, f32>,
+    /// Окно «Новый источник тайлов».
+    own_dialog: Option<OwnDialog>,
+    /// Окно «Номенклатура листа».
+    sheets_window: Option<crate::sheets::SheetsWindow>,
+    /// Окно «Сайты меню «Открыть в браузере»».
+    links_window: Option<crate::menulinks::LinksWindow>,
+    /// Окна и слои «Видимость» и «Инсоляция».
+    viewshed: Option<crate::pointcalc::Calc>,
+    insolation: Option<crate::pointcalc::Calc>,
+    /// Тайлы высот, которых ждут расчёты у точки.
+    calc_keys: Vec<TileKey>,
+    /// Окно «Старые карты «Это Место»».
+    etomesto: Option<crate::etomesto::EtomestoWindow>,
+    /// Живые объекты по строкам.
+    live: BTreeMap<crate::live::Kind, crate::live::Live>,
+    /// Модели живых объектов в видеокарте: строка и ключ по порядку.
+    live_keys: Vec<(crate::live::Kind, String)>,
+    /// Точки и подписи живых объектов.
+    live_points: Vec<render::PointsMesh>,
+    live_labels: Vec<(String, DVec3)>,
+    /// Объекты живых строк на этот кадр, для окна «Объекты» и меню.
+    live_objects: Vec<(crate::live::Kind, crate::live::Object)>,
+    /// Камера следом за живым объектом: строка и ключ.
+    live_follow: Option<(crate::live::Kind, String)>,
+    /// Режим «Геоид»: загрузчик тайлов геоида и масштаб.
+    geoid: Option<GeoidState>,
+    /// Палеогеография: ползунок возраста и что было до неё.
+    paleo: Option<PaleoState>,
+    /// Режим полёта, свой самолёт.
+    flight: Option<crate::flight::Flight>,
+    /// Модель на пути, за которой идёт камера, номер в `movers`.
+    followed: Option<usize>,
     /// Разрез Земли, строка каталога.
     cutaway: Option<crate::cutaway::Cutaway>,
     /// Подземный режим, `SubsurfaceManager` модуля.
@@ -740,6 +829,23 @@ impl LiteApp {
             map_opacity: settings.opacity.iter().cloned().collect(),
             subsurface: None,
             cutaway: None,
+            own_dialog: None,
+            sheets_window: None,
+            links_window: None,
+            viewshed: None,
+            insolation: None,
+            calc_keys: Vec::new(),
+            etomesto: None,
+            paleo: None,
+            geoid: None,
+            live: BTreeMap::new(),
+            live_keys: Vec::new(),
+            live_points: Vec::new(),
+            live_labels: Vec::new(),
+            live_objects: Vec::new(),
+            live_follow: None,
+            followed: None,
+            flight: None,
             floor,
             open_dir: None,
             route_keys: HashSet::new(),
@@ -1187,7 +1293,40 @@ impl LiteApp {
                 point: t.ruler.mode == crate::ruler::Mode::Point,
             }
         });
-        crate::globemenu::GlobeMenu { at: pos, point, coords, place, drawing }
+        // Модель на пути под курсором, иначе та, за которой идёт камера.
+        let store = self.heights.read();
+        let window = self.timebar.window();
+        let radius = crate::card::PICK_PIXELS * ppp * 2.0;
+        let under = self.movers.iter().position(|m| {
+            let (q, front) = self.nav.camera.project(m.place(window, &store).center);
+            front && (q.x - px).hypot(q.y - py) <= radius
+        });
+        let mover = under.or(self.followed).and_then(|i| self.movers.get(i).map(|m| (i, m.name.clone(), self.followed == Some(i))));
+        // Живой объект под курсором, иначе тот, за которым идёт камера.
+        let e = self.nav.camera.ellipsoid;
+        let live = self
+            .live_objects
+            .iter()
+            .filter_map(|(kind, o)| {
+                let h = if o.alt.is_finite() { o.alt * store.scale() } else { store.height_at(o.lat, o.lon) };
+                let (q, front) = self.nav.camera.project(e.geodetic_to_ecef(o.lat, o.lon, h));
+                let gap = (q.x - px).hypot(q.y - py);
+                (front && gap <= crate::live::PICK_PIXELS * ppp * 2.0).then_some((gap, kind, o))
+            })
+            .min_by(|a, b| a.0.total_cmp(&b.0))
+            .map(|(_, kind, o)| (*kind, o.key.clone(), o.label.clone()))
+            .or_else(|| {
+                let (kind, key) = self.live_follow.clone()?;
+                let label = self.live_objects.iter().find(|(k, o)| *k == kind && o.key == key).map_or(key.clone(), |(_, o)| o.label.clone());
+                Some((kind, key, label))
+            })
+            .map(|(kind, key, label)| {
+                let on = self.live_follow.as_ref().is_some_and(|(k, f)| *k == kind && *f == key);
+                (kind, key, label, on)
+            });
+        let sheets = point.map_or(Vec::new(), |(lat, lon)| crate::sheets::items(self.lang, lat, lon));
+        let links = self.settings.links.clone();
+        crate::globemenu::GlobeMenu { at: pos, point, coords, place, drawing, mover, live, sheets, links }
     }
 
     /// Выбор в меню на глобусе.
@@ -1253,6 +1392,75 @@ impl LiteApp {
                     self.objects = Some(self.make_objects(lat, lon, None, Some(tr(self.lang, "loading").to_string())));
                 }
             }
+            Choice::FlyFrom(kind) => {
+                if let Some((lat, lon)) = point {
+                    let ground = self.heights.read().heights_at(&[(lat, lon)], false).first().copied().unwrap_or(0.0).max(0.0);
+                    let heading = self.nav.pose.heading;
+                    self.live_follow = None;
+                    self.followed = None;
+                    self.flight = Some(crate::flight::Flight::start(lat, lon, ground, heading, kind, now));
+                    self.nav.show(Pose::new(lat, lon, crate::flight::CHASE_REACH, heading, crate::flight::CHASE_TILT));
+                }
+            }
+            Choice::Follow(index) => {
+                self.followed = index;
+                if index.is_some() {
+                    self.live_follow = None;
+                }
+            }
+            Choice::FollowLive(target) => {
+                if let Some((kind, _)) = &target
+                    && let Some(live) = self.live.get_mut(kind)
+                {
+                    live.reach = crate::live::START_REACH;
+                    self.followed = None;
+                }
+                self.live_follow = target;
+                self.live_keys.clear();
+            }
+            Choice::CopySheet(number) => {
+                ctx.copy_text(number.clone());
+                self.open_message = Some(trf(self.lang, "Copied: {number}", &[("number", &number)]));
+            }
+            Choice::SheetsWindow => {
+                if let Some((lat, lon)) = point {
+                    let place = self.point_text(lat, lon, None, 6);
+                    self.sheets_window = Some(crate::sheets::SheetsWindow::new(self.lang, lat, lon, place));
+                }
+            }
+            Choice::OpenLink(template) => {
+                if let Some((lat, lon)) = point {
+                    let zoom = data::geocode::link_zoom(lat, self.view_width());
+                    match data::menulinks::fill(&template, lat, lon, f64::from(zoom)) {
+                        Ok(url) => ctx.open_url(egui::OpenUrl::new_tab(url)),
+                        Err(e) => self.open_message = Some(e),
+                    }
+                }
+            }
+            Choice::EditLinks => self.links_window = Some(crate::menulinks::LinksWindow::new(self.settings.links.clone())),
+            Choice::Viewshed | Choice::Insolation => {
+                let Some((lat, lon)) = point else {
+                    return;
+                };
+                let name = place.as_ref().map(|(_, n)| n.clone()).unwrap_or_default();
+                let coords = format!("{lat:.5}, {lon:.5}");
+                let title = if name.is_empty() { coords } else { format!("{name}  {coords}") };
+                let (slot, kind) = if choice == Choice::Viewshed { (&mut self.viewshed, crate::pointcalc::Kind::Viewshed) } else { (&mut self.insolation, crate::pointcalc::Kind::Insolation) };
+                match slot {
+                    Some(c) => c.set_point(lat, lon, title),
+                    None => {
+                        let unix = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64());
+                        *slot = Some(crate::pointcalc::Calc::new(kind, lat, lon, title, unix));
+                    }
+                }
+            }
+            Choice::Etomesto => {
+                if let Some((lat, lon)) = point {
+                    let loaders = &self.loaders;
+                    let request = |limit: u64| (loaders.request)(limit);
+                    self.etomesto = Some(crate::etomesto::EtomestoWindow::new(lat, lon, &request));
+                }
+            }
             Choice::RouteFrom | Choice::RouteTo => {
                 // Точечная метка под курсором даёт свою точку и название,
                 // как `route_items` модуля.
@@ -1290,6 +1498,30 @@ impl LiteApp {
             groups.extend(self.dots.identify(self.lang, &self.nav, (lat, lon), (px, py), crate::card::PICK_PIXELS * ppp * 2.0, self.timebar.window()));
         }
         groups.extend(self.geo.identify(&self.dots, self.lang, lat, lon, self.magnetic_year().0));
+        // Живые объекты у пикселя, `LiveManager.identify` модуля.
+        if let Some((px, py, ppp)) = pixel {
+            let store = self.heights.read();
+            let e = self.nav.camera.ellipsoid;
+            for (kind, live) in &self.live {
+                let mut near: Vec<(f64, &crate::live::Object)> = self
+                    .live_objects
+                    .iter()
+                    .filter(|(k, _)| k == kind)
+                    .filter_map(|(_, o)| {
+                        let h = if o.alt.is_finite() { o.alt * store.scale() } else { store.height_at(o.lat, o.lon) };
+                        let (q, front) = self.nav.camera.project(e.geodetic_to_ecef(o.lat, o.lon, h));
+                        let gap = (q.x - px).hypot(q.y - py);
+                        let radius = crate::live::PICK_PIXELS * ppp * if crate::live::near(*kind, self.view_width()) { 3.0 } else { 1.0 };
+                        (front && gap <= radius).then_some((gap, o))
+                    })
+                    .collect();
+                near.sort_by(|a, b| a.0.total_cmp(&b.0));
+                let features: Vec<crate::identify::Feature> = near.into_iter().take(5).map(|(_, o)| (o.label.clone(), live.values(self.lang, &o.key))).collect();
+                if !features.is_empty() {
+                    groups.push((tr(self.lang, kind.name()).to_string(), features));
+                }
+            }
+        }
         groups.push(crate::identify::place_group(self.lang, height.filter(|_| self.settings.relief), address));
         if let Some((ask, answer)) = &self.map_ask
             && ask.at == (lat, lon)
@@ -1729,6 +1961,24 @@ impl LiteApp {
                     self.settings_dirty = true;
                     self.sea_changed();
                 }
+                Action::AddSource => self.own_dialog = Some(OwnDialog::default()),
+                Action::RemoveOwn(b) => {
+                    if let Some(own) = crate::basemap::own_of(b) {
+                        self.settings.own.retain(|o| *o != own);
+                        self.settings_dirty = true;
+                    }
+                    if self.basemap == b {
+                        self.set_basemap(Basemap::Esri);
+                    }
+                }
+                Action::GeoidScale(scale) => {
+                    self.settings.geoid_scale = scale;
+                    self.settings_dirty = true;
+                    if let Some(g) = &mut self.geoid {
+                        g.scale = scale;
+                        self.heights.write().set_scale(scale);
+                    }
+                }
                 Action::Stretch(on) => {
                     self.settings.stretch = on;
                     self.settings_dirty = true;
@@ -1795,6 +2045,54 @@ impl LiteApp {
             Extra::Sun => self.settings.sun = on,
             Extra::Grid => self.settings.grid = on,
             Extra::Map(_) => {}
+            Extra::Live(kind) => {
+                if on {
+                    self.live.entry(kind).or_insert_with(|| crate::live::Live::new(kind));
+                } else if self.live.remove(&kind).is_some() {
+                    if self.live_follow.as_ref().is_some_and(|(k, _)| *k == kind) {
+                        self.live_follow = None;
+                    }
+                    self.live_keys.clear();
+                    if let Some(globe) = &mut self.globe {
+                        globe.set_live_models(&[]);
+                    }
+                    self.live_points.clear();
+                    self.live_labels.clear();
+                    self.dots.dirty = true;
+                }
+            }
+            Extra::Geoid => {
+                if on && self.geoid.is_none() {
+                    let source = net::Source { name: "geoid", url: data::geoid::TILE_URL, max_requests: 4, max_level: data::geoid::MAX_LEVEL, ext: "png", placeholders: false, raw: false, tilejson: None };
+                    self.geoid = Some(GeoidState { loader: (self.loaders.make)(source), scale: self.settings.geoid_scale });
+                    let mut store = self.heights.write();
+                    store.clear();
+                    store.max_level = data::geoid::MAX_LEVEL;
+                    store.set_scale(self.settings.geoid_scale);
+                } else if !on && self.geoid.take().is_some() {
+                    let mut store = self.heights.write();
+                    store.clear();
+                    store.max_level = terrain::MAX_LEVEL;
+                    store.set_scale(if self.settings.relief { self.settings.scale } else { 0.0 });
+                }
+                if let Some(globe) = &mut self.globe {
+                    globe.stale_meshes(None);
+                }
+            }
+            Extra::Paleo => {
+                if on && self.paleo.is_none() {
+                    let state = PaleoState { index: 0, playing: false, last: 0.0, before: self.basemap, rows: self.vector.rows.clone() };
+                    self.paleo = Some(state);
+                    self.set_vector_rows(std::collections::BTreeSet::new());
+                    self.heights.write().set_scale(0.0);
+                    self.set_basemap(Basemap::Paleo(data::paleo::AGES[0]));
+                } else if !on && let Some(state) = self.paleo.take() {
+                    self.set_basemap(state.before);
+                    self.set_vector_rows(state.rows);
+                    let scale = if self.settings.relief { self.settings.scale } else { 0.0 };
+                    self.heights.write().set_scale(scale);
+                }
+            }
             Extra::Cutaway => {
                 // Сектор под точкой взгляда в момент включения, как
                 // `_set_cutaway` модуля.
@@ -1940,6 +2238,7 @@ impl LiteApp {
             ground: self.subsurface.as_ref().map(|s| s.options.opacity),
             opacity: &self.map_opacity,
             stretch: self.settings.stretch,
+            geoid_scale: self.settings.geoid_scale,
         }
     }
 
@@ -2441,6 +2740,177 @@ impl LiteApp {
         }
         self.open_message = None;
         pose
+    }
+
+    /// Ползунок возраста палеогеографии внизу слева, `PaleoBar` модуля:
+    /// прошлое слева, настоящее справа, показ к настоящему.
+    fn paleo_bar(&mut self, ctx: &egui::Context, now: f64) {
+        let lang = self.lang;
+        let Some(state) = &mut self.paleo else {
+            return;
+        };
+        let ages = &data::paleo::AGES;
+        let last = ages.len() - 1;
+        let mut changed = false;
+        if state.playing && now - state.last >= PALEO_STEP {
+            state.last = now;
+            if state.index == 0 {
+                state.playing = false;
+            } else {
+                state.index -= 1;
+                changed = true;
+            }
+        }
+        if state.playing {
+            ctx.request_repaint_after(std::time::Duration::from_secs_f64(PALEO_STEP / 3.0));
+        }
+        egui::Area::new(egui::Id::unique("paleo-bar")).order(egui::Order::Foreground).anchor(egui::Align2::CENTER_BOTTOM, egui::vec2(0.0, -70.0)).show(ctx, |ui| {
+            egui::Frame::popup(ui.style()).show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    // Прошлое слева: ползунок идёт от последнего возраста.
+                    let mut position = last - state.index.min(last);
+                    let slider = ui.add(egui::Slider::new(&mut position, 0..=last).show_value(false)).on_hover_text(tr(lang, "Age in millions of years ago. The map of relief and depths for this age - PaleoDEM PALEOMAP, Scotese and Wright 2018."));
+                    if slider.changed() {
+                        state.index = last - position;
+                        changed = true;
+                    }
+                    let play = if state.playing { "⏸" } else { "▶" };
+                    if ui.button(play).on_hover_text(tr(lang, "Show from the chosen age to the present through all maps of the set.")).clicked() {
+                        state.playing = !state.playing && state.index > 0;
+                        state.last = now;
+                    }
+                    let age = ages[state.index.min(last)];
+                    let text = if age == 0 {
+                        tr(lang, "Present").to_string()
+                    } else {
+                        trf(lang, "{age} million years ago, {period}", &[("age", &age.to_string()), ("period", period_name(lang, data::paleo::period(f64::from(age))))])
+                    };
+                    ui.label(text);
+                });
+            });
+        });
+        if changed {
+            let age = ages[state.index.min(last)];
+            self.set_basemap(Basemap::Paleo(age));
+        }
+    }
+
+    /// Расчёты у точки: окна, шаги, тайлы высот, слои над картами,
+    /// шкала инсоляции.
+    fn step_calcs(&mut self, ctx: &egui::Context, now: f64) {
+        let lang = self.lang;
+        if let Some(w) = &mut self.etomesto
+            && !w.show(ctx, lang)
+        {
+            self.etomesto = None;
+        }
+        let mut keys = Vec::new();
+        let mut changed = false;
+        {
+            let store = self.heights.clone();
+            let has = |k: TileKey| store.read().tile(k).is_some();
+            let heights = self.true_heights();
+            for calc in [&mut self.viewshed, &mut self.insolation].into_iter().flatten() {
+                calc.show(ctx, lang, now);
+                keys.extend(calc.step(lang, now, &has, &heights));
+                changed |= std::mem::take(&mut calc.changed);
+            }
+        }
+        self.calc_keys = keys;
+        if changed {
+            let painters: Vec<(&'static str, crate::vector::Painter)> = [("viewshed", &self.viewshed), ("insolation", &self.insolation)]
+                .into_iter()
+                .filter_map(|(id, c)| c.as_ref().and_then(|c| c.layer.as_ref()).map(|l| (id, crate::pointcalc::painter(l))))
+                .collect();
+            self.vector.set_painters(painters);
+        }
+        // Окно закрыто и слоя нет - расчёт забыт.
+        for slot in [&mut self.viewshed, &mut self.insolation] {
+            if slot.as_ref().is_some_and(|c| !c.open && c.layer.is_none() && !c.busy()) {
+                *slot = None;
+            }
+        }
+        if let Some(crate::pointcalc::Layer::Insolation(r)) = self.insolation.as_ref().and_then(|c| c.layer.as_ref()) {
+            let rect = ctx.content_rect();
+            crate::pointcalc::legend(ctx, lang, r.top(), egui::pos2(rect.left() + 12.0, rect.bottom() - 120.0));
+        }
+    }
+
+    /// Окна точки меню на глобусе: номера листов и список своих сайтов.
+    fn point_windows(&mut self, ctx: &egui::Context) {
+        if let Some(w) = &mut self.sheets_window
+            && !w.show(ctx, self.lang).1
+        {
+            self.sheets_window = None;
+        }
+        if let Some(w) = &mut self.links_window {
+            let (items, open) = w.show(ctx, self.lang);
+            if let Some(items) = items {
+                self.settings.links = items;
+                self.settings_dirty = true;
+            }
+            if !open {
+                self.links_window = None;
+            }
+        }
+    }
+
+    /// Окно «Новый источник тайлов»: название, адрес, уровни, подпись.
+    /// «Добавить» ставит источник основой и в настройки.
+    fn own_window(&mut self, ctx: &egui::Context) {
+        let lang = self.lang;
+        let Some(d) = &mut self.own_dialog else {
+            return;
+        };
+        let mut open = true;
+        let mut done = None;
+        egui::Window::new(tr(lang, "New tile source")).open(&mut open).collapsible(false).resizable(false).default_width(420.0).show(ctx, |ui| {
+            egui::Grid::new("own-source").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
+                ui.label(tr(lang, "Address"));
+                ui.add(egui::TextEdit::singleline(&mut d.url).desired_width(300.0).hint_text("https://example.org/{z}/{x}/{y}.png"))
+                    .on_hover_text(tr(lang, "Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS."));
+                ui.end_row();
+                ui.label(tr(lang, "Name"));
+                ui.add(egui::TextEdit::singleline(&mut d.name).desired_width(300.0));
+                ui.end_row();
+                ui.label(tr(lang, "Levels up to"));
+                ui.add(egui::DragValue::new(&mut d.max_level).range(1..=crate::basemap::OWN_MAX_LEVEL));
+                ui.end_row();
+                ui.label(tr(lang, "Credit"));
+                ui.add(egui::TextEdit::singleline(&mut d.credit).desired_width(300.0)).on_hover_text(tr(lang, "Credit of the source on the screen, as its terms of use require."));
+                ui.end_row();
+            });
+            let error = crate::basemap::template_error(&d.url);
+            if let Some(e) = error.filter(|_| !d.url.trim().is_empty()) {
+                ui.colored_label(crate::theme::pal().accent, tr(lang, e));
+            }
+            ui.horizontal(|ui| {
+                if ui.add_enabled(error.is_none(), egui::Button::new(tr(lang, "Add"))).clicked() {
+                    done = Some(true);
+                }
+                if ui.button(tr(lang, "Cancel")).clicked() {
+                    done = Some(false);
+                }
+            });
+        });
+        if !open {
+            done = Some(false);
+        }
+        match done {
+            Some(true) => {
+                let own = crate::basemap::Own { name: d.name.clone(), url: d.url.trim().to_string(), max_level: d.max_level, credit: d.credit.clone() };
+                self.own_dialog = None;
+                if let Some(b) = crate::basemap::register(&own) {
+                    if !self.settings.own.contains(&own) {
+                        self.settings.own.push(own);
+                    }
+                    self.settings_dirty = true;
+                    self.set_basemap(b);
+                }
+            }
+            Some(false) => self.own_dialog = None,
+            None => {}
+        }
     }
 
     /// Шаг разреза Земли: загрузки, грани и полосы плит, сектор
@@ -3532,6 +4002,170 @@ impl LiteApp {
         }
     }
 
+    /// Шаг полёта, `FlightSim._tick` модуля: клавиши, физика, камера,
+    /// модель. Касание земли - надпись, через END_SHOW секунд режим
+    /// снимается.
+    fn step_flight(&mut self, ctx: &egui::Context, now: f64) {
+        let Some(flight) = &mut self.flight else {
+            return;
+        };
+        let (escape, view, hud) = ctx.input(|i| (i.key_pressed(egui::Key::Escape), i.key_pressed(egui::Key::V), i.key_pressed(egui::Key::H)));
+        if hud {
+            flight.hud = !flight.hud;
+        }
+        if view {
+            let tilt = self.nav.pose.tilt;
+            let back = !flight.cockpit;
+            flight.set_cockpit(back, tilt);
+            if !back {
+                let p = &flight.plane;
+                self.nav.air = false;
+                self.nav.show(Pose::new(p.lat, p.lon, crate::flight::CHASE_REACH, p.heading, flight.chase_tilt()));
+            }
+        }
+        let store = self.heights.read();
+        let scale = store.scale();
+        let true_ground = |lat: f64, lon: f64| if scale != 0.0 { (store.height_at(lat, lon) / scale).max(0.0) } else { 0.0 };
+        let ground = true_ground(flight.plane.lat, flight.plane.lon);
+        let going = !escape && flight.step(now, crate::flight::controls(ctx), ground);
+        let screen_ground = |lat: f64, lon: f64| store.height_at(lat, lon).max(0.0);
+        if going {
+            let alt = flight.plane.alt * scale;
+            match flight.camera(alt, &screen_ground, self.nav.pose.tilt) {
+                crate::flight::Camera::Chase(la, lo, distance, look, tilt) => self.nav.show(Pose::new(la, lo, distance, look, tilt)),
+                crate::flight::Camera::Cockpit { lat, lon, h, distance, heading, tilt, roll } => {
+                    self.nav.stop();
+                    let mut pose = Pose::new(lat, lon, distance, heading, tilt).with_h(h).with_terrain(self.nav.terrain.clone());
+                    pose.roll = roll;
+                    self.nav.set_pose(pose);
+                    self.nav.air = true;
+                }
+            }
+            if let Some(globe) = &mut self.globe {
+                if flight.fresh {
+                    flight.fresh = false;
+                    globe.set_flight_model(Some(&flight.mesh()));
+                }
+                let center = self.nav.camera.ellipsoid.geodetic_to_ecef(flight.plane.lat, flight.plane.lon, alt);
+                globe.place_flight(render::ModelPlace { center, orient: flight.orient(), sun: crate::models::sun_at(flight.plane.lat, flight.plane.lon), shown: !flight.cockpit });
+            }
+            ctx.request_repaint();
+        }
+        drop(store);
+        if !going {
+            self.flight = None;
+            self.nav.air = false;
+            if let Some(globe) = &mut self.globe {
+                globe.set_flight_model(None);
+            }
+        }
+    }
+
+    /// Шаг живых строк, `LiveManager` модуля: опрос служб, точки
+    /// и подписи издалека, модели вблизи, камера следом.
+    fn step_live(&mut self, now: f64) {
+        if self.live.is_empty() {
+            self.live_objects.clear();
+            return;
+        }
+        let pose = self.nav.pose.clone();
+        let view = (pose.lat, pose.lon, self.view_width());
+        let mut rebuild = false;
+        let mut all: Vec<(crate::live::Kind, crate::live::Object)> = Vec::new();
+        {
+            let loaders = &self.loaders;
+            let request = |limit: u64| (loaders.request)(limit);
+            for live in self.live.values_mut() {
+                live.step(now, view, &request);
+                rebuild |= live.dirty;
+                let kind = live.kind;
+                all.extend(live.objects(now).into_iter().map(|o| (kind, o)));
+            }
+        }
+        let store = self.heights.read();
+        let scale = store.scale();
+        let ground = |lat: f64, lon: f64| store.height_at(lat, lon);
+        let e = self.nav.camera.ellipsoid;
+        let level = |o: &crate::live::Object| if o.alt.is_finite() { o.alt * scale } else { ground(o.lat, o.lon) };
+        // Камера следом: объект в середине вида, азимут по курсу.
+        if let Some((kind, key)) = self.live_follow.clone() {
+            match all.iter().find(|(k, o)| *k == kind && o.key == key) {
+                Some((_, o)) => {
+                    let heading = if o.heading.is_finite() { o.heading } else { pose.heading };
+                    let reach = self.live.get(&kind).map_or(crate::live::START_REACH, |l| l.reach);
+                    let (la, lo, look, distance) = data::movers::chase_on(o.lat, o.lon, heading, level(o), &ground, reach, pose.tilt);
+                    self.nav.show(Pose::new(la, lo, distance, look, pose.tilt));
+                }
+                None => self.live_follow = None,
+            }
+        }
+        // Модели вблизи и объект под камерой следом.
+        let mut keys: Vec<(crate::live::Kind, String)> = Vec::new();
+        for live in self.live.values() {
+            let objects: Vec<crate::live::Object> = all.iter().filter(|(k, _)| *k == live.kind).map(|(_, o)| o.clone()).collect();
+            let followed = self.live_follow.as_ref().filter(|(k, _)| *k == live.kind).map(|(_, key)| key.as_str());
+            keys.extend(crate::live::model_keys(live.kind, &objects, view, followed).into_iter().map(|k| (live.kind, k)));
+        }
+        if let Some(globe) = &mut self.globe {
+            if keys != self.live_keys {
+                let mut meshes = Vec::new();
+                for (kind, key) in &keys {
+                    if let (Some(live), Some((_, o))) = (self.live.get_mut(kind), all.iter().find(|(k, o)| k == kind && o.key == *key)) {
+                        meshes.extend(live.meshes(&[o]));
+                    }
+                }
+                globe.set_live_models(&meshes);
+                self.live_keys = keys.clone();
+            }
+            for (i, (kind, key)) in keys.iter().enumerate() {
+                if let Some((_, o)) = all.iter().find(|(k, o)| k == kind && o.key == *key) {
+                    let center = e.geodetic_to_ecef(o.lat, o.lon, level(o));
+                    globe.place_live(i, render::ModelPlace { center, orient: crate::live::orient(o), sun: crate::models::sun_at(o.lat, o.lon), shown: true });
+                }
+            }
+        }
+        // Точки и подписи издалека: не те, что видны моделью крупно.
+        if rebuild {
+            let eye = self.nav.camera.eye;
+            let mut points: Vec<DVec3> = Vec::new();
+            let mut colors = Vec::new();
+            let mut labels = Vec::new();
+            for live in self.live.values_mut() {
+                let objects: Vec<crate::live::Object> = all.iter().filter(|(k, _)| *k == live.kind).map(|(_, o)| o.clone()).collect();
+                let followed = self.live_follow.as_ref().filter(|(k, _)| *k == live.kind).map(|(_, key)| key.clone());
+                let near = crate::live::near(live.kind, view.2);
+                let skip = |o: &crate::live::Object| {
+                    followed.as_deref() == Some(o.key.as_str()) || (near && (e.geodetic_to_ecef(o.lat, o.lon, level(o)) - eye).length() <= crate::live::SEEN * o.size.1)
+                };
+                for (n, o) in crate::live::nearest(&objects, view, &skip).into_iter().enumerate() {
+                    let p = e.geodetic_to_ecef(o.lat, o.lon, level(o));
+                    points.push(p);
+                    colors.push(crate::live::rgba(o.color));
+                    if n < LIVE_LABELS {
+                        labels.push((o.label.clone(), p));
+                    }
+                }
+                live.built(now);
+            }
+            self.live_points.clear();
+            if !points.is_empty() {
+                let center = points.iter().fold(DVec3::ZERO, |a, p| a + *p) / points.len() as f64;
+                self.live_points.push(render::PointsMesh {
+                    center,
+                    offsets: points.iter().map(|p| (*p - center).as_vec3().to_array()).collect(),
+                    colors,
+                    size: crate::live::POINT_SIZE,
+                    sizes: Vec::new(),
+                    dot: Some(render::Dot { alpha: 1.0, lift: crate::dots::LIFT }),
+                });
+            }
+            self.live_labels = labels;
+            self.dots.dirty = true;
+        }
+        drop(store);
+        self.live_objects = all;
+    }
+
     /// Шаг маршрута: готовый путь ложится линией в выделенную папку
     /// «Моих меток», окно летит к нему, как `_done` модуля.
     fn step_route(&mut self, now: f64) {
@@ -3679,11 +4313,14 @@ impl LiteApp {
         }
         self.basemap = basemap;
         self.pending.clear();
-        if basemap.ready().is_some() && self.ready_loader.as_ref().is_none_or(|(b, _)| *b != basemap) {
+        if matches!(basemap, Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_)) && self.ready_loader.as_ref().is_none_or(|(b, _)| *b != basemap) {
             self.ready_loader = Some((basemap, (self.loaders.make)(basemap.source())));
         }
-        self.settings.basemap = basemap.key().to_string();
-        self.settings_dirty = true;
+        // Карта палеогеографии - не выбор основы, в настройки не идёт.
+        if !matches!(basemap, Basemap::Paleo(_)) {
+            self.settings.basemap = basemap.key().to_string();
+            self.settings_dirty = true;
+        }
         self.sync_maps();
         if let Some(globe) = &mut self.globe {
             globe.clear_textures();
@@ -3829,6 +4466,7 @@ impl LiteApp {
             let terrain = self.nav.pose.terrain.clone();
             let height = move |lat: f64, lon: f64| terrain.as_ref().map_or(0.0, |t| t(lat, lon));
             let mut all = self.clouds.clone();
+            all.extend(self.live_points.iter().cloned());
             all.extend(self.dots.meshes(&self.nav.camera.ellipsoid, &height, window));
             let poles = self.geo.points();
             if !poles.is_empty() {
@@ -3908,6 +4546,25 @@ impl LiteApp {
         // Разбор подписей - в бюджете кадра.
         if self.labels.decode_queued(LABEL_BUDGET) {
             self.labels.pending = true;
+        }
+        // Геоид: высоты - тайлы геоида, без дна моря и своего рельефа.
+        if let Some(g) = &self.geoid {
+            let arrived = g.loader.take();
+            if arrived.is_empty() {
+                return;
+            }
+            let mut store = self.heights.write();
+            for loaded in arrived {
+                let (z, x, y) = loaded.key;
+                if let Ok(net::Content::Image(img)) = loaded.content
+                    && let Some(tile) = terrain::make_tile(z, x, y, &img.rgba, None, Encoding::Terrarium)
+                {
+                    store.add(tile);
+                }
+            }
+            drop(store);
+            self.nav.keep_clear();
+            return;
         }
         let arrived = self.loaders.terrain.take();
         if arrived.is_empty() && !self.relief.busy() {
@@ -3991,6 +4648,7 @@ impl LiteApp {
         if self.settings.stars && self.nav.camera.altitude() > data::stars::FADE_LOW {
             parts.push(data::stars::ATTRIBUTION);
         }
+        parts.extend(self.live.keys().map(|k| k.attribution()));
         if self.cutaway.is_some() {
             parts.push(data::crust::CITATION);
             parts.push(data::slabs::ATTRIBUTION);
@@ -4380,6 +5038,8 @@ impl eframe::App for LiteApp {
             || self.search.busy()
             || self.pictures.busy()
             || self.fetching.is_some()
+            || self.viewshed.as_ref().is_some_and(crate::pointcalc::Calc::busy)
+            || self.insolation.as_ref().is_some_and(crate::pointcalc::Calc::busy)
             || self.relief.busy();
         self.loading_since = if loading { self.loading_since.or(Some(now)) } else { None };
         let base_busy = self.base_loader(self.basemap).is_some_and(|l| l.busy());
@@ -4410,7 +5070,33 @@ impl eframe::App for LiteApp {
             let busy = padded
                 || self.tool.as_mut().is_some_and(|t| t.input(&ctx, &globe_response, rect, ppp, &self.nav))
                 || self.overlay_props.as_mut().is_some_and(|p| p.input(&ctx, &globe_response, rect, ppp, &self.nav));
-            if !busy {
+            // Камера следом: колесо - расстояние до объекта, Esc отпускает,
+            // `ChaseControl` модуля.
+            if let Some((kind, _)) = self.live_follow.clone()
+                && globe_response.hovered()
+            {
+                let scroll = ctx.input(|i| i.smooth_scroll_delta.y);
+                if scroll != 0.0
+                    && let Some(live) = self.live.get_mut(&kind)
+                {
+                    live.wheel(f64::from(scroll) / 50.0);
+                    ctx.input_mut(|i| i.smooth_scroll_delta = egui::Vec2::ZERO);
+                }
+                if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
+                    self.live_follow = None;
+                }
+            }
+            // В полёте клавиши и колесо - у самолёта, камеру ставит полёт.
+            let flying = self.flight.is_some();
+            if let Some(flight) = &mut self.flight
+                && globe_response.hovered()
+            {
+                let scroll = ctx.input(|i| i.smooth_scroll_delta.y);
+                if scroll != 0.0 {
+                    flight.wheel(f64::from(scroll) / 50.0);
+                }
+            }
+            if !busy && !flying {
                 self.input.handle(&ctx, rect, globe_response.layer_id, &mut self.nav, now, ppp);
             }
             // Точка под курсором - вторая строка состояния, как у модуля.
@@ -4480,7 +5166,13 @@ impl eframe::App for LiteApp {
         self.picked(now);
         self.step_links(now);
         self.step_route(now);
+        self.step_live(now);
+        self.step_flight(&ctx, now);
         self.step_subsurface(&ctx, now);
+        self.own_window(&ctx);
+        self.point_windows(&ctx);
+        self.step_calcs(&ctx, now);
+        self.paleo_bar(&ctx, now);
         self.step_cutaway();
         self.check_linked_models(now);
         for (bytes, name) in std::mem::take(&mut self.pending_open) {
@@ -4542,8 +5234,16 @@ impl eframe::App for LiteApp {
             }
         }
         // Высоты глубже уровня 15 у своего рельефа собираются здесь.
-        let needs = self.relief.route(height_needs(&store, &selection), &store);
-        self.loaders.terrain.want(&needs);
+        let mut needs = self.relief.route(height_needs(&store, &selection), &store);
+        // Высоты расчётов у точки - вперёд тайлов кадра.
+        needs.extend(self.calc_keys.iter().filter(|k| store.tile(**k).is_none()).map(|k| (*k, lod::INFINITE_PRIORITY + 5.0)));
+        match &self.geoid {
+            Some(g) => {
+                g.loader.want(&needs);
+                self.loaders.terrain.want(&[]);
+            }
+            None => self.loaders.terrain.want(&needs),
+        }
         let mut vector_tiles = self.labels.wanted(&selection.draw);
         // Подписям - только их тайлы: разбор пунктов всех тайлов линий
         // стоил главному потоку до 40 кадров в секунду.
@@ -4634,6 +5334,17 @@ impl eframe::App for LiteApp {
         for mover in &self.movers {
             globe.place_model(mover.index, mover.place(window, &store));
         }
+        // Камера следом за моделью на пути: точка взгляда - модель,
+        // расстояние, азимут и наклон прежние, `set_follow` модуля.
+        if self.followed.is_some_and(|i| i >= self.movers.len()) {
+            self.followed = None;
+        }
+        if let Some(m) = self.followed.and_then(|i| self.movers.get(i)) {
+            let (lat, lon, _) = self.nav.camera.ellipsoid.ecef_to_geodetic(m.place(window, &store).center);
+            let p = &self.nav.pose;
+            let pose = Pose::new(lat, lon, p.distance, p.heading, p.tilt);
+            self.nav.show(pose);
+        }
         for model in &self.animated {
             globe.animate_model(model.index, model.deltas(now));
         }
@@ -4643,7 +5354,8 @@ impl eframe::App for LiteApp {
         let recreated = globe.resize(width, height);
         // Вода над дном моря, под картой аномалий поля прозрачнее: синяя
         // вода делала красное молодое дно у хребтов фиолетовым.
-        let water = self.settings.sea.then(|| {
+        // В режиме геоида воды нет, высоты - геоид, а не дно.
+        let water = (self.settings.sea && self.geoid.is_none()).then(|| {
             let under_field = if self.settings.maps.iter().any(|m| m == "emag") { WATER_UNDER_FIELD } else { 1.0 };
             [WATER_COLOR[0], WATER_COLOR[1], WATER_COLOR[2], WATER_COLOR[3] * under_field]
         });
@@ -4679,7 +5391,56 @@ impl eframe::App for LiteApp {
         if pad {
             blocked.push(crate::navpad::rect(rect));
         }
-        self.labels.draw(&painter, rect, ppp as f32, &blocked, &self.nav.camera, &selection.draw, &self.heights.read());
+        // В палеогеографии подписей нет, как у модуля.
+        if self.paleo.is_none() {
+            self.labels.draw(&painter, rect, ppp as f32, &blocked, &self.nav.camera, &selection.draw, &self.heights.read());
+        }
+        // Приборы и строка полёта.
+        if let Some(flight) = &self.flight {
+            let ground = {
+                let store = self.heights.read();
+                let s = store.scale();
+                if s != 0.0 { (store.height_at(flight.plane.lat, flight.plane.lon) / s).max(0.0) } else { 0.0 }
+            };
+            let focal = rect.height() / 2.0 / (self.nav.camera.fov_y.to_radians() as f32 / 2.0).tan();
+            flight.hud(&painter, rect, self.lang, ground, focal);
+            let lines = flight.lines(self.lang, ground);
+            let font = egui::FontId::proportional(15.0);
+            let galleys: Vec<_> = lines.iter().enumerate().map(|(n, l)| painter.layout_no_wrap(l.clone(), font.clone(), if n == 0 && lines.len() > 1 { egui::Color32::WHITE } else { egui::Color32::from_rgb(200, 210, 222) })).collect();
+            let width = galleys.iter().map(|g| g.size().x).fold(0.0, f32::max) + 20.0;
+            let height = galleys.iter().map(|g| g.size().y).sum::<f32>() + 20.0;
+            let back = egui::Rect::from_min_size(egui::pos2(rect.center().x - width / 2.0, rect.bottom() - 44.0 - height), egui::vec2(width, height));
+            painter.rect_filled(back, 6.0, egui::Color32::from_rgba_unmultiplied(15, 25, 40, 175));
+            let mut y = back.top() + 10.0;
+            for g in galleys {
+                let h = g.size().y;
+                painter.galley(egui::pos2(back.center().x - g.size().x / 2.0, y), g, egui::Color32::WHITE);
+                y += h;
+            }
+        }
+        // Подписи живых объектов у их точек, на обращённой к глазу стороне,
+        // без наложения: ближние к точке взгляда первыми.
+        let mut taken: Vec<egui::Rect> = blocked.clone();
+        for (text, p) in &self.live_labels {
+            let (q, front) = self.nav.camera.project(*p);
+            let facing = (*p - self.nav.camera.eye).dot(p.normalize_or_zero()) < 0.0;
+            if !front || !facing {
+                continue;
+            }
+            let at = rect.min + egui::vec2((q.x / ppp) as f32 + 6.0, (q.y / ppp) as f32 - 6.0);
+            if !rect.contains(at) {
+                continue;
+            }
+            let font = egui::FontId::proportional(11.0);
+            let galley = painter.layout_no_wrap(text.clone(), font.clone(), egui::Color32::WHITE);
+            let place = egui::Rect::from_min_size(at - egui::vec2(0.0, galley.size().y), galley.size()).expand(2.0);
+            if taken.iter().any(|r| r.intersects(place)) {
+                continue;
+            }
+            taken.push(place);
+            painter.text(at + egui::vec2(1.0, 1.0), egui::Align2::LEFT_BOTTOM, text, font.clone(), egui::Color32::from_black_alpha(200));
+            painter.text(at, egui::Align2::LEFT_BOTTOM, text, font, egui::Color32::WHITE);
+        }
         if self.settings.grid {
             crate::grid::paint(&painter, rect, ppp, &self.nav, self.lang);
         }
@@ -4782,7 +5543,7 @@ impl eframe::App for LiteApp {
             check.note_labels(&self.labels.drawn, rect);
         }
         self.finish_check(&ctx);
-        self.step_shot(&ctx, moving || loading);
+        self.step_shot(&ctx, moving || loading || lines_pending);
         if moving || animating || loading || lines_pending || self.labels.pending || self.check.is_some() {
             ctx.request_repaint();
         }

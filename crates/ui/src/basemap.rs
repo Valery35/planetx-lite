@@ -11,6 +11,14 @@
 //! группы «с предупреждением»: Google, Bing, Яндекс и 2ГИС модуль ставит
 //! только через окно согласия с их условиями. Подпись источника основы
 //! всегда на экране.
+//!
+//! Свои источники тайлов - пункт «Добавить источник тайлов…» меню
+//! «Основа», окно `TileSourceDialog` модуля без служб WMS: название,
+//! шаблон адреса с {z}, {x}, {y} или {-y}, уровни, подпись. Строки
+//! источника живут до конца работы программы: основа - копируемое
+//! значение, а источник тайлов держит адрес и имя кэша навсегда.
+
+use std::sync::RwLock;
 
 use net::Source;
 
@@ -24,6 +32,114 @@ pub enum Basemap {
     Osm,
     /// Готовая подоснова, номер в [`READY`].
     Ready(usize),
+    /// Свой источник тайлов, номер в списке своих.
+    Own(usize),
+    /// Карта палеогеографии на возраст в млн лет, строка «Палеогеография»
+    /// каталога. В выборе основы её нет.
+    Paleo(u32),
+}
+
+/// Адреса карт палеогеографии по возрасту, вечные строки источника.
+static PALEO: RwLock<Vec<(u32, &'static str, &'static str)>> = RwLock::new(Vec::new());
+
+/// Имя кэша и адрес карты возраста age.
+fn paleo_source(age: u32) -> (&'static str, &'static str) {
+    if let Some(found) = PALEO.read().ok().and_then(|l| l.iter().find(|(a, _, _)| *a == age).map(|(_, n, u)| (*n, *u))) {
+        return found;
+    }
+    let name: &'static str = Box::leak(format!("paleo_{age}").into_boxed_str());
+    let url: &'static str = Box::leak(data::paleo::TILE_URL.replace("{age}", &age.to_string()).into_boxed_str());
+    if let Ok(mut l) = PALEO.write() {
+        l.push((age, name, url));
+    }
+    (name, url)
+}
+
+/// Свой источник тайлов: название, шаблон адреса, последний уровень,
+/// подпись.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Own {
+    pub name: String,
+    pub url: String,
+    pub max_level: u32,
+    pub credit: String,
+}
+
+/// Свой источник с вечными строками для источника тайлов.
+#[derive(Debug)]
+struct OwnEntry {
+    key: &'static str,
+    name: &'static str,
+    url: &'static str,
+    max_level: u32,
+    credit: &'static str,
+}
+
+/// Свои источники по порядку добавления.
+static OWN: RwLock<Vec<&'static OwnEntry>> = RwLock::new(Vec::new());
+
+fn own_list() -> Vec<&'static OwnEntry> {
+    OWN.read().map(|l| l.clone()).unwrap_or_default()
+}
+
+/// Самый глубокий уровень своих тайлов.
+pub const OWN_MAX_LEVEL: u32 = 22;
+
+/// Ошибка шаблона адреса своего источника или None, если он годится:
+/// http или https, места {z}, {x} и {y} или {-y}.
+pub fn template_error(url: &str) -> Option<&'static str> {
+    let url = url.trim();
+    if !(url.starts_with("https://") || url.starts_with("http://")) {
+        return Some("The address must begin with https:// or http://.");
+    }
+    if !(url.contains("{z}") && url.contains("{x}") && (url.contains("{y}") || url.contains("{-y}"))) {
+        return Some("The address needs the places {z}, {x} and {y} or {-y}.");
+    }
+    if url.chars().any(char::is_whitespace) {
+        return Some("The address must not contain spaces.");
+    }
+    None
+}
+
+/// Ключ своего источника по адресу: «own» и короткий хэш, имя папки кэша.
+fn own_key(url: &str) -> String {
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+    for b in url.trim().bytes() {
+        h = (h ^ u64::from(b)).wrapping_mul(0x0100_0000_01b3);
+    }
+    format!("own_{h:016x}")
+}
+
+/// Поставить свой источник в список. Тот же адрес - прежняя основа.
+/// Неверный шаблон - None.
+pub fn register(own: &Own) -> Option<Basemap> {
+    if template_error(&own.url).is_some() {
+        return None;
+    }
+    let key = own_key(&own.url);
+    let mut list = OWN.write().ok()?;
+    if let Some(i) = list.iter().position(|e| e.key == key) {
+        return Some(Basemap::Own(i));
+    }
+    let clean = |s: &str| s.replace(['\t', '\n', '\r'], " ").trim().to_string();
+    let name = clean(&own.name);
+    let entry = OwnEntry {
+        key: Box::leak(key.into_boxed_str()),
+        name: Box::leak(if name.is_empty() { "Tiles".to_string() } else { name }.into_boxed_str()),
+        url: Box::leak(own.url.trim().to_string().into_boxed_str()),
+        max_level: own.max_level.clamp(1, OWN_MAX_LEVEL),
+        credit: Box::leak(clean(&own.credit).into_boxed_str()),
+    };
+    list.push(Box::leak(Box::new(entry)));
+    Some(Basemap::Own(list.len() - 1))
+}
+
+/// Свой источник основы для настроек.
+pub fn own_of(b: Basemap) -> Option<Own> {
+    let Basemap::Own(n) = b else {
+        return None;
+    };
+    own_list().get(n).map(|e| Own { name: e.name.to_string(), url: e.url.to_string(), max_level: e.max_level, credit: e.credit.to_string() })
 }
 
 /// Группа готовых подоснов, `READY_GROUPS` модуля.
@@ -197,7 +313,20 @@ impl Basemap {
     pub fn all() -> Vec<Basemap> {
         let mut out = Self::ALL.to_vec();
         out.extend((0..READY.len()).map(Basemap::Ready));
+        out.extend((0..own_list().len()).map(Basemap::Own));
         out
+    }
+
+    /// Свои источники.
+    pub fn owns() -> Vec<Basemap> {
+        (0..own_list().len()).map(Basemap::Own).collect()
+    }
+
+    fn own(self) -> Option<&'static OwnEntry> {
+        match self {
+            Basemap::Own(n) => own_list().get(n).copied(),
+            _ => None,
+        }
     }
 
     /// Готовая подоснова.
@@ -216,6 +345,14 @@ impl Basemap {
                 Some(r) => Source { name: r.key, url: r.url, max_requests: 4, max_level: r.max_level, ext: "png", placeholders: false, raw: false, tilejson: None },
                 None => net::ESRI,
             },
+            Basemap::Own(_) => match self.own() {
+                Some(e) => Source { name: e.key, url: e.url, max_requests: 2, max_level: e.max_level, ext: "png", placeholders: false, raw: false, tilejson: None },
+                None => net::ESRI,
+            },
+            Basemap::Paleo(age) => {
+                let (name, url) = paleo_source(age);
+                Source { name, url, max_requests: 4, max_level: data::paleo::MAX_LEVEL, ext: "jpg", placeholders: false, raw: false, tilejson: None }
+            }
         }
     }
 
@@ -225,6 +362,8 @@ impl Basemap {
             Basemap::Esri => "esri",
             Basemap::Osm => "osm",
             Basemap::Ready(_) => self.ready().map_or("esri", |r| r.key),
+            Basemap::Own(_) => self.own().map_or("esri", |e| e.key),
+            Basemap::Paleo(_) => "paleo",
         }
     }
 
@@ -239,6 +378,8 @@ impl Basemap {
             Basemap::Esri => tr(lang, "Esri World Imagery"),
             Basemap::Osm => tr(lang, "OpenStreetMap map"),
             Basemap::Ready(_) => self.ready().map_or("", |r| tr(lang, r.name)),
+            Basemap::Own(_) => self.own().map_or("", |e| e.name),
+            Basemap::Paleo(_) => tr(lang, "Paleogeography"),
         }
     }
 
@@ -253,6 +394,8 @@ impl Basemap {
             ),
             Basemap::Osm => (tr(lang, "© OpenStreetMap contributors"), "https://www.openstreetmap.org/copyright"),
             Basemap::Ready(_) => self.ready().map_or(("", ""), |r| (r.credit, r.terms)),
+            Basemap::Own(_) => self.own().map_or(("", ""), |e| (e.credit, "")),
+            Basemap::Paleo(_) => data::paleo::ATTRIBUTION,
         }
     }
 }
@@ -262,11 +405,31 @@ mod tests {
     use super::{Basemap, READY};
 
     #[test]
+    fn own_source_registers_once() {
+        use super::{Own, register, template_error};
+        assert!(template_error("ftp://x/{z}/{x}/{y}").is_some());
+        assert!(template_error("https://x/{z}/{x}.png").is_some());
+        assert!(template_error("https://x/{z}/{x}/{-y}.png").is_none());
+        let own = Own { name: "Topo\tmap".into(), url: "https://tiles.example.org/{z}/{x}/{y}.png".into(), max_level: 99, credit: "Example".into() };
+        let got = register(&own);
+        assert!(got.is_some());
+        let Some(b) = got else {
+            return;
+        };
+        assert_eq!(register(&own), Some(b));
+        assert_eq!(Basemap::from_key(b.key()), Some(b));
+        assert_eq!(b.source().max_level, super::OWN_MAX_LEVEL);
+        assert_eq!(b.name(crate::i18n::Lang::EN), "Topo map");
+        assert_eq!(b.attribution(crate::i18n::Lang::EN).0, "Example");
+        assert!(register(&Own { url: "nonsense".into(), ..own }).is_none());
+    }
+
+    #[test]
     fn ready_keys_round_trip() {
         for b in Basemap::all() {
             assert_eq!(Basemap::from_key(b.key()), Some(b));
             assert!(b.source().url.starts_with("https://"));
         }
-        assert_eq!(Basemap::all().len(), 2 + READY.len());
+        assert!(Basemap::all().len() >= 2 + READY.len());
     }
 }

@@ -314,6 +314,10 @@ pub struct Globe {
     points: Points,
     stars: stars::Stars,
     models: Models,
+    /// Модели живых объектов: суда, самолёты, поезда, свой самолёт.
+    live: Models,
+    /// Свой самолёт режима полёта.
+    flight: Models,
     air: wgpu::Buffer,
     air_bind: wgpu::BindGroup,
     air_layout: wgpu::BindGroupLayout,
@@ -791,6 +795,8 @@ impl Globe {
             points: Points::new(device),
             stars: stars::Stars::new(device),
             models: Models::new(device, queue),
+            live: Models::new(device, queue),
+            flight: Models::new(device, queue),
             air,
             air_bind,
             air_layout,
@@ -1519,6 +1525,27 @@ impl Globe {
         self.models.set(&self.device, &self.queue, models);
     }
 
+    /// Модели живых объектов, отдельно от моделей сцены.
+    pub fn set_live_models(&mut self, models: &[ModelMesh]) {
+        self.live.set(&self.device, &self.queue, models);
+    }
+
+    /// Свой самолёт режима полёта, None - убрать.
+    pub fn set_flight_model(&mut self, model: Option<&ModelMesh>) {
+        let models: Vec<ModelMesh> = model.into_iter().cloned().collect();
+        self.flight.set(&self.device, &self.queue, &models);
+    }
+
+    /// Место своего самолёта на кадр.
+    pub fn place_flight(&mut self, place: ModelPlace) {
+        self.flight.place(0, place);
+    }
+
+    /// Новое место живой модели номер index из [`Globe::set_live_models`].
+    pub fn place_live(&mut self, index: usize, place: ModelPlace) {
+        self.live.place(index, place);
+    }
+
     /// Новое место модели номер index из [`Globe::set_models`]: модель
     /// едет по пути.
     pub fn place_model(&mut self, index: usize, place: ModelPlace) {
@@ -1528,6 +1555,8 @@ impl Globe {
     /// Солнце для моделей: направление в ECEF, None - свет модели свой.
     pub fn set_model_sun(&mut self, sun: Option<[f32; 3]>) {
         self.models.sun = sun;
+        self.live.sun = sun;
+        self.flight.sun = sun;
     }
 
     /// Матрицы дорожек анимации модели номер index на кадр.
@@ -1756,6 +1785,8 @@ impl Globe {
             draws += self.stars.draw(&self.queue, &mut pass, camera, ratio);
             // Картинки-наложения - под своими объектами.
             draws += self.models.draw(&self.device, &self.queue, &mut pass, camera);
+            draws += self.live.draw(&self.device, &self.queue, &mut pass, camera);
+            draws += self.flight.draw(&self.device, &self.queue, &mut pass, camera);
             draws += self.points.draw(&self.device, &self.queue, &mut pass, camera, ratio);
             draws += self.pictures.draw(&self.device, &self.queue, &mut pass, camera);
             draws += self.features.draw(&self.device, &self.queue, &mut pass, camera, ratio);

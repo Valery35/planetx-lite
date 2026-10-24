@@ -986,3 +986,157 @@ Earth cutaway	Разрез Земли
 Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on.	Вынимает из Земли сектор под точкой взгляда - четверть полушария шириной 90° по долготе. На его гранях видны кора, мантия и ядро по радиусам модели PREM, кора - по модели CRUST1.0. Где грань проходит через зону субдукции, на ней видна погружающаяся плита. Сектор ставится заново при каждом включении строки.
 Stretch the crust	Растягивать кору
 Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.	Растягивает глубины до 400 км тем сильнее, чем дальше камера, и издалека видны кора и верхняя мантия. Без флажка все глубины в настоящем масштабе.
+Camera follows	Камера следом
+Add tile source…	Добавить источник тайлов…
+Remove this tile source from the list.	Убрать этот источник тайлов из списка.
+New tile source	Новый источник тайлов
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS.	Шаблон адреса тайлов с местами {z}, {x} и {y}. {-y} - ряды снизу вверх, как у TMS.
+Levels up to	Уровни до
+Credit	Подпись
+Credit of the source on the screen, as its terms of use require.	Подпись источника на экране, как требуют условия его использования.
+The address must begin with https:// or http://.	Адрес должен начинаться с https:// или http://.
+The address needs the places {z}, {x} and {y} or {-y}.	В адресе нужны места {z}, {x} и {y} или {-y}.
+The address must not contain spaces.	В адресе не должно быть пробелов.
+Wikipedia nearby	Википедия рядом
+Wikipedia articles with coordinates - cities, monuments, rivers, peaks - as labels with a blue dot. The articles are requested when the camera is below 40 km, in the language of the QGIS interface. A click on a label opens the article card - the first paragraph, a link to the article and the Explain this button. Wikipedia texts are under CC BY-SA 4.0.	Статьи Википедии с координатами - города, памятники, реки, вершины - подписями с голубым кружком. Статьи просятся, когда камера ниже 40 км, на языке интерфейса QGIS. Щелчок по подписи открывает карточку статьи - первый абзац, ссылку на статью и кнопку «Объясни это». Тексты Википедии - CC BY-SA 4.0.
+Clouds	Облака
+Clouds from NASA GIBS VIIRS imagery of the last complete day. They lie as a translucent veil over the imagery. Snow and ice are white too and stay visible.	Облака по снимкам VIIRS из NASA GIBS за последние полные сутки. Они лежат полупрозрачной пеленой поверх снимка. Снег и лёд тоже белые и остаются видны.
+Satellites	Спутники
+Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.	Искусственные спутники по орбитальным элементам CelesTrak, положение по модели SGP4. Время - правый бегунок шкалы времени, без шкалы - часы компьютера. Группы выбирает вкладка «Спутники» витрины. Элементы группы обновляются не чаще раза в 2 часа.
+Mining areas	Горные разработки
+Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.	Контуры карьеров, отвалов, хвостохранилищ и промплощадок мира по снимкам Sentinel-2 2019 года - около 45 тысяч участков, Maus и соавторы, 2022. Щелчок по контуру показывает страну и площадь. Первое включение скачивает около 25 МБ.
+OSM mines and quarries	Шахты и карьеры OSM
+Mines, shafts and quarries from OpenStreetMap with names and the commodity. They load for the place of the view when the camera is below 150 km. The colour is the commodity group, as for the deposits. A click on a point shows the name, operator and a link to the OpenStreetMap object.	Шахты, рудники, стволы и карьеры из OpenStreetMap с названиями и ископаемым. Загружаются по месту вида, когда камера ниже 150 км. Цвет - группа ископаемого, как у месторождений. Щелчок по точке показывает название, оператора и ссылку на объект OpenStreetMap.
+Trains of Finland	Поезда Финляндии
+Trains of Finland in real time from Fintraffic Digitraffic open data, the positions are updated every 10 s. From afar a train is a dot in the colour of its category with its number, close up it is a car model that moves along OpenStreetMap rails between updates. A click on a train shows its type, number and speed.	Поезда Финляндии в реальном времени по открытым данным Fintraffic Digitraffic, положения обновляются раз в 10 с. Издалека поезд - точка цвета категории с номером, вблизи - модель вагона, которая едет по рельсам OpenStreetMap между обновлениями. Щелчок по поезду показывает вид, номер и скорость.
+Baltic ships	Суда Балтики
+Ships of the Gulfs of Finland and Bothnia and the Baltic near Finland by AIS signals, Fintraffic Digitraffic open data, the positions every 20 s. From afar a ship is a dot in the colour of its type with its name, close up a schematic model of its length that keeps its course. A click shows the type, call sign, destination, size and speed.	Суда Финского и Ботнического заливов и Балтики у Финляндии по сигналам AIS, открытые данные Fintraffic Digitraffic, положения раз в 20 с. Издалека судно - точка цвета типа с названием, вблизи - условная модель своей длины, которая идёт своим курсом. Щелчок показывает тип, позывной, назначение, размеры и скорость.
+Aircraft	Самолёты
+Aircraft by ADS-B signals of the adsb.lol volunteer network in a circle around the point of view, every 10 s. An aircraft in the air is shown at its altitude, close up as a schematic model of the size of its category with its bank. A click shows the call sign, type, registration, altitude and speed. The network has almost no receivers over Russia.	Самолёты по сигналам ADS-B сети добровольцев adsb.lol в круге у точки взгляда, раз в 10 с. Самолёт в воздухе стоит на своей высоте, вблизи - условная модель размера своей категории с креном. Щелчок показывает позывной, тип, бортовой номер, высоту и скорость. Над Россией приёмников сети почти нет.
+Currents	Течения
+Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.	Поверхностные течения океана белыми бегущими струйками над заливкой скорости. Геострофические течения NOAA CoastWatch по спутниковой альтиметрии за последние готовые сутки, сетка 0.5°. Первое включение за сеанс скачивает около 4 МБ.
+OSM power lines, cables and pipelines	ЛЭП, кабели и трубопроводы OSM
+Power lines by voltage, substations, cables and gas, oil and water pipelines from OpenStreetMap. They load for the place in view when the camera is below 150 km. A click on a line shows the voltage, substance, operator and a link to the OpenStreetMap object.	Линии электропередачи по напряжению, подстанции, кабели и трубопроводы газа, нефти и воды из OpenStreetMap. Загружаются по месту вида, когда камера ниже 150 км. Щелчок по линии показывает напряжение, вещество, оператора и ссылку на объект OpenStreetMap.
+Historical earthquakes	Исторические землетрясения
+Strong earthquakes of the world from 1904 to 2024 from the ISC-GEM catalogue - about 74 thousand events of magnitude 5 and above, with locations, depths and magnitudes recomputed in one way. A circle sits at the epicentre, at its depth - in the removed sector of the Earth cutaway, the colour shows the depth and the size the magnitude. The time slider range selects the events. A click on a circle shows the place, date, magnitude and the USGS event page. The first use downloads the catalogue in parts, about 13 MB.	Сильные землетрясения мира с 1904 по 2024 год по каталогу ISC-GEM - около 74 тысяч событий магнитудой от 5, места, глубины и магнитуды пересчитаны одним способом. Кружок стоит в эпицентре, на своей глубине - в вынутом секторе разреза Земли, цвет показывает глубину, размер - магнитуду. Промежуток шкалы времени отбирает события. Щелчок по кружку показывает место, дату, магнитуду и страницу события USGS. Первое включение скачивает каталог по частям, около 13 МБ.
+Geoid	Геоид
+The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.	Форма уровенной поверхности Земли - геоида - по модели EGM2008 NGA. Пока строка включена, высоты глобуса - высоты геоида над эллипсоидом, от -107 до +86 м, растянутые в 10 000 раз, и Земля выглядит «измятой». Горбы - там, где сила тяжести больше, например у Новой Гвинеи, впадины - где меньше, самая глубокая - в Индийском океане. Рельеф и вода на это время убраны, выключение строки их возвращает.
+Paleogeography	Палеогеография
+Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.	Рельеф суши и глубины моря в прошлом, до 540 млн лет назад, по картам PaleoDEM PALEOMAP. Возраст задаёт ползунок внизу вида. Снимок, границы и подписи на это время убраны.
+3D buildings	3D-здания
+3D buildings from OpenStreetMap in OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM or from the number of floors. A building without either gets a height of 5 m.	Объёмные здания из OpenStreetMap по векторным тайлам OpenFreeMap. Они видны, когда камера ближе 6 км к земле. Высота взята из OSM, иначе из этажности. Здание без этих сведений получает высоту 5 м.
+Rosreestr cadastre	Кадастр Росреестра
+Land parcels from the National spatial data system of Rosreestr over the imagery, for Russia only. They are seen up close, from about 10 km and lower. The service answers slowly and refuses frequent requests, so the parcels come one tile at a time.	Земельные участки из Национальной системы пространственных данных Росреестра поверх снимка, только по России. Видны вблизи, с высоты около 10 км и ниже. Служба отвечает медленно и отказывает на частые запросы, поэтому участки приходят по одному тайлу.
+Age in millions of years ago. The map of relief and depths for this age - PaleoDEM PALEOMAP, Scotese and Wright 2018.	Возраст в миллионах лет назад. Карта рельефа и глубин на этот возраст - PaleoDEM PALEOMAP, Scotese и Wright 2018.
+Quaternary	Четвертичный период
+Neogene	Неоген
+Paleogene	Палеоген
+Cretaceous	Мел
+Jurassic	Юра
+Triassic	Триас
+Permian	Пермский период
+Carboniferous	Карбон
+Devonian	Девон
+Silurian	Силур
+Ordovician	Ордовик
+Cambrian	Кембрий
+Precambrian	Докембрий
+Present	Настоящее
+{age} million years ago, {period}	{age} млн лет назад, {period}
+Show from the chosen age to the present through all maps of the set.	Показ от выбранного возраста к настоящему по всем картам набора.
+How many times the geoid heights above the ellipsoid are stretched. To the right the bulges and hollows are deeper, to the left the Earth is rounder.	Во сколько раз растянуты высоты геоида над эллипсоидом. Вправо горбы и впадины глубже, влево Земля круглее.
+Trains of Finland, Baltic ships and aircraft in real time from Fintraffic open data and the adsb.lol ADS-B network.	Поезда Финляндии, суда Балтики и самолёты в реальном времени по открытым данным Fintraffic и сети ADS-B adsb.lol.
+on the ground	на земле
+{length} × {width} m	{length} × {width} м
+{metres} m ({feet} ft)	{metres} м ({feet} футов)
+{value} km/h	{value} км/ч
+{value} kn	{value} уз
+Call sign	Позывной
+IMO	IMO
+Destination	Назначение
+Size	Размеры
+MMSI	MMSI
+Course	Курс
+Position, UTC	Положение, UTC
+Registration	Бортовой номер
+ICAO code	Код ICAO
+Altitude	Высота
+Number	Номер
+Close	Закрыть
+None	Нет
+turn on	включить
+turn off	выключить
+Above ground {height} m	Над землёй {height} м
+Climb {climb} m/s	Подъём {climb} м/с
+Fighter	Истребитель
+Fly from here	Полёт отсюда
+Propeller plane	Винтовой самолёт
+Throttle {throttle} %	Тяга {throttle} %
+Touched the ground - the flight is over.	Касание земли - полёт окончен.
+Up to 2000 km/h, start at 900 km/h, sharp bank.	До 2000 км/ч, старт 900 км/ч, резкий крен.
+Up to 340 km/h, start at 250 km/h, smooth.	До 340 км/ч, старт 250 км/ч, плавный.
+km/h	км/ч
+{speed} km/h · altitude {alt} m, above ground {height} m · heading {heading}° · climb {climb} m/s · throttle {throttle} %	{speed} км/ч · высота {alt} м, над землёй {height} м · курс {heading}° · подъём {climb} м/с · тяга {throttle} %
+↑ ↓ - nose down and up · ← → - bank · PageUp, PageDown - throttle · V - cockpit view · H - instruments · Esc - exit	↑ ↓ - нос вниз и вверх · ← → - крен · PageUp, PageDown - тяга · V - вид из кабины · H - приборы · Esc - выход
+A click on a row copies the sheet number to the clipboard.	Щелчок по строке копирует номер листа в буфер обмена.
+A click on a row copies the sheet number. Sheets of the Russian State Geological Map at 1:1,000,000 and 1:200,000 use the Russian designation too.	Щелчок по строке копирует номер листа. По российской номенклатуре нумеруются и листы Госгеолкарты-1000 и 200.
+A ready site from the list or an empty row for your own address.	Готовый сайт из списка или пустая строка для своего адреса.
+Add or edit sites…	Добавить или изменить сайты…
+Add site	Добавить сайт
+All numbers in a window…	Все номера в окне…
+Delete the selected rows.	Удалить отмеченные строки.
+Each row is an item of the Open in browser submenu of the globe menu. The item opens the site at the point under the cursor. Add site puts a ready site or an empty row for your own address. In the address {lat} and {lon} are the latitude and longitude in degrees, {zoom} is the map scale by the view.	Каждая строка - пункт подменю «Открыть в браузере» меню на глобусе. Пункт открывает сайт на точке под курсором. «Добавить сайт» ставит готовый сайт или пустую строку для своего адреса. В адресе {lat} и {lon} - широта и долгота в градусах, {zoom} - масштаб карты по виду.
+International Map of the World (IMW)	Международная карта мира (IMW)
+MGRS, 100 km square	MGRS, квадрат 100 км
+Map sheet designation	Номенклатура листа
+NATO, JOG	NATO, JOG
+Open in browser	Открыть в браузере
+Own address	Свой адрес
+Row {n}: {reason}	Строка {n}: {reason}
+Russian sheet designation	Российская номенклатура
+S. H.	Ю. П.
+Sheet number	Номер листа
+Sites of the Open in browser menu	Сайты меню «Открыть в браузере»
+System	Система
+The address does not start with https:// or http://.	Адрес начинается не с https:// или http://.
+The address has extra braces or places other than {lat}, {lon} and {zoom}.	В адресе лишние фигурные скобки или места кроме {lat}, {lon} и {zoom}.
+The address has no {lat} or {lon}.	В адресе нет {lat} или {lon}.
+The item has no name.	У пункта нет названия.
+no sheet	нет листа
+Asking Eto Mesto…	Запрос к «Это Место»…
+Build	Построить
+Computing insolation: {share}	Расчёт инсоляции: {share}
+Direct sun, h per day	Прямое солнце, ч в сутки
+Eto Mesto old maps	Старые карты «Это Место»
+Eto Mesto old maps here…	Старые карты «Это Место» здесь…
+First day	Первые сутки
+Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Высота того, что надо увидеть, над рельефом, например мачты или здания. При нуле проверяется сама земля.
+Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Высота глаза или мачты над рельефом в точке. Выше - дальше видно и меньше мест скрыто за рельефом.
+Heights of the grid nodes: {share}	Высоты узлов сетки: {share}
+Insolation	Инсоляция
+Insolation here…	Инсоляция здесь…
+Keeps the maps whose title or year holds all the words.	Оставляет карты, в названии или годе которых есть все слова.
+Last day	Последние сутки
+Loading heights: {done} of {total}	Загрузка высот: {done} из {total}
+Maps at the point {total}, shown {shown}. A click on a title opens the map on the site.	Карт у точки {total}, показано {shown}. Щелчок по названию открывает карту на сайте.
+Maps of the Eto Mesto site (etomesto.com) that cover the point. A map opens on the site, where it can be overlaid on a modern map and downloaded under the site rules.	Карты сайта «Это Место» (etomesto.com), которые накрывают точку. Карта открывается на сайте, там её можно наложить на современную и скачать по правилам сайта.
+Not all heights are loaded, the computation used less detailed ones.	Загружены не все высоты, расчёт шёл по менее подробным.
+Observer height	Высота наблюдателя
+Opens the page of the chosen map on etomesto.com in the browser.	Открывает страницу выбранной карты на etomesto.com в браузере.
+Over {days} days direct sun shines from {low} to {high} h per day. The grid step is {step} m.	За {days} сут. прямое солнце светит от {low} до {high} ч в сутки. Шаг сетки - {step} м.
+Point	Точка
+Radius of the computed circle. A larger radius gives a coarser grid. Mountain shadows are taken from a distance of at least the radius and at least 5 km.	Радиус круга расчёта. Больше - шаг сетки крупнее. Тени гор берутся с расстояния не меньше радиуса и не меньше 5 км.
+Radius of the computed circle. A larger radius gives a coarser step, the step is about one five-hundredth of the radius.	Радиус круга расчёта. Больше - шаг расчёта крупнее, он около пятисотой доли радиуса.
+Remove	Убрать
+Remove the insolation layer from the globe.	Убрать слой инсоляции с глобуса.
+Remove the viewshed layer from the globe.	Убрать слой видимости с глобуса.
+Search by title or year	Поиск по названию или году
+Target height	Высота цели
+The first day of the period. The result is the mean number of hours of direct sunlight per day over the period.	Первые сутки промежутка. Итог - среднее количество часов прямого солнца в сутки за промежуток.
+The last day of the period, inclusive. A long period is computed over 15 evenly spaced days.	Последние сутки промежутка, включительно. Длинный промежуток считается по 15 суткам, взятым равномерно.
+The site did not answer: {error}	Сайт не ответил: {error}
+The site has no maps at this point.	У этой точки карт на сайте нет.
+This body has no heights.	Для этого тела высот нет.
+Viewshed from a point	Видимость из точки
+Viewshed from here…	Видимость отсюда…
+{share} of the circle area is visible. The computation step is {step} m.	Видно {share} площади круга. Шаг расчёта {step} м.

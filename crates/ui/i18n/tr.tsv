@@ -986,3 +986,157 @@ Earth cutaway	Dünya kesiti
 Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on.	Bakış noktasının altından Dünya'dan bir dilim çıkarır - boylamda 90° genişliğinde bir yarım kürenin dörtte biri. Yüzlerinde PREM modelinin yarıçaplarına göre kabuk, manto ve çekirdek, CRUST1.0 modeline göre kabuk görünür. Bir yüz bir dalma-batma zonunu kestiği yerde dalan levha görünür. Dilim, satır her açıldığında yeniden yerleştirilir.
 Stretch the crust	Kabuğu uzat
 Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.	400 km'ye kadar derinlikleri kamera uzaklaştıkça daha çok uzatır, böylece kabuk ve üst manto uzaktan görünür. İşaret yokken tüm derinlikler gerçek ölçektedir.
+Camera follows	Kamera takipte
+Add tile source…	Karo kaynağı ekle…
+Remove this tile source from the list.	Bu karo kaynağını listeden kaldır.
+New tile source	Yeni karo kaynağı
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS.	{z}, {x} ve {y} yerleri olan karo adresi şablonu. {-y} - TMS'teki gibi aşağıdan yukarıya satırlar.
+Levels up to	Düzeyler en fazla
+Credit	Atıf
+Credit of the source on the screen, as its terms of use require.	Kullanım koşullarının gerektirdiği gibi kaynağın ekrandaki atfı.
+The address must begin with https:// or http://.	Adres https:// veya http:// ile başlamalıdır.
+The address needs the places {z}, {x} and {y} or {-y}.	Adreste {z}, {x} ve {y} veya {-y} yerleri gerekir.
+The address must not contain spaces.	Adres boşluk içermemelidir.
+Wikipedia nearby	Yakındaki Wikipedia
+Wikipedia articles with coordinates - cities, monuments, rivers, peaks - as labels with a blue dot. The articles are requested when the camera is below 40 km, in the language of the QGIS interface. A click on a label opens the article card - the first paragraph, a link to the article and the Explain this button. Wikipedia texts are under CC BY-SA 4.0.	Koordinatlı Wikipedia maddeleri - şehirler, anıtlar, nehirler, zirveler - mavi noktalı etiketler olarak. Maddeler kamera 40 km'nin altındayken QGIS arayüzünün dilinde istenir. Bir etikete tıklama madde kartını açar - ilk paragraf, maddenin bağlantısı ve "Bunu açıkla" düğmesi. Wikipedia metinleri CC BY-SA 4.0 altındadır.
+Clouds	Bulutlar
+Clouds from NASA GIBS VIIRS imagery of the last complete day. They lie as a translucent veil over the imagery. Snow and ice are white too and stay visible.	Son tam günün NASA GIBS VIIRS görüntülerinden bulutlar. Görüntünün üzerinde yarı saydam bir örtü gibi dururlar. Kar ve buz da beyazdır ve görünür kalır.
+Satellites	Uydular
+Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.	CelesTrak yörünge öğelerine göre yapay uydular, konum SGP4 modeline göre. Zaman, zaman çubuğunun sağ sürgüsüdür, çubuk yoksa bilgisayarın saatidir. Grupları galerinin "Uydular" sekmesi seçer. Bir grubun öğeleri en fazla 2 saatte bir güncellenir.
+Mining areas	Maden sahaları
+Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.	Dünyanın açık ocaklarının, döküm sahalarının, atık barajlarının ve sanayi alanlarının 2019 Sentinel-2 görüntülerine göre sınırları - yaklaşık 45 bin alan, Maus ve ark., 2022. Bir sınıra tıklama ülkeyi ve alanı gösterir. İlk açılış yaklaşık 25 MB indirir.
+OSM mines and quarries	OSM madenleri ve taş ocakları
+Mines, shafts and quarries from OpenStreetMap with names and the commodity. They load for the place of the view when the camera is below 150 km. The colour is the commodity group, as for the deposits. A click on a point shows the name, operator and a link to the OpenStreetMap object.	OpenStreetMap'ten adları ve madenleriyle madenler, kuyular ve taş ocakları. Kamera 150 km'nin altındayken görünümün yeri için yüklenir. Renk, yataklarda olduğu gibi maden grubudur. Bir noktaya tıklama adı, işletmeciyi ve OpenStreetMap nesnesinin bağlantısını gösterir.
+Trains of Finland	Finlandiya trenleri
+Trains of Finland in real time from Fintraffic Digitraffic open data, the positions are updated every 10 s. From afar a train is a dot in the colour of its category with its number, close up it is a car model that moves along OpenStreetMap rails between updates. A click on a train shows its type, number and speed.	Fintraffic Digitraffic açık verilerine göre gerçek zamanlı Finlandiya trenleri, konumlar her 10 sn'de güncellenir. Uzaktan tren, kategorisinin renginde numarasıyla bir noktadır, yakından güncellemeler arasında OpenStreetMap rayları üzerinde ilerleyen bir vagon modelidir. Bir trene tıklama türünü, numarasını ve hızını gösterir.
+Baltic ships	Baltık gemileri
+Ships of the Gulfs of Finland and Bothnia and the Baltic near Finland by AIS signals, Fintraffic Digitraffic open data, the positions every 20 s. From afar a ship is a dot in the colour of its type with its name, close up a schematic model of its length that keeps its course. A click shows the type, call sign, destination, size and speed.	Finlandiya ve Botni körfezleri ile Finlandiya yakınındaki Baltık'taki gemiler, AIS sinyallerine göre, Fintraffic Digitraffic açık verileri, konumlar her 20 sn'de. Uzaktan gemi, türünün renginde adıyla bir noktadır, yakından rotasını koruyan, boyuna uygun şematik bir modeldir. Tıklama türü, çağrı işaretini, varış yerini, boyutları ve hızı gösterir.
+Aircraft	Uçaklar
+Aircraft by ADS-B signals of the adsb.lol volunteer network in a circle around the point of view, every 10 s. An aircraft in the air is shown at its altitude, close up as a schematic model of the size of its category with its bank. A click shows the call sign, type, registration, altitude and speed. The network has almost no receivers over Russia.	adsb.lol gönüllü ağının ADS-B sinyallerine göre bakış noktası çevresindeki bir dairedeki uçaklar, her 10 sn'de. Havadaki uçak kendi irtifasında durur, yakından kategorisinin boyutunda, yatışıyla şematik bir modeldir. Tıklama çağrı işaretini, türü, tescil işaretini, irtifayı ve hızı gösterir. Ağın Rusya üzerinde neredeyse hiç alıcısı yoktur.
+Currents	Akıntılar
+Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.	Hız renklendirmesi üzerinde akan beyaz çizgiler olarak okyanus yüzey akıntıları. Son hazır günün uydu altimetrisinden NOAA CoastWatch jeostrofik akıntıları, 0.5° ızgara. Oturumdaki ilk açılış yaklaşık 4 MB indirir.
+OSM power lines, cables and pipelines	OSM enerji hatları, kablolar ve boru hatları
+Power lines by voltage, substations, cables and gas, oil and water pipelines from OpenStreetMap. They load for the place in view when the camera is below 150 km. A click on a line shows the voltage, substance, operator and a link to the OpenStreetMap object.	OpenStreetMap'ten gerilime göre enerji hatları, trafo merkezleri, kablolar ve gaz, petrol ve su boru hatları. Kamera 150 km'nin altındayken görünümün yeri için yüklenir. Bir hatta tıklama gerilimi, maddeyi, işletmeciyi ve OpenStreetMap nesnesinin bağlantısını gösterir.
+Historical earthquakes	Tarihî depremler
+Strong earthquakes of the world from 1904 to 2024 from the ISC-GEM catalogue - about 74 thousand events of magnitude 5 and above, with locations, depths and magnitudes recomputed in one way. A circle sits at the epicentre, at its depth - in the removed sector of the Earth cutaway, the colour shows the depth and the size the magnitude. The time slider range selects the events. A click on a circle shows the place, date, magnitude and the USGS event page. The first use downloads the catalogue in parts, about 13 MB.	ISC-GEM kataloğuna göre 1904'ten 2024'e dünyanın güçlü depremleri - büyüklüğü 5 ve üzeri yaklaşık 74 bin olay, yerleri, derinlikleri ve büyüklükleri tek bir yöntemle yeniden hesaplanmış. Daire dış merkezde durur, kendi derinliğinde - Dünya kesitinin çıkarılmış diliminde, renk derinliği, boyut büyüklüğü gösterir. Zaman çubuğunun aralığı olayları seçer. Bir daireye tıklama yeri, tarihi, büyüklüğü ve olayın USGS sayfasını gösterir. İlk açılış kataloğu parçalar halinde indirir, yaklaşık 13 MB.
+Geoid	Jeoit
+The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.	NGA EGM2008 modeline göre Dünya'nın eş potansiyel yüzeyinin - jeoidin - biçimi. Satır açıkken kürenin yükseklikleri, elipsoit üzerindeki -107 ile +86 m arasındaki jeoit yükseklikleridir, 10 000 kat uzatılmıştır ve Dünya "buruşuk" görünür. Tümsekler yerçekiminin daha güçlü olduğu yerlerde, örneğin Yeni Gine yakınında, çukurlar daha zayıf olduğu yerlerde, en derini Hint Okyanusu'ndadır. Arazi ve su bu süre boyunca kaldırılır, satırı kapatmak onları geri getirir.
+Paleogeography	Paleocoğrafya
+Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.	PALEOMAP PaleoDEM haritalarına göre 540 milyon yıl öncesine kadar geçmişteki kara rölyefi ve deniz derinlikleri. Yaşı görünümün altındaki kaydırıcı belirler. Görüntü, sınırlar ve etiketler bu süre boyunca kaldırılır.
+3D buildings	3B binalar
+3D buildings from OpenStreetMap in OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM or from the number of floors. A building without either gets a height of 5 m.	OpenFreeMap vektör karolarındaki OpenStreetMap'ten 3B binalar. Kamera zemine 6 km'den yakınken görünürler. Yükseklik OSM'den ya da kat sayısından alınır. İkisi de olmayan bina 5 m yükseklik alır.
+Rosreestr cadastre	Rosreestr kadastrosu
+Land parcels from the National spatial data system of Rosreestr over the imagery, for Russia only. They are seen up close, from about 10 km and lower. The service answers slowly and refuses frequent requests, so the parcels come one tile at a time.	Rosreestr Ulusal mekânsal veri sisteminden parseller, görüntünün üzerinde, yalnızca Rusya için. Yakından, yaklaşık 10 km yükseklikten ve aşağısından görünür. Hizmet yavaş yanıt verir ve sık istekleri reddeder, bu nedenle parseller karo karo gelir.
+Age in millions of years ago. The map of relief and depths for this age - PaleoDEM PALEOMAP, Scotese and Wright 2018.	Milyon yıl önce cinsinden yaş. Bu yaş için rölyef ve derinlik haritası - PaleoDEM PALEOMAP, Scotese ve Wright 2018.
+Quaternary	Kuvaterner
+Neogene	Neojen
+Paleogene	Paleojen
+Cretaceous	Kretase
+Jurassic	Jura
+Triassic	Triyas
+Permian	Permiyen
+Carboniferous	Karbonifer
+Devonian	Devoniyen
+Silurian	Siluriyen
+Ordovician	Ordovisiyen
+Cambrian	Kambriyen
+Precambrian	Prekambriyen
+Present	Günümüz
+{age} million years ago, {period}	{age} milyon yıl önce, {period}
+Show from the chosen age to the present through all maps of the set.	Seçilen yaştan günümüze, setin tüm haritaları boyunca gösterim.
+How many times the geoid heights above the ellipsoid are stretched. To the right the bulges and hollows are deeper, to the left the Earth is rounder.	Elipsoit üzerindeki jeoit yüksekliklerinin kaç kat uzatıldığı. Sağa doğru tümsekler ve çukurlar derinleşir, sola doğru Dünya daha yuvarlak olur.
+Trains of Finland, Baltic ships and aircraft in real time from Fintraffic open data and the adsb.lol ADS-B network.	Fintraffic açık verilerine ve adsb.lol ADS-B ağına göre gerçek zamanlı Finlandiya trenleri, Baltık gemileri ve uçaklar.
+on the ground	yerde
+{length} × {width} m	{length} × {width} m
+{metres} m ({feet} ft)	{metres} m ({feet} ft)
+{value} km/h	{value} km/sa
+{value} kn	{value} kn
+Call sign	Çağrı işareti
+IMO	IMO
+Destination	Varış yeri
+Size	Boyutlar
+MMSI	MMSI
+Course	Rota
+Position, UTC	Konum, UTC
+Registration	Tescil işareti
+ICAO code	ICAO kodu
+Altitude	İrtifa
+Number	Numara
+Close	Kapat
+None	Yok
+turn on	aç
+turn off	kapat
+Above ground {height} m	Yerden {height} m
+Climb {climb} m/s	Tırmanma {climb} m/sn
+Fighter	Savaş uçağı
+Fly from here	Buradan uç
+Propeller plane	Pervaneli uçak
+Throttle {throttle} %	İtki {throttle} %
+Touched the ground - the flight is over.	Yere temas - uçuş bitti.
+Up to 2000 km/h, start at 900 km/h, sharp bank.	2000 km/sa'e kadar, 900 km/sa ile kalkış, keskin yatış.
+Up to 340 km/h, start at 250 km/h, smooth.	340 km/sa'e kadar, 250 km/sa ile kalkış, yumuşak.
+km/h	km/sa
+{speed} km/h · altitude {alt} m, above ground {height} m · heading {heading}° · climb {climb} m/s · throttle {throttle} %	{speed} km/sa · irtifa {alt} m, yerden {height} m · yön {heading}° · tırmanma {climb} m/sn · itki {throttle} %
+↑ ↓ - nose down and up · ← → - bank · PageUp, PageDown - throttle · V - cockpit view · H - instruments · Esc - exit	↑ ↓ - burun aşağı ve yukarı · ← → - yatış · PageUp, PageDown - itki · V - kokpit görünümü · H - göstergeler · Esc - çıkış
+A click on a row copies the sheet number to the clipboard.	Bir satıra tıklama pafta numarasını panoya kopyalar.
+A click on a row copies the sheet number. Sheets of the Russian State Geological Map at 1:1,000,000 and 1:200,000 use the Russian designation too.	Bir satıra tıklama pafta numarasını kopyalar. Rusya Devlet Jeoloji Haritası'nın 1:1 000 000 ve 1:200 000 ölçekli paftaları da Rus adlandırmasını kullanır.
+A ready site from the list or an empty row for your own address.	Listeden hazır bir site veya kendi adresiniz için boş bir satır.
+Add or edit sites…	Site ekle veya değiştir…
+Add site	Site ekle
+All numbers in a window…	Tüm numaralar bir pencerede…
+Delete the selected rows.	İşaretli satırları sil.
+Each row is an item of the Open in browser submenu of the globe menu. The item opens the site at the point under the cursor. Add site puts a ready site or an empty row for your own address. In the address {lat} and {lon} are the latitude and longitude in degrees, {zoom} is the map scale by the view.	Her satır küredeki menünün "Tarayıcıda aç" alt menüsünün bir öğesidir. Öğe, siteyi imlecin altındaki noktada açar. "Site ekle" hazır bir site veya kendi adresiniz için boş bir satır koyar. Adreste {lat} ve {lon} derece cinsinden enlem ve boylam, {zoom} görünüme göre harita ölçeğidir.
+International Map of the World (IMW)	Uluslararası Dünya Haritası (IMW)
+MGRS, 100 km square	MGRS, 100 km kare
+Map sheet designation	Pafta adlandırması
+NATO, JOG	NATO, JOG
+Open in browser	Tarayıcıda aç
+Own address	Kendi adres
+Row {n}: {reason}	Satır {n}: {reason}
+Russian sheet designation	Rus pafta adlandırması
+S. H.	G. Y.
+Sheet number	Pafta numarası
+Sites of the Open in browser menu	"Tarayıcıda aç" menüsünün siteleri
+System	Sistem
+The address does not start with https:// or http://.	Adres https:// veya http:// ile başlamıyor.
+The address has extra braces or places other than {lat}, {lon} and {zoom}.	Adreste fazla süslü parantez veya {lat}, {lon} ve {zoom} dışında yerler var.
+The address has no {lat} or {lon}.	Adreste {lat} veya {lon} yok.
+The item has no name.	Öğenin adı yok.
+no sheet	pafta yok
+Asking Eto Mesto…	"Eto Mesto" sorgulanıyor…
+Build	Oluştur
+Computing insolation: {share}	Güneşlenme hesaplanıyor: {share}
+Direct sun, h per day	Doğrudan güneş, günde sa
+Eto Mesto old maps	"Eto Mesto" eski haritaları
+Eto Mesto old maps here…	"Eto Mesto" eski haritaları burada…
+First day	İlk gün
+Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Görülmesi gerekenin araziden yüksekliği, örneğin bir direk veya bina. Sıfırda zeminin kendisi denetlenir.
+Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Noktadaki gözün veya direğin araziden yüksekliği. Daha yüksek - daha uzak görünür ve arazinin arkasında daha az yer gizli kalır.
+Heights of the grid nodes: {share}	Izgara düğümlerinin yükseklikleri: {share}
+Insolation	Güneşlenme
+Insolation here…	Burada güneşlenme…
+Keeps the maps whose title or year holds all the words.	Başlığı veya yılı tüm sözcükleri içeren haritaları bırakır.
+Last day	Son gün
+Loading heights: {done} of {total}	Yükseklikler yükleniyor: {done} / {total}
+Maps at the point {total}, shown {shown}. A click on a title opens the map on the site.	Noktadaki harita sayısı {total}, gösterilen {shown}. Bir başlığa tıklama haritayı sitede açar.
+Maps of the Eto Mesto site (etomesto.com) that cover the point. A map opens on the site, where it can be overlaid on a modern map and downloaded under the site rules.	"Eto Mesto" sitesinin (etomesto.com) noktayı kapsayan haritaları. Harita sitede açılır, orada modern bir haritanın üzerine bindirilebilir ve site kurallarına göre indirilebilir.
+Not all heights are loaded, the computation used less detailed ones.	Tüm yükseklikler yüklenmedi, hesap daha az ayrıntılı olanlarla yapıldı.
+Observer height	Gözlemci yüksekliği
+Opens the page of the chosen map on etomesto.com in the browser.	Seçilen haritanın etomesto.com sayfasını tarayıcıda açar.
+Over {days} days direct sun shines from {low} to {high} h per day. The grid step is {step} m.	{days} gün boyunca doğrudan güneş günde {low} ile {high} sa arasında parlar. Izgara adımı {step} m.
+Point	Nokta
+Radius of the computed circle. A larger radius gives a coarser grid. Mountain shadows are taken from a distance of at least the radius and at least 5 km.	Hesaplanan dairenin yarıçapı. Daha büyük - daha kaba ızgara. Dağ gölgeleri en az yarıçap ve en az 5 km uzaklıktan hesaba katılır.
+Radius of the computed circle. A larger radius gives a coarser step, the step is about one five-hundredth of the radius.	Hesaplanan dairenin yarıçapı. Daha büyük - daha kaba adım, adım yarıçapın yaklaşık beş yüzde biridir.
+Remove	Kaldır
+Remove the insolation layer from the globe.	Güneşlenme katmanını küreden kaldır.
+Remove the viewshed layer from the globe.	Görünürlük katmanını küreden kaldır.
+Search by title or year	Başlığa veya yıla göre ara
+Target height	Hedef yüksekliği
+The first day of the period. The result is the mean number of hours of direct sunlight per day over the period.	Dönemin ilk günü. Sonuç, dönem boyunca günlük ortalama doğrudan güneş saati sayısıdır.
+The last day of the period, inclusive. A long period is computed over 15 evenly spaced days.	Dönemin son günü, dahil. Uzun bir dönem eşit aralıklı 15 gün üzerinden hesaplanır.
+The site did not answer: {error}	Site yanıt vermedi: {error}
+The site has no maps at this point.	Sitede bu noktada harita yok.
+This body has no heights.	Bu gök cisminin yükseklikleri yok.
+Viewshed from a point	Bir noktadan görünürlük
+Viewshed from here…	Buradan görünürlük…
+{share} of the circle area is visible. The computation step is {step} m.	Daire alanının {share} kadarı görünür. Hesap adımı {step} m.

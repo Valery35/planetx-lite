@@ -986,3 +986,157 @@ Earth cutaway	Doorsnede van de aarde
 Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on.	Haalt een sector uit de aarde onder het kijkpunt - een kwart halfrond, 90° breed in lengte. De vlakken tonen de korst, de mantel en de kern volgens de stralen van het model PREM, de korst volgens het model CRUST1.0. Waar een vlak een subductiezone doorsnijdt, is daarop de wegduikende plaat te zien. De sector wordt bij elk aanzetten van de regel opnieuw geplaatst.
 Stretch the crust	Korst uitrekken
 Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.	Rekt de diepten tot 400 km sterker uit naarmate de camera verder weg is, en de korst en de bovenmantel zijn van ver zichtbaar. Zonder vinkje staan alle diepten op ware schaal.
+Camera follows	Camera volgt
+Add tile source…	Tegelbron toevoegen…
+Remove this tile source from the list.	Deze tegelbron uit de lijst verwijderen.
+New tile source	Nieuwe tegelbron
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS.	Adressjabloon van de tegels met de plaatshouders {z}, {x} en {y}. {-y} - rijen van onder naar boven, zoals bij TMS.
+Levels up to	Niveaus tot
+Credit	Bronvermelding
+Credit of the source on the screen, as its terms of use require.	Bronvermelding op het scherm, zoals de gebruiksvoorwaarden van de bron vereisen.
+The address must begin with https:// or http://.	Het adres moet beginnen met https:// of http://.
+The address needs the places {z}, {x} and {y} or {-y}.	Het adres heeft de plaatshouders {z}, {x} en {y} of {-y} nodig.
+The address must not contain spaces.	Het adres mag geen spaties bevatten.
+Wikipedia nearby	Wikipedia in de buurt
+Wikipedia articles with coordinates - cities, monuments, rivers, peaks - as labels with a blue dot. The articles are requested when the camera is below 40 km, in the language of the QGIS interface. A click on a label opens the article card - the first paragraph, a link to the article and the Explain this button. Wikipedia texts are under CC BY-SA 4.0.	Wikipedia-artikelen met coördinaten - steden, monumenten, rivieren, toppen - als labels met een blauwe stip. De artikelen worden opgevraagd wanneer de camera onder 40 km is, in de taal van de QGIS-interface. Een klik op een label opent de artikelkaart - de eerste alinea, een link naar het artikel en de knop ‘Leg dit uit’. Wikipedia-teksten vallen onder CC BY-SA 4.0.
+Clouds	Wolken
+Clouds from NASA GIBS VIIRS imagery of the last complete day. They lie as a translucent veil over the imagery. Snow and ice are white too and stay visible.	Wolken uit VIIRS-beelden van NASA GIBS van de laatste volledige dag. Ze liggen als een doorschijnende sluier over de beelden. Sneeuw en ijs zijn ook wit en blijven zichtbaar.
+Satellites	Satellieten
+Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.	Kunstmatige satellieten volgens de baanelementen van CelesTrak, positie volgens het model SGP4. De tijd is de rechterschuif van de tijdbalk, zonder tijdbalk de klok van de computer. De groepen worden gekozen op het tabblad ‘Satellieten’ van de galerie. De elementen van een groep worden hoogstens eens per 2 uur bijgewerkt.
+Mining areas	Mijngebieden
+Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.	Omtrekken van dagbouwmijnen, stortplaatsen, residubekkens en industrieterreinen van de wereld volgens Sentinel-2-beelden van 2019 - ongeveer 45 duizend gebieden, Maus et al., 2022. Een klik op een omtrek toont het land en de oppervlakte. Het eerste aanzetten downloadt ongeveer 25 MB.
+OSM mines and quarries	Mijnen en groeven OSM
+Mines, shafts and quarries from OpenStreetMap with names and the commodity. They load for the place of the view when the camera is below 150 km. The colour is the commodity group, as for the deposits. A click on a point shows the name, operator and a link to the OpenStreetMap object.	Mijnen, schachten en groeven uit OpenStreetMap met namen en de grondstof. Ze worden geladen voor de plaats van de weergave wanneer de camera onder 150 km is. De kleur is de grondstofgroep, zoals bij de ertsafzettingen. Een klik op een punt toont de naam, de exploitant en een link naar het OpenStreetMap-object.
+Trains of Finland	Treinen van Finland
+Trains of Finland in real time from Fintraffic Digitraffic open data, the positions are updated every 10 s. From afar a train is a dot in the colour of its category with its number, close up it is a car model that moves along OpenStreetMap rails between updates. A click on a train shows its type, number and speed.	Treinen van Finland in realtime volgens open data van Fintraffic Digitraffic, de posities worden elke 10 s bijgewerkt. Van ver is een trein een punt in de kleur van zijn categorie met zijn nummer, van dichtbij een rijtuigmodel dat tussen de updates over de rails van OpenStreetMap rijdt. Een klik op een trein toont het soort, het nummer en de snelheid.
+Baltic ships	Schepen van de Oostzee
+Ships of the Gulfs of Finland and Bothnia and the Baltic near Finland by AIS signals, Fintraffic Digitraffic open data, the positions every 20 s. From afar a ship is a dot in the colour of its type with its name, close up a schematic model of its length that keeps its course. A click shows the type, call sign, destination, size and speed.	Schepen in de Finse en Botnische Golf en de Oostzee bij Finland volgens AIS-signalen, open data van Fintraffic Digitraffic, posities elke 20 s. Van ver is een schip een punt in de kleur van zijn type met zijn naam, van dichtbij een schematisch model van zijn lengte dat zijn koers houdt. Een klik toont het type, de roepnaam, de bestemming, de afmetingen en de snelheid.
+Aircraft	Vliegtuigen
+Aircraft by ADS-B signals of the adsb.lol volunteer network in a circle around the point of view, every 10 s. An aircraft in the air is shown at its altitude, close up as a schematic model of the size of its category with its bank. A click shows the call sign, type, registration, altitude and speed. The network has almost no receivers over Russia.	Vliegtuigen volgens ADS-B-signalen van het vrijwilligersnetwerk adsb.lol in een cirkel rond het kijkpunt, elke 10 s. Een vliegtuig in de lucht staat op zijn hoogte, van dichtbij als schematisch model in de grootte van zijn categorie met zijn helling. Een klik toont de roepnaam, het type, de registratie, de hoogte en de snelheid. Boven Rusland heeft het netwerk bijna geen ontvangers.
+Currents	Stromingen
+Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.	Oppervlaktestromingen van de oceaan als witte lopende streepjes boven een snelheidskleuring. Geostrofische stromingen van NOAA CoastWatch uit satellietaltimetrie voor de laatste gereede dag, raster 0.5°. Het eerste aanzetten in een sessie downloadt ongeveer 4 MB.
+OSM power lines, cables and pipelines	Hoogspanningslijnen, kabels en pijpleidingen OSM
+Power lines by voltage, substations, cables and gas, oil and water pipelines from OpenStreetMap. They load for the place in view when the camera is below 150 km. A click on a line shows the voltage, substance, operator and a link to the OpenStreetMap object.	Hoogspanningslijnen naar spanning, onderstations, kabels en gas-, olie- en waterleidingen uit OpenStreetMap. Ze worden geladen voor de plaats van de weergave wanneer de camera onder 150 km is. Een klik op een lijn toont de spanning, de stof, de exploitant en een link naar het OpenStreetMap-object.
+Historical earthquakes	Historische aardbevingen
+Strong earthquakes of the world from 1904 to 2024 from the ISC-GEM catalogue - about 74 thousand events of magnitude 5 and above, with locations, depths and magnitudes recomputed in one way. A circle sits at the epicentre, at its depth - in the removed sector of the Earth cutaway, the colour shows the depth and the size the magnitude. The time slider range selects the events. A click on a circle shows the place, date, magnitude and the USGS event page. The first use downloads the catalogue in parts, about 13 MB.	Zware aardbevingen van de wereld van 1904 tot 2024 volgens de catalogus ISC-GEM - ongeveer 74 duizend gebeurtenissen met magnitude 5 en hoger, met plaatsen, diepten en magnitudes op één manier herberekend. Een cirkel staat in het epicentrum, op zijn diepte - in de weggenomen sector van de doorsnede van de aarde, de kleur toont de diepte en de grootte de magnitude. De periode van de tijdbalk selecteert de gebeurtenissen. Een klik op een cirkel toont de plaats, de datum, de magnitude en de USGS-pagina van de gebeurtenis. Het eerste aanzetten downloadt de catalogus in delen, ongeveer 13 MB.
+Geoid	Geoïde
+The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.	De vorm van het niveauoppervlak van de aarde - de geoïde - volgens het model EGM2008 van de NGA. Zolang de regel aanstaat, zijn de hoogten van de globe de geoïdehoogten boven de ellipsoïde, van -107 tot +86 m, 10 000 keer uitgerekt, en de aarde ziet er ‘gekreukt’ uit. Bulten liggen waar de zwaartekracht sterker is, bijvoorbeeld bij Nieuw-Guinea, kuilen waar die zwakker is, de diepste in de Indische Oceaan. Reliëf en water zijn intussen weggehaald, de regel uitzetten brengt ze terug.
+Paleogeography	Paleogeografie
+Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.	Landreliëf en zeediepten in het verleden, tot 540 miljoen jaar geleden, volgens de kaarten PaleoDEM van PALEOMAP. De schuif onder in de weergave stelt de ouderdom in. Beelden, grenzen en labels zijn intussen weggehaald.
+3D buildings	3D-gebouwen
+3D buildings from OpenStreetMap in OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM or from the number of floors. A building without either gets a height of 5 m.	3D-gebouwen uit OpenStreetMap in vectortegels van OpenFreeMap. Ze zijn zichtbaar wanneer de camera dichter dan 6 km bij de grond is. De hoogte komt uit OSM of uit het aantal verdiepingen. Een gebouw zonder beide krijgt een hoogte van 5 m.
+Rosreestr cadastre	Kadaster van Rosreestr
+Land parcels from the National spatial data system of Rosreestr over the imagery, for Russia only. They are seen up close, from about 10 km and lower. The service answers slowly and refuses frequent requests, so the parcels come one tile at a time.	Percelen uit het Nationale systeem van ruimtelijke gegevens van Rosreestr boven de beelden, alleen voor Rusland. Ze zijn van dichtbij zichtbaar, vanaf ongeveer 10 km hoogte en lager. De dienst antwoordt traag en weigert frequente verzoeken, daarom komen de percelen tegel voor tegel.
+Age in millions of years ago. The map of relief and depths for this age - PaleoDEM PALEOMAP, Scotese and Wright 2018.	Ouderdom in miljoenen jaren geleden. De kaart van reliëf en diepten voor deze ouderdom - PaleoDEM PALEOMAP, Scotese en Wright 2018.
+Quaternary	Kwartair
+Neogene	Neogeen
+Paleogene	Paleogeen
+Cretaceous	Krijt
+Jurassic	Jura
+Triassic	Trias
+Permian	Perm
+Carboniferous	Carboon
+Devonian	Devoon
+Silurian	Siluur
+Ordovician	Ordovicium
+Cambrian	Cambrium
+Precambrian	Precambrium
+Present	Heden
+{age} million years ago, {period}	{age} miljoen jaar geleden, {period}
+Show from the chosen age to the present through all maps of the set.	Weergave van de gekozen ouderdom tot het heden door alle kaarten van de set.
+How many times the geoid heights above the ellipsoid are stretched. To the right the bulges and hollows are deeper, to the left the Earth is rounder.	Hoeveel keer de geoïdehoogten boven de ellipsoïde zijn uitgerekt. Naar rechts zijn bulten en kuilen dieper, naar links is de aarde ronder.
+Trains of Finland, Baltic ships and aircraft in real time from Fintraffic open data and the adsb.lol ADS-B network.	Treinen van Finland, schepen van de Oostzee en vliegtuigen in realtime volgens open data van Fintraffic en het ADS-B-netwerk adsb.lol.
+on the ground	aan de grond
+{length} × {width} m	{length} × {width} m
+{metres} m ({feet} ft)	{metres} m ({feet} ft)
+{value} km/h	{value} km/u
+{value} kn	{value} kn
+Call sign	Roepnaam
+IMO	IMO
+Destination	Bestemming
+Size	Afmetingen
+MMSI	MMSI
+Course	Koers
+Position, UTC	Positie, UTC
+Registration	Registratie
+ICAO code	ICAO-code
+Altitude	Hoogte
+Number	Nummer
+Close	Sluiten
+None	Geen
+turn on	inschakelen
+turn off	uitschakelen
+Above ground {height} m	Boven de grond {height} m
+Climb {climb} m/s	Stijgen {climb} m/s
+Fighter	Jachtvliegtuig
+Fly from here	Vlucht vanaf hier
+Propeller plane	Propellervliegtuig
+Throttle {throttle} %	Stuwkracht {throttle} %
+Touched the ground - the flight is over.	Grondcontact - de vlucht is voorbij.
+Up to 2000 km/h, start at 900 km/h, sharp bank.	Tot 2000 km/u, start op 900 km/u, scherpe helling.
+Up to 340 km/h, start at 250 km/h, smooth.	Tot 340 km/u, start op 250 km/u, soepel.
+km/h	km/u
+{speed} km/h · altitude {alt} m, above ground {height} m · heading {heading}° · climb {climb} m/s · throttle {throttle} %	{speed} km/u · hoogte {alt} m, boven de grond {height} m · koers {heading}° · stijgen {climb} m/s · stuwkracht {throttle} %
+↑ ↓ - nose down and up · ← → - bank · PageUp, PageDown - throttle · V - cockpit view · H - instruments · Esc - exit	↑ ↓ - neus omlaag en omhoog · ← → - helling · PageUp, PageDown - stuwkracht · V - cockpitzicht · H - instrumenten · Esc - stoppen
+A click on a row copies the sheet number to the clipboard.	Een klik op een regel kopieert het bladnummer naar het klembord.
+A click on a row copies the sheet number. Sheets of the Russian State Geological Map at 1:1,000,000 and 1:200,000 use the Russian designation too.	Een klik op een regel kopieert het bladnummer. Ook de bladen van de Russische Staatsgeologische Kaart op 1:1 000 000 en 1:200 000 gebruiken de Russische aanduiding.
+A ready site from the list or an empty row for your own address.	Een kant-en-klare site uit de lijst of een lege regel voor een eigen adres.
+Add or edit sites…	Sites toevoegen of wijzigen…
+Add site	Site toevoegen
+All numbers in a window…	Alle nummers in een venster…
+Delete the selected rows.	De aangevinkte regels verwijderen.
+Each row is an item of the Open in browser submenu of the globe menu. The item opens the site at the point under the cursor. Add site puts a ready site or an empty row for your own address. In the address {lat} and {lon} are the latitude and longitude in degrees, {zoom} is the map scale by the view.	Elke regel is een item van het submenu ‘Openen in browser’ van het menu op de globe. Het item opent de site op het punt onder de cursor. ‘Site toevoegen’ zet een kant-en-klare site of een lege regel voor een eigen adres. In het adres zijn {lat} en {lon} de breedte en lengte in graden, {zoom} is de kaartschaal volgens de weergave.
+International Map of the World (IMW)	Internationale Wereldkaart (IMW)
+MGRS, 100 km square	MGRS, vierkant 100 km
+Map sheet designation	Bladaanduiding
+NATO, JOG	NATO, JOG
+Open in browser	Openen in browser
+Own address	Eigen adres
+Row {n}: {reason}	Regel {n}: {reason}
+Russian sheet designation	Russische bladaanduiding
+S. H.	Z. H.
+Sheet number	Bladnummer
+Sites of the Open in browser menu	Sites van het menu ‘Openen in browser’
+System	Systeem
+The address does not start with https:// or http://.	Het adres begint niet met https:// of http://.
+The address has extra braces or places other than {lat}, {lon} and {zoom}.	Het adres heeft overbodige accolades of andere plaatshouders dan {lat}, {lon} en {zoom}.
+The address has no {lat} or {lon}.	Het adres heeft geen {lat} of {lon}.
+The item has no name.	Het item heeft geen naam.
+no sheet	geen blad
+Asking Eto Mesto…	‘Eto Mesto’ wordt bevraagd…
+Build	Berekenen
+Computing insolation: {share}	Bezonning berekenen: {share}
+Direct sun, h per day	Directe zon, u per dag
+Eto Mesto old maps	Oude kaarten van ‘Eto Mesto’
+Eto Mesto old maps here…	Oude kaarten van ‘Eto Mesto’ hier…
+First day	Eerste dag
+Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Hoogte boven het reliëf van wat gezien moet worden, bijvoorbeeld een mast of gebouw. Bij nul wordt de grond zelf gecontroleerd.
+Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Hoogte van het oog of de mast boven het reliëf op het punt. Hoger - je ziet verder en minder plaatsen blijven achter het reliëf verborgen.
+Heights of the grid nodes: {share}	Hoogten van de rasterknopen: {share}
+Insolation	Bezonning
+Insolation here…	Bezonning hier…
+Keeps the maps whose title or year holds all the words.	Houdt de kaarten waarvan de titel of het jaar alle woorden bevat.
+Last day	Laatste dag
+Loading heights: {done} of {total}	Hoogten laden: {done} van {total}
+Maps at the point {total}, shown {shown}. A click on a title opens the map on the site.	Kaarten bij het punt {total}, getoond {shown}. Een klik op een titel opent de kaart op de site.
+Maps of the Eto Mesto site (etomesto.com) that cover the point. A map opens on the site, where it can be overlaid on a modern map and downloaded under the site rules.	Kaarten van de site ‘Eto Mesto’ (etomesto.com) die het punt bedekken. Een kaart opent op de site, waar je haar over een moderne kaart kunt leggen en volgens de regels van de site kunt downloaden.
+Not all heights are loaded, the computation used less detailed ones.	Niet alle hoogten zijn geladen, de berekening gebruikte minder gedetailleerde.
+Observer height	Hoogte van de waarnemer
+Opens the page of the chosen map on etomesto.com in the browser.	Opent de pagina van de gekozen kaart op etomesto.com in de browser.
+Over {days} days direct sun shines from {low} to {high} h per day. The grid step is {step} m.	In {days} dagen schijnt directe zon {low} tot {high} u per dag. De rasterstap is {step} m.
+Point	Punt
+Radius of the computed circle. A larger radius gives a coarser grid. Mountain shadows are taken from a distance of at least the radius and at least 5 km.	Straal van de berekende cirkel. Groter - grover raster. Bergschaduwen worden meegenomen vanaf een afstand van minstens de straal en minstens 5 km.
+Radius of the computed circle. A larger radius gives a coarser step, the step is about one five-hundredth of the radius.	Straal van de berekende cirkel. Groter - grovere stap, de stap is ongeveer een vijfhonderdste van de straal.
+Remove	Verwijderen
+Remove the insolation layer from the globe.	De bezonningslaag van de globe verwijderen.
+Remove the viewshed layer from the globe.	De zichtbaarheidslaag van de globe verwijderen.
+Search by title or year	Zoeken op titel of jaar
+Target height	Hoogte van het doel
+The first day of the period. The result is the mean number of hours of direct sunlight per day over the period.	De eerste dag van de periode. Het resultaat is het gemiddelde aantal uren directe zon per dag over de periode.
+The last day of the period, inclusive. A long period is computed over 15 evenly spaced days.	De laatste dag van de periode, inclusief. Een lange periode wordt berekend over 15 gelijkmatig verdeelde dagen.
+The site did not answer: {error}	De site antwoordde niet: {error}
+The site has no maps at this point.	De site heeft geen kaarten op dit punt.
+This body has no heights.	Dit hemellichaam heeft geen hoogten.
+Viewshed from a point	Zichtbaarheid vanaf een punt
+Viewshed from here…	Zichtbaarheid vanaf hier…
+{share} of the circle area is visible. The computation step is {step} m.	{share} van de cirkeloppervlakte is zichtbaar. De rekenstap is {step} m.

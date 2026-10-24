@@ -185,7 +185,7 @@ pub fn read_npz(data: &[u8], names: &[&str]) -> Result<Vec<Array>, String> {
 }
 
 /// Байты файла .npy версии 1.0: тип descr, размеры shape, тело body.
-fn npy(descr: &str, shape: &[usize], body: &[u8]) -> Vec<u8> {
+pub(crate) fn npy(descr: &str, shape: &[usize], body: &[u8]) -> Vec<u8> {
     let dims: Vec<String> = shape.iter().map(usize::to_string).collect();
     let dims = if dims.len() == 1 { format!("{},", dims[0]) } else { dims.join(", ") };
     let mut header = format!("{{'descr': '{descr}', 'fortran_order': False, 'shape': ({dims}), }}");

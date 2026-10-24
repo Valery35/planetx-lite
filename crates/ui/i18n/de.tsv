@@ -986,3 +986,157 @@ Earth cutaway	Erdschnitt
 Removes a sector of the Earth under the look-at point, a quarter of a hemisphere 90° wide in longitude. Its faces show the crust, the mantle and the core by the radii of the PREM model, the crust by the CRUST1.0 model. Where a face crosses a subduction zone, the subducting slab shows on it. The sector is placed anew each time the row is switched on.	Entfernt einen Sektor der Erde unter dem Blickpunkt - ein Viertel einer Halbkugel, 90° breit in der Länge. Seine Flächen zeigen Kruste, Mantel und Kern nach den Radien des Modells PREM, die Kruste nach dem Modell CRUST1.0. Wo eine Fläche eine Subduktionszone schneidet, ist auf ihr die abtauchende Platte zu sehen. Der Sektor wird bei jedem Einschalten der Zeile neu gesetzt.
 Stretch the crust	Kruste strecken
 Stretches depths to 400 km, the more the farther the camera, and the crust and the upper mantle show from afar. Without the check all depths are in true scale.	Streckt die Tiefen bis 400 km umso stärker, je weiter die Kamera entfernt ist, und Kruste und oberer Mantel sind aus der Ferne sichtbar. Ohne Häkchen sind alle Tiefen im wahren Maßstab.
+Camera follows	Kamera folgt
+Add tile source…	Kachelquelle hinzufügen…
+Remove this tile source from the list.	Diese Kachelquelle aus der Liste entfernen.
+New tile source	Neue Kachelquelle
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS.	Adressvorlage der Kacheln mit den Platzhaltern {z}, {x} und {y}. {-y} - Zeilen von unten nach oben, wie bei TMS.
+Levels up to	Stufen bis
+Credit	Quellenangabe
+Credit of the source on the screen, as its terms of use require.	Quellenangabe auf dem Bildschirm, wie es die Nutzungsbedingungen der Quelle verlangen.
+The address must begin with https:// or http://.	Die Adresse muss mit https:// oder http:// beginnen.
+The address needs the places {z}, {x} and {y} or {-y}.	Die Adresse braucht die Platzhalter {z}, {x} und {y} oder {-y}.
+The address must not contain spaces.	Die Adresse darf keine Leerzeichen enthalten.
+Wikipedia nearby	Wikipedia in der Nähe
+Wikipedia articles with coordinates - cities, monuments, rivers, peaks - as labels with a blue dot. The articles are requested when the camera is below 40 km, in the language of the QGIS interface. A click on a label opens the article card - the first paragraph, a link to the article and the Explain this button. Wikipedia texts are under CC BY-SA 4.0.	Wikipedia-Artikel mit Koordinaten - Städte, Denkmäler, Flüsse, Gipfel - als Beschriftungen mit einem blauen Punkt. Die Artikel werden abgefragt, wenn die Kamera unter 40 km ist, in der Sprache der QGIS-Oberfläche. Ein Klick auf eine Beschriftung öffnet die Artikelkarte - den ersten Absatz, einen Link zum Artikel und die Schaltfläche „Erkläre das“. Wikipedia-Texte stehen unter CC BY-SA 4.0.
+Clouds	Wolken
+Clouds from NASA GIBS VIIRS imagery of the last complete day. They lie as a translucent veil over the imagery. Snow and ice are white too and stay visible.	Wolken aus VIIRS-Aufnahmen von NASA GIBS des letzten vollständigen Tages. Sie liegen als durchscheinender Schleier über den Aufnahmen. Schnee und Eis sind ebenfalls weiß und bleiben sichtbar.
+Satellites	Satelliten
+Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.	Künstliche Satelliten nach Bahnelementen von CelesTrak, Position nach dem Modell SGP4. Die Zeit ist der rechte Schieber der Zeitleiste, ohne Zeitleiste die Uhr des Computers. Die Gruppen wählt der Reiter „Satelliten“ der Galerie. Die Elemente einer Gruppe werden höchstens einmal in 2 Stunden aktualisiert.
+Mining areas	Bergbaugebiete
+Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.	Umrisse von Tagebauen, Halden, Absetzanlagen und Industrieflächen der Welt nach Sentinel-2-Aufnahmen von 2019 - etwa 45 Tausend Flächen, Maus et al., 2022. Ein Klick auf einen Umriss zeigt Land und Fläche. Das erste Einschalten lädt etwa 25 MB herunter.
+OSM mines and quarries	Bergwerke und Steinbrüche OSM
+Mines, shafts and quarries from OpenStreetMap with names and the commodity. They load for the place of the view when the camera is below 150 km. The colour is the commodity group, as for the deposits. A click on a point shows the name, operator and a link to the OpenStreetMap object.	Bergwerke, Schächte und Steinbrüche aus OpenStreetMap mit Namen und Rohstoff. Sie werden für den Ort der Ansicht geladen, wenn die Kamera unter 150 km ist. Die Farbe ist die Rohstoffgruppe, wie bei den Lagerstätten. Ein Klick auf einen Punkt zeigt den Namen, den Betreiber und einen Link zum OpenStreetMap-Objekt.
+Trains of Finland	Züge Finnlands
+Trains of Finland in real time from Fintraffic Digitraffic open data, the positions are updated every 10 s. From afar a train is a dot in the colour of its category with its number, close up it is a car model that moves along OpenStreetMap rails between updates. A click on a train shows its type, number and speed.	Züge Finnlands in Echtzeit nach offenen Daten von Fintraffic Digitraffic, die Positionen werden alle 10 s aktualisiert. Aus der Ferne ist ein Zug ein Punkt in der Farbe seiner Kategorie mit seiner Nummer, aus der Nähe ein Wagenmodell, das zwischen den Aktualisierungen auf den Schienen von OpenStreetMap fährt. Ein Klick auf einen Zug zeigt Art, Nummer und Geschwindigkeit.
+Baltic ships	Schiffe der Ostsee
+Ships of the Gulfs of Finland and Bothnia and the Baltic near Finland by AIS signals, Fintraffic Digitraffic open data, the positions every 20 s. From afar a ship is a dot in the colour of its type with its name, close up a schematic model of its length that keeps its course. A click shows the type, call sign, destination, size and speed.	Schiffe im Finnischen und Bottnischen Meerbusen und in der Ostsee vor Finnland nach AIS-Signalen, offene Daten von Fintraffic Digitraffic, die Positionen alle 20 s. Aus der Ferne ist ein Schiff ein Punkt in der Farbe seines Typs mit seinem Namen, aus der Nähe ein schematisches Modell seiner Länge, das seinen Kurs hält. Ein Klick zeigt Typ, Rufzeichen, Ziel, Abmessungen und Geschwindigkeit.
+Aircraft	Flugzeuge
+Aircraft by ADS-B signals of the adsb.lol volunteer network in a circle around the point of view, every 10 s. An aircraft in the air is shown at its altitude, close up as a schematic model of the size of its category with its bank. A click shows the call sign, type, registration, altitude and speed. The network has almost no receivers over Russia.	Flugzeuge nach ADS-B-Signalen des Freiwilligennetzes adsb.lol in einem Kreis um den Blickpunkt, alle 10 s. Ein Flugzeug in der Luft steht in seiner Höhe, aus der Nähe als schematisches Modell in der Größe seiner Kategorie mit seiner Querlage. Ein Klick zeigt Rufzeichen, Typ, Kennzeichen, Höhe und Geschwindigkeit. Über Russland hat das Netz fast keine Empfänger.
+Currents	Strömungen
+Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.	Oberflächenströmungen des Ozeans als weiße laufende Striche über einer Geschwindigkeitsfärbung. Geostrophische Strömungen von NOAA CoastWatch aus Satellitenaltimetrie für den letzten fertigen Tag, Gitter 0.5°. Das erste Einschalten in einer Sitzung lädt etwa 4 MB herunter.
+OSM power lines, cables and pipelines	Stromleitungen, Kabel und Rohrleitungen OSM
+Power lines by voltage, substations, cables and gas, oil and water pipelines from OpenStreetMap. They load for the place in view when the camera is below 150 km. A click on a line shows the voltage, substance, operator and a link to the OpenStreetMap object.	Stromleitungen nach Spannung, Umspannwerke, Kabel sowie Gas-, Öl- und Wasserleitungen aus OpenStreetMap. Sie werden für den Ort der Ansicht geladen, wenn die Kamera unter 150 km ist. Ein Klick auf eine Linie zeigt die Spannung, den Stoff, den Betreiber und einen Link zum OpenStreetMap-Objekt.
+Historical earthquakes	Historische Erdbeben
+Strong earthquakes of the world from 1904 to 2024 from the ISC-GEM catalogue - about 74 thousand events of magnitude 5 and above, with locations, depths and magnitudes recomputed in one way. A circle sits at the epicentre, at its depth - in the removed sector of the Earth cutaway, the colour shows the depth and the size the magnitude. The time slider range selects the events. A click on a circle shows the place, date, magnitude and the USGS event page. The first use downloads the catalogue in parts, about 13 MB.	Starke Erdbeben der Welt von 1904 bis 2024 nach dem Katalog ISC-GEM - etwa 74 Tausend Ereignisse ab Magnitude 5, Orte, Tiefen und Magnituden einheitlich neu berechnet. Ein Kreis steht im Epizentrum, in seiner Tiefe - im entnommenen Sektor des Erdschnitts, die Farbe zeigt die Tiefe, die Größe die Magnitude. Der Zeitraum der Zeitleiste wählt die Ereignisse. Ein Klick auf einen Kreis zeigt Ort, Datum, Magnitude und die USGS-Seite des Ereignisses. Das erste Einschalten lädt den Katalog in Teilen herunter, etwa 13 MB.
+Geoid	Geoid
+The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.	Die Form der Niveaufläche der Erde - des Geoids - nach dem Modell EGM2008 der NGA. Solange die Zeile eingeschaltet ist, sind die Höhen des Globus die Geoidhöhen über dem Ellipsoid, von -107 bis +86 m, 10 000-fach gestreckt, und die Erde wirkt „zerknittert“. Beulen liegen dort, wo die Schwerkraft stärker ist, etwa bei Neuguinea, Mulden dort, wo sie schwächer ist, die tiefste im Indischen Ozean. Gelände und Wasser sind währenddessen entfernt, das Ausschalten der Zeile bringt sie zurück.
+Paleogeography	Paläogeographie
+Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.	Landrelief und Meerestiefen in der Vergangenheit, bis vor 540 Millionen Jahren, nach den Karten PaleoDEM von PALEOMAP. Der Schieber unten in der Ansicht stellt das Alter ein. Aufnahmen, Grenzen und Beschriftungen sind währenddessen entfernt.
+3D buildings	3D-Gebäude
+3D buildings from OpenStreetMap in OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM or from the number of floors. A building without either gets a height of 5 m.	3D-Gebäude aus OpenStreetMap in Vektorkacheln von OpenFreeMap. Sie sind sichtbar, wenn die Kamera näher als 6 km am Boden ist. Die Höhe stammt aus OSM oder aus der Zahl der Geschosse. Ein Gebäude ohne beides erhält eine Höhe von 5 m.
+Rosreestr cadastre	Kataster von Rosreestr
+Land parcels from the National spatial data system of Rosreestr over the imagery, for Russia only. They are seen up close, from about 10 km and lower. The service answers slowly and refuses frequent requests, so the parcels come one tile at a time.	Grundstücke aus dem Nationalen System räumlicher Daten von Rosreestr über den Aufnahmen, nur für Russland. Sie sind aus der Nähe sichtbar, ab etwa 10 km Höhe und darunter. Der Dienst antwortet langsam und lehnt häufige Anfragen ab, daher kommen die Grundstücke Kachel für Kachel.
+Age in millions of years ago. The map of relief and depths for this age - PaleoDEM PALEOMAP, Scotese and Wright 2018.	Alter in Millionen Jahren vor heute. Die Karte von Relief und Tiefen für dieses Alter - PaleoDEM PALEOMAP, Scotese und Wright 2018.
+Quaternary	Quartär
+Neogene	Neogen
+Paleogene	Paläogen
+Cretaceous	Kreide
+Jurassic	Jura
+Triassic	Trias
+Permian	Perm
+Carboniferous	Karbon
+Devonian	Devon
+Silurian	Silur
+Ordovician	Ordovizium
+Cambrian	Kambrium
+Precambrian	Präkambrium
+Present	Gegenwart
+{age} million years ago, {period}	vor {age} Millionen Jahren, {period}
+Show from the chosen age to the present through all maps of the set.	Wiedergabe vom gewählten Alter bis zur Gegenwart durch alle Karten des Satzes.
+How many times the geoid heights above the ellipsoid are stretched. To the right the bulges and hollows are deeper, to the left the Earth is rounder.	Wie vielfach die Geoidhöhen über dem Ellipsoid gestreckt sind. Nach rechts sind Beulen und Mulden tiefer, nach links ist die Erde runder.
+Trains of Finland, Baltic ships and aircraft in real time from Fintraffic open data and the adsb.lol ADS-B network.	Züge Finnlands, Schiffe der Ostsee und Flugzeuge in Echtzeit nach offenen Daten von Fintraffic und dem ADS-B-Netz adsb.lol.
+on the ground	am Boden
+{length} × {width} m	{length} × {width} m
+{metres} m ({feet} ft)	{metres} m ({feet} ft)
+{value} km/h	{value} km/h
+{value} kn	{value} kn
+Call sign	Rufzeichen
+IMO	IMO
+Destination	Ziel
+Size	Abmessungen
+MMSI	MMSI
+Course	Kurs
+Position, UTC	Position, UTC
+Registration	Kennzeichen
+ICAO code	ICAO-Code
+Altitude	Höhe
+Number	Nummer
+Close	Schließen
+None	Keine
+turn on	einschalten
+turn off	ausschalten
+Above ground {height} m	Über Grund {height} m
+Climb {climb} m/s	Steigen {climb} m/s
+Fighter	Kampfflugzeug
+Fly from here	Flug von hier
+Propeller plane	Propellerflugzeug
+Throttle {throttle} %	Schub {throttle} %
+Touched the ground - the flight is over.	Bodenberührung - der Flug ist beendet.
+Up to 2000 km/h, start at 900 km/h, sharp bank.	Bis 2000 km/h, Start mit 900 km/h, scharfe Querlage.
+Up to 340 km/h, start at 250 km/h, smooth.	Bis 340 km/h, Start mit 250 km/h, ruhig.
+km/h	km/h
+{speed} km/h · altitude {alt} m, above ground {height} m · heading {heading}° · climb {climb} m/s · throttle {throttle} %	{speed} km/h · Höhe {alt} m, über Grund {height} m · Kurs {heading}° · Steigen {climb} m/s · Schub {throttle} %
+↑ ↓ - nose down and up · ← → - bank · PageUp, PageDown - throttle · V - cockpit view · H - instruments · Esc - exit	↑ ↓ - Nase runter und hoch · ← → - Querlage · PageUp, PageDown - Schub · V - Cockpitsicht · H - Instrumente · Esc - Ende
+A click on a row copies the sheet number to the clipboard.	Ein Klick auf eine Zeile kopiert die Blattnummer in die Zwischenablage.
+A click on a row copies the sheet number. Sheets of the Russian State Geological Map at 1:1,000,000 and 1:200,000 use the Russian designation too.	Ein Klick auf eine Zeile kopiert die Blattnummer. Auch die Blätter der Staatlichen Geologischen Karte Russlands 1:1 000 000 und 1:200 000 tragen die russische Bezeichnung.
+A ready site from the list or an empty row for your own address.	Eine fertige Website aus der Liste oder eine leere Zeile für eine eigene Adresse.
+Add or edit sites…	Websites hinzufügen oder ändern…
+Add site	Website hinzufügen
+All numbers in a window…	Alle Nummern in einem Fenster…
+Delete the selected rows.	Die markierten Zeilen löschen.
+Each row is an item of the Open in browser submenu of the globe menu. The item opens the site at the point under the cursor. Add site puts a ready site or an empty row for your own address. In the address {lat} and {lon} are the latitude and longitude in degrees, {zoom} is the map scale by the view.	Jede Zeile ist ein Punkt des Untermenüs „Im Browser öffnen“ im Menü auf dem Globus. Der Punkt öffnet die Website am Punkt unter dem Mauszeiger. „Website hinzufügen“ setzt eine fertige Website oder eine leere Zeile für eine eigene Adresse. In der Adresse sind {lat} und {lon} Breite und Länge in Grad, {zoom} ist der Kartenmaßstab nach der Ansicht.
+International Map of the World (IMW)	Internationale Weltkarte (IMW)
+MGRS, 100 km square	MGRS, Quadrat 100 km
+Map sheet designation	Blattbezeichnung
+NATO, JOG	NATO, JOG
+Open in browser	Im Browser öffnen
+Own address	Eigene Adresse
+Row {n}: {reason}	Zeile {n}: {reason}
+Russian sheet designation	Russische Blattbezeichnung
+S. H.	S. H.
+Sheet number	Blattnummer
+Sites of the Open in browser menu	Websites des Menüs „Im Browser öffnen“
+System	System
+The address does not start with https:// or http://.	Die Adresse beginnt nicht mit https:// oder http://.
+The address has extra braces or places other than {lat}, {lon} and {zoom}.	Die Adresse enthält überzählige geschweifte Klammern oder andere Platzhalter als {lat}, {lon} und {zoom}.
+The address has no {lat} or {lon}.	Die Adresse enthält kein {lat} oder {lon}.
+The item has no name.	Der Punkt hat keinen Namen.
+no sheet	kein Blatt
+Asking Eto Mesto…	Anfrage an „Eto Mesto“…
+Build	Berechnen
+Computing insolation: {share}	Berechnung der Besonnung: {share}
+Direct sun, h per day	Direkte Sonne, h pro Tag
+Eto Mesto old maps	Alte Karten von „Eto Mesto“
+Eto Mesto old maps here…	Alte Karten von „Eto Mesto“ hier…
+First day	Erster Tag
+Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Höhe dessen, was gesehen werden soll, über dem Gelände, etwa eines Masts oder Gebäudes. Bei null wird der Boden selbst geprüft.
+Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Höhe des Auges oder Masts über dem Gelände am Punkt. Höher - man sieht weiter, und weniger Orte bleiben hinter dem Gelände verborgen.
+Heights of the grid nodes: {share}	Höhen der Gitterknoten: {share}
+Insolation	Besonnung
+Insolation here…	Besonnung hier…
+Keeps the maps whose title or year holds all the words.	Behält die Karten, deren Titel oder Jahr alle Wörter enthält.
+Last day	Letzter Tag
+Loading heights: {done} of {total}	Höhen werden geladen: {done} von {total}
+Maps at the point {total}, shown {shown}. A click on a title opens the map on the site.	Karten am Punkt {total}, angezeigt {shown}. Ein Klick auf einen Titel öffnet die Karte auf der Website.
+Maps of the Eto Mesto site (etomesto.com) that cover the point. A map opens on the site, where it can be overlaid on a modern map and downloaded under the site rules.	Karten der Website „Eto Mesto“ (etomesto.com), die den Punkt abdecken. Eine Karte öffnet sich auf der Website, dort lässt sie sich über eine moderne Karte legen und nach den Regeln der Website herunterladen.
+Not all heights are loaded, the computation used less detailed ones.	Nicht alle Höhen sind geladen, die Berechnung nutzte weniger genaue.
+Observer height	Beobachterhöhe
+Opens the page of the chosen map on etomesto.com in the browser.	Öffnet die Seite der gewählten Karte auf etomesto.com im Browser.
+Over {days} days direct sun shines from {low} to {high} h per day. The grid step is {step} m.	In {days} Tagen scheint direkte Sonne {low} bis {high} h pro Tag. Die Gitterweite ist {step} m.
+Point	Punkt
+Radius of the computed circle. A larger radius gives a coarser grid. Mountain shadows are taken from a distance of at least the radius and at least 5 km.	Radius des berechneten Kreises. Größer - gröberes Gitter. Bergschatten werden aus einer Entfernung von mindestens dem Radius und mindestens 5 km berücksichtigt.
+Radius of the computed circle. A larger radius gives a coarser step, the step is about one five-hundredth of the radius.	Radius des berechneten Kreises. Größer - gröberer Schritt, der Schritt beträgt etwa ein Fünfhundertstel des Radius.
+Remove	Entfernen
+Remove the insolation layer from the globe.	Die Besonnungsebene vom Globus entfernen.
+Remove the viewshed layer from the globe.	Die Sichtbarkeitsebene vom Globus entfernen.
+Search by title or year	Suche nach Titel oder Jahr
+Target height	Zielhöhe
+The first day of the period. The result is the mean number of hours of direct sunlight per day over the period.	Der erste Tag des Zeitraums. Das Ergebnis ist die mittlere Zahl der Stunden direkter Sonne pro Tag im Zeitraum.
+The last day of the period, inclusive. A long period is computed over 15 evenly spaced days.	Der letzte Tag des Zeitraums, einschließlich. Ein langer Zeitraum wird über 15 gleichmäßig verteilte Tage berechnet.
+The site did not answer: {error}	Die Website hat nicht geantwortet: {error}
+The site has no maps at this point.	Die Website hat an diesem Punkt keine Karten.
+This body has no heights.	Für diesen Körper gibt es keine Höhen.
+Viewshed from a point	Sichtbarkeit von einem Punkt
+Viewshed from here…	Sichtbarkeit von hier…
+{share} of the circle area is visible. The computation step is {step} m.	Sichtbar sind {share} der Kreisfläche. Der Rechenschritt ist {step} m.

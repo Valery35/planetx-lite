@@ -81,6 +81,8 @@ pub fn sun_at(lat: f64, lon: f64) -> [f32; 3] {
 #[derive(Debug, Clone)]
 pub struct Mover {
     pub index: usize,
+    /// Название модели для меню на глобусе.
+    pub name: String,
     pub rows: Vec<TrackRow>,
     pub mode: String,
     pub scale: [f64; 3],
@@ -251,6 +253,7 @@ impl Models {
                     let scale = o.overlay.scale;
                     movers.push(Mover {
                         index: out.len(),
+                        name: o.name.clone(),
                         rows: rows.clone(),
                         mode: o.overlay.mode.clone(),
                         scale,
