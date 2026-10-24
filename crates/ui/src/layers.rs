@@ -25,6 +25,7 @@ use crate::vector::{Row, TREE, VectorBase};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Extra {
     Air,
+    Stars,
     Sun,
     Grid,
     /// Карта картинками, номер строки [`crate::maps::ALL`].
@@ -36,7 +37,7 @@ pub enum Extra {
 
 impl Extra {
     /// Порядок строк включённого, `ACTIVE_ORDER` модуля.
-    pub const ALL: [Extra; 3] = [Extra::Air, Extra::Sun, Extra::Grid];
+    pub const ALL: [Extra; 4] = [Extra::Air, Extra::Stars, Extra::Sun, Extra::Grid];
 
     /// Все слои каталога: свои и карты картинками.
     pub fn all() -> Vec<Extra> {
@@ -57,6 +58,7 @@ impl Extra {
     pub fn name(self) -> &'static str {
         match self {
             Extra::Air => "Atmosphere",
+            Extra::Stars => "Stars",
             Extra::Sun => "Sun",
             Extra::Grid => "Grid",
             Extra::Map(_) => self.map().map_or("", |e| e.name),
@@ -66,6 +68,9 @@ impl Extra {
 
     pub fn tip(self) -> &'static str {
         match self {
+            Extra::Stars => {
+                "Stars of the Yale Bright Star Catalogue. The stars show from space and fade when the camera descends into the atmosphere."
+            }
             Extra::Air => {
                 "The blue glow of the air around the planet, the sky over the horizon and the haze over the distant surface. Without the check the background of the view is black space, the surface is seen without haze."
             }
@@ -84,7 +89,7 @@ impl Extra {
     fn category(self) -> Category {
         match self {
             Extra::Grid => Category::Map,
-            Extra::Air | Extra::Sun => Category::Sky,
+            Extra::Air | Extra::Stars | Extra::Sun => Category::Sky,
             Extra::Map(_) => match self.map().map(|e| e.group) {
                 Some(crate::maps::Group::Map) => Category::Map,
                 Some(crate::maps::Group::Terrain) => Category::Terrain,
@@ -106,6 +111,7 @@ impl Extra {
     pub fn key(self) -> &'static str {
         match self {
             Extra::Air => "air",
+            Extra::Stars => "stars",
             Extra::Sun => "sun",
             Extra::Grid => "grid",
             Extra::Map(_) => self.map().map_or("", |e| e.key),
@@ -505,6 +511,7 @@ fn items() -> Vec<Item> {
     let mut out: Vec<Item> = Basemap::all().into_iter().map(Item::Base).collect();
     out.extend((0..TREE.len()).map(Item::Group));
     out.push(Item::Extra(Extra::Grid));
+    out.push(Item::Extra(Extra::Stars));
     out.push(Item::Extra(Extra::Air));
     out.push(Item::Extra(Extra::Sun));
     // Пожары - карта витрины группы «Планета огня», перед темами огня.

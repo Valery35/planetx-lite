@@ -313,6 +313,10 @@ pub struct LiteApp {
     lasting: HashMap<String, &'static str>,
     /// Загрузчик выбранной готовой подосновы.
     ready_loader: Option<(Basemap, Box<dyn TileLoader>)>,
+    /// Огни городов на ночной стороне, пока включено солнце.
+    lights_loader: Option<Box<dyn TileLoader>>,
+    /// Каталог звёзд: запрос, пришёл (true) или не пришёл (false).
+    stars: Option<Result<bool, Box<dyn net::Request>>>,
     /// Пришедшие снимки основы, ждущие загрузки в видеокарту.
     pending: HashMap<TileKey, net::Image>,
     /// Тайлы, нарисованные прошлым кадром, - их снимки грузятся первыми.
@@ -396,6 +400,20 @@ struct SideResults {
     overlay: Option<crate::overlayprops::Outcome>,
     bathy: Option<crate::bathymetry::Answer>,
 }
+
+/// Огни городов NASA Black Marble на ночной стороне, `LIGHTS_URL`
+/// модуля: снимок VIIRS 2016 года, уровни до 8.
+const LIGHTS: net::Source = net::Source {
+    name: "lights",
+    url: "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Night_Lights/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png",
+    max_requests: 4,
+    max_level: render::LIGHTS_LEVEL,
+    ext: "png",
+    placeholders: false,
+    raw: false,
+    tilejson: None,
+};
+const LIGHTS_ATTRIBUTION: (&str, &str) = ("NASA Black Marble", "https://earthobservatory.nasa.gov/features/NightLights");
 
 /// Для чего выбран файл картинки или модели.
 #[derive(Debug, Clone, PartialEq)]
@@ -621,7 +639,7 @@ impl LiteApp {
         };
         let lang = settings.lang();
         let vector_text = settings.vector.clone();
-        let extras_on: std::collections::BTreeSet<crate::layers::Extra> = [(crate::layers::Extra::Air, settings.air), (crate::layers::Extra::Sun, settings.sun), (crate::layers::Extra::Grid, settings.grid)]
+        let extras_on: std::collections::BTreeSet<crate::layers::Extra> = [(crate::layers::Extra::Air, settings.air), (crate::layers::Extra::Stars, settings.stars), (crate::layers::Extra::Sun, settings.sun), (crate::layers::Extra::Grid, settings.grid)]
             .into_iter()
             .filter_map(|(e, on)| on.then_some(e))
             .chain(settings.maps.iter().filter_map(|k| crate::maps::index(k)).map(crate::layers::Extra::Map))
@@ -720,6 +738,8 @@ impl LiteApp {
             pending: HashMap::new(),
             map_loaders: HashMap::new(),
             ready_loader: None,
+            lights_loader: None,
+            stars: None,
             theme_days: HashMap::new(),
             theme_scales: HashMap::new(),
             lasting: HashMap::new(),
@@ -1649,6 +1669,7 @@ impl LiteApp {
         use crate::layers::Extra;
         match extra {
             Extra::Air => self.settings.air = on,
+            Extra::Stars => self.settings.stars = on,
             Extra::Sun => self.settings.sun = on,
             Extra::Grid => self.settings.grid = on,
             Extra::Map(_) => {}
@@ -3523,6 +3544,54 @@ impl LiteApp {
             }
             globe.set_points(&all);
         }
+        // Звёзды: каталог просится при первом показе, как у модуля.
+        if self.settings.stars && self.stars.is_none() {
+            let r = (self.loaders.request)(ANSWER_BYTES);
+            r.start(data::stars::URL);
+            self.stars = Some(Err(r));
+        }
+        if let Some(Err(r)) = &self.stars
+            && let Some(answer) = r.take()
+        {
+            let found = answer.and_then(|b| data::stars::parse(&b));
+            let ok = found.is_ok();
+            if let (Ok(list), Some(globe)) = (found, &mut self.globe) {
+                let points: Vec<render::StarPoint> = list
+                    .iter()
+                    .map(|s| render::StarPoint {
+                        dir: s.dir.map(|v| v as f32),
+                        size: s.size as f32,
+                        color: [s.color[0] as f32, s.color[1] as f32, s.color[2] as f32, s.brightness as f32],
+                    })
+                    .collect();
+                globe.set_stars(&points);
+            }
+            self.stars = Some(Ok(ok));
+        }
+        if let Some(globe) = &mut self.globe {
+            let frame = self.settings.stars.then(|| {
+                let m = data::stars::sky_rotation(sun_moment(self.timebar.window()));
+                let rows = globe_core::DMat3::from_cols_array_2d(&m).transpose();
+                (rows, data::stars::fade(self.nav.camera.altitude()) as f32)
+            });
+            globe.set_star_frame(frame);
+        }
+        // Огни городов, как у модуля: при солнце на Земле.
+        if self.settings.sun != self.lights_loader.is_some() {
+            self.lights_loader = self.settings.sun.then(|| (self.loaders.make)(LIGHTS));
+            if !self.settings.sun
+                && let Some(globe) = &mut self.globe
+            {
+                globe.clear_lights();
+            }
+        }
+        if let (Some(loader), Some(globe)) = (&self.lights_loader, &mut self.globe) {
+            for loaded in loader.take() {
+                if let Ok(net::Content::Image(image)) = loaded.content {
+                    globe.set_lights(loaded.key, image.width, image.height, &image.rgba);
+                }
+            }
+        }
         // Тайлы карт картинками.
         for (id, loaders) in &self.map_loaders {
             for (_, loader) in loaders {
@@ -3592,6 +3661,12 @@ impl LiteApp {
         // Подписи включённых карт картинками.
         parts.extend(self.vector.map_keys().into_iter().filter_map(crate::maps::kind).map(|k| (k.attribution(), k.link())));
         parts.extend(self.dots.keys().into_iter().map(|l| l.attribution()));
+        if self.lights_loader.is_some() {
+            parts.push(LIGHTS_ATTRIBUTION);
+        }
+        if self.settings.stars && self.nav.camera.altitude() > data::stars::FADE_LOW {
+            parts.push(data::stars::ATTRIBUTION);
+        }
         self.credits.show(ctx, view, self.lang, &parts, 2);
     }
 
@@ -3956,6 +4031,7 @@ impl eframe::App for LiteApp {
         let loading = self.base_loader(self.basemap).is_some_and(|l| l.busy())
             || !self.pending.is_empty()
             || self.map_loaders.values().flatten().any(|(_, l)| l.busy())
+            || self.lights_loader.as_ref().is_some_and(|l| l.busy())
             || self.theme_days.values().any(|d| matches!(d, ThemeDay::Asking(_)))
             || self.dots.busy()
             || self.loaders.terrain.busy()
@@ -4155,6 +4231,17 @@ impl eframe::App for LiteApp {
                 let list: Vec<(TileKey, f64)> = map_tiles.iter().filter(|(k, key, _)| k == id && key.0 >= *level && key.0 < next).map(|(_, key, p)| (*key, *p)).collect();
                 loader.want(&list);
             }
+        }
+        // Тайлы огней городов: предки тайлов кадра не глубже их уровня.
+        if let Some(loader) = &self.lights_loader {
+            let mut list: Vec<(TileKey, f64)> = Vec::new();
+            for key in &selection.draw {
+                let want = terrain::ancestor(*key, key.0.min(render::LIGHTS_LEVEL));
+                if !globe.has_lights(want) && !list.iter().any(|(k, _)| *k == want) {
+                    list.push((want, 50.0 - f64::from(want.0)));
+                }
+            }
+            loader.want(&list);
         }
         // Линии векторной основы - не дольше VECTOR_BUDGET за кадр.
         self.vector.step(&selection.draw, VECTOR_BUDGET, globe);

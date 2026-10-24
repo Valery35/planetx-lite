@@ -39,6 +39,8 @@ pub struct Settings {
     pub grid: bool,
     /// Строка «Атмосфера», у модуля включена по умолчанию.
     pub air: bool,
+    /// Строка «Звёзды», у модуля включена по умолчанию.
+    pub stars: bool,
     /// Флажок строки «Рельеф» раздела «Слои».
     pub relief: bool,
     /// Строки векторной основы, `VectorBase::to_text`.
@@ -61,7 +63,7 @@ pub struct Settings {
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new() }
+        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, stars: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new() }
     }
 }
 
@@ -73,7 +75,7 @@ impl Settings {
 
     pub fn to_text(&self) -> String {
         format!(
-            "language={}\nlabels={}\ntheme={}\nscale={}\nsun={}\ngrid={}\nair={}\nrelief={}\nvector={}\ncoords={}\nplaces_height={}\nmaps={}\nbasemap={}\ndots={}\n",
+            "language={}\nlabels={}\ntheme={}\nscale={}\nsun={}\ngrid={}\nair={}\nstars={}\nrelief={}\nvector={}\ncoords={}\nplaces_height={}\nmaps={}\nbasemap={}\ndots={}\n",
             self.language.as_deref().unwrap_or(""),
             self.labels,
             if self.dark { "dark" } else { "light" },
@@ -81,6 +83,7 @@ impl Settings {
             self.sun,
             self.grid,
             self.air,
+            self.stars,
             self.relief,
             self.vector,
             self.coords,
@@ -108,6 +111,7 @@ impl Settings {
                 "sun" => s.sun = value == "true",
                 "grid" => s.grid = value == "true",
                 "air" => s.air = value != "false",
+                "stars" => s.stars = value != "false",
                 "relief" => s.relief = value != "false",
                 "coords" if COORD_FORMATS.contains(&value) => s.coords = value.to_string(),
                 "vector" => s.vector = crate::vector::VectorBase::from_text(value).to_text(),
@@ -268,7 +272,7 @@ mod tests {
 
     #[test]
     fn settings_round_trip_and_hostile_text() {
-        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()] };
+        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, stars: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()] };
         assert_eq!(Settings::from_text(&s.to_text()), s);
         let bad = Settings::from_text("language=xx\nlabels=../x\ntheme=dark\nscale=1e9\nscale=NaN\nfoo=bar\nno equals\nplaces_height=-5\nplaces_height=NaN\nmaps=emag,../x");
         assert_eq!(bad.maps, ["emag"]);

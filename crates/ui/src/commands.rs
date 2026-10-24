@@ -108,6 +108,7 @@ pub struct Now {
 /// Другие слова слоёв, `WORDS` модуля.
 fn layer_words(extra: Extra) -> &'static [&'static str] {
     match extra {
+        Extra::Stars => &["звёзды", "небо", "млечный путь", "stars", "milky way"],
         Extra::Air => &["атмосфера", "воздух", "дымка", "гало", "atmosphere", "haze", "air"],
         Extra::Sun => &["ночь", "день", "освещение", "тень", "огни городов", "sun", "night", "city lights"],
         Extra::Grid => &["сетка", "градусы", "экватор", "graticule", "grid"],

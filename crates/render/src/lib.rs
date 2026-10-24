@@ -40,6 +40,8 @@ pub use models::{ModelMesh, ModelPart, ModelPlace};
 use models::Models;
 mod points;
 pub use points::{Dot, PointsMesh};
+mod stars;
+pub use stars::StarPoint;
 use points::Points;
 pub use pictures::{PictureMesh, mip_levels};
 use pictures::Pictures;
@@ -105,6 +107,8 @@ struct DrawUniform {
     window: [f32; 4],
     /// Окно наложения линий: u0, v0, сторона, признак (1 - есть).
     over: [f32; 4],
+    /// Окно огней городов: u0, v0, сторона, признак (1 - есть).
+    lights: [f32; 4],
 }
 
 /// Окно всего снимка.
@@ -139,6 +143,18 @@ struct GpuTexture {
     bind_group: wgpu::BindGroup,
     last_used: u64,
 }
+
+/// Текстура наложения или огней: группа привязки собирается парой
+/// «наложение + огни» тайла.
+struct GpuView {
+    view: wgpu::TextureView,
+}
+
+/// Пара текстур группы 3 тайла: ключ тайла наложения и тайла огней.
+type OverPair = (Option<TileKey>, Option<TileKey>);
+
+/// Наибольший уровень тайлов огней городов, `LIGHTS_LEVEL` модуля.
+pub const LIGHTS_LEVEL: u32 = 8;
 
 struct Target {
     width: u32,
@@ -219,6 +235,8 @@ struct Item {
     texture: Option<TileKey>,
     /// Наложение линий векторной основы: ключ тайла с картинкой.
     overlay: Option<TileKey>,
+    /// Огни городов: ключ тайла с картинкой.
+    lights: Option<TileKey>,
     /// Снимок шапки: 0 - северной, 1 - южной.
     cap: Option<usize>,
     uniform: DrawUniform,
@@ -260,6 +278,7 @@ pub struct Globe {
     features: Features,
     pictures: Pictures,
     points: Points,
+    stars: stars::Stars,
     models: Models,
     air: wgpu::Buffer,
     air_bind: wgpu::BindGroup,
@@ -277,9 +296,16 @@ pub struct Globe {
     rays_bind: wgpu::BindGroup,
     blank: wgpu::BindGroup,
     /// Пустое прозрачное наложение.
-    clear: wgpu::BindGroup,
+    clear: wgpu::TextureView,
     /// Наложения линий векторной основы по тайлам, overlay.py модуля.
-    overlays: HashMap<TileKey, GpuTexture>,
+    overlays: HashMap<TileKey, GpuView>,
+    /// Огни городов на ночной стороне по тайлам, core/sun.py модуля.
+    lights: HashMap<TileKey, GpuView>,
+    /// Группа 3 тайла: наложение и огни, собранные парой.
+    over_layout: wgpu::BindGroupLayout,
+    over_binds: HashMap<OverPair, wgpu::BindGroup>,
+    /// Группа 3 без наложения и огней.
+    clear_bind: wgpu::BindGroup,
     meshes: HashMap<MeshId, GpuMesh>,
     textures: HashMap<TileKey, GpuTexture>,
     /// Тайлы, которых нет у источника.
@@ -469,6 +495,28 @@ impl Globe {
                 },
             ],
         });
+        // Группа 3 тайла: наложение линий и огни городов. Групп привязки
+        // в WebGPU не больше четырёх, огни идут в группу наложения.
+        let texture_entry = |binding: u32| wgpu::BindGroupLayoutEntry {
+            binding,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Texture {
+                sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                view_dimension: wgpu::TextureViewDimension::D2,
+                multisampled: false,
+            },
+            count: None,
+        };
+        let sampler_entry = |binding: u32| wgpu::BindGroupLayoutEntry {
+            binding,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+            count: None,
+        };
+        let over_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("overlay and lights"),
+            entries: &[texture_entry(0), sampler_entry(1), texture_entry(2), sampler_entry(3)],
+        });
         let rays_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("rays"),
             entries: &[wgpu::BindGroupLayoutEntry {
@@ -499,7 +547,7 @@ impl Globe {
         // в группе 2 у обоих.
         let tile_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("tile"),
-            bind_group_layouts: &[Some(&draw_layout), Some(&texture_layout), Some(&air_layout), Some(&texture_layout)],
+            bind_group_layouts: &[Some(&draw_layout), Some(&texture_layout), Some(&air_layout), Some(&over_layout)],
             immediate_size: 0,
         });
         let hole_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -627,7 +675,17 @@ impl Globe {
             entries: &[wgpu::BindGroupEntry { binding: 0, resource: rays.as_entire_binding() }],
         });
         let blank = Self::texture_bind(device, queue, &texture_layout, &sampler, 1, 1, &[255, 255, 255, 255]);
-        let clear = Self::texture_bind_as(device, queue, &texture_layout, &sampler, 1, 1, &[0, 0, 0, 0], OVERLAY_FORMAT);
+        let clear = Self::upload_view(device, queue, 1, 1, &[0, 0, 0, 0], OVERLAY_FORMAT);
+        let clear_bind = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("overlay and lights"),
+            layout: &over_layout,
+            entries: &[
+                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(&clear) },
+                wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&sampler) },
+                wgpu::BindGroupEntry { binding: 2, resource: wgpu::BindingResource::TextureView(&clear) },
+                wgpu::BindGroupEntry { binding: 3, resource: wgpu::BindingResource::Sampler(&sampler) },
+            ],
+        });
         let query_set = device.create_query_set(&wgpu::QuerySetDescriptor {
             label: Some("holes"),
             ty: wgpu::QueryType::Occlusion,
@@ -655,6 +713,7 @@ impl Globe {
             features: Features::new(device),
             pictures: Pictures::new(device),
             points: Points::new(device),
+            stars: stars::Stars::new(device),
             models: Models::new(device, queue),
             air,
             air_bind,
@@ -672,6 +731,10 @@ impl Globe {
             blank,
             clear,
             overlays: HashMap::new(),
+            lights: HashMap::new(),
+            over_layout,
+            over_binds: HashMap::new(),
+            clear_bind,
             meshes: HashMap::new(),
             textures: HashMap::new(),
             missing: HashSet::new(),
@@ -741,6 +804,19 @@ impl Globe {
         rgba: &[u8],
         format: wgpu::TextureFormat,
     ) -> wgpu::BindGroup {
+        let view = Self::upload_view(device, queue, width, height, rgba, format);
+        device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("tile"),
+            layout,
+            entries: &[
+                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(&view) },
+                wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(sampler) },
+            ],
+        })
+    }
+
+    /// Текстура RGBA в формате format и её вид.
+    fn upload_view(device: &wgpu::Device, queue: &wgpu::Queue, width: u32, height: u32, rgba: &[u8], format: wgpu::TextureFormat) -> wgpu::TextureView {
         let size = wgpu::Extent3d { width, height, depth_or_array_layers: 1 };
         let texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("tile"),
@@ -763,15 +839,68 @@ impl Globe {
             wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(4 * width), rows_per_image: Some(height) },
             size,
         );
-        let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-        device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: Some("tile"),
-            layout,
+        texture.create_view(&wgpu::TextureViewDescriptor::default())
+    }
+
+    /// Группа 3 тайла по паре текстур: собирается один раз.
+    fn ensure_over(&mut self, pair: OverPair) {
+        if pair == (None, None) || self.over_binds.contains_key(&pair) {
+            return;
+        }
+        let over = pair.0.and_then(|k| self.overlays.get(&k)).map_or(&self.clear, |t| &t.view);
+        let lights = pair.1.and_then(|k| self.lights.get(&k)).map_or(&self.clear, |t| &t.view);
+        let bind = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("overlay and lights"),
+            layout: &self.over_layout,
             entries: &[
-                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(&view) },
-                wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(sampler) },
+                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(over) },
+                wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&self.sampler) },
+                wgpu::BindGroupEntry { binding: 2, resource: wgpu::BindingResource::TextureView(lights) },
+                wgpu::BindGroupEntry { binding: 3, resource: wgpu::BindingResource::Sampler(&self.sampler) },
             ],
+        });
+        // Пар не бывает много больше тайлов кадра, на случай сбоя - предел.
+        if self.over_binds.len() > 8192 {
+            self.over_binds.clear();
+        }
+        self.over_binds.insert(pair, bind);
+    }
+
+    /// Огни городов для тайла: свои или доля огней предка уровня не
+    /// глубже [`LIGHTS_LEVEL`], как окна слоёв GIBS модуля.
+    fn lights_of(&self, key: TileKey) -> Option<(TileKey, [f32; 4])> {
+        let (z, x, y) = key;
+        (z.saturating_sub(LIGHTS_LEVEL)..=z).find_map(|depth| {
+            let parent = (z - depth, x >> depth, y >> depth);
+            self.lights.contains_key(&parent).then(|| {
+                let cells = 1u32 << depth.min(31);
+                let side = 1.0 / cells as f32;
+                (parent, [(x % cells) as f32 * side, (y % cells) as f32 * side, side, 1.0])
+            })
         })
+    }
+
+    /// Положить огни городов тайла key: RGBA в значениях экрана, чёрное -
+    /// огней нет. Картинка не того размера отбрасывается.
+    pub fn set_lights(&mut self, key: TileKey, width: u32, height: u32, rgba: &[u8]) {
+        let expected = u64::from(width) * u64::from(height) * 4;
+        if width == 0 || height == 0 || rgba.len() as u64 != expected {
+            return;
+        }
+        let view = Self::upload_view(&self.device, &self.queue, width, height, rgba, OVERLAY_FORMAT);
+        self.lights.insert(key, GpuView { view });
+        self.over_binds.retain(|(_, l), _| *l != Some(key));
+    }
+
+    /// Есть ли огни тайла key.
+    pub fn has_lights(&self, key: TileKey) -> bool {
+        self.lights.contains_key(&key)
+    }
+
+    /// Забыть огни городов: солнце выключено.
+    pub fn clear_lights(&mut self) {
+        self.lights.clear();
+        self.over_binds.retain(|(_, l), _| l.is_none());
     }
 
     /// Снимок для тайла: свой или доля снимка предка, если тайла нет
@@ -815,8 +944,9 @@ impl Globe {
         if width == 0 || height == 0 || rgba.len() as u64 != expected {
             return;
         }
-        let bind_group = Self::texture_bind_as(&self.device, &self.queue, &self.texture_layout, &self.sampler, width, height, rgba, OVERLAY_FORMAT);
-        self.overlays.insert(key, GpuTexture { bind_group, last_used: self.frame });
+        let view = Self::upload_view(&self.device, &self.queue, width, height, rgba, OVERLAY_FORMAT);
+        self.overlays.insert(key, GpuView { view });
+        self.over_binds.retain(|(o, _), _| *o != Some(key));
     }
 
     /// Есть ли своё наложение у тайла.
@@ -827,6 +957,7 @@ impl Globe {
     /// Забыть все наложения: сменились группы векторной основы.
     pub fn clear_overlays(&mut self) {
         self.overlays.clear();
+        self.over_binds.retain(|(o, _), _| o.is_none());
     }
 
     /// Тайл готов к рисованию: свой снимок или доля снимка предка.
@@ -901,6 +1032,8 @@ impl Globe {
             }
             let textures = &self.textures;
             self.overlays.retain(|k, _| keep.contains(k) || textures.contains_key(k) || k.0 <= UNDERLAY_LEVEL);
+            let (overlays, lights) = (&self.overlays, &self.lights);
+            self.over_binds.retain(|(o, l), _| o.is_none_or(|k| overlays.contains_key(&k)) && l.is_none_or(|k| lights.contains_key(&k)));
             for edges in &mut self.edges {
                 edges.retain(|k, _| textures.contains_key(k));
             }
@@ -1095,11 +1228,15 @@ impl Globe {
             if let Some(center) = me.mesh_for(mesh, camera, heights, &mut rebuilds) {
                 let mvp = camera.tile_mvp(center, Some(projection), scale).to_cols_array();
                 let (texture, window) = picture.map_or((None, WHOLE), |(k, w)| (Some(k), w));
-                let (overlay, over) = match (kind, mesh) {
-                    (Kind::Tile, MeshId::Tile { z, x, y }) => me.overlay_of((z, x, y)).map_or((None, [0.0; 4]), |(k, w)| (Some(k), w)),
-                    _ => (None, [0.0; 4]),
+                let ((overlay, over), (lights, glow)) = match (kind, mesh) {
+                    (Kind::Tile, MeshId::Tile { z, x, y }) => (
+                        me.overlay_of((z, x, y)).map_or((None, [0.0; 4]), |(k, w)| (Some(k), w)),
+                        me.lights_of((z, x, y)).map_or((None, [0.0; 4]), |(k, w)| (Some(k), w)),
+                    ),
+                    _ => ((None, [0.0; 4]), (None, [0.0; 4])),
                 };
-                out.push(Item { kind, mesh, texture, overlay, cap: None, uniform: DrawUniform { mvp, hole, color, window, over } });
+                me.ensure_over((overlay, lights));
+                out.push(Item { kind, mesh, texture, overlay, lights, cap: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow } });
             }
         };
         let flat = |rgb: [f32; 3]| [rgb[0], rgb[1], rgb[2], 1.0];
@@ -1205,6 +1342,17 @@ impl Globe {
     /// Матрицы дорожек анимации модели номер index на кадр.
     pub fn animate_model(&mut self, index: usize, deltas: std::collections::HashMap<usize, DMat4>) {
         self.models.animate(index, deltas);
+    }
+
+    /// Звёзды каталога в экваториальной системе. Заменяют прежние.
+    pub fn set_stars(&mut self, stars: &[StarPoint]) {
+        self.stars.set(&self.device, stars);
+    }
+
+    /// Поворот неба из экваториальной системы в ECEF и видимость звёзд
+    /// кадра, None - звёзды не рисуются.
+    pub fn set_star_frame(&mut self, frame: Option<(globe_core::DMat3, f32)>) {
+        self.stars.set_frame(frame);
     }
 
     /// Облака точек. Заменяют прежние.
@@ -1382,8 +1530,8 @@ impl Globe {
                 };
                 pass.set_bind_group(0, &self.uniform_bind, &[offset]);
                 pass.set_bind_group(1, texture, &[]);
-                let overlay = item.overlay.and_then(|k| self.overlays.get(&k)).map_or(&self.clear, |t| &t.bind_group);
-                pass.set_bind_group(3, overlay, &[]);
+                let over = self.over_binds.get(&(item.overlay, item.lights)).unwrap_or(&self.clear_bind);
+                pass.set_bind_group(3, over, &[]);
                 pass.set_vertex_buffer(0, mesh.vertices.slice(..));
                 pass.set_index_buffer(mesh.indices.slice(..), wgpu::IndexFormat::Uint16);
                 pass.draw_indexed(0..mesh.index_count, 0, 0..1);
@@ -1399,12 +1547,14 @@ impl Globe {
                 pass.set_bind_group(0, &self.uniform_bind, &[0]);
                 pass.set_bind_group(1, &self.blank, &[]);
                 pass.set_bind_group(2, &self.air_bind, &[]);
-                pass.set_bind_group(3, &self.clear, &[]);
+                pass.set_bind_group(3, &self.clear_bind, &[]);
                 pass.draw(0..3, 0..1);
             }
             // Свои объекты - после неба: небо глубину не пишет и закрыло
             // бы линию над горизонтом.
             let ratio = if options.ratio > 0.0 { options.ratio } else { 1.0 };
+            // Звёзды - после неба, свет прибавляется к нему.
+            draws += self.stars.draw(&self.queue, &mut pass, camera, ratio);
             // Картинки-наложения - под своими объектами.
             draws += self.models.draw(&self.device, &self.queue, &mut pass, camera);
             draws += self.points.draw(&self.device, &self.queue, &mut pass, camera, ratio);

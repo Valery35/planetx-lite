@@ -52,4 +52,5 @@ pub mod plates;
 pub mod quakes;
 pub mod rastermaps;
 pub mod slope;
+pub mod stars;
 pub mod volcanoes;

@@ -23,6 +23,8 @@ struct Draw {
     window: vec4<f32>,
     // Окно наложения линий векторной основы: u0, v0, сторона, признак.
     over: vec4<f32>,
+    // Окно огней городов: u0, v0, сторона, признак.
+    lights: vec4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> draw: Draw;
@@ -32,6 +34,9 @@ struct Draw {
 // поверх снимка: значения экрана, альфа умножена на цвет.
 @group(3) @binding(0) var over_texture: texture_2d<f32>;
 @group(3) @binding(1) var over_sampler: sampler;
+// Огни городов NASA Black Marble, видны на ночной стороне при солнце.
+@group(3) @binding(2) var lights_texture: texture_2d<f32>;
+@group(3) @binding(3) var lights_sampler: sampler;
 
 struct VertexOut {
     @builtin(position) position: vec4<f32>,
@@ -52,8 +57,6 @@ struct VertexOut {
 // 24 октября 2026 года «ночь потемнее».
 const SUN_AMBIENT: f32 = 0.35;
 const SUN_NIGHT: f32 = 0.03;
-const SUN_TWILIGHT: f32 = -0.20791169;
-const SUN_DAYLIGHT: f32 = 0.10452846;
 const SUN_FLAT: f32 = 0.80961941;
 
 fn sun_brightness(cos_sun: f32) -> f32 {
@@ -93,6 +96,7 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     // пикселях четвёрки.
     let picture = textureSample(tile_texture, tile_sampler, draw.window.xy + in.uv * draw.window.z);
     let lines = textureSample(over_texture, over_sampler, draw.over.xy + in.uv * draw.over.z) * draw.over.w;
+    let glow = textureSample(lights_texture, lights_sampler, draw.lights.xy + in.uv * draw.lights.z) * draw.lights.w;
     if draw.hole.w > 0.5 {
         let low = draw.hole.xy;
         let high = draw.hole.xy + vec2<f32>(draw.hole.z, draw.hole.z);
@@ -108,7 +112,13 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     if air_frame.sun.w > 0.5 && dot(n, n) > 0.0 {
         shade = sun_brightness(dot(normalize(n), air_frame.sun.xyz));
     }
-    let ground = clamp(base * shade, vec3<f32>(0.0), vec3<f32>(1.0));
+    var ground = clamp(base * shade, vec3<f32>(0.0), vec3<f32>(1.0));
+    // Огни городов: ночью по высоте солнца над горизонтом, к дню гаснут,
+    // как у модуля. Облаков у Lite нет.
+    if air_frame.sun.w > 0.5 && draw.lights.w > 0.5 && dot(n, n) > 0.0 {
+        let day = smoothstep(SUN_TWILIGHT, SUN_DAYLIGHT, dot(normalize(n), air_frame.sun.xyz));
+        ground = min(ground + glow.rgb * (1.0 - day), vec3<f32>(1.0));
+    }
     // Дымка: воздух между глазом и поверхностью. Белая подложка под
     // дымкой остаётся белой: through + (1 - through) = 1.
     return vec4<f32>(min(ground * in.through + in.glow, vec3<f32>(1.0)), 1.0);
