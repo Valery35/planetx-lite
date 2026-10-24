@@ -269,5 +269,11 @@ on the user's computer.
 - **Tiles load slowly.** The status line shows the number of requests in
   progress. Tiles are cached: the program keeps them on disk, the web
   page in the browser cache.
+- **On Linux the program closes with "Io error: Broken pipe" or
+  "Connection reset by peer".** The Wayland compositor disconnects a
+  window busy with long work. Versions after 0.1.0 open the window
+  through X11 (XWayland) when it is available. For version 0.1.0 start
+  it without Wayland: `env -u WAYLAND_DISPLAY ./PlanetX-Lite-...AppImage`.
+  `PLANETX_WAYLAND=1` brings Wayland back.
 
 Problems and wishes: https://github.com/Valery35/planetx-lite/issues

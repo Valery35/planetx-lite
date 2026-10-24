@@ -42,6 +42,32 @@ const SCENE_BYTES: u64 = 64 << 20;
 /// Размер окна, решение автора от 22 октября 2026 года.
 const WINDOW: [f32; 2] = [1280.0, 800.0];
 
+/// Окно на Linux - через X11, если он есть, в том числе XWayland.
+///
+/// Композитор Wayland отключает клиента, который не успевает читать
+/// события: буфер сокета у libwayland мал, и движение мыши заполняет
+/// его за доли секунды паузы кадра. Программа получала «Io error:
+/// Connection reset by peer» или «Broken pipe» и закрывалась при
+/// открытии большого KML (сообщение пользователя Zorin OS 18.1,
+/// 23 октября 2026 года). X-сервер копит события, пока клиент занят.
+/// `PLANETX_WAYLAND=1` или отсутствие `DISPLAY` - Wayland.
+#[cfg(target_os = "linux")]
+fn display_server() -> Option<eframe::EventLoopBuilderHook> {
+    use winit::platform::x11::EventLoopBuilderExtX11;
+    let wayland = std::env::var_os("PLANETX_WAYLAND").is_some_and(|v| v == "1");
+    if wayland || std::env::var_os("DISPLAY").is_none() {
+        return None;
+    }
+    Some(Box::new(|builder| {
+        builder.with_x11();
+    }))
+}
+
+#[cfg(not(target_os = "linux"))]
+fn display_server() -> Option<eframe::EventLoopBuilderHook> {
+    None
+}
+
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().collect();
     let check_arg = args.windows(2).find(|w| w[0] == "--check").map(|w| w[1].clone());
@@ -99,7 +125,12 @@ fn main() -> ExitCode {
     if let Some(icon) = ui::credits::window_icon() {
         viewport = viewport.with_icon(icon);
     }
-    let options = eframe::NativeOptions { renderer: eframe::Renderer::Wgpu, viewport, ..Default::default() };
+    let options = eframe::NativeOptions {
+        renderer: eframe::Renderer::Wgpu,
+        viewport,
+        event_loop_builder: display_server(),
+        ..Default::default()
+    };
     let shared = result.clone();
     let run = eframe::run_native(
         "PlanetX Lite",

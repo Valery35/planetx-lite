@@ -2336,6 +2336,7 @@ dependencies = [
  "image",
  "net",
  "ui",
+ "winit",
  "winresource",
 ]
 
