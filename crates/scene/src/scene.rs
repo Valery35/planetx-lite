@@ -100,6 +100,12 @@ impl Scene {
         <[f64; 3]>::try_from(v).ok()
     }
 
+    /// Строки слоёв сцены, `view["extras"]` модуля: ключ и включена ли.
+    /// Значения не логические пропускаются.
+    pub fn extras(&self) -> Vec<(String, bool)> {
+        self.view.get("extras").and_then(Value::as_object).map(|m| m.iter().filter_map(|(k, v)| v.as_bool().map(|b| (k.clone(), b))).collect()).unwrap_or_default()
+    }
+
     /// Словарь для scene.json.
     pub fn to_dict(&self) -> Value {
         let [lat, lon, distance, heading, tilt] = self.camera;

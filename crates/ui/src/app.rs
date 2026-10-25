@@ -706,7 +706,10 @@ pub(crate) fn group_thousands(n: i64) -> String {
 /// Пункты меню «Демо» по разделам, как у модуля. Выбранное демо -
 /// в clicked.
 fn demo_items(ui: &mut egui::Ui, lang: Lang, clicked: &mut Option<&'static crate::demos::Demo>) {
-    for section in &crate::demos::MENU {
+    for (n, section) in crate::demos::MENU.iter().enumerate() {
+        if n == crate::demos::BODIES_FROM {
+            ui.separator();
+        }
         ui.menu_button(tr(lang, section.en), |ui| {
             for demo in section.demos {
                 if ui.button(tr(lang, demo.en)).clicked() {
@@ -1194,7 +1197,7 @@ impl LiteApp {
                                 ui.close();
                             }
                         });
-                        let demo = tool_button(ui, Tool::Demo, false, true, true, tr(lang, "Demo: prepared scenes with placemarks and tours. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour."));
+                        let demo = tool_button(ui, Tool::Demo, false, true, true, tr(lang, "Demo: prepared scenes with placemarks and tours on the Earth, Mars, the Moon and in the sky. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour."));
                         egui::Popup::menu(&demo).show(|ui| demo_items(ui, lang, &mut clicks.demo));
                         // Тело глобуса, меню `MENU` модуля: Земля сверху, под
                         // разделителем Луна и Марс, прочие тела - подменю.
@@ -3240,6 +3243,18 @@ impl LiteApp {
                         self.set_body(body);
                     }
                     None => {}
+                }
+                // Слои сцены, как `_apply_extra` модуля: известные строки
+                // каталога включаются или выключаются. Земные строки на
+                // другом теле не трогаются.
+                for (key, on) in &opened.extras {
+                    if let Some(extra) = crate::layers::Extra::from_key(key)
+                        && (self.planet.earth || !extra.earth_only())
+                        && self.extras_on.contains(&extra) != *on
+                    {
+                        self.extras.insert(extra);
+                        self.set_extra(extra, *on);
+                    }
                 }
                 // Поза, заданная при запуске, сильнее позы сцены.
                 if let Some(pose) = opened.pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {

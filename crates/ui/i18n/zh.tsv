@@ -1384,3 +1384,9 @@ Size|sky	大小
 Other|deepsky	其他
 Sky imagery when zooming in	放大时显示天空影像
 Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.	视场小于约 50° 时，NASA 的详细星图取代银河图片出现，小于 6° 时出现 DSS 巡天影像。不勾选时，天空为银河图片和星表中的恒星。
+Demo: prepared scenes with placemarks and tours on the Earth, Mars, the Moon and in the sky. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour.	演示：地球、火星、月球和天空上带有地标和游览的预制场景。地标作为新文件夹放入“我的地点”，列表下方的 ▶ 按钮播放游览。
+Trains of Finland, live	芬兰列车，实时
+Mars rover landing sites	火星车着陆点
+Jezero crater	杰泽罗陨石坑
+Apollo and Lunokhod	“阿波罗”和“月球车”
+Constellations and bright objects	星座和亮天体

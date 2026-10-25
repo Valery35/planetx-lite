@@ -8,8 +8,8 @@
 //! и Lite, демо в выпуск Lite не входит. Файл демо скачивается при
 //! первом открытии. Программа хранит его в папке кэша, страница
 //! полагается на кэш браузера. Раскладка - как в папке `planetx/demo`
-//! модуля, меню - как у модуля, без демо, которые Lite пока не
-//! показывает: поезда вживую, исторические карты, Марс, Луна и небо.
+//! модуля, меню - как у модуля, без самосвалов слоем QGIS: проекта
+//! QGIS у Lite нет. Сцены других тел и неба идут после разделителя.
 //! У подземного демо файл GeoPackage идёт раньше растров кровель:
 //! растры ждёт открытая им модель.
 
@@ -30,7 +30,10 @@ pub struct Section {
     pub demos: &'static [Demo],
 }
 
-pub const MENU: [Section; 6] = [
+/// Разделы меню: земные, потом другие тела и небо с BODIES_FROM.
+pub const BODIES_FROM: usize = 6;
+
+pub const MENU: [Section; 9] = [
     Section {
         en: "Placemarks and tours",
         demos: &[
@@ -84,6 +87,7 @@ pub const MENU: [Section; 6] = [
         demos: &[
             Demo { en: "3D models, Suzdal and Perm", files: &["models.planetx"] },
             Demo { en: "Animated model, wind turbines", files: &["turbines.planetx"] },
+            Demo { en: "Trains of Finland, live", files: &["trains.planetx"] },
         ],
     },
     Section {
@@ -95,6 +99,9 @@ pub const MENU: [Section; 6] = [
             Demo { en: "Haul trucks, Lebedinsky", files: &["haul_lebedinsky.planetx"] },
         ],
     },
+    Section { en: "Mars", demos: &[Demo { en: "Mars rover landing sites", files: &["mars.planetx"] }, Demo { en: "Jezero crater", files: &["jezero.planetx"] }] },
+    Section { en: "Moon", demos: &[Demo { en: "Apollo and Lunokhod", files: &["moon.planetx"] }] },
+    Section { en: "Sky", demos: &[Demo { en: "Constellations and bright objects", files: &["sky.planetx"] }] },
 ];
 
 /// Демо самосвалов: после открытия шкала проигрывает рейс по кругу.

@@ -440,11 +440,7 @@ impl Live {
     fn unit(&mut self, group: &str, color: [f64; 3]) -> &Unit {
         let kind = self.kind;
         self.units.entry(group.to_string()).or_insert_with(|| {
-            let parts: Vec<data::trains::Part> = match kind {
-                Kind::Vessels => vessels::unit_ship_parts(color),
-                Kind::Aircraft => aircraft::unit_plane_parts(color),
-                Kind::Trains => trains::train_parts(color, true),
-            };
+            let parts = unit_parts(kind, color);
             let base = base();
             let parts = parts
                 .into_iter()
@@ -478,6 +474,29 @@ impl Live {
     /// Колесо в камере следом: расстояние до объекта.
     pub fn wheel(&mut self, notches: f64) {
         self.reach = (self.reach * WHEEL_STEP.powf(notches)).clamp(movers::CHASE_MIN, MAX_REACH);
+    }
+}
+
+/// Части модели единичного размера: размер объекта в метрах растягивает
+/// их в [`orient`]. Вагон `train_parts` - в метрах, он делится на свои
+/// размеры: иначе поезд из пяти вагонов выходил длиной больше 3 км,
+/// 25 м вагона на 130 м масштаба.
+fn unit_parts(kind: Kind, color: [f64; 3]) -> Vec<data::trains::Part> {
+    match kind {
+        Kind::Vessels => vessels::unit_ship_parts(color),
+        Kind::Aircraft => aircraft::unit_plane_parts(color),
+        Kind::Trains => {
+            let scale = [trains::CAR_WIDTH, trains::CAR_LENGTH, trains::CAR_HEIGHT];
+            let mut parts = trains::train_parts(color, true);
+            for part in &mut parts {
+                for v in &mut part.positions {
+                    for (c, s) in v.iter_mut().zip(scale) {
+                        *c /= s;
+                    }
+                }
+            }
+            parts
+        }
     }
 }
 
@@ -543,6 +562,18 @@ mod tests {
         }
         fn stats(&self) -> &net::Stats {
             &self.1
+        }
+    }
+
+    #[test]
+    fn unit_models_are_one_long() {
+        // Модели всех видов - длиной 1 по оси Y, размер в метрах их
+        // растягивает. Вагон в метрах давал поезд длиной в километры,
+        // замечено по демо поездов 25 октября 2026 года.
+        for kind in Kind::ALL {
+            let ys: Vec<f64> = unit_parts(kind, [1.0, 0.0, 0.0]).iter().flat_map(|p| p.positions.iter().map(|v| v[1])).collect();
+            let (lo, hi) = ys.iter().fold((f64::MAX, f64::MIN), |(lo, hi), y| (lo.min(*y), hi.max(*y)));
+            assert!((hi - lo - 1.0).abs() < 0.05, "{kind:?}: {}", hi - lo);
         }
     }
 
