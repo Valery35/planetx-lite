@@ -263,11 +263,16 @@ struct OwnDialog {
     url: String,
     max_level: u32,
     credit: String,
+    /// Ответ GetCapabilities службы WMS по адресу asked: слои или ошибка.
+    caps: Option<Result<scene::wms::Capabilities, String>>,
+    asked: String,
+    /// Выбранный слой службы.
+    layer: usize,
 }
 
 impl Default for OwnDialog {
     fn default() -> Self {
-        OwnDialog { name: String::new(), url: String::new(), max_level: 19, credit: String::new() }
+        OwnDialog { name: String::new(), url: String::new(), max_level: 19, credit: String::new(), caps: None, asked: String::new(), layer: 0 }
     }
 }
 
@@ -352,6 +357,8 @@ pub struct LiteApp {
     map_opacity: HashMap<String, f32>,
     /// Окно «Новый источник тайлов».
     own_dialog: Option<OwnDialog>,
+    /// Запрос GetCapabilities окна «Новый источник тайлов».
+    own_caps: Option<Box<dyn net::Request>>,
     /// Окно «Номенклатура листа».
     sheets_window: Option<crate::sheets::SheetsWindow>,
     /// Окно «Сайты меню «Открыть в браузере»».
@@ -945,6 +952,7 @@ impl LiteApp {
             subsurface: None,
             cutaway: None,
             own_dialog: None,
+            own_caps: None,
             sheets_window: None,
             links_window: None,
             viewshed: None,
@@ -3816,29 +3824,90 @@ impl LiteApp {
     fn own_window(&mut self, ctx: &egui::Context) {
         let lang = self.lang;
         let Some(d) = &mut self.own_dialog else {
+            self.own_caps = None;
             return;
         };
+        // Ответ GetCapabilities: слои службы, название и подпись - из него.
+        if let Some(request) = &self.own_caps
+            && let Some(answer) = request.take()
+        {
+            self.own_caps = None;
+            let caps = answer.and_then(|b| scene::wms::parse(&b).map_err(|e| e.to_string()));
+            if let Ok(c) = &caps {
+                d.layer = 0;
+                if d.name.trim().is_empty() {
+                    d.name = c.layers.first().map_or_else(|| c.title.clone(), |l| l.title.clone());
+                }
+                if d.credit.trim().is_empty() {
+                    d.credit = if c.attribution.is_empty() { c.title.clone() } else { c.attribution.clone() };
+                }
+            }
+            d.caps = Some(caps);
+        }
+        let wms = scene::wms::is_wms(&d.url);
+        let mut ask_caps = false;
         let mut open = true;
         let mut done = None;
         egui::Window::new(tr(lang, "New tile source")).open(&mut open).collapsible(false).resizable(false).default_width(420.0).show(ctx, |ui| {
             egui::Grid::new("own-source").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
                 ui.label(tr(lang, "Address"));
                 ui.add(egui::TextEdit::singleline(&mut d.url).desired_width(300.0).hint_text("https://example.org/{z}/{x}/{y}.png"))
-                    .on_hover_text(tr(lang, "Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS."));
+                    .on_hover_text(tr(lang, "Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS. Or the address of a WMS service - the window knows it by the words WMSServer, /wms or service=WMS and reads the list of its layers."));
                 ui.end_row();
+                if wms {
+                    ui.label(tr(lang, "Layer"));
+                    ui.horizontal(|ui| {
+                        if let Some(Ok(caps)) = &d.caps {
+                            let title = |l: &scene::wms::Layer| if l.group { format!("{} - {}", l.title, tr(lang, "all layers")) } else { l.title.clone() };
+                            let current = caps.layers.get(d.layer).map(title).unwrap_or_default();
+                            egui::ComboBox::from_id_salt("own-wms-layer").width(240.0).selected_text(current).show_ui(ui, |ui| {
+                                for (n, l) in caps.layers.iter().enumerate() {
+                                    if ui.selectable_label(d.layer == n, title(l)).clicked() {
+                                        d.layer = n;
+                                        d.name = l.title.clone();
+                                    }
+                                }
+                            });
+                        }
+                        let waiting = self.own_caps.is_some();
+                        if ui.add_enabled(!waiting, egui::Button::new(tr(lang, "Read layers"))).on_hover_text(tr(lang, "Read the list of layers of the service, the GetCapabilities request.")).clicked() {
+                            ask_caps = true;
+                        }
+                        if waiting {
+                            ui.spinner();
+                        }
+                    });
+                    ui.end_row();
+                }
                 ui.label(tr(lang, "Name"));
                 ui.add(egui::TextEdit::singleline(&mut d.name).desired_width(300.0));
                 ui.end_row();
-                ui.label(tr(lang, "Levels up to"));
-                ui.add(egui::DragValue::new(&mut d.max_level).range(1..=crate::basemap::OWN_MAX_LEVEL));
-                ui.end_row();
+                if !wms {
+                    ui.label(tr(lang, "Levels up to"));
+                    ui.add(egui::DragValue::new(&mut d.max_level).range(1..=crate::basemap::OWN_MAX_LEVEL));
+                    ui.end_row();
+                }
                 ui.label(tr(lang, "Credit"));
                 ui.add(egui::TextEdit::singleline(&mut d.credit).desired_width(300.0)).on_hover_text(tr(lang, "Credit of the source on the screen, as its terms of use require."));
                 ui.end_row();
             });
-            let error = crate::basemap::template_error(&d.url);
-            if let Some(e) = error.filter(|_| !d.url.trim().is_empty()) {
+            let error = if wms {
+                match &d.caps {
+                    Some(Ok(_)) if d.asked == d.url.trim() => None,
+                    Some(Err(e)) if d.asked == d.url.trim() => {
+                        ui.colored_label(crate::theme::pal().accent, crate::i18n::trf(lang, "The service did not give its layers: {error}", &[("error", e)]));
+                        Some("")
+                    }
+                    _ => Some(""),
+                }
+            } else {
+                crate::basemap::template_error(&d.url)
+            };
+            if let Some(e) = error.filter(|e| !d.url.trim().is_empty() && !e.is_empty()) {
                 ui.colored_label(crate::theme::pal().accent, tr(lang, e));
+            }
+            if wms {
+                ui.label(egui::RichText::new(tr(lang, "A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.")).weak());
             }
             ui.horizontal(|ui| {
                 if ui.add_enabled(error.is_none(), egui::Button::new(tr(lang, "Add"))).clicked() {
@@ -3851,6 +3920,40 @@ impl LiteApp {
         });
         if !open {
             done = Some(false);
+        }
+        if ask_caps {
+            d.asked = d.url.trim().to_string();
+            d.caps = None;
+            let request = (self.loaders.request)(8 << 20);
+            request.start(&scene::wms::capabilities_url(&scene::wms::base_url(&d.asked)));
+            self.own_caps = Some(request);
+        }
+        // Служба WMS - карта поверх подложки, `wms.source` модуля.
+        if done == Some(true)
+            && wms
+            && let Some(Ok(caps)) = &d.caps
+            && let Some(layer) = caps.layers.get(d.layer)
+        {
+            let base = scene::wms::base_url(&d.asked);
+            let template = scene::wms::getmap_template(&base, &caps.version, &layer.names, scene::wms::mercator_code(&layer.crs), scene::wms::pick_format(&caps.formats));
+            let saved = crate::maps::WmsSaved { name: d.name.clone(), template, bbox: layer.bbox, credit: d.credit.clone() };
+            let layer_box = layer.bbox;
+            self.own_dialog = None;
+            if let Some(n) = crate::maps::register_wms(&saved) {
+                if !self.settings.wms.contains(&saved) {
+                    self.settings.wms.push(saved);
+                }
+                self.extras.insert(crate::layers::Extra::Map(n));
+                self.set_extra(crate::layers::Extra::Map(n), true);
+                // Перелёт к району службы.
+                if let Some(b) = layer_box.filter(|b| !scene::wms::is_world(Some(*b))) {
+                    let (lat, lon) = ((b[1] + b[3]) / 2.0, (b[0] + b[2]) / 2.0);
+                    let span = globe_core::ellipsoid::EARTH.a * (b[3] - b[1]).max((b[2] - b[0]) * lat.to_radians().cos()).to_radians();
+                    let now = ctx.input(|i| i.time);
+                    crate::input::fly(&mut self.nav, Pose::new(lat, lon, span.clamp(2000.0, 4.0e6) * 1.5, 0.0, 0.0), now);
+                }
+            }
+            return;
         }
         match done {
             Some(true) => {

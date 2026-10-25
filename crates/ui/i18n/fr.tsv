@@ -1401,3 +1401,15 @@ The NASA GIBS catalog is loading, the first time about 10 seconds.	Le catalogue 
 NASA GIBS layers - also one map on the globe	Couches NASA GIBS - aussi une seule carte sur le globe
 A layer of the whole NASA GIBS catalog. It behaves as a theme - one map on the globe, the series of dates goes to the time slider, the colour scale is in the legend. The names of the layers are in English.	Une couche de tout le catalogue NASA GIBS. Elle se comporte comme un thème - une carte sur le globe, la série de dates va au curseur du temps, l'échelle des couleurs est dans la légende. Les noms des couches sont en anglais.
 The NASA GIBS catalog did not load: {error}	Le catalogue NASA GIBS ne s'est pas chargé : {error}
+PASDA DVRPC 2020, Philadelphia	PASDA DVRPC 2020, Philadelphie
+Spring 2020 orthophoto of nine counties around Philadelphia (USA), the Pennsylvania Spatial Data Access service. The service is slow, pictures arrive in a few seconds.	Orthophoto du printemps 2020 de neuf comtés autour de Philadelphie (États-Unis), service Pennsylvania Spatial Data Access. Le service est lent, les images arrivent en quelques secondes.
+A map from a WMS service added in the window «New tile source». The globe asks the service for a picture of each tile in Web Mercator. Outside the area of the layer the base map of the globe is seen.	Une carte d'un service WMS ajouté dans la fenêtre «Nouvelle source de tuiles». Le globe demande au service une image de chaque tuile en Web Mercator. Hors de l'emprise de la couche, on voit le fond du globe.
+Local data	Données locales
+Detailed imagery and maps of separate areas from the services of their owners, over the base map of the globe. Outside the area the base map is seen. Own WMS services of the window «New tile source» are here too.	Images et cartes détaillées de zones séparées depuis les services de leurs propriétaires, par-dessus le fond du globe. Hors de la zone, on voit le fond. Les services WMS de la fenêtre «Nouvelle source de tuiles» sont ici aussi.
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS. Or the address of a WMS service - the window knows it by the words WMSServer, /wms or service=WMS and reads the list of its layers.	Modèle d'adresse des tuiles avec les places {z}, {x} et {y}. {-y} - rangées de bas en haut, comme en TMS. Ou l'adresse d'un service WMS - la fenêtre la reconnaît aux mots WMSServer, /wms ou service=WMS et lit la liste de ses couches.
+Layer	Couche
+all layers	toutes les couches
+Read layers	Lire les couches
+Read the list of layers of the service, the GetCapabilities request.	Lire la liste des couches du service, requête GetCapabilities.
+The service did not give its layers: {error}	Le service n'a pas donné ses couches : {error}
+A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.	Une carte WMS se pose sur le fond du globe, hors de l'emprise de la couche on voit le fond. Le service dessine chaque image à nouveau, la carte se charge donc plus lentement que des tuiles.

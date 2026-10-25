@@ -1401,3 +1401,15 @@ The NASA GIBS catalog is loading, the first time about 10 seconds.	NASA GIBS-ი
 NASA GIBS layers - also one map on the globe	NASA GIBS-ის ფენები - ესეც ერთი რუკაა გლობუსზე
 A layer of the whole NASA GIBS catalog. It behaves as a theme - one map on the globe, the series of dates goes to the time slider, the colour scale is in the legend. The names of the layers are in English.	NASA GIBS-ის მთელი კატალოგის ფენა. ის თემასავით იქცევა - ერთი რუკა გლობუსზე, თარიღების რიგი დროის სკალაზე გადადის, ფერების სკალა ლეგენდაშია. ფენების სახელები ინგლისურია.
 The NASA GIBS catalog did not load: {error}	NASA GIBS-ის კატალოგი არ ჩაიტვირთა: {error}
+PASDA DVRPC 2020, Philadelphia	PASDA DVRPC 2020, ფილადელფია
+Spring 2020 orthophoto of nine counties around Philadelphia (USA), the Pennsylvania Spatial Data Access service. The service is slow, pictures arrive in a few seconds.	ფილადელფიის (აშშ) ირგვლივ ცხრა ოლქის 2020 წლის გაზაფხულის ორთოფოტო, სერვისი Pennsylvania Spatial Data Access. სერვისი ნელია, სურათები რამდენიმე წამში მოდის.
+A map from a WMS service added in the window «New tile source». The globe asks the service for a picture of each tile in Web Mercator. Outside the area of the layer the base map of the globe is seen.	რუკა WMS სერვისიდან, დამატებული ფანჯარაში «ახალი ფილების წყარო». გლობუსი სერვისს თითოეული ფილის სურათს სთხოვს Web Mercator-ში. ფენის არეალის გარეთ გლობუსის საფუძველი ჩანს.
+Local data	ადგილობრივი მონაცემები
+Detailed imagery and maps of separate areas from the services of their owners, over the base map of the globe. Outside the area the base map is seen. Own WMS services of the window «New tile source» are here too.	ცალკეული რაიონების დეტალური სურათები და რუკები მათი მფლობელების სერვისებიდან, გლობუსის საფუძვლის ზემოთ. რაიონის გარეთ საფუძველი ჩანს. აქვეა ფანჯრის «ახალი ფილების წყარო» საკუთარი WMS სერვისები.
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS. Or the address of a WMS service - the window knows it by the words WMSServer, /wms or service=WMS and reads the list of its layers.	ფილების მისამართის შაბლონი ადგილებით {z}, {x} და {y}. {-y} - რიგები ქვემოდან ზემოთ, როგორც TMS-ში. ან WMS სერვისის მისამართი - ფანჯარა მას ცნობს სიტყვებით WMSServer, /wms ან service=WMS და კითხულობს მისი ფენების სიას.
+Layer	ფენა
+all layers	ყველა ფენა
+Read layers	ფენების წაკითხვა
+Read the list of layers of the service, the GetCapabilities request.	სერვისის ფენების სიის წაკითხვა, მოთხოვნა GetCapabilities.
+The service did not give its layers: {error}	სერვისმა ფენები არ მისცა: {error}
+A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.	WMS რუკა ეწყობა გლობუსის საფუძველზე, ფენის არეალის გარეთ საფუძველი ჩანს. სერვისი ყოველ სურათს თავიდან ხატავს, ამიტომ რუკა ფილებზე ნელა იტვირთება.

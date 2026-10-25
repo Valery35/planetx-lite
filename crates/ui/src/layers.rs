@@ -159,6 +159,7 @@ impl Extra {
                 Some(crate::maps::Group::Soil) => Category::Soil,
                 Some(crate::maps::Group::Tiles) => Category::Tiles,
                 Some(crate::maps::Group::Gibs) => Category::Gibs,
+                Some(crate::maps::Group::Local) => Category::Local,
                 _ => Category::Depths,
             },
             Extra::Dots(crate::dots::Layer::Fires) => Category::Fire,
@@ -608,6 +609,8 @@ fn popup(ui: &mut egui::Ui, menu_open: &mut Option<String>, key: &str, rect: egu
 enum Category {
     All,
     Base,
+    /// Службы WMS районов и свои службы WMS.
+    Local,
     Map,
     Fire,
     Water,
@@ -807,6 +810,7 @@ impl Catalog {
         let categories = [
             (Category::All, tr(lang, "All"), tr(lang, "All maps and layers of the catalog.")),
             (Category::Base, tr(lang, "Base maps"), tr(lang, "Basemaps of the globe - imagery and maps. There is one base on the globe, under the layers.")),
+            (Category::Local, tr(lang, "Local data"), tr(lang, "Detailed imagery and maps of separate areas from the services of their owners, over the base map of the globe. Outside the area the base map is seen. Own WMS services of the window «New tile source» are here too.")),
             (Category::Map, tr(lang, "Map"), tr(lang, "The OpenFreeMap vector base and the coordinate grid.")),
             (Category::Fire, tr(lang, "Planet of Fire"), tr(lang, "Fire spots, smoke, aerosol and carbon monoxide of fires and industry from NASA data.")),
             (Category::Water, tr(lang, "Planet of Water"), tr(lang, "Precipitation, soil moisture, snow, ice, water vapor, chlorophyll, salinity and floods from NASA data, currents from NOAA data.")),

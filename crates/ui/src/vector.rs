@@ -590,8 +590,8 @@ impl VectorBase {
                     }
                     continue;
                 }
-                // Мельче первого уровня карты тайлы не просятся.
-                if key.0 < kind.min_level() {
+                // Мельче первого уровня карты и вне охвата службы тайлы не просятся.
+                if !kind.wants(*key) {
                     continue;
                 }
                 let (source, _, _) = raster_of(*key, kind.max_level());
@@ -715,7 +715,7 @@ impl VectorBase {
                     }
                     continue;
                 }
-                if key.0 < kind.min_level() {
+                if !kind.wants(*key) {
                     continue;
                 }
                 let (source, depth, cell) = raster_of(*key, kind.max_level());
@@ -723,8 +723,8 @@ impl VectorBase {
                     maps.push(MapPart { id, kind: *kind, source, depth, cell, raster: r.clone(), contour: None, opacity: self.opacity_of(id) });
                 }
             }
-            // Карты мельче своего первого уровня в тайле не нужны.
-            if maps.len() < self.maps.iter().filter(|(_, k)| key.0 >= k.min_level()).count() {
+            // Карты мельче своего первого уровня и вне охвата в тайле не нужны.
+            if maps.len() < self.maps.iter().filter(|(_, k)| k.wants(*key)).count() {
                 continue;
             }
             let job = Job {

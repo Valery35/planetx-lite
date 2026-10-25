@@ -30,6 +30,8 @@ pub enum Kind {
     Clouds,
     /// Земельные участки НСПД Росреестра, `core/cadastre.py` модуля.
     Cadastre,
+    /// Карта из службы WMS поверх подложки.
+    Wms(&'static WmsMap),
 }
 
 /// Анализ рельефа: на глобусе одна из двух раскрасок, как у модуля.
@@ -54,6 +56,8 @@ pub enum Group {
     Tiles,
     /// Слой всего каталога NASA GIBS.
     Gibs,
+    /// Служба WMS района или своя служба WMS.
+    Local,
 }
 
 /// Строка каталога: ключ, название и подсказка (английский ключ
@@ -374,29 +378,91 @@ pub const ALL: [Entry; 43] = [
     },
 ];
 
-/// Слои всего каталога NASA GIBS: строки и темы, номера строк - после
-/// [`ALL`]. Каталог приходит один раз за запуск, строки живут до конца.
-static CATALOG: std::sync::OnceLock<(Vec<Entry>, Vec<Theme>)> = std::sync::OnceLock::new();
+/// Карта из службы WMS, `core/wms.py` модуля: ключ и имя кэша, шаблон
+/// GetMap с местом {bbox}, охват в метрах EPSG:3857 (None - весь мир),
+/// первый уровень, подпись.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct WmsMap {
+    pub key: &'static str,
+    pub template: &'static str,
+    pub bbox: Option<[f64; 4]>,
+    pub min_level: u32,
+    pub credit: &'static str,
+}
+
+impl WmsMap {
+    /// Тайл задевает охват службы.
+    pub fn inside(&self, key: globe_core::lod::TileKey) -> bool {
+        let Some(b) = self.bbox else {
+            return true;
+        };
+        let t = net::tile_bbox(key);
+        t[0] < b[2] && t[2] > b[0] && t[1] < b[3] && t[3] > b[1]
+    }
+}
+
+/// Своя служба WMS для настроек: название, шаблон GetMap, охват
+/// в градусах, подпись.
+#[derive(Debug, Clone, PartialEq)]
+pub struct WmsSaved {
+    pub name: String,
+    pub template: String,
+    pub bbox: Option<[f64; 4]>,
+    pub credit: String,
+}
+
+/// Строки карт сверх [`ALL`], номера - следом за ними в порядке
+/// появления: службы районов, свои службы WMS, слои всего каталога
+/// NASA GIBS. Строки живут до конца работы программы.
+static DYNAMIC: std::sync::LazyLock<std::sync::RwLock<Vec<(&'static Entry, Kind)>>> = std::sync::LazyLock::new(|| {
+    let rows = scene::wms::LOCAL
+        .iter()
+        .map(|l| {
+            let map = WmsMap {
+                key: l.key,
+                template: leak(l.template()),
+                bbox: Some(scene::wms::mercator_box(l.bbox)),
+                min_level: scene::wms::first_level(l.bbox),
+                credit: l.credit,
+            };
+            let entry: &'static Entry = Box::leak(Box::new(Entry { key: l.key, name: l.name, tip: l.about, group: Group::Local, source: l.credit }));
+            (entry, Kind::Wms(Box::leak(Box::new(map))))
+        })
+        .collect();
+    std::sync::RwLock::new(rows)
+});
+/// Каталог GIBS пришёл.
+static GIBS_READY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 /// Подсказка строки слоя каталога GIBS, ключ перевода.
 pub const GIBS_TIP: &str = "A layer of the whole NASA GIBS catalog. It behaves as a theme - one map on the globe, the series of dates goes to the time slider, the colour scale is in the legend. The names of the layers are in English.";
+/// Подсказка своей службы WMS, ключ перевода.
+pub const WMS_TIP: &str = "A map from a WMS service added in the window «New tile source». The globe asks the service for a picture of each tile in Web Mercator. Outside the area of the layer the base map of the globe is seen.";
 
 fn leak(text: String) -> &'static str {
     Box::leak(text.into_boxed_str())
 }
 
+fn push_rows(rows: Vec<(&'static Entry, Kind)>) {
+    if let Ok(mut d) = DYNAMIC.write() {
+        d.extend(rows);
+    }
+}
+
 /// Слои каталога GIBS - строки карт. Второй каталог не принимается.
 pub fn register(layers: Vec<gibs::CatalogLayer>) {
-    let mut entries = Vec::with_capacity(layers.len());
-    let mut themes = Vec::with_capacity(layers.len());
+    if GIBS_READY.swap(true, std::sync::atomic::Ordering::SeqCst) {
+        return;
+    }
+    let mut rows = Vec::with_capacity(layers.len());
     for l in layers {
         let key = leak(format!("{}{}", gibs::CATALOG_PREFIX, l.layer));
         let when = match (l.intervals.iter().map(|i| i.0).min(), l.intervals.iter().map(|i| i.1).max()) {
             (Some(a), Some(b)) => format!("{} - {}", a.text(), b.text()),
             _ => "default".to_string(),
         };
-        entries.push(Entry { key, name: leak(l.title), tip: GIBS_TIP, group: Group::Gibs, source: leak(format!("NASA GIBS · {} · {when} · z{}", l.layer, l.level)) });
-        themes.push(Theme {
+        let entry: &'static Entry = Box::leak(Box::new(Entry { key, name: leak(l.title), tip: GIBS_TIP, group: Group::Gibs, source: leak(format!("NASA GIBS · {} · {when} · z{}", l.layer, l.level)) }));
+        let theme: &'static Theme = Box::leak(Box::new(Theme {
             key,
             group: gibs::Group::Catalog,
             layer: leak(l.layer),
@@ -405,29 +471,61 @@ pub fn register(layers: Vec<gibs::CatalogLayer>) {
             colormap: leak(l.colormap),
             clear: &[],
             intervals: Some(Box::leak(l.intervals.into_boxed_slice())),
-        });
+        }));
+        rows.push((entry, Kind::Theme(theme)));
     }
-    let _ = CATALOG.set((entries, themes));
+    push_rows(rows);
+}
+
+/// Своя служба WMS - строка карт. Тот же шаблон - прежняя строка.
+/// Возвращает номер строки.
+pub fn register_wms(saved: &WmsSaved) -> Option<usize> {
+    let template = saved.template.trim();
+    if !(template.starts_with("https://") || template.starts_with("http://")) || !template.contains("{bbox}") || template.chars().any(char::is_whitespace) {
+        return None;
+    }
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+    for b in template.bytes() {
+        h = (h ^ u64::from(b)).wrapping_mul(0x0100_0000_01b3);
+    }
+    let key = format!("wms_{h:016x}");
+    if let Some(n) = index(&key) {
+        return Some(n);
+    }
+    let key = leak(key);
+    let name = saved.name.replace(['\t', '\n', '\r'], " ").trim().to_string();
+    let credit = leak(saved.credit.replace(['\t', '\n', '\r'], " ").trim().to_string());
+    let world = scene::wms::is_world(saved.bbox);
+    let map = WmsMap {
+        key,
+        template: leak(template.to_string()),
+        bbox: saved.bbox.filter(|_| !world).map(scene::wms::mercator_box),
+        min_level: saved.bbox.filter(|_| !world).map_or(0, scene::wms::first_level),
+        credit,
+    };
+    let entry: &'static Entry = Box::leak(Box::new(Entry { key, name: leak(if name.is_empty() { "WMS".into() } else { name }), tip: WMS_TIP, group: Group::Local, source: credit }));
+    push_rows(vec![(entry, Kind::Wms(Box::leak(Box::new(map))))]);
+    index(key)
 }
 
 /// Каталог GIBS пришёл.
 pub fn has_catalog() -> bool {
-    CATALOG.get().is_some()
+    GIBS_READY.load(std::sync::atomic::Ordering::SeqCst)
 }
 
-/// Количество строк карт: [`ALL`] и слои каталога GIBS.
+/// Количество строк карт: [`ALL`] и строки сверх них.
 pub fn count() -> usize {
-    ALL.len() + CATALOG.get().map_or(0, |c| c.0.len())
+    ALL.len() + DYNAMIC.read().map_or(0, |d| d.len())
 }
 
 /// Строка карт по номеру.
 pub fn entry(n: usize) -> Option<&'static Entry> {
-    ALL.get(n).or_else(|| CATALOG.get().and_then(|c| c.0.get(n.checked_sub(ALL.len())?)))
+    ALL.get(n).or_else(|| DYNAMIC.read().ok()?.get(n.checked_sub(ALL.len())?).map(|r| r.0))
 }
 
 /// Номер строки по ключу.
 pub fn index(key: &str) -> Option<usize> {
-    ALL.iter().position(|e| e.key == key).or_else(|| CATALOG.get()?.0.iter().position(|e| e.key == key).map(|n| n + ALL.len()))
+    ALL.iter().position(|e| e.key == key).or_else(|| DYNAMIC.read().ok()?.iter().position(|r| r.0.key == key).map(|n| n + ALL.len()))
 }
 
 /// Вид карты строки.
@@ -449,8 +547,8 @@ pub fn kind(key: &str) -> Option<Kind> {
     if let Some(t) = gibs::theme_of(key) {
         return Some(Kind::Theme(t));
     }
-    if key.starts_with(gibs::CATALOG_PREFIX) {
-        return CATALOG.get()?.1.iter().find(|t| t.key == key).map(Kind::Theme);
+    if let Some(kind) = DYNAMIC.read().ok().and_then(|d| d.iter().find(|(e, _)| e.key == key).map(|r| r.1)) {
+        return Some(kind);
     }
     if let Some(f) = rastermaps::field(key) {
         return Some(Kind::Field(f));
@@ -470,8 +568,17 @@ impl Kind {
             Kind::Theme(_) => Some(0),
             Kind::Field(_) | Kind::Map(_) => Some(1),
             Kind::Terrain(_) => Some(2),
-            Kind::Overlay(_) | Kind::Contours(_) | Kind::Clouds | Kind::Cadastre => None,
+            Kind::Overlay(_) | Kind::Contours(_) | Kind::Clouds | Kind::Cadastre | Kind::Wms(_) => None,
         }
+    }
+
+    /// Тайл key карте нужен: не мельче первого уровня и в охвате службы.
+    pub fn wants(self, key: globe_core::lod::TileKey) -> bool {
+        key.0 >= self.min_level()
+            && match self {
+                Kind::Wms(w) => w.inside(key),
+                _ => true,
+            }
     }
 
     /// Карта занимает место, на котором бывает одна.
@@ -490,14 +597,18 @@ impl Kind {
             Kind::Terrain(_) => net::TERRARIUM.max_level,
             Kind::Clouds => data::clouds::MAX_LEVEL,
             Kind::Cadastre => data::cadastre::MAX_LEVEL,
+            Kind::Wms(_) => scene::wms::MAX_LEVEL,
         }
     }
 
     /// Первый уровень тайлов карты: мельче карта не просится. У кадастра
-    /// участков в мелком тайле тысячи, служба на них отказывает.
+    /// участков в мелком тайле тысячи, служба на них отказывает. Тайл
+    /// во много раз больше района служба PASDA считала долго и отвечала
+    /// 500, как `min_level` модуля.
     pub fn min_level(self) -> u32 {
         match self {
             Kind::Cadastre => data::cadastre::MIN_LEVEL,
+            Kind::Wms(w) => w.min_level,
             _ => 0,
         }
     }
@@ -511,6 +622,7 @@ impl Kind {
             Kind::Theme(_) => gibs::ATTRIBUTION.0,
             Kind::Clouds => data::clouds::ATTRIBUTION.0,
             Kind::Cadastre => data::cadastre::ATTRIBUTION.0,
+            Kind::Wms(w) => w.credit,
             // Подпись высот Terrarium и так стоит на экране.
             Kind::Contours(_) | Kind::Terrain(_) => "",
         }
@@ -525,7 +637,7 @@ impl Kind {
             Kind::Theme(_) => gibs::ATTRIBUTION.1,
             Kind::Clouds => data::clouds::ATTRIBUTION.1,
             Kind::Cadastre => data::cadastre::ATTRIBUTION.1,
-            Kind::Contours(_) | Kind::Terrain(_) => "",
+            Kind::Contours(_) | Kind::Terrain(_) | Kind::Wms(_) => "",
         }
     }
 
@@ -535,7 +647,7 @@ impl Kind {
         match self {
             Kind::Field(f) => rastermaps::field_rgba(f, rgba),
             Kind::Map(m) => rastermaps::map_rgba(m, rgba, m.opacity),
-            Kind::Overlay(_) | Kind::Cadastre => rastermaps::overlay_rgba(rgba),
+            Kind::Overlay(_) | Kind::Cadastre | Kind::Wms(_) => rastermaps::overlay_rgba(rgba),
             Kind::Theme(t) => gibs::overlay_rgba(rgba, gibs::OPACITY, t.clear),
             // Картинку горизонталей рисует задание по тайлу высот.
             Kind::Contours(_) => None,
@@ -571,6 +683,8 @@ impl Kind {
             Kind::Overlay(o) => vec![(0, source(key, o.url, o.max_level))],
             // Служба отказывает на частые запросы: тайлы по одному.
             Kind::Cadastre => vec![(0, net::Source { max_requests: 1, ..source(key, data::cadastre::URL, data::cadastre::MAX_LEVEL) })],
+            // Служба WMS рисует каждую картинку заново: запросов - два.
+            Kind::Wms(w) => vec![(0, net::Source { max_requests: 2, ..source(w.key, w.template, scene::wms::MAX_LEVEL) })],
             Kind::Map(m) if !m.coarse.is_empty() && m.split > 0 => {
                 vec![(0, source(coarse_name(key), m.coarse, m.split - 1)), (m.split, source(key, m.url, m.max_level))]
             }
@@ -608,13 +722,29 @@ mod tests {
         let layer = |name: &str, intervals: Vec<data::gibs::Interval>| data::gibs::CatalogLayer { layer: name.into(), title: name.into(), ext: "png", level: 8, colormap: String::new(), intervals };
         super::register(vec![layer("A_Layer", vec![(day, day, 1, 'D')]), layer("B_Layer", Vec::new())]);
         assert!(super::has_catalog());
-        assert_eq!(super::count(), ALL.len() + 2);
-        assert_eq!(super::index("gibs:B_Layer"), Some(ALL.len() + 1));
-        assert_eq!(super::entry(ALL.len()).map(|e| e.key), Some("gibs:A_Layer"));
+        // Строки других тестов ложатся в тот же список, номера - по ключам.
+        let (a, b) = (super::index("gibs:A_Layer"), super::index("gibs:B_Layer"));
+        assert!(a.is_some_and(|a| a >= ALL.len()) && b > a && super::count() > b.unwrap_or(0));
+        assert_eq!(a.and_then(super::entry).map(|e| e.key), Some("gibs:A_Layer"));
         assert!(matches!(kind("gibs:A_Layer"), Some(super::Kind::Theme(t)) if t.layer == "A_Layer" && t.intervals.is_some()));
         assert!(kind("gibs:missing").is_none());
-        // Встроенные строки на своих местах.
+        // Встроенные строки на своих местах, служба района - следом.
         assert_eq!(super::index(ALL[0].key), Some(0));
+        assert!(matches!(kind("pasda_dvrpc2020"), Some(super::Kind::Wms(w)) if w.min_level == 6 && !w.inside((6, 0, 0))));
+    }
+
+    #[test]
+    fn wms_rows_register_once() {
+        let saved = super::WmsSaved { name: "Orthos".into(), template: "https://y.org/wms?SERVICE=WMS&BBOX={bbox}".into(), bbox: Some([10.0, 50.0, 11.0, 51.0]), credit: "Y".into() };
+        let n = super::register_wms(&saved);
+        assert!(n.is_some());
+        assert_eq!(super::register_wms(&saved), n);
+        assert!(super::register_wms(&super::WmsSaved { template: "https://y.org/{z}/{x}/{y}".into(), ..saved }).is_none());
+        let Some(super::Kind::Wms(w)) = n.and_then(super::entry).and_then(|e| kind(e.key)) else {
+            return;
+        };
+        // Тайл у 50.5° с. ш. 10.5° в. д. задевает охват, угол мира - нет.
+        assert!(w.inside((12, 2167, 1380)) && !w.inside((12, 0, 0)));
     }
 
     #[test]

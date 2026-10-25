@@ -1401,3 +1401,15 @@ The NASA GIBS catalog is loading, the first time about 10 seconds.	NASA GIBS kat
 NASA GIBS layers - also one map on the globe	NASA GIBS qatları - bunlar da qlobusda bir xəritədir
 A layer of the whole NASA GIBS catalog. It behaves as a theme - one map on the globe, the series of dates goes to the time slider, the colour scale is in the legend. The names of the layers are in English.	Bütün NASA GIBS kataloqundan bir qat. O, mövzu kimi davranır - qlobusda bir xəritə, tarix sırası zaman şkalasına keçir, rəng şkalası şərhdədir. Qatların adları ingiliscədir.
 The NASA GIBS catalog did not load: {error}	NASA GIBS kataloqu yüklənmədi: {error}
+PASDA DVRPC 2020, Philadelphia	PASDA DVRPC 2020, Filadelfiya
+Spring 2020 orthophoto of nine counties around Philadelphia (USA), the Pennsylvania Spatial Data Access service. The service is slow, pictures arrive in a few seconds.	Filadelfiya (ABŞ) ətrafında doqquz dairənin 2020-ci il yazının ortofotosu, Pennsylvania Spatial Data Access xidməti. Xidmət yavaşdır, şəkillər bir neçə saniyəyə gəlir.
+A map from a WMS service added in the window «New tile source». The globe asks the service for a picture of each tile in Web Mercator. Outside the area of the layer the base map of the globe is seen.	«Yeni kafel mənbəyi» pəncərəsində əlavə edilmiş WMS xidmətindən xəritə. Qlobus xidmətdən hər kafelin Web Mercator şəklini istəyir. Qatın sahəsindən kənarda qlobusun əsas xəritəsi görünür.
+Local data	Yerli məlumatlar
+Detailed imagery and maps of separate areas from the services of their owners, over the base map of the globe. Outside the area the base map is seen. Own WMS services of the window «New tile source» are here too.	Ayrı-ayrı ərazilərin sahiblərinin xidmətlərindən ətraflı şəkillər və xəritələr, qlobusun əsas xəritəsi üzərində. Ərazidən kənarda əsas xəritə görünür. «Yeni kafel mənbəyi» pəncərəsinin öz WMS xidmətləri də buradadır.
+Address template of the tiles with the places {z}, {x} and {y}. {-y} - rows from bottom to top, as in TMS. Or the address of a WMS service - the window knows it by the words WMSServer, /wms or service=WMS and reads the list of its layers.	{z}, {x} və {y} yerləri ilə kafel ünvanı şablonu. {-y} - TMS-dəki kimi aşağıdan yuxarı sıralar. Və ya WMS xidmətinin ünvanı - pəncərə onu WMSServer, /wms və ya service=WMS sözlərindən tanıyır və qatlarının siyahısını oxuyur.
+Layer	Qat
+all layers	bütün qatlar
+Read layers	Qatları oxu
+Read the list of layers of the service, the GetCapabilities request.	Xidmətin qatlarının siyahısını oxu, GetCapabilities sorğusu.
+The service did not give its layers: {error}	Xidmət qatlarını vermədi: {error}
+A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.	WMS xəritəsi qlobusun əsas xəritəsi üzərinə düşür, qatın sahəsindən kənarda əsas xəritə görünür. Xidmət hər şəkli yenidən çəkir, ona görə xəritə kafellərdən yavaş yüklənir.

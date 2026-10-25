@@ -60,6 +60,7 @@ pub mod sun;
 pub mod tour;
 pub mod track;
 pub mod when;
+pub mod wms;
 pub mod xml;
 
 mod util;
