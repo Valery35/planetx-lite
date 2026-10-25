@@ -59,6 +59,7 @@ pub mod route;
 pub mod rumsey;
 pub mod section;
 pub mod sky;
+pub mod skysurvey;
 pub mod ruler;
 pub mod satellites;
 pub mod search;

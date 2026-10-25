@@ -1350,3 +1350,37 @@ Saturn	Saturn
 Uranus	Uran
 Neptune	Neptun
 The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	Göy sferasının mərkəzindən ulduzlu səma: ulduzlar, bürclər, Günəş, Ay və planetlər. Dartma səmanı döndərir, təkər görmə sahəsini dəyişir.
+Constellations	Bürclər
+Figure lines and names of the constellations in the sky. Without them the stars, their names and the Sun, the Moon and the planets remain.	Səmada bürclərin fiqur xətləri və adları. Onlarsız ulduzlar, onların adları, Günəş, Ay və planetlər qalır.
+Deep-sky objects	Dərin səma obyektləri
+Labels of galaxies, nebulae and clusters of the Messier, NGC and IC catalogues. A click on a label opens the card of the object.	Messier, NGC və IC kataloqlarının qalaktika, duman və topalarının yazıları. Yazıya klik obyektin kartını açır.
+Nothing found in the sky: {name}	Səmada tapılmadı: {name}
+Designation	İşarələmə
+Constellation	Bürc
+Other name	Digər ad
+{size}′	{size}′
+Right ascension	Düz yüksəliş
+Object in SIMBAD	SIMBAD-da obyekt
+Catalogue: OpenNGC, CC BY-SA 4.0	Kataloq - OpenNGC, CC BY-SA 4.0
+Galaxy	Qalaktika
+Galaxy pair	Qalaktika cütü
+Galaxy triplet	Qalaktika üçlüyü
+Galaxy group	Qalaktika qrupu
+Open cluster	Səpələnmiş ulduz topası
+Globular cluster	Kürəvi ulduz topası
+Cluster with nebula	Dumanlı ulduz topası
+Planetary nebula	Planetar duman
+Nebula	Duman
+HII region	HII oblastı
+Emission nebula	Emissiya dumanı
+Reflection nebula	Əksetdirici duman
+Dark nebula	Qaranlıq duman
+Supernova remnant	İfrat yeni ulduz qalığı
+Stellar association	Ulduz assosiasiyası
+Double star	Qoşa ulduz
+Star	Ulduz
+Magnitude|sky	Ulduz ölçüsü
+Size|sky	Ölçü
+Other|deepsky	Digər
+Sky imagery when zooming in	Yaxınlaşanda səma şəkilləri
+Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.	Təxminən 50°-dən dar görmə sahəsində Süd Yolu şəklinin yerinə NASA-nın təfərrüatlı səma xəritəsi, 6°-dən dar sahədə DSS icmalının şəkilləri görünür. Bayraqcıq olmadan səma Süd Yolu şəkli və kataloq ulduzlarıdır.

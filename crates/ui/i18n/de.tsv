@@ -1350,3 +1350,37 @@ Saturn	Saturn
 Uranus	Uranus
 Neptune	Neptun
 The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	Der Sternenhimmel vom Mittelpunkt der Himmelskugel: Sterne, Sternbilder, Sonne, Mond und Planeten. Ziehen dreht den Himmel, das Mausrad ändert das Sichtfeld.
+Constellations	Sternbilder
+Figure lines and names of the constellations in the sky. Without them the stars, their names and the Sun, the Moon and the planets remain.	Figurlinien und Namen der Sternbilder am Himmel. Ohne sie bleiben die Sterne, ihre Namen sowie Sonne, Mond und Planeten.
+Deep-sky objects	Deep-Sky-Objekte
+Labels of galaxies, nebulae and clusters of the Messier, NGC and IC catalogues. A click on a label opens the card of the object.	Beschriftungen von Galaxien, Nebeln und Sternhaufen der Kataloge Messier, NGC und IC. Ein Klick auf eine Beschriftung öffnet die Karte des Objekts.
+Nothing found in the sky: {name}	Am Himmel nicht gefunden: {name}
+Designation	Bezeichnung
+Constellation	Sternbild
+Other name	Anderer Name
+{size}′	{size}′
+Right ascension	Rektaszension
+Object in SIMBAD	Objekt in SIMBAD
+Catalogue: OpenNGC, CC BY-SA 4.0	Katalog - OpenNGC, CC BY-SA 4.0
+Galaxy	Galaxie
+Galaxy pair	Galaxienpaar
+Galaxy triplet	Galaxientriplett
+Galaxy group	Galaxiengruppe
+Open cluster	Offener Sternhaufen
+Globular cluster	Kugelsternhaufen
+Cluster with nebula	Sternhaufen mit Nebel
+Planetary nebula	Planetarischer Nebel
+Nebula	Nebel
+HII region	HII-Region
+Emission nebula	Emissionsnebel
+Reflection nebula	Reflexionsnebel
+Dark nebula	Dunkelwolke
+Supernova remnant	Supernovaüberrest
+Stellar association	Sternassoziation
+Double star	Doppelstern
+Star	Stern
+Magnitude|sky	Helligkeit
+Size|sky	Größe
+Other|deepsky	Sonstiges
+Sky imagery when zooming in	Himmelsaufnahmen beim Heranzoomen
+Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.	Bei einem Sichtfeld unter etwa 50° erscheint statt des Bildes der Milchstraße die detaillierte Himmelskarte der NASA, unter 6° die Aufnahmen der Durchmusterung DSS. Ohne Häkchen ist der Himmel das Bild der Milchstraße mit den Katalogsternen.

@@ -35,6 +35,9 @@ pub const CDS: &str = "https://alasky.cds.unistra.fr/";
 pub const TERRAIN: &str = "https://raw.githubusercontent.com/Valery35/planetx-terrain/main/";
 
 pub const DSS_CREDIT: &str = "DSS: STScI/NASA, CDS";
+/// Подпись карты неба слоя starmap, как у модуля.
+pub const STARMAP_CREDIT: &str = "NASA/Goddard SVS, Gaia DR2: ESA/Gaia/DPAC";
+pub const STARMAP_LINK: &str = "https://svs.gsfc.nasa.gov/4851";
 pub const DSS_TERMS: &str = "https://archive.stsci.edu/dss/acknowledging.html";
 
 /// Слой снимков неба. base - адрес HiPS после [`CDS`] или [`TERRAIN`],

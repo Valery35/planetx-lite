@@ -1350,3 +1350,37 @@ Saturn	토성
 Uranus	천왕성
 Neptune	해왕성
 The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	천구의 중심에서 본 별하늘: 별, 별자리, 태양, 달, 행성. 끌면 하늘이 돌고 휠은 시야를 바꿉니다.
+Constellations	별자리
+Figure lines and names of the constellations in the sky. Without them the stars, their names and the Sun, the Moon and the planets remain.	하늘의 별자리 선과 이름. 끄더라도 별과 그 이름, 태양, 달, 행성은 남습니다.
+Deep-sky objects	심우주 천체
+Labels of galaxies, nebulae and clusters of the Messier, NGC and IC catalogues. A click on a label opens the card of the object.	메시에, NGC, IC 목록의 은하, 성운, 성단 레이블. 레이블을 클릭하면 천체 카드가 열립니다.
+Nothing found in the sky: {name}	하늘에서 찾지 못함: {name}
+Designation	명칭
+Constellation	별자리
+Other name	다른 이름
+{size}′	{size}′
+Right ascension	적경
+Object in SIMBAD	SIMBAD의 천체
+Catalogue: OpenNGC, CC BY-SA 4.0	목록 - OpenNGC, CC BY-SA 4.0
+Galaxy	은하
+Galaxy pair	은하 쌍
+Galaxy triplet	삼중 은하
+Galaxy group	은하군
+Open cluster	산개 성단
+Globular cluster	구상 성단
+Cluster with nebula	성운이 있는 성단
+Planetary nebula	행성상 성운
+Nebula	성운
+HII region	HII 영역
+Emission nebula	발광 성운
+Reflection nebula	반사 성운
+Dark nebula	암흑 성운
+Supernova remnant	초신성 잔해
+Stellar association	성협
+Double star	이중성
+Star	별
+Magnitude|sky	등급
+Size|sky	크기
+Other|deepsky	기타
+Sky imagery when zooming in	확대 시 하늘 영상
+Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.	시야가 약 50°보다 좁아지면 은하수 그림 대신 NASA의 자세한 하늘 지도가, 6°보다 좁아지면 DSS 탐사 영상이 나타납니다. 확인란을 끄면 하늘은 은하수 그림과 목록의 별입니다.

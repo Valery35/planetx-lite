@@ -1350,3 +1350,37 @@ Saturn	Satürn
 Uranus	Uranüs
 Neptune	Neptün
 The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	Gök küresinin merkezinden yıldızlı gökyüzü: yıldızlar, takımyıldızlar, Güneş, Ay ve gezegenler. Sürükleme gökyüzünü döndürür, tekerlek görüş alanını değiştirir.
+Constellations	Takımyıldızlar
+Figure lines and names of the constellations in the sky. Without them the stars, their names and the Sun, the Moon and the planets remain.	Gökyüzündeki takımyıldızların şekil çizgileri ve adları. Bunlar olmadan yıldızlar, adları ve Güneş, Ay ile gezegenler kalır.
+Deep-sky objects	Derin gökyüzü nesneleri
+Labels of galaxies, nebulae and clusters of the Messier, NGC and IC catalogues. A click on a label opens the card of the object.	Messier, NGC ve IC kataloglarındaki gökadaların, bulutsuların ve kümelerin etiketleri. Bir etikete tıklama nesnenin kartını açar.
+Nothing found in the sky: {name}	Gökyüzünde bulunamadı: {name}
+Designation	Tanım
+Constellation	Takımyıldız
+Other name	Diğer ad
+{size}′	{size}′
+Right ascension	Sağ açıklık
+Object in SIMBAD	SIMBAD'da nesne
+Catalogue: OpenNGC, CC BY-SA 4.0	Katalog - OpenNGC, CC BY-SA 4.0
+Galaxy	Gökada
+Galaxy pair	Gökada çifti
+Galaxy triplet	Gökada üçlüsü
+Galaxy group	Gökada grubu
+Open cluster	Açık küme
+Globular cluster	Küresel küme
+Cluster with nebula	Bulutsulu küme
+Planetary nebula	Gezegenimsi bulutsu
+Nebula	Bulutsu
+HII region	HII bölgesi
+Emission nebula	Salma bulutsusu
+Reflection nebula	Yansıma bulutsusu
+Dark nebula	Karanlık bulutsu
+Supernova remnant	Süpernova kalıntısı
+Stellar association	Yıldız birliği
+Double star	Çift yıldız
+Star	Yıldız
+Magnitude|sky	Kadir
+Size|sky	Boyut
+Other|deepsky	Diğer
+Sky imagery when zooming in	Yaklaştırınca gökyüzü görüntüleri
+Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.	Yaklaşık 50°'den dar görüş alanında Samanyolu resminin yerine NASA'nın ayrıntılı gökyüzü haritası, 6°'den dar alanda DSS taramasının görüntüleri belirir. İşaret yokken gökyüzü Samanyolu resmi ve katalog yıldızlarıdır.

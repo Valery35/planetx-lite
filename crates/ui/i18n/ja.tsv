@@ -1350,3 +1350,37 @@ Saturn	土星
 Uranus	天王星
 Neptune	海王星
 The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	天球の中心から見た星空 - 恒星、星座、太陽、月、惑星。ドラッグで空を回し、ホイールで視野を変えます。
+Constellations	星座
+Figure lines and names of the constellations in the sky. Without them the stars, their names and the Sun, the Moon and the planets remain.	空の星座の線と名前。オフにしても、恒星とその名前、太陽、月、惑星は残ります。
+Deep-sky objects	深宇宙天体
+Labels of galaxies, nebulae and clusters of the Messier, NGC and IC catalogues. A click on a label opens the card of the object.	メシエ、NGC、IC カタログの銀河、星雲、星団のラベル。ラベルをクリックすると天体のカードが開きます。
+Nothing found in the sky: {name}	空で見つかりません：{name}
+Designation	符号
+Constellation	星座
+Other name	別名
+{size}′	{size}′
+Right ascension	赤経
+Object in SIMBAD	SIMBAD の天体
+Catalogue: OpenNGC, CC BY-SA 4.0	カタログ - OpenNGC, CC BY-SA 4.0
+Galaxy	銀河
+Galaxy pair	銀河のペア
+Galaxy triplet	三つ組銀河
+Galaxy group	銀河群
+Open cluster	散開星団
+Globular cluster	球状星団
+Cluster with nebula	星雲を伴う星団
+Planetary nebula	惑星状星雲
+Nebula	星雲
+HII region	HII 領域
+Emission nebula	輝線星雲
+Reflection nebula	反射星雲
+Dark nebula	暗黒星雲
+Supernova remnant	超新星残骸
+Stellar association	アソシエーション
+Double star	二重星
+Star	恒星
+Magnitude|sky	等級
+Size|sky	大きさ
+Other|deepsky	その他
+Sky imagery when zooming in	拡大時の空の画像
+Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.	視野が約 50° より狭くなると天の川の画像の代わりに NASA の詳細な星図が現れ、6° より狭くなると DSS サーベイの画像が現れます。チェックを外すと、空は天の川の画像とカタログの恒星になります。

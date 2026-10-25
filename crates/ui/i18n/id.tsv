@@ -1350,3 +1350,37 @@ Saturn	Saturnus
 Uranus	Uranus
 Neptune	Neptunus
 The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	Langit berbintang dari pusat bola langit: bintang, rasi bintang, Matahari, Bulan, dan planet. Menyeret memutar langit, roda mengubah medan pandang.
+Constellations	Rasi bintang
+Figure lines and names of the constellations in the sky. Without them the stars, their names and the Sun, the Moon and the planets remain.	Garis bentuk dan nama rasi bintang di langit. Tanpanya tetap ada bintang, namanya, serta Matahari, Bulan, dan planet.
+Deep-sky objects	Objek langit dalam
+Labels of galaxies, nebulae and clusters of the Messier, NGC and IC catalogues. A click on a label opens the card of the object.	Label galaksi, nebula, dan gugus dari katalog Messier, NGC, dan IC. Klik pada label membuka kartu objek.
+Nothing found in the sky: {name}	Tidak ditemukan di langit: {name}
+Designation	Penandaan
+Constellation	Rasi bintang
+Other name	Nama lain
+{size}′	{size}′
+Right ascension	Asensio rekta
+Object in SIMBAD	Objek di SIMBAD
+Catalogue: OpenNGC, CC BY-SA 4.0	Katalog - OpenNGC, CC BY-SA 4.0
+Galaxy	Galaksi
+Galaxy pair	Pasangan galaksi
+Galaxy triplet	Tripel galaksi
+Galaxy group	Grup galaksi
+Open cluster	Gugus terbuka
+Globular cluster	Gugus bola
+Cluster with nebula	Gugus dengan nebula
+Planetary nebula	Nebula planeter
+Nebula	Nebula
+HII region	Wilayah HII
+Emission nebula	Nebula emisi
+Reflection nebula	Nebula pantulan
+Dark nebula	Nebula gelap
+Supernova remnant	Sisa supernova
+Stellar association	Asosiasi bintang
+Double star	Bintang ganda
+Star	Bintang
+Magnitude|sky	Magnitudo
+Size|sky	Ukuran
+Other|deepsky	Lainnya
+Sky imagery when zooming in	Citra langit saat diperbesar
+Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.	Pada medan pandang di bawah sekitar 50° peta langit rinci NASA muncul menggantikan gambar Bimasakti, di bawah 6° citra survei DSS. Tanpa centang langit berupa gambar Bimasakti dan bintang katalog.

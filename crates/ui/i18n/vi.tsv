@@ -1350,3 +1350,37 @@ Saturn	Sao Thổ
 Uranus	Sao Thiên Vương
 Neptune	Sao Hải Vương
 The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	Bầu trời sao nhìn từ tâm thiên cầu: các vì sao, chòm sao, Mặt Trời, Mặt Trăng và các hành tinh. Kéo chuột để xoay bầu trời, con lăn thay đổi trường nhìn.
+Constellations	Các chòm sao
+Figure lines and names of the constellations in the sky. Without them the stars, their names and the Sun, the Moon and the planets remain.	Đường hình và tên các chòm sao trên bầu trời. Khi tắt vẫn còn các vì sao, tên của chúng, Mặt Trời, Mặt Trăng và các hành tinh.
+Deep-sky objects	Thiên thể sâu
+Labels of galaxies, nebulae and clusters of the Messier, NGC and IC catalogues. A click on a label opens the card of the object.	Nhãn của thiên hà, tinh vân và quần tinh trong các danh mục Messier, NGC và IC. Nhấp vào nhãn để mở thẻ của thiên thể.
+Nothing found in the sky: {name}	Không tìm thấy trên bầu trời: {name}
+Designation	Ký hiệu
+Constellation	Chòm sao
+Other name	Tên khác
+{size}′	{size}′
+Right ascension	Xích kinh
+Object in SIMBAD	Thiên thể trong SIMBAD
+Catalogue: OpenNGC, CC BY-SA 4.0	Danh mục - OpenNGC, CC BY-SA 4.0
+Galaxy	Thiên hà
+Galaxy pair	Cặp thiên hà
+Galaxy triplet	Bộ ba thiên hà
+Galaxy group	Nhóm thiên hà
+Open cluster	Quần tinh mở
+Globular cluster	Quần tinh cầu
+Cluster with nebula	Quần tinh có tinh vân
+Planetary nebula	Tinh vân hành tinh
+Nebula	Tinh vân
+HII region	Vùng HII
+Emission nebula	Tinh vân phát xạ
+Reflection nebula	Tinh vân phản xạ
+Dark nebula	Tinh vân tối
+Supernova remnant	Tàn dư siêu tân tinh
+Stellar association	Liên kết sao
+Double star	Sao đôi
+Star	Ngôi sao
+Magnitude|sky	Cấp sao
+Size|sky	Kích thước
+Other|deepsky	Khác
+Sky imagery when zooming in	Ảnh bầu trời khi phóng to
+Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.	Khi trường nhìn hẹp hơn khoảng 50°, bản đồ bầu trời chi tiết của NASA hiện thay cho ảnh Dải Ngân Hà, hẹp hơn 6° là ảnh của khảo sát DSS. Khi bỏ đánh dấu, bầu trời là ảnh Dải Ngân Hà và các sao trong danh mục.

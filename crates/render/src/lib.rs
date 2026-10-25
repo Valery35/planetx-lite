@@ -40,9 +40,11 @@ pub use models::{ModelMesh, ModelPart, ModelPlace};
 use models::Models;
 mod points;
 pub use points::{Dot, PointsMesh};
+mod hips;
 mod skylines;
 mod skymap;
 mod stars;
+pub use hips::{HipsKey, HipsVertex};
 pub use stars::StarPoint;
 mod subsurface;
 pub use subsurface::{SubMesh, SubVertex, light_at};
@@ -327,6 +329,8 @@ pub struct Globe {
     sky_lines: skylines::SkyLines,
     /// Картинка неба с Млечным путём.
     sky_map: skymap::SkyMap,
+    /// Снимки неба HiPS вида неба.
+    hips: hips::HipsSky,
     models: Models,
     /// Модели живых объектов: суда, самолёты, поезда, свой самолёт.
     live: Models,
@@ -811,6 +815,7 @@ impl Globe {
             bodies: stars::Stars::new(device),
             sky_lines: skylines::SkyLines::new(device),
             sky_map: skymap::SkyMap::new(device),
+            hips: hips::HipsSky::new(device),
             models: Models::new(device, queue),
             live: Models::new(device, queue),
             flight: Models::new(device, queue),
@@ -1614,6 +1619,29 @@ impl Globe {
         self.sky_map.set_frame(frame);
     }
 
+    /// Тайл снимков неба: вершины, треугольники, картинка RGBA.
+    pub fn set_hips_tile(&mut self, key: HipsKey, vertices: &[HipsVertex], indices: &[u32], width: u32, height: u32, rgba: &[u8]) {
+        self.hips.set(&self.device, &self.queue, key, vertices, indices, width, height, rgba);
+    }
+
+    pub fn has_hips_tile(&self, key: HipsKey) -> bool {
+        self.hips.has(key)
+    }
+
+    /// Оставить тайлы снимков неба, для которых keep истинно.
+    pub fn retain_hips(&mut self, keep: &dyn Fn(HipsKey) -> bool) {
+        self.hips.retain(keep);
+    }
+
+    pub fn hips_tiles(&self) -> usize {
+        self.hips.len()
+    }
+
+    /// Тайлы снимков неба кадра с непрозрачностью, по порядку.
+    pub fn set_hips_order(&mut self, order: Vec<(HipsKey, f32)>) {
+        self.hips.set_order(order);
+    }
+
     /// Линии фигур созвездий вида неба: пары направлений J2000.
     pub fn set_sky_lines(&mut self, segments: &[[f32; 3]]) {
         self.sky_lines.set(&self.device, segments);
@@ -1836,6 +1864,10 @@ impl Globe {
             let ratio = if options.ratio > 0.0 { options.ratio } else { 1.0 };
             // Млечный путь и звёзды - после неба, свет прибавляется к нему.
             draws += self.sky_map.draw(&self.queue, &mut pass, camera);
+            // Снимки неба - поверх Млечного пути, под звёздами и линиями.
+            if options.sky {
+                draws += self.hips.draw(&self.device, &mut pass, camera);
+            }
             draws += self.stars.draw(&self.queue, &mut pass, camera, ratio);
             // Небо: линии созвездий и светила поверх звёзд, объектов
             // глобуса нет - камера в центре сферы.

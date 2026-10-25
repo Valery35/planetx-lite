@@ -1350,3 +1350,37 @@ Saturn	სატურნი
 Uranus	ურანი
 Neptune	ნეპტუნი
 The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	ვარსკვლავიანი ცა ციური სფეროს ცენტრიდან: ვარსკვლავები, თანავარსკვლავედები, მზე, მთვარე და პლანეტები. გადათრევა ცას აბრუნებს, ბორბალი ხედვის არეს ცვლის.
+Constellations	თანავარსკვლავედები
+Figure lines and names of the constellations in the sky. Without them the stars, their names and the Sun, the Moon and the planets remain.	თანავარსკვლავედების ფიგურების ხაზები და სახელები ცაზე. მათ გარეშე რჩება ვარსკვლავები, მათი სახელები, მზე, მთვარე და პლანეტები.
+Deep-sky objects	ღრმა ცის ობიექტები
+Labels of galaxies, nebulae and clusters of the Messier, NGC and IC catalogues. A click on a label opens the card of the object.	მესიეს, NGC-ისა და IC-ის კატალოგების გალაქტიკების, ნისლეულებისა და გროვების წარწერები. წარწერაზე დაწკაპუნება ობიექტის ბარათს ხსნის.
+Nothing found in the sky: {name}	ცაზე ვერ მოიძებნა: {name}
+Designation	აღნიშვნა
+Constellation	თანავარსკვლავედი
+Other name	სხვა სახელი
+{size}′	{size}′
+Right ascension	პირდაპირი აღსვლა
+Object in SIMBAD	ობიექტი SIMBAD-ში
+Catalogue: OpenNGC, CC BY-SA 4.0	კატალოგი - OpenNGC, CC BY-SA 4.0
+Galaxy	გალაქტიკა
+Galaxy pair	გალაქტიკების წყვილი
+Galaxy triplet	გალაქტიკების სამეული
+Galaxy group	გალაქტიკების ჯგუფი
+Open cluster	გაფანტული გროვა
+Globular cluster	სფერული გროვა
+Cluster with nebula	გროვა ნისლეულით
+Planetary nebula	პლანეტური ნისლეული
+Nebula	ნისლეული
+HII region	HII არე
+Emission nebula	ემისიური ნისლეული
+Reflection nebula	ამრეკლი ნისლეული
+Dark nebula	ბნელი ნისლეული
+Supernova remnant	ზეახალი ვარსკვლავის ნარჩენი
+Stellar association	ვარსკვლავური ასოციაცია
+Double star	ორმაგი ვარსკვლავი
+Star	ვარსკვლავი
+Magnitude|sky	ვარსკვლავიერი სიდიდე
+Size|sky	ზომა
+Other|deepsky	სხვა
+Sky imagery when zooming in	ცის სურათები მიახლოებისას
+Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.	დაახლოებით 50°-ზე ვიწრო ხედვის არეში ირმის ნახტომის სურათის ნაცვლად ჩნდება NASA-ს დეტალური ცის რუკა, 6°-ზე ვიწროში - DSS მიმოხილვის სურათები. ალმის გარეშე ცა - ირმის ნახტომის სურათი და კატალოგის ვარსკვლავებია.

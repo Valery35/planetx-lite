@@ -1350,3 +1350,37 @@ Saturn	Saturno
 Uranus	Urano
 Neptune	Nettuno
 The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	Il cielo stellato dal centro della sfera celeste: stelle, costellazioni, il Sole, la Luna e i pianeti. Trascinare ruota il cielo, la rotella cambia il campo visivo.
+Constellations	Costellazioni
+Figure lines and names of the constellations in the sky. Without them the stars, their names and the Sun, the Moon and the planets remain.	Linee delle figure e nomi delle costellazioni nel cielo. Senza di esse restano le stelle, i loro nomi e il Sole, la Luna e i pianeti.
+Deep-sky objects	Oggetti del cielo profondo
+Labels of galaxies, nebulae and clusters of the Messier, NGC and IC catalogues. A click on a label opens the card of the object.	Etichette di galassie, nebulose e ammassi dei cataloghi Messier, NGC e IC. Un clic su un’etichetta apre la scheda dell’oggetto.
+Nothing found in the sky: {name}	Non trovato nel cielo: {name}
+Designation	Designazione
+Constellation	Costellazione
+Other name	Altro nome
+{size}′	{size}′
+Right ascension	Ascensione retta
+Object in SIMBAD	Oggetto in SIMBAD
+Catalogue: OpenNGC, CC BY-SA 4.0	Catalogo - OpenNGC, CC BY-SA 4.0
+Galaxy	Galassia
+Galaxy pair	Coppia di galassie
+Galaxy triplet	Tripletta di galassie
+Galaxy group	Gruppo di galassie
+Open cluster	Ammasso aperto
+Globular cluster	Ammasso globulare
+Cluster with nebula	Ammasso con nebulosa
+Planetary nebula	Nebulosa planetaria
+Nebula	Nebulosa
+HII region	Regione HII
+Emission nebula	Nebulosa a emissione
+Reflection nebula	Nebulosa a riflessione
+Dark nebula	Nebulosa oscura
+Supernova remnant	Resto di supernova
+Stellar association	Associazione stellare
+Double star	Stella doppia
+Star	Stella
+Magnitude|sky	Magnitudine
+Size|sky	Dimensione
+Other|deepsky	Altro
+Sky imagery when zooming in	Immagini del cielo avvicinando
+Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.	Con un campo visivo inferiore a circa 50° al posto dell’immagine della Via Lattea compare la mappa dettagliata del cielo della NASA, sotto 6° le immagini della survey DSS. Senza la casella il cielo è l’immagine della Via Lattea con le stelle del catalogo.

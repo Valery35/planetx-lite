@@ -1350,3 +1350,37 @@ Saturn	Saturnus
 Uranus	Uranus
 Neptune	Neptunus
 The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	De sterrenhemel vanuit het middelpunt van de hemelbol: sterren, sterrenbeelden, de zon, de maan en de planeten. Slepen draait de hemel, het muiswiel verandert het gezichtsveld.
+Constellations	Sterrenbeelden
+Figure lines and names of the constellations in the sky. Without them the stars, their names and the Sun, the Moon and the planets remain.	Figuurlijnen en namen van de sterrenbeelden aan de hemel. Zonder ze blijven de sterren, hun namen en de zon, de maan en de planeten over.
+Deep-sky objects	Deep-sky-objecten
+Labels of galaxies, nebulae and clusters of the Messier, NGC and IC catalogues. A click on a label opens the card of the object.	Labels van sterrenstelsels, nevels en sterrenhopen uit de catalogi Messier, NGC en IC. Een klik op een label opent de kaart van het object.
+Nothing found in the sky: {name}	Niet gevonden aan de hemel: {name}
+Designation	Aanduiding
+Constellation	Sterrenbeeld
+Other name	Andere naam
+{size}′	{size}′
+Right ascension	Rechte klimming
+Object in SIMBAD	Object in SIMBAD
+Catalogue: OpenNGC, CC BY-SA 4.0	Catalogus - OpenNGC, CC BY-SA 4.0
+Galaxy	Sterrenstelsel
+Galaxy pair	Paar sterrenstelsels
+Galaxy triplet	Drietal sterrenstelsels
+Galaxy group	Groep sterrenstelsels
+Open cluster	Open sterrenhoop
+Globular cluster	Bolvormige sterrenhoop
+Cluster with nebula	Sterrenhoop met nevel
+Planetary nebula	Planetaire nevel
+Nebula	Nevel
+HII region	HII-gebied
+Emission nebula	Emissienevel
+Reflection nebula	Reflectienevel
+Dark nebula	Donkere nevel
+Supernova remnant	Supernovarest
+Stellar association	Sterassociatie
+Double star	Dubbelster
+Star	Ster
+Magnitude|sky	Magnitude
+Size|sky	Grootte
+Other|deepsky	Overig
+Sky imagery when zooming in	Hemelbeelden bij inzoomen
+Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.	Bij een gezichtsveld kleiner dan ongeveer 50° verschijnt de gedetailleerde hemelkaart van NASA in plaats van het beeld van de Melkweg, onder 6° de opnamen van de survey DSS. Zonder vinkje is de hemel het beeld van de Melkweg met de catalogussterren.

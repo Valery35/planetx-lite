@@ -1350,3 +1350,37 @@ Saturn	土星
 Uranus	天王星
 Neptune	海王星
 The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	从天球中心看到的星空：恒星、星座、太阳、月球和行星。拖动可旋转天空，滚轮可改变视场。
+Constellations	星座
+Figure lines and names of the constellations in the sky. Without them the stars, their names and the Sun, the Moon and the planets remain.	天空中的星座连线和名称。关闭后仍保留恒星及其名称、太阳、月球和行星。
+Deep-sky objects	深空天体
+Labels of galaxies, nebulae and clusters of the Messier, NGC and IC catalogues. A click on a label opens the card of the object.	梅西耶、NGC 和 IC 星表中星系、星云和星团的标注。单击标注可打开天体卡片。
+Nothing found in the sky: {name}	天空中未找到：{name}
+Designation	编号
+Constellation	星座
+Other name	别名
+{size}′	{size}′
+Right ascension	赤经
+Object in SIMBAD	SIMBAD 中的天体
+Catalogue: OpenNGC, CC BY-SA 4.0	星表 - OpenNGC, CC BY-SA 4.0
+Galaxy	星系
+Galaxy pair	星系对
+Galaxy triplet	三重星系
+Galaxy group	星系群
+Open cluster	疏散星团
+Globular cluster	球状星团
+Cluster with nebula	带星云的星团
+Planetary nebula	行星状星云
+Nebula	星云
+HII region	HII 区
+Emission nebula	发射星云
+Reflection nebula	反射星云
+Dark nebula	暗星云
+Supernova remnant	超新星遗迹
+Stellar association	星协
+Double star	双星
+Star	恒星
+Magnitude|sky	星等
+Size|sky	大小
+Other|deepsky	其他
+Sky imagery when zooming in	放大时显示天空影像
+Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.	视场小于约 50° 时，NASA 的详细星图取代银河图片出现，小于 6° 时出现 DSS 巡天影像。不勾选时，天空为银河图片和星表中的恒星。

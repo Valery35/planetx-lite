@@ -1350,3 +1350,37 @@ Saturn	Сатурн
 Uranus	Уран
 Neptune	Нептун
 The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	Звёздное небо из центра небесной сферы: звёзды, созвездия, Солнце, Луна и планеты. Протяжка поворачивает небо, колесо меняет поле зрения.
+Constellations	Созвездия
+Figure lines and names of the constellations in the sky. Without them the stars, their names and the Sun, the Moon and the planets remain.	Линии фигур и названия созвездий на небе. Без них остаются звёзды, их имена, Солнце, Луна и планеты.
+Deep-sky objects	Объекты глубокого неба
+Labels of galaxies, nebulae and clusters of the Messier, NGC and IC catalogues. A click on a label opens the card of the object.	Подписи галактик, туманностей и скоплений каталогов Мессье, NGC и IC. Щелчок по подписи открывает карточку объекта.
+Nothing found in the sky: {name}	В небе не найдено: {name}
+Designation	Обозначение
+Constellation	Созвездие
+Other name	Другое название
+{size}′	{size}′
+Right ascension	Прямое восхождение
+Object in SIMBAD	Объект в базе SIMBAD
+Catalogue: OpenNGC, CC BY-SA 4.0	Каталог - OpenNGC, CC BY-SA 4.0
+Galaxy	Галактика
+Galaxy pair	Пара галактик
+Galaxy triplet	Тройка галактик
+Galaxy group	Группа галактик
+Open cluster	Рассеянное скопление
+Globular cluster	Шаровое скопление
+Cluster with nebula	Скопление с туманностью
+Planetary nebula	Планетарная туманность
+Nebula	Туманность
+HII region	Область HII
+Emission nebula	Эмиссионная туманность
+Reflection nebula	Отражательная туманность
+Dark nebula	Тёмная туманность
+Supernova remnant	Остаток сверхновой
+Stellar association	Звёздная ассоциация
+Double star	Двойная звезда
+Star	Звезда
+Magnitude|sky	Звёздная величина
+Size|sky	Размер
+Other|deepsky	Прочее
+Sky imagery when zooming in	Снимки неба при приближении
+Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.	Ближе поля зрения около 50° вместо картинки Млечного пути проявляется подробная карта неба NASA, ближе 6° - снимки обзора DSS. Без флажка небо - картинка Млечного пути и звёзды каталога.

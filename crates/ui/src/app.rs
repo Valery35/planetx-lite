@@ -537,6 +537,8 @@ pub struct LiteApp {
     sky: Option<crate::sky::Sky>,
     /// Взгляд на небо при прошлом выходе из неба.
     sky_saved: Option<data::skyview::SkyView>,
+    /// Снимки неба HiPS при приближении.
+    surveys: crate::skysurvey::Surveys,
     /// Пришедшие снимки основы, ждущие загрузки в видеокарту.
     pending: HashMap<TileKey, net::Image>,
     /// Тайлы, нарисованные прошлым кадром, - их снимки грузятся первыми.
@@ -1021,6 +1023,7 @@ impl LiteApp {
             sky_image: None,
             sky: None,
             sky_saved: None,
+            surveys: crate::skysurvey::Surveys::default(),
             theme_days: HashMap::new(),
             theme_scales: HashMap::new(),
             lasting: HashMap::new(),
@@ -1118,6 +1121,8 @@ impl LiteApp {
         let mut snapshot: Option<SnapshotTo> = None;
         let mut scene: Option<SceneAction> = None;
         let mut body: Option<&'static str> = None;
+        let mut sky_flags = (self.settings.constellations, self.settings.deepsky, self.settings.sky_imagery);
+        let mut sky_changed = false;
         // Уровень панели - как у окон: открытое окно встаёт поверх неё.
         // На уровне Foreground панель закрывала окно «Источники данных»,
         // замечание автора от 23 октября 2026 года.
@@ -1219,6 +1224,17 @@ impl LiteApp {
                                 body = Some("sky");
                                 ui.close();
                             }
+                            // Флажки неба вне группы тел, как у модуля.
+                            ui.separator();
+                            if ui.checkbox(&mut sky_flags.0, tr(lang, "Constellations")).on_hover_text(tr(lang, "Figure lines and names of the constellations in the sky. Without them the stars, their names and the Sun, the Moon and the planets remain.")).changed() {
+                                sky_changed = true;
+                            }
+                            if ui.checkbox(&mut sky_flags.2, tr(lang, "Sky imagery when zooming in")).on_hover_text(tr(lang, "Closer than a field of view of about 50° the detailed NASA sky map appears instead of the Milky Way picture, closer than 6° - the DSS survey images. Without the check the sky is the Milky Way picture and the catalogue stars.")).changed() {
+                                sky_changed = true;
+                            }
+                            if ui.checkbox(&mut sky_flags.1, tr(lang, "Deep-sky objects")).on_hover_text(tr(lang, "Labels of galaxies, nebulae and clusters of the Messier, NGC and IC catalogues. A click on a label opens the card of the object.")).changed() {
+                                sky_changed = true;
+                            }
                         });
                         if tool_button(ui, Tool::Settings, settings, false, true, tr(lang, "View properties: relief scale, language of labels, appearance.")).clicked() {
                             settings = !settings;
@@ -1247,6 +1263,10 @@ impl LiteApp {
         }
         if record {
             self.toggle_record(now);
+        }
+        if sky_changed {
+            (self.settings.constellations, self.settings.deepsky, self.settings.sky_imagery) = sky_flags;
+            self.settings_dirty = true;
         }
         if let Some(key) = body {
             // «Небо» - вид из центра сферы, тело под ним остаётся.
@@ -1735,12 +1755,12 @@ impl LiteApp {
             return;
         };
         let moved = sky.input(ctx, response, ppp, f64::from(height));
-        let lines = sky.step_data(&|limit| (loaders.request)(limit));
+        let lines = sky.step_data(&|limit| (loaders.request)(limit), self.settings.constellations);
         let bodies = sky.bodies_at.is_none_or(|t| (moment - t).abs() > crate::sky::BODIES_PERIOD).then(|| {
             sky.bodies_at = Some(moment);
             crate::sky::body_points(moment)
         });
-        let busy = sky.busy() || matches!(self.stars, Some(Err(_)) | None) || matches!(self.sky_image, Some(Err(_)) | None);
+        let busy = sky.busy() || matches!(self.stars, Some(Err(_)) | None) || matches!(self.sky_image, Some(Err(_)) | None) || self.surveys.busy();
         let view = sky.view;
         // Камера неба: глаз не важен, звёзды и линии - направления, оси -
         // взгляда на небо.
@@ -1752,6 +1772,13 @@ impl LiteApp {
             if let Some(lines) = lines {
                 globe.set_sky_lines(&lines);
             }
+            // Снимки неба: карта неба гасит Млечный путь, DSS - звёзды
+            // каталога, как у модуля.
+            let aspect = f64::from(width) / f64::from(height.max(1));
+            self.surveys.step(globe, &view, (aspect, f64::from(height)), self.settings.sky_imagery, now, &|limit| (loaders.request)(limit));
+            let identity = globe_core::DMat3::IDENTITY;
+            globe.set_sky_map_frame(Some((identity, (1.0 - self.surveys.share(0)) as f32)));
+            globe.set_star_frame(Some((identity, (1.0 - self.surveys.share(1)) as f32)));
             if let Some(points) = bodies {
                 globe.set_sky_bodies(&points);
             }
@@ -1764,15 +1791,29 @@ impl LiteApp {
             ui.painter().image(id, rect, uv, egui::Color32::WHITE);
         }
         let painter = ui.painter().with_clip_rect(rect);
-        if let Some(sky) = &self.sky {
-            sky.labels(&painter, rect, ppp, self.lang, moment);
+        let shown = crate::sky::Shown { constellations: self.settings.constellations, deep: self.settings.deepsky };
+        if let Some(sky) = &mut self.sky {
+            sky.labels(&painter, rect, ppp, self.lang, moment, shown);
+            sky.card(ctx, self.lang);
+            if let Some(name) = &sky.not_found {
+                painter.text(rect.center_bottom() + egui::vec2(0.0, -40.0), egui::Align2::CENTER_BOTTOM, trf(self.lang, "Nothing found in the sky: {name}", &[("name", name)]), egui::FontId::proportional(14.0), egui::Color32::from_rgb(230, 160, 120));
+            }
             // Направление под курсором - строкой у нижнего края, как у модуля.
             if let Some(pos) = response.hover_pos() {
                 let d = sky.view.direction_at(f64::from(pos.x - rect.min.x) * ppp, f64::from(pos.y - rect.min.y) * ppp, f64::from(width), f64::from(height));
                 painter.text(rect.left_bottom() + egui::vec2(8.0, -8.0), egui::Align2::LEFT_BOTTOM, data::skyview::ra_dec_text(d), egui::FontId::proportional(13.0), egui::Color32::from_gray(200));
             }
         }
-        let parts = [data::stars::ATTRIBUTION, data::stars::SKY_ATTRIBUTION, data::skydata::ATTRIBUTION];
+        let mut parts = vec![data::stars::ATTRIBUTION, data::stars::SKY_ATTRIBUTION, data::skydata::ATTRIBUTION];
+        if self.settings.deepsky {
+            parts.push(data::deepsky::ATTRIBUTION);
+        }
+        if self.surveys.share(0) > 0.0 {
+            parts.push((data::hips::STARMAP_CREDIT, data::hips::STARMAP_LINK));
+        }
+        if self.surveys.share(1) > 0.0 {
+            parts.push((data::hips::DSS_CREDIT, data::hips::DSS_TERMS));
+        }
         self.credits.show(ctx, rect, self.lang, &parts, 2);
         if self.shows_ui() {
             self.toolbar(ctx, rect, now);
@@ -5669,8 +5710,9 @@ impl LiteApp {
             .horizontal(|ui| {
                 let width = ui.available_width() - 70.0;
                 // Поиск места - земной, на другом теле строка выключена.
+                // В небе строка ищет объекты неба, как у модуля.
                 let edit = ui.add_enabled(
-                    self.planet.earth,
+                    self.planet.earth || self.sky.is_some(),
                     egui::TextEdit::singleline(&mut self.search_text)
                         .id(egui::Id::unique("planetx-search"))
                         .hint_text(tr(self.lang, "Voyages of Columbus"))
@@ -5715,6 +5757,14 @@ impl LiteApp {
         }
         self.suggesting = edit.has_focus();
         let entered = edit.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
+        // Поиск в небе: каталог неба, иначе служба имён Sesame.
+        if (entered || clicked)
+            && let Some(sky) = &mut self.sky
+        {
+            let loaders = &self.loaders;
+            sky.search(&self.search_text, &|limit| (loaders.request)(limit));
+            return;
+        }
         // Enter с точным совпадением названия метки или действия -
         // подсказка, иначе запрос Nominatim, правило службы.
         if entered && chosen.is_none() {
