@@ -206,16 +206,12 @@ impl GlobeMenu {
                             ui.separator();
                             pick(ui, tr(lang, "Viewshed from here…"), Choice::Viewshed);
                             pick(ui, tr(lang, "Satellite images here…"), Choice::Sentinel);
-                        pick(ui, tr(lang, "Lidar point clouds here"), Choice::Lidar);
+                            pick(ui, tr(lang, "Lidar point clouds here"), Choice::Lidar);
                             pick(ui, tr(lang, "Insolation here…"), Choice::Insolation);
-                            ui.separator();
                             // Карты Рамсея (IIIF) и «Это место» не отдают данные
-                            // странице, у неё пункты - заглушки.
-                            if cfg!(target_arch = "wasm32") {
-                                for text in ["Rumsey historical maps here…", "Eto Mesto old maps here…"] {
-                                    ui.add_enabled(false, egui::Button::new(tr(lang, text))).on_disabled_hover_text(tr(lang, crate::layers::DESKTOP_ONLY));
-                                }
-                            } else {
+                            // странице, у неё этих пунктов нет.
+                            if !cfg!(target_arch = "wasm32") {
+                                ui.separator();
                                 pick(ui, tr(lang, "Rumsey historical maps here…"), Choice::Rumsey);
                                 pick(ui, tr(lang, "Eto Mesto old maps here…"), Choice::Etomesto);
                             }

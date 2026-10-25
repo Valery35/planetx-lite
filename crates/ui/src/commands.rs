@@ -175,7 +175,7 @@ pub fn actions(lang: Lang, now: &Now) -> Vec<Suggestion> {
         out.push(Suggestion::action(&c.key(), title, note, words));
     };
     let on_off = |on: bool| if on { tr(lang, "turn off") } else { tr(lang, "turn on") };
-    for extra in Extra::all() {
+    for extra in Extra::all().into_iter().filter(|e| !e.desktop_only()) {
         let on = now.extras.contains(&extra);
         add(Command::Layer(extra), tr(lang, extra.name()), on_off(on), layer_words(extra));
     }
@@ -238,12 +238,15 @@ pub fn actions(lang: Lang, now: &Now) -> Vec<Suggestion> {
     );
     add(Command::SceneSave, tr(lang, "Save Scene"), open, &["сцена", "scene"]);
     add(Command::SceneOpen, tr(lang, "Open Scene"), open, &["сцена", "scene"]);
-    add(
-        Command::Fullscreen,
-        tr(lang, "Full screen"),
-        run,
-        &["полный экран", "весь экран", "показ", "презентация", "f11", "fullscreen", "full screen", "presentation"],
-    );
+    // У страницы полный экран - средствами браузера.
+    if !cfg!(target_arch = "wasm32") {
+        add(
+            Command::Fullscreen,
+            tr(lang, "Full screen"),
+            run,
+            &["полный экран", "весь экран", "показ", "презентация", "f11", "fullscreen", "full screen", "presentation"],
+        );
+    }
     add(
         Command::Share,
         tr(lang, "Share view"),

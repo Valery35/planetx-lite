@@ -1287,7 +1287,9 @@ impl LiteApp {
                         if tool_button(ui, Tool::Settings, settings, false, true, tr(lang, "View properties: relief scale, language of labels, appearance.")).clicked() {
                             settings = !settings;
                         }
-                        if tool_button(ui, Tool::Fullscreen, false, false, true, tr(lang, "Full screen (F11) - the globe view for a show. Esc or F11 returns the window.")).clicked() {
+                        // У страницы полный экран - средствами браузера, команда
+                        // окна eframe там ничего не делает: кнопки нет.
+                        if !cfg!(target_arch = "wasm32") && tool_button(ui, Tool::Fullscreen, false, false, true, tr(lang, "Full screen (F11) - the globe view for a show. Esc or F11 returns the window.")).clicked() {
                             full = true;
                         }
                         if tool_button(ui, Tool::Info, false, false, true, tr(lang, "About")).clicked() {

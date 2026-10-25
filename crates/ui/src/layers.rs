@@ -83,6 +83,16 @@ impl Extra {
         !matches!(self, Extra::Air | Extra::Stars | Extra::Grid)
     }
 
+    /// Слоя нет у страницы: самолёты ADS-B и кадастр НСПД не отдают
+    /// данные браузеру. Страница их строк не показывает.
+    pub fn desktop_only(self) -> bool {
+        cfg!(target_arch = "wasm32")
+            && match self {
+                Extra::Live(crate::live::Kind::Aircraft) => true,
+                e => e.map().is_some_and(|m| m.key == "cadastre"),
+            }
+    }
+
     /// Строка карты картинками.
     pub fn map(self) -> Option<&'static crate::maps::Entry> {
         match self {
@@ -727,14 +737,9 @@ impl Item {
     }
 
     /// Строка недоступна странице: самолёты ADS-B и кадастр НСПД
-    /// не отдают данные браузеру, у страницы они - заглушки.
+    /// не отдают данные браузеру.
     fn desktop_only(self) -> bool {
-        cfg!(target_arch = "wasm32")
-            && match self {
-                Item::Extra(Extra::Live(crate::live::Kind::Aircraft)) => true,
-                Item::Extra(e) => e.map().is_some_and(|m| m.key == "cadastre"),
-                _ => false,
-            }
+        matches!(self, Item::Extra(e) if e.desktop_only())
     }
 
     /// Почему строка сейчас недоступна, подсказка заглушки, или None:
@@ -799,6 +804,8 @@ fn items() -> Vec<Item> {
     out.push(Item::Extra(Extra::Wiki));
     out.extend((0..data::satellites::GROUPS.len()).map(Item::Sat));
     out.push(Item::Events);
+    // Строк, которых нет у страницы, она не показывает.
+    out.retain(|i| !i.desktop_only());
     out
 }
 
