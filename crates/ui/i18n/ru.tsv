@@ -1236,3 +1236,48 @@ The map was not built.	Карта не собрана.
 The map is on the globe: {title}.	Карта на глобусе: {title}.
 On the globe	На глобус
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Карта собирается из изображения коллекции, привязывается и ложится картинкой на поверхность в «Мои метки», папку «Карты Рамсея», с годом карты. Год ставит карту на шкалу времени.
+The bands were not read: {error}	Каналы не прочитаны: {error}
+Satellite images here…	Космоснимки здесь…
+Reading the bands: {done} of {total}	Чтение каналов: {done} из {total}
+Natural colour (B4 B3 B2)	Естественные цвета (B4 B3 B2)
+Shortwave infrared (B12 B8A B4)	Коротковолновый ИК (B12 B8A B4)
+The product was not built.	Продукт не собран.
+Clouds and shadows empty	Облака и тени - пусто
+The scene has no band {band}.	У сцены нет канала {band}.
+The image is on the globe: {name}.	Снимок на глобусе: {name}.
+Landsat 4-9 Collection 2 Level-2 (USGS), files and catalogue of Microsoft Planetary Computer. The layers carry the credit "Landsat image courtesy of the U.S. Geological Survey".	Landsat 4-9 Collection 2 Level-2 (USGS), файлы и каталог Microsoft Planetary Computer. Слои несут подпись «Landsat image courtesy of the U.S. Geological Survey».
+Urban (B12 B11 B4)	Застройка (B12 B11 B4)
+The scene has no UTM system.	У сцены нет системы UTM.
+Find	Найти
+The first acquisition day searched.	Первый день съёмки в поиске.
+The catalogue did not answer: {error}	Каталог не ответил: {error}
+Scene	Сцена
+Product	Продукт
+Scenes found: {count}	Найдено сцен: {count}
+Area side	Сторона участка
+The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	Продукт выбранной сцены по участку - картинкой на поверхности в «Мои метки», папку «Космоснимки», с днём снимка.
+Tile	Тайл
+Reading the bands…	Чтение каналов…
+to	по
+NDMI - vegetation moisture	NDMI - влажность растительности
+Sentinel-2 - 10 m, since 2015	Sentinel-2 - 10 м, с 2015 года
+The last acquisition day searched.	Последний день съёмки в поиске.
+Surface temperature, °C	Температура поверхности, °C
+Geology (B12 B11 B2)	Геология (B12 B11 B2)
+NDVI - vegetation	NDVI - растительность
+NDWI - open water	NDWI - открытая вода
+The area is outside the UTM zone of the scene.	Участок вне зоны UTM сцены.
+Copernicus Sentinel-2 L2A (ESA), files and the Earth Search catalogue by Element 84 on AWS. Layers carry the Contains modified Copernicus Sentinel data notice with the image year.	Copernicus Sentinel-2 L2A (ESA), файлы и каталог Earth Search Element 84 на AWS. Слои несут подпись «Contains modified Copernicus Sentinel data» с годом снимка.
+NDSI - snow	NDSI - снег
+Satellite	Спутник
+Landsat 4-9 - 30 m, since 1982	Landsat 4-9 - 30 м, с 1982 года
+Agriculture (B11 B8 B2)	Сельское хозяйство (B11 B8 B2)
+Acquired from	Съёмка с
+Planetary Computer did not give a key for the Landsat files.	Planetary Computer не дал ключ к файлам Landsat.
+NBR - burned areas	NBR - гари
+Date, UTC	Дата, UTC
+Satellite images	Космоснимки
+The area has no data in this scene.	Над участком у сцены нет данных.
+Searching scenes…	Поиск сцен…
+False colour, near infrared (B8 B4 B3)	Ложные цвета, ближний ИК (B8 B4 B3)
+Scene cloud cover up to	Облачность сцены до

@@ -1236,3 +1236,48 @@ The map was not built.	地図を作成できませんでした。
 The map is on the globe: {title}.	地図は地球儀上にあります：{title}。
 On the globe	地球儀へ
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	地図はコレクションの画像から作成され、ジオリファレンスされて、地図の年とともに「マイプレイス」の「Rumsey の地図」フォルダーに地表の画像として置かれます。年によって地図はタイムバーに載ります。
+The bands were not read: {error}	バンドを読み込めませんでした：{error}
+Satellite images here…	ここの衛星画像…
+Reading the bands: {done} of {total}	バンドを読み込み中：{done} / {total}
+Natural colour (B4 B3 B2)	トゥルーカラー (B4 B3 B2)
+Shortwave infrared (B12 B8A B4)	短波長赤外 (B12 B8A B4)
+The product was not built.	プロダクトを作成できませんでした。
+Clouds and shadows empty	雲と影を空にする
+The scene has no band {band}.	シーンにバンド {band} がありません。
+The image is on the globe: {name}.	画像は地球儀上にあります：{name}。
+Landsat 4-9 Collection 2 Level-2 (USGS), files and catalogue of Microsoft Planetary Computer. The layers carry the credit "Landsat image courtesy of the U.S. Geological Survey".	Landsat 4-9 Collection 2 Level-2 (USGS)、Microsoft Planetary Computer のファイルとカタログ。レイヤーには「Landsat image courtesy of the U.S. Geological Survey」のクレジットが付きます。
+Urban (B12 B11 B4)	市街地 (B12 B11 B4)
+The scene has no UTM system.	シーンに UTM 系がありません。
+Find	検索
+The first acquisition day searched.	検索する最初の撮影日。
+The catalogue did not answer: {error}	カタログが応答しません：{error}
+Scene	シーン
+Product	プロダクト
+Scenes found: {count}	見つかったシーン：{count}
+Area side	区域の一辺
+The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	選んだシーンの区域のプロダクトを、撮影日とともに「マイプレイス」の「衛星画像」フォルダーに地表の画像として置きます。
+Tile	タイル
+Reading the bands…	バンドを読み込み中…
+to	～
+NDMI - vegetation moisture	NDMI - 植生の水分
+Sentinel-2 - 10 m, since 2015	Sentinel-2 - 10 m、2015 年から
+The last acquisition day searched.	検索する最後の撮影日。
+Surface temperature, °C	地表温度、°C
+Geology (B12 B11 B2)	地質 (B12 B11 B2)
+NDVI - vegetation	NDVI - 植生
+NDWI - open water	NDWI - 開水面
+The area is outside the UTM zone of the scene.	区域がシーンの UTM ゾーンの外にあります。
+Copernicus Sentinel-2 L2A (ESA), files and the Earth Search catalogue by Element 84 on AWS. Layers carry the Contains modified Copernicus Sentinel data notice with the image year.	Copernicus Sentinel-2 L2A (ESA)、AWS 上の Element 84 のファイルと Earth Search カタログ。レイヤーには撮影年とともに「Contains modified Copernicus Sentinel data」のクレジットが付きます。
+NDSI - snow	NDSI - 雪
+Satellite	衛星
+Landsat 4-9 - 30 m, since 1982	Landsat 4-9 - 30 m、1982 年から
+Agriculture (B11 B8 B2)	農業 (B11 B8 B2)
+Acquired from	撮影日の開始
+Planetary Computer did not give a key for the Landsat files.	Planetary Computer が Landsat ファイルのキーを発行しませんでした。
+NBR - burned areas	NBR - 焼失地
+Date, UTC	日付、UTC
+Satellite images	衛星画像
+The area has no data in this scene.	この区域にはシーンのデータがありません。
+Searching scenes…	シーンを検索中…
+False colour, near infrared (B8 B4 B3)	フォールスカラー、近赤外 (B8 B4 B3)
+Scene cloud cover up to	シーンの雲量の上限

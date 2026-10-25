@@ -1236,3 +1236,48 @@ The map was not built.	未能生成地图。
 The map is on the globe: {title}.	地图已在地球上：{title}。
 On the globe	到地球上
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	地图由收藏图像生成，经配准后连同地图年份作为地表图片放入“我的地点”的“Rumsey 地图”文件夹。年份把地图放到时间条上。
+The bands were not read: {error}	未能读取波段：{error}
+Satellite images here…	此处的卫星影像…
+Reading the bands: {done} of {total}	正在读取波段：{done} / {total}
+Natural colour (B4 B3 B2)	真彩色 (B4 B3 B2)
+Shortwave infrared (B12 B8A B4)	短波红外 (B12 B8A B4)
+The product was not built.	未能生成产品。
+Clouds and shadows empty	云和阴影置空
+The scene has no band {band}.	场景没有波段 {band}。
+The image is on the globe: {name}.	影像已在地球上：{name}。
+Landsat 4-9 Collection 2 Level-2 (USGS), files and catalogue of Microsoft Planetary Computer. The layers carry the credit "Landsat image courtesy of the U.S. Geological Survey".	Landsat 4-9 Collection 2 Level-2 (USGS)，Microsoft Planetary Computer 的文件和目录。图层带有署名“Landsat image courtesy of the U.S. Geological Survey”。
+Urban (B12 B11 B4)	建成区 (B12 B11 B4)
+The scene has no UTM system.	场景没有 UTM 坐标系。
+Find	查找
+The first acquisition day searched.	搜索的第一个成像日。
+The catalogue did not answer: {error}	目录未响应：{error}
+Scene	场景
+Product	产品
+Scenes found: {count}	找到的场景：{count}
+Area side	区域边长
+The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	所选场景在该区域上的产品，连同成像日期作为地表图片放入“我的地点”的“卫星影像”文件夹。
+Tile	瓦片
+Reading the bands…	正在读取波段…
+to	至
+NDMI - vegetation moisture	NDMI - 植被湿度
+Sentinel-2 - 10 m, since 2015	Sentinel-2 - 10 米，自 2015 年起
+The last acquisition day searched.	搜索的最后一个成像日。
+Surface temperature, °C	地表温度，°C
+Geology (B12 B11 B2)	地质 (B12 B11 B2)
+NDVI - vegetation	NDVI - 植被
+NDWI - open water	NDWI - 开阔水面
+The area is outside the UTM zone of the scene.	该区域在场景的 UTM 带之外。
+Copernicus Sentinel-2 L2A (ESA), files and the Earth Search catalogue by Element 84 on AWS. Layers carry the Contains modified Copernicus Sentinel data notice with the image year.	Copernicus Sentinel-2 L2A (ESA)，AWS 上 Element 84 的文件和 Earth Search 目录。图层带有署名“Contains modified Copernicus Sentinel data”及成像年份。
+NDSI - snow	NDSI - 积雪
+Satellite	卫星
+Landsat 4-9 - 30 m, since 1982	Landsat 4-9 - 30 米，自 1982 年起
+Agriculture (B11 B8 B2)	农业 (B11 B8 B2)
+Acquired from	成像起始
+Planetary Computer did not give a key for the Landsat files.	Planetary Computer 未提供 Landsat 文件的密钥。
+NBR - burned areas	NBR - 火烧迹地
+Date, UTC	日期，UTC
+Satellite images	卫星影像
+The area has no data in this scene.	场景在该区域上没有数据。
+Searching scenes…	正在搜索场景…
+False colour, near infrared (B8 B4 B3)	假彩色，近红外 (B8 B4 B3)
+Scene cloud cover up to	场景云量上限

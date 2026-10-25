@@ -1236,3 +1236,48 @@ The map was not built.	Chưa dựng được bản đồ.
 The map is on the globe: {title}.	Bản đồ đã ở trên quả địa cầu: {title}.
 On the globe	Lên quả địa cầu
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Bản đồ được dựng từ ảnh của bộ sưu tập, được định vị và đặt làm hình ảnh trên bề mặt trong "Địa điểm của tôi", thư mục "Bản đồ Rumsey", kèm năm của bản đồ. Năm đặt bản đồ lên thanh thời gian.
+The bands were not read: {error}	Chưa đọc được các kênh: {error}
+Satellite images here…	Ảnh vệ tinh ở đây…
+Reading the bands: {done} of {total}	Đang đọc các kênh: {done} / {total}
+Natural colour (B4 B3 B2)	Màu tự nhiên (B4 B3 B2)
+Shortwave infrared (B12 B8A B4)	Hồng ngoại sóng ngắn (B12 B8A B4)
+The product was not built.	Chưa dựng được sản phẩm.
+Clouds and shadows empty	Mây và bóng mây để trống
+The scene has no band {band}.	Cảnh không có kênh {band}.
+The image is on the globe: {name}.	Ảnh đã ở trên quả địa cầu: {name}.
+Landsat 4-9 Collection 2 Level-2 (USGS), files and catalogue of Microsoft Planetary Computer. The layers carry the credit "Landsat image courtesy of the U.S. Geological Survey".	Landsat 4-9 Collection 2 Level-2 (USGS), tệp và danh mục của Microsoft Planetary Computer. Các lớp mang ghi nguồn "Landsat image courtesy of the U.S. Geological Survey".
+Urban (B12 B11 B4)	Khu dân cư (B12 B11 B4)
+The scene has no UTM system.	Cảnh không có hệ UTM.
+Find	Tìm
+The first acquisition day searched.	Ngày chụp đầu tiên trong tìm kiếm.
+The catalogue did not answer: {error}	Danh mục không trả lời: {error}
+Scene	Cảnh
+Product	Sản phẩm
+Scenes found: {count}	Số cảnh tìm thấy: {count}
+Area side	Cạnh vùng
+The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	Sản phẩm của cảnh đã chọn trên vùng, dưới dạng hình ảnh trên bề mặt trong "Địa điểm của tôi", thư mục "Ảnh vệ tinh", kèm ngày chụp.
+Tile	Ô
+Reading the bands…	Đang đọc các kênh…
+to	đến
+NDMI - vegetation moisture	NDMI - độ ẩm thực vật
+Sentinel-2 - 10 m, since 2015	Sentinel-2 - 10 m, từ năm 2015
+The last acquisition day searched.	Ngày chụp cuối cùng trong tìm kiếm.
+Surface temperature, °C	Nhiệt độ bề mặt, °C
+Geology (B12 B11 B2)	Địa chất (B12 B11 B2)
+NDVI - vegetation	NDVI - thực vật
+NDWI - open water	NDWI - mặt nước
+The area is outside the UTM zone of the scene.	Vùng nằm ngoài múi UTM của cảnh.
+Copernicus Sentinel-2 L2A (ESA), files and the Earth Search catalogue by Element 84 on AWS. Layers carry the Contains modified Copernicus Sentinel data notice with the image year.	Copernicus Sentinel-2 L2A (ESA), tệp và danh mục Earth Search của Element 84 trên AWS. Các lớp mang ghi nguồn "Contains modified Copernicus Sentinel data" kèm năm chụp.
+NDSI - snow	NDSI - tuyết
+Satellite	Vệ tinh
+Landsat 4-9 - 30 m, since 1982	Landsat 4-9 - 30 m, từ năm 1982
+Agriculture (B11 B8 B2)	Nông nghiệp (B11 B8 B2)
+Acquired from	Chụp từ
+Planetary Computer did not give a key for the Landsat files.	Planetary Computer không cấp khóa cho các tệp Landsat.
+NBR - burned areas	NBR - vùng cháy
+Date, UTC	Ngày, UTC
+Satellite images	Ảnh vệ tinh
+The area has no data in this scene.	Cảnh không có dữ liệu trên vùng này.
+Searching scenes…	Đang tìm cảnh…
+False colour, near infrared (B8 B4 B3)	Màu giả, hồng ngoại gần (B8 B4 B3)
+Scene cloud cover up to	Độ che phủ mây của cảnh tối đa

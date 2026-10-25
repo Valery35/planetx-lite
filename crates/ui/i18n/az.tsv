@@ -1236,3 +1236,48 @@ The map was not built.	Xəritə qurulmadı.
 The map is on the globe: {title}.	Xəritə qlobusdadır: {title}.
 On the globe	Qlobusa
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Xəritə kolleksiyanın təsvirindən qurulur, bağlanır və xəritənin ili ilə "Mənim yerlərim"də "Rumsey xəritələri" qovluğuna səthdə şəkil kimi qoyulur. İl xəritəni zaman şkalasına qoyur.
+The bands were not read: {error}	Kanallar oxunmadı: {error}
+Satellite images here…	Burada peyk şəkilləri…
+Reading the bands: {done} of {total}	Kanallar oxunur: {done} / {total}
+Natural colour (B4 B3 B2)	Təbii rənglər (B4 B3 B2)
+Shortwave infrared (B12 B8A B4)	Qısadalğalı İQ (B12 B8A B4)
+The product was not built.	Məhsul qurulmadı.
+Clouds and shadows empty	Buludlar və kölgələr - boş
+The scene has no band {band}.	Səhnədə {band} kanalı yoxdur.
+The image is on the globe: {name}.	Şəkil qlobusdadır: {name}.
+Landsat 4-9 Collection 2 Level-2 (USGS), files and catalogue of Microsoft Planetary Computer. The layers carry the credit "Landsat image courtesy of the U.S. Geological Survey".	Landsat 4-9 Collection 2 Level-2 (USGS), Microsoft Planetary Computer faylları və kataloqu. Laylarda "Landsat image courtesy of the U.S. Geological Survey" imzası var.
+Urban (B12 B11 B4)	Tikililər (B12 B11 B4)
+The scene has no UTM system.	Səhnədə UTM sistemi yoxdur.
+Find	Tap
+The first acquisition day searched.	Axtarışda ilk çəkiliş günü.
+The catalogue did not answer: {error}	Kataloq cavab vermədi: {error}
+Scene	Səhnə
+Product	Məhsul
+Scenes found: {count}	Tapılan səhnələr: {count}
+Area side	Sahənin tərəfi
+The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	Seçilmiş səhnənin sahə üzrə məhsulu - şəklin günü ilə "Mənim yerlərim"də "Peyk şəkilləri" qovluğuna səthdə şəkil kimi.
+Tile	Kafel
+Reading the bands…	Kanallar oxunur…
+to	qədər
+NDMI - vegetation moisture	NDMI - bitkiliyin nəmliyi
+Sentinel-2 - 10 m, since 2015	Sentinel-2 - 10 m, 2015-ci ildən
+The last acquisition day searched.	Axtarışda son çəkiliş günü.
+Surface temperature, °C	Səth temperaturu, °C
+Geology (B12 B11 B2)	Geologiya (B12 B11 B2)
+NDVI - vegetation	NDVI - bitkilik
+NDWI - open water	NDWI - açıq su
+The area is outside the UTM zone of the scene.	Sahə səhnənin UTM zonasından kənardadır.
+Copernicus Sentinel-2 L2A (ESA), files and the Earth Search catalogue by Element 84 on AWS. Layers carry the Contains modified Copernicus Sentinel data notice with the image year.	Copernicus Sentinel-2 L2A (ESA), AWS-də Element 84-ün faylları və Earth Search kataloqu. Laylarda şəklin ili ilə "Contains modified Copernicus Sentinel data" imzası var.
+NDSI - snow	NDSI - qar
+Satellite	Peyk
+Landsat 4-9 - 30 m, since 1982	Landsat 4-9 - 30 m, 1982-ci ildən
+Agriculture (B11 B8 B2)	Kənd təsərrüfatı (B11 B8 B2)
+Acquired from	Çəkiliş başlanğıcı
+Planetary Computer did not give a key for the Landsat files.	Planetary Computer Landsat faylları üçün açar vermədi.
+NBR - burned areas	NBR - yanmış sahələr
+Date, UTC	Tarix, UTC
+Satellite images	Peyk şəkilləri
+The area has no data in this scene.	Səhnənin sahə üzərində məlumatı yoxdur.
+Searching scenes…	Səhnələr axtarılır…
+False colour, near infrared (B8 B4 B3)	Saxta rənglər, yaxın İQ (B8 B4 B3)
+Scene cloud cover up to	Səhnənin buludluluğu ən çox

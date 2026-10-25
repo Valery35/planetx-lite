@@ -1236,3 +1236,48 @@ The map was not built.	Die Karte wurde nicht erstellt.
 The map is on the globe: {title}.	Die Karte ist auf dem Globus: {title}.
 On the globe	Auf den Globus
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Die Karte wird aus dem Bild der Sammlung erstellt, georeferenziert und als Bild auf der Oberfläche in „Meine Orte“ gelegt, Ordner „Rumsey-Karten“, mit dem Jahr der Karte. Das Jahr setzt die Karte auf die Zeitleiste.
+The bands were not read: {error}	Die Kanäle wurden nicht gelesen: {error}
+Satellite images here…	Satellitenbilder hier…
+Reading the bands: {done} of {total}	Kanäle werden gelesen: {done} von {total}
+Natural colour (B4 B3 B2)	Natürliche Farben (B4 B3 B2)
+Shortwave infrared (B12 B8A B4)	Kurzwelliges Infrarot (B12 B8A B4)
+The product was not built.	Das Produkt wurde nicht erstellt.
+Clouds and shadows empty	Wolken und Schatten - leer
+The scene has no band {band}.	Die Szene hat keinen Kanal {band}.
+The image is on the globe: {name}.	Das Bild ist auf dem Globus: {name}.
+Landsat 4-9 Collection 2 Level-2 (USGS), files and catalogue of Microsoft Planetary Computer. The layers carry the credit "Landsat image courtesy of the U.S. Geological Survey".	Landsat 4-9 Collection 2 Level-2 (USGS), Dateien und Katalog von Microsoft Planetary Computer. Die Ebenen tragen den Vermerk „Landsat image courtesy of the U.S. Geological Survey“.
+Urban (B12 B11 B4)	Bebauung (B12 B11 B4)
+The scene has no UTM system.	Die Szene hat kein UTM-System.
+Find	Suchen
+The first acquisition day searched.	Der erste gesuchte Aufnahmetag.
+The catalogue did not answer: {error}	Der Katalog hat nicht geantwortet: {error}
+Scene	Szene
+Product	Produkt
+Scenes found: {count}	Gefundene Szenen: {count}
+Area side	Seitenlänge des Gebiets
+The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	Das Produkt der gewählten Szene über dem Gebiet als Bild auf der Oberfläche in „Meine Orte“, Ordner „Satellitenbilder“, mit dem Tag der Aufnahme.
+Tile	Kachel
+Reading the bands…	Kanäle werden gelesen…
+to	bis
+NDMI - vegetation moisture	NDMI - Feuchte der Vegetation
+Sentinel-2 - 10 m, since 2015	Sentinel-2 - 10 m, seit 2015
+The last acquisition day searched.	Der letzte gesuchte Aufnahmetag.
+Surface temperature, °C	Oberflächentemperatur, °C
+Geology (B12 B11 B2)	Geologie (B12 B11 B2)
+NDVI - vegetation	NDVI - Vegetation
+NDWI - open water	NDWI - offenes Wasser
+The area is outside the UTM zone of the scene.	Das Gebiet liegt außerhalb der UTM-Zone der Szene.
+Copernicus Sentinel-2 L2A (ESA), files and the Earth Search catalogue by Element 84 on AWS. Layers carry the Contains modified Copernicus Sentinel data notice with the image year.	Copernicus Sentinel-2 L2A (ESA), Dateien und der Katalog Earth Search von Element 84 auf AWS. Die Ebenen tragen den Vermerk „Contains modified Copernicus Sentinel data“ mit dem Jahr der Aufnahme.
+NDSI - snow	NDSI - Schnee
+Satellite	Satellit
+Landsat 4-9 - 30 m, since 1982	Landsat 4-9 - 30 m, seit 1982
+Agriculture (B11 B8 B2)	Landwirtschaft (B11 B8 B2)
+Acquired from	Aufnahme ab
+Planetary Computer did not give a key for the Landsat files.	Planetary Computer hat keinen Schlüssel für die Landsat-Dateien gegeben.
+NBR - burned areas	NBR - Brandflächen
+Date, UTC	Datum, UTC
+Satellite images	Satellitenbilder
+The area has no data in this scene.	Die Szene hat über dem Gebiet keine Daten.
+Searching scenes…	Szenen werden gesucht…
+False colour, near infrared (B8 B4 B3)	Falschfarben, nahes Infrarot (B8 B4 B3)
+Scene cloud cover up to	Bewölkung der Szene bis

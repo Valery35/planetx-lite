@@ -1236,3 +1236,48 @@ The map was not built.	Peta tidak dibuat.
 The map is on the globe: {title}.	Peta ada di globe: {title}.
 On the globe	Ke globe
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Peta dibuat dari gambar koleksi, digeoreferensikan, dan diletakkan sebagai gambar di permukaan dalam "Tempat Saya", folder "Peta Rumsey", dengan tahun peta. Tahun menempatkan peta pada bilah waktu.
+The bands were not read: {error}	Kanal tidak terbaca: {error}
+Satellite images here…	Citra satelit di sini…
+Reading the bands: {done} of {total}	Membaca kanal: {done} dari {total}
+Natural colour (B4 B3 B2)	Warna alami (B4 B3 B2)
+Shortwave infrared (B12 B8A B4)	Inframerah gelombang pendek (B12 B8A B4)
+The product was not built.	Produk tidak dibuat.
+Clouds and shadows empty	Awan dan bayangan kosong
+The scene has no band {band}.	Adegan tidak memiliki kanal {band}.
+The image is on the globe: {name}.	Citra ada di globe: {name}.
+Landsat 4-9 Collection 2 Level-2 (USGS), files and catalogue of Microsoft Planetary Computer. The layers carry the credit "Landsat image courtesy of the U.S. Geological Survey".	Landsat 4-9 Collection 2 Level-2 (USGS), berkas dan katalog Microsoft Planetary Computer. Lapisan membawa atribusi "Landsat image courtesy of the U.S. Geological Survey".
+Urban (B12 B11 B4)	Permukiman (B12 B11 B4)
+The scene has no UTM system.	Adegan tidak memiliki sistem UTM.
+Find	Cari
+The first acquisition day searched.	Hari perekaman pertama dalam pencarian.
+The catalogue did not answer: {error}	Katalog tidak menjawab: {error}
+Scene	Adegan
+Product	Produk
+Scenes found: {count}	Adegan ditemukan: {count}
+Area side	Sisi area
+The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	Produk adegan yang dipilih di atas area sebagai gambar di permukaan dalam "Tempat Saya", folder "Citra satelit", dengan hari perekaman.
+Tile	Ubin
+Reading the bands…	Membaca kanal…
+to	sampai
+NDMI - vegetation moisture	NDMI - kelembapan vegetasi
+Sentinel-2 - 10 m, since 2015	Sentinel-2 - 10 m, sejak 2015
+The last acquisition day searched.	Hari perekaman terakhir dalam pencarian.
+Surface temperature, °C	Suhu permukaan, °C
+Geology (B12 B11 B2)	Geologi (B12 B11 B2)
+NDVI - vegetation	NDVI - vegetasi
+NDWI - open water	NDWI - perairan terbuka
+The area is outside the UTM zone of the scene.	Area berada di luar zona UTM adegan.
+Copernicus Sentinel-2 L2A (ESA), files and the Earth Search catalogue by Element 84 on AWS. Layers carry the Contains modified Copernicus Sentinel data notice with the image year.	Copernicus Sentinel-2 L2A (ESA), berkas dan katalog Earth Search dari Element 84 di AWS. Lapisan membawa atribusi "Contains modified Copernicus Sentinel data" dengan tahun citra.
+NDSI - snow	NDSI - salju
+Satellite	Satelit
+Landsat 4-9 - 30 m, since 1982	Landsat 4-9 - 30 m, sejak 1982
+Agriculture (B11 B8 B2)	Pertanian (B11 B8 B2)
+Acquired from	Perekaman dari
+Planetary Computer did not give a key for the Landsat files.	Planetary Computer tidak memberikan kunci untuk berkas Landsat.
+NBR - burned areas	NBR - area terbakar
+Date, UTC	Tanggal, UTC
+Satellite images	Citra satelit
+The area has no data in this scene.	Adegan tidak memiliki data di atas area ini.
+Searching scenes…	Mencari adegan…
+False colour, near infrared (B8 B4 B3)	Warna semu, inframerah dekat (B8 B4 B3)
+Scene cloud cover up to	Tutupan awan adegan hingga

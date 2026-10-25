@@ -1236,3 +1236,48 @@ The map was not built.	지도를 만들지 못했습니다.
 The map is on the globe: {title}.	지도가 지구본에 있습니다: {title}.
 On the globe	지구본으로
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	지도는 컬렉션 이미지로 만들어지고 좌표를 맞춘 뒤 지도 연도와 함께 ‘내 장소’의 ‘Rumsey 지도’ 폴더에 지표면 이미지로 놓입니다. 연도에 따라 지도가 시간 막대에 놓입니다.
+The bands were not read: {error}	밴드를 읽지 못했습니다: {error}
+Satellite images here…	여기의 위성 영상…
+Reading the bands: {done} of {total}	밴드를 읽는 중: {done} / {total}
+Natural colour (B4 B3 B2)	자연색 (B4 B3 B2)
+Shortwave infrared (B12 B8A B4)	단파 적외선 (B12 B8A B4)
+The product was not built.	결과물을 만들지 못했습니다.
+Clouds and shadows empty	구름과 그림자 비우기
+The scene has no band {band}.	장면에 {band} 밴드가 없습니다.
+The image is on the globe: {name}.	영상이 지구본에 있습니다: {name}.
+Landsat 4-9 Collection 2 Level-2 (USGS), files and catalogue of Microsoft Planetary Computer. The layers carry the credit "Landsat image courtesy of the U.S. Geological Survey".	Landsat 4-9 Collection 2 Level-2 (USGS), Microsoft Planetary Computer의 파일과 목록. 레이어에는 ‘Landsat image courtesy of the U.S. Geological Survey’ 출처 표기가 붙습니다.
+Urban (B12 B11 B4)	시가지 (B12 B11 B4)
+The scene has no UTM system.	장면에 UTM 체계가 없습니다.
+Find	찾기
+The first acquisition day searched.	검색할 첫 촬영일.
+The catalogue did not answer: {error}	목록이 응답하지 않았습니다: {error}
+Scene	장면
+Product	결과물
+Scenes found: {count}	찾은 장면: {count}
+Area side	구역 한 변
+The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	선택한 장면의 구역 결과물을 촬영일과 함께 ‘내 장소’의 ‘위성 영상’ 폴더에 지표면 이미지로 넣습니다.
+Tile	타일
+Reading the bands…	밴드를 읽는 중…
+to	~
+NDMI - vegetation moisture	NDMI - 식생 수분
+Sentinel-2 - 10 m, since 2015	Sentinel-2 - 10 m, 2015년부터
+The last acquisition day searched.	검색할 마지막 촬영일.
+Surface temperature, °C	지표면 온도, °C
+Geology (B12 B11 B2)	지질 (B12 B11 B2)
+NDVI - vegetation	NDVI - 식생
+NDWI - open water	NDWI - 개방 수면
+The area is outside the UTM zone of the scene.	구역이 장면의 UTM 구역 밖에 있습니다.
+Copernicus Sentinel-2 L2A (ESA), files and the Earth Search catalogue by Element 84 on AWS. Layers carry the Contains modified Copernicus Sentinel data notice with the image year.	Copernicus Sentinel-2 L2A (ESA), AWS의 Element 84 파일과 Earth Search 목록. 레이어에는 촬영 연도와 함께 ‘Contains modified Copernicus Sentinel data’ 출처 표기가 붙습니다.
+NDSI - snow	NDSI - 눈
+Satellite	위성
+Landsat 4-9 - 30 m, since 1982	Landsat 4-9 - 30 m, 1982년부터
+Agriculture (B11 B8 B2)	농업 (B11 B8 B2)
+Acquired from	촬영 시작일
+Planetary Computer did not give a key for the Landsat files.	Planetary Computer가 Landsat 파일 키를 주지 않았습니다.
+NBR - burned areas	NBR - 산불 피해지
+Date, UTC	날짜, UTC
+Satellite images	위성 영상
+The area has no data in this scene.	이 구역에는 장면의 데이터가 없습니다.
+Searching scenes…	장면을 찾는 중…
+False colour, near infrared (B8 B4 B3)	가색, 근적외선 (B8 B4 B3)
+Scene cloud cover up to	장면 운량 최대

@@ -1236,3 +1236,48 @@ The map was not built.	Harita oluşturulmadı.
 The map is on the globe: {title}.	Harita kürede: {title}.
 On the globe	Küreye
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Harita koleksiyon görüntüsünden oluşturulur, koordinatlandırılır ve haritanın yılıyla "Yerlerim" içinde "Rumsey haritaları" klasörüne yüzeydeki resim olarak yerleşir. Yıl haritayı zaman çubuğuna koyar.
+The bands were not read: {error}	Bantlar okunmadı: {error}
+Satellite images here…	Burada uydu görüntüleri…
+Reading the bands: {done} of {total}	Bantlar okunuyor: {done} / {total}
+Natural colour (B4 B3 B2)	Doğal renkler (B4 B3 B2)
+Shortwave infrared (B12 B8A B4)	Kısa dalga kızılötesi (B12 B8A B4)
+The product was not built.	Ürün oluşturulmadı.
+Clouds and shadows empty	Bulutlar ve gölgeler boş
+The scene has no band {band}.	Sahnede {band} bandı yok.
+The image is on the globe: {name}.	Görüntü kürede: {name}.
+Landsat 4-9 Collection 2 Level-2 (USGS), files and catalogue of Microsoft Planetary Computer. The layers carry the credit "Landsat image courtesy of the U.S. Geological Survey".	Landsat 4-9 Collection 2 Level-2 (USGS), Microsoft Planetary Computer dosyaları ve kataloğu. Katmanlar "Landsat image courtesy of the U.S. Geological Survey" atfını taşır.
+Urban (B12 B11 B4)	Yapılaşma (B12 B11 B4)
+The scene has no UTM system.	Sahnenin UTM sistemi yok.
+Find	Bul
+The first acquisition day searched.	Aramadaki ilk çekim günü.
+The catalogue did not answer: {error}	Katalog yanıt vermedi: {error}
+Scene	Sahne
+Product	Ürün
+Scenes found: {count}	Bulunan sahneler: {count}
+Area side	Alanın kenarı
+The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	Seçilen sahnenin alan üzerindeki ürünü, görüntü günüyle "Yerlerim" içinde "Uydu görüntüleri" klasörüne yüzeydeki resim olarak.
+Tile	Karo
+Reading the bands…	Bantlar okunuyor…
+to	ile
+NDMI - vegetation moisture	NDMI - bitki nemi
+Sentinel-2 - 10 m, since 2015	Sentinel-2 - 10 m, 2015'ten beri
+The last acquisition day searched.	Aramadaki son çekim günü.
+Surface temperature, °C	Yüzey sıcaklığı, °C
+Geology (B12 B11 B2)	Jeoloji (B12 B11 B2)
+NDVI - vegetation	NDVI - bitki örtüsü
+NDWI - open water	NDWI - açık su
+The area is outside the UTM zone of the scene.	Alan sahnenin UTM dilimi dışında.
+Copernicus Sentinel-2 L2A (ESA), files and the Earth Search catalogue by Element 84 on AWS. Layers carry the Contains modified Copernicus Sentinel data notice with the image year.	Copernicus Sentinel-2 L2A (ESA), AWS üzerinde Element 84'ün dosyaları ve Earth Search kataloğu. Katmanlar görüntü yılıyla "Contains modified Copernicus Sentinel data" atfını taşır.
+NDSI - snow	NDSI - kar
+Satellite	Uydu
+Landsat 4-9 - 30 m, since 1982	Landsat 4-9 - 30 m, 1982'den beri
+Agriculture (B11 B8 B2)	Tarım (B11 B8 B2)
+Acquired from	Çekim başlangıcı
+Planetary Computer did not give a key for the Landsat files.	Planetary Computer Landsat dosyaları için anahtar vermedi.
+NBR - burned areas	NBR - yanmış alanlar
+Date, UTC	Tarih, UTC
+Satellite images	Uydu görüntüleri
+The area has no data in this scene.	Sahnenin alan üzerinde verisi yok.
+Searching scenes…	Sahneler aranıyor…
+False colour, near infrared (B8 B4 B3)	Yanlış renkler, yakın kızılötesi (B8 B4 B3)
+Scene cloud cover up to	Sahne bulutluluğu en fazla

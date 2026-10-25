@@ -1236,3 +1236,48 @@ The map was not built.	De kaart is niet gemaakt.
 The map is on the globe: {title}.	De kaart staat op de globe: {title}.
 On the globe	Naar de globe
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	De kaart wordt gemaakt uit de afbeelding van de collectie, gegeorefereerd en als afbeelding op het oppervlak in ‘Mijn plaatsen’ gelegd, map ‘Rumsey-kaarten’, met het jaar van de kaart. Het jaar zet de kaart op de tijdbalk.
+The bands were not read: {error}	De banden zijn niet gelezen: {error}
+Satellite images here…	Satellietbeelden hier…
+Reading the bands: {done} of {total}	Banden lezen: {done} van {total}
+Natural colour (B4 B3 B2)	Natuurlijke kleuren (B4 B3 B2)
+Shortwave infrared (B12 B8A B4)	Kortgolvig infrarood (B12 B8A B4)
+The product was not built.	Het product is niet gemaakt.
+Clouds and shadows empty	Wolken en schaduwen leeg
+The scene has no band {band}.	De scène heeft geen band {band}.
+The image is on the globe: {name}.	Het beeld staat op de globe: {name}.
+Landsat 4-9 Collection 2 Level-2 (USGS), files and catalogue of Microsoft Planetary Computer. The layers carry the credit "Landsat image courtesy of the U.S. Geological Survey".	Landsat 4-9 Collection 2 Level-2 (USGS), bestanden en catalogus van Microsoft Planetary Computer. De lagen dragen de vermelding ‘Landsat image courtesy of the U.S. Geological Survey’.
+Urban (B12 B11 B4)	Bebouwing (B12 B11 B4)
+The scene has no UTM system.	De scène heeft geen UTM-systeem.
+Find	Zoeken
+The first acquisition day searched.	De eerste opnamedag in de zoekopdracht.
+The catalogue did not answer: {error}	De catalogus antwoordde niet: {error}
+Scene	Scène
+Product	Product
+Scenes found: {count}	Gevonden scènes: {count}
+Area side	Zijde van het gebied
+The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	Het product van de gekozen scène over het gebied als afbeelding op het oppervlak in ‘Mijn plaatsen’, map ‘Satellietbeelden’, met de dag van de opname.
+Tile	Tegel
+Reading the bands…	Banden lezen…
+to	tot
+NDMI - vegetation moisture	NDMI - vochtigheid van de vegetatie
+Sentinel-2 - 10 m, since 2015	Sentinel-2 - 10 m, sinds 2015
+The last acquisition day searched.	De laatste opnamedag in de zoekopdracht.
+Surface temperature, °C	Oppervlaktetemperatuur, °C
+Geology (B12 B11 B2)	Geologie (B12 B11 B2)
+NDVI - vegetation	NDVI - vegetatie
+NDWI - open water	NDWI - open water
+The area is outside the UTM zone of the scene.	Het gebied ligt buiten de UTM-zone van de scène.
+Copernicus Sentinel-2 L2A (ESA), files and the Earth Search catalogue by Element 84 on AWS. Layers carry the Contains modified Copernicus Sentinel data notice with the image year.	Copernicus Sentinel-2 L2A (ESA), bestanden en de catalogus Earth Search van Element 84 op AWS. De lagen dragen de vermelding ‘Contains modified Copernicus Sentinel data’ met het jaar van de opname.
+NDSI - snow	NDSI - sneeuw
+Satellite	Satelliet
+Landsat 4-9 - 30 m, since 1982	Landsat 4-9 - 30 m, sinds 1982
+Agriculture (B11 B8 B2)	Landbouw (B11 B8 B2)
+Acquired from	Opname vanaf
+Planetary Computer did not give a key for the Landsat files.	Planetary Computer gaf geen sleutel voor de Landsat-bestanden.
+NBR - burned areas	NBR - brandplekken
+Date, UTC	Datum, UTC
+Satellite images	Satellietbeelden
+The area has no data in this scene.	De scène heeft boven het gebied geen gegevens.
+Searching scenes…	Scènes zoeken…
+False colour, near infrared (B8 B4 B3)	Valse kleuren, nabij infrarood (B8 B4 B3)
+Scene cloud cover up to	Bewolking van de scène tot

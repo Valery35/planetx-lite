@@ -330,7 +330,7 @@ impl Calc {
 
 /// Поле даты: день, месяц, год. Возвращает ответ последнего поля
 /// с отметкой изменения любого.
-fn date_edit(ui: &mut egui::Ui, date: &mut (i64, u32, u32)) -> egui::Response {
+pub fn date_edit(ui: &mut egui::Ui, date: &mut (i64, u32, u32)) -> egui::Response {
     ui.horizontal(|ui| {
         let (mut year, mut month, mut day) = *date;
         let a = ui.add(egui::DragValue::new(&mut day).range(1..=31).custom_formatter(|v, _| format!("{v:02}")));

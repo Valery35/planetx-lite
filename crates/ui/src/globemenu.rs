@@ -54,6 +54,8 @@ pub enum Choice {
     Etomesto,
     /// «Исторические карты Рамсея здесь…».
     Rumsey,
+    /// «Космоснимки здесь…».
+    Sentinel,
     /// «Орбита и след» спутника: номер NORAD или None - снять.
     SatPath(Option<i64>),
     /// «Камера следом» за спутником: номер NORAD или None - отпустить.
@@ -197,6 +199,7 @@ impl GlobeMenu {
                     if self.drawing.is_none() {
                         ui.separator();
                         pick(ui, tr(lang, "Viewshed from here…"), Choice::Viewshed);
+                        pick(ui, tr(lang, "Satellite images here…"), Choice::Sentinel);
                         pick(ui, tr(lang, "Insolation here…"), Choice::Insolation);
                         ui.separator();
                         pick(ui, tr(lang, "Rumsey historical maps here…"), Choice::Rumsey);

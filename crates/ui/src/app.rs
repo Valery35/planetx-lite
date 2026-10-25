@@ -341,6 +341,8 @@ pub struct LiteApp {
     currents: Option<crate::currents::Currents>,
     /// Окно «Карты Рамсея».
     rumsey: Option<crate::rumsey::Rumsey>,
+    /// Окно «Космоснимки».
+    sentinel: Option<crate::sentinel::Sentinel>,
     /// Объекты живых строк на этот кадр, для окна «Объекты» и меню.
     live_objects: Vec<(crate::live::Kind, crate::live::Object)>,
     /// Камера следом за живым объектом: строка и ключ.
@@ -889,6 +891,7 @@ impl LiteApp {
             parcels: Vec::new(),
             currents: None,
             rumsey: None,
+            sentinel: None,
             live_objects: Vec::new(),
             live_follow: None,
             followed: None,
@@ -1521,6 +1524,17 @@ impl LiteApp {
                         self.followed = None;
                     } else {
                         s.follow = false;
+                    }
+                }
+            }
+            Choice::Sentinel => {
+                if let Some((lat, lon)) = point {
+                    match &mut self.sentinel {
+                        Some(s) => s.show_point(lat, lon),
+                        None => {
+                            let unix = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64());
+                            self.sentinel = Some(crate::sentinel::Sentinel::new(lat, lon, self.view_width(), unix));
+                        }
                     }
                 }
             }
@@ -3010,26 +3024,57 @@ impl LiteApp {
         let Some(b) = built else {
             return;
         };
-        let [west, south, east, north] = b.bbox;
-        let mut o = scene::overlays::Overlay::new(scene::overlays::Kind::Ground);
-        o.set_box([north, south, east, west, 0.0]);
         let year = b.year.map_or(String::new(), |y| y.to_string());
         let name = if year.is_empty() { b.title.clone() } else { format!("{year} {}", b.title) };
-        let mut overlay = scene::kml::Overlay::new(&name, o);
-        if !year.is_empty() {
-            overlay.time = Some((year.clone(), year));
+        self.add_picture(tr(lang, "Rumsey maps"), &name, &format!("rumsey/{}.png", b.number), b.png, b.bbox, (!year.is_empty()).then(|| (year.clone(), year)), String::new());
+    }
+
+    /// Окно «Космоснимки»: поиск, чтение каналов, готовый снимок -
+    /// картинкой на поверхности в «Мои метки», папка «Космоснимки».
+    fn step_sentinel(&mut self, ctx: &egui::Context, now: f64) {
+        let lang = self.lang;
+        let Some(s) = &mut self.sentinel else {
+            return;
+        };
+        {
+            let loaders = &self.loaders;
+            let request = |limit: u64| (loaders.request)(limit);
+            s.step(lang, now, &request);
+            s.show(ctx, lang, &request);
         }
-        // У программы картинка - файлом в папке данных, у страницы - в метках.
-        let file = self.data_dir().map(|d| d.join("rumsey").join(format!("{}.png", b.number)));
-        match file.filter(|p| p.parent().is_some_and(|d| std::fs::create_dir_all(d).is_ok()) && std::fs::write(p, &b.png).is_ok()) {
+        if s.busy() {
+            ctx.request_repaint_after(std::time::Duration::from_millis(100));
+        }
+        let built = s.built.take();
+        if !s.open && !s.busy() {
+            self.sentinel = None;
+        }
+        let Some(b) = built else {
+            return;
+        };
+        let stem = b.name.chars().map(|c| if c.is_alphanumeric() || c == '-' { c } else { '_' }).collect::<String>();
+        self.add_picture(tr(lang, "Satellite images"), &b.name, &format!("images/{stem}.png"), b.png, b.bbox, Some((b.day.clone(), b.day.clone())), b.credit);
+    }
+
+    /// Картинка на поверхности в «Мои метки», в папку folder_name: у
+    /// программы - файлом file в папке данных, у страницы - в метках.
+    #[allow(clippy::too_many_arguments)]
+    fn add_picture(&mut self, folder_name: &str, name: &str, file: &str, png: Vec<u8>, bbox: [f64; 4], time: Option<scene::when::Time>, description: String) {
+        let [west, south, east, north] = bbox;
+        let mut o = scene::overlays::Overlay::new(scene::overlays::Kind::Ground);
+        o.set_box([north, south, east, west, 0.0]);
+        let mut overlay = scene::kml::Overlay::new(name, o);
+        overlay.time = time;
+        overlay.description = description;
+        let path = self.data_dir().map(|d| d.join(file));
+        match path.filter(|p| p.parent().is_some_and(|d| std::fs::create_dir_all(d).is_ok()) && std::fs::write(p, &png).is_ok()) {
             Some(p) => overlay.href = p.to_string_lossy().into_owned(),
             None => {
-                overlay.href = format!("rumsey-{}.png", b.number);
-                overlay.image = Some(b.png);
+                overlay.href = file.replace('/', "-");
+                overlay.image = Some(png);
             }
         }
-        let root = marks::root_name(lang);
-        let folder_name = tr(lang, "Rumsey maps");
+        let root = marks::root_name(self.lang);
         let tree = self.marks.root(root);
         let at = tree.children.iter().position(|i| matches!(i, scene::kml::Item::Folder(f) if f.name == folder_name));
         let at = match at {
@@ -5584,6 +5629,7 @@ impl eframe::App for LiteApp {
             || self.parcel_ask.is_some()
             || self.currents.as_ref().is_some_and(crate::currents::Currents::busy)
             || self.rumsey.as_ref().is_some_and(crate::rumsey::Rumsey::busy)
+            || self.sentinel.as_ref().is_some_and(crate::sentinel::Sentinel::busy)
             || self.buildings.as_ref().is_some_and(|b| b.busy(self.heights.read().version()))
             || self.osm_mines.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.osm_infra.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
@@ -5749,6 +5795,7 @@ impl eframe::App for LiteApp {
         self.step_parcels();
         self.step_currents(&ctx, now);
         self.step_rumsey(&ctx, now);
+        self.step_sentinel(&ctx, now);
         self.paleo_bar(&ctx, now);
         self.step_cutaway();
         self.check_linked_models(now);

@@ -1236,3 +1236,48 @@ The map was not built.	რუკა არ აიწყო.
 The map is on the globe: {title}.	რუკა გლობუსზეა: {title}.
 On the globe	გლობუსზე
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	რუკა იწყობა კოლექციის გამოსახულებიდან, მიებმება და რუკის წლით ზედაპირზე სურათად ჯდება „ჩემ ნიშნებში“, საქაღალდეში „Rumsey-ის რუკები“. წელი რუკას დროის ზოლზე სვამს.
+The bands were not read: {error}	არხები არ წაიკითხა: {error}
+Satellite images here…	კოსმოსური სურათები აქ…
+Reading the bands: {done} of {total}	არხების წაკითხვა: {done} / {total}
+Natural colour (B4 B3 B2)	ბუნებრივი ფერები (B4 B3 B2)
+Shortwave infrared (B12 B8A B4)	მოკლეტალღოვანი ინფრაწითელი (B12 B8A B4)
+The product was not built.	პროდუქტი არ აიწყო.
+Clouds and shadows empty	ღრუბლები და ჩრდილები - ცარიელი
+The scene has no band {band}.	სცენას არ აქვს არხი {band}.
+The image is on the globe: {name}.	სურათი გლობუსზეა: {name}.
+Landsat 4-9 Collection 2 Level-2 (USGS), files and catalogue of Microsoft Planetary Computer. The layers carry the credit "Landsat image courtesy of the U.S. Geological Survey".	Landsat 4-9 Collection 2 Level-2 (USGS), Microsoft Planetary Computer-ის ფაილები და კატალოგი. ფენებს აქვს წარწერა „Landsat image courtesy of the U.S. Geological Survey“.
+Urban (B12 B11 B4)	განაშენიანება (B12 B11 B4)
+The scene has no UTM system.	სცენას არ აქვს UTM სისტემა.
+Find	პოვნა
+The first acquisition day searched.	ძიების პირველი გადაღების დღე.
+The catalogue did not answer: {error}	კატალოგმა არ უპასუხა: {error}
+Scene	სცენა
+Product	პროდუქტი
+Scenes found: {count}	ნაპოვნია სცენა: {count}
+Area side	უბნის გვერდი
+The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	არჩეული სცენის პროდუქტი უბანზე - ზედაპირზე სურათად „ჩემ ნიშნებში“, საქაღალდეში „კოსმოსური სურათები“, სურათის დღით.
+Tile	ფილა
+Reading the bands…	არხების წაკითხვა…
+to	-მდე
+NDMI - vegetation moisture	NDMI - მცენარეულობის ტენიანობა
+Sentinel-2 - 10 m, since 2015	Sentinel-2 - 10 მ, 2015 წლიდან
+The last acquisition day searched.	ძიების ბოლო გადაღების დღე.
+Surface temperature, °C	ზედაპირის ტემპერატურა, °C
+Geology (B12 B11 B2)	გეოლოგია (B12 B11 B2)
+NDVI - vegetation	NDVI - მცენარეულობა
+NDWI - open water	NDWI - ღია წყალი
+The area is outside the UTM zone of the scene.	უბანი სცენის UTM ზონის გარეთაა.
+Copernicus Sentinel-2 L2A (ESA), files and the Earth Search catalogue by Element 84 on AWS. Layers carry the Contains modified Copernicus Sentinel data notice with the image year.	Copernicus Sentinel-2 L2A (ESA), Element 84-ის ფაილები და Earth Search კატალოგი AWS-ზე. ფენებს აქვს წარწერა „Contains modified Copernicus Sentinel data“ სურათის წლით.
+NDSI - snow	NDSI - თოვლი
+Satellite	თანამგზავრი
+Landsat 4-9 - 30 m, since 1982	Landsat 4-9 - 30 მ, 1982 წლიდან
+Agriculture (B11 B8 B2)	სოფლის მეურნეობა (B11 B8 B2)
+Acquired from	გადაღება -დან
+Planetary Computer did not give a key for the Landsat files.	Planetary Computer-მა Landsat-ის ფაილების გასაღები არ მისცა.
+NBR - burned areas	NBR - ნახანძრალი
+Date, UTC	თარიღი, UTC
+Satellite images	კოსმოსური სურათები
+The area has no data in this scene.	სცენას უბნის თავზე მონაცემები არ აქვს.
+Searching scenes…	სცენების ძიება…
+False colour, near infrared (B8 B4 B3)	ყალბი ფერები, ახლო ინფრაწითელი (B8 B4 B3)
+Scene cloud cover up to	სცენის ღრუბლიანობა -მდე
