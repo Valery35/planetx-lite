@@ -686,6 +686,17 @@ impl Item {
         }
     }
 
+    /// Строка недоступна странице: самолёты ADS-B и кадастр НСПД
+    /// не отдают данные браузеру, у страницы они - заглушки.
+    fn desktop_only(self) -> bool {
+        cfg!(target_arch = "wasm32")
+            && match self {
+                Item::Extra(Extra::Live(crate::live::Kind::Aircraft)) => true,
+                Item::Extra(e) => e.map().is_some_and(|m| m.key == "cadastre"),
+                _ => false,
+            }
+    }
+
     fn is_on(self, state: &State<'_>) -> bool {
         match self {
             Item::Base(b) => state.basemap == b,
@@ -695,6 +706,9 @@ impl Item {
         }
     }
 }
+
+/// Подсказка заглушки у страницы: служба не отдаёт данные браузеру.
+pub const DESKTOP_ONLY: &str = "Only in the desktop program - the service does not give its data to a web page.";
 
 /// Ключ группы спутников по номеру.
 fn sat_key(n: usize) -> &'static str {
@@ -804,19 +818,22 @@ impl Catalog {
                             ui.label(egui::RichText::new(head).strong());
                             for item in list {
                                 let mut on = item.is_on(state);
+                                let missing = item.desktop_only() && !on;
                                 ui.horizontal(|ui| {
-                                    if crate::theme::checkbox(ui, &mut on).clicked() {
+                                    let check = ui.add_enabled_ui(!missing, |ui| crate::theme::checkbox(ui, &mut on).clicked()).inner;
+                                    if check {
                                         self.chosen = Some(item.key());
                                         click(item, state, out);
                                     }
                                     let sub = item.subtitle();
                                     let label = if sub.is_empty() { item.name(lang) } else { format!("{}\n{}", item.name(lang), sub) };
                                     let selected = self.chosen.as_deref() == Some(&item.key());
-                                    let r = ui.selectable_label(selected, label).on_hover_text(item.tip(lang));
+                                    let tip = if missing { format!("{}\n\n{}", item.tip(lang), tr(lang, DESKTOP_ONLY)) } else { item.tip(lang) };
+                                    let r = ui.selectable_label(selected, label).on_hover_text(tip);
                                     if r.clicked() {
                                         self.chosen = Some(item.key());
                                     }
-                                    if r.double_clicked() {
+                                    if r.double_clicked() && !missing {
                                         click(item, state, out);
                                     }
                                 });
@@ -833,6 +850,7 @@ impl Catalog {
                             ui.label(item.tip(lang));
                             let on = item.is_on(state);
                             let (text, enabled) = match item {
+                                _ if item.desktop_only() && !on => (tr(lang, DESKTOP_ONLY), false),
                                 Item::Base(_) if on => (tr(lang, "Base map on the globe"), false),
                                 Item::Base(_) => (tr(lang, "Set as base map"), true),
                                 _ if on => (tr(lang, "Remove from the globe"), true),

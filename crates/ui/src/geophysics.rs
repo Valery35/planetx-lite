@@ -128,9 +128,16 @@ impl Geo {
         if let (Some(c), GufmState::None) = (&combined, &self.gufm)
             && year < c.igrf.first()
         {
-            let r = request();
-            r.start(geomag::GUFM_URL);
-            self.gufm = GufmState::Asking(r);
+            // gufm1 без права распространения не копируется, сайт
+            // не отдаёт её странице: у неё поля до 1900 года нет.
+            if cfg!(target_arch = "wasm32") {
+                message = Some(tr(lang, "The field before 1900 is only in the desktop program.").to_string());
+                self.gufm = GufmState::Failed;
+            } else {
+                let r = request();
+                r.start(geomag::GUFM_URL);
+                self.gufm = GufmState::Asking(r);
+            }
         }
         self.update_decl(combined.as_deref().filter(|_| magnetic.as_ref().is_some_and(|m| m.2)), year);
         let poles = magnetic.as_ref().and_then(|m| m.1.clone());

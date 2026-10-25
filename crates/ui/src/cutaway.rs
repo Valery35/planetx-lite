@@ -73,6 +73,9 @@ impl Cutaway {
     pub fn new(lat: f64, lon: f64, stretch: bool, crust: Option<&[u8]>) -> Cutaway {
         let crust = match crust.map(crust::from_archive) {
             Some(Ok(c)) => Ask::Ready(c),
+            // CRUST1.0 без права распространения не копируется, сайт
+            // не отдаёт архив странице: у неё разрез без коры.
+            _ if cfg!(target_arch = "wasm32") => Ask::Failed(crate::layers::DESKTOP_ONLY.to_string()),
             _ => Ask::Idle,
         };
         Cutaway { wedge: cutaway::wedge_at(lat, lon, cutaway::HALF), stretch, gain: f64::NAN, crust, index: Ask::Idle, zones: HashMap::new(), dirty: true }
