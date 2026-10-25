@@ -14,6 +14,7 @@ pub mod bathymetry;
 pub mod card;
 pub mod check;
 pub mod cogread;
+pub mod cogtiles;
 pub mod commands;
 pub mod coords_text;
 pub mod credits;

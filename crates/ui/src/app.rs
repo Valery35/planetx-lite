@@ -410,6 +410,8 @@ pub struct LiteApp {
     planet: scene::planets::Planet,
     /// Земля на время другого тела.
     earth_away: Option<EarthAway>,
+    /// Основа тела из мозаики COG, у Луны - LROC WAC.
+    cog_base: Option<crate::cogtiles::CogTiles>,
     /// Режим полёта, свой самолёт.
     flight: Option<crate::flight::Flight>,
     /// Модель на пути, за которой идёт камера, номер в `movers`.
@@ -931,6 +933,7 @@ impl LiteApp {
             paleo: None,
             planet: scene::planets::planet_by_key("earth"),
             earth_away: None,
+            cog_base: None,
             geoid: None,
             live: BTreeMap::new(),
             live_keys: Vec::new(),
@@ -1187,12 +1190,6 @@ impl LiteApp {
                             for (n, (group, keys)) in scene::planets::MENU.iter().enumerate() {
                                 let mut items = |ui: &mut egui::Ui| {
                                     for key in keys.iter() {
-                                        // Снимки Марса и Луны в S3 без CORS: у страницы
-                                        // эти тела - заглушки.
-                                        if cfg!(target_arch = "wasm32") && matches!(*key, "mars" | "moon") {
-                                            ui.add_enabled(false, egui::RadioButton::new(false, tr(lang, body_name(key)))).on_disabled_hover_text(tr(lang, crate::layers::DESKTOP_ONLY));
-                                            continue;
-                                        }
                                         if ui.radio(current == *key, tr(lang, body_name(key))).clicked() {
                                             body = Some(*key);
                                             ui.close();
@@ -5064,7 +5061,14 @@ impl LiteApp {
         }
         self.basemap = basemap;
         self.pending.clear();
-        if matches!(basemap, Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_) | Basemap::Body(_)) && self.ready_loader.as_ref().is_none_or(|(b, _)| *b != basemap) {
+        // Снимки тела из мозаики COG - свой загрузчик, не загрузчик тайлов.
+        let cog = match basemap {
+            Basemap::Body(key) => scene::planets::planet_by_key(key).imagery.filter(|i| i.cog).map(|i| (i.url, i.clon)),
+            _ => None,
+        };
+        let loaders = &self.loaders;
+        self.cog_base = cog.map(|(url, clon)| crate::cogtiles::CogTiles::new(&url, clon, &|limit| (loaders.request)(limit)));
+        if self.cog_base.is_none() && matches!(basemap, Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_) | Basemap::Body(_)) && self.ready_loader.as_ref().is_none_or(|(b, _)| *b != basemap) {
             self.ready_loader = Some((basemap, (self.loaders.make)(basemap.source())));
         }
         // Карта палеогеографии - не выбор основы, в настройки не идёт.
@@ -5113,6 +5117,22 @@ impl LiteApp {
 
     /// Снимки и высоты пришедших тайлов - в видеокарту и в хранилище.
     fn upload(&mut self) {
+        if let Some(c) = &mut self.cog_base {
+            let loaders = &self.loaders;
+            c.step(&|limit| (loaders.request)(limit));
+            for (key, tile) in c.take() {
+                match tile {
+                    crate::cogtiles::Tile::Image(image) => {
+                        self.pending.insert(key, image);
+                    }
+                    crate::cogtiles::Tile::Missing => {
+                        if let Some(globe) = &mut self.globe {
+                            globe.mark_missing(key);
+                        }
+                    }
+                }
+            }
+        }
         let bases: Vec<Basemap> = Basemap::ALL.into_iter().chain(self.ready_loader.as_ref().map(|(b, _)| *b)).collect();
         for basemap in bases {
             // Тайлы прежней основы, пришедшие после смены, не нужны.
@@ -5840,6 +5860,7 @@ impl eframe::App for LiteApp {
             || self.viewshed.as_ref().is_some_and(crate::pointcalc::Calc::busy)
             || self.insolation.as_ref().is_some_and(crate::pointcalc::Calc::busy)
             || self.section.as_ref().is_some_and(crate::section::SectionWindow::busy)
+            || self.cog_base.as_ref().is_some_and(crate::cogtiles::CogTiles::busy)
             || self.relief.busy();
         self.loading_since = if loading { self.loading_since.or(Some(now)) } else { None };
         let base_busy = self.base_loader(self.basemap).is_some_and(|l| l.busy());
@@ -6091,6 +6112,9 @@ impl eframe::App for LiteApp {
             if let Some(loader) = loader {
                 loader.want(if basemap == self.basemap { &wanted } else { &[] });
             }
+        }
+        if let Some(c) = &mut self.cog_base {
+            c.want(&wanted);
         }
         // Высоты глубже уровня 15 у своего рельефа собираются здесь.
         let mut needs = self.relief.route(height_needs(&store, &selection), &store);

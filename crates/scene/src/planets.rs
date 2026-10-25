@@ -6,11 +6,11 @@
 //! `core/planets.py` модуля.
 //!
 //! Размеры тела лежат в [`globe_core::ellipsoid`]. Здесь - снимки тела,
-//! воздух, домашняя точка и то, есть ли у тела земные функции. Снимки
-//! Марса и Луны - тайлы OpenPlanetaryMap в Web Mercator, как у земной
-//! подложки, в разметке TMS ({-y}). Марс - цветная мозаика Viking MDIM2.1
-//! (NASA, USGS) до уровня 7, Луна - альбедо с отмывкой по рельефу LOLA
-//! (USGS) до уровня 6. Снимки прочих тел - тайлы JPEG из глобальных
+//! воздух, домашняя точка и то, есть ли у тела земные функции. Марс -
+//! цветная мозаика Viking MDIM2.1 (NASA, USGS) до уровня 7, копия тайлов
+//! OpenPlanetaryMap в planetx-bodies-imagery. Луна - мозаика LROC WAC
+//! 100 м, файл COG хранилища astrogeo-ard USGS. Снимки прочих тел - тайлы
+//! JPEG из глобальных
 //! мозаик USGS Astrogeology и NASA Photojournal, общественное достояние,
 //! в хранилище planetx-terrain. Высоты Марса и Луны - тайлы Terrarium
 //! уровней 0-5 там же.
@@ -21,8 +21,14 @@
 
 use globe_core::ellipsoid::{self, Body};
 
-pub const MARS_VIKING: &str = "https://s3-eu-west-1.amazonaws.com/whereonmars.cartodb.net/viking_mdim21_global/{z}/{x}/{-y}.png";
+/// Viking MDIM2.1 - копия тайлов OpenPlanetaryMap в planetx-bodies-imagery,
+/// PNG как есть, ряды XYZ: S3 OpenPlanetaryMap не отдаёт ответ странице
+/// (CORS). Копия от 25 октября 2026 года.
+pub const MARS_VIKING: &str = "https://raw.githubusercontent.com/Valery35/planetx-bodies-imagery/main/mars/{z}/{x}/{y}.png";
 pub const MOON_ALBEDO: &str = "https://s3.amazonaws.com/opmbuilder/301_moon/tiles/w/hillshaded-albedo/{z}/{x}/{-y}.png";
+/// Глобальная мозаика Луны LROC WAC 100 м, COG в хранилище astrogeo-ard
+/// USGS, с CORS: Lite читает её окнами, без своих копий.
+pub const MOON_WAC: &str = "https://astrogeo-ard.s3.us-west-2.amazonaws.com/moon/basemaps/lroc_wac_mosaic/lroc_wac_mosaic_global_303ppd_v3/lroc_wac_mosaic_global_303ppd_v3.tif";
 /// Высоты тел, Terrarium, `TERRAIN_TILES` модуля, {key} - ключ тела.
 pub const TERRAIN_TILES: &str = "https://raw.githubusercontent.com/Valery35/planetx-terrain/main/{key}/{z}/{x}/{y}.png";
 pub const TERRAIN_LEVEL: u8 = 5;
@@ -34,7 +40,9 @@ pub const PHOTOJOURNAL: &str = "https://science.nasa.gov/photojournal/";
 pub const HOME_RADII: f64 = 3.5;
 
 /// Снимки тела: название мозаики, адрес тайлов, предельный уровень,
-/// подпись источника, ссылка.
+/// подпись источника, ссылка. cog - адрес не шаблон тайлов, а файл COG
+/// всей мозаики, clon - центральный меридиан его проекции в градусах:
+/// Lite не читает параметры проекции из файла.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Imagery {
     pub name: &'static str,
@@ -42,6 +50,8 @@ pub struct Imagery {
     pub max_level: u8,
     pub credit: &'static str,
     pub link: &'static str,
+    pub cog: bool,
+    pub clon: f64,
 }
 
 /// Высоты тела: название, адрес тайлов Terrarium, предельный уровень,
@@ -128,6 +138,8 @@ pub fn planet_by_key(key: &str) -> Planet {
                 max_level: 7,
                 credit: "NASA, USGS, Viking MDIM2.1, OpenPlanetaryMap",
                 link: "https://www.openplanetary.org/opm-basemaps/global-viking-mdim2-1-colorized-mosaic",
+                cog: false,
+                clon: 0.0,
             }),
             air: Some([1.2, 0.3, 0.07]),
             // Олимп.
@@ -137,12 +149,17 @@ pub fn planet_by_key(key: &str) -> Planet {
         },
         "moon" => Planet {
             body: ellipsoid::MOON,
+            // LROC WAC 100 м вместо альбедо OpenPlanetaryMap 670 м - выбор
+            // помощника 25 октября 2026 года, утверждает автор.
             imagery: Some(Imagery {
-                name: "Moon LOLA hillshaded albedo",
-                url: MOON_ALBEDO.to_string(),
-                max_level: 6,
-                credit: "USGS, LRO LOLA, OpenPlanetaryMap",
-                link: "https://github.com/openplanetary/opm/wiki/OPM-Basemaps",
+                name: "Moon LRO LROC WAC 100 m",
+                url: MOON_WAC.to_string(),
+                max_level: 9,
+                credit: "NASA, GSFC, Arizona State University, LRO LROC WAC, USGS",
+                link: "https://astrogeology.usgs.gov/search/map/moon_lro_lroc_wac_global_morphology_mosaic_100m",
+                cog: true,
+                // В файле WAC «Equirectangular, clon = 180».
+                clon: 180.0,
             }),
             air: None,
             // Море Спокойствия, посадка Аполлона-11.
@@ -155,7 +172,7 @@ pub fn planet_by_key(key: &str) -> Planet {
                 let body = *ellipsoid::body_by_key(key);
                 Planet {
                     body,
-                    imagery: Some(Imagery { name, url: IMAGERY_TILES.replace("{key}", key), max_level: *level, credit, link }),
+                    imagery: Some(Imagery { name, url: IMAGERY_TILES.replace("{key}", key), max_level: *level, credit, link, cog: false, clon: 0.0 }),
                     air: *air,
                     home: (home.0, home.1, HOME_RADII * body.a),
                     earth: false,
@@ -189,8 +206,12 @@ mod tests {
     #[test]
     fn mars_and_moon_are_tms() {
         // С рядами XYZ Луна у модуля 30 сентября 2026 года вышла полосами.
+        // Копия Марса - в рядах XYZ, у OpenPlanetaryMap были TMS.
+        assert!(planet_by_key("mars").imagery.unwrap().url.contains("planetx-bodies-imagery"));
+        // Луна - мозаика COG целиком, не шаблон тайлов.
+        let moon = planet_by_key("moon").imagery.unwrap();
+        assert!(moon.cog && moon.url.ends_with(".tif"));
         for key in ["mars", "moon"] {
-            assert!(planet_by_key(key).imagery.unwrap().url.contains("{-y}"), "{key}");
             assert!(planet_by_key(key).terrain.is_some());
         }
     }

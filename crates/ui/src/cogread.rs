@@ -14,6 +14,7 @@
 
 use std::collections::HashMap;
 use std::ops::Range;
+use std::sync::Arc;
 
 use data::cog::{self, Chunks, CogHeader, Parsed};
 use data::sentinel::Raw;
@@ -28,7 +29,7 @@ type Ask = (u64, Box<dyn net::Request>);
 
 enum Stage {
     Header(Chunks, Vec<Ask>),
-    Tiles { header: Box<CogHeader>, level: usize, window: cog::Window, plan: Vec<cog::TileRequest>, chunks: Chunks, asks: Vec<Ask> },
+    Tiles { header: Arc<CogHeader>, level: usize, window: cog::Window, plan: Vec<cog::TileRequest>, chunks: Chunks, asks: Vec<Ask> },
     Done(Raw),
     Failed(String),
 }
@@ -77,6 +78,14 @@ impl BandRead {
         Self { href: href.to_string(), bbox, res, nearest, stage: Stage::Header(Chunks::new(), vec![ask]) }
     }
 
+    /// Чтение окна файла, заголовок которого уже разобран: тайлы окна
+    /// просятся сразу.
+    pub fn with_header(href: &str, header: Arc<CogHeader>, bbox: [f64; 4], res: f64, nearest: bool, request: &dyn Fn(u64) -> Box<dyn net::Request>) -> Self {
+        let mut read = Self { href: href.to_string(), bbox, res, nearest, stage: Stage::Failed(String::new()) };
+        read.stage = read.plan(header, request);
+        read
+    }
+
     /// Окно готово.
     pub fn result(&self) -> Option<&Raw> {
         match &self.stage {
@@ -106,7 +115,7 @@ impl BandRead {
                         let asks = cog::merge_ranges(ranges, MERGE_GAP).iter().map(|r| ask_range(&self.href, r, request)).collect();
                         Stage::Header(chunks, asks)
                     }
-                    Ok(Parsed::Header(header)) => self.plan(header, request),
+                    Ok(Parsed::Header(header)) => self.plan(Arc::new(header), request),
                 },
             },
             Stage::Tiles { header, level, window, plan, mut chunks, mut asks } => match collect(&mut asks, &mut chunks) {
@@ -128,7 +137,7 @@ impl BandRead {
         };
     }
 
-    fn plan(&self, header: CogHeader, request: &dyn Fn(u64) -> Box<dyn net::Request>) -> Stage {
+    fn plan(&self, header: Arc<CogHeader>, request: &dyn Fn(u64) -> Box<dyn net::Request>) -> Stage {
         let level = cog::level_for_resolution(&header, self.res);
         let Some(window) = cog::bbox_window(&header, level, self.bbox) else {
             return Stage::Failed("outside".into());
@@ -139,7 +148,7 @@ impl BandRead {
         };
         let ranges = cog::merge_ranges(plan.iter().map(|t| t.range.clone()).collect(), MERGE_GAP);
         let asks = ranges.iter().map(|r| ask_range(&self.href, r, request)).collect();
-        Stage::Tiles { header: Box::new(header), level, window, plan, chunks: Chunks::new(), asks }
+        Stage::Tiles { header, level, window, plan, chunks: Chunks::new(), asks }
     }
 
     /// Окно на сетку участка: строки сверху вниз, центр пикселя -
@@ -185,5 +194,40 @@ impl BandRead {
             }
         }
         Raw::from_vec(rows, cols, out)
+    }
+}
+
+/// Чтение одного заголовка COG по сети, общего для многих окон.
+pub struct HeaderRead {
+    href: String,
+    chunks: Chunks,
+    asks: Vec<Ask>,
+    done: Option<Result<Arc<CogHeader>, String>>,
+}
+
+impl HeaderRead {
+    pub fn new(href: &str, request: &dyn Fn(u64) -> Box<dyn net::Request>) -> Self {
+        let ask = ask_range(href, &(0..cog::PREFIX_LEN), request);
+        Self { href: href.to_string(), chunks: Chunks::new(), asks: vec![ask], done: None }
+    }
+
+    /// Разобранный заголовок или ошибка, None - ещё идёт.
+    pub fn result(&self) -> Option<&Result<Arc<CogHeader>, String>> {
+        self.done.as_ref()
+    }
+
+    pub fn step(&mut self, request: &dyn Fn(u64) -> Box<dyn net::Request>) {
+        if self.done.is_some() {
+            return;
+        }
+        match collect(&mut self.asks, &mut self.chunks) {
+            Err(e) => self.done = Some(Err(e)),
+            Ok(false) => {}
+            Ok(true) => match CogHeader::parse_chunks(&self.chunks) {
+                Err(e) => self.done = Some(Err(e.to_string())),
+                Ok(Parsed::NeedMore(ranges)) => self.asks = cog::merge_ranges(ranges, MERGE_GAP).iter().map(|r| ask_range(&self.href, r, request)).collect(),
+                Ok(Parsed::Header(header)) => self.done = Some(Ok(Arc::new(header))),
+            },
+        }
     }
 }
