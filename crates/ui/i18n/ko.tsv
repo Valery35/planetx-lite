@@ -1216,3 +1216,23 @@ Cadastral block	지적 블록
 Status	상태
 Currents did not load, check the network and switch the row on again.	해류를 불러오지 못했습니다. 네트워크를 확인하고 행을 다시 켜십시오.
 Loading currents, about 4 MB…	해류를 불러오는 중, 약 4 MB…
+Rumsey maps	Rumsey 지도
+Year or title	연도 또는 제목
+Whole catalogue	전체 목록에서
+Search by title and year among all maps of the collection, not only at the view. The Show on the globe button flies to the chosen map.	화면만이 아니라 컬렉션의 모든 지도에서 제목과 연도로 검색합니다. ‘지구본에 표시’ 버튼은 선택한 지도로 이동합니다.
+Flight to the frame of the chosen map.	선택한 지도의 틀로 이동합니다.
+Map page	지도 페이지
+The map page on the collection site in the browser.	컬렉션 사이트의 지도 페이지를 브라우저에서 엽니다.
+Loading the map catalogue…	지도 목록을 불러오는 중…
+The Rumsey map catalogue did not load, check the network.	Rumsey 지도 목록을 불러오지 못했습니다. 네트워크를 확인하십시오.
+Loading map details…	지도 정보를 불러오는 중…
+Loading the map image…	지도 이미지를 불러오는 중…
+Loading the map image: {done} of {total}	지도 이미지를 불러오는 중: {done} / {total}
+Georeferencing the map…	지도 좌표 맞춤 중…
+Rumsey historical maps here…	여기의 Rumsey 역사 지도…
+Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	David Rumsey 컬렉션의 지도로, 그 기준점으로 좌표를 맞췄습니다. 이미지는 CC BY-NC-SA 3.0이며 비상업적 이용만 가능하고 출처를 밝혀야 합니다.
+Maps at the view: {count}, by year. A click on a column header changes the order.	화면의 지도: {count}개, 연도순. 열 머리글을 클릭하면 순서가 바뀝니다.
+The map was not built.	지도를 만들지 못했습니다.
+The map is on the globe: {title}.	지도가 지구본에 있습니다: {title}.
+On the globe	지구본으로
+The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	지도는 컬렉션 이미지로 만들어지고 좌표를 맞춘 뒤 지도 연도와 함께 ‘내 장소’의 ‘Rumsey 지도’ 폴더에 지표면 이미지로 놓입니다. 연도에 따라 지도가 시간 막대에 놓입니다.

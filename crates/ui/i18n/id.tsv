@@ -1216,3 +1216,23 @@ Cadastral block	Blok kadaster
 Status	Status
 Currents did not load, check the network and switch the row on again.	Arus tidak termuat, periksa jaringan dan nyalakan baris lagi.
 Loading currents, about 4 MB…	Memuat arus, sekitar 4 MB…
+Rumsey maps	Peta Rumsey
+Year or title	Tahun atau judul
+Whole catalogue	Di seluruh katalog
+Search by title and year among all maps of the collection, not only at the view. The Show on the globe button flies to the chosen map.	Cari menurut judul dan tahun di antara semua peta koleksi, tidak hanya di tampilan. Tombol "Tampilkan di globe" terbang ke peta yang dipilih.
+Flight to the frame of the chosen map.	Terbang ke bingkai peta yang dipilih.
+Map page	Halaman peta
+The map page on the collection site in the browser.	Halaman peta di situs koleksi di peramban.
+Loading the map catalogue…	Memuat katalog peta…
+The Rumsey map catalogue did not load, check the network.	Katalog peta Rumsey tidak termuat, periksa jaringan.
+Loading map details…	Memuat keterangan peta…
+Loading the map image…	Memuat gambar peta…
+Loading the map image: {done} of {total}	Memuat gambar peta: {done} dari {total}
+Georeferencing the map…	Mengikat georeferensi peta…
+Rumsey historical maps here…	Peta sejarah Rumsey di sini…
+Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	Peta koleksi David Rumsey, digeoreferensikan dengan titik kontrolnya. Gambar berlisensi CC BY-NC-SA 3.0: hanya untuk penggunaan nonkomersial, dengan menyebutkan sumber.
+Maps at the view: {count}, by year. A click on a column header changes the order.	Peta di tampilan: {count}, menurut tahun. Klik pada judul kolom mengubah urutan.
+The map was not built.	Peta tidak dibuat.
+The map is on the globe: {title}.	Peta ada di globe: {title}.
+On the globe	Ke globe
+The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Peta dibuat dari gambar koleksi, digeoreferensikan, dan diletakkan sebagai gambar di permukaan dalam "Tempat Saya", folder "Peta Rumsey", dengan tahun peta. Tahun menempatkan peta pada bilah waktu.

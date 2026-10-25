@@ -1216,3 +1216,23 @@ Cadastral block	საკადასტრო კვარტალი
 Status	სტატუსი
 Currents did not load, check the network and switch the row on again.	დინებები არ ჩაიტვირთა, შეამოწმეთ ქსელი და ხელახლა ჩართეთ სტრიქონი.
 Loading currents, about 4 MB…	დინებების ჩატვირთვა, დაახლოებით 4 მბ…
+Rumsey maps	Rumsey-ის რუკები
+Year or title	წელი ან სათაური
+Whole catalogue	მთელ კატალოგში
+Search by title and year among all maps of the collection, not only at the view. The Show on the globe button flies to the chosen map.	ძიება სათაურითა და წლით კოლექციის ყველა რუკაში და არა მხოლოდ ხედთან. ღილაკი „გლობუსზე ჩვენება“ მიფრინავს არჩეულ რუკასთან.
+Flight to the frame of the chosen map.	გადაფრენა არჩეული რუკის ჩარჩოსთან.
+Map page	რუკის გვერდი
+The map page on the collection site in the browser.	რუკის გვერდი კოლექციის საიტზე, ბრაუზერში.
+Loading the map catalogue…	რუკების კატალოგის ჩატვირთვა…
+The Rumsey map catalogue did not load, check the network.	Rumsey-ის რუკების კატალოგი არ ჩაიტვირთა, შეამოწმეთ ქსელი.
+Loading map details…	რუკის ცნობების ჩატვირთვა…
+Loading the map image…	რუკის გამოსახულების ჩატვირთვა…
+Loading the map image: {done} of {total}	რუკის გამოსახულების ჩატვირთვა: {done} / {total}
+Georeferencing the map…	რუკის მიბმა…
+Rumsey historical maps here…	Rumsey-ის ისტორიული რუკები აქ…
+Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	David Rumsey-ის კოლექციის რუკები, მიბმული მისი საყრდენი წერტილებით. გამოსახულებები - CC BY-NC-SA 3.0: მხოლოდ არაკომერციული გამოყენებისთვის, წყაროს მითითებით.
+Maps at the view: {count}, by year. A click on a column header changes the order.	რუკები ხედთან: {count}, წლების მიხედვით. სვეტის სათაურზე დაწკაპუნება რიგს ცვლის.
+The map was not built.	რუკა არ აიწყო.
+The map is on the globe: {title}.	რუკა გლობუსზეა: {title}.
+On the globe	გლობუსზე
+The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	რუკა იწყობა კოლექციის გამოსახულებიდან, მიებმება და რუკის წლით ზედაპირზე სურათად ჯდება „ჩემ ნიშნებში“, საქაღალდეში „Rumsey-ის რუკები“. წელი რუკას დროის ზოლზე სვამს.

@@ -1216,3 +1216,23 @@ Cadastral block	Kadastro adası
 Status	Durum
 Currents did not load, check the network and switch the row on again.	Akıntılar yüklenmedi, ağı denetleyin ve satırı yeniden açın.
 Loading currents, about 4 MB…	Akıntılar yükleniyor, yaklaşık 4 MB…
+Rumsey maps	Rumsey haritaları
+Year or title	Yıl veya başlık
+Whole catalogue	Tüm katalogda
+Search by title and year among all maps of the collection, not only at the view. The Show on the globe button flies to the chosen map.	Yalnızca görünümde değil, koleksiyonun tüm haritaları arasında başlığa ve yıla göre ara. "Kürede göster" düğmesi seçilen haritaya uçar.
+Flight to the frame of the chosen map.	Seçilen haritanın çerçevesine uçuş.
+Map page	Harita sayfası
+The map page on the collection site in the browser.	Koleksiyon sitesindeki harita sayfası, tarayıcıda.
+Loading the map catalogue…	Harita kataloğu yükleniyor…
+The Rumsey map catalogue did not load, check the network.	Rumsey harita kataloğu yüklenmedi, ağı denetleyin.
+Loading map details…	Harita bilgileri yükleniyor…
+Loading the map image…	Harita görüntüsü yükleniyor…
+Loading the map image: {done} of {total}	Harita görüntüsü yükleniyor: {done} / {total}
+Georeferencing the map…	Harita koordinatlandırılıyor…
+Rumsey historical maps here…	Burada Rumsey tarihî haritaları…
+Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	David Rumsey koleksiyonunun dayanak noktalarıyla koordinatlandırılmış haritaları. Görüntüler CC BY-NC-SA 3.0 altındadır: yalnızca ticari olmayan kullanım için, kaynak belirtilerek.
+Maps at the view: {count}, by year. A click on a column header changes the order.	Görünümdeki haritalar: {count}, yıllara göre. Bir sütun başlığına tıklama sırayı değiştirir.
+The map was not built.	Harita oluşturulmadı.
+The map is on the globe: {title}.	Harita kürede: {title}.
+On the globe	Küreye
+The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Harita koleksiyon görüntüsünden oluşturulur, koordinatlandırılır ve haritanın yılıyla "Yerlerim" içinde "Rumsey haritaları" klasörüne yüzeydeki resim olarak yerleşir. Yıl haritayı zaman çubuğuna koyar.

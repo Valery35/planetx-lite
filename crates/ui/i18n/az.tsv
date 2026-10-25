@@ -1216,3 +1216,23 @@ Cadastral block	Kadastr məhəlləsi
 Status	Status
 Currents did not load, check the network and switch the row on again.	Axınlar yüklənmədi, şəbəkəni yoxlayın və sətri yenidən yandırın.
 Loading currents, about 4 MB…	Axınlar yüklənir, təxminən 4 MB…
+Rumsey maps	Rumsey xəritələri
+Year or title	İl və ya ad
+Whole catalogue	Bütün kataloq üzrə
+Search by title and year among all maps of the collection, not only at the view. The Show on the globe button flies to the chosen map.	Yalnız görünüşdə deyil, kolleksiyanın bütün xəritələri arasında ad və il üzrə axtar. "Qlobusda göstər" düyməsi seçilmiş xəritəyə uçur.
+Flight to the frame of the chosen map.	Seçilmiş xəritənin çərçivəsinə uçuş.
+Map page	Xəritə səhifəsi
+The map page on the collection site in the browser.	Kolleksiya saytında xəritənin səhifəsi, brauzerdə.
+Loading the map catalogue…	Xəritə kataloqu yüklənir…
+The Rumsey map catalogue did not load, check the network.	Rumsey xəritə kataloqu yüklənmədi, şəbəkəni yoxlayın.
+Loading map details…	Xəritə haqqında məlumat yüklənir…
+Loading the map image…	Xəritənin təsviri yüklənir…
+Loading the map image: {done} of {total}	Xəritənin təsviri yüklənir: {done} / {total}
+Georeferencing the map…	Xəritə bağlanır…
+Rumsey historical maps here…	Burada Rumsey tarixi xəritələri…
+Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	David Rumsey kolleksiyasının xəritələri, onun dayaq nöqtələri ilə bağlanıb. Təsvirlər CC BY-NC-SA 3.0 altındadır: yalnız qeyri-kommersiya istifadəsi üçün, mənbə göstərilməklə.
+Maps at the view: {count}, by year. A click on a column header changes the order.	Görünüşdə xəritələr: {count}, illər üzrə. Sütun başlığına klik sıranı dəyişir.
+The map was not built.	Xəritə qurulmadı.
+The map is on the globe: {title}.	Xəritə qlobusdadır: {title}.
+On the globe	Qlobusa
+The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Xəritə kolleksiyanın təsvirindən qurulur, bağlanır və xəritənin ili ilə "Mənim yerlərim"də "Rumsey xəritələri" qovluğuna səthdə şəkil kimi qoyulur. İl xəritəni zaman şkalasına qoyur.

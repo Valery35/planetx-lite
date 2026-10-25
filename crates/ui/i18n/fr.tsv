@@ -1216,3 +1216,23 @@ Cadastral block	Îlot cadastral
 Status	Statut
 Currents did not load, check the network and switch the row on again.	Les courants ne se sont pas chargés, vérifiez le réseau et réactivez la ligne.
 Loading currents, about 4 MB…	Chargement des courants, environ 4 Mo…
+Rumsey maps	Cartes Rumsey
+Year or title	Année ou titre
+Whole catalogue	Dans tout le catalogue
+Search by title and year among all maps of the collection, not only at the view. The Show on the globe button flies to the chosen map.	Chercher par titre et année parmi toutes les cartes de la collection, pas seulement dans la vue. Le bouton « Afficher sur le globe » vole vers la carte choisie.
+Flight to the frame of the chosen map.	Vol vers le cadre de la carte choisie.
+Map page	Page de la carte
+The map page on the collection site in the browser.	La page de la carte sur le site de la collection dans le navigateur.
+Loading the map catalogue…	Chargement du catalogue de cartes…
+The Rumsey map catalogue did not load, check the network.	Le catalogue des cartes Rumsey ne s’est pas chargé, vérifiez le réseau.
+Loading map details…	Chargement des informations de la carte…
+Loading the map image…	Chargement de l’image de la carte…
+Loading the map image: {done} of {total}	Chargement de l’image de la carte : {done} sur {total}
+Georeferencing the map…	Géoréférencement de la carte…
+Rumsey historical maps here…	Cartes historiques Rumsey ici…
+Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	Cartes de la collection de David Rumsey, géoréférencées selon ses points d’appui. Les images sont sous CC BY-NC-SA 3.0 : usage non commercial uniquement, avec mention de la source.
+Maps at the view: {count}, by year. A click on a column header changes the order.	Cartes dans la vue : {count}, par année. Un clic sur un en-tête de colonne change l’ordre.
+The map was not built.	La carte n’a pas été construite.
+The map is on the globe: {title}.	La carte est sur le globe : {title}.
+On the globe	Sur le globe
+The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	La carte est construite à partir de l’image de la collection, géoréférencée et posée comme image sur la surface dans « Mes lieux », dossier « Cartes Rumsey », avec l’année de la carte. L’année place la carte sur la barre de temps.

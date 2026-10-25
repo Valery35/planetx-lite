@@ -17,6 +17,10 @@ serde_json.workspace = true
 terrio.workspace = true
 tiny-skia.workspace = true
 zip.workspace = true
+# Распаковка тайлов COG (src/cog.rs): LZW и zstd на Rust, MIT и Apache 2.0.
+# Те же версии уже собираются как зависимости terrio.
+ruzstd = "0.9"
+weezl = "0.2"
 
 [lints]
 workspace = true

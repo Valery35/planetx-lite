@@ -43,7 +43,11 @@
 //!   `core/cutaway.py` модуля;
 //! - [`flow`] - струйки ветра и течений, заливка скорости течений
 //!   и поле течений ERDDAP, перенос `core/flow.py` модуля;
-//! - [`netcdf`] - чтение netCDF-3 (CDF1 и CDF2) без GDAL.
+//! - [`netcdf`] - чтение netCDF-3 (CDF1 и CDF2) без GDAL;
+//! - [`cog`] - окна Cloud Optimized GeoTIFF по кускам файла без GDAL,
+//!   замена `/vsicurl/` модуля для каналов космоснимков;
+//! - [`warp`] - привязка изображения по опорным точкам без GDAL, полином
+//!   и тонкая пластина.
 
 pub mod areas;
 pub mod aircraft;
@@ -52,6 +56,7 @@ pub mod buildings;
 pub mod cadastre;
 pub mod cloud;
 pub mod clouds;
+pub mod cog;
 pub mod contours;
 pub mod crust;
 pub mod csv;
@@ -104,4 +109,5 @@ pub mod trains;
 pub mod vessels;
 pub mod viewshed;
 pub mod volcanoes;
+pub mod warp;
 pub mod wikipedia;

@@ -1216,3 +1216,23 @@ Cadastral block	Khu phố địa chính
 Status	Trạng thái
 Currents did not load, check the network and switch the row on again.	Hải lưu chưa tải được, hãy kiểm tra mạng và bật lại dòng.
 Loading currents, about 4 MB…	Đang tải hải lưu, khoảng 4 MB…
+Rumsey maps	Bản đồ Rumsey
+Year or title	Năm hoặc tiêu đề
+Whole catalogue	Trong toàn bộ danh mục
+Search by title and year among all maps of the collection, not only at the view. The Show on the globe button flies to the chosen map.	Tìm theo tiêu đề và năm trong mọi bản đồ của bộ sưu tập, không chỉ ở khung nhìn. Nút "Hiện trên quả địa cầu" bay tới bản đồ đã chọn.
+Flight to the frame of the chosen map.	Bay tới khung của bản đồ đã chọn.
+Map page	Trang bản đồ
+The map page on the collection site in the browser.	Trang của bản đồ trên trang web bộ sưu tập, trong trình duyệt.
+Loading the map catalogue…	Đang tải danh mục bản đồ…
+The Rumsey map catalogue did not load, check the network.	Danh mục bản đồ Rumsey chưa tải được, hãy kiểm tra mạng.
+Loading map details…	Đang tải thông tin bản đồ…
+Loading the map image…	Đang tải ảnh bản đồ…
+Loading the map image: {done} of {total}	Đang tải ảnh bản đồ: {done} / {total}
+Georeferencing the map…	Đang định vị bản đồ…
+Rumsey historical maps here…	Bản đồ lịch sử Rumsey ở đây…
+Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	Bản đồ trong bộ sưu tập của David Rumsey, được định vị theo các điểm khống chế của bộ sưu tập. Ảnh theo giấy phép CC BY-NC-SA 3.0: chỉ dùng phi thương mại, có ghi nguồn.
+Maps at the view: {count}, by year. A click on a column header changes the order.	Bản đồ tại khung nhìn: {count}, theo năm. Nhấp vào tiêu đề cột để đổi thứ tự.
+The map was not built.	Chưa dựng được bản đồ.
+The map is on the globe: {title}.	Bản đồ đã ở trên quả địa cầu: {title}.
+On the globe	Lên quả địa cầu
+The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Bản đồ được dựng từ ảnh của bộ sưu tập, được định vị và đặt làm hình ảnh trên bề mặt trong "Địa điểm của tôi", thư mục "Bản đồ Rumsey", kèm năm của bản đồ. Năm đặt bản đồ lên thanh thời gian.

@@ -1216,3 +1216,23 @@ Cadastral block	地籍街区
 Status	状態
 Currents did not load, check the network and switch the row on again.	海流を読み込めませんでした。ネットワークを確認し、行をもう一度オンにしてください。
 Loading currents, about 4 MB…	海流を読み込み中、約 4 MB…
+Rumsey maps	Rumsey の地図
+Year or title	年またはタイトル
+Whole catalogue	カタログ全体
+Search by title and year among all maps of the collection, not only at the view. The Show on the globe button flies to the chosen map.	表示中だけでなく、コレクションのすべての地図からタイトルと年で検索します。「地球儀に表示」ボタンで選んだ地図へ移動します。
+Flight to the frame of the chosen map.	選んだ地図の枠へ移動します。
+Map page	地図のページ
+The map page on the collection site in the browser.	コレクションのサイトにある地図のページをブラウザーで開きます。
+Loading the map catalogue…	地図カタログを読み込み中…
+The Rumsey map catalogue did not load, check the network.	Rumsey の地図カタログを読み込めませんでした。ネットワークを確認してください。
+Loading map details…	地図の情報を読み込み中…
+Loading the map image…	地図の画像を読み込み中…
+Loading the map image: {done} of {total}	地図の画像を読み込み中：{done} / {total}
+Georeferencing the map…	地図をジオリファレンス中…
+Rumsey historical maps here…	ここの Rumsey の歴史地図…
+Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	David Rumsey コレクションの地図で、その基準点でジオリファレンスされています。画像は CC BY-NC-SA 3.0 で、非営利利用のみ、出典の表示が必要です。
+Maps at the view: {count}, by year. A click on a column header changes the order.	表示中の地図：{count}、年順。列見出しをクリックすると順序が変わります。
+The map was not built.	地図を作成できませんでした。
+The map is on the globe: {title}.	地図は地球儀上にあります：{title}。
+On the globe	地球儀へ
+The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	地図はコレクションの画像から作成され、ジオリファレンスされて、地図の年とともに「マイプレイス」の「Rumsey の地図」フォルダーに地表の画像として置かれます。年によって地図はタイムバーに載ります。

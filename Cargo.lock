@@ -486,9 +486,11 @@ name = "data"
 version = "0.1.0"
 dependencies = [
  "flate2",
+ "ruzstd 0.9.1",
  "serde_json",
  "terrio",
  "tiny-skia",
+ "weezl 0.2.1",
  "zip 9.0.5",
 ]
 

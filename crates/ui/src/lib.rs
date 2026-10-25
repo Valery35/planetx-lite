@@ -54,6 +54,7 @@ pub mod pointcalc;
 pub mod profile;
 pub mod relief;
 pub mod route;
+pub mod rumsey;
 pub mod ruler;
 pub mod satellites;
 pub mod search;

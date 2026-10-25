@@ -339,6 +339,8 @@ pub struct LiteApp {
     parcels: Vec<data::cadastre::Parcel>,
     /// Строка «Течения».
     currents: Option<crate::currents::Currents>,
+    /// Окно «Карты Рамсея».
+    rumsey: Option<crate::rumsey::Rumsey>,
     /// Объекты живых строк на этот кадр, для окна «Объекты» и меню.
     live_objects: Vec<(crate::live::Kind, crate::live::Object)>,
     /// Камера следом за живым объектом: строка и ключ.
@@ -886,6 +888,7 @@ impl LiteApp {
             parcel_ask: None,
             parcels: Vec::new(),
             currents: None,
+            rumsey: None,
             live_objects: Vec::new(),
             live_follow: None,
             followed: None,
@@ -1518,6 +1521,24 @@ impl LiteApp {
                         self.followed = None;
                     } else {
                         s.follow = false;
+                    }
+                }
+            }
+            Choice::Rumsey => {
+                if let Some((lat, lon)) = point {
+                    // Рамка вида - по ширине и высоте вида у точки взгляда.
+                    let width = self.view_width();
+                    let height = width / self.nav.camera.aspect().max(0.1);
+                    let (pl, plon) = (self.nav.pose.lat, self.nav.pose.lon);
+                    let dlat = (height / 2.0 / 111_320.0).min(85.0);
+                    let dlon = (width / 2.0 / (111_320.0 * pl.to_radians().cos().max(0.05))).min(180.0);
+                    let view = [plon - dlon, (pl - dlat).max(-90.0), plon + dlon, (pl + dlat).min(90.0)];
+                    match &mut self.rumsey {
+                        Some(r) => r.show_view(lat, lon, view),
+                        None => {
+                            let loaders = &self.loaders;
+                            self.rumsey = Some(crate::rumsey::Rumsey::new(lat, lon, view, &|limit: u64| (loaders.request)(limit)));
+                        }
                     }
                 }
             }
@@ -2960,6 +2981,66 @@ impl LiteApp {
             let age = ages[state.index.min(last)];
             self.set_basemap(Basemap::Paleo(age));
         }
+    }
+
+    /// Окно «Карты Рамсея»: каталог, сборка, готовая карта - картинкой
+    /// на поверхности в «Мои метки», папка «Карты Рамсея».
+    fn step_rumsey(&mut self, ctx: &egui::Context, now: f64) {
+        let lang = self.lang;
+        let Some(r) = &mut self.rumsey else {
+            return;
+        };
+        {
+            let loaders = &self.loaders;
+            let request = |limit: u64| (loaders.request)(limit);
+            r.step(lang, &request);
+            r.show(ctx, lang, &request);
+        }
+        if r.busy() {
+            ctx.request_repaint_after(std::time::Duration::from_millis(100));
+        }
+        if let Some(b) = r.fly.take() {
+            let distance = data::rumsey::fly_distance(&b, self.nav.camera.fov_y);
+            crate::input::fly(&mut self.nav, Pose::new((b[1] + b[3]) / 2.0, (b[0] + b[2]) / 2.0, distance, 0.0, 0.0), now);
+        }
+        let built = r.built.take();
+        if !r.open && !r.busy() {
+            self.rumsey = None;
+        }
+        let Some(b) = built else {
+            return;
+        };
+        let [west, south, east, north] = b.bbox;
+        let mut o = scene::overlays::Overlay::new(scene::overlays::Kind::Ground);
+        o.set_box([north, south, east, west, 0.0]);
+        let year = b.year.map_or(String::new(), |y| y.to_string());
+        let name = if year.is_empty() { b.title.clone() } else { format!("{year} {}", b.title) };
+        let mut overlay = scene::kml::Overlay::new(&name, o);
+        if !year.is_empty() {
+            overlay.time = Some((year.clone(), year));
+        }
+        // У программы картинка - файлом в папке данных, у страницы - в метках.
+        let file = self.data_dir().map(|d| d.join("rumsey").join(format!("{}.png", b.number)));
+        match file.filter(|p| p.parent().is_some_and(|d| std::fs::create_dir_all(d).is_ok()) && std::fs::write(p, &b.png).is_ok()) {
+            Some(p) => overlay.href = p.to_string_lossy().into_owned(),
+            None => {
+                overlay.href = format!("rumsey-{}.png", b.number);
+                overlay.image = Some(b.png);
+            }
+        }
+        let root = marks::root_name(lang);
+        let folder_name = tr(lang, "Rumsey maps");
+        let tree = self.marks.root(root);
+        let at = tree.children.iter().position(|i| matches!(i, scene::kml::Item::Folder(f) if f.name == folder_name));
+        let at = match at {
+            Some(n) => n,
+            None => {
+                tree.children.insert(0, scene::kml::Item::Folder(scene::kml::Folder::new(folder_name)));
+                0
+            }
+        };
+        self.marks.insert(&[at], scene::kml::Item::Overlay(overlay), root);
+        self.marks_changed();
     }
 
     /// Шаг течений: сутки по бегунку шкалы времени, загрузка, частицы.
@@ -5103,6 +5184,9 @@ impl LiteApp {
         if self.currents.is_some() {
             parts.push(data::flow::CURRENTS_ATTRIBUTION);
         }
+        if self.rumsey.is_some() {
+            parts.push(data::rumsey::ATTRIBUTION);
+        }
         if !self.wiki_labels.is_empty() {
             parts.push(data::wikipedia::ATTRIBUTION);
         }
@@ -5499,6 +5583,7 @@ impl eframe::App for LiteApp {
             || self.mining.as_ref().is_some_and(crate::mining::Mining::busy)
             || self.parcel_ask.is_some()
             || self.currents.as_ref().is_some_and(crate::currents::Currents::busy)
+            || self.rumsey.as_ref().is_some_and(crate::rumsey::Rumsey::busy)
             || self.buildings.as_ref().is_some_and(|b| b.busy(self.heights.read().version()))
             || self.osm_mines.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.osm_infra.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
@@ -5663,6 +5748,7 @@ impl eframe::App for LiteApp {
         self.step_overpass(now);
         self.step_parcels();
         self.step_currents(&ctx, now);
+        self.step_rumsey(&ctx, now);
         self.paleo_bar(&ctx, now);
         self.step_cutaway();
         self.check_linked_models(now);
@@ -5956,6 +6042,38 @@ impl eframe::App for LiteApp {
             }
             painter.text(at + egui::vec2(1.0, 1.0), egui::Align2::LEFT_BOTTOM, text, font.clone(), egui::Color32::from_black_alpha(200));
             painter.text(at, egui::Align2::LEFT_BOTTOM, text, font, egui::Color32::WHITE);
+        }
+        // Рамки карт окна «Карты Рамсея», выбранная - ярче.
+        if let Some(r) = &self.rumsey {
+            let (boxes, selected) = r.footprints();
+            let e = self.nav.camera.ellipsoid;
+            let store = self.heights.read();
+            let frame = |b: &data::rumsey::Bbox, stroke: egui::Stroke| {
+                let [w, s, ea, n] = *b;
+                let ring = [(s, w), (s, ea), (n, ea), (n, w), (s, w)];
+                let mut points: Vec<Option<egui::Pos2>> = Vec::new();
+                for pair in ring.windows(2) {
+                    for k in 0..=8 {
+                        let t = f64::from(k) / 8.0;
+                        let (la, lo) = (pair[0].0 + (pair[1].0 - pair[0].0) * t, pair[0].1 + (pair[1].1 - pair[0].1) * t);
+                        let p = e.geodetic_to_ecef(la, lo, store.height_at(la, lo));
+                        let (q, front) = self.nav.camera.project(p);
+                        let facing = (p - self.nav.camera.eye).dot(p.normalize_or_zero()) < 0.0;
+                        points.push((front && facing).then(|| rect.min + egui::vec2((q.x / ppp) as f32, (q.y / ppp) as f32)));
+                    }
+                }
+                for pair in points.windows(2) {
+                    if let [Some(a), Some(b)] = pair {
+                        painter.line_segment([*a, *b], stroke);
+                    }
+                }
+            };
+            for b in &boxes {
+                frame(b, egui::Stroke::new(1.0, egui::Color32::from_rgba_unmultiplied(255, 200, 60, 140)));
+            }
+            if let Some(b) = selected {
+                frame(&b, egui::Stroke::new(2.5, egui::Color32::from_rgb(255, 120, 30)));
+            }
         }
         // Струйки течений поверх глобуса.
         if let Some(c) = &self.currents {

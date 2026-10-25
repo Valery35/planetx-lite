@@ -1216,3 +1216,23 @@ Cadastral block	Quarteirão cadastral
 Status	Estado
 Currents did not load, check the network and switch the row on again.	As correntes não foram carregadas, verifique a rede e volte a ligar a linha.
 Loading currents, about 4 MB…	A carregar correntes, cerca de 4 MB…
+Rumsey maps	Mapas de Rumsey
+Year or title	Ano ou título
+Whole catalogue	Em todo o catálogo
+Search by title and year among all maps of the collection, not only at the view. The Show on the globe button flies to the chosen map.	Pesquisar por título e ano entre todos os mapas da coleção, não só na vista. O botão «Mostrar no globo» voa até ao mapa escolhido.
+Flight to the frame of the chosen map.	Voo até à moldura do mapa escolhido.
+Map page	Página do mapa
+The map page on the collection site in the browser.	A página do mapa no sítio da coleção no navegador.
+Loading the map catalogue…	A carregar o catálogo de mapas…
+The Rumsey map catalogue did not load, check the network.	O catálogo de mapas de Rumsey não foi carregado, verifique a rede.
+Loading map details…	A carregar os dados do mapa…
+Loading the map image…	A carregar a imagem do mapa…
+Loading the map image: {done} of {total}	A carregar a imagem do mapa: {done} de {total}
+Georeferencing the map…	A georreferenciar o mapa…
+Rumsey historical maps here…	Mapas históricos de Rumsey aqui…
+Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	Mapas da coleção de David Rumsey, georreferenciados pelos seus pontos de controlo. As imagens estão sob CC BY-NC-SA 3.0: só para uso não comercial, com indicação da fonte.
+Maps at the view: {count}, by year. A click on a column header changes the order.	Mapas na vista: {count}, por ano. Um clique no cabeçalho de uma coluna muda a ordem.
+The map was not built.	O mapa não foi construído.
+The map is on the globe: {title}.	O mapa está no globo: {title}.
+On the globe	Para o globo
+The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	O mapa é construído a partir da imagem da coleção, georreferenciado e colocado como imagem na superfície em «Os meus lugares», pasta «Mapas de Rumsey», com o ano do mapa. O ano coloca o mapa na barra de tempo.

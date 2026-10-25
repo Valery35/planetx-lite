@@ -1216,3 +1216,23 @@ Cadastral block	Quartiere catastale
 Status	Stato
 Currents did not load, check the network and switch the row on again.	Le correnti non si sono caricate, controlla la rete e riattiva la riga.
 Loading currents, about 4 MB…	Caricamento delle correnti, circa 4 MB…
+Rumsey maps	Carte Rumsey
+Year or title	Anno o titolo
+Whole catalogue	In tutto il catalogo
+Search by title and year among all maps of the collection, not only at the view. The Show on the globe button flies to the chosen map.	Cerca per titolo e anno tra tutte le carte della collezione, non solo nella vista. Il pulsante «Mostra sul globo» vola alla carta scelta.
+Flight to the frame of the chosen map.	Volo al riquadro della carta scelta.
+Map page	Pagina della carta
+The map page on the collection site in the browser.	La pagina della carta sul sito della collezione nel browser.
+Loading the map catalogue…	Caricamento del catalogo delle carte…
+The Rumsey map catalogue did not load, check the network.	Il catalogo delle carte Rumsey non si è caricato, controlla la rete.
+Loading map details…	Caricamento dei dati della carta…
+Loading the map image…	Caricamento dell’immagine della carta…
+Loading the map image: {done} of {total}	Caricamento dell’immagine della carta: {done} di {total}
+Georeferencing the map…	Georeferenziazione della carta…
+Rumsey historical maps here…	Carte storiche Rumsey qui…
+Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	Carte della collezione di David Rumsey, georeferenziate con i suoi punti di controllo. Le immagini sono CC BY-NC-SA 3.0: solo per uso non commerciale, citando la fonte.
+Maps at the view: {count}, by year. A click on a column header changes the order.	Carte nella vista: {count}, per anno. Un clic sull’intestazione di una colonna cambia l’ordine.
+The map was not built.	La carta non è stata costruita.
+The map is on the globe: {title}.	La carta è sul globo: {title}.
+On the globe	Sul globo
+The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	La carta si costruisce dall’immagine della collezione, si georeferenzia e si posa come immagine sulla superficie in «I miei luoghi», cartella «Carte Rumsey», con l’anno della carta. L’anno colloca la carta sulla barra del tempo.

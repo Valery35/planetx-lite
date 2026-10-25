@@ -1216,3 +1216,23 @@ Cadastral block	地籍街区
 Status	状态
 Currents did not load, check the network and switch the row on again.	洋流未能加载，请检查网络并重新开启该行。
 Loading currents, about 4 MB…	正在加载洋流，约 4 MB…
+Rumsey maps	Rumsey 地图
+Year or title	年份或标题
+Whole catalogue	在整个目录中
+Search by title and year among all maps of the collection, not only at the view. The Show on the globe button flies to the chosen map.	按标题和年份在收藏的全部地图中搜索，而不仅限于视图。“在地球上显示”按钮飞往所选地图。
+Flight to the frame of the chosen map.	飞往所选地图的边框。
+Map page	地图页面
+The map page on the collection site in the browser.	在浏览器中打开收藏网站上的地图页面。
+Loading the map catalogue…	正在加载地图目录…
+The Rumsey map catalogue did not load, check the network.	Rumsey 地图目录未能加载，请检查网络。
+Loading map details…	正在加载地图信息…
+Loading the map image…	正在加载地图图像…
+Loading the map image: {done} of {total}	正在加载地图图像：{done} / {total}
+Georeferencing the map…	正在配准地图…
+Rumsey historical maps here…	此处的 Rumsey 历史地图…
+Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	David Rumsey 收藏的地图，按其控制点配准。图像采用 CC BY-NC-SA 3.0：仅限非商业用途，并须注明来源。
+Maps at the view: {count}, by year. A click on a column header changes the order.	视图中的地图：{count} 幅，按年份排列。单击列标题可更改顺序。
+The map was not built.	未能生成地图。
+The map is on the globe: {title}.	地图已在地球上：{title}。
+On the globe	到地球上
+The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	地图由收藏图像生成，经配准后连同地图年份作为地表图片放入“我的地点”的“Rumsey 地图”文件夹。年份把地图放到时间条上。

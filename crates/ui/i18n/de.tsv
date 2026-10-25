@@ -1216,3 +1216,23 @@ Cadastral block	Katasterquartal
 Status	Status
 Currents did not load, check the network and switch the row on again.	Strömungen wurden nicht geladen, das Netz prüfen und die Zeile erneut einschalten.
 Loading currents, about 4 MB…	Strömungen werden geladen, etwa 4 MB…
+Rumsey maps	Rumsey-Karten
+Year or title	Jahr oder Titel
+Whole catalogue	Im ganzen Katalog
+Search by title and year among all maps of the collection, not only at the view. The Show on the globe button flies to the chosen map.	Nach Titel und Jahr unter allen Karten der Sammlung suchen, nicht nur an der Ansicht. Die Schaltfläche „Auf dem Globus zeigen“ fliegt zur gewählten Karte.
+Flight to the frame of the chosen map.	Flug zum Rahmen der gewählten Karte.
+Map page	Kartenseite
+The map page on the collection site in the browser.	Die Seite der Karte auf der Website der Sammlung im Browser.
+Loading the map catalogue…	Kartenkatalog wird geladen…
+The Rumsey map catalogue did not load, check the network.	Der Katalog der Rumsey-Karten wurde nicht geladen, das Netz prüfen.
+Loading map details…	Angaben zur Karte werden geladen…
+Loading the map image…	Kartenbild wird geladen…
+Loading the map image: {done} of {total}	Kartenbild wird geladen: {done} von {total}
+Georeferencing the map…	Karte wird georeferenziert…
+Rumsey historical maps here…	Historische Rumsey-Karten hier…
+Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	Karten der Sammlung von David Rumsey, georeferenziert nach ihren Passpunkten. Die Bilder stehen unter CC BY-NC-SA 3.0: nur für nichtkommerzielle Nutzung, mit Quellenangabe.
+Maps at the view: {count}, by year. A click on a column header changes the order.	Karten an der Ansicht: {count}, nach Jahr. Ein Klick auf einen Spaltenkopf ändert die Reihenfolge.
+The map was not built.	Die Karte wurde nicht erstellt.
+The map is on the globe: {title}.	Die Karte ist auf dem Globus: {title}.
+On the globe	Auf den Globus
+The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Die Karte wird aus dem Bild der Sammlung erstellt, georeferenziert und als Bild auf der Oberfläche in „Meine Orte“ gelegt, Ordner „Rumsey-Karten“, mit dem Jahr der Karte. Das Jahr setzt die Karte auf die Zeitleiste.

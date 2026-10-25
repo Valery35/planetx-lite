@@ -1216,3 +1216,23 @@ Cadastral block	Кадастровый квартал
 Status	Статус
 Currents did not load, check the network and switch the row on again.	Течения не загрузились, проверьте сеть и включите строку снова.
 Loading currents, about 4 MB…	Загрузка течений, около 4 МБ…
+Rumsey maps	Карты Рамсея
+Year or title	Год или название
+Whole catalogue	По всему каталогу
+Search by title and year among all maps of the collection, not only at the view. The Show on the globe button flies to the chosen map.	Искать по названию и году среди всех карт коллекции, а не только у вида. Кнопка «Показать на глобусе» перелетает к выбранной карте.
+Flight to the frame of the chosen map.	Перелёт к рамке выбранной карты.
+Map page	Страница карты
+The map page on the collection site in the browser.	Страница карты на сайте коллекции в браузере.
+Loading the map catalogue…	Загрузка каталога карт…
+The Rumsey map catalogue did not load, check the network.	Каталог карт Рамсея не загрузился, проверьте сеть.
+Loading map details…	Загрузка сведений о карте…
+Loading the map image…	Загрузка изображения карты…
+Loading the map image: {done} of {total}	Загрузка изображения карты: {done} из {total}
+Georeferencing the map…	Привязка карты…
+Rumsey historical maps here…	Исторические карты Рамсея здесь…
+Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	Карты коллекции Дэвида Рамсея, привязка - по его опорным точкам. Изображения - CC BY-NC-SA 3.0: только для некоммерческого использования, с указанием источника.
+Maps at the view: {count}, by year. A click on a column header changes the order.	Карт у вида: {count}, по годам. Щелчок по заголовку столбца меняет порядок.
+The map was not built.	Карта не собрана.
+The map is on the globe: {title}.	Карта на глобусе: {title}.
+On the globe	На глобус
+The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Карта собирается из изображения коллекции, привязывается и ложится картинкой на поверхность в «Мои метки», папку «Карты Рамсея», с годом карты. Год ставит карту на шкалу времени.
