@@ -24,8 +24,14 @@ use crate::cogread::{BandRead, HeaderRead};
 
 /// Сторона тайла.
 const SIZE: usize = 256;
+/// Допуск шва файла, градусы. Ширина файла WAC не ровно 360°: его край
+/// стоит на 0.00012° от нулевого меридиана. 0.01° - три пикселя WAC.
+const SEAM: f64 = 0.01;
 /// Окон в чтении одновременно.
 const ACTIVE: usize = 6;
+/// Шаг окна к пикселю тайла: уровень обзора берётся не мельче, чем
+/// нужно с запасом √2.
+const COARSE: f64 = std::f64::consts::SQRT_2;
 
 /// Пришедший тайл: снимок или пропуск.
 pub enum Tile {
@@ -68,9 +74,15 @@ impl Frame {
     /// Отрезок градусов от западного края файла под долготами тайла
     /// west..east. Тайл через шов файла берёт всю его ширину.
     fn span(&self, west: f64, east: f64) -> (f64, f64) {
-        let from = self.east_of_edge(west);
+        // Край файла посчитан из его привязки с погрешностью до долей пикселя:
+        // тайл, кончающийся на шве, не должен считаться пересекающим его,
+        // иначе он читает всю ширину файла.
+        let mut from = self.east_of_edge(west);
+        if from > 360.0 - SEAM {
+            from = 0.0;
+        }
         let to = from + (east - west);
-        if to > 360.0 + 1e-9 { (0.0, 360.0) } else { (from, to) }
+        if to > 360.0 + SEAM { (0.0, 360.0) } else { (from, to.min(360.0)) }
     }
 
     fn x(&self, degrees: f64) -> f64 {
@@ -141,19 +153,27 @@ pub struct CogTiles {
     reads: HashMap<TileKey, (BandRead, (f64, f64))>,
     /// Центральный меридиан проекции файла.
     clon: f64,
+    /// Уровни тайлов, которые читаются из файла.
+    levels: std::ops::RangeInclusive<u32>,
     done: Vec<(TileKey, Tile)>,
     /// Тайлы, которые уже пришли или пропущены, второй раз не просятся.
     seen: std::collections::HashSet<TileKey>,
 }
 
 impl CogTiles {
-    pub fn new(href: &str, clon: f64, request: &dyn Fn(u64) -> Box<dyn net::Request>) -> Self {
-        Self { href: href.to_string(), header: HeaderRead::new(href, request), wanted: Vec::new(), reads: HashMap::new(), clon, done: Vec::new(), seen: Default::default() }
+    /// Мозаика href для уровней from..=to.
+    pub fn new(href: &str, clon: f64, from: u32, to: u32, request: &dyn Fn(u64) -> Box<dyn net::Request>) -> Self {
+        Self { href: href.to_string(), header: HeaderRead::new(href, request), wanted: Vec::new(), reads: HashMap::new(), clon, levels: from..=to, done: Vec::new(), seen: Default::default() }
+    }
+
+    /// Первый уровень, который читается из файла.
+    pub fn from_level(&self) -> u32 {
+        *self.levels.start()
     }
 
     /// Тайлы, которые просит кадр. Чтения тайлов вне списка бросаются.
     pub fn want(&mut self, wanted: &[(TileKey, f64)]) {
-        self.wanted = wanted.iter().copied().filter(|(k, p)| p.is_finite() && !self.seen.contains(k)).collect();
+        self.wanted = wanted.iter().copied().filter(|(k, p)| p.is_finite() && self.levels.contains(&k.0) && !self.seen.contains(k)).collect();
         self.wanted.sort_by(|a, b| b.1.total_cmp(&a.1));
         let keep: std::collections::HashSet<TileKey> = self.wanted.iter().map(|(k, _)| *k).collect();
         self.reads.retain(|k, _| keep.contains(k));
@@ -200,9 +220,11 @@ impl CogTiles {
         let starts: Vec<TileKey> = self.wanted.iter().map(|(k, _)| *k).filter(|k| !self.reads.contains_key(k) && !self.seen.contains(k)).take(ACTIVE.saturating_sub(self.reads.len())).collect();
         for key in starts {
             let [west, south, east, north] = tile_bounds(key);
-            // Шаг окна - пиксель тайла по долготе, рамка - по системе файла.
+            // Шаг окна - пиксель тайла по долготе, умноженный на COARSE:
+            // обзор вдвое мельче тайла тянул вчетверо больше байт, а глазу
+            // разница почти не видна. Рамка - по системе файла.
             let span = frame.span(west, east);
-            let res = (span.1 - span.0) / SIZE as f64 * frame.per_lon;
+            let res = (span.1 - span.0) / SIZE as f64 * frame.per_lon * COARSE;
             let bbox = [frame.x(span.0), frame.y(south), frame.x(span.1), frame.y(north)];
             self.reads.insert(key, (BandRead::with_header(&self.href, header.clone(), bbox, res, false, request), span));
         }
@@ -259,6 +281,12 @@ mod tests {
         assert_eq!(f.span(23.0, 24.0), (23.0, 24.0));
         assert_eq!(f.span(-90.0, 0.0), (270.0, 360.0));
         assert_eq!(f.span(-180.0, 180.0), (0.0, 360.0));
+        // Край файла с погрешностью привязки: тайл до шва - не через шов.
+        let shifted = Frame { lon0: f.lon0 - 0.00012, ..f };
+        let (a, b) = shifted.span(-90.0, 0.0);
+        assert!((a - 270.0).abs() < 1e-3 && b <= 360.0, "{a} {b}");
+        let (a, b) = Frame { lon0: f.lon0 + 0.00012, ..f }.span(0.0, 90.0);
+        assert!(a.abs() < 1e-3 && (b - 90.0).abs() < 1e-3, "{a} {b}");
         assert!((f.x(360.0) - (header.geotransform.unwrap()[0] + 244098.0 * px)).abs() < 1e-3);
         let g = Frame::of(&header, 0.0).unwrap();
         assert!((g.lon0 + 180.0).abs() < 1e-9 && g.span(-180.0, -90.0) == (0.0, 90.0));
@@ -284,7 +312,7 @@ mod tests {
     #[cfg(not(target_arch = "wasm32"))]
     fn live_wac() {
         let request = |limit: u64| -> Box<dyn net::Request> { Box::new(net::native::Requests::with_limit(std::sync::Arc::new(|| {}), limit)) };
-        let mut tiles = CogTiles::new(scene::planets::MOON_WAC, 180.0, &request);
+        let mut tiles = CogTiles::new(scene::planets::MOON_WAC, 180.0, 0, 9, &request);
         let keys: Vec<(TileKey, f64)> = [(2, 1, 1), (2, 2, 1), (3, 3, 3), (3, 4, 3), (4, 7, 7), (4, 8, 7)].iter().map(|k| (*k, 1.0)).collect();
         let start = std::time::Instant::now();
         let mut got = Vec::new();
@@ -303,6 +331,21 @@ mod tests {
                 panic!("{e}");
             }
             std::thread::sleep(std::time::Duration::from_millis(50));
+        }
+        if let Some(Ok(header)) = tiles.header.result() {
+            let frame = Frame::of(header, 180.0).unwrap();
+            for (key, _) in &keys {
+                let [west, south, east, north] = tile_bounds(*key);
+                let span = frame.span(west, east);
+                let res = (span.1 - span.0) / SIZE as f64 * frame.per_lon * COARSE;
+                let level = data::cog::level_for_resolution(header, res);
+                let window = data::cog::bbox_window(header, level, [frame.x(span.0), frame.y(south), frame.x(span.1), frame.y(north)]).unwrap();
+                let plan = data::cog::window_plan(header, level, window.x0, window.y0, window.width, window.height).unwrap();
+                let bytes: u64 = plan.iter().map(|p| p.range.end - p.range.start).sum();
+                let merged = data::cog::merge_ranges(plan.iter().map(|p| p.range.clone()).collect(), 65536);
+                let span_bytes: u64 = merged.iter().map(|r| r.end - r.start).sum();
+                eprintln!("{key:?} level {level} window {}x{} tiles {} bytes {} requests {} merged bytes {}", window.width, window.height, plan.len(), bytes, merged.len(), span_bytes);
+            }
         }
         assert_eq!(got.len(), keys.len(), "busy {}", tiles.busy());
     }

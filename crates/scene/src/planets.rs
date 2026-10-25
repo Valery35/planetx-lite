@@ -13,7 +13,7 @@
 //! JPEG из глобальных
 //! мозаик USGS Astrogeology и NASA Photojournal, общественное достояние,
 //! в хранилище planetx-terrain. Высоты Марса и Луны - тайлы Terrarium
-//! уровней 0-5 там же.
+//! уровней 0-7 в хранилище planetx-bodies-terrain.
 //!
 //! Воздух задаётся множителем рассеяния к земному по каналам RGB. У Марса
 //! пыльный воздух рассеивает красный сильнее синего, у Луны воздуха нет.
@@ -27,11 +27,16 @@ use globe_core::ellipsoid::{self, Body};
 pub const MARS_VIKING: &str = "https://raw.githubusercontent.com/Valery35/planetx-bodies-imagery/main/mars/{z}/{x}/{y}.png";
 pub const MOON_ALBEDO: &str = "https://s3.amazonaws.com/opmbuilder/301_moon/tiles/w/hillshaded-albedo/{z}/{x}/{-y}.png";
 /// Глобальная мозаика Луны LROC WAC 100 м, COG в хранилище astrogeo-ard
-/// USGS, с CORS: Lite читает её окнами, без своих копий.
+/// USGS, с CORS. Уровни 0-7 - её нарезка в planetx-bodies-imagery (MOON_WAC_TILES),
+/// ближе Lite читает мозаику сама окнами: издалека окна шли минутами.
+pub const MOON_WAC_TILES: &str = "https://raw.githubusercontent.com/Valery35/planetx-bodies-imagery/main/moon/{z}/{x}/{y}.png";
 pub const MOON_WAC: &str = "https://astrogeo-ard.s3.us-west-2.amazonaws.com/moon/basemaps/lroc_wac_mosaic/lroc_wac_mosaic_global_303ppd_v3/lroc_wac_mosaic_global_303ppd_v3.tif";
-/// Высоты тел, Terrarium, `TERRAIN_TILES` модуля, {key} - ключ тела.
-pub const TERRAIN_TILES: &str = "https://raw.githubusercontent.com/Valery35/planetx-terrain/main/{key}/{z}/{x}/{y}.png";
-pub const TERRAIN_LEVEL: u8 = 5;
+/// Высоты тел, Terrarium, {key} - ключ тела. Хранилище planetx-bodies-terrain,
+/// 25 октября 2026 года: Марс - MOLA 463 м над ареоидом, Луна - LOLA
+/// 118 м над сферой 1737.4 км, уровни 0-7. Прежние тайлы planetx-terrain
+/// модуля были уровней 0-5 из сеток 32 и 64 точки на градус.
+pub const TERRAIN_TILES: &str = "https://raw.githubusercontent.com/Valery35/planetx-bodies-terrain/main/{key}/{z}/{x}/{y}.png";
+pub const TERRAIN_LEVEL: u8 = 7;
 /// Снимки прочих тел, {key} - ключ тела.
 pub const IMAGERY_TILES: &str = "https://raw.githubusercontent.com/Valery35/planetx-terrain/main/imagery/{key}/{z}/{x}/{y}.jpg";
 pub const USGS_MAPS: &str = "https://astrogeology.usgs.gov/search";
@@ -40,9 +45,7 @@ pub const PHOTOJOURNAL: &str = "https://science.nasa.gov/photojournal/";
 pub const HOME_RADII: f64 = 3.5;
 
 /// Снимки тела: название мозаики, адрес тайлов, предельный уровень,
-/// подпись источника, ссылка. cog - адрес не шаблон тайлов, а файл COG
-/// всей мозаики, clon - центральный меридиан его проекции в градусах:
-/// Lite не читает параметры проекции из файла.
+/// подпись источника, ссылка, подробная мозаика для уровней глубже.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Imagery {
     pub name: &'static str,
@@ -50,8 +53,17 @@ pub struct Imagery {
     pub max_level: u8,
     pub credit: &'static str,
     pub link: &'static str,
-    pub cog: bool,
+    pub deep: Option<Deep>,
+}
+
+/// Подробная мозаика тела - файл COG целиком, уровни после тайлов
+/// до max_level. clon - центральный меридиан проекции файла в градусах:
+/// Lite не читает параметры проекции из файла.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Deep {
+    pub url: &'static str,
     pub clon: f64,
+    pub max_level: u8,
 }
 
 /// Высоты тела: название, адрес тайлов Terrarium, предельный уровень,
@@ -138,14 +150,13 @@ pub fn planet_by_key(key: &str) -> Planet {
                 max_level: 7,
                 credit: "NASA, USGS, Viking MDIM2.1, OpenPlanetaryMap",
                 link: "https://www.openplanetary.org/opm-basemaps/global-viking-mdim2-1-colorized-mosaic",
-                cog: false,
-                clon: 0.0,
+                deep: None,
             }),
             air: Some([1.2, 0.3, 0.07]),
             // Олимп.
             home: (18.65, -133.8, 1.2e7),
             earth: false,
-            terrain: terrain("mars", "MOLA MEGDR", "Terrain: NASA MGS MOLA MEGDR"),
+            terrain: terrain("mars", "MOLA 463 m", "Terrain: NASA MGS MOLA, USGS"),
         },
         "moon" => Planet {
             body: ellipsoid::MOON,
@@ -153,26 +164,25 @@ pub fn planet_by_key(key: &str) -> Planet {
             // помощника 25 октября 2026 года, утверждает автор.
             imagery: Some(Imagery {
                 name: "Moon LRO LROC WAC 100 m",
-                url: MOON_WAC.to_string(),
-                max_level: 9,
+                url: MOON_WAC_TILES.to_string(),
+                max_level: 7,
                 credit: "NASA, GSFC, Arizona State University, LRO LROC WAC, USGS",
                 link: "https://astrogeology.usgs.gov/search/map/moon_lro_lroc_wac_global_morphology_mosaic_100m",
-                cog: true,
                 // В файле WAC «Equirectangular, clon = 180».
-                clon: 180.0,
+                deep: Some(Deep { url: MOON_WAC, clon: 180.0, max_level: 9 }),
             }),
             air: None,
             // Море Спокойствия, посадка Аполлона-11.
             home: (0.674, 23.473, 6.0e6),
             earth: false,
-            terrain: terrain("moon", "LOLA GDR", "Terrain: NASA LRO LOLA GDR"),
+            terrain: terrain("moon", "LOLA 118 m", "Terrain: NASA LRO LOLA, USGS"),
         },
         _ => match OTHER.iter().find(|o| o.0 == key) {
             Some((key, name, level, credit, link, air, home)) => {
                 let body = *ellipsoid::body_by_key(key);
                 Planet {
                     body,
-                    imagery: Some(Imagery { name, url: IMAGERY_TILES.replace("{key}", key), max_level: *level, credit, link, cog: false, clon: 0.0 }),
+                    imagery: Some(Imagery { name, url: IMAGERY_TILES.replace("{key}", key), max_level: *level, credit, link, deep: None }),
                     air: *air,
                     home: (home.0, home.1, HOME_RADII * body.a),
                     earth: false,
@@ -208,9 +218,10 @@ mod tests {
         // С рядами XYZ Луна у модуля 30 сентября 2026 года вышла полосами.
         // Копия Марса - в рядах XYZ, у OpenPlanetaryMap были TMS.
         assert!(planet_by_key("mars").imagery.unwrap().url.contains("planetx-bodies-imagery"));
-        // Луна - мозаика COG целиком, не шаблон тайлов.
+        // Луна - тайлы до уровня 7, дальше мозаика COG целиком.
         let moon = planet_by_key("moon").imagery.unwrap();
-        assert!(moon.cog && moon.url.ends_with(".tif"));
+        let deep = moon.deep.unwrap();
+        assert!(moon.url.contains("{z}") && deep.url.ends_with(".tif") && deep.max_level > moon.max_level);
         for key in ["mars", "moon"] {
             assert!(planet_by_key(key).terrain.is_some());
         }

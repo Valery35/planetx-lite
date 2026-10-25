@@ -5061,14 +5061,14 @@ impl LiteApp {
         }
         self.basemap = basemap;
         self.pending.clear();
-        // Снимки тела из мозаики COG - свой загрузчик, не загрузчик тайлов.
-        let cog = match basemap {
-            Basemap::Body(key) => scene::planets::planet_by_key(key).imagery.filter(|i| i.cog).map(|i| (i.url, i.clon)),
+        // Подробная мозаика тела COG - свой загрузчик уровней после тайлов.
+        let deep = match basemap {
+            Basemap::Body(key) => scene::planets::planet_by_key(key).imagery.and_then(|i| i.deep.map(|d| (d, u32::from(i.max_level)))),
             _ => None,
         };
         let loaders = &self.loaders;
-        self.cog_base = cog.map(|(url, clon)| crate::cogtiles::CogTiles::new(&url, clon, &|limit| (loaders.request)(limit)));
-        if self.cog_base.is_none() && matches!(basemap, Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_) | Basemap::Body(_)) && self.ready_loader.as_ref().is_none_or(|(b, _)| *b != basemap) {
+        self.cog_base = deep.map(|(d, from)| crate::cogtiles::CogTiles::new(d.url, d.clon, from + 1, u32::from(d.max_level), &|limit| (loaders.request)(limit)));
+        if matches!(basemap, Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_) | Basemap::Body(_)) && self.ready_loader.as_ref().is_none_or(|(b, _)| *b != basemap) {
             self.ready_loader = Some((basemap, (self.loaders.make)(basemap.source())));
         }
         // Карта палеогеографии - не выбор основы, в настройки не идёт.
@@ -6110,7 +6110,12 @@ impl eframe::App for LiteApp {
         for basemap in bases {
             let loader = self.loaders.basemap(basemap).or_else(|| self.ready_loader.as_ref().filter(|(b, _)| *b == basemap).map(|(_, l)| l.as_ref()));
             if let Some(loader) = loader {
-                loader.want(if basemap == self.basemap { &wanted } else { &[] });
+                // Уровни подробной мозаики идут не загрузчику тайлов.
+                let base: Vec<(TileKey, f64)> = match &self.cog_base {
+                    Some(c) if basemap == self.basemap => wanted.iter().copied().filter(|(k, _)| k.0 < c.from_level()).collect(),
+                    _ => Vec::new(),
+                };
+                loader.want(if basemap != self.basemap { &[] } else if self.cog_base.is_some() { &base } else { &wanted });
             }
         }
         if let Some(c) = &mut self.cog_base {
