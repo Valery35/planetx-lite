@@ -37,6 +37,31 @@ pub enum Basemap {
     /// Карта палеогеографии на возраст в млн лет, строка «Палеогеография»
     /// каталога. В выборе основы её нет.
     Paleo(u32),
+    /// Снимки тела, ключ [`scene::planets`]. В выборе основы её нет, она
+    /// стоит, пока на глобусе это тело.
+    Body(&'static str),
+}
+
+/// Вечные строки источника снимков тела: ключ, имя кэша, адрес,
+/// название, подпись, ссылка, предельный уровень.
+type BodyEntry = (&'static str, &'static str, &'static str, &'static str, &'static str, &'static str, u32);
+
+/// Источники снимков тел, заведённые за работу программы.
+static BODIES: RwLock<Vec<BodyEntry>> = RwLock::new(Vec::new());
+
+/// Строки источника снимков тела key или None, если у тела снимков нет.
+fn body_entry(key: &str) -> Option<BodyEntry> {
+    if let Some(found) = BODIES.read().ok().and_then(|l| l.iter().find(|e| e.0 == key).copied()) {
+        return Some(found);
+    }
+    let planet = scene::planets::planet_by_key(key);
+    let imagery = planet.imagery?;
+    let leak = |s: String| -> &'static str { Box::leak(s.into_boxed_str()) };
+    let entry = (planet.body.key, leak(format!("body_{key}")), leak(imagery.url), imagery.name, imagery.credit, imagery.link, u32::from(imagery.max_level));
+    if let Ok(mut l) = BODIES.write() {
+        l.push(entry);
+    }
+    Some(entry)
 }
 
 /// Адреса карт палеогеографии по возрасту, вечные строки источника.
@@ -353,6 +378,13 @@ impl Basemap {
                 let (name, url) = paleo_source(age);
                 Source { name, url, max_requests: 4, max_level: data::paleo::MAX_LEVEL, ext: "jpg", placeholders: false, raw: false, tilejson: None }
             }
+            Basemap::Body(key) => match body_entry(key) {
+                Some((_, name, url, _, _, _, max_level)) => {
+                    let ext = if url.ends_with(".jpg") { "jpg" } else { "png" };
+                    Source { name, url, max_requests: 4, max_level, ext, placeholders: false, raw: false, tilejson: None }
+                }
+                None => net::ESRI,
+            },
         }
     }
 
@@ -364,6 +396,7 @@ impl Basemap {
             Basemap::Ready(_) => self.ready().map_or("esri", |r| r.key),
             Basemap::Own(_) => self.own().map_or("esri", |e| e.key),
             Basemap::Paleo(_) => "paleo",
+            Basemap::Body(_) => "body",
         }
     }
 
@@ -380,6 +413,7 @@ impl Basemap {
             Basemap::Ready(_) => self.ready().map_or("", |r| tr(lang, r.name)),
             Basemap::Own(_) => self.own().map_or("", |e| e.name),
             Basemap::Paleo(_) => tr(lang, "Paleogeography"),
+            Basemap::Body(key) => body_entry(key).map_or("", |e| e.3),
         }
     }
 
@@ -396,6 +430,7 @@ impl Basemap {
             Basemap::Ready(_) => self.ready().map_or(("", ""), |r| (r.credit, r.terms)),
             Basemap::Own(_) => self.own().map_or(("", ""), |e| (e.credit, "")),
             Basemap::Paleo(_) => data::paleo::ATTRIBUTION,
+            Basemap::Body(key) => body_entry(key).map_or(("", ""), |e| (e.4, e.5)),
         }
     }
 }

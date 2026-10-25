@@ -1321,3 +1321,27 @@ Slab2 slab	Плита Slab2
 CRUST1.0 crust, PREM shells, depth, km	Кора CRUST1.0, оболочки PREM, глубина, км
 PREM shells, depth, km	Оболочки PREM, глубина, км
 The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	Модель коры CRUST1.0 не загружена, кора - слой PREM.
+Moon	Луна
+Mars	Марс
+Mercury	Меркурий
+Venus	Венера
+Jupiter	Юпитер
+Io	Ио
+Europa	Европа
+Ganymede	Ганимед
+Callisto	Каллисто
+Mimas	Мимас
+Enceladus	Энцелад
+Tethys	Тефия
+Dione	Диона
+Rhea	Рея
+Titan	Титан
+Iapetus	Япет
+Ceres	Церера
+Vesta	Веста
+Planets	Планеты
+Moons of Jupiter	Спутники Юпитера
+Moons of Saturn	Спутники Сатурна
+Asteroids	Астероиды
+Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies.	Тело глобуса - планета, спутник или карликовая планета. У каждого тела свои снимки, у Марса и Луны ещё и рельеф. Земные слои, поиск и здания на других телах выключены.
+Only on the Earth. The menu «Body» returns the Earth to the globe.	Только у Земли. Меню «Тело» возвращает Землю на глобус.

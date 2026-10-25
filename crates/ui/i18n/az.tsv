@@ -1321,3 +1321,27 @@ Slab2 slab	Slab2 lövhəsi
 CRUST1.0 crust, PREM shells, depth, km	CRUST1.0 qabığı, PREM təbəqələri, dərinlik, km
 PREM shells, depth, km	PREM təbəqələri, dərinlik, km
 The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	CRUST1.0 qabıq modeli yüklənməyib, qabıq PREM layıdır.
+Moon	Ay
+Mars	Mars
+Mercury	Merkuri
+Venus	Venera
+Jupiter	Yupiter
+Io	İo
+Europa	Avropa
+Ganymede	Qanimed
+Callisto	Kallisto
+Mimas	Mimas
+Enceladus	Enselad
+Tethys	Tefiya
+Dione	Diona
+Rhea	Reya
+Titan	Titan
+Iapetus	Yapet
+Ceres	Serera
+Vesta	Vesta
+Planets	Planetlər
+Moons of Jupiter	Yupiterin peykləri
+Moons of Saturn	Saturnun peykləri
+Asteroids	Asteroidlər
+Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies.	Qlobusun cismi - planet, peyk və ya cırtdan planet. Hər cismin öz şəkilləri var, Mars və Ayın həm də relyefi var. Yer layları, axtarış və binalar başqa cisimlərdə söndürülüb.
+Only on the Earth. The menu «Body» returns the Earth to the globe.	Yalnız Yerdə. "Cisim" menyusu Yeri qlobusa qaytarır.

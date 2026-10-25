@@ -356,6 +356,8 @@ pub enum Tool {
     Scene,
     /// Демо: академическая шапочка, у кнопки меню.
     Demo,
+    /// Тело глобуса: планета с кольцом, у кнопки меню.
+    Body,
     /// Свойства вида: шестерня.
     Settings,
     /// Во весь экран.
@@ -553,6 +555,20 @@ pub fn paint_tool(painter: &egui::Painter, rect: egui::Rect, tool: Tool, menu: b
             pen.arc(6.5, 12.0, 11.0, 7.0, 180.0, 180.0);
             pen.line(&[(17.5, 11.5), (17.5, 15.5)]);
             pen.line(&[(21.5, 9.5), (21.5, 15.0)]);
+        }
+        Tool::Body => {
+            pen.circle(12.0, 12.0, 5.5);
+            // Кольцо наискось: дуги эллипса перед шаром и по краям.
+            let ring: Vec<(f32, f32)> = (0..=24)
+                .map(|i| {
+                    let a = (15.0 * i as f32).to_radians();
+                    let (x, y) = (10.0 * a.cos(), 3.2 * a.sin());
+                    let (s, c) = (-20f32).to_radians().sin_cos();
+                    (12.0 + x * c - y * s, 12.0 + x * s + y * c)
+                })
+                .collect();
+            pen.line(&ring[..15]);
+            pen.line(&ring[22..]);
         }
         Tool::Settings => {
             pen.circle(12.0, 12.0, 3.0);

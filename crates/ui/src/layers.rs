@@ -74,6 +74,12 @@ impl Extra {
         out
     }
 
+    /// Слой есть только у Земли, `EARTH_EXTRAS` модуля. На любом теле -
+    /// атмосфера, звёзды и сетка.
+    pub fn earth_only(self) -> bool {
+        !matches!(self, Extra::Air | Extra::Stars | Extra::Grid)
+    }
+
     /// Строка карты картинками.
     pub fn map(self) -> Option<&'static crate::maps::Entry> {
         match self {
@@ -211,6 +217,8 @@ pub struct State<'a> {
     pub geoid_scale: f64,
     /// Выбранные группы спутников.
     pub sat_groups: &'a [String],
+    /// На глобусе Земля. На другом теле земные строки каталога - заглушки.
+    pub earth: bool,
 }
 
 /// Что попросили строки раздела или каталог.
@@ -259,7 +267,7 @@ pub fn basemap_title(lang: Lang, b: Basemap) -> &'static str {
     match b {
         Basemap::Esri => tr(lang, "Esri World Imagery - example"),
         Basemap::Osm => "OpenStreetMap",
-        Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_) => b.name(lang),
+        Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_) | Basemap::Body(_) => b.name(lang),
     }
 }
 
@@ -342,7 +350,8 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
     // Основа: щелчок по строке - меню выбора подложки.
     let title = format!("{} · {}", tr(lang, "Base map"), basemap_title(lang, state.basemap));
     let hit = row(ui, 4.0, None, true, &title, "▾", tr(lang, "Imagery or map on the surface. A click on the row chooses the basemap. Esri World Imagery is an example basemap, its terms are set by Esri."));
-    if hit.text || hit.menu {
+    // На другом теле основа - снимки тела, выбора нет.
+    if (hit.text || hit.menu) && state.earth {
         *menu_open = Some("basemap".into());
     }
     popup(ui, menu_open, "basemap", hit.rect, |ui| {
@@ -697,6 +706,19 @@ impl Item {
             }
     }
 
+    /// Почему строка сейчас недоступна, подсказка заглушки, или None:
+    /// служба не отдаёт данные странице или на глобусе не Земля.
+    fn unavailable(self, state: &State<'_>) -> Option<&'static str> {
+        if self.desktop_only() {
+            return Some(DESKTOP_ONLY);
+        }
+        let earth_only = match self {
+            Item::Extra(e) => e.earth_only(),
+            Item::Base(_) | Item::Group(_) | Item::Sat(_) => true,
+        };
+        (earth_only && !state.earth).then_some(EARTH_ONLY)
+    }
+
     fn is_on(self, state: &State<'_>) -> bool {
         match self {
             Item::Base(b) => state.basemap == b,
@@ -709,6 +731,8 @@ impl Item {
 
 /// Подсказка заглушки у страницы: служба не отдаёт данные браузеру.
 pub const DESKTOP_ONLY: &str = "Only in the desktop program - the service does not give its data to a web page.";
+/// Подсказка заглушки на другом теле.
+pub const EARTH_ONLY: &str = "Only on the Earth. The menu «Body» returns the Earth to the globe.";
 
 /// Ключ группы спутников по номеру.
 fn sat_key(n: usize) -> &'static str {
@@ -818,9 +842,9 @@ impl Catalog {
                             ui.label(egui::RichText::new(head).strong());
                             for item in list {
                                 let mut on = item.is_on(state);
-                                let missing = item.desktop_only() && !on;
+                                let missing = item.unavailable(state).filter(|_| !on);
                                 ui.horizontal(|ui| {
-                                    let check = ui.add_enabled_ui(!missing, |ui| crate::theme::checkbox(ui, &mut on).clicked()).inner;
+                                    let check = ui.add_enabled_ui(missing.is_none(), |ui| crate::theme::checkbox(ui, &mut on).clicked()).inner;
                                     if check {
                                         self.chosen = Some(item.key());
                                         click(item, state, out);
@@ -828,12 +852,15 @@ impl Catalog {
                                     let sub = item.subtitle();
                                     let label = if sub.is_empty() { item.name(lang) } else { format!("{}\n{}", item.name(lang), sub) };
                                     let selected = self.chosen.as_deref() == Some(&item.key());
-                                    let tip = if missing { format!("{}\n\n{}", item.tip(lang), tr(lang, DESKTOP_ONLY)) } else { item.tip(lang) };
+                                    let tip = match missing {
+                                        Some(why) => format!("{}\n\n{}", item.tip(lang), tr(lang, why)),
+                                        None => item.tip(lang),
+                                    };
                                     let r = ui.selectable_label(selected, label).on_hover_text(tip);
                                     if r.clicked() {
                                         self.chosen = Some(item.key());
                                     }
-                                    if r.double_clicked() && !missing {
+                                    if r.double_clicked() && missing.is_none() {
                                         click(item, state, out);
                                     }
                                 });
@@ -850,7 +877,7 @@ impl Catalog {
                             ui.label(item.tip(lang));
                             let on = item.is_on(state);
                             let (text, enabled) = match item {
-                                _ if item.desktop_only() && !on => (tr(lang, DESKTOP_ONLY), false),
+                                _ if !on && let Some(why) = item.unavailable(state) => (tr(lang, why), false),
                                 Item::Base(_) if on => (tr(lang, "Base map on the globe"), false),
                                 Item::Base(_) => (tr(lang, "Set as base map"), true),
                                 _ if on => (tr(lang, "Remove from the globe"), true),

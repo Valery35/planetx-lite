@@ -1321,3 +1321,27 @@ Slab2 slab	Slab2 俯冲板片
 CRUST1.0 crust, PREM shells, depth, km	CRUST1.0 地壳，PREM 圈层，深度，公里
 PREM shells, depth, km	PREM 圈层，深度，公里
 The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	未加载 CRUST1.0 地壳模型，地壳为 PREM 的一层。
+Moon	月球
+Mars	火星
+Mercury	水星
+Venus	金星
+Jupiter	木星
+Io	木卫一
+Europa	木卫二
+Ganymede	木卫三
+Callisto	木卫四
+Mimas	土卫一
+Enceladus	土卫二
+Tethys	土卫三
+Dione	土卫四
+Rhea	土卫五
+Titan	土卫六
+Iapetus	土卫八
+Ceres	谷神星
+Vesta	灶神星
+Planets	行星
+Moons of Jupiter	木星的卫星
+Moons of Saturn	土星的卫星
+Asteroids	小行星
+Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies.	地球仪显示的天体 - 行星、卫星或矮行星。每个天体都有自己的影像，火星和月球还有地形。在其他天体上，地球图层、搜索和建筑处于关闭状态。
+Only on the Earth. The menu «Body» returns the Earth to the globe.	仅限地球。“天体”菜单可将地球恢复到地球仪上。

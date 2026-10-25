@@ -1321,3 +1321,27 @@ Slab2 slab	Slab2-ის ფილა
 CRUST1.0 crust, PREM shells, depth, km	CRUST1.0-ის ქერქი, PREM-ის გარსები, სიღრმე, კმ
 PREM shells, depth, km	PREM-ის გარსები, სიღრმე, კმ
 The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	ქერქის მოდელი CRUST1.0 არ ჩაიტვირთა, ქერქი PREM-ის ფენაა.
+Moon	მთვარე
+Mars	მარსი
+Mercury	მერკური
+Venus	ვენერა
+Jupiter	იუპიტერი
+Io	იო
+Europa	ევროპა
+Ganymede	განიმედი
+Callisto	კალისტო
+Mimas	მიმასი
+Enceladus	ენცელადი
+Tethys	ტეთისი
+Dione	დიონე
+Rhea	რეა
+Titan	ტიტანი
+Iapetus	იაპეტი
+Ceres	ცერერა
+Vesta	ვესტა
+Planets	პლანეტები
+Moons of Jupiter	იუპიტერის თანამგზავრები
+Moons of Saturn	სატურნის თანამგზავრები
+Asteroids	ასტეროიდები
+Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies.	გლობუსის სხეული - პლანეტა, თანამგზავრი ან ჯუჯა პლანეტა. ყოველ სხეულს თავისი სურათები აქვს, მარსსა და მთვარეს რელიეფიც აქვს. დედამიწის ფენები, ძიება და შენობები სხვა სხეულებზე გამორთულია.
+Only on the Earth. The menu «Body» returns the Earth to the globe.	მხოლოდ დედამიწაზე. მენიუ „სხეული“ გლობუსზე დედამიწას აბრუნებს.

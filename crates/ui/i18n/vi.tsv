@@ -1321,3 +1321,27 @@ Slab2 slab	Mảng Slab2
 CRUST1.0 crust, PREM shells, depth, km	Vỏ CRUST1.0, các lớp PREM, độ sâu, km
 PREM shells, depth, km	Các lớp PREM, độ sâu, km
 The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	Chưa tải mô hình vỏ CRUST1.0, vỏ là một lớp của PREM.
+Moon	Mặt Trăng
+Mars	Sao Hỏa
+Mercury	Sao Thủy
+Venus	Sao Kim
+Jupiter	Sao Mộc
+Io	Io
+Europa	Europa
+Ganymede	Ganymede
+Callisto	Callisto
+Mimas	Mimas
+Enceladus	Enceladus
+Tethys	Tethys
+Dione	Dione
+Rhea	Rhea
+Titan	Titan
+Iapetus	Iapetus
+Ceres	Ceres
+Vesta	Vesta
+Planets	Các hành tinh
+Moons of Jupiter	Các vệ tinh của Sao Mộc
+Moons of Saturn	Các vệ tinh của Sao Thổ
+Asteroids	Các tiểu hành tinh
+Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies.	Thiên thể của quả địa cầu - một hành tinh, một vệ tinh hoặc một hành tinh lùn. Mỗi thiên thể có ảnh riêng, Sao Hỏa và Mặt Trăng còn có địa hình. Các lớp của Trái Đất, tìm kiếm và tòa nhà bị tắt trên các thiên thể khác.
+Only on the Earth. The menu «Body» returns the Earth to the globe.	Chỉ có ở Trái Đất. Menu "Thiên thể" đưa Trái Đất trở lại quả địa cầu.

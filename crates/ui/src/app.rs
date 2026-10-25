@@ -151,7 +151,7 @@ impl Loaders {
         match basemap {
             Basemap::Esri => Some(self.esri.as_ref()),
             Basemap::Osm => Some(self.osm.as_ref()),
-            Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_) => None,
+            Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_) | Basemap::Body(_) => None,
         }
     }
 }
@@ -174,6 +174,61 @@ struct PaleoState {
     last: f64,
     before: Basemap,
     rows: std::collections::BTreeSet<crate::vector::Row>,
+}
+
+/// Земля на время другого тела: земные слои каталога, строки векторной
+/// основы и основа, как они были. С возвратом Земли они включаются снова.
+struct EarthAway {
+    extras: Vec<crate::layers::Extra>,
+    rows: std::collections::BTreeSet<crate::vector::Row>,
+    basemap: Basemap,
+}
+
+/// Название тела по ключу [`scene::planets`], ключ перевода.
+pub fn body_name(key: &str) -> &'static str {
+    match key {
+        "moon" => "Moon",
+        "mars" => "Mars",
+        "mercury" => "Mercury",
+        "venus" => "Venus",
+        "jupiter" => "Jupiter",
+        "io" => "Io",
+        "europa" => "Europa",
+        "ganymede" => "Ganymede",
+        "callisto" => "Callisto",
+        "mimas" => "Mimas",
+        "enceladus" => "Enceladus",
+        "tethys" => "Tethys",
+        "dione" => "Dione",
+        "rhea" => "Rhea",
+        "titan" => "Titan",
+        "iapetus" => "Iapetus",
+        "ceres" => "Ceres",
+        "vesta" => "Vesta",
+        _ => "Earth",
+    }
+}
+
+/// Подменю меню «Тело» по ключу [`scene::planets::MENU`].
+fn body_group_name(key: &str) -> &'static str {
+    match key {
+        "planets" => "Planets",
+        "jupiter" => "Moons of Jupiter",
+        "saturn" => "Moons of Saturn",
+        _ => "Asteroids",
+    }
+}
+
+/// Источник высот тела: у Земли Terrarium, у Марса и Луны - тайлы
+/// planetx-terrain, у прочих тел высот нет.
+fn terrain_source(planet: &scene::planets::Planet) -> Option<net::Source> {
+    if planet.earth {
+        return Some(net::TERRARIUM);
+    }
+    let t = planet.terrain.as_ref()?;
+    let name: &'static str = Box::leak(format!("terrain_{}", planet.key()).into_boxed_str());
+    let url: &'static str = Box::leak(t.url.clone().into_boxed_str());
+    Some(net::Source { name, url, max_requests: 4, max_level: u32::from(t.max_level), ..net::TERRARIUM })
 }
 
 /// Секунд на шаг возраста при показе, `PLAY_PERIOD` модуля.
@@ -351,6 +406,10 @@ pub struct LiteApp {
     geoid: Option<GeoidState>,
     /// Палеогеография: ползунок возраста и что было до неё.
     paleo: Option<PaleoState>,
+    /// Тело на глобусе, `core/planets.py` модуля.
+    planet: scene::planets::Planet,
+    /// Земля на время другого тела.
+    earth_away: Option<EarthAway>,
     /// Режим полёта, свой самолёт.
     flight: Option<crate::flight::Flight>,
     /// Модель на пути, за которой идёт камера, номер в `movers`.
@@ -870,6 +929,8 @@ impl LiteApp {
             calc_keys: Vec::new(),
             etomesto: None,
             paleo: None,
+            planet: scene::planets::planet_by_key("earth"),
+            earth_away: None,
             geoid: None,
             live: BTreeMap::new(),
             live_keys: Vec::new(),
@@ -1014,8 +1075,7 @@ impl LiteApp {
     /// Панель значков в левом верхнем углу глобуса, `ui/toolbar.py`
     /// модуля. Кнопки и их порядок - как у модуля, решение автора
     /// от 24 октября 2026 года «порядок кнопок возьми тем же». Без
-    /// кнопок QGIS: синхронизации с картой и вида в макет, и без
-    /// «Тела»: другие тела Lite не показывает.
+    /// кнопок QGIS: синхронизации с картой и вида в макет.
     fn toolbar(&mut self, ctx: &egui::Context, view: egui::Rect, now: f64) {
         use crate::theme::{Tool, tool_button};
         let lang = self.lang;
@@ -1045,6 +1105,7 @@ impl LiteApp {
         let mut save_view = false;
         let mut snapshot: Option<SnapshotTo> = None;
         let mut scene: Option<SceneAction> = None;
+        let mut body: Option<&'static str> = None;
         // Уровень панели - как у окон: открытое окно встаёт поверх неё.
         // На уровне Foreground панель закрывала окно «Источники данных»,
         // замечание автора от 23 октября 2026 года.
@@ -1118,6 +1179,36 @@ impl LiteApp {
                         });
                         let demo = tool_button(ui, Tool::Demo, false, true, true, tr(lang, "Demo: prepared scenes with placemarks and tours. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour."));
                         egui::Popup::menu(&demo).show(|ui| demo_items(ui, lang, &mut clicks.demo));
+                        // Тело глобуса, меню `MENU` модуля: Земля сверху, под
+                        // разделителем Луна и Марс, прочие тела - подменю.
+                        let body_button = tool_button(ui, Tool::Body, !self.planet.earth, true, true, tr(lang, "Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies."));
+                        let current = self.planet.key();
+                        egui::Popup::menu(&body_button).show(|ui| {
+                            for (n, (group, keys)) in scene::planets::MENU.iter().enumerate() {
+                                let mut items = |ui: &mut egui::Ui| {
+                                    for key in keys.iter() {
+                                        // Снимки Марса и Луны в S3 без CORS: у страницы
+                                        // эти тела - заглушки.
+                                        if cfg!(target_arch = "wasm32") && matches!(*key, "mars" | "moon") {
+                                            ui.add_enabled(false, egui::RadioButton::new(false, tr(lang, body_name(key)))).on_disabled_hover_text(tr(lang, crate::layers::DESKTOP_ONLY));
+                                            continue;
+                                        }
+                                        if ui.radio(current == *key, tr(lang, body_name(key))).clicked() {
+                                            body = Some(*key);
+                                            ui.close();
+                                        }
+                                    }
+                                };
+                                if group.is_empty() {
+                                    if n > 0 {
+                                        ui.separator();
+                                    }
+                                    items(ui);
+                                } else {
+                                    ui.menu_button(tr(lang, body_group_name(group)), items);
+                                }
+                            }
+                        });
                         if tool_button(ui, Tool::Settings, settings, false, true, tr(lang, "View properties: relief scale, language of labels, appearance.")).clicked() {
                             settings = !settings;
                         }
@@ -1145,6 +1236,9 @@ impl LiteApp {
         }
         if record {
             self.toggle_record(now);
+        }
+        if let Some(key) = body {
+            self.set_body(key);
         }
         if save_view {
             let name = scene::placetree::numbered_name(tr(lang, "View"), &self.marks.names());
@@ -1585,7 +1679,63 @@ impl LiteApp {
     /// Пол высот Земли: 0 - высоты ниже нуля обнуляются, минус
     /// бесконечность - дно моря остаётся, `_earth_floor` модуля.
     fn earth_floor(&self) -> f32 {
-        if self.settings.sea { f32::NEG_INFINITY } else { EARTH_FLOOR }
+        // У других тел моря нет, впадины остаются.
+        if self.settings.sea || !self.planet.earth { f32::NEG_INFINITY } else { EARTH_FLOOR }
+    }
+
+    /// Сменить тело глобуса, `_set_body` модуля: размеры тела, снимки,
+    /// высоты, воздух и земные слои сразу. Камера встаёт над домашней
+    /// точкой тела. Неизвестный ключ - Земля.
+    fn set_body(&mut self, key: &str) {
+        use crate::layers::Extra;
+        let planet = scene::planets::planet_by_key(key);
+        if planet.key() == self.planet.key() {
+            return;
+        }
+        // Земные слои и векторная основа приостанавливаются, как
+        // `_apply_extra` модуля на другом теле.
+        if self.planet.earth {
+            let extras: Vec<Extra> = self.extras_on.iter().copied().filter(|e| e.earth_only()).collect();
+            for extra in &extras {
+                self.set_extra(*extra, false);
+            }
+            let rows = self.vector.rows.clone();
+            self.set_vector_rows(std::collections::BTreeSet::new());
+            self.earth_away = Some(EarthAway { extras, rows, basemap: self.basemap });
+        }
+        // Разрез вниз и профиль считались по прежнему телу.
+        self.section = None;
+        self.profile = None;
+        self.planet = planet;
+        self.nav.camera.ellipsoid = Ellipsoid::new(self.planet.body);
+        // Высоты прежнего тела не годятся.
+        let source = terrain_source(&self.planet);
+        self.loaders.terrain = (self.loaders.make)(source.unwrap_or(net::TERRARIUM));
+        {
+            let mut store = self.heights.write();
+            store.clear();
+            store.max_level = source.map_or(0, |s| s.max_level).min(terrain::MAX_LEVEL);
+        }
+        if let Some(globe) = &mut self.globe {
+            globe.change_body();
+            globe.set_subsurface("section", None);
+        }
+        self.pending.clear();
+        if self.planet.earth {
+            let away = self.earth_away.take();
+            self.set_basemap(away.as_ref().map_or(Basemap::default(), |a| a.basemap));
+            if let Some(away) = away {
+                self.set_vector_rows(away.rows);
+                for extra in away.extras {
+                    self.set_extra(extra, true);
+                }
+            }
+        } else {
+            self.set_basemap(Basemap::Body(self.planet.key()));
+        }
+        let (lat, lon, distance) = self.planet.home;
+        self.nav.stop();
+        self.nav.set_pose(Pose::new(lat, lon, distance, 0.0, 0.0));
     }
 
     /// Окно «Объекты» для точки: метки под пикселем, если он дан, и место
@@ -2468,6 +2618,7 @@ impl LiteApp {
             stretch: self.settings.stretch,
             geoid_scale: self.settings.geoid_scale,
             sat_groups: &self.settings.sat_groups,
+            earth: self.planet.earth,
         }
     }
 
@@ -2930,6 +3081,10 @@ impl LiteApp {
                 self.marks.add(opened.tree, &opened.name, marks::root_name(self.lang));
                 self.player = None;
                 self.marks_changed();
+                // Тело сцены - до её позы, как `ui/scene.py` модуля.
+                if let Some(body) = &opened.body {
+                    self.set_body(body);
+                }
                 // Поза, заданная при запуске, сильнее позы сцены.
                 if let Some(pose) = opened.pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
                     match fly {
@@ -4909,11 +5064,11 @@ impl LiteApp {
         }
         self.basemap = basemap;
         self.pending.clear();
-        if matches!(basemap, Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_)) && self.ready_loader.as_ref().is_none_or(|(b, _)| *b != basemap) {
+        if matches!(basemap, Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_) | Basemap::Body(_)) && self.ready_loader.as_ref().is_none_or(|(b, _)| *b != basemap) {
             self.ready_loader = Some((basemap, (self.loaders.make)(basemap.source())));
         }
         // Карта палеогеографии - не выбор основы, в настройки не идёт.
-        if !matches!(basemap, Basemap::Paleo(_)) {
+        if !matches!(basemap, Basemap::Paleo(_) | Basemap::Body(_)) {
             self.settings.basemap = basemap.key().to_string();
             self.settings_dirty = true;
         }
@@ -5245,7 +5400,14 @@ impl LiteApp {
     /// Знак PlanetX и подпись источников, как в модуле: подложка
     /// и рельеф целиком, дальше векторная основа.
     fn attribution(&mut self, ctx: &egui::Context, view: egui::Rect) {
-        let mut parts = vec![self.basemap.attribution(self.lang), credits::TERRAIN, labels::ATTRIBUTION];
+        // На другом теле - его снимки и высоты, земных подписей мест нет.
+        let mut parts = if self.planet.earth {
+            vec![self.basemap.attribution(self.lang), credits::TERRAIN, labels::ATTRIBUTION]
+        } else {
+            let mut p = vec![self.basemap.attribution(self.lang)];
+            p.extend(self.planet.terrain.as_ref().map(|t| (t.credit, "")));
+            p
+        };
         // Подписи включённых карт картинками.
         parts.extend(self.vector.map_keys().into_iter().filter_map(crate::maps::kind).map(|k| (k.attribution(), k.link())));
         parts.extend(self.dots.keys().into_iter().map(|l| l.attribution()));
@@ -5345,7 +5507,9 @@ impl LiteApp {
         let edit = ui
             .horizontal(|ui| {
                 let width = ui.available_width() - 70.0;
-                let edit = ui.add(
+                // Поиск места - земной, на другом теле строка выключена.
+                let edit = ui.add_enabled(
+                    self.planet.earth,
                     egui::TextEdit::singleline(&mut self.search_text)
                         .id(egui::Id::unique("planetx-search"))
                         .hint_text(tr(self.lang, "Voyages of Columbus"))
@@ -5937,9 +6101,10 @@ impl eframe::App for LiteApp {
                 g.loader.want(&needs);
                 self.loaders.terrain.want(&[]);
             }
-            None => self.loaders.terrain.want(&needs),
+            None if terrain_source(&self.planet).is_some() => self.loaders.terrain.want(&needs),
+            None => self.loaders.terrain.want(&[]),
         }
-        let mut vector_tiles = self.labels.wanted(&selection.draw);
+        let mut vector_tiles = if self.planet.earth { self.labels.wanted(&selection.draw) } else { Vec::new() };
         // Подписям - только их тайлы: разбор пунктов всех тайлов линий
         // стоил главному потоку до 40 кадров в секунду.
         self.label_keys = vector_tiles.iter().map(|(k, _)| *k).collect();
@@ -6069,7 +6234,7 @@ impl eframe::App for LiteApp {
         // Вода над дном моря, под картой аномалий поля прозрачнее: синяя
         // вода делала красное молодое дно у хребтов фиолетовым.
         // В режиме геоида воды нет, высоты - геоид, а не дно.
-        let water = (self.settings.sea && self.geoid.is_none()).then(|| {
+        let water = (self.settings.sea && self.geoid.is_none() && self.planet.earth).then(|| {
             let under_field = if self.settings.maps.iter().any(|m| m == "emag") { WATER_UNDER_FIELD } else { 1.0 };
             [WATER_COLOR[0], WATER_COLOR[1], WATER_COLOR[2], WATER_COLOR[3] * under_field]
         });
@@ -6078,7 +6243,7 @@ impl eframe::App for LiteApp {
             globe.grab();
         }
         let stats =
-            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air, ratio: ppp as f32, sun, water, tint: None });
+            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air && self.planet.air.is_some(), ratio: ppp as f32, sun, water, tint: self.planet.air });
         drop(store);
         if let Some(check) = &mut self.check
             && check.waits_frame()
@@ -6105,8 +6270,8 @@ impl eframe::App for LiteApp {
         if pad {
             blocked.push(crate::navpad::rect(rect));
         }
-        // В палеогеографии подписей нет, как у модуля.
-        if self.paleo.is_none() {
+        // В палеогеографии и на других телах подписей нет, как у модуля.
+        if self.paleo.is_none() && self.planet.earth {
             self.labels.draw(&painter, rect, ppp as f32, &blocked, &self.nav.camera, &selection.draw, &self.heights.read());
         }
         // Приборы и строка полёта.

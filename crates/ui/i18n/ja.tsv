@@ -1321,3 +1321,27 @@ Slab2 slab	Slab2 のスラブ
 CRUST1.0 crust, PREM shells, depth, km	CRUST1.0 の地殻、PREM の層、深さ、km
 PREM shells, depth, km	PREM の層、深さ、km
 The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	地殻モデル CRUST1.0 が読み込まれていないため、地殻は PREM の層です。
+Moon	月
+Mars	火星
+Mercury	水星
+Venus	金星
+Jupiter	木星
+Io	イオ
+Europa	エウロパ
+Ganymede	ガニメデ
+Callisto	カリスト
+Mimas	ミマス
+Enceladus	エンケラドゥス
+Tethys	テティス
+Dione	ディオネ
+Rhea	レア
+Titan	タイタン
+Iapetus	イアペトゥス
+Ceres	ケレス
+Vesta	ベスタ
+Planets	惑星
+Moons of Jupiter	木星の衛星
+Moons of Saturn	土星の衛星
+Asteroids	小惑星
+Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies.	地球儀の天体 - 惑星、衛星、準惑星のいずれか。天体ごとに独自の画像があり、火星と月には地形もあります。他の天体では地球のレイヤー、検索、建物はオフになります。
+Only on the Earth. The menu «Body» returns the Earth to the globe.	地球のみ。「天体」メニューで地球儀を地球に戻せます。

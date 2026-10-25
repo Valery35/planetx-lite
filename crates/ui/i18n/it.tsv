@@ -1321,3 +1321,27 @@ Slab2 slab	Placca Slab2
 CRUST1.0 crust, PREM shells, depth, km	Crosta CRUST1.0, involucri PREM, profondità, km
 PREM shells, depth, km	Involucri PREM, profondità, km
 The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	Il modello di crosta CRUST1.0 non è caricato, la crosta è uno strato di PREM.
+Moon	Luna
+Mars	Marte
+Mercury	Mercurio
+Venus	Venere
+Jupiter	Giove
+Io	Io
+Europa	Europa
+Ganymede	Ganimede
+Callisto	Callisto
+Mimas	Mimas
+Enceladus	Encelado
+Tethys	Teti
+Dione	Dione
+Rhea	Rea
+Titan	Titano
+Iapetus	Giapeto
+Ceres	Cerere
+Vesta	Vesta
+Planets	Pianeti
+Moons of Jupiter	Lune di Giove
+Moons of Saturn	Lune di Saturno
+Asteroids	Asteroidi
+Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies.	Corpo del globo - un pianeta, una luna o un pianeta nano. Ogni corpo ha le proprie immagini, Marte e la Luna hanno anche il rilievo. I livelli terrestri, la ricerca e gli edifici sono disattivati sugli altri corpi.
+Only on the Earth. The menu «Body» returns the Earth to the globe.	Solo sulla Terra. Il menu «Corpo» riporta la Terra sul globo.
