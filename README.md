@@ -1,5 +1,7 @@
 # PlanetX Lite
 
+[![Support development](https://img.shields.io/badge/Support-development-2ea44f)](https://github.com/Valery35#%D0%BF%D0%BE%D0%B4%D0%B4%D0%B5%D1%80%D0%B6%D0%B0%D1%82%D1%8C-%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%BA%D1%83)
+
 The [PlanetX](https://github.com/Valery35/planetx) globe without QGIS.
 One Rust program for Windows, Linux and macOS, and the same program as
 a web page, on phones too.
@@ -21,6 +23,8 @@ a web page, on phones too.
 | Web page for your own server | `PlanetX-Lite-<version>-web.zip` |
 
 File checksums are in `SHA256SUMS` in the same release.
+
+The program is free and open source. [Support development](https://github.com/Valery35#%D0%BF%D0%BE%D0%B4%D0%B4%D0%B5%D1%80%D0%B6%D0%B0%D1%82%D1%8C-%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%BA%D1%83) (Russian bank cards via SBP)
 
 ## Features
 
@@ -89,6 +93,8 @@ window.
 
 # PlanetX Lite по-русски
 
+[![Поддержать СБП](https://img.shields.io/badge/%D0%9F%D0%BE%D0%B4%D0%B4%D0%B5%D1%80%D0%B6%D0%B0%D1%82%D1%8C-%D0%A1%D0%91%D0%9F-2ea44f)](https://github.com/Valery35#%D0%BF%D0%BE%D0%B4%D0%B4%D0%B5%D1%80%D0%B6%D0%B0%D1%82%D1%8C-%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%BA%D1%83)
+
 Глобус [PlanetX](https://github.com/Valery35/planetx) без QGIS. Одна
 программа на Rust для Windows, Linux и macOS и та же программа
 страницей в браузере, на телефоне тоже.
@@ -108,6 +114,8 @@ window.
 | Страница для своего сервера | `PlanetX-Lite-<версия>-web.zip` |
 
 Контрольные суммы файлов - `SHA256SUMS` в том же выпуске.
+
+Программа бесплатная и открытая. [Поддержать разработку](https://github.com/Valery35#%D0%BF%D0%BE%D0%B4%D0%B4%D0%B5%D1%80%D0%B6%D0%B0%D1%82%D1%8C-%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%BA%D1%83)
 
 ## Что умеет
 
