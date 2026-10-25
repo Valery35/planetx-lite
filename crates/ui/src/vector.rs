@@ -116,11 +116,15 @@ pub type TreeGroup = (&'static str, &'static str, &'static [TreeRow]);
 pub const TREE: [TreeGroup; 3] = [
     (
         "Borders and names",
-        "Borders of countries and regions and labels on the globe.",
+        "Borders of countries and regions, rivers and lakes, labels on the globe.",
         &[
             (Row::Borders, "Borders", "Borders of countries bright yellow, borders of regions thin white. Sea borders are not drawn."),
             (Row::Places, "Settlements", "Names of countries, regions, cities, towns and villages. Smaller places appear when zooming in."),
             (Row::WaterNames, "Water names", "Names of seas, lakes and reservoirs, in light blue italics."),
+            // Реки и водоёмы - в границах и названиях, решение автора
+            // от 26 октября 2026 года, по умолчанию выключены.
+            (Row::Rivers, "Rivers", "Narrow rivers as blue lines. They appear from about 600 m per pixel."),
+            (Row::Water, "Lakes and reservoirs", "Shores of lakes, reservoirs and wide rivers outlined in blue. Reservoirs are cut into pieces in the data, and the outline runs along the cuts too."),
         ],
     ),
     (
@@ -135,10 +139,8 @@ pub const TREE: [TreeGroup; 3] = [
     ),
     (
         "Nature",
-        "Rivers, peaks and protected areas.",
+        "Peaks and protected areas.",
         &[
-            (Row::Rivers, "Rivers", "Narrow rivers as blue lines. They appear from about 600 m per pixel."),
-            (Row::Water, "Lakes and reservoirs", "Shores of lakes, reservoirs and wide rivers outlined in blue. Reservoirs are cut into pieces in the data, and the outline runs along the cuts too."),
             (Row::Peaks, "Peaks", "Peaks and volcanoes with their height in metres, a triangle icon. They are labelled from a height below 400 km."),
             (Row::Parks, "Reserves and national parks", "Nature reserves, national parks and wildlife refuges, a green outline and a name. Names are seen below 3000 km, the outline together with motorways."),
         ],
