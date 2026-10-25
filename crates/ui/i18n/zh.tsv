@@ -1173,3 +1173,20 @@ Starlink	Starlink
 SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	位于 340-570 公里高度的 SpaceX 通信卫星，数以千计。加载和首次计算比其他分组耗时更长。
 OneWeb	OneWeb
 OneWeb communication satellites at about 1200 km.	位于约 1200 公里高度的 OneWeb 通信卫星。
+Power line 500 kV and above	500 kV 及以上输电线路
+Power line 220-330 kV	220-330 kV 输电线路
+Power line 110-150 kV	110-150 kV 输电线路
+Power line below 110 kV or without voltage	110 kV 以下或无电压的输电线路
+Gas pipeline	输气管道
+Oil or product pipeline	输油或成品油管道
+Water, heat, sewage	供水、供热、排污
+Pipeline, substance not given	管道，输送物未注明
+Mine	矿井
+Mine shaft	竖井
+Power line	输电线路
+Pipeline	管道
+Substation	变电站
+Dot - substation	圆点 - 变电站
+Substance	输送物
+Location	敷设方式
+The OpenStreetMap server did not answer, the request will repeat by itself.	OpenStreetMap 服务器未响应，请求将自动重试。

@@ -114,6 +114,25 @@ fn dots_scale(layer: Layer) -> Option<Scale> {
             footer: "",
             lines: false,
         },
+        Layer::OsmMines => Scale::Rows {
+            title: "OSM mines and quarries",
+            rows: (0..=data::deposits::OTHER).map(|n| (data::deposits::color(n), crate::dots::deposit_group(n))).collect(),
+            footer: "",
+            lines: false,
+        },
+        // ЛЭП и трубопроводы OSM, `InfraLegend` модуля. Пунктира у Lite нет,
+        // подстанция - кружок, а не квадрат.
+        Layer::InfraOsm => Scale::Rows {
+            title: "OSM power lines, cables and pipelines",
+            rows: data::infra::VOLTAGES
+                .iter()
+                .map(|v| (v.2, crate::dots::infra_name(v.0)))
+                .chain(data::infra::CABLES.iter().map(|c| (c.1, crate::dots::infra_name(c.0))))
+                .chain(data::infra::SUBSTANCES.iter().map(|s| (s.2, crate::dots::infra_name(s.0))))
+                .collect(),
+            footer: "Dot - substation",
+            lines: true,
+        },
         Layer::Plates | Layer::Cables | Layer::MagPoles | Layer::MagDecl | Layer::PlateMotion => return None,
     })
 }

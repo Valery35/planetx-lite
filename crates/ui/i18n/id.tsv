@@ -1173,3 +1173,20 @@ Starlink	Starlink
 SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	Satelit komunikasi SpaceX pada ketinggian 340-570 km, jumlahnya ribuan. Pemuatan dan perhitungan pertama lebih lama daripada grup lain.
 OneWeb	OneWeb
 OneWeb communication satellites at about 1200 km.	Satelit komunikasi OneWeb pada ketinggian sekitar 1200 km.
+Power line 500 kV and above	Saluran listrik 500 kV ke atas
+Power line 220-330 kV	Saluran listrik 220-330 kV
+Power line 110-150 kV	Saluran listrik 110-150 kV
+Power line below 110 kV or without voltage	Saluran listrik di bawah 110 kV atau tanpa tegangan
+Gas pipeline	Pipa gas
+Oil or product pipeline	Pipa minyak atau produk
+Water, heat, sewage	Air, panas, limbah
+Pipeline, substance not given	Pipa, zat tidak disebutkan
+Mine	Tambang
+Mine shaft	Sumuran tambang
+Power line	Saluran listrik
+Pipeline	Pipa
+Substation	Gardu induk
+Dot - substation	Lingkaran - gardu induk
+Substance	Zat
+Location	Pemasangan
+The OpenStreetMap server did not answer, the request will repeat by itself.	Server OpenStreetMap tidak menjawab, permintaan akan diulang sendiri.

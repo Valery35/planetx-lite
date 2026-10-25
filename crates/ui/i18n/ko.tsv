@@ -1173,3 +1173,20 @@ Starlink	Starlink
 SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	고도 340-570 km의 SpaceX 통신 위성으로 수천 기입니다. 불러오기와 첫 계산이 다른 그룹보다 오래 걸립니다.
 OneWeb	OneWeb
 OneWeb communication satellites at about 1200 km.	고도 약 1200 km의 OneWeb 통신 위성.
+Power line 500 kV and above	송전선 500 kV 이상
+Power line 220-330 kV	송전선 220-330 kV
+Power line 110-150 kV	송전선 110-150 kV
+Power line below 110 kV or without voltage	송전선 110 kV 미만 또는 전압 미상
+Gas pipeline	가스관
+Oil or product pipeline	석유 또는 제품 수송관
+Water, heat, sewage	상수, 열, 하수
+Pipeline, substance not given	파이프라인, 운송 물질 미상
+Mine	광산
+Mine shaft	수갱
+Power line	송전선
+Pipeline	파이프라인
+Substation	변전소
+Dot - substation	원 - 변전소
+Substance	운송 물질
+Location	설치 방식
+The OpenStreetMap server did not answer, the request will repeat by itself.	OpenStreetMap 서버가 응답하지 않았습니다. 요청은 자동으로 다시 보냅니다.

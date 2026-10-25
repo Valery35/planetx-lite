@@ -189,7 +189,7 @@ pub struct VectorBase {
     /// Наборы линий слоёв каталога над картами, под линиями основы.
     sets: Vec<Arc<Vec<Line>>>,
     /// Слои расчёта над картами: картинка тайла считается по готовому
-    /// результату без сети, как ResultTiles модуля.
+    /// результату без сети, как `ResultTiles` модуля.
     painters: Vec<(&'static str, Painter)>,
     #[cfg(not(target_arch = "wasm32"))]
     pool: Option<Pool>,

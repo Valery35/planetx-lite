@@ -1173,3 +1173,20 @@ Starlink	Starlink
 SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	Спутники связи SpaceX на высоте 340-570 км, их тысячи. Загрузка и первый расчёт идут дольше прочих групп.
 OneWeb	OneWeb
 OneWeb communication satellites at about 1200 km.	Спутники связи OneWeb на высоте около 1200 км.
+Power line 500 kV and above	ЛЭП 500 кВ и выше
+Power line 220-330 kV	ЛЭП 220-330 кВ
+Power line 110-150 kV	ЛЭП 110-150 кВ
+Power line below 110 kV or without voltage	ЛЭП ниже 110 кВ и без напряжения
+Gas pipeline	Газопровод
+Oil or product pipeline	Нефте- и продуктопровод
+Water, heat, sewage	Вода, тепло, стоки
+Pipeline, substance not given	Трубопровод, вещество не указано
+Mine	Шахта или рудник
+Mine shaft	Ствол шахты
+Power line	ЛЭП
+Pipeline	Трубопровод
+Substation	Подстанция
+Dot - substation	Кружок - подстанция
+Substance	Вещество
+Location	Прокладка
+The OpenStreetMap server did not answer, the request will repeat by itself.	Сервер OpenStreetMap не ответил, запрос повторится сам.

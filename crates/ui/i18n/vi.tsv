@@ -1173,3 +1173,20 @@ Starlink	Starlink
 SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	Vệ tinh liên lạc của SpaceX ở độ cao 340-570 km, hàng nghìn chiếc. Tải và lần tính đầu tiên lâu hơn các nhóm khác.
 OneWeb	OneWeb
 OneWeb communication satellites at about 1200 km.	Vệ tinh liên lạc của OneWeb ở độ cao khoảng 1200 km.
+Power line 500 kV and above	Đường dây điện từ 500 kV trở lên
+Power line 220-330 kV	Đường dây điện 220-330 kV
+Power line 110-150 kV	Đường dây điện 110-150 kV
+Power line below 110 kV or without voltage	Đường dây điện dưới 110 kV hoặc không rõ điện áp
+Gas pipeline	Đường ống khí
+Oil or product pipeline	Đường ống dầu hoặc sản phẩm dầu
+Water, heat, sewage	Nước, nhiệt, nước thải
+Pipeline, substance not given	Đường ống, chưa rõ chất vận chuyển
+Mine	Mỏ hầm lò
+Mine shaft	Giếng mỏ
+Power line	Đường dây điện
+Pipeline	Đường ống
+Substation	Trạm biến áp
+Dot - substation	Chấm tròn - trạm biến áp
+Substance	Chất vận chuyển
+Location	Cách lắp đặt
+The OpenStreetMap server did not answer, the request will repeat by itself.	Máy chủ OpenStreetMap không trả lời, yêu cầu sẽ tự lặp lại.

@@ -1173,3 +1173,20 @@ Starlink	Starlink
 SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	340-570 km'deki SpaceX haberleşme uyduları, binlerce. Yükleme ve ilk hesap diğer gruplardan uzun sürer.
 OneWeb	OneWeb
 OneWeb communication satellites at about 1200 km.	Yaklaşık 1200 km'deki OneWeb haberleşme uyduları.
+Power line 500 kV and above	Enerji hattı 500 kV ve üzeri
+Power line 220-330 kV	Enerji hattı 220-330 kV
+Power line 110-150 kV	Enerji hattı 110-150 kV
+Power line below 110 kV or without voltage	Enerji hattı 110 kV'nin altında veya gerilimsiz
+Gas pipeline	Doğal gaz boru hattı
+Oil or product pipeline	Petrol veya ürün boru hattı
+Water, heat, sewage	Su, ısı, atık su
+Pipeline, substance not given	Boru hattı, madde belirtilmemiş
+Mine	Maden ocağı
+Mine shaft	Maden kuyusu
+Power line	Enerji hattı
+Pipeline	Boru hattı
+Substation	Trafo merkezi
+Dot - substation	Daire - trafo merkezi
+Substance	Madde
+Location	Döşeme
+The OpenStreetMap server did not answer, the request will repeat by itself.	OpenStreetMap sunucusu yanıt vermedi, istek kendiliğinden yinelenecek.

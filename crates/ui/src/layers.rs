@@ -135,7 +135,7 @@ impl Extra {
                 _ => Category::Depths,
             },
             Extra::Dots(crate::dots::Layer::Fires) => Category::Fire,
-            Extra::Dots(crate::dots::Layer::Cables | crate::dots::Layer::Plants) => Category::Infra,
+            Extra::Dots(crate::dots::Layer::Cables | crate::dots::Layer::Plants | crate::dots::Layer::InfraOsm) => Category::Infra,
             Extra::Dots(_) | Extra::Cutaway | Extra::Paleo | Extra::Geoid => Category::Depths,
             Extra::Live(_) => Category::Transport,
             Extra::Wiki => Category::Wiki,
@@ -690,7 +690,7 @@ fn items() -> Vec<Item> {
     out.extend((0..crate::maps::ALL.len()).map(|n| Item::Extra(Extra::Map(n))));
     use crate::dots::Layer;
     out.extend(
-        [Layer::Quakes, Layer::Iscgem, Layer::Plates, Layer::Faults, Layer::PlateMotion, Layer::Volcanoes, Layer::MagPoles, Layer::MagDecl, Layer::Deposits, Layer::Plants, Layer::Cables]
+        [Layer::Quakes, Layer::Iscgem, Layer::Plates, Layer::Faults, Layer::PlateMotion, Layer::Volcanoes, Layer::MagPoles, Layer::MagDecl, Layer::Deposits, Layer::OsmMines, Layer::Plants, Layer::InfraOsm, Layer::Cables]
             .map(|l| Item::Extra(Extra::Dots(l))),
     );
     // Порядок LAYERS витрины модуля.

@@ -83,13 +83,13 @@ pub struct GlobeMenu {
     /// Живой объект под курсором или тот, за которым идёт камера: строка,
     /// ключ, подпись, идёт ли камера следом, `live_items` модуля.
     pub live: Option<(crate::live::Kind, String, String, bool)>,
-    /// Листы карт в точке: номер и система с масштабом, sheet_items.
+    /// Листы карт в точке: номер и система с масштабом, `sheet_items`.
     pub sheets: Vec<(String, String)>,
-    /// Свои пункты «Открыть в браузере»: название и шаблон, link_items.
+    /// Свои пункты «Открыть в браузере»: название и шаблон, `link_items`.
     pub links: Vec<(String, String)>,
     /// Спутник под курсором или выбранный: номер NORAD, название,
     /// показаны ли виток и след, идёт ли камера следом,
-    /// satellite_items модуля.
+    /// `satellite_items` модуля.
     pub satellite: Option<(i64, String, bool, bool)>,
 }
 

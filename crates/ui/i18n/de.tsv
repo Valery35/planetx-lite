@@ -1173,3 +1173,20 @@ Starlink	Starlink
 SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	Kommunikationssatelliten von SpaceX in 340-570 km Höhe, Tausende davon. Laden und erste Berechnung dauern länger als bei anderen Gruppen.
 OneWeb	OneWeb
 OneWeb communication satellites at about 1200 km.	Kommunikationssatelliten von OneWeb in etwa 1200 km Höhe.
+Power line 500 kV and above	Stromleitung 500 kV und mehr
+Power line 220-330 kV	Stromleitung 220-330 kV
+Power line 110-150 kV	Stromleitung 110-150 kV
+Power line below 110 kV or without voltage	Stromleitung unter 110 kV oder ohne Spannung
+Gas pipeline	Gasleitung
+Oil or product pipeline	Öl- oder Produktenleitung
+Water, heat, sewage	Wasser, Wärme, Abwasser
+Pipeline, substance not given	Rohrleitung, Stoff nicht angegeben
+Mine	Bergwerk
+Mine shaft	Schacht
+Power line	Stromleitung
+Pipeline	Rohrleitung
+Substation	Umspannwerk
+Dot - substation	Punkt - Umspannwerk
+Substance	Stoff
+Location	Verlegung
+The OpenStreetMap server did not answer, the request will repeat by itself.	Der OpenStreetMap-Server hat nicht geantwortet, die Anfrage wird von selbst wiederholt.

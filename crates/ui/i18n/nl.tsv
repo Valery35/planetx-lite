@@ -1173,3 +1173,20 @@ Starlink	Starlink
 SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	Communicatiesatellieten van SpaceX op 340-570 km, duizenden. Laden en de eerste berekening duren langer dan bij andere groepen.
 OneWeb	OneWeb
 OneWeb communication satellites at about 1200 km.	Communicatiesatellieten van OneWeb op ongeveer 1200 km.
+Power line 500 kV and above	Hoogspanningslijn 500 kV en hoger
+Power line 220-330 kV	Hoogspanningslijn 220-330 kV
+Power line 110-150 kV	Hoogspanningslijn 110-150 kV
+Power line below 110 kV or without voltage	Hoogspanningslijn onder 110 kV of zonder spanning
+Gas pipeline	Gasleiding
+Oil or product pipeline	Olie- of productleiding
+Water, heat, sewage	Water, warmte, afvalwater
+Pipeline, substance not given	Pijpleiding, stof niet opgegeven
+Mine	Mijn
+Mine shaft	Mijnschacht
+Power line	Hoogspanningslijn
+Pipeline	Pijpleiding
+Substation	Onderstation
+Dot - substation	Stip - onderstation
+Substance	Stof
+Location	Ligging
+The OpenStreetMap server did not answer, the request will repeat by itself.	De OpenStreetMap-server antwoordde niet, het verzoek wordt vanzelf herhaald.

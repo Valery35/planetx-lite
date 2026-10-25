@@ -1173,3 +1173,20 @@ Starlink	Starlink
 SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	SpaceX-ის კავშირგაბმულობის თანამგზავრები 340-570 კმ სიმაღლეზე, ათასობით. ჩატვირთვა და პირველი გამოთვლა სხვა ჯგუფებზე დიდხანს გრძელდება.
 OneWeb	OneWeb
 OneWeb communication satellites at about 1200 km.	OneWeb-ის კავშირგაბმულობის თანამგზავრები დაახლოებით 1200 კმ სიმაღლეზე.
+Power line 500 kV and above	ელექტროგადამცემი ხაზი 500 კვ და მეტი
+Power line 220-330 kV	ელექტროგადამცემი ხაზი 220-330 კვ
+Power line 110-150 kV	ელექტროგადამცემი ხაზი 110-150 კვ
+Power line below 110 kV or without voltage	ელექტროგადამცემი ხაზი 110 კვ-ზე დაბალი ან ძაბვის გარეშე
+Gas pipeline	გაზსადენი
+Oil or product pipeline	ნავთობსადენი ან პროდუქტსადენი
+Water, heat, sewage	წყალი, სითბო, ჩამდინარე წყლები
+Pipeline, substance not given	მილსადენი, ნივთიერება მითითებული არ არის
+Mine	შახტი ან მაღარო
+Mine shaft	შახტის ლულა
+Power line	ელექტროგადამცემი ხაზი
+Pipeline	მილსადენი
+Substation	ქვესადგური
+Dot - substation	წრე - ქვესადგური
+Substance	ნივთიერება
+Location	გაყვანა
+The OpenStreetMap server did not answer, the request will repeat by itself.	OpenStreetMap-ის სერვერმა არ უპასუხა, მოთხოვნა თავად განმეორდება.

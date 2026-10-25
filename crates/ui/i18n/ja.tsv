@@ -1173,3 +1173,20 @@ Starlink	Starlink
 SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	高度 340-570 km の SpaceX の通信衛星で、数千機あります。読み込みと最初の計算は他のグループより時間がかかります。
 OneWeb	OneWeb
 OneWeb communication satellites at about 1200 km.	高度約 1200 km の OneWeb の通信衛星。
+Power line 500 kV and above	送電線 500 kV 以上
+Power line 220-330 kV	送電線 220-330 kV
+Power line 110-150 kV	送電線 110-150 kV
+Power line below 110 kV or without voltage	送電線 110 kV 未満または電圧不明
+Gas pipeline	ガスパイプライン
+Oil or product pipeline	石油・製品パイプライン
+Water, heat, sewage	水道、熱供給、下水
+Pipeline, substance not given	パイプライン、輸送物不明
+Mine	鉱山
+Mine shaft	立坑
+Power line	送電線
+Pipeline	パイプライン
+Substation	変電所
+Dot - substation	円 - 変電所
+Substance	輸送物
+Location	敷設方法
+The OpenStreetMap server did not answer, the request will repeat by itself.	OpenStreetMap サーバーが応答しません。要求は自動で再送されます。

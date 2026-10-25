@@ -27,6 +27,7 @@ pub mod gpkg;
 pub mod geophysics;
 pub mod netlinks;
 pub mod overlayprops;
+pub mod overpass;
 pub mod placeprops;
 pub mod glyphs;
 pub mod grid;

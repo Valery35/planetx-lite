@@ -50,7 +50,17 @@ pub enum Layer {
     PlateMotion,
     /// Исторические землетрясения каталога ISC-GEM, `core/iscgem.py`.
     Iscgem,
+    /// Шахты и карьеры OSM: данные кладёт загрузчик Overpass
+    /// ([`crate::overpass`]), сводок нет.
+    OsmMines,
+    /// ЛЭП, кабели, трубопроводы и подстанции OSM, тоже Overpass.
+    InfraOsm,
 }
+
+/// Подпись источника ЛЭП OSM.
+pub const INFRA_ATTRIBUTION: (&str, &str) = ("Power lines: © OpenStreetMap contributors", "https://www.openstreetmap.org/copyright");
+/// Сторона квадрата подстанции, пиксели, `SUBSTATION_SIZE` модуля.
+const SUBSTATION_SIZE: f32 = 7.0;
 
 /// Непрозрачность кругов, выбор помощника.
 const ALPHA: f32 = 0.9;
@@ -64,7 +74,7 @@ const FIRES_TIP: &str = "Fire spots of the last 24 hours from VIIRS images of th
 const NEAR: usize = 20;
 
 impl Layer {
-    pub const ALL: [Layer; 12] = [Layer::Quakes, Layer::Volcanoes, Layer::Fires, Layer::Faults, Layer::Plates, Layer::Cables, Layer::Plants, Layer::Deposits, Layer::MagPoles, Layer::MagDecl, Layer::PlateMotion, Layer::Iscgem];
+    pub const ALL: [Layer; 14] = [Layer::Quakes, Layer::Volcanoes, Layer::Fires, Layer::Faults, Layer::Plates, Layer::Cables, Layer::Plants, Layer::Deposits, Layer::MagPoles, Layer::MagDecl, Layer::PlateMotion, Layer::Iscgem, Layer::OsmMines, Layer::InfraOsm];
 
     pub fn key(self) -> &'static str {
         match self {
@@ -80,6 +90,8 @@ impl Layer {
             Layer::MagDecl => "magdecl",
             Layer::PlateMotion => "platemotion",
             Layer::Iscgem => "iscgem",
+            Layer::OsmMines => "osm_mines",
+            Layer::InfraOsm => "infra_osm",
         }
     }
 
@@ -101,7 +113,7 @@ impl Layer {
     /// Постоянные адреса сводок слоя.
     fn fixed_urls(self) -> &'static [&'static str] {
         match self {
-            Layer::Iscgem => &[],
+            Layer::Iscgem | Layer::OsmMines | Layer::InfraOsm => &[],
             Layer::Quakes => &[quakes::FEED],
             Layer::Volcanoes => &[volcanoes::URL],
             Layer::Fires => &[fires::FEED],
@@ -136,6 +148,8 @@ impl Layer {
             Layer::MagDecl => ("Declination: IGRF-14, IAGA", "https://www.ncei.noaa.gov/products/international-geomagnetic-reference-field"),
             Layer::PlateMotion => data::platemotion::ATTRIBUTION,
             Layer::Iscgem => iscgem::ATTRIBUTION,
+            Layer::OsmMines => data::mining::OSM_ATTRIBUTION,
+            Layer::InfraOsm => INFRA_ATTRIBUTION,
         }
     }
 
@@ -171,6 +185,8 @@ impl Layer {
                 "Lines of equal magnetic declination, the angle between the compass needle and the north, every 10° for the year of the time scale after the IGRF-14 model from 1900 and the gufm1 model from 1590, gufm1 is downloaded on first display. Red lines are east declination, blue lines west, the green line zero. The lines meet at the magnetic poles."
             }
             Layer::Iscgem => "Strong earthquakes of the world from 1904 to 2024 from the ISC-GEM catalogue - about 74 thousand events of magnitude 5 and above, with locations, depths and magnitudes recomputed in one way. A circle sits at the epicentre, at its depth - in the removed sector of the Earth cutaway, the colour shows the depth and the size the magnitude. The time slider range selects the events. A click on a circle shows the place, date, magnitude and the USGS event page. The first use downloads the catalogue in parts, about 13 MB.",
+            Layer::OsmMines => "Mines, shafts and quarries from OpenStreetMap with names and the commodity. They load for the place of the view when the camera is below 150 km. The colour is the commodity group, as for the deposits. A click on a point shows the name, operator and a link to the OpenStreetMap object.",
+            Layer::InfraOsm => "Power lines by voltage, substations, cables and gas, oil and water pipelines from OpenStreetMap. They load for the place in view when the camera is below 150 km. A click on a line shows the voltage, substance, operator and a link to the OpenStreetMap object.",
             Layer::PlateMotion => {
                 "Arrows of lithospheric plate motion after the NNR-MORVEL56 model, the speed relative to the mean motion of all plates. The arrow grows with the speed, the number at its start is mm/yr. The Pacific plate moves north-west at about 70 mm/yr, the Eurasian plate at about 25. The Features window shows the plate, speed and direction at the point."
             }
@@ -192,6 +208,7 @@ impl Layer {
             Layer::MagDecl => "IGRF-14",
             Layer::PlateMotion => "NNR-MORVEL56",
             Layer::Iscgem => "ISC-GEM, 1904-2024",
+            Layer::OsmMines | Layer::InfraOsm => "OpenStreetMap",
         }
     }
 
@@ -210,6 +227,8 @@ impl Layer {
             Layer::MagDecl => "Declination lines",
             Layer::PlateMotion => "Plate motion",
             Layer::Iscgem => "Historical earthquakes",
+            Layer::OsmMines => "OSM mines and quarries",
+            Layer::InfraOsm => "OSM power lines, cables and pipelines",
         }
     }
 
@@ -291,6 +310,62 @@ pub enum Data {
     /// Модель IGRF и таблицы полюсов (у строки линий склонения их нет).
     Magnetic(Arc<data::geomag::Model>, Option<Arc<data::geomag::Poles>>),
     Motion(Arc<data::platemotion::Motion>),
+    /// Шахты и карьеры OSM записями месторождений, `to_deposits` модуля.
+    Mines(Vec<Deposit>),
+    /// Линии OSM, их рисунок и подстанции.
+    Infra(Vec<data::infra::Item>, Arc<Vec<Line>>, Vec<data::infra::Item>),
+}
+
+/// Названия классов ЛЭП и трубопроводов, `infra_names` модуля.
+pub fn infra_name(style: &str) -> &'static str {
+    match style {
+        "v500" => "Power line 500 kV and above",
+        "v220" => "Power line 220-330 kV",
+        "v110" => "Power line 110-150 kV",
+        "v35" => "Power line below 110 kV or without voltage",
+        "cable" => "Power cable",
+        "telecom" => "Communication line",
+        "gas" => "Gas pipeline",
+        "oil" => "Oil or product pipeline",
+        "water" => "Water, heat, sewage",
+        _ => "Pipeline, substance not given",
+    }
+}
+
+/// Цвет и толщина класса ЛЭП, кабеля или трубопровода.
+fn infra_style(style: &str) -> ([u8; 3], f32) {
+    use data::infra::{CABLES, PIPE_WIDTH, SUBSTANCES, VOLTAGES};
+    if let Some((_, _, color, width)) = VOLTAGES.iter().find(|v| v.0 == style) {
+        return (*color, *width as f32);
+    }
+    if let Some((_, color, width)) = CABLES.iter().find(|c| c.0 == style) {
+        return (*color, *width as f32);
+    }
+    let color = SUBSTANCES.iter().find(|s| s.0 == style).or(SUBSTANCES.last()).map_or([128; 3], |s| s.2);
+    (color, PIPE_WIDTH as f32)
+}
+
+/// Данные строки ЛЭП OSM по объектам Overpass.
+pub fn infra_data(items: Vec<data::infra::Item>) -> Data {
+    let (subs, lines): (Vec<_>, Vec<_>) = data::infra::unique(items).into_iter().partition(|i| i.kind == data::infra::Kind::Substation);
+    let drawn = lines
+        .iter()
+        .map(|i| {
+            let (c, w) = infra_style(i.style);
+            Line::new(i.points.clone(), [c[0], c[1], c[2], 255], w)
+        })
+        .collect();
+    Data::Infra(lines, Arc::new(drawn), subs)
+}
+
+/// Названия видов шахт OSM, `mine_kind_names` модуля.
+fn mine_kind(kind: &str) -> &'static str {
+    match kind {
+        "mine" => "Mine",
+        "shaft" => "Mine shaft",
+        "quarry" => "Quarry",
+        _ => "",
+    }
 }
 
 /// Итог разбора сводок.
@@ -352,13 +427,16 @@ impl Data {
             Layer::PlateMotion => Data::Motion(Arc::new(data::platemotion::read(&String::from_utf8_lossy(bytes))?)),
             // Части каталога по отрезкам лет - одним списком.
             Layer::Iscgem => Data::Quakes(all.iter().flat_map(|b| iscgem::parse(b)).collect()),
+            // Объекты кладёт загрузчик Overpass.
+            Layer::OsmMines => Data::Mines(Vec::new()),
+            Layer::InfraOsm => infra_data(Vec::new()),
         })
     }
 
     /// Линии слоя линий.
     fn lines(&self) -> Option<&Arc<Vec<Line>>> {
         match self {
-            Data::Faults(_, l) | Data::Plates(_, l, _) | Data::Cables(_, l) => Some(l),
+            Data::Faults(_, l) | Data::Plates(_, l, _) | Data::Cables(_, l) | Data::Infra(_, l, _) => Some(l),
             _ => None,
         }
     }
@@ -372,7 +450,14 @@ impl Data {
                 .collect(),
             Data::Fires(f) => f.iter().map(|e| Dot { lat: e.lat, lon: e.lon, color: fires::color(e.frp), size: fires::size(e.frp) as f32, time: e.time }).collect(),
             Data::Plants(p) => p.iter().map(|e| Dot { lat: e.lat, lon: e.lon, color: plants::FUELS[e.fuel.min(plants::FUELS.len() - 1)].2, size: plants::size(e.capacity) as f32, time: None }).collect(),
-            Data::Deposits(d) => d.iter().map(|e| Dot { lat: e.lat, lon: e.lon, color: deposit::color(e.group), size: e.size() as f32, time: None }).collect(),
+            Data::Deposits(d) | Data::Mines(d) => d.iter().map(|e| Dot { lat: e.lat, lon: e.lon, color: deposit::color(e.group), size: e.size() as f32, time: None }).collect(),
+            Data::Infra(_, _, subs) => subs
+                .iter()
+                .filter_map(|s| {
+                    let (lat, lon) = *s.points.first()?;
+                    Some(Dot { lat, lon, color: infra_style(s.style).0, size: SUBSTATION_SIZE, time: None })
+                })
+                .collect(),
             Data::Faults(..) | Data::Plates(..) | Data::Cables(..) | Data::Magnetic(..) | Data::Motion(_) => Vec::new(),
         }
     }
@@ -519,9 +604,36 @@ impl Data {
                 }
                 (if field(0).is_empty() { format!("{:.4}, {:.4}", e.lat, e.lon) } else { field(0).to_string() }, values)
             }
+            Data::Mines(d) => {
+                let e = d.get(n)?;
+                let f = e.fields();
+                let field = |k: usize| f.get(k).copied().unwrap_or("");
+                let mut values = vec![row("Commodities", field(2).to_string()), row("Group", tr(lang, deposit_group(e.group)).to_string())];
+                let kind = mine_kind(field(3));
+                if !kind.is_empty() {
+                    values.push(row("Type", tr(lang, kind).to_string()));
+                }
+                if !field(6).is_empty() {
+                    values.push(row("Operator", field(6).to_string()));
+                }
+                if let Some(page) = data::mining::osm_page(field(9)) {
+                    values.push(row("OSM object", page));
+                }
+                (if field(0).is_empty() { format!("{:.4}, {:.4}", e.lat, e.lon) } else { field(0).to_string() }, values)
+            }
+            Data::Infra(_, _, subs) => infra_feature(lang, subs.get(n)?),
             // Поле и скорость плиты в точке - у crate::geophysics.
             Data::Magnetic(..) | Data::Motion(_) => return None,
         })
+    }
+
+    /// Поля линии n окна «Объекты»: у ЛЭП OSM номер - в списке линий,
+    /// у прочих слоёв линий - как у точек.
+    fn line_feature(&self, lang: Lang, n: usize) -> Option<Feature> {
+        match self {
+            Data::Infra(lines, _, _) => Some(infra_feature(lang, lines.get(n)?)),
+            _ => self.feature(lang, n),
+        }
     }
 }
 /// Слои точек на глобусе.
@@ -550,6 +662,14 @@ impl Dots {
             })
             .collect();
         self.layers.push((layer, State::Asking(asks)));
+    }
+
+    /// Данные слоя, которые кладёт свой загрузчик: шахты и ЛЭП OSM.
+    pub fn set_data(&mut self, layer: Layer, data: Data) {
+        if let Some((_, state)) = self.layers.iter_mut().find(|(l, _)| *l == layer) {
+            *state = State::Ready(data);
+            self.dirty = true;
+        }
     }
 
     /// Убрать слой с глобуса.
@@ -738,10 +858,13 @@ impl Dots {
                 let p = nav.camera.ellipsoid.geodetic_to_ecef(at.0, at.1, height(at.0, at.1));
                 let scale = 2.0 * (nav.camera.fov_y.to_radians() / 2.0).tan() / f64::from(nav.camera.height.max(1));
                 let metres = radius * (nav.camera.eye - p).length() * scale;
-                if let Some(feature) = data::linesets::nearest(lines, at.0, at.1, metres).and_then(|n| data.feature(lang, n)) {
+                if let Some(feature) = data::linesets::nearest(lines, at.0, at.1, metres).and_then(|n| data.line_feature(lang, n)) {
                     out.push((tr(lang, layer.group()).to_string(), vec![feature]));
                 }
-                continue;
+                // У ЛЭП OSM есть и точки - подстанции.
+                if !matches!(data, Data::Infra(..)) {
+                    continue;
+                }
             }
             let mut near: Vec<(f64, usize)> = data
                 .dots()
@@ -764,4 +887,28 @@ impl Dots {
         }
         out
     }
+}
+
+/// Поля ЛЭП, трубопровода или подстанции OSM, `nearest_infra` модуля.
+fn infra_feature(lang: Lang, item: &data::infra::Item) -> Feature {
+    use data::infra::Kind;
+    let row = |a: &'static str, b: String| (tr(lang, a).to_string(), b);
+    let kind = match item.kind {
+        Kind::Line => "Power line",
+        Kind::Pipe => "Pipeline",
+        Kind::Substation => "Substation",
+        Kind::Cable => "Power cable",
+        Kind::Telecom => "Communication line",
+    };
+    let mut values = vec![row("View", tr(lang, kind).to_string()), row("Class", tr(lang, infra_name(item.style)).to_string())];
+    if let Some(kv) = item.voltage.filter(|v| v.is_finite()) {
+        values.push(row("Voltage", trf(lang, "{value} kV", &[("value", &short(kv))])));
+    }
+    for (name, value) in [("Substance", &item.substance), ("Location", &item.location), ("Owner", &item.operator)] {
+        if !value.is_empty() {
+            values.push(row(name, value.clone()));
+        }
+    }
+    values.push(row("OSM object", format!("https://www.openstreetmap.org/{}", item.osm)));
+    (if item.name.is_empty() { tr(lang, "Untitled").to_string() } else { item.name.clone() }, values)
 }

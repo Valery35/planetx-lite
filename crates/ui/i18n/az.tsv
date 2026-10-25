@@ -1173,3 +1173,20 @@ Starlink	Starlink
 SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	340-570 km hündürlükdə SpaceX rabitə peykləri, minlərlə. Yükləmə və ilk hesablama digər qruplardan uzun çəkir.
 OneWeb	OneWeb
 OneWeb communication satellites at about 1200 km.	Təxminən 1200 km hündürlükdə OneWeb rabitə peykləri.
+Power line 500 kV and above	Elektrik xətti 500 kV və yuxarı
+Power line 220-330 kV	Elektrik xətti 220-330 kV
+Power line 110-150 kV	Elektrik xətti 110-150 kV
+Power line below 110 kV or without voltage	Elektrik xətti 110 kV-dan aşağı və ya gərginliksiz
+Gas pipeline	Qaz kəməri
+Oil or product pipeline	Neft və ya məhsul kəməri
+Water, heat, sewage	Su, istilik, tullantı suları
+Pipeline, substance not given	Boru kəməri, maddə göstərilməyib
+Mine	Şaxta və ya mədən
+Mine shaft	Şaxta lüləsi
+Power line	Elektrik xətti
+Pipeline	Boru kəməri
+Substation	Yarımstansiya
+Dot - substation	Dairə - yarımstansiya
+Substance	Maddə
+Location	Çəkiliş
+The OpenStreetMap server did not answer, the request will repeat by itself.	OpenStreetMap serveri cavab vermədi, sorğu özü təkrarlanacaq.

@@ -1173,3 +1173,20 @@ Starlink	Starlink
 SpaceX communication satellites at 340-570 km, thousands of them. Loading and the first calculation take longer than for other groups.	Satélites de comunicaciones de SpaceX a 340-570 km, miles de ellos. La carga y el primer cálculo tardan más que en otros grupos.
 OneWeb	OneWeb
 OneWeb communication satellites at about 1200 km.	Satélites de comunicaciones de OneWeb a unos 1200 km.
+Power line 500 kV and above	Línea eléctrica de 500 kV o más
+Power line 220-330 kV	Línea eléctrica de 220-330 kV
+Power line 110-150 kV	Línea eléctrica de 110-150 kV
+Power line below 110 kV or without voltage	Línea eléctrica de menos de 110 kV o sin tensión
+Gas pipeline	Gasoducto
+Oil or product pipeline	Oleoducto o poliducto
+Water, heat, sewage	Agua, calor, aguas residuales
+Pipeline, substance not given	Tubería, sustancia no indicada
+Mine	Mina
+Mine shaft	Pozo de mina
+Power line	Línea eléctrica
+Pipeline	Tubería
+Substation	Subestación
+Dot - substation	Círculo - subestación
+Substance	Sustancia
+Location	Tendido
+The OpenStreetMap server did not answer, the request will repeat by itself.	El servidor de OpenStreetMap no respondió, la solicitud se repetirá sola.

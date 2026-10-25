@@ -321,6 +321,11 @@ pub struct LiteApp {
     satellites: Option<crate::satellites::Satellites>,
     sat_points: Vec<render::PointsMesh>,
     sat_shown: Vec<(usize, DVec3)>,
+    /// Загрузчики Overpass строк «Шахты и карьеры OSM» и «ЛЭП, кабели
+    /// и трубопроводы OSM».
+    osm_mines: Option<crate::overpass::Overpass<data::mining::Item>>,
+    osm_infra: Option<crate::overpass::Overpass<data::infra::Item>>,
+    overpass_mirrors: crate::overpass::Mirrors,
     /// Объекты живых строк на этот кадр, для окна «Объекты» и меню.
     live_objects: Vec<(crate::live::Kind, crate::live::Object)>,
     /// Камера следом за живым объектом: строка и ключ.
@@ -858,6 +863,9 @@ impl LiteApp {
             satellites: None,
             sat_points: Vec::new(),
             sat_shown: Vec::new(),
+            osm_mines: None,
+            osm_infra: None,
+            overpass_mirrors: crate::overpass::Mirrors::default(),
             live_objects: Vec::new(),
             live_follow: None,
             followed: None,
@@ -1561,7 +1569,7 @@ impl LiteApp {
                 }
             }
         }
-        // Спутник у пикселя, SatelliteManager.identify модуля.
+        // Спутник у пикселя, `SatelliteManager.identify` модуля.
         if let (Some((px, py, ppp)), Some(sats)) = (pixel, &self.satellites)
             && let Some(number) = self.satellite_under(px, py, ppp)
             && let Some(index) = sats.swarm.index_of(number)
@@ -1626,7 +1634,7 @@ impl LiteApp {
     /// `_ask_tilemap` модуля. Ответ ложится в окно «Объекты».
     fn ask_map_value(&mut self, lat: f64, lon: f64) {
         let key = self.vector.map_keys().into_iter().find(|k| crate::maps::kind(k).and_then(|m| m.slot()) == Some(1));
-        // Уровень карты запроса Macrostrat - по ширине вида, link_zoom модуля.
+        // Уровень карты запроса Macrostrat - по ширине вида, `link_zoom` модуля.
         let pose = &self.nav.pose;
         let width = 2.0 * pose.distance * (self.nav.camera.fov_y.to_radians() / 2.0).tan() * self.nav.camera.aspect();
         let zoom = data::geocode::link_zoom(lat, width);
@@ -2217,6 +2225,12 @@ impl LiteApp {
                     self.dots.enable(layer, &|| (loaders.request)(layer.bytes()));
                 } else {
                     self.dots.disable(layer);
+                }
+                // Объекты OSM просит свой загрузчик Overpass по тайлам вида.
+                match layer {
+                    crate::dots::Layer::OsmMines => self.osm_mines = on.then(|| crate::overpass::Overpass::new(data::mining::query, data::mining::parse)),
+                    crate::dots::Layer::InfraOsm => self.osm_infra = on.then(|| crate::overpass::Overpass::new(data::infra::query, data::infra::parse)),
+                    _ => {}
                 }
                 self.settings.dots = crate::dots::Layer::ALL.into_iter().filter(|l| if *l == layer { on } else { self.extras_on.contains(&Extra::Dots(*l)) }).map(|l| l.key().to_string()).collect();
             }
@@ -2898,6 +2912,36 @@ impl LiteApp {
         }
     }
 
+    /// Шаг загрузчиков Overpass: тайлы у точки взгляда, пришедшие
+    /// объекты - в слои точек и линий.
+    fn step_overpass(&mut self, now: f64) {
+        if self.osm_mines.is_none() && self.osm_infra.is_none() {
+            return;
+        }
+        let altitude = self.nav.camera.ellipsoid.ecef_to_geodetic(self.nav.camera.eye).2;
+        let view = (self.nav.pose.lat, self.nav.pose.lon, altitude);
+        let loaders = &self.loaders;
+        let request = |limit: u64| (loaders.request)(limit);
+        let mut failed = false;
+        if let Some(o) = &mut self.osm_mines {
+            o.step(now, view, &mut self.overpass_mirrors, &request);
+            failed |= o.failed;
+            if std::mem::take(&mut o.dirty) {
+                self.dots.set_data(crate::dots::Layer::OsmMines, crate::dots::Data::Mines(data::mining::to_deposits(&o.all())));
+            }
+        }
+        if let Some(o) = &mut self.osm_infra {
+            o.step(now, view, &mut self.overpass_mirrors, &request);
+            failed |= o.failed;
+            if std::mem::take(&mut o.dirty) {
+                self.dots.set_data(crate::dots::Layer::InfraOsm, crate::dots::infra_data(o.all()));
+            }
+        }
+        if failed {
+            self.open_message = Some(tr(self.lang, "The OpenStreetMap server did not answer, the request will repeat by itself.").to_string());
+        }
+    }
+
     /// Папка файлов групп спутников, у страницы None.
     #[cfg(not(target_arch = "wasm32"))]
     fn satellite_dir(&self) -> Option<std::path::PathBuf> {
@@ -2910,7 +2954,7 @@ impl LiteApp {
     }
 
     /// Момент спутников: правый бегунок открытой шкалы времени, иначе
-    /// часы, moment модуля.
+    /// часы, `moment` модуля.
     fn satellite_moment(&self) -> f64 {
         match self.timebar.window() {
             Some((_, hi)) if hi.is_finite() => hi,
@@ -5280,6 +5324,8 @@ impl eframe::App for LiteApp {
             || self.pictures.busy()
             || self.fetching.is_some()
             || self.wiki.as_ref().is_some_and(crate::wiki::Wiki::busy)
+            || self.osm_mines.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
+            || self.osm_infra.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.satellites.as_ref().is_some_and(crate::satellites::Satellites::busy)
             || self.viewshed.as_ref().is_some_and(crate::pointcalc::Calc::busy)
             || self.insolation.as_ref().is_some_and(crate::pointcalc::Calc::busy)
@@ -5429,6 +5475,7 @@ impl eframe::App for LiteApp {
         self.step_calcs(&ctx, now);
         self.step_wiki(now);
         self.step_satellites(now);
+        self.step_overpass(now);
         self.paleo_bar(&ctx, now);
         self.step_cutaway();
         self.check_linked_models(now);
@@ -5513,7 +5560,7 @@ impl eframe::App for LiteApp {
         vector_tiles.extend(self.route_only.iter().map(|k| (*k, lod::INFINITE_PRIORITY)));
         self.loaders.places.want(&vector_tiles);
         // Уровень высот горизонталей: открытое море - глубины с уровня
-        // contours::SEA_LEVEL, как sea_high модуля.
+        // `contours::SEA_LEVEL`, как `sea_high` модуля.
         let sea = |key: TileKey| -> Option<f64> {
             if key.0 < data::contours::SEA_LEVEL {
                 return None;
