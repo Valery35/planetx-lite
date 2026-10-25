@@ -328,6 +328,11 @@ pub struct LiteApp {
     overpass_mirrors: crate::overpass::Mirrors,
     /// Строка «Горные разработки».
     mining: Option<crate::mining::Mining>,
+    /// Строка «3D-здания», тайлы зданий загрузчика OpenFreeMap и те из них,
+    /// что нужны только зданиям.
+    buildings: Option<crate::buildings::Buildings>,
+    building_keys: HashSet<TileKey>,
+    building_only: HashSet<TileKey>,
     /// Объекты живых строк на этот кадр, для окна «Объекты» и меню.
     live_objects: Vec<(crate::live::Kind, crate::live::Object)>,
     /// Камера следом за живым объектом: строка и ключ.
@@ -869,6 +874,9 @@ impl LiteApp {
             osm_infra: None,
             overpass_mirrors: crate::overpass::Mirrors::default(),
             mining: None,
+            buildings: None,
+            building_keys: HashSet::new(),
+            building_only: HashSet::new(),
             live_objects: Vec::new(),
             live_follow: None,
             followed: None,
@@ -2156,6 +2164,15 @@ impl LiteApp {
                     self.live_points.clear();
                     self.live_labels.clear();
                     self.dots.dirty = true;
+                }
+            }
+            Extra::Buildings => {
+                if on {
+                    self.buildings.get_or_insert_with(crate::buildings::Buildings::default);
+                } else if let Some(mut b) = self.buildings.take()
+                    && let Some(globe) = &mut self.globe
+                {
+                    b.clear(globe);
                 }
             }
             Extra::Mining => {
@@ -4729,6 +4746,15 @@ impl LiteApp {
             if self.label_keys.contains(&loaded.key) {
                 self.labels.add(loaded.key, bytes.clone());
             }
+            if self.building_keys.contains(&loaded.key)
+                && let Some(b) = &mut self.buildings
+            {
+                b.add(loaded.key, bytes.clone());
+                // Тайл только зданий в основу не идёт.
+                if self.building_only.contains(&loaded.key) {
+                    continue;
+                }
+            }
             if self.route_keys.contains(&loaded.key) {
                 self.route.add_tile(self.lang, loaded.key, bytes.as_deref().map(Vec::as_slice));
                 // Тайл только маршрута в основу не идёт.
@@ -5384,6 +5410,7 @@ impl eframe::App for LiteApp {
             || self.fetching.is_some()
             || self.wiki.as_ref().is_some_and(crate::wiki::Wiki::busy)
             || self.mining.as_ref().is_some_and(crate::mining::Mining::busy)
+            || self.buildings.as_ref().is_some_and(|b| b.busy(self.heights.read().version()))
             || self.osm_mines.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.osm_infra.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.satellites.as_ref().is_some_and(crate::satellites::Satellites::busy)
@@ -5618,6 +5645,25 @@ impl eframe::App for LiteApp {
         self.route_keys = self.route.wanted().into_iter().collect();
         self.route_only = self.route_keys.iter().copied().filter(|k| !vector_tiles.iter().any(|(v, _)| v == k)).collect();
         vector_tiles.extend(self.route_only.iter().map(|k| (*k, lod::INFINITE_PRIORITY)));
+        // Тайлы зданий у глаза - тем же загрузчиком, `render/buildings.py`
+        // модуля.
+        if let Some(b) = &mut self.buildings {
+            let cam = &self.nav.camera;
+            let (lat, lon, _) = cam.ellipsoid.ecef_to_geodetic(cam.eye);
+            let forward = -cam.rotation.z_axis;
+            let wanted = b.want(cam.eye.to_array(), forward.to_array(), store.height_at(lat, lon));
+            self.building_keys = b.wanted.iter().copied().collect();
+            self.building_only = wanted.iter().map(|(k, _)| *k).filter(|k| !vector_tiles.iter().any(|(v, _)| v == k)).collect();
+            vector_tiles.extend(wanted.into_iter().filter(|(k, _)| self.building_only.contains(k)));
+            let heights = |lats: &[f64], lons: &[f64]| -> Vec<f64> {
+                let points: Vec<(f64, f64)> = lats.iter().copied().zip(lons.iter().copied()).collect();
+                store.heights_at(&points, true)
+            };
+            b.step(globe, store.version(), &heights);
+        } else {
+            self.building_keys.clear();
+            self.building_only.clear();
+        }
         self.loaders.places.want(&vector_tiles);
         // Уровень высот горизонталей: открытое море - глубины с уровня
         // `contours::SEA_LEVEL`, как `sea_high` модуля.

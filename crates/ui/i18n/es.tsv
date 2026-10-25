@@ -1196,3 +1196,4 @@ Mining area outlines did not load, check the network and switch the row on again
 The mining area outline file cannot be read: {path}	El archivo de contornos de zonas mineras no se puede leer: {path}
 Mining area	Zona minera
 {value} km²	{value} km²
+Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.	Edificios 3D de OpenStreetMap en teselas vectoriales de OpenFreeMap. Se ven cuando la cámara está a menos de 6 km del suelo. La altura procede de OSM o del número de plantas. Un edificio sin ninguno de estos datos recibe una altura de 5 m.

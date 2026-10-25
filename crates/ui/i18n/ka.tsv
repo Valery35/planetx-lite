@@ -1196,3 +1196,4 @@ Mining area outlines did not load, check the network and switch the row on again
 The mining area outline file cannot be read: {path}	სამთო სამუშაოების კონტურების ფაილი არ იკითხება: {path}
 Mining area	სამთო სამუშაო
 {value} km²	{value} კმ²
+Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.	3D შენობები OpenStreetMap-იდან OpenFreeMap-ის ვექტორულ ფილებში. ისინი ჩანს, როცა კამერა მიწასთან 6 კმ-ზე ახლოსაა. სიმაღლე აღებულია OSM-იდან, თუ არა - სართულიანობიდან. ამ ცნობების გარეშე შენობა იღებს 5 მ სიმაღლეს.

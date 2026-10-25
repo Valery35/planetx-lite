@@ -1196,3 +1196,4 @@ Mining area outlines did not load, check the network and switch the row on again
 The mining area outline file cannot be read: {path}	Không đọc được tệp đường bao khu khai thác mỏ: {path}
 Mining area	Khu khai thác mỏ
 {value} km²	{value} km²
+Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.	Tòa nhà 3D từ OpenStreetMap trong ô vector của OpenFreeMap. Chúng hiển thị khi máy quay gần mặt đất hơn 6 km. Chiều cao lấy từ OSM hoặc từ số tầng. Tòa nhà không có cả hai nhận chiều cao 5 m.

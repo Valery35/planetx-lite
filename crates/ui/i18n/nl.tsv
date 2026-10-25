@@ -1196,3 +1196,4 @@ Mining area outlines did not load, check the network and switch the row on again
 The mining area outline file cannot be read: {path}	Het bestand met omtrekken van mijngebieden is niet leesbaar: {path}
 Mining area	Mijngebied
 {value} km²	{value} km²
+Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.	3D-gebouwen uit OpenStreetMap in vectortegels van OpenFreeMap. Ze zijn zichtbaar wanneer de camera dichter dan 6 km bij de grond is. De hoogte komt uit OSM of uit het aantal verdiepingen. Een gebouw zonder beide krijgt een hoogte van 5 m.

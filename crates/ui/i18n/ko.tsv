@@ -1196,3 +1196,4 @@ Mining area outlines did not load, check the network and switch the row on again
 The mining area outline file cannot be read: {path}	광산 지역 윤곽 파일을 읽을 수 없습니다: {path}
 Mining area	광산 지역
 {value} km²	{value} km²
+Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.	OpenFreeMap 벡터 타일의 OpenStreetMap 3D 건물. 카메라가 지면에서 6 km보다 가까울 때 보입니다. 높이는 OSM에서, 없으면 층수에서 가져옵니다. 둘 다 없는 건물은 높이 5 m가 됩니다.

@@ -9,6 +9,7 @@
 
 pub mod app;
 pub mod basemap;
+pub mod buildings;
 pub mod bathymetry;
 pub mod card;
 pub mod check;

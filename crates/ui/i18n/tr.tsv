@@ -1196,3 +1196,4 @@ Mining area outlines did not load, check the network and switch the row on again
 The mining area outline file cannot be read: {path}	Maden sahası sınırları dosyası okunamıyor: {path}
 Mining area	Maden sahası
 {value} km²	{value} km²
+Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.	OpenFreeMap vektör karolarındaki OpenStreetMap'ten 3B binalar. Kamera zemine 6 km'den yakınken görünürler. Yükseklik OSM'den ya da kat sayısından alınır. İkisi de olmayan bina 5 m yükseklik alır.
