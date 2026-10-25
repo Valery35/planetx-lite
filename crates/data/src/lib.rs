@@ -4,6 +4,9 @@
 
 //! Данные PlanetX Lite, слой L1.
 //!
+//! - [`deepsky`] - объекты глубокого неба OpenNGC, перенос `core/deepsky.py`;
+//! - [`ephemeris`] - Солнце, Луна и планеты на небе Земли, перенос `core/ephemeris.py`;
+//! - [`hips`] - сетка HEALPix и обзоры неба HiPS, перенос `core/hips.py`;
 //! - [`lines`] - линии векторной основы в картинку тайла, стиль
 //!   `net/overlay.py` модуля;
 //! - [`mvt`] - разбор векторного тайла Mapbox Vector Tile 2;
@@ -22,6 +25,8 @@
 //! - [`linesets`], [`faults`], [`plates`] - разломы, границы плит
 //!   и кабели линиями наложения;
 //! - [`csv`] - таблица CSV;
+//! - [`skydata`] - созвездия и светила вида неба, перенос `core/skydata.py`;
+//! - [`skyview`] - взгляд из центра небесной сферы, перенос `core/skyview.py`;
 //! - [`volcanoes`] и [`fires`] - вулканы GVP и пожары FIRMS;
 //! - [`plants`] и [`deposits`] - электростанции WRI и месторождения USGS;
 //! - [`slope`] - уклон и экспозиция, перенос `core/slope.py`;
@@ -63,9 +68,11 @@ pub mod contours;
 pub mod crust;
 pub mod csv;
 pub mod cutaway;
+pub mod deepsky;
 pub mod dem;
 pub mod deposits;
 pub mod drillholes;
+pub mod ephemeris;
 pub mod etomesto;
 pub mod faults;
 pub mod fires;
@@ -77,6 +84,7 @@ pub mod geology;
 pub mod geomag;
 pub mod gibs;
 pub mod grid;
+pub mod hips;
 pub mod infra;
 pub mod insolation;
 pub mod iscgem;
@@ -103,6 +111,8 @@ pub mod section;
 pub mod sentinel;
 pub mod sgp4;
 pub mod sheets;
+pub mod skydata;
+pub mod skyview;
 pub mod slabs;
 pub mod slope;
 pub mod stars;
