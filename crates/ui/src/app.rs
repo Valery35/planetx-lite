@@ -531,6 +531,8 @@ pub struct LiteApp {
     lights_loader: Option<Box<dyn TileLoader>>,
     /// Каталог звёзд: запрос, пришёл (true) или не пришёл (false).
     stars: Option<Result<bool, Box<dyn net::Request>>>,
+    /// Картинка неба с Млечным путём: запрос или пришла ли.
+    sky_image: Option<Result<bool, Box<dyn net::Request>>>,
     /// Вид неба, `show_sky` модуля. None - на экране тело.
     sky: Option<crate::sky::Sky>,
     /// Взгляд на небо при прошлом выходе из неба.
@@ -1016,6 +1018,7 @@ impl LiteApp {
             ready_loader: None,
             lights_loader: None,
             stars: None,
+            sky_image: None,
             sky: None,
             sky_saved: None,
             theme_days: HashMap::new(),
@@ -1737,7 +1740,7 @@ impl LiteApp {
             sky.bodies_at = Some(moment);
             crate::sky::body_points(moment)
         });
-        let busy = sky.busy() || matches!(self.stars, Some(Err(_)) | None);
+        let busy = sky.busy() || matches!(self.stars, Some(Err(_)) | None) || matches!(self.sky_image, Some(Err(_)) | None);
         let view = sky.view;
         // Камера неба: глаз не важен, звёзды и линии - направления, оси -
         // взгляда на небо.
@@ -1769,7 +1772,7 @@ impl LiteApp {
                 painter.text(rect.left_bottom() + egui::vec2(8.0, -8.0), egui::Align2::LEFT_BOTTOM, data::skyview::ra_dec_text(d), egui::FontId::proportional(13.0), egui::Color32::from_gray(200));
             }
         }
-        let parts = [data::stars::ATTRIBUTION, data::skydata::ATTRIBUTION];
+        let parts = [data::stars::ATTRIBUTION, data::stars::SKY_ATTRIBUTION, data::skydata::ATTRIBUTION];
         self.credits.show(ctx, rect, self.lang, &parts, 2);
         if self.shows_ui() {
             self.toolbar(ctx, rect, now);
@@ -5404,6 +5407,24 @@ impl LiteApp {
             }
             self.stars = Some(Ok(ok));
         }
+        // Картинка неба - вместе со звёздами, раскладывается один раз.
+        if (self.settings.stars || self.sky.is_some()) && self.sky_image.is_none() {
+            let r = (self.loaders.request)(data::stars::SKY_BYTES);
+            r.start(data::stars::SKY_URL);
+            self.sky_image = Some(Err(r));
+        }
+        if let Some(Err(r)) = &self.sky_image
+            && let Some(answer) = r.take()
+        {
+            let image = answer.and_then(|b| image::load_from_memory(&b).map_err(|e| e.to_string()));
+            let ok = image.is_ok();
+            if let (Ok(img), Some(globe)) = (image, &mut self.globe) {
+                let rgba = img.to_rgba8();
+                let (w, h) = rgba.dimensions();
+                globe.set_sky_image(w, h, rgba.as_raw());
+            }
+            self.sky_image = Some(Ok(ok));
+        }
         if let Some(globe) = &mut self.globe {
             // Небо - в своей системе J2000, без поворота и всегда видно.
             let frame = if self.sky.is_some() { Some((globe_core::DMat3::IDENTITY, 1.0)) } else { self.settings.stars.then(|| {
@@ -5412,6 +5433,7 @@ impl LiteApp {
                 (rows, data::stars::fade(self.nav.camera.altitude()) as f32)
             }) };
             globe.set_star_frame(frame);
+            globe.set_sky_map_frame(frame);
         }
         // Огни городов, как у модуля: при солнце на Земле.
         if self.settings.sun != self.lights_loader.is_some() {
@@ -5552,6 +5574,9 @@ impl LiteApp {
         }
         if self.settings.stars && self.nav.camera.altitude() > data::stars::FADE_LOW {
             parts.push(data::stars::ATTRIBUTION);
+            if matches!(self.sky_image, Some(Ok(true))) {
+                parts.push(data::stars::SKY_ATTRIBUTION);
+            }
         }
         parts.extend(self.live.keys().map(|k| k.attribution()));
         if self.satellites.is_some() {

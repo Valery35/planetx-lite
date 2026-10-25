@@ -16,6 +16,13 @@
 /// Файл каталога модуля.
 pub const URL: &str = "https://raw.githubusercontent.com/Valery35/planetx/main/planetx/data/stars.npy";
 pub const ATTRIBUTION: (&str, &str) = ("Stars: Yale Bright Star Catalogue", "http://tdc-www.harvard.edu/catalogs/bsc5.html");
+/// Картинка неба 8192×4096 с Млечным путём, NASA SVS Deep Star Maps 2020,
+/// `SKY_URL` модуля. Копия в planetx-terrain: файлы выпусков GitHub
+/// не отдаются странице (CORS).
+pub const SKY_URL: &str = "https://raw.githubusercontent.com/Valery35/planetx-terrain/main/sky/sky_2020_8k.jpg";
+pub const SKY_ATTRIBUTION: (&str, &str) = ("Milky Way: NASA/Goddard SVS", "https://svs.gsfc.nasa.gov/4851");
+/// Предел ответа картинки неба.
+pub const SKY_BYTES: u64 = 32 << 20;
 /// Звёзды тусклее в файл не идут.
 pub const MAX_MAG: f64 = 6.0;
 /// Выше звёзды видны полностью, ниже FADE_LOW звёзд нет, метры.

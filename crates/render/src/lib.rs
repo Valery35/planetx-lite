@@ -41,6 +41,7 @@ use models::Models;
 mod points;
 pub use points::{Dot, PointsMesh};
 mod skylines;
+mod skymap;
 mod stars;
 pub use stars::StarPoint;
 mod subsurface;
@@ -324,6 +325,8 @@ pub struct Globe {
     bodies: stars::Stars,
     /// Линии фигур созвездий вида неба.
     sky_lines: skylines::SkyLines,
+    /// Картинка неба с Млечным путём.
+    sky_map: skymap::SkyMap,
     models: Models,
     /// Модели живых объектов: суда, самолёты, поезда, свой самолёт.
     live: Models,
@@ -807,6 +810,7 @@ impl Globe {
             stars: stars::Stars::new(device),
             bodies: stars::Stars::new(device),
             sky_lines: skylines::SkyLines::new(device),
+            sky_map: skymap::SkyMap::new(device),
             models: Models::new(device, queue),
             live: Models::new(device, queue),
             flight: Models::new(device, queue),
@@ -1596,6 +1600,20 @@ impl Globe {
         self.stars.set_frame(frame);
     }
 
+    /// Картинка неба с Млечным путём, RGBA. Пустая - картинки нет.
+    pub fn set_sky_image(&mut self, width: u32, height: u32, rgba: &[u8]) {
+        self.sky_map.set_image(&self.device, &self.queue, width, height, rgba);
+    }
+
+    pub fn has_sky_image(&self) -> bool {
+        self.sky_map.has_image()
+    }
+
+    /// Поворот неба и видимость картинки неба, как у звёзд.
+    pub fn set_sky_map_frame(&mut self, frame: Option<(globe_core::DMat3, f32)>) {
+        self.sky_map.set_frame(frame);
+    }
+
     /// Линии фигур созвездий вида неба: пары направлений J2000.
     pub fn set_sky_lines(&mut self, segments: &[[f32; 3]]) {
         self.sky_lines.set(&self.device, segments);
@@ -1816,7 +1834,8 @@ impl Globe {
             // Свои объекты - после неба: небо глубину не пишет и закрыло
             // бы линию над горизонтом.
             let ratio = if options.ratio > 0.0 { options.ratio } else { 1.0 };
-            // Звёзды - после неба, свет прибавляется к нему.
+            // Млечный путь и звёзды - после неба, свет прибавляется к нему.
+            draws += self.sky_map.draw(&self.queue, &mut pass, camera);
             draws += self.stars.draw(&self.queue, &mut pass, camera, ratio);
             // Небо: линии созвездий и светила поверх звёзд, объектов
             // глобуса нет - камера в центре сферы.
