@@ -447,12 +447,45 @@ fn cut_opens_the_surface_and_glass_does_not() {
     let base = globe.render(&cam, &sel, None, FrameOptions::default()).draws;
     let center = Ellipsoid::wgs84().geodetic_to_ecef(PERM.0, PERM.1, -50.0);
     let v = |x: f32, y: f32| render::SubVertex { offset: [x, y, 0.0], normal: [0.0, 0.0, 1.0], color: [200, 100, 50, 255] };
-    let mesh = render::SubMesh { center, vertices: vec![v(0.0, 0.0), v(30.0, 0.0), v(0.0, 30.0)], indices: vec![0, 1, 2], cull_front: false, bias: false };
+    let mesh = render::SubMesh { center, vertices: vec![v(0.0, 0.0), v(30.0, 0.0), v(0.0, 30.0)], indices: vec![0, 1, 2], cull_front: false, bias: false, xray: false };
     globe.set_subsurface("wells", Some(&mesh));
     assert_eq!(globe.render(&cam, &sel, None, FrameOptions::default()).draws, base + 1);
     globe.set_subsurface("wells", None);
     assert_eq!(globe.render(&cam, &sel, None, FrameOptions::default()).draws, base);
 }
+#[test]
+fn xray_mesh_shows_through_the_surface() {
+    // Красный квадрат 200 × 200 м в 50 м под поверхностью у точки взгляда:
+    // обычную сетку поверхность закрывает, сетку xray - нет, как стенку
+    // разреза модуля.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 500.0, 0.0, 0.0);
+    let e = Ellipsoid::wgs84();
+    let center = e.geodetic_to_ecef(PERM.0, PERM.1, -50.0);
+    let up = (e.geodetic_to_ecef(PERM.0, PERM.1, -49.0) - center).normalize();
+    let east = globe_core::DVec3::Z.cross(up).normalize();
+    let north = up.cross(east);
+    let v = |x: f64, y: f64| {
+        let p = east * x + north * y;
+        render::SubVertex { offset: [p.x as f32, p.y as f32, p.z as f32], normal: [up.x as f32, up.y as f32, up.z as f32], color: [255, 0, 0, 255] }
+    };
+    let vertices = vec![v(-100.0, -100.0), v(100.0, -100.0), v(100.0, 100.0), v(-100.0, 100.0)];
+    let square = |xray| render::SubMesh { center, vertices: vertices.clone(), indices: vec![0, 1, 2, 0, 2, 3], cull_front: false, bias: false, xray };
+    let (cx, cy) = (f64::from(cam.width) / 2.0, f64::from(cam.height) / 2.0);
+    globe.set_subsurface("wall", Some(&square(false)));
+    let hidden = rgb(&grab(&mut globe, &cam, false), cx, cy);
+    globe.set_subsurface("wall", Some(&square(true)));
+    let seen = rgb(&grab(&mut globe, &cam, false), cx, cy);
+    eprintln!("под поверхностью {hidden:?}, сквозь неё {seen:?}");
+    let red = |c: [u8; 3]| i32::from(c[0]) - i32::from(c[1]).max(i32::from(c[2]));
+    assert!(red(hidden) < 40, "{hidden:?}");
+    assert!(red(seen) > 80, "{seen:?}");
+}
+
 #[test]
 fn wedge_removes_the_surface() {
     // Разрез Земли: внутри сектора поверхности нет, под ней видна

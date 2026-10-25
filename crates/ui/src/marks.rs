@@ -320,6 +320,8 @@ pub enum Action {
     NewFolder(Vec<usize>),
     /// Профиль высот пути.
     Profile(Vec<usize>),
+    /// Разрез вниз вдоль пути.
+    Section(Vec<usize>),
     /// Сохранить вид глобуса меткой в папке по пути.
     SaveView(Vec<usize>),
     /// Копировать строку текстом KML в буфер обмена.
@@ -408,8 +410,8 @@ fn add_menu(ui: &mut eframe::egui::Ui, lang: crate::i18n::Lang, path: &[usize], 
 }
 
 /// Меню правой кнопки строки, как `_menu` модуля: порядок меню папки
-/// Google Earth, у метки сверху «Подлететь». Пунктов QGIS, разрезов,
-/// космоснимков и вырезов модели у Lite нет.
+/// Google Earth, у метки сверху «Подлететь». Пунктов QGIS, разреза
+/// модели, космоснимков и вырезов модели у Lite нет.
 fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[usize], tour: bool, kind: RowKind, actions: &mut Vec<Action>) {
     use crate::i18n::tr;
     response.context_menu(|ui| {
@@ -442,6 +444,7 @@ fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[
         } else if kind == RowKind::Path {
             item(ui, tr(lang, "Tour along the path"), Action::Tour(p()), actions);
             item(ui, tr(lang, "Elevation profile"), Action::Profile(p()), actions);
+            item(ui, tr(lang, "Section down…"), Action::Section(p()), actions);
         }
         item(ui, tr(lang, "Snapshot view"), Action::ViewSnapshot(p()), actions);
         let props = if kind == RowKind::Overlay { Action::OverlayProperties(p()) } else { Action::Properties(p()) };

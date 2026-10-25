@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	가색, 근적외선 (B8 B4 B3)
 Scene cloud cover up to	장면 운량 최대
 Only in the desktop program - the service does not give its data to a web page.	데스크톱 프로그램에서만 - 서비스가 웹 페이지에 데이터를 주지 않습니다.
 The field before 1900 is only in the desktop program.	1900년 이전의 자기장은 데스크톱 프로그램에만 있습니다.
+Section down…	아래로 단면…
+Section	단면
+Section: {name}	단면: {name}
+Foci band	진원 띠
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	단면이 내려가는 깊이. 700 km는 전이대의 바닥이며 더 깊은 곳에는 지진이 거의 없습니다. 2891 km는 핵의 경계, 6371 km는 지구의 중심입니다.
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	선을 따라 진원을 단면으로 옮겨 오는 띠의 너비. 띠가 넓을수록 진원이 많아지지만 먼 진원은 선이 있는 곳에 있지 않습니다.
+A path of at least two points is needed.	점이 두 개 이상인 경로가 필요합니다.
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	길이 {length}, 깊이 {depth}. 띠 안의 진원 {count}.
+Historical ISC-GEM foci {count}.	ISC-GEM 역사 진원 {count}.
+CRUST1.0 crust	CRUST1.0 지각
+Slab2 slabs	Slab2 슬랩
+Loading: {what}.	불러오는 중: {what}.
+Moho {depth}	모호면 {depth}
+slab {top}-{bottom}	슬랩 {top}-{bottom}
+earthquakes	지진

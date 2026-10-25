@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	フォールスカラー、近赤外 (B8 
 Scene cloud cover up to	シーンの雲量の上限
 Only in the desktop program - the service does not give its data to a web page.	デスクトップ版のみ - サービスがウェブページにデータを提供しません。
 The field before 1900 is only in the desktop program.	1900 年以前の磁場はデスクトップ版にのみあります。
+Section down…	下向きの断面…
+Section	断面
+Section: {name}	断面：{name}
+Foci band	震源帯
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	断面の深さ。700 km は遷移層の下面で、これより深い地震はほとんどありません。2891 km は核の境界、6371 km は地球の中心です。
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	線に沿った帯の幅で、この帯の中の震源が断面に投影されます。帯を広くすると震源は増えますが、遠い震源は線の位置にはありません。
+A path of at least two points is needed.	2 点以上の経路が必要です。
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	長さ {length}、深さ {depth}。帯の中の震源 {count}。
+Historical ISC-GEM foci {count}.	ISC-GEM の歴史震源 {count}。
+CRUST1.0 crust	CRUST1.0 の地殻
+Slab2 slabs	Slab2 のスラブ
+Loading: {what}.	読み込み中：{what}。
+Moho {depth}	モホ面 {depth}
+slab {top}-{bottom}	スラブ {top}-{bottom}
+earthquakes	地震

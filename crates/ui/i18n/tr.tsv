@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	Yanlış renkler, yakın kızılötesi (B
 Scene cloud cover up to	Sahne bulutluluğu en fazla
 Only in the desktop program - the service does not give its data to a web page.	Yalnızca masaüstü programında - hizmet verilerini bir web sayfasına vermez.
 The field before 1900 is only in the desktop program.	1900 öncesi alan yalnızca masaüstü programında vardır.
+Section down…	Aşağı doğru kesit…
+Section	Kesit
+Section: {name}	Kesit: {name}
+Foci band	Odak şeridi
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	Kesitin ne kadar derine indiği. 700 km geçiş zonunun tabanıdır, daha derinde neredeyse deprem yoktur. 2891 km çekirdek sınırı, 6371 km Dünya'nın merkezidir.
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	Çizgi boyunca, deprem odaklarının kesite aktarıldığı şeridin genişliği. Daha geniş şerit daha çok odak verir, ama uzak odaklar çizginin bulunduğu yerde değildir.
+A path of at least two points is needed.	En az iki noktalı bir yol gerekir.
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	Uzunluk {length}, derinlik {depth}. Şeritteki deprem odakları {count}.
+Historical ISC-GEM foci {count}.	Tarihî ISC-GEM odakları {count}.
+CRUST1.0 crust	CRUST1.0 kabuğu
+Slab2 slabs	Slab2 levhaları
+Loading: {what}.	Yükleniyor: {what}.
+Moho {depth}	Moho {depth}
+slab {top}-{bottom}	levha {top}-{bottom}
+earthquakes	depremler

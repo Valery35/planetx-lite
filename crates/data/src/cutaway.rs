@@ -385,7 +385,7 @@ impl Default for Faces<'_> {
 }
 
 /// Нижняя граница коры PREM, км радиуса.
-fn crust_low() -> f64 {
+pub fn crust_low() -> f64 {
     SHELLS.iter().find(|s| s.key == "crust").map_or(PREM_RADIUS, |s| s.low)
 }
 

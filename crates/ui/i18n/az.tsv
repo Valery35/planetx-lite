@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	Saxta rənglər, yaxın İQ (B8 B4 B3)
 Scene cloud cover up to	Səhnənin buludluluğu ən çox
 Only in the desktop program - the service does not give its data to a web page.	Yalnız kompüter proqramında - xidmət məlumatlarını veb səhifəyə vermir.
 The field before 1900 is only in the desktop program.	1900-cü ilə qədərki sahə yalnız kompüter proqramında var.
+Section down…	Aşağı kəsik…
+Section	Kəsik
+Section: {name}	Kəsik: {name}
+Foci band	Ocaqlar zolağı
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	Kəsiyin hansı dərinliyə qədər getdiyi. 700 km keçid zonasının altıdır, daha dərində demək olar ki, zəlzələ yoxdur. 2891 km nüvənin sərhədi, 6371 km Yerin mərkəzidir.
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	Xətt boyunca zolağın eni, oradan zəlzələ ocaqları kəsiyə köçürülür. Zolaq geniş olduqca ocaqlar çox olur, amma uzaq ocaqlar xəttin olduğu yerdə deyil.
+A path of at least two points is needed.	Ən azı iki nöqtədən ibarət yol lazımdır.
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	Uzunluq {length}, dərinlik {depth}. Zolaqda zəlzələ ocaqları {count}.
+Historical ISC-GEM foci {count}.	ISC-GEM tarixi ocaqları {count}.
+CRUST1.0 crust	CRUST1.0 qabığı
+Slab2 slabs	Slab2 lövhələri
+Loading: {what}.	Yüklənir: {what}.
+Moho {depth}	Moho {depth}
+slab {top}-{bottom}	lövhə {top}-{bottom}
+earthquakes	zəlzələlər

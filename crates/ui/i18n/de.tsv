@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	Falschfarben, nahes Infrarot (B8 B4 B3)
 Scene cloud cover up to	Bewölkung der Szene bis
 Only in the desktop program - the service does not give its data to a web page.	Nur im Desktop-Programm - der Dienst gibt seine Daten nicht an eine Webseite.
 The field before 1900 is only in the desktop program.	Das Feld vor 1900 gibt es nur im Desktop-Programm.
+Section down…	Schnitt nach unten…
+Section	Schnitt
+Section: {name}	Schnitt: {name}
+Foci band	Herdband
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	Wie tief der Schnitt reicht. 700 km ist die Unterseite der Übergangszone, tiefer gibt es fast keine Erdbeben. 2891 km ist die Kerngrenze, 6371 km der Erdmittelpunkt.
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	Breite des Bandes entlang der Linie, aus dem Erdbebenherde auf den Schnitt übertragen werden. Ein breiteres Band liefert mehr Herde, aber entfernte Herde liegen nicht dort, wo die Linie ist.
+A path of at least two points is needed.	Es wird ein Pfad aus mindestens zwei Punkten benötigt.
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	Länge {length}, Tiefe {depth}. Erdbebenherde im Band {count}.
+Historical ISC-GEM foci {count}.	Historische Herde ISC-GEM {count}.
+CRUST1.0 crust	Kruste CRUST1.0
+Slab2 slabs	Platten Slab2
+Loading: {what}.	Wird geladen: {what}.
+Moho {depth}	Moho {depth}
+slab {top}-{bottom}	Platte {top}-{bottom}
+earthquakes	Erdbeben

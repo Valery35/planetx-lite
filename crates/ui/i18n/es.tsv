@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	Falso color, infrarrojo cercano (B8 B4 B3
 Scene cloud cover up to	Nubosidad de la escena hasta
 Only in the desktop program - the service does not give its data to a web page.	Solo en el programa de escritorio - el servicio no entrega sus datos a una página web.
 The field before 1900 is only in the desktop program.	El campo anterior a 1900 solo está en el programa de escritorio.
+Section down…	Corte hacia abajo…
+Section	Corte
+Section: {name}	Corte: {name}
+Foci band	Banda de focos
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	Hasta qué profundidad llega el corte. 700 km es la base de la zona de transición, más abajo casi no hay terremotos. 2891 km es el límite del núcleo, 6371 km es el centro de la Tierra.
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	Anchura de la banda a lo largo de la línea desde la que los focos de terremotos se trasladan al corte. Una banda más ancha da más focos, pero los focos lejanos no están donde está la línea.
+A path of at least two points is needed.	Se necesita una ruta de al menos dos puntos.
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	Longitud {length}, profundidad {depth}. Focos de terremotos en la banda {count}.
+Historical ISC-GEM foci {count}.	Focos históricos ISC-GEM {count}.
+CRUST1.0 crust	corteza CRUST1.0
+Slab2 slabs	placas Slab2
+Loading: {what}.	Cargando: {what}.
+Moho {depth}	Moho {depth}
+slab {top}-{bottom}	placa {top}-{bottom}
+earthquakes	terremotos

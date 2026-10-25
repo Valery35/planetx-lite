@@ -27,8 +27,8 @@ pub const CRUST_BYTES: u64 = 16 << 20;
 pub const SLAB_BYTES: u64 = 16 << 20;
 pub const INDEX_BYTES: u64 = 1 << 20;
 
-/// Загрузка: идёт, готово, не удалось.
-enum Ask<T> {
+/// Загрузка: идёт, готово, не удалось. Ею же грузит окно «Разрез».
+pub(crate) enum Ask<T> {
     Idle,
     Asking(Box<dyn net::Request>),
     Ready(T),
@@ -54,7 +54,7 @@ pub struct Meshes {
     pub slabs: Option<render::SubMesh>,
 }
 
-fn to_sub(mesh: Option<data::subsurface::Mesh>, bias: bool) -> Option<render::SubMesh> {
+pub(crate) fn to_sub(mesh: Option<data::subsurface::Mesh>, bias: bool) -> Option<render::SubMesh> {
     let mesh = mesh?;
     let vertices = mesh
         .vertices
@@ -65,7 +65,7 @@ fn to_sub(mesh: Option<data::subsurface::Mesh>, bias: bool) -> Option<render::Su
             color: v.color,
         })
         .collect();
-    Some(render::SubMesh { center: globe_core::DVec3::from_array(mesh.center), vertices, indices: mesh.indices, cull_front: false, bias })
+    Some(render::SubMesh { center: globe_core::DVec3::from_array(mesh.center), vertices, indices: mesh.indices, cull_front: false, bias, xray: false })
 }
 
 impl Cutaway {

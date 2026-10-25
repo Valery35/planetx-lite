@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	假彩色，近红外 (B8 B4 B3)
 Scene cloud cover up to	场景云量上限
 Only in the desktop program - the service does not give its data to a web page.	仅限桌面程序 - 该服务不向网页提供数据。
 The field before 1900 is only in the desktop program.	1900 年以前的磁场仅在桌面程序中提供。
+Section down…	向下剖面…
+Section	剖面
+Section: {name}	剖面：{name}
+Foci band	震源带
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	剖面的深度。700 公里是过渡带底部，更深处几乎没有地震。2891 公里是地核边界，6371 公里是地心。
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	沿线条的带宽，带内的地震震源投影到剖面上。带越宽震源越多，但远处的震源并不在线条所在的位置。
+A path of at least two points is needed.	需要至少有两个点的路径。
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	长度 {length}，深度 {depth}。带内地震震源 {count}。
+Historical ISC-GEM foci {count}.	ISC-GEM 历史震源 {count}。
+CRUST1.0 crust	CRUST1.0 地壳
+Slab2 slabs	Slab2 俯冲板片
+Loading: {what}.	正在加载：{what}。
+Moho {depth}	莫霍面 {depth}
+slab {top}-{bottom}	板片 {top}-{bottom}
+earthquakes	地震

@@ -1726,7 +1726,7 @@ impl Globe {
             });
             // Подземные сетки - до тайлов: прозрачная поверхность ложится
             // на них смешиванием, как у модуля.
-            draws += self.subsurface.draw(&self.device, &self.queue, &mut pass, camera);
+            draws += self.subsurface.draw(&self.device, &self.queue, &mut pass, camera, false);
             pass.set_pipeline(if self.cut.is_some() { &self.glass_pipeline } else { &self.tile_pipeline });
             pass.set_bind_group(2, &self.air_bind, &[]);
             let mut underlay_open = false;
@@ -1783,6 +1783,10 @@ impl Globe {
             let ratio = if options.ratio > 0.0 { options.ratio } else { 1.0 };
             // Звёзды - после неба, свет прибавляется к нему.
             draws += self.stars.draw(&self.queue, &mut pass, camera, ratio);
+            // Сетки сквозь поверхность - стенка разреза, без дыр.
+            if !options.show_holes {
+                draws += self.subsurface.draw(&self.device, &self.queue, &mut pass, camera, true);
+            }
             // Картинки-наложения - под своими объектами.
             draws += self.models.draw(&self.device, &self.queue, &mut pass, camera);
             draws += self.live.draw(&self.device, &self.queue, &mut pass, camera);

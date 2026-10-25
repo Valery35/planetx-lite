@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	Fausses couleurs, proche infrarouge (B8 B
 Scene cloud cover up to	Nébulosité de la scène jusqu’à
 Only in the desktop program - the service does not give its data to a web page.	Seulement dans le programme de bureau - le service ne fournit pas ses données à une page web.
 The field before 1900 is only in the desktop program.	Le champ avant 1900 n’existe que dans le programme de bureau.
+Section down…	Coupe vers le bas…
+Section	Coupe
+Section: {name}	Coupe : {name}
+Foci band	Bande des foyers
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	Jusqu’à quelle profondeur va la coupe. 700 km est la base de la zone de transition, plus bas il n’y a presque pas de séismes. 2891 km est la limite du noyau, 6371 km le centre de la Terre.
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	Largeur de la bande le long de la ligne dont les foyers sismiques sont reportés sur la coupe. Une bande plus large donne plus de foyers, mais les foyers éloignés ne se trouvent pas là où passe la ligne.
+A path of at least two points is needed.	Un trajet d’au moins deux points est nécessaire.
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	Longueur {length}, profondeur {depth}. Foyers sismiques dans la bande {count}.
+Historical ISC-GEM foci {count}.	Foyers historiques ISC-GEM {count}.
+CRUST1.0 crust	croûte CRUST1.0
+Slab2 slabs	plaques Slab2
+Loading: {what}.	Chargement : {what}.
+Moho {depth}	Moho {depth}
+slab {top}-{bottom}	plaque {top}-{bottom}
+earthquakes	séismes

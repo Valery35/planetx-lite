@@ -804,6 +804,15 @@ impl Dots {
         model.map(|m| (m, poles, decl))
     }
 
+    /// Очаги строки layer, если она включена и данные пришли: свежие
+    /// USGS или исторические ISC-GEM.
+    pub fn quakes(&self, layer: Layer) -> Option<&[Quake]> {
+        self.layers.iter().find_map(|(l, s)| match s {
+            State::Ready(Data::Quakes(q)) if *l == layer => Some(q.as_slice()),
+            _ => None,
+        })
+    }
+
     /// Скорости плит включённой строки.
     pub fn motion(&self) -> Option<Arc<data::platemotion::Motion>> {
         self.layers.iter().find_map(|(_, s)| match s {

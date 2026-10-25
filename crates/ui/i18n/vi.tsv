@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	Màu giả, hồng ngoại gần (B8 B4 B
 Scene cloud cover up to	Độ che phủ mây của cảnh tối đa
 Only in the desktop program - the service does not give its data to a web page.	Chỉ có trong chương trình máy tính - dịch vụ không cung cấp dữ liệu cho trang web.
 The field before 1900 is only in the desktop program.	Trường trước năm 1900 chỉ có trong chương trình máy tính.
+Section down…	Mặt cắt xuống dưới…
+Section	Mặt cắt
+Section: {name}	Mặt cắt: {name}
+Foci band	Dải chấn tiêu
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	Mặt cắt đi sâu đến đâu. 700 km là đáy đới chuyển tiếp, sâu hơn hầu như không có động đất. 2891 km là ranh giới lõi, 6371 km là tâm Trái Đất.
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	Chiều rộng dải dọc theo đường mà từ đó các chấn tiêu động đất được chuyển lên mặt cắt. Dải rộng hơn cho nhiều chấn tiêu hơn, nhưng chấn tiêu ở xa không nằm đúng chỗ đường đi qua.
+A path of at least two points is needed.	Cần một đường đi có ít nhất hai điểm.
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	Chiều dài {length}, độ sâu {depth}. Chấn tiêu động đất trong dải {count}.
+Historical ISC-GEM foci {count}.	Chấn tiêu lịch sử ISC-GEM {count}.
+CRUST1.0 crust	vỏ CRUST1.0
+Slab2 slabs	mảng Slab2
+Loading: {what}.	Đang tải: {what}.
+Moho {depth}	Moho {depth}
+slab {top}-{bottom}	mảng {top}-{bottom}
+earthquakes	động đất

@@ -37,6 +37,8 @@
 //!   модуля;
 //! - [`tomography`] - томография мантии SEISGLOB2, перенос
 //!   `core/tomography.py` модуля;
+//! - [`section`] - разрез вниз вдоль линии, перенос `core/section.py`
+//!   модуля;
 //! - [`slabs`] - погружающиеся плиты Slab2 на разрезах, перенос
 //!   `core/slabs.py` модуля;
 //! - [`cutaway`] - разрез Земли, сектор и оболочки PREM на гранях, перенос
@@ -97,6 +99,7 @@ pub mod rastermaps;
 pub mod routing;
 pub mod rumsey;
 pub mod satellites;
+pub mod section;
 pub mod sentinel;
 pub mod sgp4;
 pub mod sheets;

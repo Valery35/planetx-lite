@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	Ложные цвета, ближний �
 Scene cloud cover up to	Облачность сцены до
 Only in the desktop program - the service does not give its data to a web page.	Только в программе для компьютера - служба не отдаёт данные странице.
 The field before 1900 is only in the desktop program.	Поле до 1900 года есть только в программе для компьютера.
+Section down…	Разрез вниз…
+Section	Разрез
+Section: {name}	Разрез: {name}
+Foci band	Полоса очагов
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	До какой глубины идёт разрез. 700 км - низ переходной зоны, глубже землетрясений почти нет. 2891 км - граница ядра, 6371 км - центр Земли.
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	Ширина полосы вдоль линии, из которой очаги землетрясений переносятся на разрез. Шире полоса - больше очагов, но дальние очаги лежат не там, где линия.
+A path of at least two points is needed.	Нужен путь хотя бы из двух точек.
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	Длина {length}, глубина {depth}. Очагов землетрясений в полосе {count}.
+Historical ISC-GEM foci {count}.	Исторических очагов ISC-GEM {count}.
+CRUST1.0 crust	кора CRUST1.0
+Slab2 slabs	плиты Slab2
+Loading: {what}.	Загружаются: {what}.
+Moho {depth}	Мохо {depth}
+slab {top}-{bottom}	плита {top}-{bottom}
+earthquakes	землетрясения

@@ -158,6 +158,7 @@ impl Buildings {
                     indices: mesh.indices,
                     cull_front: false,
                     bias: false,
+                    xray: false,
                 };
                 globe.set_subsurface(&name, Some(&sub));
             } else {

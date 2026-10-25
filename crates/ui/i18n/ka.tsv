@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	ყალბი ფერები, ა�
 Scene cloud cover up to	სცენის ღრუბლიანობა -მდე
 Only in the desktop program - the service does not give its data to a web page.	მხოლოდ კომპიუტერის პროგრამაში - სამსახური მონაცემებს ვებგვერდს არ აძლევს.
 The field before 1900 is only in the desktop program.	1900 წლამდე ველი მხოლოდ კომპიუტერის პროგრამაშია.
+Section down…	ჭრილი ქვემოთ…
+Section	ჭრილი
+Section: {name}	ჭრილი: {name}
+Foci band	კერების ზოლი
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	რა სიღრმემდე მიდის ჭრილი. 700 კმ - გარდამავალი ზონის ქვედა საზღვარია, უფრო ღრმად მიწისძვრები თითქმის არ არის. 2891 კმ - ბირთვის საზღვარი, 6371 კმ - დედამიწის ცენტრი.
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	ზოლის სიგანე ხაზის გასწვრივ, საიდანაც მიწისძვრის კერები ჭრილზე გადაიტანება. რაც უფრო ფართოა ზოლი, მით მეტია კერა, მაგრამ შორეული კერები იქ არ არის, სადაც ხაზია.
+A path of at least two points is needed.	საჭიროა გზა სულ მცირე ორი წერტილით.
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	სიგრძე {length}, სიღრმე {depth}. მიწისძვრის კერები ზოლში {count}.
+Historical ISC-GEM foci {count}.	ISC-GEM-ის ისტორიული კერები {count}.
+CRUST1.0 crust	CRUST1.0-ის ქერქი
+Slab2 slabs	Slab2-ის ფილები
+Loading: {what}.	იტვირთება: {what}.
+Moho {depth}	მოჰო {depth}
+slab {top}-{bottom}	ფილა {top}-{bottom}
+earthquakes	მიწისძვრები

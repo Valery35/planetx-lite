@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	Warna semu, inframerah dekat (B8 B4 B3)
 Scene cloud cover up to	Tutupan awan adegan hingga
 Only in the desktop program - the service does not give its data to a web page.	Hanya di program desktop - layanan tidak memberikan datanya ke halaman web.
 The field before 1900 is only in the desktop program.	Medan sebelum 1900 hanya ada di program desktop.
+Section down…	Penampang ke bawah…
+Section	Penampang
+Section: {name}	Penampang: {name}
+Foci band	Pita hiposentrum
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	Seberapa dalam penampang. 700 km adalah dasar zona transisi, lebih dalam hampir tidak ada gempa. 2891 km adalah batas inti, 6371 km adalah pusat Bumi.
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	Lebar pita di sepanjang garis tempat hiposentrum gempa dipindahkan ke penampang. Pita lebih lebar memberi lebih banyak hiposentrum, tetapi hiposentrum yang jauh tidak berada di tempat garis.
+A path of at least two points is needed.	Diperlukan jalur dengan paling sedikit dua titik.
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	Panjang {length}, kedalaman {depth}. Hiposentrum gempa di pita {count}.
+Historical ISC-GEM foci {count}.	Hiposentrum historis ISC-GEM {count}.
+CRUST1.0 crust	kerak CRUST1.0
+Slab2 slabs	lempeng Slab2
+Loading: {what}.	Memuat: {what}.
+Moho {depth}	Moho {depth}
+slab {top}-{bottom}	lempeng {top}-{bottom}
+earthquakes	gempa bumi

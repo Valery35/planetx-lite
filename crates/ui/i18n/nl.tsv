@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	Valse kleuren, nabij infrarood (B8 B4 B3)
 Scene cloud cover up to	Bewolking van de scène tot
 Only in the desktop program - the service does not give its data to a web page.	Alleen in het desktopprogramma - de dienst geeft zijn gegevens niet aan een webpagina.
 The field before 1900 is only in the desktop program.	Het veld vóór 1900 is er alleen in het desktopprogramma.
+Section down…	Doorsnede naar beneden…
+Section	Doorsnede
+Section: {name}	Doorsnede: {name}
+Foci band	Band van haarden
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	Hoe diep de doorsnede gaat. 700 km is de onderkant van de overgangszone, dieper zijn er bijna geen aardbevingen. 2891 km is de kerngrens, 6371 km het middelpunt van de aarde.
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	Breedte van de band langs de lijn waaruit aardbevingshaarden op de doorsnede worden overgebracht. Een bredere band geeft meer haarden, maar verre haarden liggen niet waar de lijn is.
+A path of at least two points is needed.	Er is een pad van minstens twee punten nodig.
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	Lengte {length}, diepte {depth}. Aardbevingshaarden in de band {count}.
+Historical ISC-GEM foci {count}.	Historische haarden ISC-GEM {count}.
+CRUST1.0 crust	korst CRUST1.0
+Slab2 slabs	platen Slab2
+Loading: {what}.	Laden: {what}.
+Moho {depth}	Moho {depth}
+slab {top}-{bottom}	plaat {top}-{bottom}
+earthquakes	aardbevingen

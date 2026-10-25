@@ -1283,3 +1283,18 @@ False colour, near infrared (B8 B4 B3)	Falsi colori, infrarosso vicino (B8 B4 B3
 Scene cloud cover up to	Nuvolosità della scena fino a
 Only in the desktop program - the service does not give its data to a web page.	Solo nel programma desktop - il servizio non fornisce i suoi dati a una pagina web.
 The field before 1900 is only in the desktop program.	Il campo prima del 1900 è solo nel programma desktop.
+Section down…	Sezione verso il basso…
+Section	Sezione
+Section: {name}	Sezione: {name}
+Foci band	Fascia degli ipocentri
+How deep the section goes. 700 km is the bottom of the transition zone, there are almost no earthquakes deeper. 2891 km is the core boundary, 6371 km is the centre of the Earth.	Fino a quale profondità arriva la sezione. 700 km è la base della zona di transizione, più in basso non ci sono quasi terremoti. 2891 km è il limite del nucleo, 6371 km il centro della Terra.
+Width of the band along the line from which earthquake foci are moved onto the section. A wider band gives more foci, but distant foci do not lie where the line is.	Larghezza della fascia lungo la linea da cui gli ipocentri dei terremoti vengono riportati sulla sezione. Una fascia più larga dà più ipocentri, ma quelli lontani non stanno dove passa la linea.
+A path of at least two points is needed.	Serve un percorso di almeno due punti.
+Length {length}, depth {depth}. Earthquake foci in the band {count}.	Lunghezza {length}, profondità {depth}. Ipocentri dei terremoti nella fascia {count}.
+Historical ISC-GEM foci {count}.	Ipocentri storici ISC-GEM {count}.
+CRUST1.0 crust	crosta CRUST1.0
+Slab2 slabs	placche Slab2
+Loading: {what}.	Caricamento: {what}.
+Moho {depth}	Moho {depth}
+slab {top}-{bottom}	placca {top}-{bottom}
+earthquakes	terremoti

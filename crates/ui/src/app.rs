@@ -528,6 +528,8 @@ pub struct LiteApp {
     card: Option<crate::card::Card>,
     /// Окно профиля высот пути или линейки.
     profile: Option<crate::profile::ProfileWindow>,
+    /// Окно «Разрез» вниз вдоль пути.
+    section: Option<crate::section::SectionWindow>,
     /// Действия «Моих меток» от окон, разбираются панелью в следующем
     /// кадре.
     queued: Vec<crate::marks::Action>,
@@ -973,6 +975,7 @@ impl LiteApp {
             snapshot: None,
             card: None,
             profile: None,
+            section: None,
             queued: Vec::new(),
             overlays_built: None,
             haul_pending: false,
@@ -1939,6 +1942,30 @@ impl LiteApp {
         profile.window(ctx, self.lang, &heights_at, &lakes, ready, &mut open);
         if !open {
             self.profile = None;
+        }
+    }
+
+    /// Окно «Разрез»: загрузки, сборка, стенка на глобусе. Закрыли -
+    /// стенка уходит.
+    fn section_window(&mut self, ctx: &egui::Context) {
+        let Some(s) = &mut self.section else {
+            return;
+        };
+        let loaders = &self.loaders;
+        let (wall, saved) = s.step(&|limit| (loaders.request)(limit), self.dots.quakes(crate::dots::Layer::Quakes), self.dots.quakes(crate::dots::Layer::Iscgem), self.timebar.window());
+        if let (Some(wall), Some(globe)) = (wall, &mut self.globe) {
+            globe.set_subsurface("section", wall.as_ref());
+        }
+        let mut open = true;
+        s.window(ctx, self.lang, &mut open);
+        if let Some(bytes) = saved {
+            self.store_crust(&bytes);
+        }
+        if !open {
+            self.section = None;
+            if let Some(globe) = &mut self.globe {
+                globe.set_subsurface("section", None);
+            }
         }
     }
 
@@ -4111,6 +4138,15 @@ impl LiteApp {
                         self.profile = Some(crate::profile::ProfileWindow { title: place.name.clone(), points: place.points.clone(), hovered: None, ruler: false });
                     }
                 }
+                crate::marks::Action::Section(path) => {
+                    if let Some(place) = self.marks.place(&path) {
+                        let (title, points) = (place.name.clone(), place.points.clone());
+                        match &mut self.section {
+                            Some(s) => s.set_source(title, points),
+                            None => self.section = Some(crate::section::SectionWindow::new(title, points, self.crust_cache().as_deref())),
+                        }
+                    }
+                }
                 crate::marks::Action::Copy(path) => {
                     self.copy_marks(ui.ctx(), &path);
                 }
@@ -5235,9 +5271,12 @@ impl LiteApp {
         if !self.wiki_labels.is_empty() {
             parts.push(data::wikipedia::ATTRIBUTION);
         }
-        if self.cutaway.is_some() {
+        if self.cutaway.is_some() || self.section.is_some() {
             parts.push(data::crust::CITATION);
             parts.push(data::slabs::ATTRIBUTION);
+        }
+        if self.section.is_some() {
+            parts.push(data::quakes::ATTRIBUTION);
         }
         self.credits.show(ctx, view, self.lang, &parts, 2);
     }
@@ -5636,6 +5675,7 @@ impl eframe::App for LiteApp {
             || self.satellites.as_ref().is_some_and(crate::satellites::Satellites::busy)
             || self.viewshed.as_ref().is_some_and(crate::pointcalc::Calc::busy)
             || self.insolation.as_ref().is_some_and(crate::pointcalc::Calc::busy)
+            || self.section.as_ref().is_some_and(crate::section::SectionWindow::busy)
             || self.relief.busy();
         self.loading_since = if loading { self.loading_since.or(Some(now)) } else { None };
         let base_busy = self.base_loader(self.basemap).is_some_and(|l| l.busy());
@@ -6222,6 +6262,17 @@ impl eframe::App for LiteApp {
                 painter.circle(at, 5.0, egui::Color32::from_rgb(220, 60, 40), egui::Stroke::new(1.5, egui::Color32::WHITE));
             }
         }
+        // Точка разреза под курсором графика с расстоянием вдоль линии.
+        if let Some((lat, lon, km)) = self.section.as_ref().and_then(|s| s.hovered) {
+            let h = self.nav.pose.terrain.as_ref().map_or(0.0, |t| t(lat, lon));
+            let (px, front) = self.nav.camera.project(self.nav.camera.ellipsoid.geodetic_to_ecef(lat, lon, h));
+            if front {
+                let at = rect.min + egui::vec2((px.x / ppp) as f32, (px.y / ppp) as f32);
+                painter.circle(at, 5.0, egui::Color32::from_rgb(220, 60, 40), egui::Stroke::new(1.5, egui::Color32::WHITE));
+                let text = trf(self.lang, "{value} km", &[("value", &format!("{km:.0}"))]);
+                painter.text(at + egui::vec2(8.0, -8.0), egui::Align2::LEFT_BOTTOM, text, egui::FontId::proportional(13.0), egui::Color32::WHITE);
+            }
+        }
         if pad {
             self.navpad.paint(&painter, rect, &self.nav, self.settings.dark);
             self.navpad.tooltip(ui, rect, self.lang);
@@ -6291,6 +6342,7 @@ impl eframe::App for LiteApp {
             self.tool_window(&ctx);
             self.card_window(&ctx);
             self.profile_window(&ctx);
+            self.section_window(&ctx);
             self.name_window(&ctx);
             self.dialogs(&ctx, now);
             self.overlay_windows(&ctx);
