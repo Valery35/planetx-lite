@@ -6078,7 +6078,7 @@ impl eframe::App for LiteApp {
             globe.grab();
         }
         let stats =
-            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air, ratio: ppp as f32, sun, water });
+            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air, ratio: ppp as f32, sun, water, tint: None });
         drop(store);
         if let Some(check) = &mut self.check
             && check.waits_frame()

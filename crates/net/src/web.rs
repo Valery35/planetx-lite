@@ -190,7 +190,7 @@ async fn fetch_with(url: &str, headers: &[(String, String)], body: Option<&[u8]>
     }
     let response = JsFuture::from(window.fetch_with_str_and_init(url, &init)).await.map_err(|e| Some(format!("{e:?}")))?;
     let response: web_sys::Response = response.dyn_into().map_err(|_| Some("ответ не Response".to_string()))?;
-    if response.status() == 404 {
+    if response.status() == 404 || (response.status() == 403 && crate::forbidden_is_missing(url)) {
         return Err(None);
     }
     if !response.ok() {

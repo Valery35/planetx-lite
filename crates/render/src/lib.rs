@@ -204,6 +204,9 @@ pub struct FrameOptions {
     /// опускаются на уровень моря. None - воды нет, у Земли высоты ниже
     /// нуля тогда обнулены.
     pub water: Option<[f32; 4]>,
+    /// Рассеяние воздуха тела к земному по R, G, B, `u_air_tint` модуля.
+    /// None - земное.
+    pub tint: Option<[f32; 3]>,
 }
 
 /// Глубина полной воды в метрах, мельче вода прозрачнее, `SHALLOW`
@@ -1126,6 +1129,13 @@ impl Globe {
         self.missing.insert(key);
     }
 
+    /// Сменилось тело: сетки тайлов и шапок строятся заново по эллипсоиду
+    /// камеры, снимки прежнего тела забываются, как `change_body` модуля.
+    pub fn change_body(&mut self) {
+        self.meshes.clear();
+        self.clear_textures();
+    }
+
     /// Забыть все снимки - сменилась основа.
     pub fn clear_textures(&mut self) {
         self.textures.clear();
@@ -1495,7 +1505,8 @@ impl Globe {
 
     /// Воздух кадра: глаз в долях полуосей, оси камеры в ECEF. Разности
     /// квадратов считаются в f64.
-    fn air_uniform(camera: &Camera, width: u32, height: u32, on: bool, sun: Option<[f64; 3]>) -> AirUniform {
+    fn air_uniform(camera: &Camera, width: u32, height: u32, on: bool, sun: Option<[f64; 3]>, tint: Option<[f32; 3]>) -> AirUniform {
+        let [tr, tg, tb] = tint.unwrap_or([1.0; 3]);
         let e = &camera.ellipsoid;
         let axes = DVec3::new(1.0 / e.a, 1.0 / e.a, 1.0 / e.b);
         let eye = camera.eye * axes;
@@ -1510,7 +1521,7 @@ impl Globe {
             right: v4(r.x_axis * (t * camera.aspect()), f64::from(width)),
             up: v4(r.y_axis * t, f64::from(height)),
             back: v4(r.z_axis, squared - 1.0),
-            flags: [if on { 1.0 } else { 0.0 }, 0.0, 0.0, 0.0],
+            flags: [if on { 1.0 } else { 0.0 }, tr, tg, tb],
             sun: sun.map_or([0.0, 0.0, 1.0, 0.0], |s| [s[0] as f32, s[1] as f32, s[2] as f32, 1.0]),
         }
     }
@@ -1702,7 +1713,7 @@ impl Globe {
         }
         // Пурпурные дыры видны только без воздуха, как в модуле.
         let air_on = options.air && !options.show_holes;
-        let air = Self::air_uniform(camera, target.width, target.height, air_on, options.sun);
+        let air = Self::air_uniform(camera, target.width, target.height, air_on, options.sun, options.tint);
         self.queue.write_buffer(&self.air, 0, bytemuck::bytes_of(&air));
         let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("globe") });
         let mut draws = 0;

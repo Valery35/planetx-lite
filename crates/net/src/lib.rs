@@ -212,6 +212,16 @@ pub struct HostRule {
     pub root: &'static [u8],
 }
 
+/// Хранилища S3 на отсутствующий ключ отвечают 403, а не 404: так
+/// приходят пропуски снимков Марса и Луны OpenPlanetaryMap, как
+/// `missing=(403, 404)` источника модуля.
+pub const FORBIDDEN_IS_MISSING: [&str; 2] = ["https://s3.amazonaws.com/", "https://s3-eu-west-1.amazonaws.com/"];
+
+/// Ответ 403 по адресу url значит, что тайла нет.
+pub fn forbidden_is_missing(url: &str) -> bool {
+    FORBIDDEN_IS_MISSING.iter().any(|h| url.starts_with(h))
+}
+
 /// Правила узлов. НСПД Росреестра (`data::cadastre`): без Referer карты
 /// ответ 403, сертификат выдан «Russian Trusted Sub CA» Минцифры,
 /// корневого «Russian Trusted Root CA» в системах по умолчанию нет. Его

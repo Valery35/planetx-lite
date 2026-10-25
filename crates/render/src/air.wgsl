@@ -28,7 +28,8 @@ struct Air {
     up: vec4<f32>,
     // Назад, w - |eye|² - 1, посчитано в f64.
     back: vec4<f32>,
-    // x - 1 атмосфера включена, 0 выключена.
+    // x - 1 атмосфера включена, 0 выключена, yzw - рассеяние воздуха
+    // тела к земному по R, G, B.
     flags: vec4<f32>,
     // Направление на солнце в ECEF, w - 1, когда свет солнца включён.
     sun: vec4<f32>,
@@ -99,7 +100,7 @@ fn air(dir: vec3<f32>, t_end: f32) -> AirLight {
     let tc = clamp(-qb / qa, t0, t1);
     let km_per_t = length(dir) / 1000.0;
     let depth = half_depth(d, tc, t0, km_per_t) + half_depth(d, tc, t1, km_per_t);
-    light.through = exp(-BETA * depth);
+    light.through = exp(-BETA * air_frame.flags.yzw * depth);
     light.glow = 1.0 - light.through;
     if air_frame.sun.w > 0.5 {
         // Воздух светится, пока над ближней к Земле точкой луча день,

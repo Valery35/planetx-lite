@@ -256,6 +256,7 @@ impl Worker {
             .and_then(|mut r| r.body_mut().with_config().limit(limit).read_to_vec())
             .map_err(|e| match e {
                 ureq::Error::StatusCode(404) => None,
+                ureq::Error::StatusCode(403) if crate::forbidden_is_missing(url) => None,
                 e => Some(e.to_string()),
             });
         stats.request_finished();

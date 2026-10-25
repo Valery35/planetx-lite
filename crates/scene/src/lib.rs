@@ -8,6 +8,8 @@
 //! - [`clock`] - ход момента шкалы времени, перенос `core/clock.py`;
 //! - [`lookat`] - вид метки, перенос `core/lookat.py`;
 //! - [`placetree`] - дерево меток, перенос `core/placetree.py`;
+//! - [`planets`] - тела глобуса, их снимки, высоты и воздух, перенос
+//!   `core/planets.py`;
 //! - [`icons`] - значки меток, перенос `core/icons.py`;
 //! - [`region`] - Region KML, скрытие дальше расстояния, перенос `core/region.py`;
 //! - [`measure`] - единицы, профиль высот, длина по рельефу, перенос `core/measure.py`;
@@ -50,6 +52,7 @@ pub mod obj;
 pub mod opacity;
 pub mod overlays;
 pub mod placetree;
+pub mod planets;
 pub mod region;
 pub mod scene;
 pub mod searchbar;
