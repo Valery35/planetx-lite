@@ -1214,3 +1214,5 @@ Value applies from	評価額の適用開始日
 Registered on	登録日
 Cadastral block	地籍街区
 Status	状態
+Currents did not load, check the network and switch the row on again.	海流を読み込めませんでした。ネットワークを確認し、行をもう一度オンにしてください。
+Loading currents, about 4 MB…	海流を読み込み中、約 4 MB…

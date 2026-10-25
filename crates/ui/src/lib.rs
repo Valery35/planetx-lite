@@ -16,6 +16,7 @@ pub mod check;
 pub mod commands;
 pub mod coords_text;
 pub mod credits;
+pub mod currents;
 pub mod cutaway;
 pub mod demos;
 pub mod dots;

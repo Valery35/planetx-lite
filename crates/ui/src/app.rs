@@ -337,6 +337,8 @@ pub struct LiteApp {
     /// участки для подсветки, `_ask_parcels` модуля.
     parcel_ask: Option<((f64, f64), Box<dyn net::Request>)>,
     parcels: Vec<data::cadastre::Parcel>,
+    /// Строка «Течения».
+    currents: Option<crate::currents::Currents>,
     /// Объекты живых строк на этот кадр, для окна «Объекты» и меню.
     live_objects: Vec<(crate::live::Kind, crate::live::Object)>,
     /// Камера следом за живым объектом: строка и ключ.
@@ -883,6 +885,7 @@ impl LiteApp {
             building_only: HashSet::new(),
             parcel_ask: None,
             parcels: Vec::new(),
+            currents: None,
             live_objects: Vec::new(),
             live_follow: None,
             followed: None,
@@ -2172,6 +2175,13 @@ impl LiteApp {
                     self.dots.dirty = true;
                 }
             }
+            Extra::Currents => {
+                if on {
+                    self.currents.get_or_insert_with(crate::currents::Currents::default);
+                } else if self.currents.take().is_some() {
+                    self.refresh_painters();
+                }
+            }
             Extra::Buildings => {
                 if on {
                     self.buildings.get_or_insert_with(crate::buildings::Buildings::default);
@@ -2952,6 +2962,30 @@ impl LiteApp {
         }
     }
 
+    /// Шаг течений: сутки по бегунку шкалы времени, загрузка, частицы.
+    fn step_currents(&mut self, ctx: &egui::Context, now: f64) {
+        let moment = match self.timebar.window() {
+            Some((_, hi)) if hi.is_finite() => Some(hi),
+            _ => None,
+        };
+        let altitude = self.nav.camera.ellipsoid.ecef_to_geodetic(self.nav.camera.eye).2;
+        let view = (self.nav.pose.lat, self.nav.pose.lon, altitude, self.view_width());
+        let lang = self.lang;
+        let Some(c) = &mut self.currents else {
+            return;
+        };
+        let loaders = &self.loaders;
+        if let Some(message) = c.step(lang, now, moment, view, &|limit: u64| (loaders.request)(limit)) {
+            self.open_message = Some(message);
+        }
+        let changed = std::mem::take(&mut c.changed);
+        // Струйки бегут - кадры идут по такту частиц.
+        ctx.request_repaint_after(std::time::Duration::from_millis(u64::from(data::flow::TICK_MS)));
+        if changed {
+            self.refresh_painters();
+        }
+    }
+
     /// Пришли сведения об участках: группа окна «Объекты» и подсветка
     /// контуров, `_parcels_arrived` модуля.
     fn step_parcels(&mut self) {
@@ -3211,6 +3245,9 @@ impl LiteApp {
     /// контуры горных разработок.
     fn refresh_painters(&mut self) {
         let mut painters: Vec<(&'static str, crate::vector::Painter)> = Vec::new();
+        if let Some(grid) = self.currents.as_ref().and_then(crate::currents::Currents::grid) {
+            painters.push(("currents", crate::currents::painter(grid)));
+        }
         if let Some(mines) = self.mining.as_ref().and_then(crate::mining::Mining::mines) {
             painters.push(("mining", crate::mining::painter(mines)));
         }
@@ -5063,6 +5100,9 @@ impl LiteApp {
         if self.mining.is_some() {
             parts.push(data::mining::POLYGONS_ATTRIBUTION);
         }
+        if self.currents.is_some() {
+            parts.push(data::flow::CURRENTS_ATTRIBUTION);
+        }
         if !self.wiki_labels.is_empty() {
             parts.push(data::wikipedia::ATTRIBUTION);
         }
@@ -5458,6 +5498,7 @@ impl eframe::App for LiteApp {
             || self.wiki.as_ref().is_some_and(crate::wiki::Wiki::busy)
             || self.mining.as_ref().is_some_and(crate::mining::Mining::busy)
             || self.parcel_ask.is_some()
+            || self.currents.as_ref().is_some_and(crate::currents::Currents::busy)
             || self.buildings.as_ref().is_some_and(|b| b.busy(self.heights.read().version()))
             || self.osm_mines.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.osm_infra.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
@@ -5621,6 +5662,7 @@ impl eframe::App for LiteApp {
         self.step_satellites(now);
         self.step_overpass(now);
         self.step_parcels();
+        self.step_currents(&ctx, now);
         self.paleo_bar(&ctx, now);
         self.step_cutaway();
         self.check_linked_models(now);
@@ -5914,6 +5956,10 @@ impl eframe::App for LiteApp {
             }
             painter.text(at + egui::vec2(1.0, 1.0), egui::Align2::LEFT_BOTTOM, text, font.clone(), egui::Color32::from_black_alpha(200));
             painter.text(at, egui::Align2::LEFT_BOTTOM, text, font, egui::Color32::WHITE);
+        }
+        // Струйки течений поверх глобуса.
+        if let Some(c) = &self.currents {
+            c.paint(&painter, rect, ppp, &self.nav.camera);
         }
         // Контуры участков кадастра под щелчком.
         if !self.parcels.is_empty() {
