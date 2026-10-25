@@ -326,6 +326,8 @@ pub struct LiteApp {
     osm_mines: Option<crate::overpass::Overpass<data::mining::Item>>,
     osm_infra: Option<crate::overpass::Overpass<data::infra::Item>>,
     overpass_mirrors: crate::overpass::Mirrors,
+    /// Строка «Горные разработки».
+    mining: Option<crate::mining::Mining>,
     /// Объекты живых строк на этот кадр, для окна «Объекты» и меню.
     live_objects: Vec<(crate::live::Kind, crate::live::Object)>,
     /// Камера следом за живым объектом: строка и ключ.
@@ -866,6 +868,7 @@ impl LiteApp {
             osm_mines: None,
             osm_infra: None,
             overpass_mirrors: crate::overpass::Mirrors::default(),
+            mining: None,
             live_objects: Vec::new(),
             live_follow: None,
             followed: None,
@@ -1569,6 +1572,10 @@ impl LiteApp {
                 }
             }
         }
+        // Контур горной разработки под точкой, `_identify_mining` модуля.
+        if let Some(group) = self.mining.as_ref().and_then(|m| m.identify(self.lang, lat, lon)) {
+            groups.push(group);
+        }
         // Спутник у пикселя, `SatelliteManager.identify` модуля.
         if let (Some((px, py, ppp)), Some(sats)) = (pixel, &self.satellites)
             && let Some(number) = self.satellite_under(px, py, ppp)
@@ -2151,6 +2158,21 @@ impl LiteApp {
                     self.dots.dirty = true;
                 }
             }
+            Extra::Mining => {
+                if on {
+                    if self.mining.is_none() {
+                        let path = self.data_dir().map(|d| d.join(data::mining::POLYGONS_FILE));
+                        let loaders = &self.loaders;
+                        let (m, message) = crate::mining::Mining::new(self.lang, path, &|limit: u64| (loaders.request)(limit));
+                        self.mining = Some(m);
+                        if message.is_some() {
+                            self.open_message = message;
+                        }
+                    }
+                } else if self.mining.take().is_some() {
+                    self.refresh_painters();
+                }
+            }
             Extra::Satellites => {
                 if on {
                     if self.satellites.is_none() {
@@ -2226,12 +2248,7 @@ impl LiteApp {
                 } else {
                     self.dots.disable(layer);
                 }
-                // Объекты OSM просит свой загрузчик Overpass по тайлам вида.
-                match layer {
-                    crate::dots::Layer::OsmMines => self.osm_mines = on.then(|| crate::overpass::Overpass::new(data::mining::query, data::mining::parse)),
-                    crate::dots::Layer::InfraOsm => self.osm_infra = on.then(|| crate::overpass::Overpass::new(data::infra::query, data::infra::parse)),
-                    _ => {}
-                }
+
                 self.settings.dots = crate::dots::Layer::ALL.into_iter().filter(|l| if *l == layer { on } else { self.extras_on.contains(&Extra::Dots(*l)) }).map(|l| l.key().to_string()).collect();
             }
         }
@@ -2915,6 +2932,17 @@ impl LiteApp {
     /// Шаг загрузчиков Overpass: тайлы у точки взгляда, пришедшие
     /// объекты - в слои точек и линий.
     fn step_overpass(&mut self, now: f64) {
+        // Загрузчик идёт за включённой строкой: строки включаются и из
+        // настроек при запуске, мимо щелчка по строке.
+        let keys = self.dots.keys();
+        let mines_on = keys.contains(&crate::dots::Layer::OsmMines);
+        let infra_on = keys.contains(&crate::dots::Layer::InfraOsm);
+        if mines_on != self.osm_mines.is_some() {
+            self.osm_mines = mines_on.then(|| crate::overpass::Overpass::new(data::mining::query, data::mining::parse));
+        }
+        if infra_on != self.osm_infra.is_some() {
+            self.osm_infra = infra_on.then(|| crate::overpass::Overpass::new(data::infra::query, data::infra::parse));
+        }
         if self.osm_mines.is_none() && self.osm_infra.is_none() {
             return;
         }
@@ -3094,12 +3122,14 @@ impl LiteApp {
             }
         }
         self.calc_keys = keys;
+        if let Some(m) = &mut self.mining {
+            if let Some(message) = m.step(lang) {
+                self.open_message = Some(message);
+            }
+            changed |= std::mem::take(&mut m.changed);
+        }
         if changed {
-            let painters: Vec<(&'static str, crate::vector::Painter)> = [("viewshed", &self.viewshed), ("insolation", &self.insolation)]
-                .into_iter()
-                .filter_map(|(id, c)| c.as_ref().and_then(|c| c.layer.as_ref()).map(|l| (id, crate::pointcalc::painter(l))))
-                .collect();
-            self.vector.set_painters(painters);
+            self.refresh_painters();
         }
         // Окно закрыто и слоя нет - расчёт забыт.
         for slot in [&mut self.viewshed, &mut self.insolation] {
@@ -3111,6 +3141,32 @@ impl LiteApp {
             let rect = ctx.content_rect();
             crate::pointcalc::legend(ctx, lang, r.top(), egui::pos2(rect.left() + 12.0, rect.bottom() - 120.0));
         }
+    }
+
+    /// Слои над картами по готовым результатам: видимость, инсоляция,
+    /// контуры горных разработок.
+    fn refresh_painters(&mut self) {
+        let mut painters: Vec<(&'static str, crate::vector::Painter)> = Vec::new();
+        if let Some(mines) = self.mining.as_ref().and_then(crate::mining::Mining::mines) {
+            painters.push(("mining", crate::mining::painter(mines)));
+        }
+        for (id, c) in [("viewshed", &self.viewshed), ("insolation", &self.insolation)] {
+            if let Some(l) = c.as_ref().and_then(|c| c.layer.as_ref()) {
+                painters.push((id, crate::pointcalc::painter(l)));
+            }
+        }
+        self.vector.set_painters(painters);
+    }
+
+    /// Папка данных программы, у страницы None.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn data_dir(&self) -> Option<std::path::PathBuf> {
+        self.demo_cache.as_ref()?.parent().map(std::path::Path::to_path_buf)
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    fn data_dir(&self) -> Option<std::path::PathBuf> {
+        None
     }
 
     /// Окна точки меню на глобусе: номера листов и список своих сайтов.
@@ -4931,6 +4987,9 @@ impl LiteApp {
         if self.satellites.is_some() {
             parts.push(data::satellites::ATTRIBUTION);
         }
+        if self.mining.is_some() {
+            parts.push(data::mining::POLYGONS_ATTRIBUTION);
+        }
         if !self.wiki_labels.is_empty() {
             parts.push(data::wikipedia::ATTRIBUTION);
         }
@@ -5324,6 +5383,7 @@ impl eframe::App for LiteApp {
             || self.pictures.busy()
             || self.fetching.is_some()
             || self.wiki.as_ref().is_some_and(crate::wiki::Wiki::busy)
+            || self.mining.as_ref().is_some_and(crate::mining::Mining::busy)
             || self.osm_mines.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.osm_infra.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.satellites.as_ref().is_some_and(crate::satellites::Satellites::busy)

@@ -45,6 +45,8 @@ pub enum Extra {
     Wiki,
     /// Спутники CelesTrak выбранных групп.
     Satellites,
+    /// Контуры горных разработок, Maus и др. 2022.
+    Mining,
 }
 
 impl Extra {
@@ -62,6 +64,7 @@ impl Extra {
         out.extend(crate::live::Kind::ALL.map(Extra::Live));
         out.push(Extra::Wiki);
         out.push(Extra::Satellites);
+        out.push(Extra::Mining);
         out
     }
 
@@ -87,6 +90,7 @@ impl Extra {
             Extra::Live(k) => k.name(),
             Extra::Wiki => "Wikipedia nearby",
             Extra::Satellites => "Satellites",
+            Extra::Mining => "Mining areas",
         }
     }
 
@@ -107,6 +111,7 @@ impl Extra {
             Extra::Map(_) => self.map().map_or("", |e| e.tip),
             Extra::Dots(l) => l.tip(),
             Extra::Live(k) => k.tip(),
+            Extra::Mining => "Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.",
             Extra::Satellites => "Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.",
             Extra::Wiki => "Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.",
             Extra::Geoid => "The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.",
@@ -140,6 +145,7 @@ impl Extra {
             Extra::Live(_) => Category::Transport,
             Extra::Wiki => Category::Wiki,
             Extra::Satellites => Category::Sky,
+            Extra::Mining => Category::Depths,
         }
     }
 
@@ -158,6 +164,7 @@ impl Extra {
             Extra::Live(k) => k.key(),
             Extra::Wiki => "wiki",
             Extra::Satellites => "satellites",
+            Extra::Mining => "mining",
         }
     }
 
@@ -655,6 +662,7 @@ impl Item {
             Item::Extra(Extra::Live(k)) => k.source(),
             Item::Extra(Extra::Wiki) => "Wikipedia",
             Item::Extra(Extra::Satellites) | Item::Sat(_) => "CelesTrak",
+            Item::Extra(Extra::Mining) => "Maus et al. 2022",
             Item::Extra(Extra::Cutaway) => "PREM, CRUST1.0, Slab2",
             Item::Extra(Extra::Paleo) => "PALEOMAP",
             Item::Extra(Extra::Geoid) => "EGM2008, NGA",
@@ -694,6 +702,7 @@ fn items() -> Vec<Item> {
             .map(|l| Item::Extra(Extra::Dots(l))),
     );
     // Порядок LAYERS витрины модуля.
+    out.push(Item::Extra(Extra::Mining));
     out.push(Item::Extra(Extra::Geoid));
     out.extend(crate::live::Kind::ALL.map(|k| Item::Extra(Extra::Live(k))));
     out.push(Item::Extra(Extra::Cutaway));

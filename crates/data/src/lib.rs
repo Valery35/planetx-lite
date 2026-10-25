@@ -42,6 +42,7 @@
 //! - [`cutaway`] - разрез Земли, сектор и оболочки PREM на гранях, перенос
 //!   `core/cutaway.py` модуля.
 
+pub mod areas;
 pub mod aircraft;
 pub mod bathymetry;
 pub mod buildings;

@@ -1190,3 +1190,9 @@ Dot - substation	Cerchio - sottostazione
 Substance	Sostanza
 Location	Posa
 The OpenStreetMap server did not answer, the request will repeat by itself.	Il server di OpenStreetMap non ha risposto, la richiesta si ripeterà da sola.
+Loading mining area outlines, about 25 MB…	Caricamento dei contorni delle aree minerarie, circa 25 MB…
+Mining area outlines are not written: {error}	I contorni delle aree minerarie non sono stati scritti: {error}
+Mining area outlines did not load, check the network and switch the row on again.	I contorni delle aree minerarie non si sono caricati, controlla la rete e riattiva la riga.
+The mining area outline file cannot be read: {path}	Il file dei contorni delle aree minerarie non è leggibile: {path}
+Mining area	Area mineraria
+{value} km²	{value} km²

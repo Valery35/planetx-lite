@@ -1190,3 +1190,9 @@ Dot - substation	Dairə - yarımstansiya
 Substance	Maddə
 Location	Çəkiliş
 The OpenStreetMap server did not answer, the request will repeat by itself.	OpenStreetMap serveri cavab vermədi, sorğu özü təkrarlanacaq.
+Loading mining area outlines, about 25 MB…	Mədən sahələrinin konturları yüklənir, təxminən 25 MB…
+Mining area outlines are not written: {error}	Mədən sahələrinin konturları yazılmayıb: {error}
+Mining area outlines did not load, check the network and switch the row on again.	Mədən sahələrinin konturları yüklənmədi, şəbəkəni yoxlayın və sətri yenidən yandırın.
+The mining area outline file cannot be read: {path}	Mədən sahələrinin kontur faylı oxunmur: {path}
+Mining area	Mədən sahəsi
+{value} km²	{value} km²

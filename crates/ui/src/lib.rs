@@ -43,6 +43,7 @@ pub mod maps;
 pub mod menulinks;
 pub mod mapvalue;
 pub mod marks;
+pub mod mining;
 pub mod models;
 pub mod navpad;
 pub mod pictures;

@@ -1190,3 +1190,9 @@ Dot - substation	Stip - onderstation
 Substance	Stof
 Location	Ligging
 The OpenStreetMap server did not answer, the request will repeat by itself.	De OpenStreetMap-server antwoordde niet, het verzoek wordt vanzelf herhaald.
+Loading mining area outlines, about 25 MB…	Omtrekken van mijngebieden laden, ongeveer 25 MB…
+Mining area outlines are not written: {error}	Omtrekken van mijngebieden zijn niet weggeschreven: {error}
+Mining area outlines did not load, check the network and switch the row on again.	Omtrekken van mijngebieden zijn niet geladen, controleer het netwerk en zet de regel opnieuw aan.
+The mining area outline file cannot be read: {path}	Het bestand met omtrekken van mijngebieden is niet leesbaar: {path}
+Mining area	Mijngebied
+{value} km²	{value} km²

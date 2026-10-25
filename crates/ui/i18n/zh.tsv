@@ -1190,3 +1190,9 @@ Dot - substation	圆点 - 变电站
 Substance	输送物
 Location	敷设方式
 The OpenStreetMap server did not answer, the request will repeat by itself.	OpenStreetMap 服务器未响应，请求将自动重试。
+Loading mining area outlines, about 25 MB…	正在加载采矿区轮廓，约 25 MB…
+Mining area outlines are not written: {error}	未能写入采矿区轮廓：{error}
+Mining area outlines did not load, check the network and switch the row on again.	采矿区轮廓未能加载，请检查网络并重新开启该行。
+The mining area outline file cannot be read: {path}	无法读取采矿区轮廓文件：{path}
+Mining area	采矿区
+{value} km²	{value} km²

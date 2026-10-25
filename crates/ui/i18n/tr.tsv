@@ -1190,3 +1190,9 @@ Dot - substation	Daire - trafo merkezi
 Substance	Madde
 Location	Döşeme
 The OpenStreetMap server did not answer, the request will repeat by itself.	OpenStreetMap sunucusu yanıt vermedi, istek kendiliğinden yinelenecek.
+Loading mining area outlines, about 25 MB…	Maden sahası sınırları yükleniyor, yaklaşık 25 MB…
+Mining area outlines are not written: {error}	Maden sahası sınırları yazılmadı: {error}
+Mining area outlines did not load, check the network and switch the row on again.	Maden sahası sınırları yüklenmedi, ağı denetleyin ve satırı yeniden açın.
+The mining area outline file cannot be read: {path}	Maden sahası sınırları dosyası okunamıyor: {path}
+Mining area	Maden sahası
+{value} km²	{value} km²

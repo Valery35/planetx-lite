@@ -1190,3 +1190,9 @@ Dot - substation	Punkt - Umspannwerk
 Substance	Stoff
 Location	Verlegung
 The OpenStreetMap server did not answer, the request will repeat by itself.	Der OpenStreetMap-Server hat nicht geantwortet, die Anfrage wird von selbst wiederholt.
+Loading mining area outlines, about 25 MB…	Umrisse der Bergbaugebiete werden geladen, etwa 25 MB…
+Mining area outlines are not written: {error}	Umrisse der Bergbaugebiete sind nicht geschrieben: {error}
+Mining area outlines did not load, check the network and switch the row on again.	Umrisse der Bergbaugebiete wurden nicht geladen, das Netz prüfen und die Zeile erneut einschalten.
+The mining area outline file cannot be read: {path}	Die Datei der Umrisse der Bergbaugebiete ist nicht lesbar: {path}
+Mining area	Bergbaugebiet
+{value} km²	{value} km²

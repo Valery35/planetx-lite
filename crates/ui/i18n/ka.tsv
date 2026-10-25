@@ -1190,3 +1190,9 @@ Dot - substation	წრე - ქვესადგური
 Substance	ნივთიერება
 Location	გაყვანა
 The OpenStreetMap server did not answer, the request will repeat by itself.	OpenStreetMap-ის სერვერმა არ უპასუხა, მოთხოვნა თავად განმეორდება.
+Loading mining area outlines, about 25 MB…	სამთო სამუშაოების კონტურების ჩატვირთვა, დაახლოებით 25 მბ…
+Mining area outlines are not written: {error}	სამთო სამუშაოების კონტურები არ ჩაიწერა: {error}
+Mining area outlines did not load, check the network and switch the row on again.	სამთო სამუშაოების კონტურები არ ჩაიტვირთა, შეამოწმეთ ქსელი და ხელახლა ჩართეთ სტრიქონი.
+The mining area outline file cannot be read: {path}	სამთო სამუშაოების კონტურების ფაილი არ იკითხება: {path}
+Mining area	სამთო სამუშაო
+{value} km²	{value} კმ²

@@ -1190,3 +1190,9 @@ Dot - substation	円 - 変電所
 Substance	輸送物
 Location	敷設方法
 The OpenStreetMap server did not answer, the request will repeat by itself.	OpenStreetMap サーバーが応答しません。要求は自動で再送されます。
+Loading mining area outlines, about 25 MB…	鉱山地域の輪郭を読み込み中、約 25 MB…
+Mining area outlines are not written: {error}	鉱山地域の輪郭を書き込めません：{error}
+Mining area outlines did not load, check the network and switch the row on again.	鉱山地域の輪郭を読み込めませんでした。ネットワークを確認し、行をもう一度オンにしてください。
+The mining area outline file cannot be read: {path}	鉱山地域の輪郭ファイルを読み込めません：{path}
+Mining area	鉱山地域
+{value} km²	{value} km²

@@ -1190,3 +1190,9 @@ Dot - substation	Lingkaran - gardu induk
 Substance	Zat
 Location	Pemasangan
 The OpenStreetMap server did not answer, the request will repeat by itself.	Server OpenStreetMap tidak menjawab, permintaan akan diulang sendiri.
+Loading mining area outlines, about 25 MB…	Memuat garis batas wilayah tambang, sekitar 25 MB…
+Mining area outlines are not written: {error}	Garis batas wilayah tambang tidak tertulis: {error}
+Mining area outlines did not load, check the network and switch the row on again.	Garis batas wilayah tambang tidak termuat, periksa jaringan dan nyalakan baris lagi.
+The mining area outline file cannot be read: {path}	Berkas garis batas wilayah tambang tidak dapat dibaca: {path}
+Mining area	Wilayah tambang
+{value} km²	{value} km²

@@ -1190,3 +1190,9 @@ Dot - substation	원 - 변전소
 Substance	운송 물질
 Location	설치 방식
 The OpenStreetMap server did not answer, the request will repeat by itself.	OpenStreetMap 서버가 응답하지 않았습니다. 요청은 자동으로 다시 보냅니다.
+Loading mining area outlines, about 25 MB…	광산 지역 윤곽을 불러오는 중, 약 25 MB…
+Mining area outlines are not written: {error}	광산 지역 윤곽을 기록하지 못했습니다: {error}
+Mining area outlines did not load, check the network and switch the row on again.	광산 지역 윤곽을 불러오지 못했습니다. 네트워크를 확인하고 행을 다시 켜십시오.
+The mining area outline file cannot be read: {path}	광산 지역 윤곽 파일을 읽을 수 없습니다: {path}
+Mining area	광산 지역
+{value} km²	{value} km²

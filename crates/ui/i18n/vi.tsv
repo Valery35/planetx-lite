@@ -1190,3 +1190,9 @@ Dot - substation	Chấm tròn - trạm biến áp
 Substance	Chất vận chuyển
 Location	Cách lắp đặt
 The OpenStreetMap server did not answer, the request will repeat by itself.	Máy chủ OpenStreetMap không trả lời, yêu cầu sẽ tự lặp lại.
+Loading mining area outlines, about 25 MB…	Đang tải đường bao khu khai thác mỏ, khoảng 25 MB…
+Mining area outlines are not written: {error}	Chưa ghi được đường bao khu khai thác mỏ: {error}
+Mining area outlines did not load, check the network and switch the row on again.	Đường bao khu khai thác mỏ chưa tải được, hãy kiểm tra mạng và bật lại dòng.
+The mining area outline file cannot be read: {path}	Không đọc được tệp đường bao khu khai thác mỏ: {path}
+Mining area	Khu khai thác mỏ
+{value} km²	{value} km²

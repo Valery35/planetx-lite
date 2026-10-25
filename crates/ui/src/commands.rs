@@ -118,6 +118,7 @@ fn layer_words(extra: Extra) -> &'static [&'static str] {
         Extra::Geoid => &["геоид", "фигура земли", "egm2008", "geoid"],
         Extra::Paleo => &["палеогеография", "палеокарта", "древние материки", "пангея", "paleogeography", "paleomap", "pangaea"],
         Extra::Cutaway => &["разрез земли", "разрез", "ядро", "мантия", "кора", "cutaway", "core", "mantle", "crust"],
+        Extra::Mining => &["карьеры", "отвалы", "горные работы", "mining", "pits"],
         Extra::Satellites => &["мкс", "спутники", "орбиты", "starlink", "iss", "satellites"],
         Extra::Wiki => &["википедия", "энциклопедия", "статьи", "достопримечательности", "wikipedia", "encyclopedia", "articles", "landmarks"],
         Extra::Map(_) | Extra::Dots(_) => key_words(extra.key()),

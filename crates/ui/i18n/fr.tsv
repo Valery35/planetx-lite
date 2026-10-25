@@ -1190,3 +1190,9 @@ Dot - substation	Point - poste électrique
 Substance	Substance
 Location	Pose
 The OpenStreetMap server did not answer, the request will repeat by itself.	Le serveur OpenStreetMap n’a pas répondu, la requête sera répétée automatiquement.
+Loading mining area outlines, about 25 MB…	Chargement des contours des zones minières, environ 25 Mo…
+Mining area outlines are not written: {error}	Les contours des zones minières ne sont pas écrits : {error}
+Mining area outlines did not load, check the network and switch the row on again.	Les contours des zones minières ne se sont pas chargés, vérifiez le réseau et réactivez la ligne.
+The mining area outline file cannot be read: {path}	Le fichier des contours des zones minières est illisible : {path}
+Mining area	Zone minière
+{value} km²	{value} km²

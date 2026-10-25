@@ -1190,3 +1190,9 @@ Dot - substation	Кружок - подстанция
 Substance	Вещество
 Location	Прокладка
 The OpenStreetMap server did not answer, the request will repeat by itself.	Сервер OpenStreetMap не ответил, запрос повторится сам.
+Loading mining area outlines, about 25 MB…	Загрузка контуров горных разработок, около 25 МБ…
+Mining area outlines are not written: {error}	Контуры горных разработок не записаны: {error}
+Mining area outlines did not load, check the network and switch the row on again.	Контуры горных разработок не загрузились, проверьте сеть и включите строку снова.
+The mining area outline file cannot be read: {path}	Файл контуров горных разработок не читается: {path}
+Mining area	Горная разработка
+{value} km²	{value} км²

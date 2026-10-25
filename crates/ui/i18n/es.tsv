@@ -1190,3 +1190,9 @@ Dot - substation	Círculo - subestación
 Substance	Sustancia
 Location	Tendido
 The OpenStreetMap server did not answer, the request will repeat by itself.	El servidor de OpenStreetMap no respondió, la solicitud se repetirá sola.
+Loading mining area outlines, about 25 MB…	Cargando los contornos de zonas mineras, unos 25 MB…
+Mining area outlines are not written: {error}	Los contornos de zonas mineras no se escribieron: {error}
+Mining area outlines did not load, check the network and switch the row on again.	Los contornos de zonas mineras no se cargaron, compruebe la red y active la fila de nuevo.
+The mining area outline file cannot be read: {path}	El archivo de contornos de zonas mineras no se puede leer: {path}
+Mining area	Zona minera
+{value} km²	{value} km²
