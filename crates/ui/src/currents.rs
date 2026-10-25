@@ -36,6 +36,19 @@ const SLOW_FLOOR: f64 = 0.3;
 /// Зерно частиц.
 const SEED: u64 = 20261012;
 
+/// Адрес суток течений: у программы - служба NOAA, у страницы - копия
+/// planetx-live, у ERDDAP нет CORS.
+fn day_url(day: Option<&str>) -> String {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        flow::currents_url(day)
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        flow::currents_web_url(day)
+    }
+}
+
 /// Множитель непрозрачности струйки по скорости, м/с.
 fn slow_fade(speed: f64) -> f64 {
     (speed / CURRENT_SLOW).clamp(SLOW_FLOOR, 1.0)
@@ -58,6 +71,8 @@ pub struct Currents {
     /// Поле сменилось: заливка рисуется заново.
     pub changed: bool,
     failed: bool,
+    /// Сутки, которых у службы или копии нет: больше не просятся.
+    missing: std::collections::HashSet<String>,
 }
 
 impl Default for Currents {
@@ -74,6 +89,7 @@ impl Default for Currents {
             ticked: f64::NEG_INFINITY,
             changed: false,
             failed: false,
+            missing: std::collections::HashSet::new(),
         }
     }
 }
@@ -117,6 +133,9 @@ impl Currents {
                         self.changed = true;
                     }
                 }
+                Err(_) if !day.is_empty() => {
+                    self.missing.insert(day);
+                }
                 Err(_) => {
                     self.failed = true;
                     message = Some(tr(lang, "Currents did not load, check the network and switch the row on again.").to_string());
@@ -127,13 +146,15 @@ impl Currents {
         match (&self.last, self.ask.is_some()) {
             (None, false) if !self.failed => {
                 let ask = request(ANSWER_BYTES);
-                ask.start(&flow::currents_url(None));
+                ask.start(&day_url(None));
                 self.ask = Some((String::new(), ask));
                 message = Some(tr(lang, "Loading currents, about 4 MB…").to_string());
             }
             (Some(last), false) => {
                 let day = flow::current_day(moment, last);
-                if self.days.contains_key(&day) {
+                if self.missing.contains(&day) {
+                    self.wanted = None;
+                } else if self.days.contains_key(&day) {
                     if self.day.as_deref() != Some(&day) {
                         self.day = Some(day);
                         self.changed = true;
@@ -145,7 +166,7 @@ impl Currents {
                     && now - at >= f64::from(flow::DAY_PAUSE_MS) / 1000.0
                 {
                     let ask = request(ANSWER_BYTES);
-                    ask.start(&flow::currents_url(Some(d)));
+                    ask.start(&day_url(Some(d)));
                     self.ask = Some((d.clone(), ask));
                     self.wanted = None;
                 }

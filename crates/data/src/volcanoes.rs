@@ -14,6 +14,10 @@
 use crate::csv::{Table, number};
 
 pub const URL: &str = "https://webservices.volcano.si.edu/geoserver/GVP-VOTW/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=GVP-VOTW:Smithsonian_VOTW_Holocene_Volcanoes&outputFormat=csv";
+/// Копия для страницы в хранилище planetx-live: у службы нет заголовка
+/// CORS, браузер её ответ не читает. Копии раз в 3 часа обновляет задача
+/// GitHub Actions того хранилища, с 25 октября 2026 года.
+pub const URL_WEB: &str = "https://raw.githubusercontent.com/Valery35/planetx-live/data/volcanoes/holocene.csv";
 pub const ATTRIBUTION: (&str, &str) = ("Volcanoes: Global Volcanism Program, Smithsonian Institution", "https://volcano.si.edu/");
 /// Страница вулкана по номеру.
 pub const PAGE: &str = "https://volcano.si.edu/volcano.cfm?vn=";

@@ -80,7 +80,11 @@ impl Mining {
             return (Self { state: Self::parse_state(bytes), path, changed: false }, None);
         }
         let ask = request(ANSWER_BYTES);
+        // У страницы - копия planetx-live: у PANGAEA нет CORS.
+        #[cfg(not(target_arch = "wasm32"))]
         ask.start(data::mining::POLYGONS_URL);
+        #[cfg(target_arch = "wasm32")]
+        ask.start(data::mining::POLYGONS_WEB);
         (Self { state: State::Asking(ask), path, changed: false }, Some(tr(lang, "Loading mining area outlines, about 25 MB…").to_string()))
     }
 

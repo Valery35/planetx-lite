@@ -29,6 +29,10 @@ use serde_json::{Map, Value};
 use crate::deposits::{Builder, Deposit};
 
 pub const POLYGONS_URL: &str = "https://download.pangaea.de/dataset/942325/files/global_mining_polygons_v2.gpkg";
+/// Копия для страницы в хранилище planetx-live: у службы нет заголовка
+/// CORS, браузер её ответ не читает. Копии раз в 3 часа обновляет задача
+/// GitHub Actions того хранилища, с 25 октября 2026 года.
+pub const POLYGONS_WEB: &str = "https://raw.githubusercontent.com/Valery35/planetx-live/data/static/global_mining_polygons_v2.gpkg";
 pub const POLYGONS_FILE: &str = "global_mining_polygons_v2.gpkg";
 pub const POLYGONS_ATTRIBUTION: (&str, &str) = ("Mining areas: Maus et al. 2022, CC BY-SA 4.0", "https://doi.org/10.1594/PANGAEA.942325");
 pub const OSM_QUERY_URL: &str = "https://overpass-api.de/api/interpreter";

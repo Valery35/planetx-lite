@@ -115,8 +115,15 @@ impl Layer {
         match self {
             Layer::Iscgem | Layer::OsmMines | Layer::InfraOsm => &[],
             Layer::Quakes => &[quakes::FEED],
+            // У страницы - копии planetx-live: у служб нет CORS.
+            #[cfg(not(target_arch = "wasm32"))]
             Layer::Volcanoes => &[volcanoes::URL],
+            #[cfg(target_arch = "wasm32")]
+            Layer::Volcanoes => &[volcanoes::URL_WEB],
+            #[cfg(not(target_arch = "wasm32"))]
             Layer::Fires => &[fires::FEED],
+            #[cfg(target_arch = "wasm32")]
+            Layer::Fires => &[fires::FEED_WEB],
             Layer::Faults => &[faults::URL],
             Layer::Plates => &[plates::PLATES_URL],
             Layer::Cables => &[plates::CABLES_URL],

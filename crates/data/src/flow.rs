@@ -94,6 +94,15 @@ vgos%5B({t})%5D%5B(-89.875):2:(89.875)%5D%5B(-179.875):2:(179.875)%5D";
 pub const CURRENTS_ATTRIBUTION: (&str, &str) =
     ("Currents: NOAA CoastWatch, NESDIS SSH", "https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisSSH1day.html");
 
+/// Сутки течений у страницы - копия в хранилище planetx-live: у ERDDAP нет
+/// заголовка CORS, браузер его ответ не читает. Копии раз в 3 часа
+/// обновляет задача GitHub Actions того хранилища, с 25 октября 2026 года.
+/// Хранятся последние 7 суток, None или пустая строка - последние.
+pub fn currents_web_url(day: Option<&str>) -> String {
+    let name = day.filter(|d| !d.is_empty()).unwrap_or("latest");
+    format!("https://raw.githubusercontent.com/Valery35/planetx-live/data/currents/{name}.nc")
+}
+
 /// Адрес выборки течений: день «ГГГГ-ММ-ДД» или последний (None или
 /// пустая строка).
 pub fn currents_url(day: Option<&str>) -> String {

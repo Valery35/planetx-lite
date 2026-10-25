@@ -14,6 +14,10 @@
 use crate::csv::{Table, number};
 
 pub const FEED: &str = "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_24h.csv";
+/// Копия для страницы в хранилище planetx-live: у службы нет заголовка
+/// CORS, браузер её ответ не читает. Копии раз в 3 часа обновляет задача
+/// GitHub Actions того хранилища, с 25 октября 2026 года.
+pub const FEED_WEB: &str = "https://raw.githubusercontent.com/Valery35/planetx-live/data/fires/J1_VIIRS_C2_Global_24h.csv";
 pub const ATTRIBUTION: (&str, &str) = ("Fires: NASA FIRMS VIIRS NOAA-20", "https://firms.modaps.eosdis.nasa.gov/");
 /// Мощность излучения, МВт - цвет.
 pub const FRP_STOPS: [(f64, [u8; 3]); 4] = [(1.0, [255, 230, 80]), (10.0, [255, 150, 30]), (100.0, [230, 40, 20]), (1000.0, [120, 0, 0])];
