@@ -12,6 +12,10 @@
 //! размер - мощность в логарифме от SIZE_MIN до SIZE_MAX.
 
 pub const URL: &str = "https://wri-dataportal-prod.s3.amazonaws.com/manual/global_power_plant_database_v_1_3.zip";
+/// Та же база версии 1.3.0 таблицей CSV в хранилище WRI на GitHub через
+/// jsDelivr: архив S3 браузер страницы не читает, у него нет заголовка
+/// CORS, проверено 25 октября 2026 года.
+pub const WEB_URL: &str = "https://cdn.jsdelivr.net/gh/wri/global-power-plant-database@master/output_database/global_power_plant_database.csv";
 pub const ATTRIBUTION: (&str, &str) = ("Power plants: WRI Global Power Plant Database, CC BY 4.0", "https://datasets.wri.org/dataset/globalpowerplantdatabase");
 /// Вид топлива: ключ, значения primary_fuel, цвет. Выбор помощника модуля.
 pub const FUELS: [(&str, &[&str], [u8; 3]); 9] = [

@@ -5758,6 +5758,37 @@ impl eframe::App for LiteApp {
                     self.card = Some(crate::card::Card { path });
                 }
             }
+            // Щелчок по статье Википедии без инструмента - её ссылка и первый
+            // абзац в окне «Объекты», как `open_article_card` модуля.
+            if self.tool.is_none()
+                && !self.identify
+                && !padded
+                && self.card.is_none()
+                && globe_response.clicked()
+                && let Some(pos) = globe_response.interact_pointer_pos()
+            {
+                let (px, py) = (f64::from(pos.x - rect.min.x) * ppp, f64::from(pos.y - rect.min.y) * ppp);
+                let radius = crate::wiki::PICK_PIXELS * ppp;
+                let hit = self.wiki.as_ref().and(
+                    self.wiki_labels
+                        .iter()
+                        .filter_map(|(title, p)| {
+                            let (q, front) = self.nav.camera.project(*p);
+                            let gap = (q.x - px).hypot(q.y - py);
+                            (front && gap <= radius).then_some((gap, title.clone(), *p))
+                        })
+                        .min_by(|a, b| a.0.total_cmp(&b.0)),
+                );
+                if let Some((_, title, p)) = hit {
+                    let (lat, lon, _) = self.nav.camera.ellipsoid.ecef_to_geodetic(p);
+                    let (q, _) = self.nav.camera.project(p);
+                    self.objects = Some(self.make_objects(lat, lon, Some((q.x, q.y, ppp)), None));
+                    if let Some(wiki) = &mut self.wiki {
+                        let loaders = &self.loaders;
+                        wiki.ask_summary(&title, &|limit: u64| (loaders.request)(limit));
+                    }
+                }
+            }
         }
         if let Some(name) = self.check.as_mut().and_then(Check::take_scene_request) {
             self.load_check_scene(&name, now);

@@ -120,7 +120,11 @@ impl Layer {
             Layer::Faults => &[faults::URL],
             Layer::Plates => &[plates::PLATES_URL],
             Layer::Cables => &[plates::CABLES_URL],
+            // У страницы архив S3 без CORS - таблица с GitHub.
+            #[cfg(not(target_arch = "wasm32"))]
             Layer::Plants => &[plants::URL],
+            #[cfg(target_arch = "wasm32")]
+            Layer::Plants => &[plants::WEB_URL],
             Layer::Deposits => &[deposit::MRDS_URL, deposit::MAJOR_URL, deposit::MINFAC_URL],
             Layer::MagPoles => &[data::geomag::IGRF_URL, data::geomag::POLES_URL],
             Layer::MagDecl => &[data::geomag::IGRF_URL],
@@ -131,7 +135,8 @@ impl Layer {
     /// Предел ответа сводки, байты: файл разломов около 11 МБ, архив
     /// MRDS - 25 МБ, вулканов - около 2 МБ.
     pub fn bytes(self) -> u64 {
-        if matches!(self, Layer::Faults | Layer::Deposits) { 32 << 20 } else { 8 << 20 }
+        // Таблица электростанций у страницы - около 12 МБ.
+        if matches!(self, Layer::Faults | Layer::Deposits | Layer::Plants) { 32 << 20 } else { 8 << 20 }
     }
 
     pub fn attribution(self) -> (&'static str, &'static str) {

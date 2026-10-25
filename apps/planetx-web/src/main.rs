@@ -101,7 +101,7 @@ fn main() {
                             let repaint = repaint.clone();
                             Box::new(move |source| Box::new(net::web::Loader::new(source, repaint.clone())))
                         },
-                        request: Box::new(move |_| Box::new(net::web::Requests::new(repaint.clone()))),
+                        request: Box::new(move |limit| Box::new(net::web::Requests::with_limit(repaint.clone(), limit))),
                     };
                     let report: ui::Report = Box::new(move |text, _ok| show(text));
                     let mut app = ui::LiteApp::new(cc, loaders, scenario, report).with_scenes(&demo);
