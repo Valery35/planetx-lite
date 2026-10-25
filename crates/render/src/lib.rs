@@ -133,6 +133,12 @@ struct DrawUniform {
     wedge: [f32; 4],
     /// Разрез Земли: синусы южной и северной широты.
     wedge_lat: [f32; 4],
+    /// Снимки события «после»: u0, v0, сторона, признак (1 - есть).
+    event: [f32; 4],
+    /// Снимки события «до» для шторки: u0, v0, сторона, признак.
+    event_before: [f32; 4],
+    /// Шторка: x - линия в пикселях кадра, y - признак (1 - слева «до»).
+    split: [f32; 4],
 }
 
 /// Окно всего снимка.
@@ -174,8 +180,9 @@ struct GpuView {
     view: wgpu::TextureView,
 }
 
-/// Пара текстур группы 3 тайла: ключ тайла наложения и тайла огней.
-type OverPair = (Option<TileKey>, Option<TileKey>);
+/// Текстуры группы 3 тайла: ключи тайлов наложения, огней, снимков
+/// события «после» и «до».
+type OverPair = (Option<TileKey>, Option<TileKey>, Option<TileKey>, Option<TileKey>);
 
 /// Наибольший уровень тайлов огней городов, `LIGHTS_LEVEL` модуля.
 pub const LIGHTS_LEVEL: u32 = 8;
@@ -274,10 +281,9 @@ struct Item {
     kind: Kind,
     mesh: MeshId,
     texture: Option<TileKey>,
-    /// Наложение линий векторной основы: ключ тайла с картинкой.
-    overlay: Option<TileKey>,
-    /// Огни городов: ключ тайла с картинкой.
-    lights: Option<TileKey>,
+    /// Тайлы с картинками группы 3: наложение линий, огни городов,
+    /// снимки события «после» и «до».
+    over_pair: OverPair,
     /// Снимок шапки: 0 - северной, 1 - южной.
     cap: Option<usize>,
     uniform: DrawUniform,
@@ -366,7 +372,11 @@ pub struct Globe {
     overlays: HashMap<TileKey, GpuView>,
     /// Огни городов на ночной стороне по тайлам, core/sun.py модуля.
     lights: HashMap<TileKey, GpuView>,
-    /// Группа 3 тайла: наложение и огни, собранные парой.
+    /// Снимки события по тайлам: «после» и «до» для шторки.
+    events: [HashMap<TileKey, GpuView>; 2],
+    /// Линия шторки в пикселях кадра, None - шторки нет.
+    split: Option<f32>,
+    /// Группа 3 тайла: наложение, огни и снимки события.
     over_layout: wgpu::BindGroupLayout,
     over_binds: HashMap<OverPair, wgpu::BindGroup>,
     /// Группа 3 без наложения и огней.
@@ -580,7 +590,7 @@ impl Globe {
         };
         let over_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("overlay and lights"),
-            entries: &[texture_entry(0), sampler_entry(1), texture_entry(2), sampler_entry(3)],
+            entries: &[texture_entry(0), sampler_entry(1), texture_entry(2), sampler_entry(3), texture_entry(4), texture_entry(5)],
         });
         let rays_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("rays"),
@@ -780,6 +790,8 @@ impl Globe {
                 wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&sampler) },
                 wgpu::BindGroupEntry { binding: 2, resource: wgpu::BindingResource::TextureView(&clear) },
                 wgpu::BindGroupEntry { binding: 3, resource: wgpu::BindingResource::Sampler(&sampler) },
+                wgpu::BindGroupEntry { binding: 4, resource: wgpu::BindingResource::TextureView(&clear) },
+                wgpu::BindGroupEntry { binding: 5, resource: wgpu::BindingResource::TextureView(&clear) },
             ],
         });
         let query_set = device.create_query_set(&wgpu::QuerySetDescriptor {
@@ -840,6 +852,8 @@ impl Globe {
             blank,
             clear,
             overlays: HashMap::new(),
+            events: [HashMap::new(), HashMap::new()],
+            split: None,
             lights: HashMap::new(),
             over_layout,
             over_binds: HashMap::new(),
@@ -953,11 +967,13 @@ impl Globe {
 
     /// Группа 3 тайла по паре текстур: собирается один раз.
     fn ensure_over(&mut self, pair: OverPair) {
-        if pair == (None, None) || self.over_binds.contains_key(&pair) {
+        if pair == (None, None, None, None) || self.over_binds.contains_key(&pair) {
             return;
         }
         let over = pair.0.and_then(|k| self.overlays.get(&k)).map_or(&self.clear, |t| &t.view);
         let lights = pair.1.and_then(|k| self.lights.get(&k)).map_or(&self.clear, |t| &t.view);
+        let after = pair.2.and_then(|k| self.events[0].get(&k)).map_or(&self.clear, |t| &t.view);
+        let before = pair.3.and_then(|k| self.events[1].get(&k)).map_or(&self.clear, |t| &t.view);
         let bind = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("overlay and lights"),
             layout: &self.over_layout,
@@ -966,6 +982,8 @@ impl Globe {
                 wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&self.sampler) },
                 wgpu::BindGroupEntry { binding: 2, resource: wgpu::BindingResource::TextureView(lights) },
                 wgpu::BindGroupEntry { binding: 3, resource: wgpu::BindingResource::Sampler(&self.sampler) },
+                wgpu::BindGroupEntry { binding: 4, resource: wgpu::BindingResource::TextureView(after) },
+                wgpu::BindGroupEntry { binding: 5, resource: wgpu::BindingResource::TextureView(before) },
             ],
         });
         // Пар не бывает много больше тайлов кадра, на случай сбоя - предел.
@@ -998,7 +1016,7 @@ impl Globe {
         }
         let view = Self::upload_view(&self.device, &self.queue, width, height, rgba, OVERLAY_FORMAT);
         self.lights.insert(key, GpuView { view });
-        self.over_binds.retain(|(_, l), _| *l != Some(key));
+        self.over_binds.retain(|(_, l, _, _), _| *l != Some(key));
     }
 
     /// Есть ли огни тайла key.
@@ -1073,7 +1091,7 @@ impl Globe {
 
     pub fn clear_lights(&mut self) {
         self.lights.clear();
-        self.over_binds.retain(|(_, l), _| l.is_none());
+        self.over_binds.retain(|(_, l, _, _), _| l.is_none());
     }
 
     /// Снимок для тайла: свой или доля снимка предка, если тайла нет
@@ -1094,6 +1112,53 @@ impl Globe {
                 (parent, [(x % cells) as f32 * side, (y % cells) as f32 * side, side, 0.0])
             })
         })
+    }
+
+    /// Снимки события стороны side (0 - «после», 1 - «до») для тайла:
+    /// свои или доля снимков предка, пока свои не готовы.
+    fn event_of(&self, side: usize, key: TileKey) -> Option<(TileKey, [f32; 4])> {
+        let found = self.events.get(side)?;
+        let (z, x, y) = key;
+        (0..=MAX_FILL_DEPTH.min(z)).find_map(|depth| {
+            let parent = (z - depth, x >> depth, y >> depth);
+            found.contains_key(&parent).then(|| {
+                let cells = 1u32 << depth;
+                let side = 1.0 / cells as f32;
+                (parent, [(x % cells) as f32 * side, (y % cells) as f32 * side, side, 1.0])
+            })
+        })
+    }
+
+    /// Положить снимки события стороны side тайла key: RGBA с альфой,
+    /// умноженной на цвет, в значениях экрана. Картинка не того размера
+    /// отбрасывается.
+    pub fn set_event(&mut self, side: usize, key: TileKey, width: u32, height: u32, rgba: &[u8]) {
+        let expected = u64::from(width) * u64::from(height) * 4;
+        if side > 1 || width == 0 || height == 0 || rgba.len() as u64 != expected {
+            return;
+        }
+        let view = Self::upload_view(&self.device, &self.queue, width, height, rgba, OVERLAY_FORMAT);
+        self.events[side].insert(key, GpuView { view });
+        self.over_binds.retain(|(_, _, a, b), _| if side == 0 { *a != Some(key) } else { *b != Some(key) });
+    }
+
+    /// Есть ли свои снимки события стороны side у тайла.
+    pub fn has_event(&self, side: usize, key: TileKey) -> bool {
+        self.events.get(side).is_some_and(|e| e.contains_key(&key))
+    }
+
+    /// Забыть снимки события стороны side: другой день или событие снято.
+    pub fn clear_events(&mut self, side: usize) {
+        if let Some(e) = self.events.get_mut(side) {
+            e.clear();
+        }
+        self.over_binds.retain(|(_, _, a, b), _| if side == 0 { a.is_none() } else { b.is_none() });
+    }
+
+    /// Линия шторки в пикселях кадра: слева снимки «до», справа «после».
+    /// None - шторки нет, видны снимки «после».
+    pub fn set_split(&mut self, split: Option<f32>) {
+        self.split = split.filter(|x| x.is_finite());
     }
 
     /// Наложение линий для тайла: своё или доля наложения предка, пока
@@ -1119,7 +1184,7 @@ impl Globe {
         }
         let view = Self::upload_view(&self.device, &self.queue, width, height, rgba, OVERLAY_FORMAT);
         self.overlays.insert(key, GpuView { view });
-        self.over_binds.retain(|(o, _), _| *o != Some(key));
+        self.over_binds.retain(|(o, _, _, _), _| *o != Some(key));
     }
 
     /// Есть ли своё наложение у тайла.
@@ -1130,7 +1195,7 @@ impl Globe {
     /// Забыть все наложения: сменились группы векторной основы.
     pub fn clear_overlays(&mut self) {
         self.overlays.clear();
-        self.over_binds.retain(|(o, _), _| o.is_none());
+        self.over_binds.retain(|(o, _, _, _), _| o.is_none());
     }
 
     /// Тайл готов к рисованию: свой снимок или доля снимка предка.
@@ -1212,8 +1277,13 @@ impl Globe {
             }
             let textures = &self.textures;
             self.overlays.retain(|k, _| keep.contains(k) || textures.contains_key(k) || k.0 <= UNDERLAY_LEVEL);
-            let (overlays, lights) = (&self.overlays, &self.lights);
-            self.over_binds.retain(|(o, l), _| o.is_none_or(|k| overlays.contains_key(&k)) && l.is_none_or(|k| lights.contains_key(&k)));
+            for side in &mut self.events {
+                side.retain(|k, _| keep.contains(k) || textures.contains_key(k) || k.0 <= UNDERLAY_LEVEL);
+            }
+            let (overlays, lights, events) = (&self.overlays, &self.lights, &self.events);
+            self.over_binds.retain(|(o, l, a, b), _| {
+                o.is_none_or(|k| overlays.contains_key(&k)) && l.is_none_or(|k| lights.contains_key(&k)) && a.is_none_or(|k| events[0].contains_key(&k)) && b.is_none_or(|k| events[1].contains_key(&k))
+            });
             for edges in &mut self.edges {
                 edges.retain(|k, _| textures.contains_key(k));
             }
@@ -1411,15 +1481,16 @@ impl Globe {
             if let Some(center) = me.mesh_for(mesh, camera, heights, &mut rebuilds) {
                 let mvp = camera.tile_mvp(center, Some(projection), scale).to_cols_array();
                 let (texture, window) = picture.map_or((None, WHOLE), |(k, w)| (Some(k), w));
-                let ((overlay, over), (lights, glow)) = match (kind, mesh) {
-                    (Kind::Tile, MeshId::Tile { z, x, y }) => (
-                        me.overlay_of((z, x, y)).map_or((None, [0.0; 4]), |(k, w)| (Some(k), w)),
-                        me.lights_of((z, x, y)).map_or((None, [0.0; 4]), |(k, w)| (Some(k), w)),
-                    ),
-                    _ => ((None, [0.0; 4]), (None, [0.0; 4])),
+                let none = (None, [0.0; 4]);
+                let some = |found: Option<(TileKey, [f32; 4])>| found.map_or(none, |(k, w)| (Some(k), w));
+                let ((overlay, over), (lights, glow), (after, event), (before, event_before)) = match (kind, mesh) {
+                    (Kind::Tile, MeshId::Tile { z, x, y }) => (some(me.overlay_of((z, x, y))), some(me.lights_of((z, x, y))), some(me.event_of(0, (z, x, y))), some(me.event_of(1, (z, x, y)))),
+                    _ => (none, none, none, none),
                 };
-                me.ensure_over((overlay, lights));
-                out.push(Item { kind, mesh, texture, overlay, lights, cap: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow, water: [0.0; 4], sea: [0.0; 4], cut: [0.0; 4], glass: [1.0, 0.0, 0.0, 0.0], wedge: [0.0; 4], wedge_lat: [0.0; 4] } });
+                let split = me.split.map_or([0.0; 4], |x| [x, 1.0, 0.0, 0.0]);
+                let pair = (overlay, lights, after, before);
+                me.ensure_over(pair);
+                out.push(Item { kind, mesh, texture, over_pair: pair, cap: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow, water: [0.0; 4], sea: [0.0; 4], cut: [0.0; 4], glass: [1.0, 0.0, 0.0, 0.0], wedge: [0.0; 4], wedge_lat: [0.0; 4], event, event_before, split } });
             }
         };
         let flat = |rgb: [f32; 3]| [rgb[0], rgb[1], rgb[2], 1.0];
@@ -1495,8 +1566,7 @@ impl Globe {
                     kind: Kind::Water,
                     mesh: i.mesh,
                     texture: i.texture,
-                    overlay: i.overlay,
-                    lights: i.lights,
+                    over_pair: i.over_pair,
                     cap: None,
                     uniform: DrawUniform { water: color, sea, ..i.uniform },
                 })
@@ -1839,7 +1909,7 @@ impl Globe {
                 };
                 pass.set_bind_group(0, &self.uniform_bind, &[offset]);
                 pass.set_bind_group(1, texture, &[]);
-                let over = self.over_binds.get(&(item.overlay, item.lights)).unwrap_or(&self.clear_bind);
+                let over = self.over_binds.get(&item.over_pair).unwrap_or(&self.clear_bind);
                 pass.set_bind_group(3, over, &[]);
                 pass.set_vertex_buffer(0, mesh.vertices.slice(..));
                 pass.set_index_buffer(mesh.indices.slice(..), wgpu::IndexFormat::Uint16);

@@ -1413,3 +1413,31 @@ Read layers	ფენების წაკითხვა
 Read the list of layers of the service, the GetCapabilities request.	სერვისის ფენების სიის წაკითხვა, მოთხოვნა GetCapabilities.
 The service did not give its layers: {error}	სერვისმა ფენები არ მისცა: {error}
 A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.	WMS რუკა ეწყობა გლობუსის საფუძველზე, ფენის არეალის გარეთ საფუძველი ჩანს. სერვისი ყოველ სურათს თავიდან ხატავს, ამიტომ რუკა ფილებზე ნელა იტვირთება.
+Event imagery	მოვლენების სურათები
+Images of earthquakes, floods, fires and hurricanes from the open catalogs of Vantor and Planet. The license of the images is CC BY-NC 4.0 - non-commercial use only.	მიწისძვრების, წყალდიდობების, ხანძრებისა და ქარიშხლების სურათები Vantor-ისა და Planet-ის ღია კატალოგებიდან. სურათების ლიცენზია CC BY-NC 4.0 - მხოლოდ არაკომერციული გამოყენება.
+Event	მოვლენა
+Date	თარიღი
+Images: {count}	სურათები: {count}
+Loading the list of events…	მოვლენების სია იტვირთება…
+The list of events did not load: {error}	მოვლენების სია არ ჩაიტვირთა: {error}
+Events: {count}	მოვლენები: {count}
+The previous day of images	სურათების წინა დღე
+The next day of images	სურათების შემდეგი დღე
+Before the event	მოვლენამდე
+The last day of images before the event.	სურათების ბოლო დღე მოვლენამდე.
+After the event	მოვლენის შემდეგ
+The last day of images of the event.	მოვლენის სურათების ბოლო დღე.
+Loading the images of the event: catalog documents {count}	მოვლენის სურათები იტვირთება: კატალოგის დოკუმენტები {count}
+The event has no images the globe can show.	მოვლენას არ აქვს სურათები, რომლებსაც გლობუსი აჩვენებს.
+Images: {count}, days of survey: {days}. The buttons below choose the day.	სურათები: {count}, გადაღების დღეები: {days}. ქვემოთ ღილაკები დღეს ირჩევს.
+Loading the images of the event «{title}»…	მოვლენის «{title}» სურათები იტვირთება…
+Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	მიწისძვრების, წყალდიდობების, ხანძრებისა და ქარიშხლების სურათები ორი ღია კატალოგიდან. Vantor (ადრე Maxar) იძლევა WorldView-ის ზოლებს, Planet - PlanetScope-ის, SkySat-ისა და Pelican-ის სცენებს და Planet-ის კვარტალურ მოზაიკას მოვლენამდე. სტრიქონი ხსნის ფანჯარას «მოვლენების სურათები» მოვლენების სიით. სურათების ლიცენზია CC BY-NC 4.0 - მხოლოდ არაკომერციული გამოყენება.
+Imagery archive	სურათების არქივი
+Images of extraordinary events from the open catalogs of Vantor and Planet.	საგანგებო მოვლენების სურათები Vantor-ისა და Planet-ის ღია კატალოგებიდან.
+Lidar point clouds here	ლიდარის წერტილების ღრუბლები აქ
+Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	ძიება ლიდარის კატალოგებში IGN LiDAR HD და USGS 3DEP წერტილთან…
+Lidar point clouds: {error}	ლიდარის წერტილების ღრუბლები: {error}
+There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	წერტილთან არ არის IGN LiDAR HD-ისა და USGS 3DEP-ის ლიდარის ფილები.
+Swipe ⇆	ფარდა ⇆
+Compare two days: left of the line on the globe - the images of an earlier day, right - of the chosen day. The line is dragged with the mouse.	ორი დღის შედარება: გლობუსზე ხაზის მარცხნივ - ადრინდელი დღის სურათები, მარჯვნივ - არჩეული დღისა. ხაზი თაგვით გადაადგილდება.
+Left:	მარცხნივ:

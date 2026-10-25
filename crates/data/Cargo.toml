@@ -21,6 +21,14 @@ zip.workspace = true
 # Те же версии уже собираются как зависимости terrio.
 ruzstd = "0.9"
 weezl = "0.2"
+# Тайлы картинок COG (src/cog.rs): маленький TIFF с JPEG, LZW или deflate,
+# MIT. Та же версия уже собирается как зависимость terrio.
+tiff = { version = "0.11", default-features = false, features = ["deflate", "jpeg", "lzw"] }
+
+[dev-dependencies]
+# Тайлы JPEG для проверок картинок COG, MIT и Apache 2.0, та же версия
+# у terrio.
+jpeg-encoder = "0.7"
 
 [lints]
 workspace = true

@@ -56,6 +56,8 @@ pub enum Choice {
     Rumsey,
     /// «Космоснимки здесь…».
     Sentinel,
+    /// «Облака точек лидара здесь».
+    Lidar,
     /// «Орбита и след» спутника: номер NORAD или None - снять.
     SatPath(Option<i64>),
     /// «Камера следом» за спутником: номер NORAD или None - отпустить.
@@ -204,6 +206,7 @@ impl GlobeMenu {
                             ui.separator();
                             pick(ui, tr(lang, "Viewshed from here…"), Choice::Viewshed);
                             pick(ui, tr(lang, "Satellite images here…"), Choice::Sentinel);
+                        pick(ui, tr(lang, "Lidar point clouds here"), Choice::Lidar);
                             pick(ui, tr(lang, "Insolation here…"), Choice::Insolation);
                             ui.separator();
                             // Карты Рамсея (IIIF) и «Это место» не отдают данные

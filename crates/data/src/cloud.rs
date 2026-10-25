@@ -9,9 +9,16 @@
 //! red, green, blue файла, без них - по классу точки, как раскраска
 //! классов ASPRS. Облако COPC читается с уровней дерева, на которых
 //! точек не больше заданного количества, прочие - каждая n-я точка.
+//!
+//! Облако COPC по сети читает [`SparseCloud`] частями файла - вызывающий
+//! сам запрашивает недостающие куски (запросы HTTP Range) и повторяет
+//! чтение, главный поток не ждёт сети, в браузере тоже.
 
 use terrio::crs::{SpatialRef, Transformer};
-use terrio::pointcloud::{self, PointReadOptions};
+use std::sync::{Mutex, PoisonError};
+
+use terrio::pointcloud::{self, PointCloudReader, PointReadOptions};
+use terrio::sparse::SparseFile;
 
 /// Облако в памяти.
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -56,6 +63,12 @@ fn vertical_unit(crs: &SpatialRef) -> f64 {
 /// Облако из байтов файла name, не больше max_points точек.
 pub fn read(bytes: Vec<u8>, name: &str, max_points: u64) -> Result<Cloud, String> {
     let mut reader = pointcloud::open_points_bytes(bytes, name).map_err(|e| e.to_string())?;
+    from_reader(&mut reader, max_points)
+}
+
+/// Облако из открытого файла, не больше max_points точек. У COPC
+/// читаются верхние уровни дерева, у прочих - каждая n-я точка.
+fn from_reader(reader: &mut PointCloudReader, max_points: u64) -> Result<Cloud, String> {
     let total = reader.header().point_count;
     let options = PointReadOptions { max_points: Some(max_points), ..Default::default() };
     let pc = reader.read(&options).map_err(|e| e.to_string())?;
@@ -102,4 +115,117 @@ pub fn read(bytes: Vec<u8>, name: &str, max_points: u64) -> Result<Cloud, String
     }
     let epsg = crs.authority().filter(|(a, _)| a.eq_ignore_ascii_case("EPSG")).map(|(_, c)| c);
     Ok(Cloud { points, colors, total, epsg })
+}
+
+/// Длина файла неизвестной длины для чтения частями, 1 ТиБ. Конец файла
+/// узнаётся по короткому ответу на запрос куска.
+const UNKNOWN_LEN: u64 = 1 << 40;
+
+/// Наибольшее количество повторов чтения. COPC читается за несколько
+/// кругов - заголовок, записи EVLR, страницы иерархии, узлы дерева.
+const MAX_ROUNDS: usize = 64;
+
+/// Чтение облака COPC по сети частями файла.
+///
+/// Порядок работы - [`SparseCloud::read`], при `Ok(None)` - запрос
+/// кусков [`SparseCloud::missing`], [`SparseCloud::insert`] каждого
+/// ответа и снова `read`. Длина файла может быть неизвестна - тогда
+/// короткий ответ на кусок у конца файла дополняется нулями, за концом
+/// файла правильный COPC ничего не читает.
+#[derive(Debug)]
+pub struct SparseCloud {
+    file: SparseFile,
+    name: String,
+    max_points: usize,
+    /// Длина файла известна.
+    exact: bool,
+    /// Открытый файл между повторами - заголовок и записи VLR прочитаны.
+    reader: Option<PointCloudReader>,
+    /// Куски, отданные на запрос и ещё не вставленные.
+    asked: Mutex<Vec<(u64, u64)>>,
+    rounds: usize,
+}
+
+impl SparseCloud {
+    /// Чтение файла name длиной len байт, None - длина неизвестна.
+    /// В облаке будет около max_points точек - верхние уровни дерева.
+    pub fn new(name: &str, len: Option<u64>, max_points: usize) -> Self {
+        Self {
+            file: SparseFile::new(len.unwrap_or(UNKNOWN_LEN)),
+            name: name.to_string(),
+            max_points,
+            exact: len.is_some(),
+            reader: None,
+            asked: Mutex::new(Vec::new()),
+            rounds: 0,
+        }
+    }
+
+    /// Попытка чтения. `Ok(Some(cloud))` - облако готово. `Ok(None)` -
+    /// не хватает байтов - их список даёт [`SparseCloud::missing`],
+    /// после [`SparseCloud::insert`] чтение повторяется. `Err` - файл
+    /// не читается.
+    pub fn read(&mut self) -> Result<Option<Cloud>, String> {
+        self.rounds += 1;
+        if self.rounds > MAX_ROUNDS {
+            return Err(format!("облако {} не прочитано за {MAX_ROUNDS} запросов", self.name));
+        }
+        if self.reader.is_none() {
+            match pointcloud::open_points_sparse(self.file.clone(), &self.name) {
+                Ok(r) if !self.file.has_missing() => self.reader = Some(r),
+                Ok(_) => return Ok(None),
+                Err(_) if self.file.has_missing() => return Ok(None),
+                Err(e) => return Err(e.to_string()),
+            }
+        }
+        let Some(reader) = self.reader.as_mut() else {
+            return Ok(None);
+        };
+        let max = u64::try_from(self.max_points).unwrap_or(u64::MAX);
+        match from_reader(reader, max) {
+            Ok(_) | Err(_) if self.file.has_missing() => Ok(None),
+            Ok(cloud) => Ok(Some(cloud)),
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Куски файла для запроса сейчас - начало и длина в байтах,
+    /// соседние слиты.
+    pub fn missing(&self) -> Vec<(u64, u64)> {
+        let ranges = self.file.missing();
+        let mut asked = self.asked.lock().unwrap_or_else(PoisonError::into_inner);
+        asked.extend(ranges.iter().copied());
+        ranges
+    }
+
+    /// Ответ на запрос куска, начиная с байта start. Короткий ответ при
+    /// неизвестной длине - конец файла. Ответ длиннее запрошенного
+    /// не с начала файла - сервер не понял Range и прислал файл целиком.
+    pub fn insert(&mut self, start: u64, bytes: &[u8]) {
+        let len = bytes.len() as u64;
+        let asked = {
+            let mut asked = self.asked.lock().unwrap_or_else(PoisonError::into_inner);
+            asked.iter().position(|(s, _)| *s == start).map(|i| asked.swap_remove(i).1)
+        };
+        match asked {
+            Some(want) if len > want && start > 0 => {
+                // Весь файл: длина теперь известна.
+                self.file = SparseFile::new(len);
+                self.file.insert(0, bytes);
+                self.exact = true;
+                self.reader = None;
+            }
+            Some(want) if len < want && !self.exact => {
+                let mut padded = bytes.to_vec();
+                padded.resize(usize::try_from(want).unwrap_or(bytes.len()), 0);
+                self.file.insert(start, &padded);
+            }
+            _ => self.file.insert(start, bytes),
+        }
+    }
+
+    /// Получено байтов и ответов вставлено.
+    pub fn fetched(&self) -> (u64, u64) {
+        self.file.fetched()
+    }
 }

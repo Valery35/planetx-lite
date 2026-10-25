@@ -1413,3 +1413,31 @@ Read layers	读取图层
 Read the list of layers of the service, the GetCapabilities request.	读取服务的图层列表，即 GetCapabilities 请求。
 The service did not give its layers: {error}	服务未提供图层：{error}
 A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.	WMS 地图叠加在地球底图之上，图层范围以外显示底图。服务每次重新绘制图片，因此地图加载比瓦片慢。
+Event imagery	事件影像
+Images of earthquakes, floods, fires and hurricanes from the open catalogs of Vantor and Planet. The license of the images is CC BY-NC 4.0 - non-commercial use only.	来自 Vantor 和 Planet 开放目录的地震、洪水、火灾和飓风影像。影像许可为 CC BY-NC 4.0——仅限非商业用途。
+Event	事件
+Date	日期
+Images: {count}	影像：{count}
+Loading the list of events…	正在加载事件列表…
+The list of events did not load: {error}	事件列表未加载：{error}
+Events: {count}	事件：{count}
+The previous day of images	上一个影像日
+The next day of images	下一个影像日
+Before the event	事件前
+The last day of images before the event.	事件前最后一个影像日。
+After the event	事件后
+The last day of images of the event.	事件的最后一个影像日。
+Loading the images of the event: catalog documents {count}	正在加载事件影像：目录文档 {count}
+The event has no images the globe can show.	该事件没有地球可以显示的影像。
+Images: {count}, days of survey: {days}. The buttons below choose the day.	影像：{count}，拍摄天数：{days}。下方按钮选择日期。
+Loading the images of the event «{title}»…	正在加载事件“{title}”的影像…
+Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	来自两个开放目录的地震、洪水、火灾和飓风影像。Vantor（原 Maxar）提供 WorldView 条带，Planet 提供 PlanetScope、SkySat 和 Pelican 场景以及事件前的 Planet 季度镶嵌图。此行打开带有事件列表的“事件影像”窗口。影像许可为 CC BY-NC 4.0——仅限非商业用途。
+Imagery archive	影像档案
+Images of extraordinary events from the open catalogs of Vantor and Planet.	来自 Vantor 和 Planet 开放目录的突发事件影像。
+Lidar point clouds here	此处的激光雷达点云
+Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	正在该点附近搜索 IGN LiDAR HD 和 USGS 3DEP 激光雷达目录…
+Lidar point clouds: {error}	激光雷达点云：{error}
+There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	该点附近没有 IGN LiDAR HD 和 USGS 3DEP 激光雷达分块。
+Swipe ⇆	卷帘 ⇆
+Compare two days: left of the line on the globe - the images of an earlier day, right - of the chosen day. The line is dragged with the mouse.	比较两天：地球上分割线左侧是较早一天的影像，右侧是所选日期的影像。用鼠标拖动分割线。
+Left:	左侧：

@@ -1413,3 +1413,31 @@ Read layers	Qatları oxu
 Read the list of layers of the service, the GetCapabilities request.	Xidmətin qatlarının siyahısını oxu, GetCapabilities sorğusu.
 The service did not give its layers: {error}	Xidmət qatlarını vermədi: {error}
 A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.	WMS xəritəsi qlobusun əsas xəritəsi üzərinə düşür, qatın sahəsindən kənarda əsas xəritə görünür. Xidmət hər şəkli yenidən çəkir, ona görə xəritə kafellərdən yavaş yüklənir.
+Event imagery	Hadisə şəkilləri
+Images of earthquakes, floods, fires and hurricanes from the open catalogs of Vantor and Planet. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Vantor və Planet açıq kataloqlarından zəlzələ, daşqın, yanğın və qasırğa şəkilləri. Şəkillərin lisenziyası CC BY-NC 4.0 - yalnız qeyri-kommersiya istifadəsi.
+Event	Hadisə
+Date	Tarix
+Images: {count}	Şəkil: {count}
+Loading the list of events…	Hadisələrin siyahısı yüklənir…
+The list of events did not load: {error}	Hadisələrin siyahısı yüklənmədi: {error}
+Events: {count}	Hadisə: {count}
+The previous day of images	Əvvəlki şəkil günü
+The next day of images	Növbəti şəkil günü
+Before the event	Hadisədən əvvəl
+The last day of images before the event.	Hadisədən əvvəlki son şəkil günü.
+After the event	Hadisədən sonra
+The last day of images of the event.	Hadisənin son şəkil günü.
+Loading the images of the event: catalog documents {count}	Hadisənin şəkilləri yüklənir: kataloq sənədi {count}
+The event has no images the globe can show.	Hadisənin qlobusun göstərə biləcəyi şəkli yoxdur.
+Images: {count}, days of survey: {days}. The buttons below choose the day.	Şəkil: {count}, çəkiliş günü: {days}. Aşağıdakı düymələr günü seçir.
+Loading the images of the event «{title}»…	«{title}» hadisəsinin şəkilləri yüklənir…
+Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	İki açıq kataloqdan zəlzələ, daşqın, yanğın və qasırğa şəkilləri. Vantor (əvvəlki Maxar) WorldView zolaqlarını, Planet isə PlanetScope, SkySat və Pelican səhnələrini və hadisədən əvvəlki rüblük Planet mozaikasını verir. Sətir hadisələrin siyahısı ilə «Hadisə şəkilləri» pəncərəsini açır. Şəkillərin lisenziyası CC BY-NC 4.0 - yalnız qeyri-kommersiya istifadəsi.
+Imagery archive	Şəkil arxivi
+Images of extraordinary events from the open catalogs of Vantor and Planet.	Vantor və Planet açıq kataloqlarından fövqəladə hadisələrin şəkilləri.
+Lidar point clouds here	Burada lidar nöqtə buludları
+Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Nöqtənin yanında IGN LiDAR HD və USGS 3DEP lidar kataloqlarında axtarış…
+Lidar point clouds: {error}	Lidar nöqtə buludları: {error}
+There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	Nöqtənin yanında IGN LiDAR HD və USGS 3DEP lidar kafelləri yoxdur.
+Swipe ⇆	Pərdə ⇆
+Compare two days: left of the line on the globe - the images of an earlier day, right - of the chosen day. The line is dragged with the mouse.	İki günü müqayisə et: qlobusdakı xəttin solunda daha əvvəlki günün, sağında seçilmiş günün şəkilləri. Xətt siçanla çəkilir.
+Left:	Sol:

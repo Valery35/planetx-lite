@@ -227,6 +227,8 @@ pub struct State<'a> {
     pub sat_groups: &'a [String],
     /// На глобусе Земля. На другом теле земные строки каталога - заглушки.
     pub earth: bool,
+    /// Снимки события на глобусе.
+    pub events: bool,
 }
 
 /// Что попросили строки раздела или каталог.
@@ -267,6 +269,8 @@ pub enum Action {
     AddSource,
     /// Попросить весь каталог NASA GIBS.
     GibsCatalog,
+    /// Открыть окно «Снимки событий».
+    Events,
     /// Свой источник убрать из списка основ.
     RemoveOwn(Basemap),
 }
@@ -627,6 +631,8 @@ enum Category {
     Satellites,
     /// Весь каталог NASA GIBS: строки приходят по запросу.
     Gibs,
+    /// Архив снимков: снимки событий.
+    Archive,
 }
 
 /// Знаков поиска, с которых просится каталог GIBS, `GIBS_SEARCH` модуля.
@@ -650,6 +656,8 @@ enum Item {
     Extra(Extra),
     /// Группа спутников CelesTrak, номер в satellites::GROUPS.
     Sat(usize),
+    /// «Снимки событий» Vantor и Planet: строка открывает окно.
+    Events,
 }
 
 impl Item {
@@ -659,6 +667,7 @@ impl Item {
             Item::Group(n) => format!("vector:{n}"),
             Item::Extra(e) => e.key().to_string(),
             Item::Sat(n) => format!("sat:{}", sat_key(n)),
+            Item::Events => "events".to_string(),
         }
     }
 
@@ -668,6 +677,7 @@ impl Item {
             Item::Group(_) => Category::Map,
             Item::Extra(e) => e.category(),
             Item::Sat(_) => Category::Satellites,
+            Item::Events => Category::Archive,
         }
     }
 
@@ -677,6 +687,7 @@ impl Item {
             Item::Group(n) => tr(lang, TREE[n].0).to_string(),
             Item::Extra(e) => tr(lang, e.name()).to_string(),
             Item::Sat(n) => crate::satellites::group_names(lang).get(n).map_or(String::new(), |g| g.1.to_string()),
+            Item::Events => tr(lang, "Event imagery").to_string(),
         }
     }
 
@@ -688,6 +699,7 @@ impl Item {
             Item::Group(n) => tr(lang, TREE[n].1).to_string(),
             Item::Extra(e) => tr(lang, e.tip()).to_string(),
             Item::Sat(n) => crate::satellites::group_names(lang).get(n).map_or(String::new(), |g| g.2.to_string()),
+            Item::Events => tr(lang, "Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.").to_string(),
         }
     }
 
@@ -702,6 +714,7 @@ impl Item {
             Item::Extra(Extra::Live(k)) => k.source(),
             Item::Extra(Extra::Wiki) => "Wikipedia",
             Item::Extra(Extra::Satellites) | Item::Sat(_) => "CelesTrak",
+            Item::Events => "Vantor, Planet",
             Item::Extra(Extra::Mining) => "Maus et al. 2022",
             Item::Extra(Extra::Buildings) => "OpenFreeMap",
             Item::Extra(Extra::Overture) => "Overture Maps",
@@ -732,7 +745,7 @@ impl Item {
         }
         let earth_only = match self {
             Item::Extra(e) => e.earth_only(),
-            Item::Base(_) | Item::Group(_) | Item::Sat(_) => true,
+            Item::Base(_) | Item::Group(_) | Item::Sat(_) | Item::Events => true,
         };
         (earth_only && !state.earth).then_some(EARTH_ONLY)
     }
@@ -743,6 +756,7 @@ impl Item {
             Item::Group(n) => TREE[n].2.iter().any(|(r, _, _)| state.vector.rows.contains(r)),
             Item::Extra(e) => state.on.contains(&e),
             Item::Sat(n) => state.on.contains(&Extra::Satellites) && state.sat_groups.iter().any(|g| g == sat_key(n)),
+            Item::Events => state.events,
         }
     }
 }
@@ -784,6 +798,7 @@ fn items() -> Vec<Item> {
     out.push(Item::Extra(Extra::Paleo));
     out.push(Item::Extra(Extra::Wiki));
     out.extend((0..data::satellites::GROUPS.len()).map(Item::Sat));
+    out.push(Item::Events);
     out
 }
 
@@ -825,6 +840,7 @@ impl Catalog {
             (Category::Tiles, tr(lang, "Map overlays"), tr(lang, "Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.")),
             (Category::Satellites, tr(lang, "Satellites"), tr(lang, "Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.")),
             (Category::Wiki, tr(lang, "Encyclopedia"), tr(lang, "Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.")),
+            (Category::Archive, tr(lang, "Imagery archive"), tr(lang, "Images of extraordinary events from the open catalogs of Vantor and Planet.")),
             (
                 Category::Gibs,
                 tr(lang, "All NASA GIBS layers"),
@@ -944,6 +960,8 @@ fn click(item: Item, state: &State<'_>, out: &mut Vec<Action>) {
             }
         }
         Item::Group(n) => out.push(Action::Rows(toggle_group(state.vector, n))),
+        // Снимки событий: окно со списком событий, снимает их окно.
+        Item::Events => out.push(Action::Events),
         // Группа спутников: щелчок показывает её или убирает, строка
         // «Спутники» включается вместе с группой.
         Item::Sat(n) => {

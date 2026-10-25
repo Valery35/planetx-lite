@@ -12,8 +12,8 @@ use std::ops::Range;
 
 use data::cog::{
     Chunks, CogError, CogHeader, Compression, Parsed, Predictor, SampleFormat, Window, bbox_window,
-    level_for_factor, level_for_resolution, merge_ranges, read_window, read_window_sample,
-    window_plan, window_plan_sample, window_transform,
+    decode_picture, level_for_factor, level_for_resolution, merge_ranges, picture_ranges,
+    read_window, read_window_sample, window_plan, window_plan_sample, window_transform,
 };
 use data::sentinel::Grid;
 
@@ -102,6 +102,8 @@ struct Img {
     sparse: Vec<usize>,
     /// Полосы вместо тайлов.
     stripped: bool,
+    /// PhotometricInterpretation.
+    photometric: u16,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -139,6 +141,7 @@ fn img(
         data,
         sparse: Vec::new(),
         stripped: false,
+        photometric: 1,
     }
 }
 
@@ -261,7 +264,7 @@ fn level_tags(i: &Img, big: bool, bigtiff: bool, offsets: &[u64], counts: &[u64]
     t.push(tag_ints(big, 257, 4, &[u64::from(i.height)]));
     t.push(tag_ints(big, 258, 3, &vec![u64::from(i.bits); spp]));
     t.push(tag_ints(big, 259, 3, &[u64::from(i.compression)]));
-    t.push(tag_ints(big, 262, 3, &[1]));
+    t.push(tag_ints(big, 262, 3, &[u64::from(i.photometric)]));
     t.push(tag_ints(big, 277, 3, &[u64::from(i.samples)]));
     t.push(tag_ints(big, 284, 3, &[u64::from(i.planar)]));
     if i.predictor != 1 {
@@ -1006,6 +1009,14 @@ fn survive(file: &[u8], len_known: bool) {
             let (w, hh) = (l.width.min(4096), l.height.min(4096));
             let _ = read(&h, file, level, 0, 0, w, hh, 0);
             let _ = bbox_window(&h, level, [0.0, 0.0, 1e6, 1e7]);
+            if l.picture.is_some() {
+                for (col, row) in [(0, 0), (1, 0), (0, 1), (u32::MAX, 0)] {
+                    if let Some(ranges) = picture_ranges(&h, level, col, row) {
+                        let parts: Vec<&[u8]> = ranges.iter().map(|r| slice(file, r).unwrap_or(&[])).collect();
+                        let _ = decode_picture(&h, level, &parts);
+                    }
+                }
+            }
         }
         let _ = level_for_resolution(&h, 15.0);
     }
@@ -1032,6 +1043,8 @@ fn samples() -> Vec<Vec<u8>> {
             })],
             &opts(true, false),
         ),
+        build(&[img(20, 18, 16, 3, 8, 1, 5, 2, picture_value)], &opts(false, false)),
+        build(&[planar(img(20, 18, 16, 4, 8, 1, 8, 1, picture_value))], &opts(true, false)),
     ]
 }
 
@@ -1117,4 +1130,337 @@ fn ifd_loop_is_error() {
         CogHeader::parse(&file).unwrap_err(),
         CogError::Corrupt("кольцо IFD")
     );
+}
+
+// ---------------------------------------------------------------------
+// Картинки
+
+/// Отсчёт картинки: слева полоса чёрного поля за краем снимка, дальше
+/// узор, канал 3 - прозрачность.
+fn picture_value(x: u32, y: u32, s: u16) -> u64 {
+    if x < 3 {
+        return 0;
+    }
+    u64::from(match s {
+        0 => (x * 11 + y * 3) % 256,
+        1 => (y * 17 + 5) % 256,
+        2 => (x * y + 40) % 256,
+        _ => (x * 30 + y) % 256,
+    })
+}
+
+fn planar(mut i: Img) -> Img {
+    i.planar = 2;
+    i
+}
+
+fn tag_bytes(tag: u16, bytes: &[u8]) -> Tag {
+    Tag {
+        tag,
+        typ: 7,
+        count: bytes.len() as u64,
+        bytes: bytes.to_vec(),
+    }
+}
+
+/// RGBA тайла картинки (col, row) уровня 0.
+fn picture_tile(h: &CogHeader, file: &[u8], col: u32, row: u32) -> Result<Vec<u8>, CogError> {
+    let ranges = picture_ranges(h, 0, col, row).unwrap();
+    let parts: Vec<&[u8]> = ranges.iter().map(|r| slice(file, r).unwrap()).collect();
+    decode_picture(h, 0, &parts)
+}
+
+#[test]
+fn lossless_pictures() {
+    for (samples, compression, predictor, plane, big) in [
+        (3, 5, 2, 1, false),
+        (4, 5, 2, 1, true),
+        (3, 8, 1, 1, false),
+        (4, 32946, 2, 1, false),
+        (3, 1, 1, 1, false),
+        (3, 1, 1, 2, true),
+        (4, 5, 2, 2, false),
+        (4, 8, 1, 2, false),
+    ] {
+        let mut i = img(40, 24, 16, samples, 8, 1, compression, predictor, picture_value);
+        i.planar = plane;
+        i.photometric = 2;
+        let file = build(&[i.clone()], &opts(big, false));
+        let h = header(&file);
+        assert!(h.is_picture());
+        let case = format!("каналов {samples}, сжатие {compression}, плоскости {plane}");
+        for row in 0..2 {
+            for col in 0..3 {
+                let ranges = picture_ranges(&h, 0, col, row).unwrap();
+                assert_eq!(ranges.len(), if plane == 2 { usize::from(samples) } else { 1 }, "{case}");
+                let rgba = picture_tile(&h, &file, col, row).unwrap();
+                assert_eq!(rgba.len(), 16 * 16 * 4, "{case}");
+                for ty in 0..16 {
+                    for tx in 0..16 {
+                        let (x, y) = (col * 16 + tx, row * 16 + ty);
+                        if x >= 40 || y >= 24 {
+                            continue;
+                        }
+                        let at = ((ty * 16 + tx) * 4) as usize;
+                        let rgb: Vec<u8> = (0..3).map(|s| picture_value(x, y, s) as u8).collect();
+                        let alpha = if samples == 4 {
+                            picture_value(x, y, 3) as u8
+                        } else if rgb.iter().any(|v| *v != 0) {
+                            255
+                        } else {
+                            0
+                        };
+                        assert_eq!(&rgba[at..at + 3], rgb.as_slice(), "{case}, x {x}, y {y}");
+                        assert_eq!(rgba[at + 3], alpha, "{case}, x {x}, y {y}");
+                    }
+                }
+            }
+        }
+        // Чёрное поле трёх каналов прозрачно.
+        if samples == 3 {
+            assert_eq!(picture_tile(&h, &file, 0, 0).unwrap()[3], 0);
+        }
+    }
+}
+
+#[test]
+fn picture_ranges_edges() {
+    let mut i = img(40, 24, 16, 3, 8, 1, 5, 2, picture_value);
+    i.sparse = vec![1];
+    let file = build(&[i], &opts(false, false));
+    let h = header(&file);
+    assert_eq!(picture_ranges(&h, 0, 1, 0), None);
+    assert_eq!(picture_ranges(&h, 0, 3, 0), None);
+    assert_eq!(picture_ranges(&h, 0, 0, 2), None);
+    assert_eq!(picture_ranges(&h, 1, 0, 0), None);
+    assert!(picture_ranges(&h, 0, 2, 1).is_some());
+    assert_eq!(decode_picture(&h, 1, &[]).unwrap_err(), CogError::NoLevel);
+    // Плоскости канала: тайл (1, 0) каждого из четырёх каналов.
+    let file = build(&[planar(img(40, 24, 16, 4, 8, 1, 1, 1, picture_value))], &opts(false, false));
+    let h = header(&file);
+    let ranges = picture_ranges(&h, 0, 1, 0).unwrap();
+    assert_eq!(ranges.len(), 4);
+    for (p, r) in ranges.iter().enumerate() {
+        assert_eq!(r.end - r.start, 256);
+        assert_eq!(r.start, h.levels[0].tile_offsets[p * 6 + 1]);
+    }
+}
+
+#[test]
+fn value_rasters_are_not_pictures() {
+    for i in [
+        img(16, 16, 16, 1, 16, 1, 8, 2, |x, y, _| u16_value(x, y)),
+        img(16, 16, 16, 3, 16, 1, 8, 2, |x, y, _| u16_value(x, y)),
+        img(16, 16, 16, 3, 8, 2, 8, 1, |_, _, _| 5),
+        img(16, 16, 16, 3, 8, 1, 50000, 1, |_, _, _| 5),
+        img(16, 16, 16, 2, 8, 1, 8, 1, |_, _, _| 5),
+    ] {
+        let file = build(&[i], &opts(false, false));
+        let h = header(&file);
+        assert!(!h.is_picture());
+        assert_eq!(
+            decode_picture(&h, 0, &[&[1, 2, 3]]).unwrap_err(),
+            CogError::Unsupported("не картинка")
+        );
+    }
+    // JPEG у растра значений - неподдержанное сжатие, как прежде.
+    let i = img(16, 16, 16, 3, 16, 1, 7, 1, |x, y, _| u16_value(x, y));
+    let file = build(&[i], &opts(false, false));
+    assert_eq!(CogHeader::parse(&file).unwrap_err(), CogError::Unsupported("сжатие"));
+}
+
+/// Поток JPEG, разделённый как в TIFF: таблицы DQT и DHT отдельным
+/// потоком SOI..EOI (JPEGTables), тайл - SOI и остальное.
+fn split_jpeg(jpg: &[u8]) -> (Vec<u8>, Vec<u8>) {
+    assert_eq!(&jpg[..2], &[0xFF, 0xD8]);
+    let mut tables = vec![0xFF, 0xD8];
+    let mut tile = vec![0xFF, 0xD8];
+    let mut i = 2;
+    loop {
+        assert_eq!(jpg[i], 0xFF);
+        let marker = jpg[i + 1];
+        if marker == 0xDA {
+            tile.extend_from_slice(&jpg[i..]);
+            break;
+        }
+        let len = usize::from(u16::from_be_bytes([jpg[i + 2], jpg[i + 3]]));
+        let seg = &jpg[i..i + 2 + len];
+        if marker == 0xDB || marker == 0xC4 {
+            tables.extend_from_slice(seg);
+        } else {
+            tile.extend_from_slice(seg);
+        }
+        i += 2 + len;
+    }
+    tables.extend_from_slice(&[0xFF, 0xD9]);
+    (tables, tile)
+}
+
+fn jpeg(pixels: &[u8], w: u16, h: u16, color: jpeg_encoder::ColorType) -> Vec<u8> {
+    let mut out = Vec::new();
+    jpeg_encoder::Encoder::new(&mut out, 92).encode(pixels, w, h, color).unwrap();
+    out
+}
+
+fn near(a: &[u8], b: &[u8], tol: i32) -> bool {
+    a.iter().zip(b).all(|(x, y)| (i32::from(*x) - i32::from(*y)).abs() <= tol)
+}
+
+/// Картинка JPEG YCbCr 32 × 16 с таблицами отдельно, как полоса
+/// WorldView Vantor: заголовок и тайл.
+fn jpeg_ycbcr() -> (CogHeader, Vec<u8>, Vec<u8>) {
+    let (red, blue) = ([200u8, 40, 40], [40u8, 60, 200]);
+    let mut rgb = Vec::new();
+    for _y in 0..16 {
+        for x in 0..32 {
+            rgb.extend_from_slice(if x < 16 { &red } else { &blue });
+        }
+    }
+    let (tables, tile) = split_jpeg(&jpeg(&rgb, 32, 16, jpeg_encoder::ColorType::Rgb));
+    let mut i = img(32, 16, 16, 3, 8, 1, 7, 1, |_, _, _| 0);
+    i.tw = 32;
+    i.photometric = 6;
+    let mut o = opts(false, false);
+    o.geo = vec![tag_bytes(347, &tables), tag_ints(false, 530, 3, &[2, 2])];
+    o.far = true;
+    let file = build(&[i], &o);
+    let whole = header(&file);
+    // Длинные JPEGTables за началом файла дочитываются.
+    let (_, h, _) = rounds(&file, 16, false);
+    assert_eq!(h, whole);
+    let pic = h.levels[0].picture.clone().unwrap();
+    assert_eq!(pic.jpeg_tables, tables);
+    assert_eq!(pic.photometric, 6);
+    assert_eq!(pic.ycbcr_subsampling, Some([2, 2]));
+    assert_eq!(h.levels[0].compression, Compression::Jpeg);
+    (h, tile, tables)
+}
+
+#[test]
+fn jpeg_ycbcr_with_tables() {
+    let (h, tile, _) = jpeg_ycbcr();
+    assert!(h.is_picture());
+    let rgba = decode_picture(&h, 0, &[&tile]).unwrap();
+    assert_eq!(rgba.len(), 32 * 16 * 4);
+    for y in 0..16 {
+        for x in (0..12).chain(20..32) {
+            let at = (y * 32 + x) * 4;
+            let want: &[u8] = if x < 16 { &[200, 40, 40, 255] } else { &[40, 60, 200, 255] };
+            assert!(near(&rgba[at..at + 4], want, 12), "x {x}, y {y}: {:?}", &rgba[at..at + 4]);
+        }
+    }
+    // Тайл целиком, с таблицами внутри, тоже раскодируется.
+    let (mut h2, _, _) = jpeg_ycbcr();
+    h2.levels[0].picture.as_mut().unwrap().jpeg_tables.clear();
+    let mut rgb = Vec::new();
+    for _ in 0..32 * 16 {
+        rgb.extend_from_slice(&[90, 160, 30]);
+    }
+    let full = jpeg(&rgb, 32, 16, jpeg_encoder::ColorType::Rgb);
+    let rgba = decode_picture(&h2, 0, &[&full]).unwrap();
+    assert!(near(&rgba[..4], &[90, 160, 30, 255], 8), "{:?}", &rgba[..4]);
+}
+
+#[test]
+fn jpeg_planes_with_tables() {
+    let values = [10u8, 120, 200, 255];
+    let mut planes = Vec::new();
+    let mut tables = Vec::new();
+    for v in values {
+        let (t, tile) = split_jpeg(&jpeg(&[v; 256], 16, 16, jpeg_encoder::ColorType::Luma));
+        tables = t;
+        planes.push(tile);
+    }
+    let mut i = planar(img(16, 16, 16, 4, 8, 1, 7, 1, |_, _, _| 0));
+    i.photometric = 2;
+    let mut o = opts(false, false);
+    o.geo = vec![tag_bytes(347, &tables), tag_ints(false, 338, 3, &[2])];
+    let h = header(&build(&[i], &o));
+    let parts: Vec<&[u8]> = planes.iter().map(Vec::as_slice).collect();
+    let rgba = decode_picture(&h, 0, &parts).unwrap();
+    for px in rgba.as_chunks::<4>().0 {
+        assert!(near(px, &values, 3), "{px:?}");
+    }
+    // Не столько частей, сколько плоскостей, - ошибка.
+    assert!(decode_picture(&h, 0, &parts[..3]).is_err());
+}
+
+#[test]
+fn hostile_picture_tiles_never_panic() {
+    let (h, tile, tables) = jpeg_ycbcr();
+    let lossless = build(&[img(40, 24, 16, 4, 8, 1, 5, 2, picture_value)], &opts(false, false));
+    let hl = header(&lossless);
+    let deflate = build(&[planar(img(40, 24, 16, 3, 8, 1, 8, 1, picture_value))], &opts(false, false));
+    let hd = header(&deflate);
+    let mut seed: u64 = 0x0bad_cafe_1234_5678;
+    let mut noise = |len: usize| -> Vec<u8> {
+        (0..len)
+            .map(|_| {
+                seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+                (seed >> 33) as u8
+            })
+            .collect()
+    };
+    for len in [0usize, 1, 2, 3, 7, 64, 700, 5000] {
+        let junk = noise(len);
+        assert!(decode_picture(&h, 0, &[&junk]).is_err(), "JPEG, длина {len}");
+        assert!(decode_picture(&hl, 0, &[&junk]).is_err(), "LZW, длина {len}");
+        assert!(decode_picture(&hd, 0, &[&junk, &junk, &junk]).is_err(), "deflate, длина {len}");
+    }
+    // Начало файла JPEG и мусор после него.
+    let mut fake = vec![0xFF, 0xD8, 0xFF, 0xC0];
+    fake.extend(noise(300));
+    let _ = decode_picture(&h, 0, &[&fake]);
+    // Обрезанный и испорченный тайл JPEG.
+    for len in 0..tile.len() {
+        let _ = decode_picture(&h, 0, &[&tile[..len]]);
+    }
+    for i in 0..tile.len() {
+        for v in [0x00, 0xFF, tile[i] ^ 0x55] {
+            let mut bad = tile.clone();
+            bad[i] = v;
+            let _ = decode_picture(&h, 0, &[&bad]);
+        }
+    }
+    // Испорченные таблицы.
+    for i in 0..tables.len() {
+        let mut hb = h.clone();
+        hb.levels[0].picture.as_mut().unwrap().jpeg_tables[i] ^= 0x5A;
+        let _ = decode_picture(&hb, 0, &[&tile]);
+    }
+    for short in [vec![0xFF], vec![0xFF, 0xD9], vec![0xFF, 0xD8, 0xFF], vec![1, 2, 3, 4, 5]] {
+        let mut hb = h.clone();
+        hb.levels[0].picture.as_mut().unwrap().jpeg_tables = short;
+        assert_eq!(decode_picture(&hb, 0, &[&tile]).unwrap_err(), CogError::Corrupt("JPEGTables"));
+    }
+    // Испорченный тайл LZW.
+    let r = picture_ranges(&hl, 0, 0, 0).unwrap();
+    let good = slice(&lossless, &r[0]).unwrap().to_vec();
+    for i in 0..good.len() {
+        let mut bad = good.clone();
+        bad[i] ^= 0x55;
+        let _ = decode_picture(&hl, 0, &[&bad]);
+        let _ = decode_picture(&hl, 0, &[&good[..i]]);
+    }
+    // Огромный тайл в заголовке - отказ до раскодирования.
+    let mut big = hl.clone();
+    big.levels[0].tile_width = 1 << 15;
+    big.levels[0].tile_height = 1 << 15;
+    assert_eq!(decode_picture(&big, 0, &[&good]).unwrap_err(), CogError::TooLarge);
+}
+
+#[test]
+fn geographic_model_without_code_is_wgs84() {
+    let i = img(16, 16, 16, 3, 8, 1, 1, 1, picture_value);
+    let mut o = opts(false, false);
+    o.geo = vec![
+        tag_f64(false, 33550, &[0.001, 0.001, 0.0]),
+        tag_f64(false, 33922, &[0.0, 0.0, 0.0, 10.0, 50.0, 0.0]),
+        tag_ints(false, 34735, 3, &[1, 1, 0, 1, 1024, 0, 1, 2]),
+    ];
+    let h = header(&build(std::slice::from_ref(&i), &o));
+    assert_eq!(h.epsg, Some(4326));
+    // Проекция без кода - по-прежнему None.
+    o.geo[2] = tag_ints(false, 34735, 3, &[1, 1, 0, 1, 1024, 0, 1, 1]);
+    assert_eq!(header(&build(&[i], &o)).epsg, None);
 }

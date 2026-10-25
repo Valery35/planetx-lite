@@ -26,6 +26,14 @@
 //! chunky и separate. Файл с полосами вместо тайлов - ошибка
 //! [`CogError::Stripped`]. Входной файл считается враждебным: любые
 //! длины проверяются, ошибка - `Err`, а не паника.
+//!
+//! Картинки - снимки событий Vantor и Planet ([`crate::events`]): три
+//! или четыре канала по 8 бит без знака, вперемежку или плоскостями,
+//! сжатие none, LZW, deflate или JPEG. Перенос картинок `core/cog.py`
+//! модуля. [`picture_ranges`] даёт байты тайла картинки,
+//! [`decode_picture`] заворачивает сжатый тайл в маленький TIFF, как
+//! `tiff_bytes` модуля, раскодирует его крейтом tiff и отдаёт RGBA.
+//! У трёх каналов чёрное прозрачно - это поле за краем полосы снимка.
 
 use std::fmt;
 use std::io::Read;
@@ -60,15 +68,21 @@ const IMAGE_WIDTH: u16 = 256;
 const IMAGE_LENGTH: u16 = 257;
 const BITS_PER_SAMPLE: u16 = 258;
 const COMPRESSION: u16 = 259;
+const PHOTOMETRIC: u16 = 262;
 const STRIP_OFFSETS: u16 = 273;
 const SAMPLES_PER_PIXEL: u16 = 277;
+const ROWS_PER_STRIP: u16 = 278;
+const STRIP_BYTE_COUNTS: u16 = 279;
 const PLANAR_CONFIGURATION: u16 = 284;
 const PREDICTOR: u16 = 317;
 const TILE_WIDTH: u16 = 322;
 const TILE_LENGTH: u16 = 323;
 const TILE_OFFSETS: u16 = 324;
 const TILE_BYTE_COUNTS: u16 = 325;
+const EXTRA_SAMPLES: u16 = 338;
 const SAMPLE_FORMAT: u16 = 339;
+const JPEG_TABLES: u16 = 347;
+const YCBCR_SUBSAMPLING: u16 = 530;
 const MODEL_PIXEL_SCALE: u16 = 33550;
 const MODEL_TIEPOINT: u16 = 33922;
 const MODEL_TRANSFORMATION: u16 = 34264;
@@ -76,8 +90,9 @@ const GEO_KEY_DIRECTORY: u16 = 34735;
 const GDAL_METADATA: u16 = 42112;
 const GDAL_NODATA: u16 = 42113;
 
-/// Теги, значения которых нужны у каждого уровня.
-const LEVEL_TAGS: [u16; 13] = [
+/// Теги, значения которых нужны у каждого уровня. Последние четыре -
+/// теги картинки, тайл уносит их в свой TIFF.
+const LEVEL_TAGS: [u16; 17] = [
     NEW_SUBFILE_TYPE,
     IMAGE_WIDTH,
     IMAGE_LENGTH,
@@ -91,6 +106,10 @@ const LEVEL_TAGS: [u16; 13] = [
     TILE_OFFSETS,
     TILE_BYTE_COUNTS,
     SAMPLE_FORMAT,
+    PHOTOMETRIC,
+    EXTRA_SAMPLES,
+    JPEG_TABLES,
+    YCBCR_SUBSAMPLING,
 ];
 
 /// Теги привязки и метаданных, нужны только у полного разрешения.
@@ -279,6 +298,8 @@ pub enum Compression {
     Deflate,
     Lzw,
     Zstd,
+    /// 7 - JPEG, только у картинок.
+    Jpeg,
 }
 
 /// Предиктор TIFF.
@@ -301,6 +322,19 @@ pub enum Planar {
     Separate,
 }
 
+/// Теги уровня-картинки, которые тайл уносит в свой TIFF.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct Picture {
+    /// PhotometricInterpretation: 2 - RGB, 6 - YCbCr, нет тега - 2.
+    pub photometric: u16,
+    /// ExtraSamples, у четырёх каналов - смысл четвёртого.
+    pub extra_samples: Vec<u16>,
+    /// JPEGTables - таблицы JPEG, общие для тайлов уровня, или пусто.
+    pub jpeg_tables: Vec<u8>,
+    /// YCbCrSubSampling или None.
+    pub ycbcr_subsampling: Option<[u16; 2]>,
+}
+
 /// Уровень: полное разрешение или обзор.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Level {
@@ -317,6 +351,9 @@ pub struct Level {
     /// Смещения тайлов по строкам тайлов, у Separate - канал за каналом.
     pub tile_offsets: Vec<u64>,
     pub tile_byte_counts: Vec<u64>,
+    /// Теги картинки у уровня с тремя-четырьмя каналами по 8 бит без
+    /// знака и сжатием none, LZW, deflate или JPEG, иначе None.
+    pub picture: Option<Picture>,
 }
 
 impl Level {
@@ -366,7 +403,8 @@ pub struct CogHeader {
     /// y0, поворот, шаг y. Отсчёт от угла пикселя.
     pub geotransform: Option<[f64; 6]>,
     /// EPSG системы файла. None у своей системы (32767), например
-    /// синусоидальной MODIS.
+    /// синусоидальной MODIS. Географическая модель без кода системы -
+    /// 4326, как `_epsg` модуля.
     pub epsg: Option<u32>,
     /// RasterPixelIsPoint, привязка уже сдвинута на полпикселя, как в GDAL.
     pub pixel_is_point: bool,
@@ -715,8 +753,17 @@ fn build_level(src: &Src<'_>, entries: &[Entry]) -> Result<Level, CogError> {
         8 | 32946 => Compression::Deflate,
         5 => Compression::Lzw,
         50000 => Compression::Zstd,
+        7 => Compression::Jpeg,
         _ => return Err(CogError::Unsupported("сжатие")),
     };
+    // Картинка: три-четыре канала по 8 бит без знака, сжатие картинок
+    // модуля. JPEG бывает только у картинки.
+    let picture_layout = matches!(samples, 3 | 4) && bits == 8 && format == SampleFormat::Uint;
+    let picture_compression = matches!(compression, Compression::None | Compression::Lzw | Compression::Deflate | Compression::Jpeg);
+    if compression == Compression::Jpeg && !picture_layout {
+        return Err(CogError::Unsupported("сжатие"));
+    }
+    let picture = if picture_layout && picture_compression { Some(picture_tags(src, entries)?) } else { None };
     let predictor = match first_uint(src, entries, PREDICTOR)?.unwrap_or(1) {
         1 => Predictor::None,
         2 if format != SampleFormat::Float => Predictor::Horizontal,
@@ -741,6 +788,7 @@ fn build_level(src: &Src<'_>, entries: &[Entry]) -> Result<Level, CogError> {
         planar,
         tile_offsets: Vec::new(),
         tile_byte_counts: Vec::new(),
+        picture,
     };
     let expected = level
         .tiles_across()
@@ -760,6 +808,29 @@ fn build_level(src: &Src<'_>, entries: &[Entry]) -> Result<Level, CogError> {
     level.tile_offsets = list(TILE_OFFSETS, "TileOffsets")?;
     level.tile_byte_counts = list(TILE_BYTE_COUNTS, "TileByteCounts")?;
     Ok(level)
+}
+
+/// Теги картинки уровня, значения уже прочитаны.
+fn picture_tags(src: &Src<'_>, entries: &[Entry]) -> Result<Picture, CogError> {
+    let shorts = |tag| -> Result<Vec<u16>, CogError> {
+        match find(entries, tag) {
+            Some(e) => Ok(src.uints(e)?.into_iter().map(|v| u16::try_from(v).unwrap_or(u16::MAX)).collect()),
+            None => Ok(Vec::new()),
+        }
+    };
+    let photometric = shorts(PHOTOMETRIC)?.first().copied().unwrap_or(2);
+    let extra_samples = shorts(EXTRA_SAMPLES)?;
+    let jpeg_tables = match find(entries, JPEG_TABLES) {
+        Some(e) if matches!(e.typ, 1 | 7) => src.values(e)?.to_vec(),
+        Some(_) => return Err(CogError::Corrupt("тип JPEGTables")),
+        None => Vec::new(),
+    };
+    let sub = shorts(YCBCR_SUBSAMPLING)?;
+    let ycbcr_subsampling = match sub.as_slice() {
+        [h, v, ..] => Some([*h, *v]),
+        _ => None,
+    };
+    Ok(Picture { photometric, extra_samples, jpeg_tables, ycbcr_subsampling })
 }
 
 /// Ключи GeoKeyDirectory: (GTModelType, GTRasterType, EPSG).
@@ -790,7 +861,12 @@ fn geokeys(keys: &[u64]) -> (Option<u64>, Option<u64>, Option<u32>) {
     };
     let epsg = match model {
         Some(1) => code(projected),
-        Some(2) => code(geographic),
+        // Географическая модель без ключа 2048 - WGS84, как `_epsg`
+        // модуля. Своя система (32767) остаётся None.
+        Some(2) => match geographic {
+            None => Some(4326),
+            g => code(g),
+        },
         None => code(projected).or_else(|| code(geographic)),
         _ => None,
     };
@@ -1037,6 +1113,12 @@ impl CogHeader {
             scale: value_scale,
             offset: value_offset,
         }))
+    }
+
+    /// Файл - картинка: у полного разрешения три-четыре канала по 8 бит
+    /// и сжатие картинок.
+    pub fn is_picture(&self) -> bool {
+        self.levels.first().is_some_and(|l| l.picture.is_some())
     }
 
     /// Уровень по номеру.
@@ -1447,5 +1529,233 @@ fn decompress(compression: Compression, data: &[u8], total: usize) -> Result<Vec
                 .map_err(|_| ())?;
             if n == total { Ok(out) } else { Err(()) }
         }
+        // JPEG раскодирует только decode_picture.
+        Compression::Jpeg => Err(()),
     }
+}
+
+// ---------------------------------------------------------------------
+// Картинки
+
+/// Диапазоны байт тайла картинки (col, row) уровня level: один или
+/// по одному на плоскость канала у PlanarConfiguration 2. None - нет
+/// такого уровня или тайла, или тайл пустой (длина 0).
+pub fn picture_ranges(header: &CogHeader, level: usize, col: u32, row: u32) -> Option<Vec<Range<u64>>> {
+    let lvl = header.level(level)?;
+    let (col, row) = (u64::from(col), u64::from(row));
+    if col >= lvl.tiles_across() || row >= lvl.tiles_down() {
+        return None;
+    }
+    let mut out = Vec::new();
+    for plane in 0..lvl.planes() {
+        let sample = u16::try_from(plane).ok()?;
+        let index = lvl.tile_index(col, row, sample)?;
+        let offset = *lvl.tile_offsets.get(index)?;
+        let count = *lvl.tile_byte_counts.get(index)?;
+        if count == 0 || offset == 0 {
+            return None;
+        }
+        out.push(offset..offset.checked_add(count)?);
+    }
+    Some(out)
+}
+
+/// Раскодировать тайл картинки уровня level из сжатых частей (порядок
+/// [`picture_ranges`]) в RGBA, tile_width × tile_height × 4 байт,
+/// строки сверху вниз. У трёх каналов прозрачность 255, где хоть один
+/// канал не ноль, иначе 0 - чёрное лежит за краем полосы снимка, как
+/// в модуле. У четырёх каналов четвёртый - прозрачность.
+pub fn decode_picture(header: &CogHeader, level: usize, parts: &[&[u8]]) -> Result<Vec<u8>, CogError> {
+    let lvl = header.level(level).ok_or(CogError::NoLevel)?;
+    let pic = lvl.picture.as_ref().ok_or(CogError::Unsupported("не картинка"))?;
+    let (tw, th) = (lvl.tile_width as usize, lvl.tile_height as usize);
+    let pixels = tw.checked_mul(th).ok_or(CogError::TooLarge)?;
+    let total = pixels.checked_mul(4).ok_or(CogError::TooLarge)?;
+    if total as u64 > MAX_TILE_BYTES {
+        return Err(CogError::TooLarge);
+    }
+    let planes = usize::try_from(lvl.planes()).map_err(|_| CogError::TooLarge)?;
+    if parts.len() != planes || parts.iter().any(|p| p.is_empty()) {
+        return Err(CogError::Corrupt("части тайла картинки"));
+    }
+    if lvl.compression == Compression::Jpeg && !pic.jpeg_tables.is_empty() {
+        // Таблицы - отдельный поток JPEG от SOI до EOI. Короче - крейт
+        // tiff не разбирает их без паники.
+        let t = &pic.jpeg_tables;
+        if t.len() < 4 || t.get(..2) != Some(&[0xFF, 0xD8]) || t.get(t.len() - 2..) != Some(&[0xFF, 0xD9]) {
+            return Err(CogError::Corrupt("JPEGTables"));
+        }
+    }
+    let samples = usize::from(lvl.samples);
+    let mut rgba = vec![0u8; total];
+    match lvl.planar {
+        Planar::Chunky => {
+            let photometric = if pic.photometric == 6 { 6 } else { 2 };
+            let part = parts.first().copied().unwrap_or(&[]);
+            let (color, data) = decode_tiff(tiff_bytes(lvl, pic, lvl.samples, photometric, part), lvl)?;
+            let (ycbcr, n) = match color {
+                tiff::ColorType::RGB(8) => (false, 3),
+                tiff::ColorType::RGBA(8) => (false, 4),
+                tiff::ColorType::YCbCr(8) => (true, 3),
+                _ => return Err(CogError::Corrupt("цвет тайла картинки")),
+            };
+            if data.len() < pixels * n {
+                return Err(CogError::Corrupt("тайл картинки"));
+            }
+            for (px, dst) in data.chunks_exact(n).zip(rgba.as_chunks_mut::<4>().0) {
+                let (r, g, b) = match px {
+                    [y, cb, cr, ..] if ycbcr => ycbcr_to_rgb(*y, *cb, *cr),
+                    [r, g, b, ..] => (*r, *g, *b),
+                    _ => (0, 0, 0),
+                };
+                *dst = [r, g, b, px.get(3).copied().unwrap_or(255)];
+            }
+        }
+        Planar::Separate => {
+            for (plane, part) in parts.iter().enumerate() {
+                let (color, data) = decode_tiff(tiff_bytes(lvl, pic, 1, 1, part), lvl)?;
+                if color != tiff::ColorType::Gray(8) || data.len() < pixels {
+                    return Err(CogError::Corrupt("плоскость тайла картинки"));
+                }
+                for (v, dst) in data.iter().zip(rgba.as_chunks_mut::<4>().0) {
+                    if let Some(cell) = dst.get_mut(plane) {
+                        *cell = *v;
+                    }
+                }
+            }
+        }
+    }
+    if samples == 3 {
+        // Без канала прозрачности чёрное - за краем снимка.
+        for [r, g, b, a] in rgba.as_chunks_mut::<4>().0 {
+            *a = if *r != 0 || *g != 0 || *b != 0 { 255 } else { 0 };
+        }
+    }
+    Ok(rgba)
+}
+
+/// YCbCr полного размаха JPEG (JFIF) в RGB.
+fn ycbcr_to_rgb(y: u8, cb: u8, cr: u8) -> (u8, u8, u8) {
+    let (y, cb, cr) = (f64::from(y), f64::from(cb) - 128.0, f64::from(cr) - 128.0);
+    let c = |v: f64| v.round().clamp(0.0, 255.0) as u8;
+    (c(y + 1.402 * cr), c(y - 0.344136 * cb - 0.714136 * cr), c(y + 1.772 * cb))
+}
+
+/// Раскодировать маленький TIFF крейтом tiff: цвет и байты отсчётов.
+/// Размер обязан совпасть с тайлом уровня.
+fn decode_tiff(bytes: Vec<u8>, lvl: &Level) -> Result<(tiff::ColorType, Vec<u8>), CogError> {
+    let bad = |_| CogError::Corrupt("тайл картинки");
+    let mut decoder = tiff::decoder::Decoder::new(std::io::Cursor::new(bytes)).map_err(bad)?;
+    if decoder.dimensions().map_err(bad)? != (lvl.tile_width, lvl.tile_height) {
+        return Err(CogError::Corrupt("размер тайла картинки"));
+    }
+    let color = decoder.colortype().map_err(bad)?;
+    match decoder.read_image().map_err(bad)? {
+        tiff::decoder::DecodingResult::U8(data) => Ok((color, data)),
+        _ => Err(CogError::Corrupt("тайл картинки")),
+    }
+}
+
+/// Сжатый тайл картинки маленьким TIFF с одной полосой, как
+/// `tiff_bytes` модуля: размер тайла, сжатие, предиктор и теги
+/// картинки уровня. samples - каналов в полосе (1 у плоскости), цвет
+/// photometric. Порядок байт файла не важен: отсчёты по 8 бит, а
+/// таблицы и поток JPEG от него не зависят.
+fn tiff_bytes(lvl: &Level, pic: &Picture, samples: u16, photometric: u16, raw: &[u8]) -> Vec<u8> {
+    let compression = match lvl.compression {
+        Compression::None => 1,
+        Compression::Lzw => 5,
+        Compression::Jpeg => 7,
+        Compression::Deflate => 8,
+        // У картинок zstd не бывает, см. build_level.
+        Compression::Zstd => 50000,
+    };
+    let predictor = match lvl.predictor {
+        Predictor::Horizontal => 2,
+        _ => 1,
+    };
+    let len = u32::try_from(raw.len()).unwrap_or(u32::MAX);
+    // (тег, тип, значения): тип 3 - SHORT, 4 - LONG, 7 - UNDEFINED.
+    let mut entries: Vec<(u16, u16, Vec<u32>)> = vec![
+        (IMAGE_WIDTH, 4, vec![lvl.tile_width]),
+        (IMAGE_LENGTH, 4, vec![lvl.tile_height]),
+        (BITS_PER_SAMPLE, 3, vec![8; usize::from(samples)]),
+        (COMPRESSION, 3, vec![compression]),
+        (PHOTOMETRIC, 3, vec![u32::from(photometric)]),
+        (STRIP_OFFSETS, 4, vec![0]),
+        (SAMPLES_PER_PIXEL, 3, vec![u32::from(samples)]),
+        (ROWS_PER_STRIP, 4, vec![lvl.tile_height]),
+        (STRIP_BYTE_COUNTS, 4, vec![len]),
+        (PLANAR_CONFIGURATION, 3, vec![1]),
+        (PREDICTOR, 3, vec![predictor]),
+    ];
+    if samples == 4 {
+        // Четвёртый канал - прозрачность: своя, если файл её назвал,
+        // иначе несвязанная.
+        let extra = match pic.extra_samples.first() {
+            Some(v @ (1 | 2)) => u32::from(*v),
+            _ => 2,
+        };
+        entries.push((EXTRA_SAMPLES, 3, vec![extra]));
+    }
+    if lvl.compression == Compression::Jpeg && !pic.jpeg_tables.is_empty() {
+        entries.push((JPEG_TABLES, 7, pic.jpeg_tables.iter().map(|b| u32::from(*b)).collect()));
+    }
+    if photometric == 6
+        && let Some([h, v]) = pic.ycbcr_subsampling
+    {
+        entries.push((YCBCR_SUBSAMPLING, 3, vec![u32::from(h), u32::from(v)]));
+    }
+    entries.sort_by_key(|e| e.0);
+    // Длина каталога не зависит от смещения полосы: сначала место,
+    // потом смещение.
+    let head = tiff_head(&entries);
+    let at = u32::try_from(head.len()).unwrap_or(u32::MAX);
+    for e in &mut entries {
+        if e.0 == STRIP_OFFSETS {
+            e.2 = vec![at];
+        }
+    }
+    let mut out = tiff_head(&entries);
+    out.extend_from_slice(raw);
+    out
+}
+
+/// Заголовок TIFF с прямым порядком байт и каталог, длинные значения
+/// после каталога.
+fn tiff_head(entries: &[(u16, u16, Vec<u32>)]) -> Vec<u8> {
+    let count = entries.len();
+    let after = 8 + 2 + 12 * count + 4;
+    let mut out = Vec::with_capacity(after);
+    out.extend_from_slice(b"II*\0");
+    out.extend_from_slice(&8u32.to_le_bytes());
+    out.extend_from_slice(&u16::try_from(count).unwrap_or(u16::MAX).to_le_bytes());
+    let mut extra: Vec<u8> = Vec::new();
+    for (tag, typ, values) in entries {
+        let mut packed = Vec::new();
+        for v in values {
+            match typ {
+                3 => packed.extend_from_slice(&u16::try_from(*v).unwrap_or(u16::MAX).to_le_bytes()),
+                7 => packed.push(u8::try_from(*v).unwrap_or(u8::MAX)),
+                _ => packed.extend_from_slice(&v.to_le_bytes()),
+            }
+        }
+        out.extend_from_slice(&tag.to_le_bytes());
+        out.extend_from_slice(&typ.to_le_bytes());
+        out.extend_from_slice(&u32::try_from(values.len()).unwrap_or(u32::MAX).to_le_bytes());
+        if packed.len() <= 4 {
+            packed.resize(4, 0);
+            out.extend_from_slice(&packed);
+        } else {
+            let at = u32::try_from(after + extra.len()).unwrap_or(u32::MAX);
+            out.extend_from_slice(&at.to_le_bytes());
+            extra.extend_from_slice(&packed);
+            if extra.len() % 2 == 1 {
+                extra.push(0);
+            }
+        }
+    }
+    out.extend_from_slice(&0u32.to_le_bytes());
+    out.extend_from_slice(&extra);
+    out
 }

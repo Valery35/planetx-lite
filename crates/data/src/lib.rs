@@ -19,6 +19,8 @@
 //! - [`layers`] - слои GeoPackage, через terrio;
 //! - [`geology`] - геологическая карта Macrostrat, перенос `core/geology.py`;
 //! - [`gibs`] - темы NASA GIBS по датам, перенос `core/themes.py`;
+//! - [`events`] - снимки чрезвычайных событий Vantor и Planet, каталоги
+//!   STAC, перенос `core/events.py`;
 //! - [`quakes`] - землетрясения USGS, перенос `core/quakes.py`;
 //! - [`bathymetry`] - своя батиметрия, перенос `core/bathymetry.py`;
 //! - [`contours`] - горизонтали рельефа и изолинии, перенос `core/contours.py`;
@@ -74,6 +76,7 @@ pub mod deposits;
 pub mod drillholes;
 pub mod ephemeris;
 pub mod etomesto;
+pub mod events;
 pub mod faults;
 pub mod fires;
 pub mod flightsim;
@@ -89,6 +92,7 @@ pub mod infra;
 pub mod insolation;
 pub mod iscgem;
 pub mod layers;
+pub mod lidarnet;
 pub mod linesets;
 pub mod lines;
 pub mod menulinks;

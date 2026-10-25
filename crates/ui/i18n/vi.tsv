@@ -1413,3 +1413,31 @@ Read layers	Đọc các lớp
 Read the list of layers of the service, the GetCapabilities request.	Đọc danh sách lớp của dịch vụ, yêu cầu GetCapabilities.
 The service did not give its layers: {error}	Dịch vụ không trả các lớp: {error}
 A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.	Bản đồ WMS nằm trên bản đồ nền của quả địa cầu, ngoài phạm vi lớp thấy bản đồ nền. Dịch vụ vẽ lại từng ảnh, nên bản đồ tải chậm hơn các ô.
+Event imagery	Ảnh sự kiện
+Images of earthquakes, floods, fires and hurricanes from the open catalogs of Vantor and Planet. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Ảnh động đất, lũ lụt, cháy rừng và bão từ các danh mục mở của Vantor và Planet. Giấy phép ảnh CC BY-NC 4.0 - chỉ dùng phi thương mại.
+Event	Sự kiện
+Date	Ngày
+Images: {count}	Ảnh: {count}
+Loading the list of events…	Đang tải danh sách sự kiện…
+The list of events did not load: {error}	Danh sách sự kiện không tải được: {error}
+Events: {count}	Sự kiện: {count}
+The previous day of images	Ngày ảnh trước
+The next day of images	Ngày ảnh sau
+Before the event	Trước sự kiện
+The last day of images before the event.	Ngày ảnh cuối cùng trước sự kiện.
+After the event	Sau sự kiện
+The last day of images of the event.	Ngày ảnh cuối cùng của sự kiện.
+Loading the images of the event: catalog documents {count}	Đang tải ảnh sự kiện: tài liệu danh mục {count}
+The event has no images the globe can show.	Sự kiện không có ảnh mà quả địa cầu có thể hiển thị.
+Images: {count}, days of survey: {days}. The buttons below choose the day.	Ảnh: {count}, ngày chụp: {days}. Các nút bên dưới chọn ngày.
+Loading the images of the event «{title}»…	Đang tải ảnh sự kiện «{title}»…
+Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Ảnh động đất, lũ lụt, cháy rừng và bão từ hai danh mục mở. Vantor (trước là Maxar) cho dải WorldView, Planet - cảnh PlanetScope, SkySat và Pelican cùng ảnh ghép hằng quý của Planet trước sự kiện. Dòng này mở cửa sổ «Ảnh sự kiện» với danh sách sự kiện. Giấy phép ảnh CC BY-NC 4.0 - chỉ dùng phi thương mại.
+Imagery archive	Kho ảnh
+Images of extraordinary events from the open catalogs of Vantor and Planet.	Ảnh các sự kiện bất thường từ danh mục mở của Vantor và Planet.
+Lidar point clouds here	Đám mây điểm lidar tại đây
+Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Đang tìm trong danh mục lidar IGN LiDAR HD và USGS 3DEP gần điểm…
+Lidar point clouds: {error}	Đám mây điểm lidar: {error}
+There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	Gần điểm không có ô lidar của IGN LiDAR HD và USGS 3DEP.
+Swipe ⇆	Rèm ⇆
+Compare two days: left of the line on the globe - the images of an earlier day, right - of the chosen day. The line is dragged with the mouse.	So sánh hai ngày: bên trái đường trên quả địa cầu là ảnh của ngày trước đó, bên phải là ảnh của ngày đã chọn. Kéo đường bằng chuột.
+Left:	Bên trái:

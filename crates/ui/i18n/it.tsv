@@ -1413,3 +1413,31 @@ Read layers	Leggi i livelli
 Read the list of layers of the service, the GetCapabilities request.	Leggi l'elenco dei livelli del servizio, richiesta GetCapabilities.
 The service did not give its layers: {error}	Il servizio non ha dato i suoi livelli: {error}
 A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.	Una mappa WMS si posa sulla mappa di base del globo, fuori dall'area del livello si vede la mappa di base. Il servizio disegna ogni immagine di nuovo, quindi la mappa si carica più lentamente dei tile.
+Event imagery	Immagini di eventi
+Images of earthquakes, floods, fires and hurricanes from the open catalogs of Vantor and Planet. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Immagini di terremoti, alluvioni, incendi e uragani dai cataloghi aperti di Vantor e Planet. Licenza delle immagini CC BY-NC 4.0 - solo uso non commerciale.
+Event	Evento
+Date	Data
+Images: {count}	Immagini: {count}
+Loading the list of events…	Caricamento dell'elenco degli eventi…
+The list of events did not load: {error}	L'elenco degli eventi non si è caricato: {error}
+Events: {count}	Eventi: {count}
+The previous day of images	Giorno di immagini precedente
+The next day of images	Giorno di immagini successivo
+Before the event	Prima dell'evento
+The last day of images before the event.	L'ultimo giorno di immagini prima dell'evento.
+After the event	Dopo l'evento
+The last day of images of the event.	L'ultimo giorno di immagini dell'evento.
+Loading the images of the event: catalog documents {count}	Caricamento delle immagini dell'evento: documenti del catalogo {count}
+The event has no images the globe can show.	L'evento non ha immagini che il globo possa mostrare.
+Images: {count}, days of survey: {days}. The buttons below choose the day.	Immagini: {count}, giorni di ripresa: {days}. I pulsanti sotto scelgono il giorno.
+Loading the images of the event «{title}»…	Caricamento delle immagini dell'evento «{title}»…
+Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Immagini di terremoti, alluvioni, incendi e uragani da due cataloghi aperti. Vantor (già Maxar) fornisce strisce WorldView, Planet - scene PlanetScope, SkySat e Pelican e il mosaico trimestrale di Planet prima dell'evento. La riga apre la finestra «Immagini di eventi» con l'elenco degli eventi. Licenza delle immagini CC BY-NC 4.0 - solo uso non commerciale.
+Imagery archive	Archivio di immagini
+Images of extraordinary events from the open catalogs of Vantor and Planet.	Immagini di eventi straordinari dai cataloghi aperti di Vantor e Planet.
+Lidar point clouds here	Nuvole di punti lidar qui
+Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Ricerca nei cataloghi lidar IGN LiDAR HD e USGS 3DEP vicino al punto…
+Lidar point clouds: {error}	Nuvole di punti lidar: {error}
+There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	Non ci sono tessere lidar IGN LiDAR HD e USGS 3DEP vicino al punto.
+Swipe ⇆	Tendina ⇆
+Compare two days: left of the line on the globe - the images of an earlier day, right - of the chosen day. The line is dragged with the mouse.	Confronta due giorni: a sinistra della linea sul globo le immagini di un giorno precedente, a destra quelle del giorno scelto. La linea si trascina col mouse.
+Left:	A sinistra:

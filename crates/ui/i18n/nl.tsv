@@ -1413,3 +1413,31 @@ Read layers	Lagen lezen
 Read the list of layers of the service, the GetCapabilities request.	De lijst van lagen van de dienst lezen, verzoek GetCapabilities.
 The service did not give its layers: {error}	De dienst gaf zijn lagen niet: {error}
 A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.	Een WMS-kaart ligt over de basiskaart van de globe, buiten het gebied van de laag is de basiskaart te zien. De dienst tekent elk beeld opnieuw, daarom laadt de kaart trager dan tegels.
+Event imagery	Beelden van gebeurtenissen
+Images of earthquakes, floods, fires and hurricanes from the open catalogs of Vantor and Planet. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Beelden van aardbevingen, overstromingen, branden en orkanen uit de open catalogi van Vantor en Planet. Licentie van de beelden CC BY-NC 4.0 - alleen niet-commercieel gebruik.
+Event	Gebeurtenis
+Date	Datum
+Images: {count}	Beelden: {count}
+Loading the list of events…	Lijst van gebeurtenissen wordt geladen…
+The list of events did not load: {error}	De lijst van gebeurtenissen is niet geladen: {error}
+Events: {count}	Gebeurtenissen: {count}
+The previous day of images	Vorige dag met beelden
+The next day of images	Volgende dag met beelden
+Before the event	Voor de gebeurtenis
+The last day of images before the event.	De laatste dag met beelden voor de gebeurtenis.
+After the event	Na de gebeurtenis
+The last day of images of the event.	De laatste dag met beelden van de gebeurtenis.
+Loading the images of the event: catalog documents {count}	Beelden van de gebeurtenis worden geladen: catalogusdocumenten {count}
+The event has no images the globe can show.	De gebeurtenis heeft geen beelden die de globe kan tonen.
+Images: {count}, days of survey: {days}. The buttons below choose the day.	Beelden: {count}, opnamedagen: {days}. De knoppen hieronder kiezen de dag.
+Loading the images of the event «{title}»…	Beelden van de gebeurtenis «{title}» worden geladen…
+Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Beelden van aardbevingen, overstromingen, branden en orkanen uit twee open catalogi. Vantor (voorheen Maxar) geeft WorldView-stroken, Planet - scènes van PlanetScope, SkySat en Pelican en het kwartaalmozaïek van Planet van voor de gebeurtenis. De rij opent het venster «Beelden van gebeurtenissen» met de lijst. Licentie van de beelden CC BY-NC 4.0 - alleen niet-commercieel gebruik.
+Imagery archive	Beeldarchief
+Images of extraordinary events from the open catalogs of Vantor and Planet.	Beelden van buitengewone gebeurtenissen uit de open catalogi van Vantor en Planet.
+Lidar point clouds here	Lidar-puntenwolken hier
+Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Zoeken in de lidarcatalogi IGN LiDAR HD en USGS 3DEP bij het punt…
+Lidar point clouds: {error}	Lidar-puntenwolken: {error}
+There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	Bij het punt zijn geen lidartegels van IGN LiDAR HD en USGS 3DEP.
+Swipe ⇆	Gordijn ⇆
+Compare two days: left of the line on the globe - the images of an earlier day, right - of the chosen day. The line is dragged with the mouse.	Twee dagen vergelijken: links van de lijn op de globe de beelden van een eerdere dag, rechts van de gekozen dag. De lijn wordt met de muis versleept.
+Left:	Links:

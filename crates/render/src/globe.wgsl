@@ -39,6 +39,12 @@ struct Draw {
     wedge: vec4<f32>,
     // Разрез Земли: синусы южной и северной широты.
     wedge_lat: vec4<f32>,
+    // Снимки события «после» и «до»: u0, v0, сторона, признак.
+    event: vec4<f32>,
+    event_before: vec4<f32>,
+    // Шторка: x - линия в пикселях кадра, y - признак. Слева от линии
+    // снимки «до», справа «после».
+    split: vec4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> draw: Draw;
@@ -55,6 +61,10 @@ struct Draw {
 // Огни городов NASA Black Marble, видны на ночной стороне при солнце.
 @group(3) @binding(2) var lights_texture: texture_2d<f32>;
 @group(3) @binding(3) var lights_sampler: sampler;
+// Снимки события «после» и «до», значения экрана, альфа умножена на
+// цвет. Ложатся на снимок под линиями основы.
+@group(3) @binding(4) var event_texture: texture_2d<f32>;
+@group(3) @binding(5) var before_texture: texture_2d<f32>;
 
 struct VertexOut {
     @builtin(position) position: vec4<f32>,
@@ -127,6 +137,12 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     let lines = textureSample(over_texture, over_sampler, draw.over.xy + in.uv * draw.over.z) * draw.over.w;
     let glow = textureSample(lights_texture, lights_sampler, draw.lights.xy + in.uv * draw.lights.z) * draw.lights.w;
     let mask = textureSample(cut_texture, cut_sampler, draw.cut.xy + in.uv * draw.cut.zw);
+    let after = textureSample(event_texture, over_sampler, draw.event.xy + in.uv * draw.event.z) * draw.event.w;
+    let before = textureSample(before_texture, over_sampler, draw.event_before.xy + in.uv * draw.event_before.z) * draw.event_before.w;
+    var event = after;
+    if draw.split.y > 0.5 && in.position.x < draw.split.x {
+        event = before;
+    }
     if draw.hole.w > 0.5 {
         let low = draw.hole.xy;
         let high = draw.hole.xy + vec2<f32>(draw.hole.z, draw.hole.z);
@@ -135,6 +151,7 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
         }
     }
     var photo = mix(to_srgb(picture.rgb), draw.color.rgb, draw.color.a);
+    photo = photo * (1.0 - event.a) + event.rgb;
     var base = photo * (1.0 - lines.a) + lines.rgb;
     // Разрез Земли: сектор по широте и долготе вынут, как у модуля.
     if draw.wedge.w > 0.5 {

@@ -38,6 +38,8 @@ pub enum Command {
     SceneOpen,
     Fullscreen,
     Share,
+    /// Окно «Снимки событий».
+    Events,
     /// Демо: раздел и номер в разделе `crate::demos::MENU`.
     Demo(usize, usize),
 }
@@ -63,6 +65,7 @@ impl Command {
             Self::SceneOpen => "tool:scene_open".into(),
             Self::Fullscreen => "tool:fullscreen".into(),
             Self::Share => "tool:share".into(),
+            Self::Events => "open:events".into(),
             Self::Demo(s, d) => format!("demo:{s}:{d}"),
         }
     }
@@ -87,6 +90,7 @@ impl Command {
             Command::SceneOpen,
             Command::Fullscreen,
             Command::Share,
+            Command::Events,
         ]);
         for (s, section) in crate::demos::MENU.iter().enumerate() {
             all.extend((0..section.demos.len()).map(|d| Command::Demo(s, d)));
@@ -226,6 +230,12 @@ pub fn actions(lang: Lang, now: &Now) -> Vec<Suggestion> {
         &["подложка", "основа", "рельеф", "dem", "sources", "basemap"],
     );
     add(Command::About, tr(lang, "About"), open, &["версия", "about", "version"]);
+    add(
+        Command::Events,
+        tr(lang, "Event imagery"),
+        open,
+        &["снимки событий", "землетрясение", "наводнение", "ураган", "пожар", "vantor", "maxar", "planet", "disaster", "earthquake", "flood"],
+    );
     add(Command::SceneSave, tr(lang, "Save Scene"), open, &["сцена", "scene"]);
     add(Command::SceneOpen, tr(lang, "Open Scene"), open, &["сцена", "scene"]);
     add(

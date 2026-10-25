@@ -19,6 +19,8 @@ bytemuck.workspace = true
 
 [dev-dependencies]
 pollster.workspace = true
+# Разбор и проверка шейдеров без видеокарты, та же версия, что у wgpu.
+naga = { version = "30.0.1", features = ["wgsl-in"] }
 
 [lints]
 workspace = true

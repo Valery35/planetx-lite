@@ -539,3 +539,35 @@ fn wedge_removes_the_surface() {
     let (_, back) = holes(&mut globe, &cam, &sel);
     assert_eq!(back, before);
 }
+#[test]
+fn event_swipe_shows_before_left_of_the_line() {
+    // Снимки события «после» красные, «до» синие. Со шторкой посередине
+    // кадра слева синее, справа красное, без шторки - красное везде.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 500.0, 0.0, 0.0);
+    let sel = lod::select(&cam, &|_| true, Options::default());
+    let grey = vec![128u8; 256 * 256 * 4];
+    let red: Vec<u8> = (0..256 * 256).flat_map(|_| [255, 0, 0, 255]).collect();
+    let blue: Vec<u8> = (0..256 * 256).flat_map(|_| [0, 0, 255, 255]).collect();
+    for key in &sel.draw {
+        globe.upload(*key, 256, 256, &grey);
+        globe.set_event(0, *key, 256, 256, &red);
+        globe.set_event(1, *key, 256, 256, &blue);
+    }
+    let frame = grab(&mut globe, &cam, false);
+    let (w, h) = (f64::from(frame.width), f64::from(frame.height));
+    assert_eq!(rgb(&frame, w * 0.25, h / 2.0), [255, 0, 0]);
+    globe.set_split(Some((w / 2.0) as f32));
+    let frame = grab(&mut globe, &cam, false);
+    assert_eq!(rgb(&frame, w * 0.25, h / 2.0), [0, 0, 255]);
+    assert_eq!(rgb(&frame, w * 0.75, h / 2.0), [255, 0, 0]);
+    // Сняты снимки «после» - справа снова снимок подложки.
+    globe.clear_events(0);
+    let frame = grab(&mut globe, &cam, false);
+    let right = rgb(&frame, w * 0.75, h / 2.0);
+    assert!(right.iter().all(|c| c.abs_diff(128) <= 3), "{right:?}");
+}

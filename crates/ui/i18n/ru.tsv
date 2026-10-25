@@ -1413,3 +1413,31 @@ Read layers	Прочитать слои
 Read the list of layers of the service, the GetCapabilities request.	Прочитать список слоёв службы, запрос GetCapabilities.
 The service did not give its layers: {error}	Служба не отдала слои: {error}
 A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.	Карта WMS ложится поверх подложки глобуса, вне охвата слоя видна подложка. Служба рисует каждую картинку заново, поэтому карта загружается медленнее тайлов.
+Event imagery	Снимки событий
+Images of earthquakes, floods, fires and hurricanes from the open catalogs of Vantor and Planet. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Снимки землетрясений, наводнений, пожаров и ураганов из открытых каталогов Vantor и Planet. Лицензия снимков CC BY-NC 4.0 - только некоммерческое использование.
+Event	Событие
+Date	Дата
+Images: {count}	Снимков: {count}
+Loading the list of events…	Загрузка списка событий…
+The list of events did not load: {error}	Список событий не загрузился: {error}
+Events: {count}	Событий: {count}
+The previous day of images	Предыдущий день снимков
+The next day of images	Следующий день снимков
+Before the event	До события
+The last day of images before the event.	Последний день снимков до события.
+After the event	После события
+The last day of images of the event.	Последний день снимков события.
+Loading the images of the event: catalog documents {count}	Загрузка снимков события: документов каталога {count}
+The event has no images the globe can show.	У события нет снимков, которые глобус может показать.
+Images: {count}, days of survey: {days}. The buttons below choose the day.	Снимков: {count}, дней съёмки: {days}. Кнопки ниже выбирают день.
+Loading the images of the event «{title}»…	Загрузка снимков события «{title}»…
+Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Снимки землетрясений, наводнений, пожаров и ураганов из двух открытых каталогов. Vantor (прежде Maxar) даёт полосы WorldView, Planet - сцены PlanetScope, SkySat и Pelican и квартальную мозаику Planet до события. Строка открывает окно «Снимки событий» со списком событий. Лицензия снимков CC BY-NC 4.0 - только некоммерческое использование.
+Imagery archive	Архив снимков
+Images of extraordinary events from the open catalogs of Vantor and Planet.	Снимки чрезвычайных событий из открытых каталогов Vantor и Planet.
+Lidar point clouds here	Облака точек лидара здесь
+Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Поиск в каталогах лидара IGN LiDAR HD и USGS 3DEP у точки…
+Lidar point clouds: {error}	Облака точек лидара: {error}
+There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	У точки нет плиток лидара IGN LiDAR HD и USGS 3DEP.
+Swipe ⇆	Шторка ⇆
+Compare two days: left of the line on the globe - the images of an earlier day, right - of the chosen day. The line is dragged with the mouse.	Сравнение двух дней: слева от линии на глобусе - снимки более раннего дня, справа - выбранного. Линия тянется мышью.
+Left:	Слева:

@@ -1413,3 +1413,31 @@ Read layers	Baca lapisan
 Read the list of layers of the service, the GetCapabilities request.	Baca daftar lapisan layanan, permintaan GetCapabilities.
 The service did not give its layers: {error}	Layanan tidak memberikan lapisannya: {error}
 A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.	Peta WMS berada di atas peta dasar bola dunia, di luar cakupan lapisan terlihat peta dasar. Layanan menggambar setiap gambar dari awal, jadi peta dimuat lebih lambat daripada ubin.
+Event imagery	Citra peristiwa
+Images of earthquakes, floods, fires and hurricanes from the open catalogs of Vantor and Planet. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Citra gempa bumi, banjir, kebakaran, dan badai dari katalog terbuka Vantor dan Planet. Lisensi citra CC BY-NC 4.0 - hanya penggunaan nonkomersial.
+Event	Peristiwa
+Date	Tanggal
+Images: {count}	Citra: {count}
+Loading the list of events…	Memuat daftar peristiwa…
+The list of events did not load: {error}	Daftar peristiwa tidak dimuat: {error}
+Events: {count}	Peristiwa: {count}
+The previous day of images	Hari citra sebelumnya
+The next day of images	Hari citra berikutnya
+Before the event	Sebelum peristiwa
+The last day of images before the event.	Hari citra terakhir sebelum peristiwa.
+After the event	Setelah peristiwa
+The last day of images of the event.	Hari citra terakhir peristiwa.
+Loading the images of the event: catalog documents {count}	Memuat citra peristiwa: dokumen katalog {count}
+The event has no images the globe can show.	Peristiwa tidak memiliki citra yang dapat ditampilkan bola dunia.
+Images: {count}, days of survey: {days}. The buttons below choose the day.	Citra: {count}, hari pemotretan: {days}. Tombol di bawah memilih hari.
+Loading the images of the event «{title}»…	Memuat citra peristiwa «{title}»…
+Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Citra gempa bumi, banjir, kebakaran, dan badai dari dua katalog terbuka. Vantor (dulu Maxar) memberi strip WorldView, Planet - adegan PlanetScope, SkySat, dan Pelican serta mosaik triwulanan Planet sebelum peristiwa. Baris ini membuka jendela «Citra peristiwa» dengan daftar peristiwa. Lisensi citra CC BY-NC 4.0 - hanya penggunaan nonkomersial.
+Imagery archive	Arsip citra
+Images of extraordinary events from the open catalogs of Vantor and Planet.	Citra peristiwa luar biasa dari katalog terbuka Vantor dan Planet.
+Lidar point clouds here	Awan titik lidar di sini
+Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Mencari di katalog lidar IGN LiDAR HD dan USGS 3DEP di dekat titik…
+Lidar point clouds: {error}	Awan titik lidar: {error}
+There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	Tidak ada ubin lidar IGN LiDAR HD dan USGS 3DEP di dekat titik.
+Swipe ⇆	Tirai ⇆
+Compare two days: left of the line on the globe - the images of an earlier day, right - of the chosen day. The line is dragged with the mouse.	Bandingkan dua hari: di kiri garis pada bola dunia citra hari sebelumnya, di kanan citra hari yang dipilih. Garis digeser dengan tetikus.
+Left:	Kiri:

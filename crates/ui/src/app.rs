@@ -119,6 +119,8 @@ type MapLoaders = Vec<(u32, Box<dyn TileLoader>)>;
 
 /// Предел ответа разового запроса, байты.
 const ANSWER_BYTES: u64 = 1 << 20;
+/// Половина ширины полосы, за которую берётся линия шторки, точки экрана.
+const SWIPE_GRIP: f32 = 8.0;
 /// Предел ответа всего каталога NASA GIBS, байт: 25 октября 2026 года
 /// ответ - 5.8 МБ.
 const GIBS_CATALOG_BYTES: u64 = 32 << 20;
@@ -534,6 +536,18 @@ pub struct LiteApp {
     theme_days: HashMap<&'static str, ThemeDay>,
     /// Запрос всего каталога NASA GIBS.
     gibs_catalog: Option<Box<dyn net::Request>>,
+    /// Окно «Снимки событий» и снимки события на глобусе.
+    events: crate::events::Events,
+    /// Тайлы снимков события без снимков, по сторонам шторки.
+    event_empty: [std::collections::HashSet<TileKey>; 2],
+    /// Ширина кадра глобуса в пикселях, для линии шторки.
+    globe_width_px: f32,
+    /// Линию шторки тянут мышью.
+    swipe_drag: bool,
+    /// Поиск и чтение облаков лидара у точки.
+    lidar: Option<crate::lidarnet::Lidar>,
+    /// Подписи облаков лидара на глобусе.
+    lidar_credits: Vec<(&'static str, &'static str)>,
     /// Слои каталога GIBS из настроек: ложатся, когда каталог придёт.
     gibs_pending: Vec<String>,
     /// Цветовые карты тем GIBS для шкалы: запрос идёт или пришла.
@@ -1048,6 +1062,12 @@ impl LiteApp {
             surveys: crate::skysurvey::Surveys::default(),
             theme_days: HashMap::new(),
             gibs_catalog: None,
+            events: crate::events::Events::default(),
+            event_empty: Default::default(),
+            globe_width_px: 0.0,
+            swipe_drag: false,
+            lidar: None,
+            lidar_credits: Vec::new(),
             gibs_pending,
             theme_scales: HashMap::new(),
             lasting: HashMap::new(),
@@ -1685,6 +1705,12 @@ impl LiteApp {
                     }
                 }
             }
+            Choice::Lidar => {
+                if let Some((lat, lon)) = point {
+                    self.lidar = Some(crate::lidarnet::Lidar::search(lat, lon, &*self.loaders.request));
+                    self.open_message = Some(tr(self.lang, "Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…").to_string());
+                }
+            }
             Choice::Sentinel => {
                 if let Some((lat, lon)) = point {
                     match &mut self.sentinel {
@@ -2051,6 +2077,28 @@ impl LiteApp {
     /// Окно вопроса перед удалением и окно свойств папки.
     fn dialogs(&mut self, ctx: &egui::Context, now: f64) {
         let lang = self.lang;
+        // Окно «Снимки событий»: перелёт к событию, слой карты на день.
+        let mut event_actions = self.events.step(lang, &*self.loaders.request);
+        self.events.window(ctx, lang, &mut event_actions);
+        for action in event_actions {
+            match action {
+                crate::events::Action::Fly([w, s, e, n]) => {
+                    let camera = &self.nav.camera;
+                    let (lat, lon, distance) = globe_core::flight::fit_view(w, s, e, n, camera.fov_y, camera.aspect());
+                    if lat.is_finite() && lon.is_finite() && distance.is_finite() {
+                        crate::input::fly(&mut self.nav, Pose::new(lat, lon, distance, 0.0, 0.0), now);
+                    }
+                }
+                crate::events::Action::Changed(side) => {
+                    if let Some(globe) = &mut self.globe {
+                        globe.clear_events(side);
+                    }
+                    if let Some(empty) = self.event_empty.get_mut(side) {
+                        empty.clear();
+                    }
+                }
+            }
+        }
         if let Some(menu) = &self.globe_menu {
             let (choice, open) = menu.show(ctx, lang);
             let point = menu.point;
@@ -2449,6 +2497,7 @@ impl LiteApp {
                 }
                 Action::AddSource => self.own_dialog = Some(OwnDialog::default()),
                 Action::GibsCatalog => self.ask_gibs_catalog(),
+                Action::Events => self.events.open(&*self.loaders.request),
                 Action::RemoveOwn(b) => {
                     if let Some(own) = crate::basemap::own_of(b) {
                         self.settings.own.retain(|o| *o != own);
@@ -2816,6 +2865,7 @@ impl LiteApp {
             geoid_scale: self.settings.geoid_scale,
             sat_groups: &self.settings.sat_groups,
             earth: self.planet.earth,
+            events: self.events.shown.is_some(),
         }
     }
 
@@ -3185,6 +3235,87 @@ impl LiteApp {
                 return Err(e);
             }
         };
+        Ok(self.show_cloud(&cloud, name, fly))
+    }
+
+    /// Линия шторки снимков события на виде rect: рисуется поверх глобуса,
+    /// тянется мышью. Истина - мышь у линии, глобус её не получает.
+    fn swipe_input(&mut self, ctx: &egui::Context, rect: egui::Rect, layer: egui::LayerId) -> bool {
+        let Some(share) = self.events.swipe() else {
+            self.swipe_drag = false;
+            return false;
+        };
+        let x = rect.left() + share * rect.width();
+        let grip = egui::Rect::from_x_y_ranges(x - SWIPE_GRIP..=x + SWIPE_GRIP, rect.y_range());
+        let (pos, pressed, down) = ctx.input(|i| (i.pointer.interact_pos(), i.pointer.primary_pressed(), i.pointer.primary_down()));
+        let near = pos.is_some_and(|p| grip.contains(p));
+        if pressed && near {
+            self.swipe_drag = true;
+        }
+        if !down {
+            self.swipe_drag = false;
+        }
+        if self.swipe_drag
+            && let Some(p) = pos
+        {
+            self.events.split = ((p.x - rect.left()) / rect.width().max(1.0)).clamp(0.02, 0.98);
+        }
+        if near || self.swipe_drag {
+            ctx.set_cursor_icon(egui::CursorIcon::ResizeHorizontal);
+        }
+        // Линия и ручка с подписями сторон.
+        let x = rect.left() + self.events.split * rect.width();
+        let painter = ctx.layer_painter(layer).with_clip_rect(rect);
+        let p = crate::theme::pal();
+        painter.line_segment([egui::pos2(x, rect.top()), egui::pos2(x, rect.bottom())], egui::Stroke::new(2.0, egui::Color32::WHITE));
+        let mid = egui::pos2(x, rect.center().y);
+        painter.circle(mid, 11.0, p.plate, egui::Stroke::new(2.0, egui::Color32::WHITE));
+        painter.text(mid, egui::Align2::CENTER_CENTER, "⇆", egui::FontId::proportional(14.0), p.plate_text);
+        if let Some(s) = &self.events.shown {
+            let font = egui::FontId::proportional(13.0);
+            let shadow = egui::Color32::from_black_alpha(160);
+            for (text, anchor, at) in [(s.before.clone().unwrap_or_default(), egui::Align2::RIGHT_TOP, egui::pos2(x - 8.0, rect.top() + 8.0)), (s.day.clone(), egui::Align2::LEFT_TOP, egui::pos2(x + 8.0, rect.top() + 8.0))] {
+                painter.text(at + egui::vec2(1.0, 1.0), anchor, &text, font.clone(), shadow);
+                painter.text(at, anchor, &text, font.clone(), egui::Color32::WHITE);
+            }
+        }
+        near || self.swipe_drag
+    }
+
+    /// Шаг облаков лидара по сети: пришедшие облака - на глобус.
+    fn step_lidar(&mut self, now: f64) {
+        let Some(lidar) = &mut self.lidar else {
+            return;
+        };
+        let arrived = lidar.step(now, &*self.loaders.request);
+        let done = !lidar.busy();
+        let mut first = true;
+        for a in arrived {
+            match a {
+                crate::lidarnet::Arrived::Cloud(tile, cloud) if !cloud.points.is_empty() => {
+                    let name = format!("{} {}", tile.name, tile.date).trim().to_string();
+                    let credit = data::lidarnet::credit(tile.source);
+                    if !self.lidar_credits.contains(&credit) {
+                        self.lidar_credits.push(credit);
+                    }
+                    // Камера летит к первому облаку.
+                    self.show_cloud(&cloud, &name, first.then_some(now));
+                    first = false;
+                }
+                crate::lidarnet::Arrived::Cloud(tile, _) => self.open_message = Some(trf(self.lang, "The point cloud did not open: {name}: {e}", &[("name", &tile.name), ("e", "0")])),
+                crate::lidarnet::Arrived::Message(text) => self.open_message = Some(trf(self.lang, "Lidar point clouds: {error}", &[("error", &text)])),
+                crate::lidarnet::Arrived::Nothing(errors) => {
+                    self.open_message = Some(if errors.is_empty() { tr(self.lang, "There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.").to_string() } else { trf(self.lang, "Lidar point clouds: {error}", &[("error", &errors)]) });
+                }
+            }
+        }
+        if done {
+            self.lidar = None;
+        }
+    }
+
+    /// Облако на глобус, камера - к нему, если fly или поза не задана.
+    fn show_cloud(&mut self, cloud: &data::cloud::Cloud, name: &str, fly: Option<f64>) -> Option<Pose> {
         let e = Ellipsoid::wgs84();
         let xyz: Vec<DVec3> = cloud.points.iter().map(|p| e.geodetic_to_ecef(p[0], p[1], p[2])).collect();
         let (center, offsets) = scene::features::centered(&xyz);
@@ -3215,7 +3346,7 @@ impl LiteApp {
             "Point cloud {name}: {shown} of {total} points",
             &[("name", name), ("shown", &cloud.points.len().to_string()), ("total", &cloud.total.to_string())],
         ));
-        Ok(pose)
+        pose
     }
 
     /// Растр высот GeoTIFF - врезка своего рельефа, камера - к нему.
@@ -5814,6 +5945,10 @@ impl LiteApp {
         if self.overture.is_some() {
             parts.push(crate::overture::ATTRIBUTION);
         }
+        if let Some(layer) = self.events.layer() {
+            parts.push(layer.credit);
+        }
+        parts.extend(self.lidar_credits.iter().copied());
         if self.rumsey.is_some() {
             parts.push(data::rumsey::ATTRIBUTION);
         }
@@ -6091,6 +6226,7 @@ impl LiteApp {
             Command::Properties => self.settings_open = true,
             Command::Sources => self.credits.sources_open = true,
             Command::About => self.credits.about_request = true,
+            Command::Events => self.events.open(&*self.loaders.request),
             Command::SceneSave => {
                 let folder = self.tree_state.selected.clone().unwrap_or_default();
                 self.save_marks(&folder, crate::export::Kind::Scene);
@@ -6236,6 +6372,8 @@ impl eframe::App for LiteApp {
             || self.buildings.as_ref().is_some_and(|b| b.busy(self.heights.read().version()))
             || self.overture.as_ref().is_some_and(crate::overture::Overture::busy)
             || self.gibs_catalog.is_some()
+            || self.events.busy()
+            || self.lidar.as_ref().is_some_and(crate::lidarnet::Lidar::busy)
             || self.osm_mines.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.osm_infra.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.satellites.as_ref().is_some_and(crate::satellites::Satellites::busy)
@@ -6270,7 +6408,10 @@ impl eframe::App for LiteApp {
             // Органы навигации и вершина инструмента держат мышь - Землю
             // она не двигает.
             let padded = self.shows_ui() && self.navpad.input(&ctx, rect, globe_response.layer_id, &mut self.nav, now);
+            self.globe_width_px = rect.width() * ppp as f32;
+            let swiped = self.swipe_input(&ctx, rect, globe_response.layer_id);
             let busy = padded
+                || swiped
                 || self.tool.as_mut().is_some_and(|t| t.input(&ctx, &globe_response, rect, ppp, &self.nav))
                 || self.overlay_props.as_mut().is_some_and(|p| p.input(&ctx, &globe_response, rect, ppp, &self.nav));
             // Камера следом: колесо - расстояние до объекта, Esc отпускает,
@@ -6432,6 +6573,7 @@ impl eframe::App for LiteApp {
         self.step_overpass(now);
         self.step_parcels();
         self.step_currents(&ctx, now);
+        self.step_lidar(now);
         self.step_rumsey(&ctx, now);
         self.step_sentinel(&ctx, now);
         self.paleo_bar(&ctx, now);
@@ -6572,6 +6714,28 @@ impl eframe::App for LiteApp {
         self.vector.note_contour_levels(&selection.draw, &sea);
         // Тайлы карт: каждому источнику - его уровни.
         let map_tiles = self.vector.maps_wanted(&selection.draw);
+        // Снимки события «после» и «до» шторки: тайлы кадра не глубже
+        // уровня снимков, своей парой текстур тайла.
+        if let Some(layer) = self.events.layer() {
+            for side in 0..2 {
+                let mut keys: Vec<TileKey> = Vec::new();
+                for key in &selection.draw {
+                    let k = terrain::ancestor(*key, key.0.min(layer.level));
+                    if !globe.has_event(side, k) && !self.event_empty[side].contains(&k) && !keys.contains(&k) {
+                        keys.push(k);
+                    }
+                }
+                for (key, rgba) in self.events.tiles(side, &keys, &*self.loaders.request) {
+                    match rgba.and_then(|r| data::rastermaps::overlay_rgba(&r)) {
+                        Some(pic) => globe.set_event(side, key, 256, 256, &pic),
+                        None => {
+                            self.event_empty[side].insert(key);
+                        }
+                    }
+                }
+            }
+        }
+        globe.set_split(self.events.swipe().map(|f| f * self.globe_width_px));
         for (id, loaders) in &self.map_loaders {
             for (n, (level, loader)) in loaders.iter().enumerate() {
                 let next = loaders.get(n + 1).map_or(u32::MAX, |(l, _)| *l);

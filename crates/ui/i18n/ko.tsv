@@ -1413,3 +1413,31 @@ Read layers	레이어 읽기
 Read the list of layers of the service, the GetCapabilities request.	서비스의 레이어 목록을 읽습니다(GetCapabilities 요청).
 The service did not give its layers: {error}	서비스가 레이어를 주지 않았습니다: {error}
 A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.	WMS 지도는 지구본 기본 지도 위에 놓이며, 레이어 범위 밖에서는 기본 지도가 보입니다. 서비스가 그림을 매번 새로 그리므로 지도는 타일보다 느리게 불러옵니다.
+Event imagery	사건 영상
+Images of earthquakes, floods, fires and hurricanes from the open catalogs of Vantor and Planet. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Vantor와 Planet 공개 카탈로그의 지진, 홍수, 화재, 허리케인 영상입니다. 영상 라이선스는 CC BY-NC 4.0이며 비상업적 이용만 허용됩니다.
+Event	사건
+Date	날짜
+Images: {count}	영상: {count}
+Loading the list of events…	사건 목록을 불러오는 중…
+The list of events did not load: {error}	사건 목록을 불러오지 못했습니다: {error}
+Events: {count}	사건: {count}
+The previous day of images	이전 촬영일
+The next day of images	다음 촬영일
+Before the event	사건 전
+The last day of images before the event.	사건 전 마지막 촬영일.
+After the event	사건 후
+The last day of images of the event.	사건의 마지막 촬영일.
+Loading the images of the event: catalog documents {count}	사건 영상을 불러오는 중: 카탈로그 문서 {count}
+The event has no images the globe can show.	이 사건에는 지구본이 보여 줄 수 있는 영상이 없습니다.
+Images: {count}, days of survey: {days}. The buttons below choose the day.	영상: {count}, 촬영일: {days}. 아래 버튼으로 날짜를 고릅니다.
+Loading the images of the event «{title}»…	사건 «{title}»의 영상을 불러오는 중…
+Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	두 공개 카탈로그의 지진, 홍수, 화재, 허리케인 영상입니다. Vantor(구 Maxar)는 WorldView 띠를, Planet은 PlanetScope, SkySat, Pelican 장면과 사건 전 분기별 Planet 모자이크를 제공합니다. 이 행은 사건 목록이 있는 «사건 영상» 창을 엽니다. 영상 라이선스는 CC BY-NC 4.0이며 비상업적 이용만 허용됩니다.
+Imagery archive	영상 보관소
+Images of extraordinary events from the open catalogs of Vantor and Planet.	Vantor와 Planet 공개 카탈로그의 비상 사건 영상.
+Lidar point clouds here	여기의 라이다 점군
+Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	지점 근처의 IGN LiDAR HD와 USGS 3DEP 라이다 카탈로그를 검색하는 중…
+Lidar point clouds: {error}	라이다 점군: {error}
+There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	지점 근처에 IGN LiDAR HD와 USGS 3DEP 라이다 타일이 없습니다.
+Swipe ⇆	스와이프 ⇆
+Compare two days: left of the line on the globe - the images of an earlier day, right - of the chosen day. The line is dragged with the mouse.	두 날을 비교합니다: 지구본의 선 왼쪽은 이전 날의 영상, 오른쪽은 선택한 날의 영상입니다. 선은 마우스로 끕니다.
+Left:	왼쪽:

@@ -267,6 +267,7 @@ mod tests {
                 planar: data::cog::Planar::Chunky,
                 tile_offsets: Vec::new(),
                 tile_byte_counts: Vec::new(),
+                picture: None,
             }],
             nodata: None,
             geotransform: Some([-180.0 * r, px, 0.0, 90.0 * r, 0.0, -px]),

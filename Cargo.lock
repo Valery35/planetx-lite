@@ -495,9 +495,11 @@ name = "data"
 version = "0.1.0"
 dependencies = [
  "flate2",
+ "jpeg-encoder 0.7.1",
  "ruzstd 0.9.1",
  "serde_json",
  "terrio",
+ "tiff",
  "tiny-skia",
  "weezl 0.2.1",
  "zip 9.0.5",
@@ -2755,6 +2757,7 @@ version = "0.1.0"
 dependencies = [
  "bytemuck",
  "globe-core",
+ "naga",
  "pollster 0.4.0",
  "terrain",
  "wgpu",

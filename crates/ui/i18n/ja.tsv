@@ -1413,3 +1413,31 @@ Read layers	レイヤーを読む
 Read the list of layers of the service, the GetCapabilities request.	サービスのレイヤー一覧を読みます（GetCapabilities 要求）。
 The service did not give its layers: {error}	サービスがレイヤーを返しませんでした: {error}
 A WMS map lies over the base map of the globe, outside the area of the layer the base map is seen. The service draws each picture anew, so the map loads slower than tiles.	WMS 地図は地球儀のベースマップの上に重なり、レイヤーの範囲外ではベースマップが見えます。サービスは画像を毎回描き直すため、地図はタイルより遅く読み込まれます。
+Event imagery	災害イベント画像
+Images of earthquakes, floods, fires and hurricanes from the open catalogs of Vantor and Planet. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Vantor と Planet のオープンカタログによる地震、洪水、火災、ハリケーンの画像です。画像のライセンスは CC BY-NC 4.0 で、非商用利用のみです。
+Event	イベント
+Date	日付
+Images: {count}	画像: {count}
+Loading the list of events…	イベント一覧を読み込み中…
+The list of events did not load: {error}	イベント一覧を読み込めませんでした: {error}
+Events: {count}	イベント: {count}
+The previous day of images	前の撮影日
+The next day of images	次の撮影日
+Before the event	イベント前
+The last day of images before the event.	イベント前の最後の撮影日。
+After the event	イベント後
+The last day of images of the event.	イベントの最後の撮影日。
+Loading the images of the event: catalog documents {count}	イベント画像を読み込み中: カタログ文書 {count}
+The event has no images the globe can show.	このイベントには地球儀で表示できる画像がありません。
+Images: {count}, days of survey: {days}. The buttons below choose the day.	画像: {count}、撮影日数: {days}。下のボタンで日を選びます。
+Loading the images of the event «{title}»…	イベント「{title}」の画像を読み込み中…
+Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	2つのオープンカタログによる地震、洪水、火災、ハリケーンの画像です。Vantor（旧 Maxar）は WorldView の帯、Planet は PlanetScope、SkySat、Pelican のシーンとイベント前の四半期モザイクを提供します。この行はイベント一覧のある「災害イベント画像」ウィンドウを開きます。画像のライセンスは CC BY-NC 4.0 で、非商用利用のみです。
+Imagery archive	画像アーカイブ
+Images of extraordinary events from the open catalogs of Vantor and Planet.	Vantor と Planet のオープンカタログによる非常事態の画像。
+Lidar point clouds here	ここのライダー点群
+Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	地点付近の IGN LiDAR HD と USGS 3DEP のライダーカタログを検索中…
+Lidar point clouds: {error}	ライダー点群: {error}
+There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	地点付近に IGN LiDAR HD と USGS 3DEP のライダータイルはありません。
+Swipe ⇆	スワイプ ⇆
+Compare two days: left of the line on the globe - the images of an earlier day, right - of the chosen day. The line is dragged with the mouse.	2日を比較します。地球儀の線の左は以前の日の画像、右は選んだ日の画像です。線はマウスでドラッグします。
+Left:	左：
