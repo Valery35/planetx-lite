@@ -70,7 +70,7 @@ fn half_ready(key: TileKey) -> bool {
 
 /// Дыры и видимая подстилка.
 fn holes(globe: &mut Globe, camera: &Camera, selection: &lod::Selection) -> (u64, u64) {
-    let stats = globe.render(camera, selection, None, FrameOptions { count_holes: true, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None });
+    let stats = globe.render(camera, selection, None, FrameOptions { count_holes: true, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: false });
     assert!(stats.draws > 0);
     (stats.holes.unwrap(), stats.underlay.unwrap())
 }
@@ -163,7 +163,7 @@ fn picture_keeps_its_brightness() {
     for key in &sel.draw {
         globe.upload(*key, 256, 256, &rgba);
     }
-    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None });
+    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: false });
     let pixel = center_pixel(&device, &queue, &globe);
     eprintln!("пиксель в середине кадра: {pixel:?}");
     for c in &pixel[..3] {
@@ -341,7 +341,7 @@ fn model_is_drawn_lit_from_the_sun() {
 fn grab(globe: &mut Globe, cam: &Camera, air: bool) -> render::Frame {
     let sel = lod::select(cam, &|_| true, Options::default());
     globe.grab();
-    globe.render(cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air, ratio: 1.0, sun: None, water: None, tint: None });
+    globe.render(cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air, ratio: 1.0, sun: None, water: None, tint: None, sky: false });
     globe.take_grab().unwrap()
 }
 
@@ -484,6 +484,30 @@ fn xray_mesh_shows_through_the_surface() {
     let red = |c: [u8; 3]| i32::from(c[0]) - i32::from(c[1]).max(i32::from(c[2]));
     assert!(red(hidden) < 40, "{hidden:?}");
     assert!(red(seen) > 80, "{seen:?}");
+}
+
+#[test]
+fn sky_frame_draws_bodies_without_globe() {
+    // Кадр неба: светило прямо по взгляду - яркий центр кадра, тайлов
+    // нет, хотя камера стоит у Перми и смотрит в землю.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 500.0, 0.0, 0.0);
+    let back = cam.rotation.z_axis;
+    let forward = [-back.x as f32, -back.y as f32, -back.z as f32];
+    globe.set_sky_bodies(&[render::StarPoint { dir: forward, size: 16.0, color: [1.0, 0.0, 0.0, 1.0] }]);
+    let sel = lod::select(&cam, &|_| true, Options::default());
+    globe.grab();
+    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: true });
+    let frame = globe.take_grab().unwrap();
+    let (cx, cy) = (f64::from(cam.width) / 2.0, f64::from(cam.height) / 2.0);
+    let centre = rgb(&frame, cx, cy);
+    assert!(centre[0] > 200 && centre[1] < 60, "{centre:?}");
+    // Вдали от светила - чёрный космос, поверхности нет.
+    assert_eq!(rgb(&frame, cx / 4.0, cy / 4.0), [0, 0, 0]);
 }
 
 #[test]

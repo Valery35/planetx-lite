@@ -1345,3 +1345,8 @@ Moons of Saturn	土星の衛星
 Asteroids	小惑星
 Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies.	地球儀の天体 - 惑星、衛星、準惑星のいずれか。天体ごとに独自の画像があり、火星と月には地形もあります。他の天体では地球のレイヤー、検索、建物はオフになります。
 Only on the Earth. The menu «Body» returns the Earth to the globe.	地球のみ。「天体」メニューで地球儀を地球に戻せます。
+Sky	空
+Saturn	土星
+Uranus	天王星
+Neptune	海王星
+The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	天球の中心から見た星空 - 恒星、星座、太陽、月、惑星。ドラッグで空を回し、ホイールで視野を変えます。

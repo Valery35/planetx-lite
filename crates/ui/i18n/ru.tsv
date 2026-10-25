@@ -1345,3 +1345,8 @@ Moons of Saturn	Спутники Сатурна
 Asteroids	Астероиды
 Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies.	Тело глобуса - планета, спутник или карликовая планета. У каждого тела свои снимки, у Марса и Луны ещё и рельеф. Земные слои, поиск и здания на других телах выключены.
 Only on the Earth. The menu «Body» returns the Earth to the globe.	Только у Земли. Меню «Тело» возвращает Землю на глобус.
+Sky	Небо
+Saturn	Сатурн
+Uranus	Уран
+Neptune	Нептун
+The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	Звёздное небо из центра небесной сферы: звёзды, созвездия, Солнце, Луна и планеты. Протяжка поворачивает небо, колесо меняет поле зрения.

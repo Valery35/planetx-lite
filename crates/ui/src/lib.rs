@@ -58,6 +58,7 @@ pub mod relief;
 pub mod route;
 pub mod rumsey;
 pub mod section;
+pub mod sky;
 pub mod ruler;
 pub mod satellites;
 pub mod search;

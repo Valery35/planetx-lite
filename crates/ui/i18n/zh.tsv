@@ -1345,3 +1345,8 @@ Moons of Saturn	土星的卫星
 Asteroids	小行星
 Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies.	地球仪显示的天体 - 行星、卫星或矮行星。每个天体都有自己的影像，火星和月球还有地形。在其他天体上，地球图层、搜索和建筑处于关闭状态。
 Only on the Earth. The menu «Body» returns the Earth to the globe.	仅限地球。“天体”菜单可将地球恢复到地球仪上。
+Sky	天空
+Saturn	土星
+Uranus	天王星
+Neptune	海王星
+The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	从天球中心看到的星空：恒星、星座、太阳、月球和行星。拖动可旋转天空，滚轮可改变视场。

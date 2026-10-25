@@ -531,6 +531,10 @@ pub struct LiteApp {
     lights_loader: Option<Box<dyn TileLoader>>,
     /// Каталог звёзд: запрос, пришёл (true) или не пришёл (false).
     stars: Option<Result<bool, Box<dyn net::Request>>>,
+    /// Вид неба, `show_sky` модуля. None - на экране тело.
+    sky: Option<crate::sky::Sky>,
+    /// Взгляд на небо при прошлом выходе из неба.
+    sky_saved: Option<data::skyview::SkyView>,
     /// Пришедшие снимки основы, ждущие загрузки в видеокарту.
     pending: HashMap<TileKey, net::Image>,
     /// Тайлы, нарисованные прошлым кадром, - их снимки грузятся первыми.
@@ -1012,6 +1016,8 @@ impl LiteApp {
             ready_loader: None,
             lights_loader: None,
             stars: None,
+            sky: None,
+            sky_saved: None,
             theme_days: HashMap::new(),
             theme_scales: HashMap::new(),
             lasting: HashMap::new(),
@@ -1185,7 +1191,7 @@ impl LiteApp {
                         // Тело глобуса, меню `MENU` модуля: Земля сверху, под
                         // разделителем Луна и Марс, прочие тела - подменю.
                         let body_button = tool_button(ui, Tool::Body, !self.planet.earth, true, true, tr(lang, "Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies."));
-                        let current = self.planet.key();
+                        let current = if self.sky.is_some() { "sky" } else { self.planet.key() };
                         egui::Popup::menu(&body_button).show(|ui| {
                             for (n, (group, keys)) in scene::planets::MENU.iter().enumerate() {
                                 let mut items = |ui: &mut egui::Ui| {
@@ -1204,6 +1210,11 @@ impl LiteApp {
                                 } else {
                                     ui.menu_button(tr(lang, body_group_name(group)), items);
                                 }
+                            }
+                            ui.separator();
+                            if ui.radio(current == "sky", tr(lang, "Sky")).on_hover_text(tr(lang, "The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.")).clicked() {
+                                body = Some("sky");
+                                ui.close();
                             }
                         });
                         if tool_button(ui, Tool::Settings, settings, false, true, tr(lang, "View properties: relief scale, language of labels, appearance.")).clicked() {
@@ -1235,7 +1246,13 @@ impl LiteApp {
             self.toggle_record(now);
         }
         if let Some(key) = body {
-            self.set_body(key);
+            // «Небо» - вид из центра сферы, тело под ним остаётся.
+            if key == "sky" {
+                self.enter_sky();
+            } else {
+                self.leave_sky();
+                self.set_body(key);
+            }
         }
         if save_view {
             let name = scene::placetree::numbered_name(tr(lang, "View"), &self.marks.names());
@@ -1678,6 +1695,91 @@ impl LiteApp {
     fn earth_floor(&self) -> f32 {
         // У других тел моря нет, впадины остаются.
         if self.settings.sea || !self.planet.earth { f32::NEG_INFINITY } else { EARTH_FLOOR }
+    }
+
+    /// Вид неба, `show_sky` модуля: поза глобуса запоминается, взгляд -
+    /// прежний или начальный.
+    fn enter_sky(&mut self) {
+        if self.sky.is_some() {
+            return;
+        }
+        self.nav.stop();
+        self.close_side();
+        self.tool = None;
+        let view = self.sky_saved.unwrap_or_default();
+        self.sky = Some(crate::sky::Sky::new(view, self.nav.pose.clone()));
+    }
+
+    /// Выход из неба, `_leave_sky` модуля: поза глобуса возвращается.
+    fn leave_sky(&mut self) {
+        if let Some(sky) = self.sky.take() {
+            self.sky_saved = Some(sky.view);
+            self.nav.stop();
+            self.nav.set_pose(sky.globe_pose);
+            if let Some(globe) = &mut self.globe {
+                globe.set_sky_lines(&[]);
+                globe.set_sky_bodies(&[]);
+            }
+        }
+    }
+
+    /// Кадр неба: ввод, данные, отрисовка, подписи, панель значков.
+    fn sky_frame(&mut self, ctx: &egui::Context, ui: &mut egui::Ui, rect: egui::Rect, response: &egui::Response, ppp: f64, now: f64) {
+        let (width, height) = (self.nav.camera.width, self.nav.camera.height);
+        let moment = sun_moment(self.timebar.window());
+        let loaders = &self.loaders;
+        let Some(sky) = &mut self.sky else {
+            return;
+        };
+        let moved = sky.input(ctx, response, ppp, f64::from(height));
+        let lines = sky.step_data(&|limit| (loaders.request)(limit));
+        let bodies = sky.bodies_at.is_none_or(|t| (moment - t).abs() > crate::sky::BODIES_PERIOD).then(|| {
+            sky.bodies_at = Some(moment);
+            crate::sky::body_points(moment)
+        });
+        let busy = sky.busy() || matches!(self.stars, Some(Err(_)) | None);
+        let view = sky.view;
+        // Камера неба: глаз не важен, звёзды и линии - направления, оси -
+        // взгляда на небо.
+        let mut camera = self.nav.camera.clone();
+        let [r, u, b] = view.rotation();
+        camera.rotation = globe_core::DMat3::from_cols(globe_core::DVec3::from_array(r), globe_core::DVec3::from_array(u), globe_core::DVec3::from_array(b));
+        camera.fov_y = view.fov;
+        if let Some(globe) = &mut self.globe {
+            if let Some(lines) = lines {
+                globe.set_sky_lines(&lines);
+            }
+            if let Some(points) = bodies {
+                globe.set_sky_bodies(&points);
+            }
+            let recreated = globe.resize(width, height);
+            globe.render(&camera, &globe_core::lod::Selection::default(), None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: ppp as f32, sun: None, water: None, tint: None, sky: true });
+            self.show_target(recreated || self.texture.is_none());
+        }
+        if let Some(id) = self.texture {
+            let uv = egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0));
+            ui.painter().image(id, rect, uv, egui::Color32::WHITE);
+        }
+        let painter = ui.painter().with_clip_rect(rect);
+        if let Some(sky) = &self.sky {
+            sky.labels(&painter, rect, ppp, self.lang, moment);
+            // Направление под курсором - строкой у нижнего края, как у модуля.
+            if let Some(pos) = response.hover_pos() {
+                let d = sky.view.direction_at(f64::from(pos.x - rect.min.x) * ppp, f64::from(pos.y - rect.min.y) * ppp, f64::from(width), f64::from(height));
+                painter.text(rect.left_bottom() + egui::vec2(8.0, -8.0), egui::Align2::LEFT_BOTTOM, data::skyview::ra_dec_text(d), egui::FontId::proportional(13.0), egui::Color32::from_gray(200));
+            }
+        }
+        let parts = [data::stars::ATTRIBUTION, data::skydata::ATTRIBUTION];
+        self.credits.show(ctx, rect, self.lang, &parts, 2);
+        if self.shows_ui() {
+            self.toolbar(ctx, rect, now);
+            self.settings_window(ctx);
+            self.dialogs(ctx, now);
+        }
+        self.step_shot(ctx, busy);
+        if moved || busy || response.dragged() {
+            ctx.request_repaint();
+        }
     }
 
     /// Сменить тело глобуса, `_set_body` модуля: размеры тела, снимки,
@@ -3078,9 +3180,22 @@ impl LiteApp {
                 self.marks.add(opened.tree, &opened.name, marks::root_name(self.lang));
                 self.player = None;
                 self.marks_changed();
-                // Тело сцены - до её позы, как `ui/scene.py` модуля.
-                if let Some(body) = &opened.body {
-                    self.set_body(body);
+                // Тело сцены - до её позы, как `ui/scene.py` модуля. Сцена
+                // неба открывает небо со своим взглядом.
+                match opened.body.as_deref() {
+                    Some("sky") => {
+                        self.enter_sky();
+                        if let (Some([ra, dec, fov]), Some(sky)) = (opened.sky, &mut self.sky) {
+                            sky.view.set(ra, dec, Some(fov));
+                        }
+                        self.open_message = None;
+                        return Ok(None);
+                    }
+                    Some(body) => {
+                        self.leave_sky();
+                        self.set_body(body);
+                    }
+                    None => {}
                 }
                 // Поза, заданная при запуске, сильнее позы сцены.
                 if let Some(pose) = opened.pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
@@ -5266,7 +5381,7 @@ impl LiteApp {
             globe.set_points(&all);
         }
         // Звёзды: каталог просится при первом показе, как у модуля.
-        if self.settings.stars && self.stars.is_none() {
+        if (self.settings.stars || self.sky.is_some()) && self.stars.is_none() {
             let r = (self.loaders.request)(ANSWER_BYTES);
             r.start(data::stars::URL);
             self.stars = Some(Err(r));
@@ -5290,11 +5405,12 @@ impl LiteApp {
             self.stars = Some(Ok(ok));
         }
         if let Some(globe) = &mut self.globe {
-            let frame = self.settings.stars.then(|| {
+            // Небо - в своей системе J2000, без поворота и всегда видно.
+            let frame = if self.sky.is_some() { Some((globe_core::DMat3::IDENTITY, 1.0)) } else { self.settings.stars.then(|| {
                 let m = data::stars::sky_rotation(sun_moment(self.timebar.window()));
                 let rows = globe_core::DMat3::from_cols_array_2d(&m).transpose();
                 (rows, data::stars::fade(self.nav.camera.altitude()) as f32)
-            });
+            }) };
             globe.set_star_frame(frame);
         }
         // Огни городов, как у модуля: при солнце на Земле.
@@ -5833,6 +5949,10 @@ impl eframe::App for LiteApp {
         let height = ((f64::from(rect.height()) * ppp).floor() as u32).max(1);
         self.nav.camera.width = width;
         self.nav.camera.height = height;
+        if self.sky.is_some() {
+            self.sky_frame(&ctx, ui, rect, &globe_response, ppp, now);
+            return;
+        }
 
         let loading = self.base_loader(self.basemap).is_some_and(|l| l.busy())
             || !self.pending.is_empty()
@@ -6272,7 +6392,7 @@ impl eframe::App for LiteApp {
             globe.grab();
         }
         let stats =
-            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air && self.planet.air.is_some(), ratio: ppp as f32, sun, water, tint: self.planet.air });
+            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air && self.planet.air.is_some(), ratio: ppp as f32, sun, water, tint: self.planet.air, sky: false });
         drop(store);
         if let Some(check) = &mut self.check
             && check.waits_frame()

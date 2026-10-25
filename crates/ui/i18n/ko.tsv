@@ -1345,3 +1345,8 @@ Moons of Saturn	토성의 위성
 Asteroids	소행성
 Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies.	지구본의 천체 - 행성, 위성 또는 왜행성. 천체마다 고유한 영상이 있고 화성과 달에는 지형도 있습니다. 다른 천체에서는 지구 레이어, 검색, 건물이 꺼집니다.
 Only on the Earth. The menu «Body» returns the Earth to the globe.	지구에서만. ‘천체’ 메뉴로 지구본을 지구로 되돌립니다.
+Sky	하늘
+Saturn	토성
+Uranus	천왕성
+Neptune	해왕성
+The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	천구의 중심에서 본 별하늘: 별, 별자리, 태양, 달, 행성. 끌면 하늘이 돌고 휠은 시야를 바꿉니다.

@@ -1345,3 +1345,8 @@ Moons of Saturn	სატურნის თანამგზავრები
 Asteroids	ასტეროიდები
 Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies.	გლობუსის სხეული - პლანეტა, თანამგზავრი ან ჯუჯა პლანეტა. ყოველ სხეულს თავისი სურათები აქვს, მარსსა და მთვარეს რელიეფიც აქვს. დედამიწის ფენები, ძიება და შენობები სხვა სხეულებზე გამორთულია.
 Only on the Earth. The menu «Body» returns the Earth to the globe.	მხოლოდ დედამიწაზე. მენიუ „სხეული“ გლობუსზე დედამიწას აბრუნებს.
+Sky	ცა
+Saturn	სატურნი
+Uranus	ურანი
+Neptune	ნეპტუნი
+The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	ვარსკვლავიანი ცა ციური სფეროს ცენტრიდან: ვარსკვლავები, თანავარსკვლავედები, მზე, მთვარე და პლანეტები. გადათრევა ცას აბრუნებს, ბორბალი ხედვის არეს ცვლის.

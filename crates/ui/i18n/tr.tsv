@@ -1345,3 +1345,8 @@ Moons of Saturn	Satürn'ün uyduları
 Asteroids	Asteroitler
 Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies.	Kürenin gök cismi - bir gezegen, bir uydu veya bir cüce gezegen. Her gök cisminin kendi görüntüleri vardır, Mars ve Ay'ın ayrıca arazisi vardır. Dünya katmanları, arama ve binalar diğer gök cisimlerinde kapalıdır.
 Only on the Earth. The menu «Body» returns the Earth to the globe.	Yalnızca Dünya'da. "Gök cismi" menüsü Dünya'yı küreye geri getirir.
+Sky	Gökyüzü
+Saturn	Satürn
+Uranus	Uranüs
+Neptune	Neptün
+The starry sky from the centre of the celestial sphere: stars, constellations, the Sun, the Moon and the planets. Dragging turns the sky, the wheel changes the field of view.	Gök küresinin merkezinden yıldızlı gökyüzü: yıldızlar, takımyıldızlar, Güneş, Ay ve gezegenler. Sürükleme gökyüzünü döndürür, tekerlek görüş alanını değiştirir.

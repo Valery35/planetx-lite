@@ -40,6 +40,7 @@ pub use models::{ModelMesh, ModelPart, ModelPlace};
 use models::Models;
 mod points;
 pub use points::{Dot, PointsMesh};
+mod skylines;
 mod stars;
 pub use stars::StarPoint;
 mod subsurface;
@@ -207,6 +208,9 @@ pub struct FrameOptions {
     /// Рассеяние воздуха тела к земному по R, G, B, `u_air_tint` модуля.
     /// None - земное.
     pub tint: Option<[f32; 3]>,
+    /// Кадр вида неба: камера в центре небесной сферы, тайлов и объектов
+    /// глобуса нет, рисуются звёзды, линии созвездий и светила.
+    pub sky: bool,
 }
 
 /// Глубина полной воды в метрах, мельче вода прозрачнее, `SHALLOW`
@@ -316,6 +320,10 @@ pub struct Globe {
     pictures: Pictures,
     points: Points,
     stars: stars::Stars,
+    /// Светила вида неба: Солнце, Луна, планеты.
+    bodies: stars::Stars,
+    /// Линии фигур созвездий вида неба.
+    sky_lines: skylines::SkyLines,
     models: Models,
     /// Модели живых объектов: суда, самолёты, поезда, свой самолёт.
     live: Models,
@@ -797,6 +805,8 @@ impl Globe {
             pictures: Pictures::new(device),
             points: Points::new(device),
             stars: stars::Stars::new(device),
+            bodies: stars::Stars::new(device),
+            sky_lines: skylines::SkyLines::new(device),
             models: Models::new(device, queue),
             live: Models::new(device, queue),
             flight: Models::new(device, queue),
@@ -1586,6 +1596,18 @@ impl Globe {
         self.stars.set_frame(frame);
     }
 
+    /// Линии фигур созвездий вида неба: пары направлений J2000.
+    pub fn set_sky_lines(&mut self, segments: &[[f32; 3]]) {
+        self.sky_lines.set(&self.device, segments);
+    }
+
+    /// Светила вида неба: направления J2000, размер и цвет. Небо без
+    /// поворота, видны всегда.
+    pub fn set_sky_bodies(&mut self, bodies: &[StarPoint]) {
+        self.bodies.set(&self.device, bodies);
+        self.bodies.set_frame(Some((globe_core::DMat3::IDENTITY, 1.0)));
+    }
+
     /// Облака точек. Заменяют прежние.
     pub fn set_points(&mut self, clouds: &[PointsMesh]) {
         self.points.set(&self.device, clouds);
@@ -1678,7 +1700,7 @@ impl Globe {
         self.frame += 1;
         self.resize(camera.width, camera.height);
         let projection = depth_fix() * camera.projection();
-        let items = self.items(camera, selection, heights, projection, options.water);
+        let items = if options.sky { Vec::new() } else { self.items(camera, selection, heights, projection, options.water) };
         let count = items.len() as u64;
         if count > self.uniform_capacity {
             let capacity = count.next_power_of_two();
@@ -1737,7 +1759,9 @@ impl Globe {
             });
             // Подземные сетки - до тайлов: прозрачная поверхность ложится
             // на них смешиванием, как у модуля.
-            draws += self.subsurface.draw(&self.device, &self.queue, &mut pass, camera, false);
+            if !options.sky {
+                draws += self.subsurface.draw(&self.device, &self.queue, &mut pass, camera, false);
+            }
             pass.set_pipeline(if self.cut.is_some() { &self.glass_pipeline } else { &self.tile_pipeline });
             pass.set_bind_group(2, &self.air_bind, &[]);
             let mut underlay_open = false;
@@ -1794,17 +1818,25 @@ impl Globe {
             let ratio = if options.ratio > 0.0 { options.ratio } else { 1.0 };
             // Звёзды - после неба, свет прибавляется к нему.
             draws += self.stars.draw(&self.queue, &mut pass, camera, ratio);
+            // Небо: линии созвездий и светила поверх звёзд, объектов
+            // глобуса нет - камера в центре сферы.
+            if options.sky {
+                draws += self.sky_lines.draw(&self.queue, &mut pass, camera);
+                draws += self.bodies.draw(&self.queue, &mut pass, camera, ratio);
+            }
             // Сетки сквозь поверхность - стенка разреза, без дыр.
-            if !options.show_holes {
+            if !options.show_holes && !options.sky {
                 draws += self.subsurface.draw(&self.device, &self.queue, &mut pass, camera, true);
             }
             // Картинки-наложения - под своими объектами.
-            draws += self.models.draw(&self.device, &self.queue, &mut pass, camera);
-            draws += self.live.draw(&self.device, &self.queue, &mut pass, camera);
-            draws += self.flight.draw(&self.device, &self.queue, &mut pass, camera);
-            draws += self.points.draw(&self.device, &self.queue, &mut pass, camera, ratio);
-            draws += self.pictures.draw(&self.device, &self.queue, &mut pass, camera);
-            draws += self.features.draw(&self.device, &self.queue, &mut pass, camera, ratio);
+            if !options.sky {
+                draws += self.models.draw(&self.device, &self.queue, &mut pass, camera);
+                draws += self.live.draw(&self.device, &self.queue, &mut pass, camera);
+                draws += self.flight.draw(&self.device, &self.queue, &mut pass, camera);
+                draws += self.points.draw(&self.device, &self.queue, &mut pass, camera, ratio);
+                draws += self.pictures.draw(&self.device, &self.queue, &mut pass, camera);
+                draws += self.features.draw(&self.device, &self.queue, &mut pass, camera, ratio);
+            }
             if counting {
                 let paint = options.show_holes || !USE_QUERIES;
                 let pipeline = if paint { &self.hole_show_pipeline } else { &self.hole_count_pipeline };

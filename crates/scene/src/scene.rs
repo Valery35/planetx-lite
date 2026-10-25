@@ -93,6 +93,13 @@ impl Scene {
         }
     }
 
+    /// Взгляд на небо сцены неба, `view["sky"]` модуля: прямое
+    /// восхождение, склонение и поле зрения в градусах. None - не три числа.
+    pub fn sky(&self) -> Option<[f64; 3]> {
+        let v: Vec<f64> = self.view.get("sky")?.as_array()?.iter().filter_map(Value::as_f64).filter(|x| x.is_finite()).collect();
+        <[f64; 3]>::try_from(v).ok()
+    }
+
     /// Словарь для scene.json.
     pub fn to_dict(&self) -> Value {
         let [lat, lon, distance, heading, tilt] = self.camera;

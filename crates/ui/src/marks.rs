@@ -44,7 +44,10 @@ pub struct Opened {
     pub pose: Option<Pose>,
     pub name: String,
     /// Тело сцены `.planetx`, у прочих файлов None - тело не меняется.
+    /// «sky» - вид неба.
     pub body: Option<String>,
+    /// Взгляд сцены неба: прямое восхождение, склонение, поле зрения.
+    pub sky: Option<[f64; 3]>,
 }
 
 /// Открыть сцену `.planetx`, KML или KMZ из байтов файла. name - имя
@@ -60,7 +63,7 @@ pub fn open(bytes: &[u8], name: &str) -> Result<Opened, String> {
             tree.children.push(Item::Place(Place::new(&label, Kind::Point, vec![(p.lat, p.lon)])));
         }
         let all: Vec<(f64, f64)> = points.iter().map(|p| (p.lat, p.lon)).collect();
-        return Ok(Opened { tree, pose: fit_points(&all, 45.0, 1.6), name: name.to_string(), body: None });
+        return Ok(Opened { tree, pose: fit_points(&all, 45.0, 1.6), name: name.to_string(), body: None, sky: None });
     }
     if lower.ends_with(".gpkg") {
         let layers = data::layers::read(bytes.to_vec(), name)?;
@@ -68,7 +71,7 @@ pub fn open(bytes: &[u8], name: &str) -> Result<Opened, String> {
         let points: Vec<(f64, f64)> = timed_shapes(&tree).iter().flat_map(|(s, _)| s.points.iter().copied()).collect();
         // Камера - к охвату всех объектов.
         let pose = fit_points(&points, 45.0, 1.6);
-        return Ok(Opened { tree, pose, name: name.to_string(), body: None });
+        return Ok(Opened { tree, pose, name: name.to_string(), body: None, sky: None });
     }
     if lower.ends_with(".planetx") {
         let (scene, places) = scene::scene::read_scene(bytes).map_err(|e| format!("{e:?}"))?;
@@ -79,11 +82,11 @@ pub fn open(bytes: &[u8], name: &str) -> Result<Opened, String> {
             kml::read_file(&places, &scene.name).map_err(|e| format!("{e:?}"))?
         };
         let title = if scene.name.is_empty() { name.to_string() } else { scene.name.clone() };
-        return Ok(Opened { tree, pose: Some(Pose::new(lat, lon, distance, heading, tilt)), name: title, body: Some(scene.body) });
+        return Ok(Opened { tree, pose: Some(Pose::new(lat, lon, distance, heading, tilt)), name: title, sky: scene.sky(), body: Some(scene.body) });
     }
     let tree = kml::read_file(bytes, name).map_err(|e| format!("{e:?}"))?;
     let pose = tree.view.map(|v| Pose::new(v[0], v[1], v[2], v[3], v[4]));
-    Ok(Opened { tree, pose, name: name.to_string(), body: None })
+    Ok(Opened { tree, pose, name: name.to_string(), body: None, sky: None })
 }
 
 /// Папка по пути номеров детей, пустой путь - корень.
