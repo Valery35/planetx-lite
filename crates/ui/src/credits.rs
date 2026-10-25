@@ -266,6 +266,8 @@ pub const REPOSITORY: &str = "https://github.com/Valery35/planetx-lite";
 pub const ISSUES: &str = "https://github.com/Valery35/planetx-lite/issues";
 /// Сайт ООО «Информ++», как в окне «О модуле» модуля.
 pub const INFORM: &str = "https://www.informpp.ru/";
+/// «Поддержать разработку» - раздел страницы автора на GitHub, как в README.
+pub const DONATE: &str = "https://github.com/Valery35#%D0%BF%D0%BE%D0%B4%D0%B4%D0%B5%D1%80%D0%B6%D0%B0%D1%82%D1%8C-%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%BA%D1%83";
 
 /// Руководство на языке интерфейса: русское для русского, иначе
 /// английское, файлы `doc/manual` хранилища.
@@ -312,6 +314,11 @@ fn about_body(ui: &mut egui::Ui, lang: Lang, icon: Option<egui::TextureId>) {
                 ui.spacing_mut().item_spacing.x = 4.0;
                 ui.label(tr(lang, "Developed with the support of"));
                 ui.hyperlink_to(tr(lang, "Inform++ LLC"), INFORM);
+            });
+            ui.horizontal_wrapped(|ui| {
+                ui.spacing_mut().item_spacing.x = 4.0;
+                ui.label(tr(lang, "The program is free and open source."));
+                ui.hyperlink_to(tr(lang, "Support development"), DONATE).on_hover_text(tr(lang, "Russian bank cards via SBP."));
             });
             ui.label(egui::RichText::new(tr(lang, "© 2026 Inform++ LLC. Apache 2.0.")).color(p.muted));
         });
