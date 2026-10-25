@@ -1395,3 +1395,9 @@ Support development	支持开发
 Russian bank cards via SBP.	通过 SBP 使用俄罗斯银行卡。
 3D buildings, Overture Maps	三维建筑，Overture Maps
 Volumetric buildings of Overture Maps - OpenStreetMap together with the open sets of Microsoft, Google Open Buildings and Esri in one PMTiles archive. Where OpenStreetMap is incomplete, for example in Africa and Asia, there are more buildings. They show when the camera is closer than 6 km to the ground. The height is the height field, otherwise the number of floors times 3.66 m. The row replaces the 3D buildings of the vector base.	Overture Maps 立体建筑——OpenStreetMap 与 Microsoft、Google Open Buildings 和 Esri 的开放数据集合为一个 PMTiles 档案。在 OpenStreetMap 不完整的地方，例如非洲和亚洲，建筑更多。相机离地面不到 6 公里时显示。高度取高度字段，否则为楼层数乘以 3.66 米。此行替代矢量底图的三维建筑。
+All NASA GIBS layers	全部 NASA GIBS 图层
+The whole NASA GIBS catalog - more than a thousand raster layers of imagery and maps. The list comes from the GIBS catalog on the first show of the category or on a search from three characters. The search finds a layer by all words of the query, the layer names are in English. These rows are not shown in «All».	完整的 NASA GIBS 目录——一千多个影像和地图栅格图层。首次显示该类别或搜索三个字符以上时，列表从 GIBS 目录获取。搜索按查询的所有词查找图层，图层名称为英文。这些行不显示在“全部”中。
+The NASA GIBS catalog is loading, the first time about 10 seconds.	正在加载 NASA GIBS 目录，首次约 10 秒。
+NASA GIBS layers - also one map on the globe	NASA GIBS 图层——同样地球上只有一张地图
+A layer of the whole NASA GIBS catalog. It behaves as a theme - one map on the globe, the series of dates goes to the time slider, the colour scale is in the legend. The names of the layers are in English.	完整 NASA GIBS 目录中的图层。它的行为与主题相同——地球上一张地图，日期序列进入时间滑块，色标在图例中。图层名称为英文。
+The NASA GIBS catalog did not load: {error}	NASA GIBS 目录未加载：{error}

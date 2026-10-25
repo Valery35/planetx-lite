@@ -1395,3 +1395,9 @@ Support development	開発を支援
 Russian bank cards via SBP.	SBP 経由のロシアの銀行カード。
 3D buildings, Overture Maps	3D建物（Overture Maps）
 Volumetric buildings of Overture Maps - OpenStreetMap together with the open sets of Microsoft, Google Open Buildings and Esri in one PMTiles archive. Where OpenStreetMap is incomplete, for example in Africa and Asia, there are more buildings. They show when the camera is closer than 6 km to the ground. The height is the height field, otherwise the number of floors times 3.66 m. The row replaces the 3D buildings of the vector base.	Overture Maps の立体建物 - OpenStreetMap と Microsoft、Google Open Buildings、Esri のオープンデータを1つの PMTiles アーカイブにまとめたもの。アフリカやアジアなど OpenStreetMap が不完全な地域では建物が多くなります。カメラが地表から6 km 以内で表示されます。高さは高さフィールド、なければ階数×3.66 m です。この行はベクター基図の3D建物を置き換えます。
+All NASA GIBS layers	NASA GIBS の全レイヤー
+The whole NASA GIBS catalog - more than a thousand raster layers of imagery and maps. The list comes from the GIBS catalog on the first show of the category or on a search from three characters. The search finds a layer by all words of the query, the layer names are in English. These rows are not shown in «All».	NASA GIBS の全カタログ - 画像と地図のラスターレイヤーが千以上あります。カテゴリーを初めて表示したとき、または3文字以上で検索したときに GIBS カタログから一覧を取得します。検索はクエリのすべての語でレイヤーを探します。レイヤー名は英語です。これらの行は「すべて」には表示されません。
+The NASA GIBS catalog is loading, the first time about 10 seconds.	NASA GIBS カタログを読み込み中です。初回は約10秒かかります。
+NASA GIBS layers - also one map on the globe	NASA GIBS レイヤー - これも地球儀上は1枚の地図
+A layer of the whole NASA GIBS catalog. It behaves as a theme - one map on the globe, the series of dates goes to the time slider, the colour scale is in the legend. The names of the layers are in English.	NASA GIBS 全カタログのレイヤーです。テーマと同じく、地球儀上は1枚の地図で、日付の系列は時間スライダーに、色の目盛りは凡例に入ります。レイヤー名は英語です。
+The NASA GIBS catalog did not load: {error}	NASA GIBS カタログを読み込めませんでした: {error}

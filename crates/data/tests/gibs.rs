@@ -161,3 +161,50 @@ fn colormap_without_labels_uses_ends() {
     assert_eq!(labels, [(0.0, "0.1".to_string()), (1.0, "≥ 53.0".to_string())]);
     assert_eq!(gibs::parse_colormap("<ColorMaps/>"), None);
 }
+
+/// Три слоя по образцу GetCapabilities GIBS 25 октября 2026 года: с рядом
+/// дат и цветовой картой, без времени в JPEG, с шагом 10 минут
+/// и векторный, `CAPS` модуля.
+const CAPS: &str = "<Contents><Layer><ows:Title xml:lang='en'>Snow Cover (Daily, MODIS &amp; Terra)</ows:Title><ows:Identifier>MODIS_Terra_NDSI_Snow_Cover</ows:Identifier><ows:Metadata xlink:href='https://gibs.earthdata.nasa.gov/colormaps/v1.3/MODIS_NDSI_Snow_Cover.xml'/><Dimension><ows:Identifier>Time</ows:Identifier><Value>2000-02-24/2023-01-01/P1D</Value><Value>2023-02-01/2026-10-24/P1D</Value></Dimension><TileMatrixSetLink><TileMatrixSet>GoogleMapsCompatible_Level8</TileMatrixSet></TileMatrixSetLink><Format>image/png</Format></Layer><Layer><ows:Title xml:lang='en'>Blue Marble</ows:Title><ows:Identifier>BlueMarble_NextGeneration</ows:Identifier><TileMatrixSetLink><TileMatrixSet>GoogleMapsCompatible_Level8</TileMatrixSet></TileMatrixSetLink><Format>image/jpeg</Format></Layer><Layer><ows:Title xml:lang='en'>GOES</ows:Title><ows:Identifier>GOES-East_ABI_Band2</ows:Identifier><Dimension><Value>2026-10-24T00:00:00Z/2026-10-24T23:50:00Z/PT10M</Value></Dimension><TileMatrixSetLink><TileMatrixSet>GoogleMapsCompatible_Level7</TileMatrixSet></TileMatrixSetLink><Format>image/png</Format></Layer><Layer><ows:Title xml:lang='en'>Roads</ows:Title><ows:Identifier>OSM_Roads</ows:Identifier><TileMatrixSetLink><TileMatrixSet>GoogleMapsCompatible_Level9</TileMatrixSet></TileMatrixSetLink><Format>application/vnd.mapbox-vector-tile</Format></Layer></Contents>";
+
+#[test]
+fn catalog_raster_daily_layers_only() {
+    let layers = gibs::parse_capabilities(CAPS);
+    assert_eq!(layers.iter().map(|l| l.layer.as_str()).collect::<Vec<_>>(), ["BlueMarble_NextGeneration", "MODIS_Terra_NDSI_Snow_Cover"]);
+    let snow = &layers[1];
+    assert_eq!(snow.title, "Snow Cover (Daily, MODIS & Terra)");
+    assert_eq!((snow.ext, snow.level, snow.colormap.as_str()), ("png", 8, "MODIS_NDSI_Snow_Cover"));
+    assert_eq!(snow.intervals.len(), 2);
+    assert_eq!(layers[0].ext, "jpg");
+    assert!(layers[0].intervals.is_empty());
+}
+
+#[test]
+fn catalog_series_and_url() {
+    let layers = gibs::parse_capabilities(CAPS);
+    let theme = |l: &gibs::CatalogLayer| gibs::Theme {
+        key: "gibs:x",
+        group: gibs::Group::Catalog,
+        layer: Box::leak(l.layer.clone().into_boxed_str()),
+        ext: l.ext,
+        level: l.level,
+        colormap: "",
+        clear: &[],
+        intervals: Some(Box::leak(l.intervals.clone().into_boxed_slice())),
+    };
+    let (snow, marble) = (theme(&layers[1]), theme(&layers[0]));
+    let now = stamp(2026, 10, 25) + 12.0 * 3600.0;
+    assert_eq!(snow.catalog_day(now).as_deref(), Some("2026-10-24"));
+    assert!(snow.url("2026-10-24").contains("/MODIS_Terra_NDSI_Snow_Cover/default/2026-10-24/GoogleMapsCompatible_Level8/"));
+    assert_eq!(marble.catalog_day(now).as_deref(), Some("2026-10-24"));
+    assert!(marble.url("2026-10-24").contains("/default/default/"));
+}
+
+#[test]
+fn catalog_search_all_words() {
+    let layers = gibs::parse_capabilities(CAPS);
+    assert_eq!(gibs::search(&layers, "terra SNOW").iter().map(|l| l.layer.as_str()).collect::<Vec<_>>(), ["MODIS_Terra_NDSI_Snow_Cover"]);
+    assert!(gibs::search(&layers, "terra marble").is_empty());
+    // Обрывок ответа - без падения.
+    assert!(gibs::parse_capabilities(&CAPS[..300]).is_empty());
+}

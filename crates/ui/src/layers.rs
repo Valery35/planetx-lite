@@ -62,7 +62,7 @@ impl Extra {
     /// Все слои каталога: свои и карты картинками.
     pub fn all() -> Vec<Extra> {
         let mut out = Self::ALL.to_vec();
-        out.extend((0..crate::maps::ALL.len()).map(Extra::Map));
+        out.extend((0..crate::maps::count()).map(Extra::Map));
         out.extend(crate::dots::Layer::ALL.map(Extra::Dots));
         out.push(Extra::Cutaway);
         out.push(Extra::Paleo);
@@ -86,7 +86,7 @@ impl Extra {
     /// Строка карты картинками.
     pub fn map(self) -> Option<&'static crate::maps::Entry> {
         match self {
-            Extra::Map(n) => crate::maps::ALL.get(n),
+            Extra::Map(n) => crate::maps::entry(n),
             _ => None,
         }
     }
@@ -158,6 +158,7 @@ impl Extra {
                 Some(crate::maps::Group::Life) => Category::Life,
                 Some(crate::maps::Group::Soil) => Category::Soil,
                 Some(crate::maps::Group::Tiles) => Category::Tiles,
+                Some(crate::maps::Group::Gibs) => Category::Gibs,
                 _ => Category::Depths,
             },
             Extra::Dots(crate::dots::Layer::Fires) => Category::Fire,
@@ -263,6 +264,8 @@ pub enum Action {
     GeoidScale(f64),
     /// Окно «Новый источник тайлов».
     AddSource,
+    /// Попросить весь каталог NASA GIBS.
+    GibsCatalog,
     /// Свой источник убрать из списка основ.
     RemoveOwn(Basemap),
 }
@@ -619,7 +622,12 @@ enum Category {
     Transport,
     Wiki,
     Satellites,
+    /// Весь каталог NASA GIBS: строки приходят по запросу.
+    Gibs,
 }
+
+/// Знаков поиска, с которых просится каталог GIBS, `GIBS_SEARCH` модуля.
+const GIBS_SEARCH: usize = 3;
 
 /// Окно каталога «Добавить данные»: открыто ли, категория, поиск,
 /// выбранная строка.
@@ -758,7 +766,7 @@ fn items() -> Vec<Item> {
     out.push(Item::Extra(Extra::Satellites));
     // Пожары - карта витрины группы «Планета огня», перед темами огня.
     out.push(Item::Extra(Extra::Dots(crate::dots::Layer::Fires)));
-    out.extend((0..crate::maps::ALL.len()).map(|n| Item::Extra(Extra::Map(n))));
+    out.extend((0..crate::maps::count()).map(|n| Item::Extra(Extra::Map(n))));
     use crate::dots::Layer;
     out.extend(
         [Layer::Quakes, Layer::Iscgem, Layer::Plates, Layer::Faults, Layer::PlateMotion, Layer::Volcanoes, Layer::MagPoles, Layer::MagDecl, Layer::Deposits, Layer::OsmMines, Layer::Plants, Layer::InfraOsm, Layer::Cables]
@@ -813,6 +821,11 @@ impl Catalog {
             (Category::Tiles, tr(lang, "Map overlays"), tr(lang, "Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.")),
             (Category::Satellites, tr(lang, "Satellites"), tr(lang, "Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.")),
             (Category::Wiki, tr(lang, "Encyclopedia"), tr(lang, "Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.")),
+            (
+                Category::Gibs,
+                tr(lang, "All NASA GIBS layers"),
+                tr(lang, "The whole NASA GIBS catalog - more than a thousand raster layers of imagery and maps. The list comes from the GIBS catalog on the first show of the category or on a search from three characters. The search finds a layer by all words of the query, the layer names are in English. These rows are not shown in «All»."),
+            ),
         ];
         egui::Window::new(tr(lang, "Add data")).open(&mut open).default_size([780.0, 520.0]).show(ctx, |ui| {
             ui.add(egui::TextEdit::singleline(&mut self.search).hint_text(tr(lang, "snow, mines, wind")).desired_width(f32::INFINITY));
@@ -830,11 +843,18 @@ impl Catalog {
                 ui.vertical(|ui| {
                     let category = categories[self.category.unwrap_or(0)].0;
                     let text = self.search.trim().to_lowercase();
+                    if (category == Category::Gibs || text.chars().count() >= GIBS_SEARCH) && !crate::maps::has_catalog() && !out.contains(&Action::GibsCatalog) {
+                        out.push(Action::GibsCatalog);
+                    }
+                    let words: Vec<String> = text.split_whitespace().map(String::from).collect();
                     let fits = |item: Item| {
-                        if !text.is_empty() {
+                        let gibs = item.category() == Category::Gibs;
+                        if !text.is_empty() && gibs {
+                            data::gibs::fits_words(&format!("{} {}", item.name(lang), item.key()), &words)
+                        } else if !text.is_empty() {
                             item.name(lang).to_lowercase().contains(&text) || item.tip(lang).to_lowercase().contains(&text)
                         } else if category == Category::All {
-                            !matches!(item, Item::Base(_))
+                            !matches!(item, Item::Base(_)) && !gibs
                         } else {
                             item.category() == category
                         }
@@ -842,8 +862,12 @@ impl Catalog {
                     let shown: Vec<Item> = items().into_iter().filter(|i| fits(*i)).collect();
                     egui::ScrollArea::vertical().max_height(360.0).show(ui, |ui| {
                         let bases: Vec<Item> = shown.iter().copied().filter(|i| matches!(i, Item::Base(_))).collect();
-                        let layers: Vec<Item> = shown.iter().copied().filter(|i| !matches!(i, Item::Base(_))).collect();
-                        for (head, list) in [(tr(lang, "Base map on the globe - one"), bases), (tr(lang, "Layers - switched on together"), layers)] {
+                        let layers: Vec<Item> = shown.iter().copied().filter(|i| !matches!(i, Item::Base(_)) && i.category() != Category::Gibs).collect();
+                        let gibs: Vec<Item> = shown.iter().copied().filter(|i| i.category() == Category::Gibs).collect();
+                        if category == Category::Gibs && gibs.is_empty() && !crate::maps::has_catalog() {
+                            ui.label(tr(lang, "The NASA GIBS catalog is loading, the first time about 10 seconds."));
+                        }
+                        for (head, list) in [(tr(lang, "Base map on the globe - one"), bases), (tr(lang, "Layers - switched on together"), layers), (tr(lang, "NASA GIBS layers - also one map on the globe"), gibs)] {
                             if list.is_empty() {
                                 continue;
                             }

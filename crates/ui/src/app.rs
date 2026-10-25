@@ -119,6 +119,9 @@ type MapLoaders = Vec<(u32, Box<dyn TileLoader>)>;
 
 /// Предел ответа разового запроса, байты.
 const ANSWER_BYTES: u64 = 1 << 20;
+/// Предел ответа всего каталога NASA GIBS, байт: 25 октября 2026 года
+/// ответ - 5.8 МБ.
+const GIBS_CATALOG_BYTES: u64 = 32 << 20;
 
 /// Загрузчики тайлов платформы.
 pub struct Loaders {
@@ -522,6 +525,10 @@ pub struct LiteApp {
     map_loaders: HashMap<&'static str, MapLoaders>,
     /// День ряда тем GIBS: запрос идёт, день выбран или ряда нет.
     theme_days: HashMap<&'static str, ThemeDay>,
+    /// Запрос всего каталога NASA GIBS.
+    gibs_catalog: Option<Box<dyn net::Request>>,
+    /// Слои каталога GIBS из настроек: ложатся, когда каталог придёт.
+    gibs_pending: Vec<String>,
     /// Цветовые карты тем GIBS для шкалы: запрос идёт или пришла.
     theme_scales: HashMap<&'static str, ThemeScale>,
     /// Адреса и папки кэша тем на день: строка живёт до конца программы,
@@ -868,6 +875,7 @@ impl LiteApp {
         };
         let lang = settings.lang();
         let vector_text = settings.vector.clone();
+        let gibs_pending: Vec<String> = settings.maps.iter().filter(|k| k.starts_with(data::gibs::CATALOG_PREFIX)).cloned().collect();
         let extras_on: std::collections::BTreeSet<crate::layers::Extra> = [(crate::layers::Extra::Air, settings.air), (crate::layers::Extra::Stars, settings.stars), (crate::layers::Extra::Sun, settings.sun), (crate::layers::Extra::Grid, settings.grid)]
             .into_iter()
             .filter_map(|(e, on)| on.then_some(e))
@@ -1031,6 +1039,8 @@ impl LiteApp {
             sky_saved: None,
             surveys: crate::skysurvey::Surveys::default(),
             theme_days: HashMap::new(),
+            gibs_catalog: None,
+            gibs_pending,
             theme_scales: HashMap::new(),
             lasting: HashMap::new(),
             drawn: std::collections::HashSet::new(),
@@ -2430,6 +2440,7 @@ impl LiteApp {
                     self.sea_changed();
                 }
                 Action::AddSource => self.own_dialog = Some(OwnDialog::default()),
+                Action::GibsCatalog => self.ask_gibs_catalog(),
                 Action::RemoveOwn(b) => {
                     if let Some(own) = crate::basemap::own_of(b) {
                         self.settings.own.retain(|o| *o != own);
@@ -2679,26 +2690,42 @@ impl LiteApp {
         self.settings_dirty = true;
     }
 
+    /// Попросить весь каталог NASA GIBS, один раз за запуск.
+    fn ask_gibs_catalog(&mut self) {
+        if self.gibs_catalog.is_none() && !crate::maps::has_catalog() {
+            let request = (self.loaders.request)(GIBS_CATALOG_BYTES);
+            request.start(data::gibs::CAPABILITIES);
+            self.gibs_catalog = Some(request);
+        }
+    }
+
     /// Карты картинками на глобусе - по включённым строкам: снизу карта
     /// значений или готовая карта, над ней наложения. Загрузчики заводятся
     /// и убираются вместе со строками.
     fn sync_maps(&mut self) {
-        let mut on: Vec<(&'static str, crate::maps::Kind)> = crate::maps::ALL
-            .iter()
-            .enumerate()
-            .filter(|(n, _)| self.extras_on.contains(&crate::layers::Extra::Map(*n)))
-            .filter_map(|(_, e)| crate::maps::kind(e.key).map(|k| (e.key, k)))
+        let mut on: Vec<(&'static str, crate::maps::Kind)> = (0..crate::maps::count())
+            .filter(|n| self.extras_on.contains(&crate::layers::Extra::Map(*n)))
+            .filter_map(crate::maps::entry)
+            .filter_map(|e| crate::maps::kind(e.key).map(|k| (e.key, k)))
             .collect();
-        self.settings.maps = on.iter().map(|(id, _)| id.to_string()).collect();
+        // Слои каталога GIBS, который ещё не пришёл, остаются в настройках.
+        self.settings.maps = on.iter().map(|(id, _)| id.to_string()).chain(self.gibs_pending.iter().cloned()).collect();
         // Тема GIBS ложится, когда известен день ряда: до ответа ряда
-        // дат картинки тайлов ждали бы её и не рисовались.
+        // дат картинки тайлов ждали бы её и не рисовались. У слоя всего
+        // каталога ряд пришёл с каталогом.
+        let now_utc = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64());
         for (id, kind) in &on {
             if let crate::maps::Kind::Theme(theme) = kind
                 && !self.theme_days.contains_key(id)
             {
-                let request = (self.loaders.request)(ANSWER_BYTES);
-                request.start(&theme.domains_url());
-                self.theme_days.insert(id, ThemeDay::Asking(request));
+                let state = if theme.intervals.is_some() {
+                    theme.catalog_day(now_utc).map_or(ThemeDay::Failed, ThemeDay::Day)
+                } else {
+                    let request = (self.loaders.request)(ANSWER_BYTES);
+                    request.start(&theme.domains_url());
+                    ThemeDay::Asking(request)
+                };
+                self.theme_days.insert(id, state);
             }
         }
         on.retain(|(id, kind)| !matches!(kind, crate::maps::Kind::Theme(_)) || matches!(self.theme_days.get(id), Some(ThemeDay::Day(_))));
@@ -2741,7 +2768,7 @@ impl LiteApp {
         }
         // Непрозрачность карт из настроек.
         for (key, alpha) in &self.map_opacity {
-            if let Some(entry) = crate::maps::index(key).and_then(|i| crate::maps::ALL.get(i)) {
+            if let Some(entry) = crate::maps::index(key).and_then(crate::maps::entry) {
                 self.vector.set_opacity(entry.key, *alpha);
             }
         }
@@ -5391,6 +5418,27 @@ impl LiteApp {
         if days_changed {
             self.sync_maps();
         }
+        // Весь каталог NASA GIBS: строки карт, слои из настроек - на глобус.
+        if !self.gibs_pending.is_empty() {
+            self.ask_gibs_catalog();
+        }
+        if let Some(request) = &self.gibs_catalog
+            && let Some(answer) = request.take()
+        {
+            self.gibs_catalog = None;
+            match answer {
+                Ok(bytes) => {
+                    crate::maps::register(data::gibs::parse_capabilities(&String::from_utf8_lossy(&bytes)));
+                    for key in std::mem::take(&mut self.gibs_pending) {
+                        if let Some(n) = crate::maps::index(&key) {
+                            self.extras.insert(crate::layers::Extra::Map(n));
+                            self.set_extra(crate::layers::Extra::Map(n), true);
+                        }
+                    }
+                }
+                Err(e) => self.open_message = Some(crate::i18n::trf(self.lang, "The NASA GIBS catalog did not load: {error}", &[("error", &e)])),
+            }
+        }
         for state in self.theme_scales.values_mut() {
             if let ThemeScale::Asking(request) = state
                 && let Some(answer) = request.take()
@@ -6084,6 +6132,7 @@ impl eframe::App for LiteApp {
             || self.sentinel.as_ref().is_some_and(crate::sentinel::Sentinel::busy)
             || self.buildings.as_ref().is_some_and(|b| b.busy(self.heights.read().version()))
             || self.overture.as_ref().is_some_and(crate::overture::Overture::busy)
+            || self.gibs_catalog.is_some()
             || self.osm_mines.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.osm_infra.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.satellites.as_ref().is_some_and(crate::satellites::Satellites::busy)
@@ -6716,7 +6765,7 @@ impl eframe::App for LiteApp {
         let maps: Vec<(&'static str, crate::maps::Kind)> = self.vector.map_list().to_vec();
         let theme = maps.iter().find_map(|(k, m)| match (m, self.theme_days.get(k)) {
             (crate::maps::Kind::Theme(_), Some(ThemeDay::Day(day))) => {
-                let name = crate::maps::ALL.iter().find(|e| e.key == *k).map_or("", |e| tr(self.lang, e.name));
+                let name = crate::maps::index(k).and_then(crate::maps::entry).map_or("", |e| tr(self.lang, e.name));
                 let scale = match self.theme_scales.get(k) {
                     Some(ThemeScale::Ready(s)) => s.clone(),
                     _ => None,

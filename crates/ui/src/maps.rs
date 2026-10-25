@@ -52,6 +52,8 @@ pub enum Group {
     Depths,
     Soil,
     Tiles,
+    /// Слой всего каталога NASA GIBS.
+    Gibs,
 }
 
 /// Строка каталога: ключ, название и подсказка (английский ключ
@@ -372,9 +374,60 @@ pub const ALL: [Entry; 43] = [
     },
 ];
 
+/// Слои всего каталога NASA GIBS: строки и темы, номера строк - после
+/// [`ALL`]. Каталог приходит один раз за запуск, строки живут до конца.
+static CATALOG: std::sync::OnceLock<(Vec<Entry>, Vec<Theme>)> = std::sync::OnceLock::new();
+
+/// Подсказка строки слоя каталога GIBS, ключ перевода.
+pub const GIBS_TIP: &str = "A layer of the whole NASA GIBS catalog. It behaves as a theme - one map on the globe, the series of dates goes to the time slider, the colour scale is in the legend. The names of the layers are in English.";
+
+fn leak(text: String) -> &'static str {
+    Box::leak(text.into_boxed_str())
+}
+
+/// Слои каталога GIBS - строки карт. Второй каталог не принимается.
+pub fn register(layers: Vec<gibs::CatalogLayer>) {
+    let mut entries = Vec::with_capacity(layers.len());
+    let mut themes = Vec::with_capacity(layers.len());
+    for l in layers {
+        let key = leak(format!("{}{}", gibs::CATALOG_PREFIX, l.layer));
+        let when = match (l.intervals.iter().map(|i| i.0).min(), l.intervals.iter().map(|i| i.1).max()) {
+            (Some(a), Some(b)) => format!("{} - {}", a.text(), b.text()),
+            _ => "default".to_string(),
+        };
+        entries.push(Entry { key, name: leak(l.title), tip: GIBS_TIP, group: Group::Gibs, source: leak(format!("NASA GIBS · {} · {when} · z{}", l.layer, l.level)) });
+        themes.push(Theme {
+            key,
+            group: gibs::Group::Catalog,
+            layer: leak(l.layer),
+            ext: l.ext,
+            level: l.level,
+            colormap: leak(l.colormap),
+            clear: &[],
+            intervals: Some(Box::leak(l.intervals.into_boxed_slice())),
+        });
+    }
+    let _ = CATALOG.set((entries, themes));
+}
+
+/// Каталог GIBS пришёл.
+pub fn has_catalog() -> bool {
+    CATALOG.get().is_some()
+}
+
+/// Количество строк карт: [`ALL`] и слои каталога GIBS.
+pub fn count() -> usize {
+    ALL.len() + CATALOG.get().map_or(0, |c| c.0.len())
+}
+
+/// Строка карт по номеру.
+pub fn entry(n: usize) -> Option<&'static Entry> {
+    ALL.get(n).or_else(|| CATALOG.get().and_then(|c| c.0.get(n.checked_sub(ALL.len())?)))
+}
+
 /// Номер строки по ключу.
 pub fn index(key: &str) -> Option<usize> {
-    ALL.iter().position(|e| e.key == key)
+    ALL.iter().position(|e| e.key == key).or_else(|| CATALOG.get()?.0.iter().position(|e| e.key == key).map(|n| n + ALL.len()))
 }
 
 /// Вид карты строки.
@@ -395,6 +448,9 @@ pub fn kind(key: &str) -> Option<Kind> {
     }
     if let Some(t) = gibs::theme_of(key) {
         return Some(Kind::Theme(t));
+    }
+    if key.starts_with(gibs::CATALOG_PREFIX) {
+        return CATALOG.get()?.1.iter().find(|t| t.key == key).map(Kind::Theme);
     }
     if let Some(f) = rastermaps::field(key) {
         return Some(Kind::Field(f));
@@ -545,6 +601,21 @@ fn coarse_name(key: &str) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::{ALL, kind};
+
+    #[test]
+    fn catalog_rows_follow_builtin() {
+        let day = data::gibs::Day { year: 2020, month: 1, day: 1 };
+        let layer = |name: &str, intervals: Vec<data::gibs::Interval>| data::gibs::CatalogLayer { layer: name.into(), title: name.into(), ext: "png", level: 8, colormap: String::new(), intervals };
+        super::register(vec![layer("A_Layer", vec![(day, day, 1, 'D')]), layer("B_Layer", Vec::new())]);
+        assert!(super::has_catalog());
+        assert_eq!(super::count(), ALL.len() + 2);
+        assert_eq!(super::index("gibs:B_Layer"), Some(ALL.len() + 1));
+        assert_eq!(super::entry(ALL.len()).map(|e| e.key), Some("gibs:A_Layer"));
+        assert!(matches!(kind("gibs:A_Layer"), Some(super::Kind::Theme(t)) if t.layer == "A_Layer" && t.intervals.is_some()));
+        assert!(kind("gibs:missing").is_none());
+        // Встроенные строки на своих местах.
+        assert_eq!(super::index(ALL[0].key), Some(0));
+    }
 
     #[test]
     fn every_row_has_map() {

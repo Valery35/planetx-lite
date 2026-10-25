@@ -20,18 +20,26 @@ pub const OPACITY: f64 = 0.8;
 /// День ряда считается готовым через сутки, секунды.
 pub const READY_LAG: f64 = 86400.0;
 
-/// Группа темы, `GROUPS` модуля.
+/// Группа темы, `GROUPS` модуля. Catalog - слой всего каталога GIBS.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Group {
     Fire,
     Water,
     Gases,
     Life,
+    Catalog,
 }
+
+/// Приставка ключа слоя всего каталога, `GIBS_PREFIX` модуля.
+pub const CATALOG_PREFIX: &str = "gibs:";
+/// Ответ GetCapabilities WMTS EPSG:3857 «best» - весь каталог GIBS.
+pub const CAPABILITIES: &str = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml";
 
 /// Слой темы: ключ строки, группа, слой GIBS, расширение тайла,
 /// предельный уровень, цветовая карта ("" - шкалы нет), цвета классов
-/// «нет явления», которые тема делает прозрачными.
+/// «нет явления», которые тема делает прозрачными. intervals - ряд дат
+/// слоя каталога прямо из его ответа: None - ряд даёт DescribeDomains,
+/// пустой - у слоя нет времени, его тайлы - на день «default».
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Theme {
     pub key: &'static str,
@@ -41,10 +49,11 @@ pub struct Theme {
     pub level: u32,
     pub colormap: &'static str,
     pub clear: &'static [[u8; 3]],
+    pub intervals: Option<&'static [Interval]>,
 }
 
 const fn theme(key: &'static str, group: Group, layer: &'static str, ext: &'static str, level: u32, colormap: &'static str) -> Theme {
-    Theme { key, group, layer, ext, level, colormap, clear: &[] }
+    Theme { key, group, layer, ext, level, colormap, clear: &[], intervals: None }
 }
 
 /// Темы в порядке модуля. У массы снега SMAP класс 0-0.8 кг/м²
@@ -59,7 +68,7 @@ pub const THEMES: [Theme; 22] = [
     theme("soil", Group::Water, "SMAP_L3_Passive_Enhanced_Day_Soil_Moisture", "png", 6, "SMAP_Soil_Moisture"),
     theme("snow", Group::Water, "MODIS_Terra_NDSI_Snow_Cover", "png", 8, "MODIS_NDSI_Snow_Cover"),
     theme("snow_8day", Group::Water, "MODIS_Terra_L3_Snow_Extent_8Day", "png", 8, "MODIS_L3_Snow_Extent"),
-    Theme { key: "snow_mass", group: Group::Water, layer: "SMAP_L4_Snow_Mass", ext: "png", level: 6, colormap: "SMAP_Snow_Mass", clear: &[[82, 98, 106]] },
+    Theme { key: "snow_mass", group: Group::Water, layer: "SMAP_L4_Snow_Mass", ext: "png", level: 6, colormap: "SMAP_Snow_Mass", clear: &[[82, 98, 106]], intervals: None },
     theme("sea_ice", Group::Water, "GHRSST_L4_MUR_Sea_Ice_Concentration", "png", 7, "GHRSST_Sea_Ice_Concentration"),
     theme("vapor", Group::Water, "MODIS_Terra_Water_Vapor_5km_Day", "png", 6, "MODIS_Water_Vapor"),
     theme("chlorophyll", Group::Water, "OCI_PACE_Chlorophyll_a", "png", 7, "MODIS_Chlorophyll"),
@@ -81,9 +90,22 @@ pub fn theme_of(key: &str) -> Option<&'static Theme> {
 }
 
 impl Theme {
-    /// Шаблон адреса тайла на день day (ГГГГ-ММ-ДД).
+    /// Шаблон адреса тайла на день day (ГГГГ-ММ-ДД). Слой без времени -
+    /// на день «default».
     pub fn url(&self, day: &str) -> String {
+        let day = if self.intervals.is_some_and(<[Interval]>::is_empty) { "default" } else { day };
         format!("{ROOT}/wmts/epsg3857/best/{}/default/{day}/GoogleMapsCompatible_Level{}/{{z}}/{{y}}/{{x}}.{}", self.layer, self.level, self.ext)
+    }
+
+    /// День слоя каталога на момент now (секунды UTC): последний готовый
+    /// день ряда, у слоя без времени - вчерашний. None - ряд даёт
+    /// DescribeDomains или готовых дней нет.
+    pub fn catalog_day(&self, now: f64) -> Option<String> {
+        let intervals = self.intervals?;
+        if intervals.is_empty() {
+            return Some(Day::from_seconds(now - READY_LAG).text());
+        }
+        pick_day(&ready_intervals(intervals, now), None)
     }
 
     /// Адрес ряда дат DescribeDomains.
@@ -202,6 +224,100 @@ pub fn parse_domains(data: &str) -> Vec<Interval> {
             (matches!(unit, 'D' | 'M' | 'Y') && count > 0).then_some((first, last, count, unit))
         })
         .collect()
+}
+
+/// Промежуток «начало/конец/PnU» с шагом в днях, месяцах или годах.
+fn parse_interval(part: &str) -> Option<Interval> {
+    let mut it = part.trim().split('/');
+    let (a, b) = (it.next()?, it.next()?);
+    // Моменты со временем суток - ряд с шагом меньше суток.
+    if a.len() != 10 || b.len() != 10 {
+        return None;
+    }
+    let (first, last) = (Day::parse(a)?, Day::parse(b)?);
+    let period = it.next()?.strip_prefix('P')?;
+    let unit = period.chars().last()?;
+    let count: i64 = period[..period.len() - unit.len_utf8()].parse().ok()?;
+    (matches!(unit, 'D' | 'M' | 'Y') && count > 0).then_some((first, last, count, unit))
+}
+
+/// Растровый слой всего каталога GIBS: имя, название из каталога,
+/// расширение тайла, предельный уровень, цветовая карта ("" - нет),
+/// ряд дат (пустой - слой без времени).
+#[derive(Debug, Clone, PartialEq)]
+pub struct CatalogLayer {
+    pub layer: String,
+    pub title: String,
+    pub ext: &'static str,
+    pub level: u32,
+    pub colormap: String,
+    pub intervals: Vec<Interval>,
+}
+
+/// Текст между open и close первого вхождения в body.
+fn between<'a>(body: &'a str, open: &str, close: &str) -> Option<&'a str> {
+    let at = body.find(open)? + open.len();
+    let end = body[at..].find(close)?;
+    Some(&body[at..at + end])
+}
+
+/// Растровые слои GIBS из ответа GetCapabilities WMTS по названию,
+/// `parse_capabilities` модуля. Слой с Dimension Time без суточного
+/// ряда (шаги в минутах и часах) и векторные тайлы пропускаются. Ответ
+/// считается враждебным.
+pub fn parse_capabilities(data: &str) -> Vec<CatalogLayer> {
+    let mut out = Vec::new();
+    let mut rest = data;
+    while let Some(open) = rest.find("<Layer>") {
+        let tail = &rest[open + 7..];
+        let Some(close) = tail.find("</Layer>") else {
+            break;
+        };
+        let body = &tail[..close];
+        rest = &tail[close + 8..];
+        let Some(ident) = between(body, "<ows:Identifier>", "</ows:Identifier>").map(str::trim).filter(|s| !s.is_empty() && !s.contains(['/', '?', '#'])) else {
+            continue;
+        };
+        let ext = if body.contains("<Format>image/png</Format>") {
+            "png"
+        } else if body.contains("<Format>image/jpeg</Format>") {
+            "jpg"
+        } else {
+            continue;
+        };
+        let Some(level) = between(body, "GoogleMapsCompatible_Level", "</TileMatrixSet>").and_then(|l| l.trim().parse::<u32>().ok()).filter(|l| *l <= 22) else {
+            continue;
+        };
+        let title = body.find("<ows:Title").and_then(|t| between(&body[t..], ">", "</ows:Title>")).map(unescape).unwrap_or_else(|| ident.to_string());
+        let colormap = between(body, "/colormaps/v1.3/", ".xml").filter(|c| !c.contains(['"', '\'', '/', '<'])).unwrap_or("").to_string();
+        let mut intervals = Vec::new();
+        if body.contains("<Dimension>") {
+            let mut scan = body;
+            while let Some(v) = between(scan, "<Value>", "</Value>") {
+                intervals.extend(v.split(',').filter_map(parse_interval));
+                scan = &scan[scan.find("</Value>").map_or(scan.len(), |e| e + 8)..];
+            }
+            if intervals.is_empty() {
+                continue;
+            }
+        }
+        out.push(CatalogLayer { layer: ident.to_string(), title: title.trim().to_string(), ext, level, colormap, intervals });
+    }
+    out.sort_by_key(|l| l.title.to_lowercase());
+    out
+}
+
+/// Слои, в названии или имени которых есть все слова text без учёта
+/// регистра, `search` модуля.
+pub fn search<'a>(layers: &'a [CatalogLayer], text: &str) -> Vec<&'a CatalogLayer> {
+    let words: Vec<String> = text.to_lowercase().split_whitespace().map(String::from).collect();
+    layers.iter().filter(|l| fits_words(&format!("{} {}", l.title, l.layer), &words)).collect()
+}
+
+/// В тексте есть все слова words (слова в нижнем регистре).
+pub fn fits_words(text: &str, words: &[String]) -> bool {
+    let text = text.to_lowercase();
+    words.iter().all(|w| text.contains(w.as_str()))
 }
 
 /// Последний день ряда start..end с шагом не позже day.
