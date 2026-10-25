@@ -1298,3 +1298,26 @@ Loading: {what}.	Загружаются: {what}.
 Moho {depth}	Мохо {depth}
 slab {top}-{bottom}	плита {top}-{bottom}
 earthquakes	землетрясения
+Inner core	Внутреннее ядро
+Outer core	Внешнее ядро
+Lower mantle	Нижняя мантия
+Transition zone	Переходная зона
+Upper mantle	Верхняя мантия
+Crust	Кора
+Ice	Лёд
+Upper sediments	Верхние осадки
+Middle sediments	Средние осадки
+Lower sediments	Нижние осадки
+Upper crust	Верхняя кора
+Middle crust	Средняя кора
+Lower crust	Нижняя кора
+upper	верхняя
+middle	средняя
+lower	нижняя
+Continental crust, {part}	Континентальная кора, {part}
+Oceanic crust, {part}	Океаническая кора, {part}
+Slab2 slab	Плита Slab2
+{name}, Moho-{depth}	{name}, Мохо-{depth}
+CRUST1.0 crust, PREM shells, depth, km	Кора CRUST1.0, оболочки PREM, глубина, км
+PREM shells, depth, km	Оболочки PREM, глубина, км
+The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	Модель коры CRUST1.0 не загружена, кора - слой PREM.

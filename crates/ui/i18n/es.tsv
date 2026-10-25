@@ -1298,3 +1298,26 @@ Loading: {what}.	Cargando: {what}.
 Moho {depth}	Moho {depth}
 slab {top}-{bottom}	placa {top}-{bottom}
 earthquakes	terremotos
+Inner core	Núcleo interno
+Outer core	Núcleo externo
+Lower mantle	Manto inferior
+Transition zone	Zona de transición
+Upper mantle	Manto superior
+Crust	Corteza
+Ice	Hielo
+Upper sediments	Sedimentos superiores
+Middle sediments	Sedimentos medios
+Lower sediments	Sedimentos inferiores
+Upper crust	Corteza superior
+Middle crust	Corteza media
+Lower crust	Corteza inferior
+upper	superior
+middle	media
+lower	inferior
+Continental crust, {part}	Corteza continental, {part}
+Oceanic crust, {part}	Corteza oceánica, {part}
+Slab2 slab	Placa Slab2
+{name}, Moho-{depth}	{name}, Moho-{depth}
+CRUST1.0 crust, PREM shells, depth, km	Corteza CRUST1.0, capas PREM, profundidad, km
+PREM shells, depth, km	Capas PREM, profundidad, km
+The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	El modelo de corteza CRUST1.0 no está cargado, la corteza es una capa de PREM.

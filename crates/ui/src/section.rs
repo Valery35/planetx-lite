@@ -13,9 +13,8 @@
 //! просятся, если их нет. Исторические очаги ISC-GEM входят в разрез,
 //! пока включена их строка, очаги берутся в окне шкалы времени, как на
 //! глобусе. Стенка разреза стоит на глобусе и видна сквозь поверхность.
-//! Курсор над графиком отмечает точку на глобусе.
-//!
-//! Нет пока: легенды слоёв рядом с графиком, разреза по линейке.
+//! Курсор над графиком отмечает точку на глобусе. Справа от графика -
+//! легенда слоёв, как `CutawayLegend` модуля.
 
 use std::collections::{BTreeMap, HashMap};
 
@@ -42,6 +41,8 @@ const HOVER: egui::Color32 = egui::Color32::from_rgb(220, 60, 40);
 const STATS_HEIGHT: f32 = 44.0;
 /// Наименьшая высота графика.
 const MIN_CHART: f32 = 200.0;
+/// Ширина легенды справа от графика.
+const LEGEND_WIDTH: f32 = 230.0;
 
 /// Что перестраивает разрез: глубина, полоса, окно времени, кора, зоны
 /// плит, количество свежих и исторических очагов.
@@ -240,7 +241,16 @@ impl SectionWindow {
                     ui.label(tr(lang, "A path of at least two points is needed."));
                     return;
                 };
-                if let Some(i) = chart(ui, lang, s) {
+                let missing = matches!(self.crust, Ask::Failed(_));
+                let hovered = ui
+                    .horizontal_top(|ui| {
+                        let size = egui::vec2((ui.available_width() - LEGEND_WIDTH - 8.0).max(240.0), ui.available_height());
+                        let i = ui.allocate_ui(size, |ui| chart(ui, lang, s)).inner;
+                        ui.vertical(|ui| legend(ui, lang, s, missing));
+                        i
+                    })
+                    .inner;
+                if let Some(i) = hovered {
                     self.hovered = Some((s.lats[i], s.lons[i], s.distance[i]));
                 }
                 let length = s.distance.last().copied().unwrap_or(0.0);
@@ -260,6 +270,110 @@ impl SectionWindow {
                 }
                 ui.label(text);
             });
+    }
+}
+
+/// Название оболочки PREM по ключу [`cutaway::SHELLS`].
+fn shell_name(key: &str) -> &'static str {
+    match key {
+        "inner_core" => "Inner core",
+        "outer_core" => "Outer core",
+        "lower_mantle" => "Lower mantle",
+        "transition_zone" => "Transition zone",
+        "upper_mantle" => "Upper mantle",
+        _ => "Crust",
+    }
+}
+
+/// Название слоя CRUST1.0 по ключу [`data::crust::LAYERS`].
+fn crust_name(key: &str) -> &'static str {
+    match key {
+        "water" => "Water",
+        "ice" => "Ice",
+        "sediments_upper" => "Upper sediments",
+        "sediments_middle" => "Middle sediments",
+        "sediments_lower" => "Lower sediments",
+        "crust_upper" => "Upper crust",
+        "crust_middle" => "Middle crust",
+        _ => "Lower crust",
+    }
+}
+
+/// Часть коры для строк «Континентальная кора, верхняя» и подобных.
+fn part_name(key: &str) -> &'static str {
+    match key {
+        "crust_upper" => "upper",
+        "crust_middle" => "middle",
+        _ => "lower",
+    }
+}
+
+/// Число глубины без лишних знаков, как `{:g}` модуля.
+fn depth_number(value: f64) -> String {
+    format!("{}", (value * 10.0).round() / 10.0)
+}
+
+/// Строки легенды, `CutawayLegend._rows` модуля: с моделью коры - слои
+/// CRUST1.0 сверху и мантия от Мохо, oceanic - кора делится на
+/// континентальную и океаническую, slabs - строка плиты Slab2.
+fn legend_rows(lang: Lang, crust: bool, oceanic: bool, slabs: bool) -> Vec<(String, [u8; 3])> {
+    let oceanic = crust && oceanic;
+    let mut rows = Vec::new();
+    if crust {
+        for key in cutaway::crust_layers() {
+            if oceanic && cutaway::ocean_color(key).is_some() {
+                continue;
+            }
+            if let Some(color) = cutaway::crust_color(key) {
+                rows.push((tr(lang, crust_name(key)).to_string(), color));
+            }
+        }
+        if oceanic {
+            for (title, sea) in [("Continental crust, {part}", false), ("Oceanic crust, {part}", true)] {
+                for (key, ocean) in cutaway::OCEAN_COLORS {
+                    let color = if sea { Some(ocean) } else { cutaway::crust_color(key) };
+                    if let Some(color) = color {
+                        rows.push((trf(lang, title, &[("part", tr(lang, part_name(key)))]), color));
+                    }
+                }
+            }
+        }
+    }
+    if slabs {
+        rows.push((tr(lang, "Slab2 slab").to_string(), cutaway::SLAB_COLOR));
+    }
+    let top = cutaway::PREM_RADIUS;
+    for shell in cutaway::SHELLS.iter().rev() {
+        if shell.key == "crust" && crust {
+            continue;
+        }
+        let name = tr(lang, shell_name(shell.key));
+        let text = if shell.key == "upper_mantle" && crust {
+            trf(lang, "{name}, Moho-{depth}", &[("name", name), ("depth", &depth_number(top - shell.low))])
+        } else {
+            format!("{name}, {}-{}", depth_number(top - shell.high), depth_number(top - shell.low))
+        };
+        rows.push((text, shell.color));
+    }
+    rows
+}
+
+/// Легенда справа от графика. missing - модель коры не пришла.
+fn legend(ui: &mut egui::Ui, lang: Lang, s: &Section, missing: bool) {
+    ui.set_width(LEGEND_WIDTH);
+    let crust = s.bounds.is_some();
+    let title = if crust { "CRUST1.0 crust, PREM shells, depth, km" } else { "PREM shells, depth, km" };
+    ui.label(egui::RichText::new(tr(lang, title)).small().strong());
+    if missing && !crust {
+        ui.label(egui::RichText::new(tr(lang, "The CRUST1.0 crust model is not loaded, the crust is a PREM layer.")).small());
+    }
+    let slabs = s.slab_top.iter().any(|v| v.is_finite());
+    for (text, color) in legend_rows(lang, crust, s.oceanic.is_some(), slabs) {
+        ui.horizontal(|ui| {
+            let (rect, _) = ui.allocate_exact_size(egui::vec2(12.0, 12.0), egui::Sense::hover());
+            ui.painter().rect_filled(rect, 2.0, rgb(color));
+            ui.label(egui::RichText::new(text).small());
+        });
     }
 }
 
@@ -374,4 +488,25 @@ fn chart(ui: &mut egui::Ui, lang: Lang, s: &Section) -> Option<usize> {
     }
     painter.text(plot.left_top() + egui::vec2(6.0, 2.0), egui::Align2::LEFT_TOP, parts.join(", "), font, text_color);
     Some(i)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::legend_rows;
+    use crate::i18n::Lang;
+
+    #[test]
+    fn legend_follows_crust_and_slabs() {
+        // Без модели коры - кора PREM, с моделью - слои CRUST1.0 и мантия
+        // от Мохо, как `CutawayLegend` модуля.
+        let plain: Vec<String> = legend_rows(Lang::EN, false, false, false).into_iter().map(|r| r.0).collect();
+        assert_eq!(plain.first().map(String::as_str), Some("Crust, 0-24.4"));
+        assert_eq!(plain.last().map(String::as_str), Some("Inner core, 5149.5-6371"));
+        assert_eq!(plain.len(), 6);
+        let full: Vec<String> = legend_rows(Lang::EN, true, true, true).into_iter().map(|r| r.0).collect();
+        assert!(full.iter().any(|r| r == "Oceanic crust, upper"));
+        assert!(full.iter().any(|r| r == "Slab2 slab"));
+        assert!(full.iter().any(|r| r == "Upper mantle, Moho-400"));
+        assert!(!full.iter().any(|r| r.starts_with("Crust,")));
+    }
 }

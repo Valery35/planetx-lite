@@ -1298,3 +1298,26 @@ Loading: {what}.	불러오는 중: {what}.
 Moho {depth}	모호면 {depth}
 slab {top}-{bottom}	슬랩 {top}-{bottom}
 earthquakes	지진
+Inner core	내핵
+Outer core	외핵
+Lower mantle	하부 맨틀
+Transition zone	전이대
+Upper mantle	상부 맨틀
+Crust	지각
+Ice	얼음
+Upper sediments	상부 퇴적층
+Middle sediments	중부 퇴적층
+Lower sediments	하부 퇴적층
+Upper crust	상부 지각
+Middle crust	중부 지각
+Lower crust	하부 지각
+upper	상부
+middle	중부
+lower	하부
+Continental crust, {part}	대륙 지각, {part}
+Oceanic crust, {part}	해양 지각, {part}
+Slab2 slab	Slab2 슬랩
+{name}, Moho-{depth}	{name}, 모호면-{depth}
+CRUST1.0 crust, PREM shells, depth, km	CRUST1.0 지각, PREM 층, 깊이, km
+PREM shells, depth, km	PREM 층, 깊이, km
+The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	지각 모델 CRUST1.0을 불러오지 않아 지각은 PREM 층입니다.

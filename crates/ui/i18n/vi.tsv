@@ -1298,3 +1298,26 @@ Loading: {what}.	Đang tải: {what}.
 Moho {depth}	Moho {depth}
 slab {top}-{bottom}	mảng {top}-{bottom}
 earthquakes	động đất
+Inner core	Lõi trong
+Outer core	Lõi ngoài
+Lower mantle	Manti dưới
+Transition zone	Đới chuyển tiếp
+Upper mantle	Manti trên
+Crust	Vỏ
+Ice	Băng
+Upper sediments	Trầm tích trên
+Middle sediments	Trầm tích giữa
+Lower sediments	Trầm tích dưới
+Upper crust	Vỏ trên
+Middle crust	Vỏ giữa
+Lower crust	Vỏ dưới
+upper	trên
+middle	giữa
+lower	dưới
+Continental crust, {part}	Vỏ lục địa, {part}
+Oceanic crust, {part}	Vỏ đại dương, {part}
+Slab2 slab	Mảng Slab2
+{name}, Moho-{depth}	{name}, Moho-{depth}
+CRUST1.0 crust, PREM shells, depth, km	Vỏ CRUST1.0, các lớp PREM, độ sâu, km
+PREM shells, depth, km	Các lớp PREM, độ sâu, km
+The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	Chưa tải mô hình vỏ CRUST1.0, vỏ là một lớp của PREM.

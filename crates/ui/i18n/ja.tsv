@@ -1298,3 +1298,26 @@ Loading: {what}.	読み込み中：{what}。
 Moho {depth}	モホ面 {depth}
 slab {top}-{bottom}	スラブ {top}-{bottom}
 earthquakes	地震
+Inner core	内核
+Outer core	外核
+Lower mantle	下部マントル
+Transition zone	遷移層
+Upper mantle	上部マントル
+Crust	地殻
+Ice	氷
+Upper sediments	上部堆積層
+Middle sediments	中部堆積層
+Lower sediments	下部堆積層
+Upper crust	上部地殻
+Middle crust	中部地殻
+Lower crust	下部地殻
+upper	上部
+middle	中部
+lower	下部
+Continental crust, {part}	大陸地殻、{part}
+Oceanic crust, {part}	海洋地殻、{part}
+Slab2 slab	Slab2 のスラブ
+{name}, Moho-{depth}	{name}、モホ面-{depth}
+CRUST1.0 crust, PREM shells, depth, km	CRUST1.0 の地殻、PREM の層、深さ、km
+PREM shells, depth, km	PREM の層、深さ、km
+The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	地殻モデル CRUST1.0 が読み込まれていないため、地殻は PREM の層です。

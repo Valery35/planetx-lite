@@ -1298,3 +1298,26 @@ Loading: {what}.	Yükleniyor: {what}.
 Moho {depth}	Moho {depth}
 slab {top}-{bottom}	levha {top}-{bottom}
 earthquakes	depremler
+Inner core	İç çekirdek
+Outer core	Dış çekirdek
+Lower mantle	Alt manto
+Transition zone	Geçiş zonu
+Upper mantle	Üst manto
+Crust	Kabuk
+Ice	Buz
+Upper sediments	Üst çökeller
+Middle sediments	Orta çökeller
+Lower sediments	Alt çökeller
+Upper crust	Üst kabuk
+Middle crust	Orta kabuk
+Lower crust	Alt kabuk
+upper	üst
+middle	orta
+lower	alt
+Continental crust, {part}	Kıtasal kabuk, {part}
+Oceanic crust, {part}	Okyanusal kabuk, {part}
+Slab2 slab	Slab2 levhası
+{name}, Moho-{depth}	{name}, Moho-{depth}
+CRUST1.0 crust, PREM shells, depth, km	CRUST1.0 kabuğu, PREM kabukları, derinlik, km
+PREM shells, depth, km	PREM kabukları, derinlik, km
+The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	CRUST1.0 kabuk modeli yüklenmedi, kabuk bir PREM katmanıdır.

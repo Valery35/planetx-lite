@@ -1298,3 +1298,26 @@ Loading: {what}.	Laden: {what}.
 Moho {depth}	Moho {depth}
 slab {top}-{bottom}	plaat {top}-{bottom}
 earthquakes	aardbevingen
+Inner core	Binnenkern
+Outer core	Buitenkern
+Lower mantle	Ondermantel
+Transition zone	Overgangszone
+Upper mantle	Bovenmantel
+Crust	Korst
+Ice	IJs
+Upper sediments	Bovenste sedimenten
+Middle sediments	Middelste sedimenten
+Lower sediments	Onderste sedimenten
+Upper crust	Bovenkorst
+Middle crust	Middenkorst
+Lower crust	Onderkorst
+upper	bovenste
+middle	middelste
+lower	onderste
+Continental crust, {part}	Continentale korst, {part}
+Oceanic crust, {part}	Oceanische korst, {part}
+Slab2 slab	Plaat Slab2
+{name}, Moho-{depth}	{name}, Moho-{depth}
+CRUST1.0 crust, PREM shells, depth, km	Korst CRUST1.0, schillen PREM, diepte, km
+PREM shells, depth, km	Schillen PREM, diepte, km
+The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	Het korstmodel CRUST1.0 is niet geladen, de korst is een laag van PREM.

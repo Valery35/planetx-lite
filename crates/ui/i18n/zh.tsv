@@ -1298,3 +1298,26 @@ Loading: {what}.	正在加载：{what}。
 Moho {depth}	莫霍面 {depth}
 slab {top}-{bottom}	板片 {top}-{bottom}
 earthquakes	地震
+Inner core	内核
+Outer core	外核
+Lower mantle	下地幔
+Transition zone	过渡带
+Upper mantle	上地幔
+Crust	地壳
+Ice	冰
+Upper sediments	上部沉积层
+Middle sediments	中部沉积层
+Lower sediments	下部沉积层
+Upper crust	上地壳
+Middle crust	中地壳
+Lower crust	下地壳
+upper	上部
+middle	中部
+lower	下部
+Continental crust, {part}	大陆地壳，{part}
+Oceanic crust, {part}	大洋地壳，{part}
+Slab2 slab	Slab2 俯冲板片
+{name}, Moho-{depth}	{name}，莫霍面-{depth}
+CRUST1.0 crust, PREM shells, depth, km	CRUST1.0 地壳，PREM 圈层，深度，公里
+PREM shells, depth, km	PREM 圈层，深度，公里
+The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	未加载 CRUST1.0 地壳模型，地壳为 PREM 的一层。

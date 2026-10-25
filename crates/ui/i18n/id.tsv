@@ -1298,3 +1298,26 @@ Loading: {what}.	Memuat: {what}.
 Moho {depth}	Moho {depth}
 slab {top}-{bottom}	lempeng {top}-{bottom}
 earthquakes	gempa bumi
+Inner core	Inti dalam
+Outer core	Inti luar
+Lower mantle	Mantel bawah
+Transition zone	Zona transisi
+Upper mantle	Mantel atas
+Crust	Kerak
+Ice	Es
+Upper sediments	Sedimen atas
+Middle sediments	Sedimen tengah
+Lower sediments	Sedimen bawah
+Upper crust	Kerak atas
+Middle crust	Kerak tengah
+Lower crust	Kerak bawah
+upper	atas
+middle	tengah
+lower	bawah
+Continental crust, {part}	Kerak benua, {part}
+Oceanic crust, {part}	Kerak samudra, {part}
+Slab2 slab	Lempeng Slab2
+{name}, Moho-{depth}	{name}, Moho-{depth}
+CRUST1.0 crust, PREM shells, depth, km	Kerak CRUST1.0, lapisan PREM, kedalaman, km
+PREM shells, depth, km	Lapisan PREM, kedalaman, km
+The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	Model kerak CRUST1.0 tidak dimuat, kerak adalah lapisan PREM.

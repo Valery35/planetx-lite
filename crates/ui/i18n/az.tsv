@@ -1298,3 +1298,26 @@ Loading: {what}.	Yüklənir: {what}.
 Moho {depth}	Moho {depth}
 slab {top}-{bottom}	lövhə {top}-{bottom}
 earthquakes	zəlzələlər
+Inner core	Daxili nüvə
+Outer core	Xarici nüvə
+Lower mantle	Aşağı mantiya
+Transition zone	Keçid zonası
+Upper mantle	Yuxarı mantiya
+Crust	Qabıq
+Ice	Buz
+Upper sediments	Yuxarı çöküntülər
+Middle sediments	Orta çöküntülər
+Lower sediments	Aşağı çöküntülər
+Upper crust	Yuxarı qabıq
+Middle crust	Orta qabıq
+Lower crust	Aşağı qabıq
+upper	yuxarı
+middle	orta
+lower	aşağı
+Continental crust, {part}	Kontinental qabıq, {part}
+Oceanic crust, {part}	Okean qabığı, {part}
+Slab2 slab	Slab2 lövhəsi
+{name}, Moho-{depth}	{name}, Moho-{depth}
+CRUST1.0 crust, PREM shells, depth, km	CRUST1.0 qabığı, PREM təbəqələri, dərinlik, km
+PREM shells, depth, km	PREM təbəqələri, dərinlik, km
+The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	CRUST1.0 qabıq modeli yüklənməyib, qabıq PREM layıdır.

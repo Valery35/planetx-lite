@@ -1298,3 +1298,26 @@ Loading: {what}.	იტვირთება: {what}.
 Moho {depth}	მოჰო {depth}
 slab {top}-{bottom}	ფილა {top}-{bottom}
 earthquakes	მიწისძვრები
+Inner core	შიდა ბირთვი
+Outer core	გარე ბირთვი
+Lower mantle	ქვედა მანტია
+Transition zone	გარდამავალი ზონა
+Upper mantle	ზედა მანტია
+Crust	ქერქი
+Ice	ყინული
+Upper sediments	ზედა ნალექები
+Middle sediments	შუა ნალექები
+Lower sediments	ქვედა ნალექები
+Upper crust	ზედა ქერქი
+Middle crust	შუა ქერქი
+Lower crust	ქვედა ქერქი
+upper	ზედა
+middle	შუა
+lower	ქვედა
+Continental crust, {part}	კონტინენტური ქერქი, {part}
+Oceanic crust, {part}	ოკეანური ქერქი, {part}
+Slab2 slab	Slab2-ის ფილა
+{name}, Moho-{depth}	{name}, მოჰო-{depth}
+CRUST1.0 crust, PREM shells, depth, km	CRUST1.0-ის ქერქი, PREM-ის გარსები, სიღრმე, კმ
+PREM shells, depth, km	PREM-ის გარსები, სიღრმე, კმ
+The CRUST1.0 crust model is not loaded, the crust is a PREM layer.	ქერქის მოდელი CRUST1.0 არ ჩაიტვირთა, ქერქი PREM-ის ფენაა.
