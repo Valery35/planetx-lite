@@ -1393,3 +1393,5 @@ Constellations and bright objects	Bürclər və parlaq obyektlər
 The program is free and open source.	Proqram pulsuz və açıq mənbəlidir.
 Support development	İnkişafa dəstək ol
 Russian bank cards via SBP.	SBP vasitəsilə Rusiya bank kartları.
+3D buildings, Overture Maps	3D binalar, Overture Maps
+Volumetric buildings of Overture Maps - OpenStreetMap together with the open sets of Microsoft, Google Open Buildings and Esri in one PMTiles archive. Where OpenStreetMap is incomplete, for example in Africa and Asia, there are more buildings. They show when the camera is closer than 6 km to the ground. The height is the height field, otherwise the number of floors times 3.66 m. The row replaces the 3D buildings of the vector base.	Overture Maps həcmli binaları - OpenStreetMap, Microsoft, Google Open Buildings və Esri açıq dəstləri ilə birlikdə bir PMTiles arxivində. OpenStreetMap natamam olan yerlərdə, məsələn, Afrika və Asiyada, binalar daha çoxdur. Kamera yerə 6 km-dən yaxın olduqda görünür. Hündürlük hündürlük sahəsidir, yoxsa mərtəbə sayı vurulsun 3,66 m. Sətir vektor əsasın 3D binalarını əvəz edir.

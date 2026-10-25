@@ -386,6 +386,8 @@ pub struct LiteApp {
     /// Строка «3D-здания», тайлы зданий загрузчика OpenFreeMap и те из них,
     /// что нужны только зданиям.
     buildings: Option<crate::buildings::Buildings>,
+    /// Загрузчик зданий Overture, когда здания из него.
+    overture: Option<crate::overture::Overture>,
     building_keys: HashSet<TileKey>,
     building_only: HashSet<TileKey>,
     /// Сведения об участках кадастра под щелчком: точка и запрос, пришедшие
@@ -962,6 +964,7 @@ impl LiteApp {
             overpass_mirrors: crate::overpass::Mirrors::default(),
             mining: None,
             buildings: None,
+            overture: None,
             building_keys: HashSet::new(),
             building_only: HashSet::new(),
             parcel_ask: None,
@@ -2540,13 +2543,26 @@ impl LiteApp {
                     self.refresh_painters();
                 }
             }
-            Extra::Buildings => {
-                if on {
-                    self.buildings.get_or_insert_with(crate::buildings::Buildings::default);
-                } else if let Some(mut b) = self.buildings.take()
+            // Здания основы и Overture - одно место: включение строки
+            // снимает другую (`extra_slot`), разобранные тайлы прежнего
+            // источника забываются.
+            Extra::Buildings | Extra::Overture => {
+                // Снятие строки, которая уже не на глобусе, ничего не трогает.
+                let active = self.buildings.is_some() && self.overture.is_some() == (extra == Extra::Overture);
+                if (on || active)
+                    && let Some(mut b) = self.buildings.take()
                     && let Some(globe) = &mut self.globe
                 {
                     b.clear(globe);
+                }
+                if on || active {
+                    self.overture = None;
+                }
+                if on {
+                    self.buildings = Some(crate::buildings::Buildings::default());
+                    if extra == Extra::Overture {
+                        self.overture = Some(crate::overture::Overture::new(&*self.loaders.request));
+                    }
                 }
             }
             Extra::Mining => {
@@ -5644,6 +5660,9 @@ impl LiteApp {
         if self.currents.is_some() {
             parts.push(data::flow::CURRENTS_ATTRIBUTION);
         }
+        if self.overture.is_some() {
+            parts.push(crate::overture::ATTRIBUTION);
+        }
         if self.rumsey.is_some() {
             parts.push(data::rumsey::ATTRIBUTION);
         }
@@ -6064,6 +6083,7 @@ impl eframe::App for LiteApp {
             || self.rumsey.as_ref().is_some_and(crate::rumsey::Rumsey::busy)
             || self.sentinel.as_ref().is_some_and(crate::sentinel::Sentinel::busy)
             || self.buildings.as_ref().is_some_and(|b| b.busy(self.heights.read().version()))
+            || self.overture.as_ref().is_some_and(crate::overture::Overture::busy)
             || self.osm_mines.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.osm_infra.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.satellites.as_ref().is_some_and(crate::satellites::Satellites::busy)
@@ -6360,9 +6380,19 @@ impl eframe::App for LiteApp {
             let (lat, lon, _) = cam.ellipsoid.ecef_to_geodetic(cam.eye);
             let forward = -cam.rotation.z_axis;
             let wanted = b.want(cam.eye.to_array(), forward.to_array(), store.height_at(lat, lon));
-            self.building_keys = b.wanted.iter().copied().collect();
-            self.building_only = wanted.iter().map(|(k, _)| *k).filter(|k| !vector_tiles.iter().any(|(v, _)| v == k)).collect();
-            vector_tiles.extend(wanted.into_iter().filter(|(k, _)| self.building_only.contains(k)));
+            if let Some(overture) = &mut self.overture {
+                // Здания Overture - своим загрузчиком архива PMTiles.
+                self.building_keys.clear();
+                self.building_only.clear();
+                let keys: Vec<TileKey> = wanted.iter().map(|(k, _)| *k).collect();
+                for (key, bytes) in overture.step(&keys, now, &*self.loaders.request) {
+                    b.add(key, bytes);
+                }
+            } else {
+                self.building_keys = b.wanted.iter().copied().collect();
+                self.building_only = wanted.iter().map(|(k, _)| *k).filter(|k| !vector_tiles.iter().any(|(v, _)| v == k)).collect();
+                vector_tiles.extend(wanted.into_iter().filter(|(k, _)| self.building_only.contains(k)));
+            }
             let heights = |lats: &[f64], lons: &[f64]| -> Vec<f64> {
                 let points: Vec<(f64, f64)> = lats.iter().copied().zip(lons.iter().copied()).collect();
                 store.heights_at(&points, true)
@@ -6787,6 +6817,7 @@ fn extra_slot(extra: crate::layers::Extra) -> Option<u8> {
     match extra {
         crate::layers::Extra::Map(_) => extra.map().and_then(|e| crate::maps::kind(e.key)).and_then(|k| k.slot()),
         crate::layers::Extra::Dots(crate::dots::Layer::Fires) => Some(0),
+        crate::layers::Extra::Buildings | crate::layers::Extra::Overture => Some(9),
         _ => None,
     }
 }

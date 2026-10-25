@@ -1393,3 +1393,5 @@ Constellations and bright objects	星座和亮天体
 The program is free and open source.	本程序免费且开源。
 Support development	支持开发
 Russian bank cards via SBP.	通过 SBP 使用俄罗斯银行卡。
+3D buildings, Overture Maps	三维建筑，Overture Maps
+Volumetric buildings of Overture Maps - OpenStreetMap together with the open sets of Microsoft, Google Open Buildings and Esri in one PMTiles archive. Where OpenStreetMap is incomplete, for example in Africa and Asia, there are more buildings. They show when the camera is closer than 6 km to the ground. The height is the height field, otherwise the number of floors times 3.66 m. The row replaces the 3D buildings of the vector base.	Overture Maps 立体建筑——OpenStreetMap 与 Microsoft、Google Open Buildings 和 Esri 的开放数据集合为一个 PMTiles 档案。在 OpenStreetMap 不完整的地方，例如非洲和亚洲，建筑更多。相机离地面不到 6 公里时显示。高度取高度字段，否则为楼层数乘以 3.66 米。此行替代矢量底图的三维建筑。

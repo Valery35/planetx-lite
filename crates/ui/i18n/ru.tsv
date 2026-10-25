@@ -1393,3 +1393,5 @@ Constellations and bright objects	Созвездия и яркие объект�
 The program is free and open source.	Программа бесплатная и открытая.
 Support development	Поддержать разработку
 Russian bank cards via SBP.	Карты российских банков через СБП.
+3D buildings, Overture Maps	3D-здания Overture Maps
+Volumetric buildings of Overture Maps - OpenStreetMap together with the open sets of Microsoft, Google Open Buildings and Esri in one PMTiles archive. Where OpenStreetMap is incomplete, for example in Africa and Asia, there are more buildings. They show when the camera is closer than 6 km to the ground. The height is the height field, otherwise the number of floors times 3.66 m. The row replaces the 3D buildings of the vector base.	Объёмные здания Overture Maps - OpenStreetMap вместе с открытыми наборами Microsoft, Google Open Buildings и Esri одним архивом PMTiles. Там, где OpenStreetMap неполон, например в Африке и Азии, зданий больше. Здания видны, когда камера ближе 6 км к земле. Высота - поле высоты, иначе количество этажей, умноженное на 3.66 м. Строка заменяет 3D-здания векторной основы.

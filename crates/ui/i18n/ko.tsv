@@ -1393,3 +1393,5 @@ Constellations and bright objects	별자리와 밝은 천체
 The program is free and open source.	이 프로그램은 무료 오픈 소스입니다.
 Support development	개발 후원
 Russian bank cards via SBP.	SBP를 통한 러시아 은행 카드.
+3D buildings, Overture Maps	3D 건물, Overture Maps
+Volumetric buildings of Overture Maps - OpenStreetMap together with the open sets of Microsoft, Google Open Buildings and Esri in one PMTiles archive. Where OpenStreetMap is incomplete, for example in Africa and Asia, there are more buildings. They show when the camera is closer than 6 km to the ground. The height is the height field, otherwise the number of floors times 3.66 m. The row replaces the 3D buildings of the vector base.	Overture Maps 입체 건물 - OpenStreetMap과 Microsoft, Google Open Buildings, Esri의 공개 데이터를 하나의 PMTiles 아카이브로 묶은 것입니다. 아프리카와 아시아처럼 OpenStreetMap이 불완전한 곳에서는 건물이 더 많습니다. 카메라가 지면에서 6 km 이내일 때 보입니다. 높이는 높이 필드이며, 없으면 층수에 3.66 m를 곱합니다. 이 행은 벡터 기본도의 3D 건물을 대신합니다.

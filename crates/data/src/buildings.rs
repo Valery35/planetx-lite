@@ -55,8 +55,13 @@ pub const MAX_VERTICES: usize = 1_500_000;
 /// `Ok(None)` у [`footprints`], ошибка разбора - `Err`.
 pub const EMPTY: &str = "empty";
 
-/// Атрибуты слоя, которые нужны зданиям.
-const WANTED: [&str; 4] = ["render_height", "render_min_height", "hide_3d", "colour"];
+/// Высота этажа и здания без высоты и этажей, метры, - как у генератора
+/// тайлов OpenMapTiles. По ним считаются здания Overture Maps.
+pub const FLOOR: f64 = 3.66;
+pub const DEFAULT_HEIGHT: f64 = 5.0;
+
+/// Атрибуты слоя, которые нужны зданиям: схемы OpenMapTiles и Overture.
+const WANTED: [&str; 10] = ["render_height", "render_min_height", "hide_3d", "colour", "is_underground", "facade_color", "height", "min_height", "num_floors", "min_floor"];
 /// Наибольшая широта сетки Web Mercator, градусы.
 const MAX_LAT: f64 = 85.051_128_779_806_59;
 /// Наибольшее количество тайлов-кандидатов у [`near_tiles`].
@@ -147,6 +152,20 @@ fn number(value: Option<&Value>) -> f64 {
     }
 }
 
+/// Высота верха и низа здания, метры. Схема OpenMapTiles - render_height
+/// и render_min_height. Схема Overture Maps - height, min_height, иначе
+/// этажи num_floors и min_floor по [`FLOOR`], иначе [`DEFAULT_HEIGHT`],
+/// как делает генератор тайлов OpenMapTiles.
+pub fn heights(attrs: &HashMap<String, Value>) -> (f64, f64) {
+    let given = |k: &str| attrs.get(k).filter(|v| truthy(v));
+    if attrs.contains_key("render_height") {
+        return (number(given("render_height")), number(given("render_min_height")));
+    }
+    let height = given("height").map(|v| number(Some(v))).or_else(|| given("num_floors").map(|v| number(Some(v)) * FLOOR));
+    let base = given("min_height").map(|v| number(Some(v))).or_else(|| given("min_floor").map(|v| number(Some(v)) * FLOOR));
+    (height.unwrap_or(DEFAULT_HEIGHT), base.unwrap_or(0.0))
+}
+
 /// Площадь кольца со знаком по формуле трапеций.
 pub fn area(ring: &[P]) -> f64 {
     let n = ring.len();
@@ -189,15 +208,14 @@ pub fn decode(data: &[u8]) -> Result<(Vec<Building>, u32), DecodeError> {
             continue;
         }
         let attrs: &HashMap<String, Value> = &feature.attrs;
-        if attrs.get("hide_3d").is_some_and(truthy) {
+        if attrs.get("hide_3d").is_some_and(truthy) || attrs.get("is_underground").is_some_and(truthy) {
             continue;
         }
-        let height = number(attrs.get("render_height").filter(|v| truthy(v)));
-        let base = number(attrs.get("render_min_height").filter(|v| truthy(v)));
+        let (height, base) = heights(attrs);
         if !(height.is_finite() && base.is_finite()) || height <= base {
             continue;
         }
-        let color = attrs.get("colour").and_then(Value::as_str).and_then(parse_color);
+        let color = attrs.get("colour").filter(|v| truthy(v)).or_else(|| attrs.get("facade_color")).and_then(Value::as_str).and_then(parse_color);
         let mut rings: Vec<Vec<P>> = Vec::new();
         for (ring, s) in feature.parts.iter().filter_map(|p| ring_of(p)) {
             if s > 0.0 {

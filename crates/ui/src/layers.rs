@@ -49,6 +49,8 @@ pub enum Extra {
     Mining,
     /// 3D-здания OpenFreeMap.
     Buildings,
+    /// 3D-здания Overture Maps архивом PMTiles.
+    Overture,
     /// Течения NOAA CoastWatch.
     Currents,
 }
@@ -70,6 +72,7 @@ impl Extra {
         out.push(Extra::Satellites);
         out.push(Extra::Mining);
         out.push(Extra::Buildings);
+        out.push(Extra::Overture);
         out.push(Extra::Currents);
         out
     }
@@ -104,6 +107,7 @@ impl Extra {
             Extra::Satellites => "Satellites",
             Extra::Mining => "Mining areas",
             Extra::Buildings => "3D buildings",
+            Extra::Overture => "3D buildings, Overture Maps",
             Extra::Currents => "Currents",
         }
     }
@@ -127,6 +131,7 @@ impl Extra {
             Extra::Live(k) => k.tip(),
             Extra::Currents => "Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.",
             Extra::Buildings => "Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.",
+            Extra::Overture => "Volumetric buildings of Overture Maps - OpenStreetMap together with the open sets of Microsoft, Google Open Buildings and Esri in one PMTiles archive. Where OpenStreetMap is incomplete, for example in Africa and Asia, there are more buildings. They show when the camera is closer than 6 km to the ground. The height is the height field, otherwise the number of floors times 3.66 m. The row replaces the 3D buildings of the vector base.",
             Extra::Mining => "Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.",
             Extra::Satellites => "Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.",
             Extra::Wiki => "Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.",
@@ -162,7 +167,7 @@ impl Extra {
             Extra::Wiki => Category::Wiki,
             Extra::Satellites => Category::Sky,
             Extra::Mining => Category::Depths,
-            Extra::Buildings => Category::Map,
+            Extra::Buildings | Extra::Overture => Category::Map,
             Extra::Currents => Category::Water,
         }
     }
@@ -184,6 +189,7 @@ impl Extra {
             Extra::Satellites => "satellites",
             Extra::Mining => "mining",
             Extra::Buildings => "buildings",
+            Extra::Overture => "overture",
             Extra::Currents => "currents",
         }
     }
@@ -687,6 +693,7 @@ impl Item {
             Item::Extra(Extra::Satellites) | Item::Sat(_) => "CelesTrak",
             Item::Extra(Extra::Mining) => "Maus et al. 2022",
             Item::Extra(Extra::Buildings) => "OpenFreeMap",
+            Item::Extra(Extra::Overture) => "Overture Maps",
             Item::Extra(Extra::Currents) => "NOAA CoastWatch",
             Item::Extra(Extra::Cutaway) => "PREM, CRUST1.0, Slab2",
             Item::Extra(Extra::Paleo) => "PALEOMAP",
@@ -744,6 +751,7 @@ fn items() -> Vec<Item> {
     out.extend((0..TREE.len()).map(Item::Group));
     out.push(Item::Extra(Extra::Grid));
     out.push(Item::Extra(Extra::Buildings));
+    out.push(Item::Extra(Extra::Overture));
     out.push(Item::Extra(Extra::Stars));
     out.push(Item::Extra(Extra::Air));
     out.push(Item::Extra(Extra::Sun));

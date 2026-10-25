@@ -1393,3 +1393,5 @@ Constellations and bright objects	Sternbilder und helle Objekte
 The program is free and open source.	Das Programm ist kostenlos und quelloffen.
 Support development	Entwicklung unterstützen
 Russian bank cards via SBP.	Karten russischer Banken über SBP.
+3D buildings, Overture Maps	3D-Gebäude, Overture Maps
+Volumetric buildings of Overture Maps - OpenStreetMap together with the open sets of Microsoft, Google Open Buildings and Esri in one PMTiles archive. Where OpenStreetMap is incomplete, for example in Africa and Asia, there are more buildings. They show when the camera is closer than 6 km to the ground. The height is the height field, otherwise the number of floors times 3.66 m. The row replaces the 3D buildings of the vector base.	Gebäude von Overture Maps - OpenStreetMap zusammen mit den offenen Datensätzen von Microsoft, Google Open Buildings und Esri in einem PMTiles-Archiv. Wo OpenStreetMap unvollständig ist, etwa in Afrika und Asien, gibt es mehr Gebäude. Sie erscheinen, wenn die Kamera näher als 6 km am Boden ist. Die Höhe ist das Höhenfeld, sonst die Anzahl der Geschosse mal 3,66 m. Die Zeile ersetzt die 3D-Gebäude der Vektorbasis.

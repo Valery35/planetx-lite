@@ -1393,3 +1393,5 @@ Constellations and bright objects	Chòm sao và thiên thể sáng
 The program is free and open source.	Chương trình miễn phí và mã nguồn mở.
 Support development	Ủng hộ phát triển
 Russian bank cards via SBP.	Thẻ ngân hàng Nga qua SBP.
+3D buildings, Overture Maps	Tòa nhà 3D, Overture Maps
+Volumetric buildings of Overture Maps - OpenStreetMap together with the open sets of Microsoft, Google Open Buildings and Esri in one PMTiles archive. Where OpenStreetMap is incomplete, for example in Africa and Asia, there are more buildings. They show when the camera is closer than 6 km to the ground. The height is the height field, otherwise the number of floors times 3.66 m. The row replaces the 3D buildings of the vector base.	Tòa nhà khối của Overture Maps - OpenStreetMap cùng các bộ dữ liệu mở của Microsoft, Google Open Buildings và Esri trong một kho PMTiles. Nơi OpenStreetMap chưa đủ, ví dụ ở châu Phi và châu Á, có nhiều tòa nhà hơn. Chúng hiện khi máy ảnh gần mặt đất hơn 6 km. Chiều cao là trường chiều cao, nếu không thì số tầng nhân 3,66 m. Dòng này thay thế tòa nhà 3D của nền vectơ.

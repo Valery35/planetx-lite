@@ -102,6 +102,7 @@ pub mod places;
 pub mod plants;
 pub mod platemotion;
 pub mod plates;
+pub mod pmtiles;
 pub mod quakes;
 pub mod rastermaps;
 pub mod routing;

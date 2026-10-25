@@ -194,6 +194,17 @@ fn parse_color() {
 }
 
 #[test]
+fn overture_heights() {
+    // Схема OpenMapTiles главнее, у Overture - высота, иначе этажи.
+    let attrs = |pairs: &[(&str, f64)]| -> HashMap<String, mvt::Value> { pairs.iter().map(|(k, v)| (k.to_string(), mvt::Value::Float(*v))).collect() };
+    assert_eq!(bd::heights(&attrs(&[("render_height", 20.0), ("render_min_height", 5.0), ("height", 99.0)])), (20.0, 5.0));
+    assert_eq!(bd::heights(&attrs(&[("height", 31.5), ("min_height", 3.0)])), (31.5, 3.0));
+    let (top, base) = bd::heights(&attrs(&[("num_floors", 4.0), ("min_floor", 1.0)]));
+    assert!((top - 4.0 * bd::FLOOR).abs() < 1e-9 && (base - bd::FLOOR).abs() < 1e-9);
+    assert_eq!(bd::heights(&HashMap::new()), (bd::DEFAULT_HEIGHT, 0.0));
+}
+
+#[test]
 fn hostile_tiles_do_not_break() {
     // Обрывки и мусор - ошибка разбора или пустой тайл, не падение.
     let good = tile(&[vec![square(10.0, 10.0, 20.0)]], 10);

@@ -120,6 +120,7 @@ fn layer_words(extra: Extra) -> &'static [&'static str] {
         Extra::Cutaway => &["разрез земли", "разрез", "ядро", "мантия", "кора", "cutaway", "core", "mantle", "crust"],
         Extra::Currents => &["течения", "океан", "гольфстрим", "currents", "ocean"],
         Extra::Buildings => &["здания", "дома", "3d", "buildings"],
+        Extra::Overture => &["здания", "overture", "buildings", "3d"],
         Extra::Mining => &["карьеры", "отвалы", "горные работы", "mining", "pits"],
         Extra::Satellites => &["мкс", "спутники", "орбиты", "starlink", "iss", "satellites"],
         Extra::Wiki => &["википедия", "энциклопедия", "статьи", "достопримечательности", "wikipedia", "encyclopedia", "articles", "landmarks"],
