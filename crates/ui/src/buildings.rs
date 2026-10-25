@@ -39,6 +39,8 @@ pub struct Buildings {
     shown: HashMap<TileKey, u64>,
 }
 
+// У страницы канала разбора нет, и умолчание выводится само.
+#[cfg_attr(target_arch = "wasm32", allow(clippy::derivable_impls))]
 impl Default for Buildings {
     fn default() -> Self {
         Self {

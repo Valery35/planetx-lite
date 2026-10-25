@@ -243,6 +243,12 @@ impl Worker {
         self.acquire().map_err(Some)?;
         let stats = &self.shared.stats;
         stats.request_started();
+        if let Some(rule) = crate::host_rule(url) {
+            let result = rule_get(url, rule, limit, TIMEOUT).map_err(|(code, e)| if code == 404 { None } else { Some(e) });
+            stats.request_finished();
+            self.release();
+            return result;
+        }
         let result = self
             .agent
             .get(url)
@@ -273,6 +279,66 @@ impl Worker {
         *lock(&self.shared.permits) += 1;
         self.shared.permit_freed.notify_one();
     }
+}
+
+/// Запрос GET к узлу со своими правилами ([`crate::host_rule`]): свой
+/// корневой сертификат и заголовок `Referer`. Запрос HTTP/1.0 собирается
+/// здесь: ureq пишет имена заголовков строчными буквами, а служба НСПД
+/// на «referer» отвечает 403, на «Referer» - 200 (проверено 25 октября
+/// 2026 года). Ответ HTTP/1.0 идёт без кусков и до закрытия соединения.
+/// Ошибка - код ответа (0 - не HTTP) и текст.
+fn rule_get(url: &str, rule: &crate::HostRule, limit: u64, timeout: Duration) -> Result<Vec<u8>, (u16, String)> {
+    use rustls_pki_types::pem::PemObject;
+    use std::io::{Read, Write};
+    let fail = |e: String| (0u16, e);
+    let rest = url.strip_prefix("https://").ok_or_else(|| fail("only https".into()))?;
+    let (authority, path) = rest.find('/').map_or((rest, "/"), |i| (&rest[..i], &rest[i..]));
+    let (host, port) = match authority.rsplit_once(':') {
+        Some((h, p)) => (h, p.parse::<u16>().map_err(|e| fail(e.to_string()))?),
+        None => (authority, 443),
+    };
+    let mut roots = rustls::RootCertStore::empty();
+    for cert in rustls_pki_types::CertificateDer::pem_slice_iter(rule.root).flatten() {
+        let _ = roots.add(cert);
+    }
+    let config = rustls::ClientConfig::builder_with_provider(Arc::new(rustls::crypto::ring::default_provider()))
+        .with_safe_default_protocol_versions()
+        .map_err(|e| fail(e.to_string()))?
+        .with_root_certificates(roots)
+        .with_no_client_auth();
+    let name = rustls_pki_types::ServerName::try_from(host.to_string()).map_err(|e| fail(e.to_string()))?;
+    let conn = rustls::ClientConnection::new(Arc::new(config), name).map_err(|e| fail(e.to_string()))?;
+    let address = std::net::ToSocketAddrs::to_socket_addrs(&(host, port)).map_err(|e| fail(e.to_string()))?.next().ok_or_else(|| fail("no address".into()))?;
+    let tcp = std::net::TcpStream::connect_timeout(&address, timeout).map_err(|e| fail(e.to_string()))?;
+    let _ = tcp.set_read_timeout(Some(timeout));
+    let _ = tcp.set_write_timeout(Some(timeout));
+    let mut tls = rustls::StreamOwned::new(conn, tcp);
+    let head = format!("GET {path} HTTP/1.0\r\nHost: {host}\r\nUser-Agent: {}\r\nReferer: {}\r\nAccept: */*\r\nConnection: close\r\n\r\n", user_agent(), rule.referer);
+    tls.write_all(head.as_bytes()).map_err(|e| fail(e.to_string()))?;
+    let mut answer = Vec::new();
+    let mut chunk = [0u8; 16384];
+    loop {
+        match tls.read(&mut chunk) {
+            Ok(0) => break,
+            Ok(n) => {
+                answer.extend_from_slice(chunk.get(..n).unwrap_or(&[]));
+                if answer.len() as u64 > limit + 65536 {
+                    return Err(fail("answer is too large".into()));
+                }
+            }
+            // Сервер закрыл соединение без close_notify - ответ уже весь.
+            Err(e) if e.kind() == io::ErrorKind::UnexpectedEof => break,
+            Err(e) => return Err(fail(e.to_string())),
+        }
+    }
+    let split = answer.windows(4).position(|w| w == b"\r\n\r\n").ok_or_else(|| fail("no HTTP header".into()))?;
+    let header = String::from_utf8_lossy(answer.get(..split).unwrap_or(&[])).to_string();
+    let code: u16 = header.split_whitespace().nth(1).and_then(|c| c.parse().ok()).ok_or_else(|| fail("no HTTP status".into()))?;
+    let body = answer.get(split + 4..).unwrap_or(&[]).to_vec();
+    if code != 200 {
+        return Err((code, format!("http status: {code}")));
+    }
+    Ok(body)
 }
 
 /// Байты тайла из кэша и признак свежести.
@@ -334,6 +400,15 @@ impl Request for Requests {
         let body = body.map(<[u8]>::to_vec);
         let spawned = std::thread::Builder::new().name("request".into()).spawn(move || {
             stats.request_started();
+            if body.is_none()
+                && let Some(rule) = crate::host_rule(&url)
+            {
+                let result = rule_get(&url, rule, limit, if limit > LARGE_ANSWER { LONG_TIMEOUT } else { TIMEOUT }).map_err(|(_, e)| e);
+                stats.request_finished();
+                let _ = sender.send(result);
+                on_ready();
+                return;
+            }
             let answer = match body {
                 Some(b) => {
                     let mut request = agent.post(&url);

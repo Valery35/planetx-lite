@@ -40,7 +40,10 @@
 //! - [`slabs`] - погружающиеся плиты Slab2 на разрезах, перенос
 //!   `core/slabs.py` модуля;
 //! - [`cutaway`] - разрез Земли, сектор и оболочки PREM на гранях, перенос
-//!   `core/cutaway.py` модуля.
+//!   `core/cutaway.py` модуля;
+//! - [`flow`] - струйки ветра и течений, заливка скорости течений
+//!   и поле течений ERDDAP, перенос `core/flow.py` модуля;
+//! - [`netcdf`] - чтение netCDF-3 (CDF1 и CDF2) без GDAL.
 
 pub mod areas;
 pub mod aircraft;
@@ -60,6 +63,7 @@ pub mod etomesto;
 pub mod faults;
 pub mod fires;
 pub mod flightsim;
+pub mod flow;
 pub mod geocode;
 pub mod geoid;
 pub mod geology;
@@ -76,6 +80,7 @@ pub mod menulinks;
 pub mod mining;
 pub mod movers;
 pub mod mvt;
+pub mod netcdf;
 mod npz;
 pub mod paleo;
 pub mod places;

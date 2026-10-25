@@ -1197,3 +1197,20 @@ The mining area outline file cannot be read: {path}	Файл контуров г
 Mining area	Горная разработка
 {value} km²	{value} км²
 Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.	Объёмные здания из OpenStreetMap по векторным тайлам OpenFreeMap. Они видны, когда камера ближе 6 км к земле. Высота взята из OSM, иначе из этажности. Здание без этих сведений получает высоту 5 м.
+No parcels under the point	Участков под точкой нет
+Land parcel {number}	Земельный участок {number}
+NSPD map	Карта НСПД
+Cadastral number	Кадастровый номер
+Surveyed area	Площадь уточнённая
+Declared area	Площадь декларированная
+Land category	Категория земель
+Permitted use	Вид разрешённого использования
+Form of ownership	Форма собственности
+Type of right	Вид права
+Cadastral value	Кадастровая стоимость
+Cadastral value per m²	Удельная кадастровая стоимость
+Value determined on	Дата определения стоимости
+Value applies from	Дата применения стоимости
+Registered on	Дата постановки на учёт
+Cadastral block	Кадастровый квартал
+Status	Статус

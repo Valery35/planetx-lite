@@ -28,6 +28,8 @@ pub enum Kind {
     Terrain(Analysis),
     /// Облака по снимкам VIIRS прошлых суток, `core/clouds.py` модуля.
     Clouds,
+    /// Земельные участки НСПД Росреестра, `core/cadastre.py` модуля.
+    Cadastre,
 }
 
 /// Анализ рельефа: на глобусе одна из двух раскрасок, как у модуля.
@@ -66,7 +68,7 @@ pub struct Entry {
 /// Строки: темы GIBS в порядке `gallery_items` модуля, за ними слои
 /// в порядке `LAYERS`. «Повторяемости воды» в списке
 /// каталога модуля нет, её нет и здесь.
-pub const ALL: [Entry; 42] = [
+pub const ALL: [Entry; 43] = [
     Entry {
         key: "clouds",
         name: "Clouds",
@@ -327,6 +329,13 @@ pub const ALL: [Entry; 42] = [
         source: "SoilGrids, ISRIC",
     },
     Entry {
+        key: "cadastre",
+        name: "Rosreestr cadastre",
+        tip: "Land parcels from the National spatial data system of Rosreestr over the imagery, for Russia only. They are seen up close, from about 10 km and lower. The service answers slowly and refuses frequent requests, so the parcels come one tile at a time.",
+        group: Group::Map,
+        source: "Rosreestr NSPD",
+    },
+    Entry {
         key: "sea_marks",
         name: "Sea marks",
         tip: "OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.",
@@ -381,6 +390,9 @@ pub fn kind(key: &str) -> Option<Kind> {
     if key == "clouds" {
         return Some(Kind::Clouds);
     }
+    if key == "cadastre" {
+        return Some(Kind::Cadastre);
+    }
     if let Some(t) = gibs::theme_of(key) {
         return Some(Kind::Theme(t));
     }
@@ -402,7 +414,7 @@ impl Kind {
             Kind::Theme(_) => Some(0),
             Kind::Field(_) | Kind::Map(_) => Some(1),
             Kind::Terrain(_) => Some(2),
-            Kind::Overlay(_) | Kind::Contours(_) | Kind::Clouds => None,
+            Kind::Overlay(_) | Kind::Contours(_) | Kind::Clouds | Kind::Cadastre => None,
         }
     }
 
@@ -421,6 +433,16 @@ impl Kind {
             Kind::Contours(_) => data::contours::LEVEL,
             Kind::Terrain(_) => net::TERRARIUM.max_level,
             Kind::Clouds => data::clouds::MAX_LEVEL,
+            Kind::Cadastre => data::cadastre::MAX_LEVEL,
+        }
+    }
+
+    /// Первый уровень тайлов карты: мельче карта не просится. У кадастра
+    /// участков в мелком тайле тысячи, служба на них отказывает.
+    pub fn min_level(self) -> u32 {
+        match self {
+            Kind::Cadastre => data::cadastre::MIN_LEVEL,
+            _ => 0,
         }
     }
 
@@ -432,6 +454,7 @@ impl Kind {
             Kind::Overlay(o) => o.attribution,
             Kind::Theme(_) => gibs::ATTRIBUTION.0,
             Kind::Clouds => data::clouds::ATTRIBUTION.0,
+            Kind::Cadastre => data::cadastre::ATTRIBUTION.0,
             // Подпись высот Terrarium и так стоит на экране.
             Kind::Contours(_) | Kind::Terrain(_) => "",
         }
@@ -445,6 +468,7 @@ impl Kind {
             Kind::Overlay(o) => o.terms,
             Kind::Theme(_) => gibs::ATTRIBUTION.1,
             Kind::Clouds => data::clouds::ATTRIBUTION.1,
+            Kind::Cadastre => data::cadastre::ATTRIBUTION.1,
             Kind::Contours(_) | Kind::Terrain(_) => "",
         }
     }
@@ -455,7 +479,7 @@ impl Kind {
         match self {
             Kind::Field(f) => rastermaps::field_rgba(f, rgba),
             Kind::Map(m) => rastermaps::map_rgba(m, rgba, m.opacity),
-            Kind::Overlay(_) => rastermaps::overlay_rgba(rgba),
+            Kind::Overlay(_) | Kind::Cadastre => rastermaps::overlay_rgba(rgba),
             Kind::Theme(t) => gibs::overlay_rgba(rgba, gibs::OPACITY, t.clear),
             // Картинку горизонталей рисует задание по тайлу высот.
             Kind::Contours(_) => None,
@@ -489,6 +513,8 @@ impl Kind {
         match self {
             Kind::Field(f) => vec![(0, source(key, f.url, f.max_level))],
             Kind::Overlay(o) => vec![(0, source(key, o.url, o.max_level))],
+            // Служба отказывает на частые запросы: тайлы по одному.
+            Kind::Cadastre => vec![(0, net::Source { max_requests: 1, ..source(key, data::cadastre::URL, data::cadastre::MAX_LEVEL) })],
             Kind::Map(m) if !m.coarse.is_empty() && m.split > 0 => {
                 vec![(0, source(coarse_name(key), m.coarse, m.split - 1)), (m.split, source(key, m.url, m.max_level))]
             }

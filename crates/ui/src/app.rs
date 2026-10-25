@@ -333,6 +333,10 @@ pub struct LiteApp {
     buildings: Option<crate::buildings::Buildings>,
     building_keys: HashSet<TileKey>,
     building_only: HashSet<TileKey>,
+    /// Сведения об участках кадастра под щелчком: точка и запрос, пришедшие
+    /// участки для подсветки, `_ask_parcels` модуля.
+    parcel_ask: Option<((f64, f64), Box<dyn net::Request>)>,
+    parcels: Vec<data::cadastre::Parcel>,
     /// Объекты живых строк на этот кадр, для окна «Объекты» и меню.
     live_objects: Vec<(crate::live::Kind, crate::live::Object)>,
     /// Камера следом за живым объектом: строка и ключ.
@@ -877,6 +881,8 @@ impl LiteApp {
             buildings: None,
             building_keys: HashSet::new(),
             building_only: HashSet::new(),
+            parcel_ask: None,
+            parcels: Vec::new(),
             live_objects: Vec::new(),
             live_follow: None,
             followed: None,
@@ -2943,6 +2949,47 @@ impl LiteApp {
         if changed {
             let age = ages[state.index.min(last)];
             self.set_basemap(Basemap::Paleo(age));
+        }
+    }
+
+    /// Пришли сведения об участках: группа окна «Объекты» и подсветка
+    /// контуров, `_parcels_arrived` модуля.
+    fn step_parcels(&mut self) {
+        let Some(((lat, lon), ask)) = &self.parcel_ask else {
+            return;
+        };
+        let Some(answer) = ask.take() else {
+            return;
+        };
+        let (lat, lon) = (*lat, *lon);
+        self.parcel_ask = None;
+        let lang = self.lang;
+        let result = answer.and_then(|d| data::cadastre::parse_info(&d));
+        let features: Vec<crate::identify::Feature> = match &result {
+            Err(e) => vec![(trf(lang, "not received: {error}", &[("error", e)]), Vec::new())],
+            Ok(list) if list.is_empty() => vec![(tr(lang, "No parcels under the point").to_string(), Vec::new())],
+            Ok(list) => list
+                .iter()
+                .map(|p| {
+                    let mut values: Vec<(String, String)> = p
+                        .values
+                        .iter()
+                        .map(|(k, v)| {
+                            let unit = data::cadastre::FIELDS.iter().find(|(f, _)| f == k).map_or("", |(_, u)| *u);
+                            let text = if unit.is_empty() { v.clone() } else { format!("{v} {unit}") };
+                            (tr(lang, crate::identify::parcel_label(k)).to_string(), text)
+                        })
+                        .collect();
+                    values.push((tr(lang, "NSPD map").to_string(), data::cadastre::map_link(lat, lon)));
+                    (trf(lang, "Land parcel {number}", &[("number", &p.number)]), values)
+                })
+                .collect(),
+        };
+        self.parcels = result.unwrap_or_default();
+        if let Some(objects) = &mut self.objects
+            && objects.at == (lat, lon)
+        {
+            objects.groups.insert(0, (tr(lang, "Rosreestr cadastre").to_string(), features));
         }
     }
 
@@ -5410,6 +5457,7 @@ impl eframe::App for LiteApp {
             || self.fetching.is_some()
             || self.wiki.as_ref().is_some_and(crate::wiki::Wiki::busy)
             || self.mining.as_ref().is_some_and(crate::mining::Mining::busy)
+            || self.parcel_ask.is_some()
             || self.buildings.as_ref().is_some_and(|b| b.busy(self.heights.read().version()))
             || self.osm_mines.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.osm_infra.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
@@ -5502,6 +5550,15 @@ impl eframe::App for LiteApp {
                     let (lat, lon, _) = self.nav.camera.ellipsoid.ecef_to_geodetic(p);
                     self.ask_map_value(lat, lon);
                     self.objects = Some(self.make_objects(lat, lon, Some((px, py, ppp)), None));
+                    // Сведения об участках, когда показан кадастр. Один
+                    // запрос на щелчок, прежний снимается.
+                    self.parcels.clear();
+                    self.parcel_ask = None;
+                    if self.vector.map_keys().contains(&"cadastre") {
+                        let ask = (self.loaders.request)(1 << 20);
+                        ask.send(&data::cadastre::info_url(lat, lon), &[("Referer", data::cadastre::REFERER)], None);
+                        self.parcel_ask = Some(((lat, lon), ask));
+                    }
                     // Найденный щелчком спутник становится выбранным.
                     if let Some(number) = self.satellite_under(px, py, ppp)
                         && let Some(s) = &mut self.satellites
@@ -5563,6 +5620,7 @@ impl eframe::App for LiteApp {
         self.step_wiki(now);
         self.step_satellites(now);
         self.step_overpass(now);
+        self.step_parcels();
         self.paleo_bar(&ctx, now);
         self.step_cutaway();
         self.check_linked_models(now);
@@ -5856,6 +5914,27 @@ impl eframe::App for LiteApp {
             }
             painter.text(at + egui::vec2(1.0, 1.0), egui::Align2::LEFT_BOTTOM, text, font.clone(), egui::Color32::from_black_alpha(200));
             painter.text(at, egui::Align2::LEFT_BOTTOM, text, font, egui::Color32::WHITE);
+        }
+        // Контуры участков кадастра под щелчком.
+        if !self.parcels.is_empty() {
+            let store = self.heights.read();
+            let e = self.nav.camera.ellipsoid;
+            let stroke = egui::Stroke::new(2.0, egui::Color32::from_rgb(255, 230, 40));
+            for ring in self.parcels.iter().flat_map(|p| &p.rings) {
+                let points: Vec<Option<egui::Pos2>> = ring
+                    .iter()
+                    .chain(ring.first())
+                    .map(|(la, lo)| {
+                        let (q, front) = self.nav.camera.project(e.geodetic_to_ecef(*la, *lo, store.height_at(*la, *lo)));
+                        front.then(|| rect.min + egui::vec2((q.x / ppp) as f32, (q.y / ppp) as f32))
+                    })
+                    .collect();
+                for pair in points.windows(2) {
+                    if let [Some(a), Some(b)] = pair {
+                        painter.line_segment([*a, *b], stroke);
+                    }
+                }
+            }
         }
         // Виток орбиты и след выбранного спутника, цвет группы.
         let moment = self.satellite_moment();

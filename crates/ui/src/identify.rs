@@ -140,3 +140,24 @@ impl Objects {
         open
     }
 }
+
+/// Подписи полей сведений об участке кадастра, `parcel_labels` модуля.
+pub fn parcel_label(key: &str) -> &'static str {
+    match key {
+        "cad_num" => "Cadastral number",
+        "readable_address" => "Address",
+        "specified_area" => "Surveyed area",
+        "declared_area" => "Declared area",
+        "land_record_category_type" => "Land category",
+        "permitted_use_established_by_document" => "Permitted use",
+        "ownership_type" => "Form of ownership",
+        "right_type" => "Type of right",
+        "cost_value" => "Cadastral value",
+        "cost_index" => "Cadastral value per m²",
+        "cost_determination_date" => "Value determined on",
+        "cost_application_date" => "Value applies from",
+        "land_record_reg_date" => "Registered on",
+        "status" => "Status",
+        _ => "Cadastral block",
+    }
+}

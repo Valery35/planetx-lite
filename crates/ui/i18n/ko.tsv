@@ -1197,3 +1197,20 @@ The mining area outline file cannot be read: {path}	광산 지역 윤곽 파일�
 Mining area	광산 지역
 {value} km²	{value} km²
 Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.	OpenFreeMap 벡터 타일의 OpenStreetMap 3D 건물. 카메라가 지면에서 6 km보다 가까울 때 보입니다. 높이는 OSM에서, 없으면 층수에서 가져옵니다. 둘 다 없는 건물은 높이 5 m가 됩니다.
+No parcels under the point	이 지점 아래에 필지가 없습니다
+Land parcel {number}	필지 {number}
+NSPD map	NSPD 지도
+Cadastral number	지번
+Surveyed area	측량 면적
+Declared area	신고 면적
+Land category	토지 범주
+Permitted use	허용 용도
+Form of ownership	소유 형태
+Type of right	권리 유형
+Cadastral value	지적 가액
+Cadastral value per m²	m²당 지적 가액
+Value determined on	가액 결정일
+Value applies from	가액 적용일
+Registered on	등록일
+Cadastral block	지적 블록
+Status	상태

@@ -1197,3 +1197,20 @@ The mining area outline file cannot be read: {path}	鉱山地域の輪郭ファ�
 Mining area	鉱山地域
 {value} km²	{value} km²
 Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.	OpenFreeMap のベクトルタイルに含まれる OpenStreetMap の 3D 建物。カメラが地面から 6 km より近いときに表示されます。高さは OSM から、なければ階数から求めます。どちらもない建物の高さは 5 m になります。
+No parcels under the point	この地点に土地区画はありません
+Land parcel {number}	土地区画 {number}
+NSPD map	NSPD 地図
+Cadastral number	地籍番号
+Surveyed area	測量面積
+Declared area	申告面積
+Land category	土地区分
+Permitted use	許可された用途
+Form of ownership	所有形態
+Type of right	権利の種類
+Cadastral value	地籍評価額
+Cadastral value per m²	m² あたりの地籍評価額
+Value determined on	評価額の決定日
+Value applies from	評価額の適用開始日
+Registered on	登録日
+Cadastral block	地籍街区
+Status	状態

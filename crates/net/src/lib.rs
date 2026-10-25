@@ -201,6 +201,31 @@ pub fn user_agent() -> String {
     format!("PlanetX-Lite/{} (+https://github.com/Valery35/planetx-lite)", env!("CARGO_PKG_VERSION"))
 }
 
+/// Узел со своими правилами запроса: заголовок Referer и корневой
+/// сертификат, которому верят только в запросах к этому узлу, как
+/// `fetch_bytes` модуля с `headers` и `CA_FILE`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct HostRule {
+    pub host: &'static str,
+    pub referer: &'static str,
+    /// Корневой сертификат PEM.
+    pub root: &'static [u8],
+}
+
+/// Правила узлов. НСПД Росреестра (`data::cadastre`): без Referer карты
+/// ответ 403, сертификат выдан «Russian Trusted Sub CA» Минцифры,
+/// корневого «Russian Trusted Root CA» в системах по умолчанию нет. Его
+/// отпечаток SHA-1 - `data::cadastre::CA_SHA1`. У страницы правила
+/// не действуют: Referer и сертификаты там задаёт браузер.
+pub const HOST_RULES: [HostRule; 1] = [HostRule { host: "nspd.gov.ru", referer: "https://nspd.gov.ru/map", root: include_bytes!("../certs/russian_trusted_root_ca.pem") }];
+
+/// Правило узла адреса url или None.
+pub fn host_rule(url: &str) -> Option<&'static HostRule> {
+    let rest = url.split_once("://").map_or(url, |(_, r)| r);
+    let host = rest.split(['/', '?', '#', ':']).next().unwrap_or("");
+    HOST_RULES.iter().find(|r| host.eq_ignore_ascii_case(r.host) || host.to_ascii_lowercase().ends_with(&format!(".{}", r.host)))
+}
+
 /// Адрес тайла key у источника.
 pub fn tile_url(source: &Source, key: TileKey) -> String {
     template_url(source.url, key)

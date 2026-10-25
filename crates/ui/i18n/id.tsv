@@ -1197,3 +1197,20 @@ The mining area outline file cannot be read: {path}	Berkas garis batas wilayah t
 Mining area	Wilayah tambang
 {value} km²	{value} km²
 Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.	Bangunan 3D dari OpenStreetMap dalam ubin vektor OpenFreeMap. Bangunan terlihat saat kamera lebih dekat dari 6 km ke tanah. Tinggi diambil dari OSM atau dari jumlah lantai. Bangunan tanpa keduanya mendapat tinggi 5 m.
+No parcels under the point	Tidak ada bidang tanah di bawah titik
+Land parcel {number}	Bidang tanah {number}
+NSPD map	Peta NSPD
+Cadastral number	Nomor kadaster
+Surveyed area	Luas terukur
+Declared area	Luas yang dinyatakan
+Land category	Kategori tanah
+Permitted use	Penggunaan yang diizinkan
+Form of ownership	Bentuk kepemilikan
+Type of right	Jenis hak
+Cadastral value	Nilai kadaster
+Cadastral value per m²	Nilai kadaster per m²
+Value determined on	Nilai ditetapkan pada
+Value applies from	Nilai berlaku sejak
+Registered on	Didaftarkan pada
+Cadastral block	Blok kadaster
+Status	Status

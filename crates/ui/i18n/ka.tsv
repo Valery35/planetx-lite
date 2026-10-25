@@ -1197,3 +1197,20 @@ The mining area outline file cannot be read: {path}	სამთო სამუ
 Mining area	სამთო სამუშაო
 {value} km²	{value} კმ²
 Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.	3D შენობები OpenStreetMap-იდან OpenFreeMap-ის ვექტორულ ფილებში. ისინი ჩანს, როცა კამერა მიწასთან 6 კმ-ზე ახლოსაა. სიმაღლე აღებულია OSM-იდან, თუ არა - სართულიანობიდან. ამ ცნობების გარეშე შენობა იღებს 5 მ სიმაღლეს.
+No parcels under the point	წერტილის ქვეშ ნაკვეთები არ არის
+Land parcel {number}	მიწის ნაკვეთი {number}
+NSPD map	NSPD-ის რუკა
+Cadastral number	საკადასტრო ნომერი
+Surveyed area	დაზუსტებული ფართობი
+Declared area	დეკლარირებული ფართობი
+Land category	მიწის კატეგორია
+Permitted use	დაშვებული გამოყენების სახე
+Form of ownership	საკუთრების ფორმა
+Type of right	უფლების სახე
+Cadastral value	საკადასტრო ღირებულება
+Cadastral value per m²	ხვედრითი საკადასტრო ღირებულება, მ²
+Value determined on	ღირებულების განსაზღვრის თარიღი
+Value applies from	ღირებულების გამოყენების თარიღი
+Registered on	აღრიცხვაზე აყვანის თარიღი
+Cadastral block	საკადასტრო კვარტალი
+Status	სტატუსი

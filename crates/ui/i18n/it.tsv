@@ -1197,3 +1197,20 @@ The mining area outline file cannot be read: {path}	Il file dei contorni delle a
 Mining area	Area mineraria
 {value} km²	{value} km²
 Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.	Edifici 3D da OpenStreetMap nelle tile vettoriali di OpenFreeMap. Sono visibili quando la fotocamera è a meno di 6 km dal suolo. L’altezza viene da OSM o dal numero di piani. Un edificio senza nessuno dei due riceve un’altezza di 5 m.
+No parcels under the point	Nessuna particella sotto il punto
+Land parcel {number}	Particella {number}
+NSPD map	Mappa NSPD
+Cadastral number	Numero catastale
+Surveyed area	Superficie rilevata
+Declared area	Superficie dichiarata
+Land category	Categoria dei terreni
+Permitted use	Uso consentito
+Form of ownership	Forma di proprietà
+Type of right	Tipo di diritto
+Cadastral value	Valore catastale
+Cadastral value per m²	Valore catastale per m²
+Value determined on	Valore determinato il
+Value applies from	Valore applicato dal
+Registered on	Registrata il
+Cadastral block	Quartiere catastale
+Status	Stato
