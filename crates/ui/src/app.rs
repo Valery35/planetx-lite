@@ -538,6 +538,9 @@ pub struct LiteApp {
     gibs_catalog: Option<Box<dyn net::Request>>,
     /// Окно «Снимки событий» и снимки события на глобусе.
     events: crate::events::Events,
+    /// Событие, которое показать, когда придёт список событий: ключ
+    /// запуска `--event`.
+    pending_event: Option<String>,
     /// Тайлы снимков события без снимков, по сторонам шторки.
     event_empty: [std::collections::HashSet<TileKey>; 2],
     /// Ширина кадра глобуса в пикселях, для линии шторки.
@@ -1063,6 +1066,7 @@ impl LiteApp {
             theme_days: HashMap::new(),
             gibs_catalog: None,
             events: crate::events::Events::default(),
+            pending_event: None,
             event_empty: Default::default(),
             globe_width_px: 0.0,
             swipe_drag: false,
@@ -2077,28 +2081,10 @@ impl LiteApp {
     /// Окно вопроса перед удалением и окно свойств папки.
     fn dialogs(&mut self, ctx: &egui::Context, now: f64) {
         let lang = self.lang;
-        // Окно «Снимки событий»: перелёт к событию, слой карты на день.
-        let mut event_actions = self.events.step(lang, &*self.loaders.request);
+        // Окно «Снимки событий».
+        let mut event_actions = Vec::new();
         self.events.window(ctx, lang, &mut event_actions);
-        for action in event_actions {
-            match action {
-                crate::events::Action::Fly([w, s, e, n]) => {
-                    let camera = &self.nav.camera;
-                    let (lat, lon, distance) = globe_core::flight::fit_view(w, s, e, n, camera.fov_y, camera.aspect());
-                    if lat.is_finite() && lon.is_finite() && distance.is_finite() {
-                        crate::input::fly(&mut self.nav, Pose::new(lat, lon, distance, 0.0, 0.0), now);
-                    }
-                }
-                crate::events::Action::Changed(side) => {
-                    if let Some(globe) = &mut self.globe {
-                        globe.clear_events(side);
-                    }
-                    if let Some(empty) = self.event_empty.get_mut(side) {
-                        empty.clear();
-                    }
-                }
-            }
-        }
+        self.event_actions(event_actions, now);
         if let Some(menu) = &self.globe_menu {
             let (choice, open) = menu.show(ctx, lang);
             let point = menu.point;
@@ -3238,9 +3224,49 @@ impl LiteApp {
         Ok(self.show_cloud(&cloud, name, fly))
     }
 
+    /// Шаг снимков событий в каждом кадре, с окнами и без: каталоги,
+    /// обход события, событие ключа `--event`.
+    fn step_events(&mut self, now: f64) {
+        let lang = self.lang;
+        let mut actions = self.events.step(lang, &*self.loaders.request);
+        if let Some(key) = self.pending_event.clone()
+            && !self.events.events.is_empty()
+            && !self.events.busy()
+        {
+            self.pending_event = None;
+            if !self.events.show_key(lang, &key, &mut actions) {
+                self.open_message = Some(trf(lang, "There is no event {key} in the catalogs.", &[("key", &key)]));
+            }
+        }
+        self.event_actions(actions, now);
+    }
+
+    /// Просьбы снимков событий: перелёт к событию, смена снимков стороны.
+    fn event_actions(&mut self, actions: Vec<crate::events::Action>, now: f64) {
+        for action in actions {
+            match action {
+                crate::events::Action::Fly([w, s, e, n]) => {
+                    let camera = &self.nav.camera;
+                    let (lat, lon, distance) = globe_core::flight::fit_view(w, s, e, n, camera.fov_y, camera.aspect());
+                    if lat.is_finite() && lon.is_finite() && distance.is_finite() {
+                        crate::input::fly(&mut self.nav, Pose::new(lat, lon, distance, 0.0, 0.0), now);
+                    }
+                }
+                crate::events::Action::Changed(side) => {
+                    if let Some(globe) = &mut self.globe {
+                        globe.clear_events(side);
+                    }
+                    if let Some(empty) = self.event_empty.get_mut(side) {
+                        empty.clear();
+                    }
+                }
+            }
+        }
+    }
+
     /// Линия шторки снимков события на виде rect: рисуется поверх глобуса,
     /// тянется мышью. Истина - мышь у линии, глобус её не получает.
-    fn swipe_input(&mut self, ctx: &egui::Context, rect: egui::Rect, layer: egui::LayerId) -> bool {
+    fn swipe_input(&mut self, ctx: &egui::Context, rect: egui::Rect) -> bool {
         let Some(share) = self.events.swipe() else {
             self.swipe_drag = false;
             return false;
@@ -3263,9 +3289,15 @@ impl LiteApp {
         if near || self.swipe_drag {
             ctx.set_cursor_icon(egui::CursorIcon::ResizeHorizontal);
         }
-        // Линия и ручка с подписями сторон.
+        near || self.swipe_drag
+    }
+
+    /// Линия шторки и ручка с днями сторон поверх кадра глобуса.
+    fn draw_swipe(&self, painter: &egui::Painter, rect: egui::Rect) {
+        if self.events.swipe().is_none() {
+            return;
+        }
         let x = rect.left() + self.events.split * rect.width();
-        let painter = ctx.layer_painter(layer).with_clip_rect(rect);
         let p = crate::theme::pal();
         painter.line_segment([egui::pos2(x, rect.top()), egui::pos2(x, rect.bottom())], egui::Stroke::new(2.0, egui::Color32::WHITE));
         let mid = egui::pos2(x, rect.center().y);
@@ -3279,7 +3311,6 @@ impl LiteApp {
                 painter.text(at, anchor, &text, font.clone(), egui::Color32::WHITE);
             }
         }
-        near || self.swipe_drag
     }
 
     /// Шаг облаков лидара по сети: пришедшие облака - на глобус.
@@ -5459,6 +5490,13 @@ impl LiteApp {
         }
     }
     /// Снимок окна вместе с левой панелью, а не только кадр глобуса.
+    /// Показать при запуске снимки события по ключу «источник/id».
+    pub fn with_event(mut self, key: &str) -> Self {
+        self.events.open(&*self.loaders.request);
+        self.pending_event = Some(key.to_string());
+        self
+    }
+
     pub fn with_shot_ui(mut self) -> Self {
         self.shot_ui = true;
         self
@@ -5487,8 +5525,7 @@ impl LiteApp {
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
             return;
         }
-        shot.idle = if busy { 0 } else { shot.idle + 1 };
-        if shot.idle >= SHOT_IDLE_FRAMES
+        shot.idle = if busy { 0 } else { shot.idle + 1 };        if shot.idle >= SHOT_IDLE_FRAMES
             && let Some(sink) = shot.sink.take()
         {
             let done = shot.done.clone();
@@ -6409,7 +6446,7 @@ impl eframe::App for LiteApp {
             // она не двигает.
             let padded = self.shows_ui() && self.navpad.input(&ctx, rect, globe_response.layer_id, &mut self.nav, now);
             self.globe_width_px = rect.width() * ppp as f32;
-            let swiped = self.swipe_input(&ctx, rect, globe_response.layer_id);
+            let swiped = self.swipe_input(&ctx, rect);
             let busy = padded
                 || swiped
                 || self.tool.as_mut().is_some_and(|t| t.input(&ctx, &globe_response, rect, ppp, &self.nav))
@@ -6574,6 +6611,7 @@ impl eframe::App for LiteApp {
         self.step_parcels();
         self.step_currents(&ctx, now);
         self.step_lidar(now);
+        self.step_events(now);
         self.step_rumsey(&ctx, now);
         self.step_sentinel(&ctx, now);
         self.paleo_bar(&ctx, now);
@@ -6847,6 +6885,7 @@ impl eframe::App for LiteApp {
         // Надписи только в кадре и не под подписью источников.
         // Картинки на экране - раньше надписей, надписи не ложатся под них.
         let painter = ui.painter().with_clip_rect(rect);
+        self.draw_swipe(&painter, rect);
         let mut blocked = self.screen_overlays(&ctx, &painter, rect);
         blocked.extend(self.credits.rect);
         blocked.extend(self.toolbar_rect);

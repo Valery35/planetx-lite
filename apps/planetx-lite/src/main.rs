@@ -86,6 +86,8 @@ fn main() -> ExitCode {
         None => None,
     };
     let shot = args.windows(2).find(|w| w[0] == "--shot").map(|w| std::path::PathBuf::from(&w[1]));
+    // Снимки события «источник/id» при запуске, например для снимка кадра.
+    let event = args.windows(2).find(|w| w[0] == "--event").map(|w| w[1].clone());
     // Сцены демо: --demo, PLANETX_DEMO, «demo» рядом с программой, иначе
     // planetx-terrain по ссылке.
     let demo = args
@@ -102,7 +104,7 @@ fn main() -> ExitCode {
     let demo_cache = default_cache_dir().and_then(|d| Some(d.parent()?.join("demo")));
     // Файлы - аргументы без «--», которые не значения флагов, по порядку:
     // растр высот, потом сцена.
-    const VALUED: [&str; 4] = ["--check", "--pose", "--shot", "--demo"];
+    const VALUED: [&str; 5] = ["--check", "--pose", "--shot", "--demo", "--event"];
     let files: Vec<std::path::PathBuf> = args
         .iter()
         .enumerate()
@@ -167,6 +169,9 @@ fn main() -> ExitCode {
             }
             if let Some(p) = pose {
                 app = app.with_pose(p);
+            }
+            if let Some(key) = &event {
+                app = app.with_event(key);
             }
             if args.iter().any(|a| a == "--ui") {
                 app = app.with_shot_ui();
