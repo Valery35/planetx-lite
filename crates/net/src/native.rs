@@ -368,7 +368,12 @@ pub struct Requests {
     results: Receiver<Result<Vec<u8>, String>>,
     stats: Arc<Stats>,
     on_ready: Arc<dyn Fn() + Send + Sync>,
+    /// Ответ с кодом ошибки HTTP - ошибка с телом ответа.
+    error_bodies: bool,
 }
+
+/// Тело ответа с ошибкой HTTP в тексте ошибки - не длиннее, байт.
+pub const ERROR_BODY: u64 = 64 << 10;
 
 impl Requests {
     /// on_ready зовётся из потока запроса, когда пришёл ответ.
@@ -385,7 +390,7 @@ impl Requests {
             .build()
             .into();
         let (sender, results) = channel();
-        Self { agent, limit, sender, results, stats: Arc::new(Stats::default()), on_ready }
+        Self { agent, limit, sender, results, stats: Arc::new(Stats::default()), on_ready, error_bodies: false }
     }
 }
 
@@ -394,9 +399,19 @@ impl Request for Requests {
         self.send(url, &[], None);
     }
 
+    fn keep_error_bodies(&mut self) {
+        self.error_bodies = true;
+        self.agent = ureq::Agent::config_builder()
+            .user_agent(user_agent())
+            .timeout_global(Some(if self.limit > LARGE_ANSWER { LONG_TIMEOUT } else { TIMEOUT }))
+            .http_status_as_error(false)
+            .build()
+            .into();
+    }
+
     fn send(&self, url: &str, headers: &[(&str, &str)], body: Option<&[u8]>) {
-        let (agent, sender, stats, on_ready, url, limit) =
-            (self.agent.clone(), self.sender.clone(), self.stats.clone(), self.on_ready.clone(), url.to_string(), self.limit);
+        let (agent, sender, stats, on_ready, url, limit, error_bodies) =
+            (self.agent.clone(), self.sender.clone(), self.stats.clone(), self.on_ready.clone(), url.to_string(), self.limit, self.error_bodies);
         let headers: Vec<(String, String)> = headers.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect();
         let body = body.map(<[u8]>::to_vec);
         let spawned = std::thread::Builder::new().name("request".into()).spawn(move || {
@@ -426,7 +441,14 @@ impl Request for Requests {
                     request.call()
                 }
             };
-            let result = answer.and_then(|mut r| r.body_mut().with_config().limit(limit).read_to_vec()).map_err(|e| e.to_string());
+            let result = match answer {
+                Ok(mut r) if error_bodies && r.status().as_u16() >= 400 => {
+                    let code = r.status().as_u16();
+                    let text = r.body_mut().with_config().limit(ERROR_BODY).read_to_vec().map(|b| String::from_utf8_lossy(&b).into_owned()).unwrap_or_default();
+                    Err(format!("HTTP {code}: {text}"))
+                }
+                answer => answer.and_then(|mut r| r.body_mut().with_config().limit(limit).read_to_vec()).map_err(|e| e.to_string()),
+            };
             stats.request_finished();
             let _ = sender.send(result);
             on_ready();

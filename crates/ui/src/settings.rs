@@ -83,11 +83,13 @@ pub struct Settings {
     pub constellations: bool,
     pub deepsky: bool,
     pub sky_imagery: bool,
+    /// Помощник ИИ: подключение, адреса, модели, ключи.
+    pub ai: crate::ai::AiSettings,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, stars: true, sea: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new(), route: "car".into(), opacity: Vec::new(), stretch: true, own: Vec::new(), wms: Vec::new(), geoid_scale: data::geoid::SCALE, links: Vec::new(), sat_groups: data::satellites::DEFAULT_GROUPS.iter().map(|g| g.to_string()).collect(), constellations: true, deepsky: true, sky_imagery: true }
+        Self { language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, stars: true, sea: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new(), route: "car".into(), opacity: Vec::new(), stretch: true, own: Vec::new(), wms: Vec::new(), geoid_scale: data::geoid::SCALE, links: Vec::new(), sat_groups: data::satellites::DEFAULT_GROUPS.iter().map(|g| g.to_string()).collect(), constellations: true, deepsky: true, sky_imagery: true, ai: crate::ai::AiSettings::default() }
     }
 }
 
@@ -130,6 +132,7 @@ impl Settings {
             + &format!("sat_groups={}\n", self.sat_groups.join(","))
             + &format!("constellations={}\ndeepsky={}\nsky_imagery={}\n", self.constellations, self.deepsky, self.sky_imagery)
             + &if self.links.is_empty() { String::new() } else { format!("links={}\n", data::menulinks::dump(&self.links)) }
+            + &self.ai.to_text()
     }
 
     /// Настройки из строки хранилища. Строка считается враждебной:
@@ -159,6 +162,9 @@ impl Settings {
         }
         for (key, value) in text.lines().filter_map(|l| l.split_once('=')) {
             let value = value.trim();
+            if s.ai.read_line(key.trim(), value) {
+                continue;
+            }
             match key.trim() {
                 "language" => s.language = Lang::from_code(value).map(|l| l.code().to_string()),
                 "labels" => {
@@ -391,7 +397,7 @@ mod tests {
 
     #[test]
     fn settings_round_trip_and_hostile_text() {
-        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, stars: false, sea: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()], route: "foot".into(), opacity: vec![("emag".into(), 0.5)], stretch: false, own: Vec::new(), wms: vec![crate::maps::WmsSaved { name: "Orthos".into(), template: "https://x.org/wms?SERVICE=WMS&BBOX={bbox}".into(), bbox: Some([-76.1, 39.5, -74.4, 40.6]), credit: "X".into() }], geoid_scale: 2000.0, links: vec![("OSM".into(), "https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map={zoom}/{lat}/{lon}".into())], sat_groups: vec!["gnss".into(), "geo".into()], constellations: false, deepsky: false, sky_imagery: false };
+        let s = Settings { language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, stars: false, sea: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()], route: "foot".into(), opacity: vec![("emag".into(), 0.5)], stretch: false, own: Vec::new(), wms: vec![crate::maps::WmsSaved { name: "Orthos".into(), template: "https://x.org/wms?SERVICE=WMS&BBOX={bbox}".into(), bbox: Some([-76.1, 39.5, -74.4, 40.6]), credit: "X".into() }], geoid_scale: 2000.0, links: vec![("OSM".into(), "https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map={zoom}/{lat}/{lon}".into())], sat_groups: vec!["gnss".into(), "geo".into()], constellations: false, deepsky: false, sky_imagery: false, ai: crate::ai::AiSettings { provider: "anthropic".into(), keys: vec![("anthropic".into(), "sk-ant-1".into())], search: false, ..Default::default() } };
         assert_eq!(Settings::from_text(&s.to_text()), s);
         let bad = Settings::from_text("language=xx\nlabels=../x\ntheme=dark\nscale=1e9\nscale=NaN\nfoo=bar\nno equals\nplaces_height=-5\nplaces_height=NaN\nmaps=emag,../x,gibs:MODIS_Terra_NDSI_Snow_Cover\nwms=a\tftp://x/{bbox}\t\tb");
         assert_eq!(bad.maps, ["emag", "gibs:MODIS_Terra_NDSI_Snow_Cover"]);

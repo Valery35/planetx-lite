@@ -42,6 +42,10 @@ pub enum Command {
     Events,
     /// Окно «Треки».
     Tracks,
+    /// Окно «Помощник».
+    Assistant,
+    /// «Моё место» по геолокации страницы.
+    MyLocation,
     /// Демо: раздел и номер в разделе `crate::demos::MENU`.
     Demo(usize, usize),
 }
@@ -69,6 +73,8 @@ impl Command {
             Self::Share => "tool:share".into(),
             Self::Events => "open:events".into(),
             Self::Tracks => "open:tracks".into(),
+            Self::Assistant => "tool:assistant".into(),
+            Self::MyLocation => "tool:my_location".into(),
             Self::Demo(s, d) => format!("demo:{s}:{d}"),
         }
     }
@@ -95,6 +101,8 @@ impl Command {
             Command::Share,
             Command::Events,
             Command::Tracks,
+            Command::Assistant,
+            Command::MyLocation,
         ]);
         for (s, section) in crate::demos::MENU.iter().enumerate() {
             all.extend((0..section.demos.len()).map(|d| Command::Demo(s, d)));
@@ -246,6 +254,20 @@ pub fn actions(lang: Lang, now: &Now) -> Vec<Suggestion> {
         open,
         &["треки", "трек", "gps", "время", "самосвалы", "движение", "tracks", "track", "gps", "motion"],
     );
+    add(
+        Command::Assistant,
+        tr(lang, "Assistant"),
+        open,
+        &["помощник", "ии", "ai", "чат", "claude", "модель", "assistant", "chat", "llm"],
+    );
+    if crate::gps::Gps::available() {
+        add(
+            Command::MyLocation,
+            tr(lang, "My location"),
+            run,
+            &["моё место", "мое место", "где я", "gps", "геолокация", "трек", "my location", "where am i", "gps", "location"],
+        );
+    }
     add(Command::SceneSave, tr(lang, "Save Scene"), open, &["сцена", "scene"]);
     add(Command::SceneOpen, tr(lang, "Open Scene"), open, &["сцена", "scene"]);
     // У страницы полный экран - средствами браузера.

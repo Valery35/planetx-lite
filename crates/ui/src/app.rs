@@ -613,6 +613,16 @@ pub struct LiteApp {
     geo_meshes: Vec<render::FeatureMesh>,
     /// Растущие треки точечных слоёв и сетки их путей.
     tracks: crate::tracks::Tracks,
+    /// Помощник ИИ и метка, о которой его спросили «Объясни это»:
+    /// путь и количество реплик разговора до вопроса.
+    ai: crate::ai::Ai,
+    /// «Моё место» по геолокации браузера и трек.
+    gps: crate::gps::Gps,
+    explaining: Option<(Vec<usize>, usize)>,
+    /// Ответ помощника под строкой «Поиск»: реплик до вопроса.
+    ai_answer_from: Option<usize>,
+    /// Запрос места пользователя: не нашёлся - вопрос помощнику.
+    ai_fallback: Option<String>,
     track_meshes: Vec<render::FeatureMesh>,
     /// Точки объектов треков надо собрать заново.
     track_dots_dirty: bool,
@@ -714,6 +724,19 @@ type PickedBox = Arc<std::sync::Mutex<Vec<(Pick, Vec<PickedFile>)>>>;
 
 /// Модель по ссылке на файл: время правки файла, время проверки и пакет.
 type LinkedModel = (Option<f64>, f64, Option<Arc<Vec<u8>>>);
+
+/// Количество меток в папке и вложенных папках.
+fn count_places(folder: &scene::kml::Folder) -> usize {
+    folder
+        .children
+        .iter()
+        .map(|c| match c {
+            scene::kml::Item::Place(_) => 1,
+            scene::kml::Item::Folder(f) => count_places(f),
+            _ => 0,
+        })
+        .sum()
+}
 
 /// Время правки файла на диске, секунды, или None. На странице файлов
 /// на диске нет.
@@ -1110,6 +1133,11 @@ impl LiteApp {
             geo: crate::geophysics::Geo::default(),
             geo_meshes: Vec::new(),
             tracks: crate::tracks::Tracks::default(),
+            ai: crate::ai::Ai::new(),
+            gps: crate::gps::Gps::default(),
+            explaining: None,
+            ai_answer_from: None,
+            ai_fallback: None,
             track_meshes: Vec::new(),
             track_dots_dirty: false,
             track_labels: Vec::new(),
@@ -2374,10 +2402,21 @@ impl LiteApp {
             return;
         };
         let mut open = true;
-        let action = card.window(ctx, self.lang, place, &mut open);
+        let answer = self.explaining.as_ref().filter(|(p, _)| *p == card.path).map(|(_, from)| self.ai.answer_since(*from));
+        let action = card.window(ctx, self.lang, place, answer.as_deref(), &mut open);
         match action {
             Some(crate::card::Action::Fly(path)) => self.queued.push(crate::marks::Action::Fly(path)),
             Some(crate::card::Action::Properties(path)) => self.queued.push(crate::marks::Action::Properties(path)),
+            Some(crate::card::Action::Explain(path)) => {
+                let question = crate::card::explain_question(self.lang, place);
+                let from = self.ai.lines.len();
+                let context = self.ai_context();
+                let loaders = &self.loaders;
+                let request = |limit: u64| (loaders.request)(limit);
+                if self.ai.ask(self.lang, &question, &self.settings.ai, &context, &request) {
+                    self.explaining = Some((path, from));
+                }
+            }
             None => {}
         }
         if !open {
@@ -3756,6 +3795,370 @@ impl LiteApp {
         if let Some(n) = self.tracks.pick_model.take() {
             self.pick_for(ctx, Pick::TrackModel(n));
         }
+    }
+
+    /// Контекст вида для модели, `assistant_context` модуля: точка
+    /// взгляда, тело, включённые строки, сектор разреза, количество
+    /// выделенных меток, время. Названия меток не уходят.
+    fn ai_context(&self) -> serde_json::Value {
+        let p = &self.nav.pose;
+        let round = |v: f64, k: f64| (v * k).round() / k;
+        let mut on: Vec<String> = Vec::new();
+        if self.settings.relief {
+            on.push("relief".into());
+        }
+        on.extend(self.extras_on.iter().map(|e| e.key().to_string()));
+        let mut keys = vec!["relief".to_string()];
+        keys.extend(crate::layers::Extra::all().into_iter().filter(|e| !e.desktop_only() || !cfg!(target_arch = "wasm32")).map(|e| e.key().to_string()));
+        let mut bodies = vec!["sky".to_string()];
+        bodies.extend(scene::planets::MENU.iter().flat_map(|(_, keys)| keys.iter().map(|k| k.to_string())));
+        let wedge = self.cutaway.as_ref().map(|c| [c.wedge.west, c.wedge.east, c.wedge.south, c.wedge.north].map(|v| round(v, 100.0)));
+        serde_json::json!({
+            "view": {"lat": round(p.lat, 1e4), "lon": round(p.lon, 1e4), "distance_km": round(p.distance / 1000.0, 10.0), "heading": round(p.heading, 10.0), "tilt": round(p.tilt, 10.0)},
+            "body": if self.sky.is_some() { "sky".to_string() } else { self.planet.key().to_string() },
+            "body_keys": bodies,
+            "layers_on": on,
+            "layer_keys": keys,
+            "cutaway": wedge,
+            "selected_places": usize::from(self.tree_state.selected.is_some()),
+            "utc": scene::when::text(web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64())),
+        })
+    }
+
+    /// Окно помощника: ответы модели, вызовы инструментов, запись
+    /// предложенных и созданных меток.
+    fn step_ai(&mut self, ctx: &egui::Context, now: f64) {
+        let lang = self.lang;
+        let context = self.ai_context();
+        {
+            let loaders = &self.loaders;
+            let request = |limit: u64| (loaders.request)(limit);
+            self.ai.step(lang, now, &self.settings.ai, &context, &request);
+            if self.shows_ui() && self.ai.show(ctx, lang, &mut self.settings.ai, &context, &request) {
+                self.settings_dirty = true;
+            }
+        }
+        // Вызовы без разрешения исполняются подряд, `_step` модуля.
+        for _ in 0..assistant::MAX_ROUNDS * 4 {
+            let Some(call) = self.ai.run.take() else {
+                break;
+            };
+            let text = self.ai_tool(ctx, &call, now);
+            let context = self.ai_context();
+            let loaders = &self.loaders;
+            let request = |limit: u64| (loaders.request)(limit);
+            self.ai.result(lang, &text, &self.settings.ai, &context, &request);
+        }
+        if let Some((kml, made)) = self.ai.write.take() {
+            let note = self.write_ai_kml(&kml, made);
+            self.ai.say(crate::ai::Who::Note, &note);
+        }
+        if self.ai.busy() {
+            ctx.request_repaint_after(std::time::Duration::from_millis(100));
+        }
+    }
+
+    /// Документ помощника - новой папкой в «Мои метки», перелёт к ней.
+    /// У созданного одним запросом шкала времени открывается на даты
+    /// меток, `_show_made_time` модуля.
+    fn write_ai_kml(&mut self, kml: &str, made: bool) -> String {
+        let lang = self.lang;
+        let opened = match marks::open(kml.as_bytes(), "assistant.kml") {
+            Ok(o) => o,
+            Err(e) => return trf(lang, "Not pasted: {e}", &[("e", &e)]),
+        };
+        let count = count_places(&opened.tree);
+        let mut tree = opened.tree;
+        if tree.name.trim().is_empty() || tree.name == "assistant.kml" {
+            tree.name = tr(lang, "Assistant").to_string();
+        }
+        let at = self.marks.insert(&[], scene::kml::Item::Folder(tree), marks::root_name(lang));
+        self.marks_changed();
+        self.tree_state.selected = Some(at.clone());
+        self.queued.push(crate::marks::Action::Fly(at));
+        if made && self.timebar.extent.is_some() {
+            self.timebar.open = true;
+        }
+        trf(lang, "Placemarks written to My Places: {count}.", &[("count", &count.to_string())])
+    }
+
+    /// Исполнить вызов инструмента модели, ответ - текст для модели,
+    /// `assistant_tool` модуля. Ошибка в аргументах - тоже ответ, модель
+    /// может исправиться. Тексты - для модели, по-русски, как описания
+    /// инструментов.
+    fn ai_tool(&mut self, ctx: &egui::Context, call: &assistant::Call, now: f64) -> String {
+        let args = &call.args;
+        let num = |k: &str| args.get(k).and_then(serde_json::Value::as_f64).filter(|v| v.is_finite());
+        let text = |k: &str| args.get(k).and_then(serde_json::Value::as_str).unwrap_or("").trim().to_string();
+        match call.name.as_str() {
+            "fly_to" => {
+                let (Some(lat), Some(lon)) = (num("lat"), num("lon")) else {
+                    return "Ошибка в аргументах fly_to: нужны lat и lon.".into();
+                };
+                let distance = num("distance_km").unwrap_or(500.0).clamp(0.05, 50_000.0) * 1000.0;
+                let (heading, tilt) = (self.nav.pose.heading, self.nav.pose.tilt);
+                crate::input::fly(&mut self.nav, Pose::new(lat.clamp(-90.0, 90.0), lon, distance, heading, tilt), now);
+                format!("Перелёт к {lat:.3}, {lon:.3}.")
+            }
+            "search_place" => {
+                let query = text("query");
+                if query.is_empty() {
+                    return "Ошибка в аргументах search_place: нужен query.".into();
+                }
+                self.search_text = query.clone();
+                if let Some(place) = self.search.submit(&query) {
+                    self.fly_to_found(&place, now);
+                }
+                format!("Поиск запущен: {query}.")
+            }
+            "set_body" => {
+                let body = text("body");
+                if body == "sky" {
+                    self.enter_sky();
+                } else if scene::planets::MENU.iter().any(|(_, keys)| keys.contains(&body.as_str())) {
+                    self.leave_sky();
+                    self.set_body(&body);
+                } else {
+                    return format!("Неизвестное тело: {body}.");
+                }
+                format!("Тело: {body}.")
+            }
+            "set_layer" => {
+                let key = text("key");
+                let on = args.get("on").and_then(serde_json::Value::as_bool).unwrap_or(true);
+                if key == "relief" {
+                    self.settings.relief = on;
+                    self.settings_dirty = true;
+                } else if let Some(extra) = crate::layers::Extra::from_key(&key).filter(|e| !e.desktop_only() || !cfg!(target_arch = "wasm32")) {
+                    self.set_extra(extra, on);
+                } else {
+                    return format!("Неизвестная строка: {key}.");
+                }
+                format!("Строка {key}: {}.", if on { "включена" } else { "выключена" })
+            }
+            "list_actions" => assistant::actions_text(&assistant::assistant_actions(&self.ai_actions())),
+            "run_action" => {
+                let key = text("key");
+                let Some(action) = assistant::assistant_actions(&self.ai_actions()).into_iter().find(|a| a.key == key) else {
+                    return format!("Нет такого действия: {key}. Ключ берётся из list_actions.");
+                };
+                let Some(command) = crate::commands::Command::from_key(&key) else {
+                    return format!("Нет такого действия: {key}. Ключ берётся из list_actions.");
+                };
+                self.run_command(ctx, command, now);
+                format!("Выполнено: {} - {}.", action.text, action.note)
+            }
+            "set_opacity" => {
+                let key = text("key");
+                let Some(value) = num("value") else {
+                    return "Ошибка в аргументах set_opacity: нужен value.".into();
+                };
+                let value = value.clamp(0.0, 1.0) as f32;
+                let entry = crate::layers::Extra::from_key(&key).filter(|e| self.extras_on.contains(e)).and_then(|e| match e {
+                    crate::layers::Extra::Map(n) => crate::maps::entry(n),
+                    _ => None,
+                });
+                let Some(entry) = entry else {
+                    return format!("Слоя {key} нет среди включённых карт.");
+                };
+                self.map_opacity.insert(entry.key.to_string(), value);
+                self.settings.opacity = self.map_opacity.iter().map(|(k, v)| (k.clone(), *v)).collect();
+                self.settings_dirty = true;
+                if self.vector.set_opacity(entry.key, value)
+                    && let Some(globe) = &mut self.globe
+                {
+                    globe.clear_overlays();
+                }
+                format!("Непрозрачность {key}: {value:.2}.")
+            }
+            "set_time" => {
+                let (start, end) = (text("start"), text("end"));
+                if start.is_empty() && end.is_empty() {
+                    self.timebar.open = false;
+                    return "Шкала времени закрыта.".into();
+                }
+                let Some(extent) = self.timebar.extent else {
+                    return "Шкалы времени нет: у видимых меток нет времени.".into();
+                };
+                let lo = if start.is_empty() { Some(extent.0) } else { scene::when::parse(&start) };
+                let hi = if end.is_empty() { Some(extent.1) } else { scene::when::parse(&end) };
+                let (Some(lo), Some(hi)) = (lo, hi) else {
+                    return format!("Даты не разобраны: {start} - {end}.");
+                };
+                self.timebar.open = true;
+                self.timebar.range = (lo.min(hi), lo.max(hi));
+                format!("Шкала времени: {start} - {end}.")
+            }
+            "earth_cutaway" => {
+                if args.get("off").and_then(serde_json::Value::as_bool).unwrap_or(false) {
+                    self.set_extra(crate::layers::Extra::Cutaway, false);
+                    return "Разрез Земли убран.".into();
+                }
+                if !self.planet.earth {
+                    return "Разрез Земли есть только у Земли.".into();
+                }
+                if self.cutaway.is_none() {
+                    self.set_extra(crate::layers::Extra::Cutaway, true);
+                }
+                if let (Some(c), Some(west), Some(east)) = (&mut self.cutaway, num("west"), num("east")) {
+                    c.wedge = data::cutaway::Wedge { west, east, south: num("south").unwrap_or(0.0).clamp(-90.0, 90.0), north: num("north").unwrap_or(90.0).clamp(-90.0, 90.0) };
+                }
+                match &self.cutaway {
+                    Some(c) => format!("Сектор: {:.1}, {:.1}, {:.1}, {:.1}.", c.wedge.west, c.wedge.east, c.wedge.south, c.wedge.north),
+                    None => "Разрез не построен.".into(),
+                }
+            }
+            "section_down" => {
+                let points: Vec<(f64, f64)> = args
+                    .get("points")
+                    .and_then(serde_json::Value::as_array)
+                    .map(|a| a.iter().filter_map(|p| Some((p.get(0)?.as_f64()?, p.get(1)?.as_f64()?))).filter(|(a, b)| a.is_finite() && b.is_finite()).collect())
+                    .unwrap_or_default();
+                if points.len() < 2 {
+                    return "Для разреза нужны хотя бы две точки.".into();
+                }
+                let title = tr(self.lang, "Assistant section").to_string();
+                match &mut self.section {
+                    Some(s) => s.set_source(title, points.clone()),
+                    None => self.section = Some(crate::section::SectionWindow::new(title, points.clone(), self.crust_cache().as_deref())),
+                }
+                format!("Разрез открыт: точек {}, очаги и строение коры в его окне.", points.len())
+            }
+            "point_info" => {
+                let (Some(lat), Some(lon)) = (num("lat"), num("lon")) else {
+                    return "Ошибка в аргументах point_info: нужны lat и lon.".into();
+                };
+                let objects = self.make_objects(lat, lon, None, None);
+                let mut lines = vec![objects.point];
+                for (group, features) in &objects.groups {
+                    for (name, values) in features {
+                        let fields: Vec<String> = values.iter().map(|(k, v)| format!("{k}: {v}")).collect();
+                        lines.push(format!("{group}, {name}: {}", fields.join("; ")));
+                    }
+                }
+                lines.join("\n")
+            }
+            "quakes_summary" => {
+                let (Some(south), Some(north), Some(west), Some(east)) = (num("south"), num("north"), num("west"), num("east")) else {
+                    return "Ошибка в аргументах quakes_summary: нужны south, north, west, east.".into();
+                };
+                let Some(quakes) = self.dots.quakes(crate::dots::Layer::Quakes) else {
+                    self.set_extra(crate::layers::Extra::Dots(crate::dots::Layer::Quakes), true);
+                    return "Сводка землетрясений загружается, повтори запрос через несколько секунд.".into();
+                };
+                let list: Vec<assistant::Quake> = quakes.iter().map(|q| assistant::Quake { lat: q.lat, lon: q.lon, depth: q.depth, mag: q.mag, place: q.place.clone() }).collect();
+                assistant::quakes_text(&list, (south, north, west, east), 3)
+            }
+            "add_basemap" => {
+                let ready = text("ready");
+                if ready.is_empty() {
+                    return "Свою подложку по адресу помощник у PlanetX Lite не ставит. Готовые источники - ready.".into();
+                }
+                let Some(n) = crate::basemap::READY.iter().position(|r| r.key == ready) else {
+                    return format!("Нет готового источника {ready}.");
+                };
+                self.set_basemap(Basemap::Ready(n));
+                format!("Подложка поставлена: {}.", crate::basemap::READY[n].name)
+            }
+            "add_kml" => {
+                let raw = text("kml");
+                let kml = assistant::extract_kml(&raw).unwrap_or(raw);
+                let tree = match scene::kml::read_kml(kml.as_bytes(), "assistant.kml") {
+                    Ok(t) => t,
+                    Err(e) => return format!("KML не разобран: {e:?}. Исправь документ."),
+                };
+                let count = count_places(&tree);
+                if count == 0 {
+                    return "В документе KML нет меток.".into();
+                }
+                let name = if tree.name.trim().is_empty() { tr(self.lang, "Assistant").to_string() } else { tree.name.clone() };
+                self.ai.propose(trf(self.lang, "The assistant offers the folder «{name}», placemarks {count}.", &[("name", &name), ("count", &count.to_string())]), kml);
+                format!("Документ показан пользователю, меток {count}. Запись - после его подтверждения.")
+            }
+            "get_kml" => {
+                let p = &self.nav.pose;
+                let mut out = vec![assistant::look_at_kml(p.lat, p.lon, p.distance, p.heading, p.tilt)];
+                let selected = self.tree_state.selected.clone().unwrap_or_default();
+                let folder = match (self.marks.folder(&selected), self.marks.place(&selected)) {
+                    (Some(f), _) if !selected.is_empty() => Some(f.clone()),
+                    (_, Some(place)) => {
+                        let mut f = scene::kml::Folder::new(&place.name);
+                        f.children.push(scene::kml::Item::Place(place.clone()));
+                        Some(f)
+                    }
+                    _ => None,
+                };
+                match folder.map(|f| crate::export::tree_bytes(&f, false)) {
+                    Some(Ok(bytes)) => out.push(String::from_utf8_lossy(&bytes).into_owned()),
+                    _ => out.push("Выделенных меток нет.".into()),
+                }
+                out.join("\n")
+            }
+            other => format!("Нет такого инструмента: {other}."),
+        }
+    }
+
+    /// «Моё место»: кнопка у правого нижнего края вида, перелёт к первому
+    /// месту, камера следом, окно с записью трека.
+    fn step_gps(&mut self, ctx: &egui::Context, now: f64) {
+        if !crate::gps::Gps::available() || !self.shows_ui() {
+            return;
+        }
+        let lang = self.lang;
+        let mut toggle = false;
+        egui::Area::new(egui::Id::unique("planetx-gps"))
+            .order(egui::Order::Middle)
+            .anchor(egui::Align2::RIGHT_BOTTOM, egui::vec2(-12.0, -40.0))
+            .show(ctx, |ui| {
+                crate::theme::plate().inner_margin(egui::Margin::same(3)).show(ui, |ui| {
+                    let text = egui::RichText::new("◎").size(22.0).color(if self.gps.on { egui::Color32::from_rgb(30, 140, 255) } else { ui.visuals().text_color() });
+                    toggle = ui.add(egui::Button::new(text).frame(false)).on_hover_text(tr(lang, "My location: the location of this device on the globe, the camera follows, a track can be recorded.")).clicked();
+                });
+            });
+        if toggle {
+            if self.gps.on {
+                self.gps.open = !self.gps.open;
+            } else {
+                self.gps.start(ctx);
+            }
+        }
+        if let Some(fix) = self.gps.step() {
+            let p = &self.nav.pose;
+            let (distance, heading, tilt) = (p.distance, p.heading, p.tilt);
+            if !self.gps.flown {
+                self.gps.flown = true;
+                crate::input::fly(&mut self.nav, Pose::new(fix.lat, fix.lon, crate::gps::FIX_DISTANCE, heading, tilt), now);
+            } else if self.gps.follow {
+                self.nav.show(Pose::new(fix.lat, fix.lon, distance, heading, tilt));
+            }
+        }
+        if self.gps.window(ctx, lang) == Some(crate::gps::Action::Save)
+            && let Some(place) = self.gps.track_place(lang)
+        {
+            let name = place.name.clone();
+            let at = self.marks.insert(&[], scene::kml::Item::Place(place), marks::root_name(lang));
+            self.tree_state.selected = Some(at);
+            self.marks_changed();
+            self.gps.track.clear();
+            self.gps.dirty = true;
+            self.open_message = Some(trf(lang, "The track is in My Places: {name}.", &[("name", &name)]));
+        }
+    }
+
+    /// Вопрос помощнику из строки «Поиск»: ответ встаёт под строкой.
+    fn ask_from_search(&mut self, text: &str) {
+        let from = self.ai.lines.len();
+        let context = self.ai_context();
+        let loaders = &self.loaders;
+        let request = |limit: u64| (loaders.request)(limit);
+        if self.ai.ask(self.lang, text, &self.settings.ai, &context, &request) {
+            self.ai_answer_from = Some(from);
+        }
+    }
+
+    /// Действия строки «Поиск» для помощника.
+    fn ai_actions(&self) -> Vec<assistant::Action> {
+        crate::commands::actions(self.lang, &self.command_state()).into_iter().map(|s| assistant::Action { key: s.key, text: s.text, note: s.note }).collect()
     }
 
     /// Картинка на поверхности в «Мои метки», в папку folder_name: у
@@ -5978,7 +6381,11 @@ impl LiteApp {
                 }
             };
             self.track_labels = self.tracks.labels().iter().map(|d| (d.name.clone(), e.geodetic_to_ecef(d.lat, d.lon, level(d)))).collect();
-            let dots = self.tracks.dots();
+            let mut dots = self.tracks.dots().into_iter().cloned().collect::<Vec<_>>();
+            // «Моё место» - точкой по земле.
+            if let Some(f) = self.gps.fix.filter(|_| self.gps.on) {
+                dots.push(crate::tracks::Dot { name: String::new(), lat: f.lat, lon: f.lon, alt: f64::NAN, relative: false, color: crate::gps::COLOUR });
+            }
             if !dots.is_empty() {
                 let points: Vec<DVec3> = dots.iter().map(|d| e.geodetic_to_ecef(d.lat, d.lon, level(d))).collect();
                 let center = points.iter().fold(DVec3::ZERO, |a, p| a + *p) / points.len() as f64;
@@ -6295,13 +6702,18 @@ impl LiteApp {
     fn search_row(&mut self, ui: &mut egui::Ui, now: f64) {
         let button = tr(self.lang, "Search");
         let mut clicked = false;
+        let mut make = false;
+        let mut talk = false;
+        let mut setup = false;
+        let lang = self.lang;
         let edit = ui
             .horizontal(|ui| {
-                let width = ui.available_width() - 70.0;
-                // Поиск места - земной, на другом теле строка выключена.
-                // В небе строка ищет объекты неба, как у модуля.
+                let width = ui.available_width() - 100.0;
+                // Поиск места - земной, на другом теле строка - только
+                // для помощника. В небе строка ищет объекты неба, как
+                // у модуля.
                 let edit = ui.add_enabled(
-                    self.planet.earth || self.sky.is_some(),
+                    self.planet.earth || self.sky.is_some() || self.settings.ai.search,
                     egui::TextEdit::singleline(&mut self.search_text)
                         .id(egui::Id::unique("planetx-search"))
                         .hint_text(tr(self.lang, "Voyages of Columbus"))
@@ -6311,9 +6723,40 @@ impl LiteApp {
                 if ui.button(button).on_hover_text(tr(self.lang, "Find what is typed in the line. A place - a flight to it, several found places - a list below.")).clicked() {
                     clicked = true;
                 }
+                // Кнопка помощника, `Panel.make` модуля: нажатие создаёт
+                // метки по описанию, правая кнопка - разговор и настройки.
+                let ai = ui.button("✦").on_hover_text(tr(lang, "Create placemarks by the description in the line with the assistant, Ctrl+Enter. The right button - the conversation and the assistant settings."));
+                make = ai.clicked();
+                ai.context_menu(|ui| {
+                    if ui.button(tr(lang, "Conversation with the assistant…")).clicked() {
+                        talk = true;
+                        ui.close();
+                    }
+                    if ui.button(tr(lang, "Assistant settings…")).clicked() {
+                        setup = true;
+                        ui.close();
+                    }
+                });
                 edit
             })
             .inner;
+        if talk {
+            self.ai.open = true;
+        }
+        if setup {
+            self.ai.settings_open = true;
+        }
+        make |= edit.has_focus() && ui.input_mut(|i| i.consume_key(egui::Modifiers::COMMAND, egui::Key::Enter));
+        if make {
+            let text = self.search_text.clone();
+            let context = self.ai_context();
+            let loaders = &self.loaders;
+            let request = |limit: u64| (loaders.request)(limit);
+            if self.ai.generate(lang, &text, &self.settings.ai, &context, &request) {
+                self.ai_answer_from = Some(self.ai.lines.len().saturating_sub(1));
+            }
+            return;
+        }
         // Ctrl+K - в строку поиска, как у модуля.
         if ui.input_mut(|i| i.consume_key(egui::Modifiers::COMMAND, egui::Key::K)) {
             edit.request_focus();
@@ -6346,6 +6789,57 @@ impl LiteApp {
         }
         self.suggesting = edit.has_focus();
         let entered = edit.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
+        // Просьба словами и запрос вне Земли - помощнику, если он
+        // подключён и флажок настроек стоит, `is_request` модуля.
+        let ai_ready = self.settings.ai.search && self.settings.ai.ready();
+        if (entered || clicked) && ai_ready && (assistant::is_request(&self.search_text) || (!self.planet.earth && self.sky.is_none())) {
+            self.ask_from_search(&self.search_text.clone());
+            return;
+        }
+        // Место не нашлось - запрос помощнику, `fly` модуля.
+        if let crate::search::Status::NotFound(q) = &self.search.status
+            && self.ai_fallback.as_deref() == Some(q.as_str())
+        {
+            self.ai_fallback = None;
+            if ai_ready {
+                self.ask_from_search(&self.search_text.clone());
+            }
+        }
+        // Ответ помощника под строкой, `set_answer` модуля.
+        if let Some(from) = self.ai_answer_from {
+            let answer = self.ai.answer_since(from);
+            let mut close = false;
+            let mut write = false;
+            egui::Frame::new().fill(crate::theme::pal().field).stroke(egui::Stroke::new(1.0, crate::theme::pal().border)).inner_margin(egui::Margin::same(4)).show(ui, |ui| {
+                ui.set_width(ui.available_width());
+                egui::ScrollArea::vertical().max_height(FOUND_HEIGHT * 1.5).id_salt("ai-answer").show(ui, |ui| {
+                    if answer.is_empty() {
+                        ui.horizontal(|ui| {
+                            ui.spinner();
+                            ui.weak(tr(lang, "Waiting for the answer…"));
+                        });
+                    } else {
+                        ui.label(&answer);
+                    }
+                });
+                ui.horizontal_wrapped(|ui| {
+                    if let Some(text) = self.ai.proposal_text() {
+                        ui.label(text);
+                        write = ui.link(tr(lang, "Write")).clicked();
+                    }
+                    if ui.link(tr(lang, "Conversation…")).clicked() {
+                        self.ai.open = true;
+                    }
+                    close = ui.link(tr(lang, "Close")).clicked();
+                });
+            });
+            if write {
+                self.ai.accept_proposal();
+            }
+            if close {
+                self.ai_answer_from = None;
+            }
+        }
         // Поиск в небе: каталог неба, иначе служба имён Sesame.
         if (entered || clicked)
             && let Some(sky) = &mut self.sky
@@ -6389,8 +6883,11 @@ impl LiteApp {
                 });
             });
         }
-        if submitted && let Some(place) = self.search.submit(&self.search_text) {
-            self.fly_to_found(&place, now);
+        if submitted {
+            self.ai_fallback = Some(data::geocode::normalize(&self.search_text));
+            if let Some(place) = self.search.submit(&self.search_text) {
+                self.fly_to_found(&place, now);
+            }
         }
         if let Some(place) = picked.and_then(|n| self.search.found.get(n).cloned()) {
             self.fly_to_found(&place, now);
@@ -6497,6 +6994,8 @@ impl LiteApp {
             Command::About => self.credits.about_request = true,
             Command::Events => self.events.open(&*self.loaders.request),
             Command::Tracks => self.tracks.open = true,
+            Command::Assistant => self.ai.open = true,
+            Command::MyLocation => self.gps.start(ctx),
             Command::SceneSave => {
                 let folder = self.tree_state.selected.clone().unwrap_or_default();
                 self.save_marks(&folder, crate::export::Kind::Scene);
@@ -6850,6 +7349,8 @@ impl eframe::App for LiteApp {
         self.step_rumsey(&ctx, now);
         self.step_sentinel(&ctx, now);
         self.step_tracks(&ctx);
+        self.step_ai(&ctx, now);
+        self.step_gps(&ctx, now);
         self.paleo_bar(&ctx, now);
         self.step_cutaway();
         self.check_linked_models(now);
@@ -7053,7 +7554,7 @@ impl eframe::App for LiteApp {
         }
         let fresh = self.marks.meshes(&store, now);
         let geo_stale = self.geo.shapes_dirty;
-        let tracks_stale = self.tracks.dirty;
+        let tracks_stale = self.tracks.dirty || self.gps.dirty;
         if fresh.is_some() || water_stale || geo_stale || tracks_stale {
             if let Some(meshes) = &fresh {
                 self.marks_meshes = meshes.clone();
@@ -7065,6 +7566,14 @@ impl eframe::App for LiteApp {
             if tracks_stale || fresh.is_some() {
                 self.tracks.dirty = false;
                 self.track_meshes = self.tracks.shapes().iter().filter_map(|s| crate::marks::mesh(s, &store)).collect();
+                // Трек «Моего места» - той же линией на рельефе.
+                self.gps.dirty = false;
+                if self.gps.track.len() >= 2 {
+                    let mut line = scene::features::Shape::new(scene::features::Kind::Line, self.gps.track.iter().map(|f| (f.lat, f.lon)).collect());
+                    line.color = crate::gps::COLOUR;
+                    line.width = 3.0;
+                    self.track_meshes.extend(crate::marks::mesh(&line, &store));
+                }
                 self.track_dots_dirty = true;
             }
             let mut all = self.marks_meshes.clone();

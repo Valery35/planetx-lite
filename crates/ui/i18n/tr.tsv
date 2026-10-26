@@ -1617,3 +1617,83 @@ Trend maps	Eğilim haritaları
 On the ground	Yerde
 above sea level	deniz seviyesinin üzerinde
 metres	metre
+OpenRouter (has free models)	OpenRouter (ücretsiz modelleri var)
+Own service, for example Ollama	Kendi hizmetiniz, örneğin Ollama
+No API key. It is entered in the window «Assistant settings».	API anahtarı yok. "Asistan ayarları" penceresinde girilir.
+The service is busy ({error}), a repeat in {seconds} s.	Hizmet meşgul ({error}), {seconds} sn sonra yeniden deneme.
+The assistant asks to run {name} {args}.	Asistan {name} {args} çalıştırmak istiyor.
+The assistant has done many actions in a row and waits for «Continue».	Asistan art arda çok sayıda eylem yaptı ve "Devam et" bekliyor.
+The model did not answer: {error}	Model yanıt vermedi: {error}
+The service on this computer does not answer. Check that it is running, for example Ollama, and that the address in the assistant settings is right.	Bu bilgisayardaki hizmet yanıt vermiyor. Çalıştığını, örneğin Ollama, ve asistan ayarlarındaki adresin doğru olduğunu denetleyin.
+The service did not accept a long answer, the request is repeated with a smaller length limit.	Hizmet uzun bir yanıtı kabul etmedi, istek daha küçük bir uzunluk sınırıyla yineleniyor.
+The model did not return a KML document.	Model bir KML belgesi döndürmedi.
+The answer of the model hit the length limit. The placemarks that came whole are taken.	Modelin yanıtı uzunluk sınırına ulaştı. Tam olarak gelen yer işaretleri alındı.
+Assistant	Asistan
+Service: {service}, model {model}.	Hizmet: {service}, model {model}.
+No API key.	API anahtarı yok.
+Settings…	Ayarlar…
+Service, model and API key of the assistant.	Asistanın hizmeti, modeli ve API anahtarı.
+Here goes the conversation: your questions, the actions of the assistant on the globe and its answers. A question is asked in the field below or in the Search line.	Konuşma burada geçer: sorularınız, asistanın küre üzerindeki eylemleri ve yanıtları. Soru aşağıdaki alanda veya "Ara" satırında sorulur.
+You	Siz
+Action	Eylem
+PlanetX Lite	PlanetX Lite
+Waiting for the answer…	Yanıt bekleniyor…
+Write to My Places	"Yerlerim"e yaz
+Allow	İzin ver
+Run this action once.	Bu eylemi bir kez çalıştır.
+Allow in this conversation	Bu konuşmada izin ver
+Exactly the same request is not asked again until a new conversation.	Tam olarak aynı istek yeni bir konuşmaya kadar bir daha sorulmaz.
+Deny	Reddet
+The assistant gets a refusal and answers without this action.	Asistan bir ret alır ve bu eylem olmadan yanıt verir.
+The assistant has done many actions in a row.	Asistan art arda çok sayıda eylem yaptı.
+The assistant continues where it stopped.	Asistan kaldığı yerden devam eder.
+For example: show a section through the Japan Trench	Örneğin: Japonya Çukuru boyunca bir kesit göster
+Ask	Sor
+Create placemarks	Yer işaretleri oluştur
+Placemarks, paths and polygons by the description in the field, for example «the voyage of Columbus». The model answers with one KML document, it is written at once as a new folder in My Places.	Alandaki açıklamaya göre yer işaretleri, yollar ve çokgenler, örneğin "Kolomb'un yolculuğu". Model tek bir KML belgesiyle yanıt verir, belge hemen "Yerlerim"e yeni bir klasör olarak yazılır.
+The question, the view point and the turned on rows of the Layers section go to the server of the chosen model. My Places go only selected.	Soru, bakış noktası ve "Katmanlar" bölümünün açık satırları seçilen modelin sunucusuna gider. "Yerlerim"den yalnızca seçili olanlar gider.
+Denied.	Reddedildi.
+Assistant settings	Asistan ayarları
+Service	Hizmet
+Through which service the assistant works. Each service has its own key, address and model. OpenRouter models with «:free» in the name are free with a limit of requests a day. The own service works in the OpenAI Chat format, on this computer no key is needed.	Asistanın hangi hizmet üzerinden çalıştığı. Her hizmetin kendi anahtarı, adresi ve modeli vardır. OpenRouter'ın adında ":free" olan modelleri günlük istek sınırıyla ücretsizdir. Kendi hizmetiniz OpenAI Chat biçiminde çalışır, bu bilgisayarda anahtar gerekmez.
+The address of the service. For Anthropic, xAI, DeepSeek and OpenRouter it does not need a change. For an own service - the address of its OpenAI format entry, for example http://localhost:11434/v1 for Ollama.	Hizmetin adresi. Anthropic, xAI, DeepSeek ve OpenRouter için değiştirilmesi gerekmez. Kendi hizmetiniz için - OpenAI biçimindeki girişinin adresi, örneğin Ollama için http://localhost:11434/v1.
+The name of the model at the chosen service. The model must be able to call tools, otherwise the assistant only answers with text.	Seçilen hizmetteki modelin adı. Model araç çağırabilmelidir, aksi halde asistan yalnızca metinle yanıt verir.
+Key	Anahtar
+the key is saved	anahtar kaydedildi
+no key is needed	anahtar gerekmez
+enter the API key	API anahtarını girin
+The API key of the chosen service. It is kept as plain text in the settings of the program and goes only to the address of the service.	Seçilen hizmetin API anahtarı. Programın ayarlarında düz metin olarak saklanır ve yalnızca hizmetin adresine gider.
+Save key	Anahtarı kaydet
+Delete key	Anahtarı sil
+Answer requests from the Search line	"Ara" satırındaki isteklere yanıt ver
+A request in words in the Search line goes to the assistant, the answer appears under the line. Without the tick the line finds only places and coordinates.	"Ara" satırına sözcüklerle yazılan istek asistana gider, yanıt satırın altında görünür. Onay işareti olmadan satır yalnızca yerleri ve koordinatları bulur.
+GPS track {time}	GPS izi {time}
+Length {km} km, time {minutes} min, points {count}.	Uzunluk {km} km, süre {minutes} dk, nokta {count}.
+My location	Konumum
+The location is not available: {error}	Konum kullanılamıyor: {error}
+Accuracy {m} m	Doğruluk {m} m
+height {m} m	yükseklik {m} m
+Waiting for the location…	Konum bekleniyor…
+The camera keeps the location in the middle, the distance and the tilt stay.	Kamera konumu ortada tutar, mesafe ve eğim korunur.
+Record a track	İz kaydet
+Locations go into the track while the tick stands. Rough locations are skipped.	Onay işareti durdukça konumlar ize girer. Kaba konumlar atlanır.
+Track: points {count}, {km} km.	İz: nokta {count}, {km} km.
+Save track	İzi kaydet
+The track goes as a path to My Places, with the time from the first to the last point.	İz, ilk noktadan son noktaya kadar zamanla birlikte yol olarak "Yerlerim"e gider.
+Clear track	İzi temizle
+The location is given by the browser and goes only to the globe.	Konumu tarayıcı verir ve konum yalnızca küreye gider.
+Explain what this object is and why this place is interesting. {kind} «{name}», point {lat}, {lon}.	Bu nesnenin ne olduğunu ve bu yerin neden ilginç olduğunu açıkla. {kind} "{name}", nokta {lat}, {lon}.
+The description of the placemark - {text}	Yer işaretinin açıklaması - {text}
+Object fields - {fields}.	Nesnenin alanları - {fields}.
+Explain this	Bunu açıkla
+A question to the assistant about this placemark: its name, kind, point, description and fields go to the server of the chosen model.	Asistana bu yer işareti hakkında bir soru. Adı, türü, noktası, açıklaması ve alanları seçilen modelin sunucusuna gider.
+Placemarks written to My Places: {count}.	"Yerlerim"e yazılan yer işaretleri: {count}.
+Assistant section	"Asistan" bölümü
+The assistant offers the folder «{name}», placemarks {count}.	Asistan "{name}" klasörünü öneriyor, yer işareti {count}.
+My location: the location of this device on the globe, the camera follows, a track can be recorded.	Konumum: bu cihazın küre üzerindeki konumu, kamera onu izler, iz kaydedilebilir.
+The track is in My Places: {name}.	İz "Yerlerim"de: {name}.
+Create placemarks by the description in the line with the assistant, Ctrl+Enter. The right button - the conversation and the assistant settings.	Satırdaki açıklamaya göre asistanla yer işaretleri oluştur, Ctrl+Enter. Sağ düğme - konuşma ve asistan ayarları.
+Conversation with the assistant…	Asistanla konuşma…
+Assistant settings…	Asistan ayarları…
+Write	Yaz
+Conversation…	Konuşma…

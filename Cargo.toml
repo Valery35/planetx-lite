@@ -14,6 +14,7 @@ members = [
     "crates/ui",
     "crates/addin-api",
     "crates/addin-host",
+    "crates/assistant",
     "apps/planetx-lite",
     "apps/planetx-web",
 ]
@@ -33,6 +34,7 @@ scene = { path = "crates/scene" }
 net = { path = "crates/net" }
 render = { path = "crates/render" }
 ui = { path = "crates/ui" }
+assistant = { path = "crates/assistant" }
 wgpu = "30"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"

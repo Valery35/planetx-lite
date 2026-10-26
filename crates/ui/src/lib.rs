@@ -7,6 +7,7 @@
 //! Программа и страница дают загрузчик тайлов своей платформы и место
 //! для отчёта самопроверки, остальное общее.
 
+pub mod ai;
 pub mod app;
 pub mod basemap;
 pub mod buildings;
@@ -36,6 +37,7 @@ pub mod overpass;
 pub mod overture;
 pub mod placeprops;
 pub mod glyphs;
+pub mod gps;
 pub mod grid;
 pub mod gridheights;
 pub mod hydrocalc;

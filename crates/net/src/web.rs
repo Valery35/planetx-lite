@@ -161,11 +161,11 @@ pub const LARGE_ANSWER: u64 = 4 << 20;
 
 /// Байты ответа сервера. Err(None) - ответ 404, тайла нет.
 async fn fetch(url: &str) -> Result<Vec<u8>, Option<String>> {
-    fetch_with(url, &[], None, TIMEOUT_MS).await
+    fetch_with(url, &[], None, TIMEOUT_MS, false).await
 }
 
 /// Байты ответа с заголовками и телом: тело есть - POST.
-async fn fetch_with(url: &str, headers: &[(String, String)], body: Option<&[u8]>, timeout_ms: u32) -> Result<Vec<u8>, Option<String>> {
+async fn fetch_with(url: &str, headers: &[(String, String)], body: Option<&[u8]>, timeout_ms: u32, error_bodies: bool) -> Result<Vec<u8>, Option<String>> {
     let window = web_sys::window().ok_or_else(|| Some("нет окна браузера".to_string()))?;
     // У fetch браузера своего предела нет: медленный сервер высот держал
     // запрос минутами, загрузка не кончалась, 23 октября 2026 года.
@@ -190,6 +190,13 @@ async fn fetch_with(url: &str, headers: &[(String, String)], body: Option<&[u8]>
     }
     let response = JsFuture::from(window.fetch_with_str_and_init(url, &init)).await.map_err(|e| Some(format!("{e:?}")))?;
     let response: web_sys::Response = response.dyn_into().map_err(|_| Some("ответ не Response".to_string()))?;
+    if !response.ok() && error_bodies {
+        let text = match response.text() {
+            Ok(p) => JsFuture::from(p).await.ok().and_then(|v| v.as_string()).unwrap_or_default(),
+            Err(_) => String::new(),
+        };
+        return Err(Some(format!("HTTP {}: {text}", response.status())));
+    }
     if response.status() == 404 || (response.status() == 403 && crate::forbidden_is_missing(url)) {
         return Err(None);
     }
@@ -255,12 +262,14 @@ pub struct Requests {
     timeout_ms: u32,
     stats: Rc<Stats>,
     on_ready: Rc<dyn Fn()>,
+    /// Ответ с кодом ошибки HTTP - ошибка с телом ответа.
+    error_bodies: bool,
 }
 
 impl Requests {
     /// on_ready зовётся, когда пришёл ответ.
     pub fn new(on_ready: Rc<dyn Fn()>) -> Self {
-        Self { results: Rc::new(RefCell::new(VecDeque::new())), timeout_ms: TIMEOUT_MS, stats: Rc::new(Stats::default()), on_ready }
+        Self { results: Rc::new(RefCell::new(VecDeque::new())), timeout_ms: TIMEOUT_MS, stats: Rc::new(Stats::default()), on_ready, error_bodies: false }
     }
 
     /// Запросы с пределом ответа limit байт: большой ответ ждётся дольше.
@@ -276,17 +285,21 @@ impl Request for Requests {
     }
 
     fn send(&self, url: &str, headers: &[(&str, &str)], body: Option<&[u8]>) {
-        let (results, stats, on_ready, url, timeout_ms) =
-            (self.results.clone(), self.stats.clone(), self.on_ready.clone(), url.to_string(), self.timeout_ms);
+        let (results, stats, on_ready, url, timeout_ms, error_bodies) =
+            (self.results.clone(), self.stats.clone(), self.on_ready.clone(), url.to_string(), self.timeout_ms, self.error_bodies);
         let headers: Vec<(String, String)> = headers.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect();
         let body = body.map(<[u8]>::to_vec);
         wasm_bindgen_futures::spawn_local(async move {
             stats.request_started();
-            let result = fetch_with(&url, &headers, body.as_deref(), timeout_ms).await.map_err(|e| e.unwrap_or_else(|| "HTTP 404".to_string()));
+            let result = fetch_with(&url, &headers, body.as_deref(), timeout_ms, error_bodies).await.map_err(|e| e.unwrap_or_else(|| "HTTP 404".to_string()));
             stats.request_finished();
             results.borrow_mut().push_back(result);
             on_ready();
         });
+    }
+
+    fn keep_error_bodies(&mut self) {
+        self.error_bodies = true;
     }
 
     fn take(&self) -> Option<Result<Vec<u8>, String>> {

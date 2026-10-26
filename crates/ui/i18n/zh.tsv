@@ -1617,3 +1617,83 @@ Trend maps	趋势图集
 On the ground	贴地
 above sea level	海拔
 metres	米
+OpenRouter (has free models)	OpenRouter（有免费模型）
+Own service, for example Ollama	自有服务，例如 Ollama
+No API key. It is entered in the window «Assistant settings».	没有 API 密钥。请在“助手设置”窗口中输入。
+The service is busy ({error}), a repeat in {seconds} s.	服务繁忙（{error}），{seconds} 秒后重试。
+The assistant asks to run {name} {args}.	助手请求运行 {name} {args}。
+The assistant has done many actions in a row and waits for «Continue».	助手已连续执行许多操作，正在等待“继续”。
+The model did not answer: {error}	模型未回答：{error}
+The service on this computer does not answer. Check that it is running, for example Ollama, and that the address in the assistant settings is right.	本计算机上的服务没有响应。请检查服务是否在运行，例如 Ollama，以及助手设置中的地址是否正确。
+The service did not accept a long answer, the request is repeated with a smaller length limit.	服务不接受长回答，请求将以较小的长度上限重试。
+The model did not return a KML document.	模型未返回 KML 文档。
+The answer of the model hit the length limit. The placemarks that came whole are taken.	模型的回答达到了长度上限。已采用完整到达的地标。
+Assistant	助手
+Service: {service}, model {model}.	服务：{service}，模型 {model}。
+No API key.	没有 API 密钥。
+Settings…	设置…
+Service, model and API key of the assistant.	助手的服务、模型和 API 密钥。
+Here goes the conversation: your questions, the actions of the assistant on the globe and its answers. A question is asked in the field below or in the Search line.	这里显示对话：你的问题、助手在地球上的操作及其回答。问题可在下方的输入框或“搜索”行中提出。
+You	你
+Action	操作
+PlanetX Lite	PlanetX Lite
+Waiting for the answer…	正在等待回答…
+Write to My Places	写入“我的地点”
+Allow	允许
+Run this action once.	执行此操作一次。
+Allow in this conversation	在本次对话中允许
+Exactly the same request is not asked again until a new conversation.	完全相同的请求在新对话之前不再询问。
+Deny	拒绝
+The assistant gets a refusal and answers without this action.	助手收到拒绝，并在没有此操作的情况下回答。
+The assistant has done many actions in a row.	助手已连续执行许多操作。
+The assistant continues where it stopped.	助手从停下的地方继续。
+For example: show a section through the Japan Trench	例如：显示穿过日本海沟的剖面
+Ask	提问
+Create placemarks	创建地标
+Placemarks, paths and polygons by the description in the field, for example «the voyage of Columbus». The model answers with one KML document, it is written at once as a new folder in My Places.	按输入框中的描述创建地标、路径和多边形，例如“哥伦布的航行”。模型以一个 KML 文档回答，该文档会立即作为新文件夹写入“我的地点”。
+The question, the view point and the turned on rows of the Layers section go to the server of the chosen model. My Places go only selected.	问题、视点以及“图层”部分中已开启的行会发送到所选模型的服务器。“我的地点”仅发送所选内容。
+Denied.	已拒绝。
+Assistant settings	助手设置
+Service	服务
+Through which service the assistant works. Each service has its own key, address and model. OpenRouter models with «:free» in the name are free with a limit of requests a day. The own service works in the OpenAI Chat format, on this computer no key is needed.	助手通过哪个服务工作。每个服务都有自己的密钥、地址和模型。OpenRouter 中名称带有“:free”的模型免费，但每天的请求数有限。自有服务使用 OpenAI Chat 格式，在本计算机上无需密钥。
+The address of the service. For Anthropic, xAI, DeepSeek and OpenRouter it does not need a change. For an own service - the address of its OpenAI format entry, for example http://localhost:11434/v1 for Ollama.	服务的地址。对于 Anthropic、xAI、DeepSeek 和 OpenRouter 无需更改。对于自有服务 - 其 OpenAI 格式入口的地址，例如 Ollama 为 http://localhost:11434/v1。
+The name of the model at the chosen service. The model must be able to call tools, otherwise the assistant only answers with text.	所选服务中的模型名称。模型必须能够调用工具，否则助手只能以文字回答。
+Key	密钥
+the key is saved	密钥已保存
+no key is needed	无需密钥
+enter the API key	输入 API 密钥
+The API key of the chosen service. It is kept as plain text in the settings of the program and goes only to the address of the service.	所选服务的 API 密钥。它以明文保存在程序设置中，只发送到服务的地址。
+Save key	保存密钥
+Delete key	删除密钥
+Answer requests from the Search line	回答来自“搜索”行的请求
+A request in words in the Search line goes to the assistant, the answer appears under the line. Without the tick the line finds only places and coordinates.	在“搜索”行中用文字提出的请求会发送给助手，回答显示在该行下方。不勾选时，该行只查找地点和坐标。
+GPS track {time}	GPS 轨迹 {time}
+Length {km} km, time {minutes} min, points {count}.	长度 {km} 公里，时间 {minutes} 分钟，点数 {count}。
+My location	我的位置
+The location is not available: {error}	位置不可用：{error}
+Accuracy {m} m	精度 {m} 米
+height {m} m	高度 {m} 米
+Waiting for the location…	正在等待位置…
+The camera keeps the location in the middle, the distance and the tilt stay.	相机将位置保持在中心，距离和倾斜保持不变。
+Record a track	记录轨迹
+Locations go into the track while the tick stands. Rough locations are skipped.	勾选期间，位置会写入轨迹。粗略的位置会被跳过。
+Track: points {count}, {km} km.	轨迹：点数 {count}，{km} 公里。
+Save track	保存轨迹
+The track goes as a path to My Places, with the time from the first to the last point.	轨迹作为路径写入“我的地点”，并带有从第一个点到最后一个点的时间。
+Clear track	清除轨迹
+The location is given by the browser and goes only to the globe.	位置由浏览器提供，只发送到地球。
+Explain what this object is and why this place is interesting. {kind} «{name}», point {lat}, {lon}.	请解释这是什么对象，以及这个地方为什么有趣。{kind}“{name}”，点 {lat}, {lon}。
+The description of the placemark - {text}	地标的说明 - {text}
+Object fields - {fields}.	对象的字段 - {fields}。
+Explain this	解释一下
+A question to the assistant about this placemark: its name, kind, point, description and fields go to the server of the chosen model.	就此地标向助手提问。它的名称、类型、点、说明和字段会发送到所选模型的服务器。
+Placemarks written to My Places: {count}.	已写入“我的地点”的地标：{count}。
+Assistant section	“助手”部分
+The assistant offers the folder «{name}», placemarks {count}.	助手建议文件夹“{name}”，地标 {count} 个。
+My location: the location of this device on the globe, the camera follows, a track can be recorded.	我的位置：此设备在地球上的位置，相机跟随，可以记录轨迹。
+The track is in My Places: {name}.	轨迹已在“我的地点”中：{name}。
+Create placemarks by the description in the line with the assistant, Ctrl+Enter. The right button - the conversation and the assistant settings.	借助助手按行中的描述创建地标，Ctrl+Enter。右键 - 对话和助手设置。
+Conversation with the assistant…	与助手对话…
+Assistant settings…	助手设置…
+Write	写入
+Conversation…	对话…

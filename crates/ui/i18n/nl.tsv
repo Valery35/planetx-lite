@@ -1617,3 +1617,83 @@ Trend maps	Trendkaarten
 On the ground	Op de grond
 above sea level	boven zeeniveau
 metres	meters
+OpenRouter (has free models)	OpenRouter (heeft gratis modellen)
+Own service, for example Ollama	Eigen dienst, bijvoorbeeld Ollama
+No API key. It is entered in the window «Assistant settings».	Geen API-sleutel. Die wordt ingevoerd in het venster ‘Instellingen van de assistent’.
+The service is busy ({error}), a repeat in {seconds} s.	De dienst is bezet ({error}), nieuwe poging over {seconds} s.
+The assistant asks to run {name} {args}.	De assistent vraagt om {name} {args} uit te voeren.
+The assistant has done many actions in a row and waits for «Continue».	De assistent heeft veel acties achter elkaar gedaan en wacht op ‘Doorgaan’.
+The model did not answer: {error}	Het model heeft niet geantwoord: {error}
+The service on this computer does not answer. Check that it is running, for example Ollama, and that the address in the assistant settings is right.	De dienst op deze computer antwoordt niet. Controleer of hij draait, bijvoorbeeld Ollama, en of het adres in de instellingen van de assistent klopt.
+The service did not accept a long answer, the request is repeated with a smaller length limit.	De dienst heeft een lang antwoord niet aangenomen, het verzoek wordt herhaald met een kleinere lengtegrens.
+The model did not return a KML document.	Het model heeft geen KML-document teruggegeven.
+The answer of the model hit the length limit. The placemarks that came whole are taken.	Het antwoord van het model heeft de lengtegrens bereikt. De plaatsmarkeringen die heel zijn aangekomen, worden overgenomen.
+Assistant	Assistent
+Service: {service}, model {model}.	Dienst: {service}, model {model}.
+No API key.	Geen API-sleutel.
+Settings…	Instellingen…
+Service, model and API key of the assistant.	Dienst, model en API-sleutel van de assistent.
+Here goes the conversation: your questions, the actions of the assistant on the globe and its answers. A question is asked in the field below or in the Search line.	Hier loopt het gesprek: uw vragen, de acties van de assistent op de globe en zijn antwoorden. Een vraag wordt gesteld in het veld hieronder of in de regel ‘Zoeken’.
+You	U
+Action	Actie
+PlanetX Lite	PlanetX Lite
+Waiting for the answer…	Wachten op het antwoord…
+Write to My Places	In ‘Mijn plaatsen’ opslaan
+Allow	Toestaan
+Run this action once.	Deze actie één keer uitvoeren.
+Allow in this conversation	Toestaan in dit gesprek
+Exactly the same request is not asked again until a new conversation.	Precies hetzelfde verzoek wordt niet meer gevraagd tot een nieuw gesprek.
+Deny	Weigeren
+The assistant gets a refusal and answers without this action.	De assistent krijgt een weigering en antwoordt zonder deze actie.
+The assistant has done many actions in a row.	De assistent heeft veel acties achter elkaar gedaan.
+The assistant continues where it stopped.	De assistent gaat verder waar hij gestopt is.
+For example: show a section through the Japan Trench	Bijvoorbeeld: toon een doorsnede door de Japantrog
+Ask	Vragen
+Create placemarks	Plaatsmarkeringen maken
+Placemarks, paths and polygons by the description in the field, for example «the voyage of Columbus». The model answers with one KML document, it is written at once as a new folder in My Places.	Plaatsmarkeringen, paden en polygonen volgens de beschrijving in het veld, bijvoorbeeld ‘de reis van Columbus’. Het model antwoordt met één KML-document, dat meteen als nieuwe map in ‘Mijn plaatsen’ wordt opgeslagen.
+The question, the view point and the turned on rows of the Layers section go to the server of the chosen model. My Places go only selected.	De vraag, het gezichtspunt en de aangezette regels van de sectie ‘Lagen’ gaan naar de server van het gekozen model. ‘Mijn plaatsen’ gaan alleen geselecteerd mee.
+Denied.	Geweigerd.
+Assistant settings	Instellingen van de assistent
+Service	Dienst
+Through which service the assistant works. Each service has its own key, address and model. OpenRouter models with «:free» in the name are free with a limit of requests a day. The own service works in the OpenAI Chat format, on this computer no key is needed.	Via welke dienst de assistent werkt. Elke dienst heeft een eigen sleutel, adres en model. OpenRouter-modellen met ‘:free’ in de naam zijn gratis met een grens aan verzoeken per dag. De eigen dienst werkt in het formaat OpenAI Chat, op deze computer is geen sleutel nodig.
+The address of the service. For Anthropic, xAI, DeepSeek and OpenRouter it does not need a change. For an own service - the address of its OpenAI format entry, for example http://localhost:11434/v1 for Ollama.	Het adres van de dienst. Voor Anthropic, xAI, DeepSeek en OpenRouter hoeft het niet te worden gewijzigd. Voor een eigen dienst - het adres van zijn ingang in OpenAI-formaat, bijvoorbeeld http://localhost:11434/v1 voor Ollama.
+The name of the model at the chosen service. The model must be able to call tools, otherwise the assistant only answers with text.	De naam van het model bij de gekozen dienst. Het model moet tools kunnen aanroepen, anders antwoordt de assistent alleen met tekst.
+Key	Sleutel
+the key is saved	sleutel opgeslagen
+no key is needed	geen sleutel nodig
+enter the API key	voer de API-sleutel in
+The API key of the chosen service. It is kept as plain text in the settings of the program and goes only to the address of the service.	De API-sleutel van de gekozen dienst. Die wordt als platte tekst in de instellingen van het programma bewaard en gaat alleen naar het adres van de dienst.
+Save key	Sleutel opslaan
+Delete key	Sleutel verwijderen
+Answer requests from the Search line	Verzoeken uit de regel ‘Zoeken’ beantwoorden
+A request in words in the Search line goes to the assistant, the answer appears under the line. Without the tick the line finds only places and coordinates.	Een verzoek in woorden in de regel ‘Zoeken’ gaat naar de assistent, het antwoord verschijnt onder de regel. Zonder vinkje vindt de regel alleen plaatsen en coördinaten.
+GPS track {time}	GPS-track {time}
+Length {km} km, time {minutes} min, points {count}.	Lengte {km} km, tijd {minutes} min, punten {count}.
+My location	Mijn locatie
+The location is not available: {error}	De locatie is niet beschikbaar: {error}
+Accuracy {m} m	Nauwkeurigheid {m} m
+height {m} m	hoogte {m} m
+Waiting for the location…	Wachten op de locatie…
+The camera keeps the location in the middle, the distance and the tilt stay.	De camera houdt de locatie in het midden, de afstand en de kanteling blijven.
+Record a track	Track opnemen
+Locations go into the track while the tick stands. Rough locations are skipped.	Zolang het vinkje staat, gaan locaties in de track. Onnauwkeurige locaties worden overgeslagen.
+Track: points {count}, {km} km.	Track: punten {count}, {km} km.
+Save track	Track opslaan
+The track goes as a path to My Places, with the time from the first to the last point.	De track gaat als pad naar ‘Mijn plaatsen’, met de tijd van het eerste tot het laatste punt.
+Clear track	Track wissen
+The location is given by the browser and goes only to the globe.	De locatie komt van de browser en gaat alleen naar de globe.
+Explain what this object is and why this place is interesting. {kind} «{name}», point {lat}, {lon}.	Leg uit wat dit object is en waarom deze plaats interessant is. {kind} ‘{name}’, punt {lat}, {lon}.
+The description of the placemark - {text}	De beschrijving van de plaatsmarkering - {text}
+Object fields - {fields}.	Velden van het object - {fields}.
+Explain this	Leg dit uit
+A question to the assistant about this placemark: its name, kind, point, description and fields go to the server of the chosen model.	Een vraag aan de assistent over deze plaatsmarkering. Naam, soort, punt, beschrijving en velden gaan naar de server van het gekozen model.
+Placemarks written to My Places: {count}.	Plaatsmarkeringen opgeslagen in ‘Mijn plaatsen’: {count}.
+Assistant section	Sectie ‘Assistent’
+The assistant offers the folder «{name}», placemarks {count}.	De assistent stelt de map ‘{name}’ voor, plaatsmarkeringen {count}.
+My location: the location of this device on the globe, the camera follows, a track can be recorded.	Mijn locatie: de locatie van dit apparaat op de globe, de camera volgt, een track kan worden opgenomen.
+The track is in My Places: {name}.	De track staat in ‘Mijn plaatsen’: {name}.
+Create placemarks by the description in the line with the assistant, Ctrl+Enter. The right button - the conversation and the assistant settings.	Plaatsmarkeringen maken volgens de beschrijving in de regel met de assistent, Ctrl+Enter. De rechterknop - het gesprek en de instellingen van de assistent.
+Conversation with the assistant…	Gesprek met de assistent…
+Assistant settings…	Instellingen van de assistent…
+Write	Schrijven
+Conversation…	Gesprek…

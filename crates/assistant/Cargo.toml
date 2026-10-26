@@ -1,0 +1,23 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "assistant"
+description = "ИИ-помощник PlanetX Lite - инструменты, запросы и разбор ответов моделей, поток SSE, круг разговора, без сети и потоков"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde_json.workspace = true
+
+[dev-dependencies]
+# Проверка, что документы KML помощника читаются читателем Lite, как
+# тесты модуля читают их core.kml.
+scene.workspace = true
+
+[lints]
+workspace = true

@@ -9,7 +9,9 @@
 //! карточку. Описание - HTML метки, как в KML и Google Earth, у метки
 //! с шаблоном BalloonStyle - по шаблону (`scene::balloon`). HTML
 //! показывается текстом без тегов, ссылки - ссылками, их открывает
-//! система. Кнопки «Объясни это» модуля нет: у Lite нет помощника.
+//! система. «Объясни это» - вопрос помощнику ИИ о метке
+//! ([`explain_question`]), ответ - под текстом карточки, как у модуля.
+//! Нажатие кнопки - согласие отправить данные этой одной метки.
 //!
 //! Попадание щелчка в метку считается в пикселях экрана
 //! (`scene::editing::hit`) в [`PICK_PIXELS`] логических пикселей, как
@@ -22,16 +24,91 @@ use scene::editing::{self, Pixel, Shape};
 use scene::features::Kind;
 use scene::kml::{Folder, Item, Place};
 
-use crate::i18n::{Lang, tr};
+use crate::i18n::{Lang, tr, trf};
 
 /// Логических пикселей до метки, в них щелчок попадает.
 pub const PICK_PIXELS: f64 = 8.0;
+/// Описание и поля метки в вопросе помощнику - не длиннее, знаков,
+/// `EXPLAIN_LIMIT` модуля.
+pub const EXPLAIN_LIMIT: usize = 2000;
+/// Полей метки в вопросе помощнику не больше, `FIELDS_LIMIT` модуля.
+pub const FIELDS_LIMIT: usize = 20;
+
+/// Текст не длиннее [`EXPLAIN_LIMIT`] знаков, обрезанный - с многоточием.
+fn clip(text: &str) -> String {
+    let text = text.split_whitespace().collect::<Vec<_>>().join(" ");
+    if text.chars().count() <= EXPLAIN_LIMIT {
+        return text;
+    }
+    text.chars().take(EXPLAIN_LIMIT).collect::<String>() + "…"
+}
+
+/// Вопрос помощнику о метке, `explain_question` модуля: название, вид,
+/// середина точек, описание без разметки и поля метки.
+pub fn explain_question(lang: Lang, place: &Place) -> String {
+    let points = if place.points.is_empty() { vec![(0.0, 0.0)] } else { place.points.clone() };
+    let lat = points.iter().map(|p| p.0).sum::<f64>() / points.len() as f64;
+    // Середина дуги долгот: путь через линию перемены дат не уводит
+    // точку на другую сторону Земли.
+    let lons: Vec<f64> = points.iter().map(|p| p.1).collect();
+    let lon = middle_lon(&lons);
+    let kind = match place.kind {
+        Kind::Point => tr(lang, "Placemark"),
+        Kind::Line => tr(lang, "Path"),
+        Kind::Polygon => tr(lang, "Polygon"),
+    };
+    let name = if place.name.trim().is_empty() { tr(lang, "Untitled").to_string() } else { place.name.clone() };
+    let mut question = trf(
+        lang,
+        "Explain what this object is and why this place is interesting. {kind} «{name}», point {lat}, {lon}.",
+        &[("kind", kind), ("name", &name), ("lat", &format!("{lat:.5}")), ("lon", &format!("{lon:.5}"))],
+    );
+    let (pieces, data) = content(place);
+    let text: Vec<&str> = pieces
+        .iter()
+        .map(|p| match p {
+            Piece::Text(t) | Piece::Link(t, _) => t.as_str(),
+        })
+        .collect();
+    let text = clip(&text.join(" "));
+    if !text.is_empty() {
+        question.push(' ');
+        question.push_str(&trf(lang, "The description of the placemark - {text}", &[("text", &text)]));
+    }
+    let fields = clip(&data.iter().take(FIELDS_LIMIT).map(|(n, v)| format!("{n} = {v}")).collect::<Vec<_>>().join("; "));
+    if !fields.is_empty() {
+        question.push(' ');
+        question.push_str(&trf(lang, "Object fields - {fields}.", &[("fields", &fields)]));
+    }
+    question
+}
+
+/// Середина дуги долгот: наименьшая дуга, что вмещает все долготы.
+fn middle_lon(lons: &[f64]) -> f64 {
+    let mut sorted: Vec<f64> = lons.iter().map(|l| (l + 180.0).rem_euclid(360.0) - 180.0).collect();
+    sorted.sort_by(f64::total_cmp);
+    let (Some(first), Some(last)) = (sorted.first().copied(), sorted.last().copied()) else {
+        return 0.0;
+    };
+    // Самый большой просвет между соседними долготами - вне дуги.
+    let mut gap = (first + 360.0 - last, last);
+    for w in sorted.windows(2) {
+        if w[1] - w[0] > gap.0 {
+            gap = (w[1] - w[0], w[0]);
+        }
+    }
+    let start = gap.1 + gap.0;
+    let span = 360.0 - gap.0;
+    (start + span / 2.0 + 180.0).rem_euclid(360.0) - 180.0
+}
 
 /// Что просит карточка.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Action {
     Fly(Vec<usize>),
     Properties(Vec<usize>),
+    /// «Объясни это»: вопрос помощнику о метке.
+    Explain(Vec<usize>),
 }
 
 /// Метка под пикселем (px, py) кадра или None: путь в дереве «Моих
@@ -109,8 +186,9 @@ pub struct Card {
 }
 
 impl Card {
-    /// Окно карточки. false в open - карточку закрыли.
-    pub fn window(&self, ctx: &egui::Context, lang: Lang, place: &Place, open: &mut bool) -> Option<Action> {
+    /// Окно карточки. false в open - карточку закрыли. answer - ответ
+    /// помощника о метке, пустой - ответ ждётся, None - не спрашивали.
+    pub fn window(&self, ctx: &egui::Context, lang: Lang, place: &Place, answer: Option<&str>, open: &mut bool) -> Option<Action> {
         let mut action = None;
         let title = if place.name.trim().is_empty() { tr(lang, "Untitled").to_string() } else { place.name.clone() };
         egui::Window::new(title)
@@ -147,9 +225,24 @@ impl Card {
                             }
                         });
                     }
+                    if let Some(text) = answer {
+                        ui.add_space(6.0);
+                        ui.separator();
+                        if text.is_empty() {
+                            ui.horizontal(|ui| {
+                                ui.spinner();
+                                ui.weak(tr(lang, "Waiting for the answer…"));
+                            });
+                        } else {
+                            ui.label(text);
+                        }
+                    }
                 });
                 ui.separator();
                 ui.horizontal(|ui| {
+                    if ui.button(tr(lang, "Explain this")).on_hover_text(tr(lang, "A question to the assistant about this placemark: its name, kind, point, description and fields go to the server of the chosen model.")).clicked() {
+                        action = Some(Action::Explain(self.path.clone()));
+                    }
                     if ui.button(tr(lang, "Fly to")).clicked() {
                         action = Some(Action::Fly(self.path.clone()));
                     }
@@ -168,6 +261,19 @@ mod tests {
     use scene::balloon::Piece;
     use scene::features::Kind;
     use scene::kml::Place;
+
+    /// Вопрос о метке: название, середина точек, описание и поля, путь
+    /// через линию перемены дат - середина у неё, а не на другой стороне.
+    #[test]
+    fn explain_question_carries_the_place() {
+        let mut p = Place::new("Ла-Манш", Kind::Line, vec![(50.0, 179.0), (51.0, -179.0)]);
+        p.description = "<b>пролив</b>".into();
+        p.data = Some(vec![("ширина".into(), "32 км".into())]);
+        let q = super::explain_question(crate::i18n::Lang::EN, &p);
+        assert!(q.contains("Ла-Манш") && q.contains("50.50000") && q.contains("180.00000"), "{q}");
+        assert!(q.contains("пролив") && !q.contains("<b>") && q.contains("ширина = 32 км"), "{q}");
+        assert!((super::middle_lon(&[10.0, 20.0]) - 15.0).abs() < 1e-9);
+    }
 
     #[test]
     fn balloon_template_wins_over_fields() {

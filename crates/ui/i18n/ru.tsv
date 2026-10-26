@@ -1617,3 +1617,83 @@ Trend maps	Карты тренда
 On the ground	По земле
 above sea level	над уровнем моря
 metres	метры
+OpenRouter (has free models)	OpenRouter (есть бесплатные модели)
+Own service, for example Ollama	Свой сервис, например Ollama
+No API key. It is entered in the window «Assistant settings».	Нет ключа API. Его вводят в окне «Настройки помощника».
+The service is busy ({error}), a repeat in {seconds} s.	Сервис занят ({error}), повтор через {seconds} с.
+The assistant asks to run {name} {args}.	Помощник просит выполнить {name} {args}.
+The assistant has done many actions in a row and waits for «Continue».	Помощник сделал много действий подряд и ждёт «Продолжить».
+The model did not answer: {error}	Модель не ответила: {error}
+The service on this computer does not answer. Check that it is running, for example Ollama, and that the address in the assistant settings is right.	Сервис на этом компьютере не отвечает. Проверьте, что он запущен, например Ollama, и что адрес в настройках помощника верный.
+The service did not accept a long answer, the request is repeated with a smaller length limit.	Сервис не принял длинный ответ, запрос повторён с меньшим пределом длины.
+The model did not return a KML document.	Модель не вернула документ KML.
+The answer of the model hit the length limit. The placemarks that came whole are taken.	Ответ модели упёрся в предел длины. Взяты метки, пришедшие целиком.
+Assistant	Помощник
+Service: {service}, model {model}.	Сервис: {service}, модель {model}.
+No API key.	Ключа API нет.
+Settings…	Настройки…
+Service, model and API key of the assistant.	Сервис, модель и ключ API помощника.
+Here goes the conversation: your questions, the actions of the assistant on the globe and its answers. A question is asked in the field below or in the Search line.	Здесь идёт разговор: ваши вопросы, действия помощника на глобусе и его ответы. Вопрос задаётся в поле ниже или в строке «Поиск».
+You	Вы
+Action	Действие
+PlanetX Lite	PlanetX Lite
+Waiting for the answer…	Ожидание ответа…
+Write to My Places	Записать в «Мои метки»
+Allow	Разрешить
+Run this action once.	Выполнить это действие один раз.
+Allow in this conversation	Разрешить в этом разговоре
+Exactly the same request is not asked again until a new conversation.	Точно такой же запрос больше не спрашивается до нового разговора.
+Deny	Отказать
+The assistant gets a refusal and answers without this action.	Помощник получает отказ и отвечает без этого действия.
+The assistant has done many actions in a row.	Помощник сделал много действий подряд.
+The assistant continues where it stopped.	Помощник продолжает с того места, где остановился.
+For example: show a section through the Japan Trench	Например: покажи разрез через Японский жёлоб
+Ask	Спросить
+Create placemarks	Создать метки
+Placemarks, paths and polygons by the description in the field, for example «the voyage of Columbus». The model answers with one KML document, it is written at once as a new folder in My Places.	Метки, пути и многоугольники по описанию в поле, например «путешествие Колумба». Модель отвечает одним документом KML, он сразу записывается новой папкой в «Мои метки».
+The question, the view point and the turned on rows of the Layers section go to the server of the chosen model. My Places go only selected.	Запрос, точка взгляда и включённые строки раздела «Слои» уходят на сервер выбранной модели. «Мои метки» уходят только выделенными.
+Denied.	Отказано.
+Assistant settings	Настройки помощника
+Service	Сервис
+Through which service the assistant works. Each service has its own key, address and model. OpenRouter models with «:free» in the name are free with a limit of requests a day. The own service works in the OpenAI Chat format, on this computer no key is needed.	Через какой сервис работает помощник. У каждого сервиса свой ключ, адрес и модель. У OpenRouter модели с «:free» в названии бесплатны с ограничением запросов в сутки. Свой сервис работает в формате OpenAI Chat, на этом компьютере ключ не нужен.
+The address of the service. For Anthropic, xAI, DeepSeek and OpenRouter it does not need a change. For an own service - the address of its OpenAI format entry, for example http://localhost:11434/v1 for Ollama.	Адрес сервиса. У Anthropic, xAI, DeepSeek и OpenRouter менять его не нужно. У своего сервиса - адрес его входа формата OpenAI, например http://localhost:11434/v1 у Ollama.
+The name of the model at the chosen service. The model must be able to call tools, otherwise the assistant only answers with text.	Название модели у выбранного сервиса. Модель должна уметь вызывать инструменты, иначе помощник только отвечает текстом.
+Key	Ключ
+the key is saved	ключ сохранён
+no key is needed	ключ не нужен
+enter the API key	введите ключ API
+The API key of the chosen service. It is kept as plain text in the settings of the program and goes only to the address of the service.	Ключ API выбранного сервиса. Он хранится открытым текстом в настройках программы и уходит только на адрес сервиса.
+Save key	Сохранить ключ
+Delete key	Удалить ключ
+Answer requests from the Search line	Отвечать на просьбы из строки «Поиск»
+A request in words in the Search line goes to the assistant, the answer appears under the line. Without the tick the line finds only places and coordinates.	Просьба словами в строке «Поиск» уходит помощнику, ответ появляется под строкой. Без флажка строка ищет только места и координаты.
+GPS track {time}	GPS-трек {time}
+Length {km} km, time {minutes} min, points {count}.	Длина {km} км, время {minutes} мин, точек {count}.
+My location	Моё место
+The location is not available: {error}	Место недоступно: {error}
+Accuracy {m} m	Точность {m} м
+height {m} m	высота {m} м
+Waiting for the location…	Определение места…
+The camera keeps the location in the middle, the distance and the tilt stay.	Камера держит место в центре, расстояние и наклон сохраняются.
+Record a track	Записывать трек
+Locations go into the track while the tick stands. Rough locations are skipped.	Пока стоит флажок, места записываются в трек. Неточные места пропускаются.
+Track: points {count}, {km} km.	Трек: точек {count}, {km} км.
+Save track	Сохранить трек
+The track goes as a path to My Places, with the time from the first to the last point.	Трек уходит путём в «Мои метки», со временем от первой до последней точки.
+Clear track	Очистить трек
+The location is given by the browser and goes only to the globe.	Место сообщает браузер. Оно уходит только на глобус.
+Explain what this object is and why this place is interesting. {kind} «{name}», point {lat}, {lon}.	Объясни, что это за объект и чем интересно это место. {kind} «{name}», точка {lat}, {lon}.
+The description of the placemark - {text}	Описание метки - {text}
+Object fields - {fields}.	Поля объекта - {fields}.
+Explain this	Объясни это
+A question to the assistant about this placemark: its name, kind, point, description and fields go to the server of the chosen model.	Вопрос помощнику об этой метке. Её название, вид, точка, описание и поля уходят на сервер выбранной модели.
+Placemarks written to My Places: {count}.	Записано меток в «Мои метки»: {count}.
+Assistant section	Раздел «Помощник»
+The assistant offers the folder «{name}», placemarks {count}.	Помощник предлагает папку «{name}», меток {count}.
+My location: the location of this device on the globe, the camera follows, a track can be recorded.	Моё место - место этого устройства на глобусе. Камера следует за ним, можно записать трек.
+The track is in My Places: {name}.	Трек «{name}» записан в «Мои метки».
+Create placemarks by the description in the line with the assistant, Ctrl+Enter. The right button - the conversation and the assistant settings.	Создать метки по описанию в строке с помощником, Ctrl+Enter. Правая кнопка - разговор и настройки помощника.
+Conversation with the assistant…	Разговор с помощником…
+Assistant settings…	Настройки помощника…
+Write	Записать
+Conversation…	Разговор…

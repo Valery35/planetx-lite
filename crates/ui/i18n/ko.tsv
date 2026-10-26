@@ -1617,3 +1617,83 @@ Trend maps	추세 지도 모음
 On the ground	지면
 above sea level	해수면 위
 metres	미터
+OpenRouter (has free models)	OpenRouter(무료 모델 있음)
+Own service, for example Ollama	자체 서비스, 예: Ollama
+No API key. It is entered in the window «Assistant settings».	API 키가 없습니다. 키는 "어시스턴트 설정" 창에서 입력합니다.
+The service is busy ({error}), a repeat in {seconds} s.	서비스가 바쁩니다({error}). {seconds}초 후 다시 시도합니다.
+The assistant asks to run {name} {args}.	어시스턴트가 {name} {args} 실행을 요청합니다.
+The assistant has done many actions in a row and waits for «Continue».	어시스턴트가 연속으로 많은 동작을 했으며 "계속"을 기다립니다.
+The model did not answer: {error}	모델이 응답하지 않았습니다: {error}
+The service on this computer does not answer. Check that it is running, for example Ollama, and that the address in the assistant settings is right.	이 컴퓨터의 서비스가 응답하지 않습니다. 서비스(예: Ollama)가 실행 중인지, 어시스턴트 설정의 주소가 올바른지 확인하세요.
+The service did not accept a long answer, the request is repeated with a smaller length limit.	서비스가 긴 응답을 받아들이지 않아 더 작은 길이 제한으로 요청을 다시 보냅니다.
+The model did not return a KML document.	모델이 KML 문서를 반환하지 않았습니다.
+The answer of the model hit the length limit. The placemarks that came whole are taken.	모델의 응답이 길이 제한에 도달했습니다. 온전히 도착한 장소 표시를 가져왔습니다.
+Assistant	어시스턴트
+Service: {service}, model {model}.	서비스: {service}, 모델 {model}.
+No API key.	API 키가 없습니다.
+Settings…	설정…
+Service, model and API key of the assistant.	어시스턴트의 서비스, 모델, API 키.
+Here goes the conversation: your questions, the actions of the assistant on the globe and its answers. A question is asked in the field below or in the Search line.	여기에 대화가 표시됩니다: 질문, 지구본에서의 어시스턴트 동작과 그 답변. 질문은 아래 입력란이나 "검색" 줄에서 합니다.
+You	나
+Action	동작
+PlanetX Lite	PlanetX Lite
+Waiting for the answer…	답변을 기다리는 중…
+Write to My Places	"내 장소"에 기록
+Allow	허용
+Run this action once.	이 동작을 한 번 실행합니다.
+Allow in this conversation	이 대화에서 허용
+Exactly the same request is not asked again until a new conversation.	똑같은 요청은 새 대화 전까지 다시 묻지 않습니다.
+Deny	거부
+The assistant gets a refusal and answers without this action.	어시스턴트는 거부를 받고 이 동작 없이 답합니다.
+The assistant has done many actions in a row.	어시스턴트가 연속으로 많은 동작을 했습니다.
+The assistant continues where it stopped.	어시스턴트가 멈춘 곳부터 계속합니다.
+For example: show a section through the Japan Trench	예: 일본 해구를 가로지르는 단면을 보여 줘
+Ask	질문
+Create placemarks	장소 표시 만들기
+Placemarks, paths and polygons by the description in the field, for example «the voyage of Columbus». The model answers with one KML document, it is written at once as a new folder in My Places.	입력란의 설명에 따른 장소 표시, 경로, 다각형. 예: "콜럼버스의 항해". 모델은 KML 문서 하나로 답하며, 이 문서는 곧바로 "내 장소"에 새 폴더로 기록됩니다.
+The question, the view point and the turned on rows of the Layers section go to the server of the chosen model. My Places go only selected.	질문, 시점, "레이어" 섹션의 켜진 행은 선택한 모델의 서버로 전송됩니다. "내 장소"는 선택한 항목만 전송됩니다.
+Denied.	거부되었습니다.
+Assistant settings	어시스턴트 설정
+Service	서비스
+Through which service the assistant works. Each service has its own key, address and model. OpenRouter models with «:free» in the name are free with a limit of requests a day. The own service works in the OpenAI Chat format, on this computer no key is needed.	어시스턴트가 사용하는 서비스. 서비스마다 고유한 키, 주소, 모델이 있습니다. 이름에 ":free"가 있는 OpenRouter 모델은 하루 요청 수 제한이 있는 무료 모델입니다. 자체 서비스는 OpenAI Chat 형식으로 작동하며, 이 컴퓨터에서는 키가 필요 없습니다.
+The address of the service. For Anthropic, xAI, DeepSeek and OpenRouter it does not need a change. For an own service - the address of its OpenAI format entry, for example http://localhost:11434/v1 for Ollama.	서비스 주소. Anthropic, xAI, DeepSeek, OpenRouter는 변경할 필요가 없습니다. 자체 서비스는 - OpenAI 형식 입구의 주소, 예를 들어 Ollama는 http://localhost:11434/v1.
+The name of the model at the chosen service. The model must be able to call tools, otherwise the assistant only answers with text.	선택한 서비스의 모델 이름. 모델은 도구를 호출할 수 있어야 하며, 그렇지 않으면 어시스턴트는 텍스트로만 답합니다.
+Key	키
+the key is saved	키 저장됨
+no key is needed	키 필요 없음
+enter the API key	API 키 입력
+The API key of the chosen service. It is kept as plain text in the settings of the program and goes only to the address of the service.	선택한 서비스의 API 키. 프로그램 설정에 일반 텍스트로 저장되며 서비스 주소로만 전송됩니다.
+Save key	키 저장
+Delete key	키 삭제
+Answer requests from the Search line	"검색" 줄의 요청에 답하기
+A request in words in the Search line goes to the assistant, the answer appears under the line. Without the tick the line finds only places and coordinates.	"검색" 줄에 말로 쓴 요청은 어시스턴트에게 전송되고, 답변은 줄 아래에 나타납니다. 체크하지 않으면 줄은 장소와 좌표만 찾습니다.
+GPS track {time}	GPS 트랙 {time}
+Length {km} km, time {minutes} min, points {count}.	길이 {km} km, 시간 {minutes}분, 점 {count}개.
+My location	내 위치
+The location is not available: {error}	위치를 사용할 수 없습니다: {error}
+Accuracy {m} m	정확도 {m} m
+height {m} m	높이 {m} m
+Waiting for the location…	위치를 기다리는 중…
+The camera keeps the location in the middle, the distance and the tilt stay.	카메라는 위치를 가운데에 유지하고, 거리와 기울기는 그대로입니다.
+Record a track	트랙 기록
+Locations go into the track while the tick stands. Rough locations are skipped.	체크되어 있는 동안 위치가 트랙에 들어갑니다. 대략적인 위치는 건너뜁니다.
+Track: points {count}, {km} km.	트랙: 점 {count}개, {km} km.
+Save track	트랙 저장
+The track goes as a path to My Places, with the time from the first to the last point.	트랙은 첫 점부터 마지막 점까지의 시간과 함께 경로로 "내 장소"에 들어갑니다.
+Clear track	트랙 지우기
+The location is given by the browser and goes only to the globe.	위치는 브라우저가 제공하며 지구본에만 전달됩니다.
+Explain what this object is and why this place is interesting. {kind} «{name}», point {lat}, {lon}.	이 개체가 무엇이고 이 장소가 왜 흥미로운지 설명해 줘. {kind} "{name}", 지점 {lat}, {lon}.
+The description of the placemark - {text}	장소 표시 설명 - {text}
+Object fields - {fields}.	개체 필드 - {fields}.
+Explain this	설명해 줘
+A question to the assistant about this placemark: its name, kind, point, description and fields go to the server of the chosen model.	이 장소 표시에 대해 어시스턴트에게 하는 질문. 이름, 종류, 지점, 설명, 필드가 선택한 모델의 서버로 전송됩니다.
+Placemarks written to My Places: {count}.	"내 장소"에 기록된 장소 표시: {count}.
+Assistant section	"어시스턴트" 섹션
+The assistant offers the folder «{name}», placemarks {count}.	어시스턴트가 "{name}" 폴더를 제안합니다. 장소 표시 {count}개.
+My location: the location of this device on the globe, the camera follows, a track can be recorded.	내 위치: 지구본 위 이 기기의 위치. 카메라가 따라가고 트랙을 기록할 수 있습니다.
+The track is in My Places: {name}.	트랙이 "내 장소"에 있습니다: {name}.
+Create placemarks by the description in the line with the assistant, Ctrl+Enter. The right button - the conversation and the assistant settings.	줄의 설명에 따라 어시스턴트로 장소 표시 만들기, Ctrl+Enter. 오른쪽 버튼 - 대화와 어시스턴트 설정.
+Conversation with the assistant…	어시스턴트와의 대화…
+Assistant settings…	어시스턴트 설정…
+Write	기록
+Conversation…	대화…

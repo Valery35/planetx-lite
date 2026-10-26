@@ -166,6 +166,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "assistant"
+version = "0.1.0"
+dependencies = [
+ "scene",
+ "serde_json",
+]
+
+[[package]]
 name = "atomic-waker"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3564,6 +3572,7 @@ version = "0.1.0"
 dependencies = [
  "addin-api",
  "addin-host",
+ "assistant",
  "data",
  "eframe",
  "epaint_default_fonts",

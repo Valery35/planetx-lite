@@ -1617,3 +1617,83 @@ Trend maps	Các bản đồ xu hướng
 On the ground	Trên mặt đất
 above sea level	so với mực nước biển
 metres	mét
+OpenRouter (has free models)	OpenRouter (có mô hình miễn phí)
+Own service, for example Ollama	Dịch vụ riêng, ví dụ Ollama
+No API key. It is entered in the window «Assistant settings».	Không có khóa API. Khóa được nhập trong cửa sổ "Cài đặt trợ lý".
+The service is busy ({error}), a repeat in {seconds} s.	Dịch vụ đang bận ({error}), thử lại sau {seconds} giây.
+The assistant asks to run {name} {args}.	Trợ lý yêu cầu chạy {name} {args}.
+The assistant has done many actions in a row and waits for «Continue».	Trợ lý đã thực hiện nhiều thao tác liên tiếp và đang chờ "Tiếp tục".
+The model did not answer: {error}	Mô hình không trả lời: {error}
+The service on this computer does not answer. Check that it is running, for example Ollama, and that the address in the assistant settings is right.	Dịch vụ trên máy tính này không trả lời. Hãy kiểm tra dịch vụ đang chạy, ví dụ Ollama, và địa chỉ trong cài đặt trợ lý là đúng.
+The service did not accept a long answer, the request is repeated with a smaller length limit.	Dịch vụ không nhận câu trả lời dài, yêu cầu được lặp lại với giới hạn độ dài nhỏ hơn.
+The model did not return a KML document.	Mô hình không trả về tài liệu KML.
+The answer of the model hit the length limit. The placemarks that came whole are taken.	Câu trả lời của mô hình chạm giới hạn độ dài. Các dấu vị trí đến nguyên vẹn được giữ lại.
+Assistant	Trợ lý
+Service: {service}, model {model}.	Dịch vụ: {service}, mô hình {model}.
+No API key.	Không có khóa API.
+Settings…	Cài đặt…
+Service, model and API key of the assistant.	Dịch vụ, mô hình và khóa API của trợ lý.
+Here goes the conversation: your questions, the actions of the assistant on the globe and its answers. A question is asked in the field below or in the Search line.	Đây là cuộc trò chuyện: câu hỏi của bạn, các thao tác của trợ lý trên quả địa cầu và câu trả lời của trợ lý. Câu hỏi được đặt trong ô bên dưới hoặc trong dòng "Tìm".
+You	Bạn
+Action	Thao tác
+PlanetX Lite	PlanetX Lite
+Waiting for the answer…	Đang chờ câu trả lời…
+Write to My Places	Ghi vào "Địa điểm của tôi"
+Allow	Cho phép
+Run this action once.	Chạy thao tác này một lần.
+Allow in this conversation	Cho phép trong cuộc trò chuyện này
+Exactly the same request is not asked again until a new conversation.	Đúng yêu cầu này sẽ không được hỏi lại cho đến cuộc trò chuyện mới.
+Deny	Từ chối
+The assistant gets a refusal and answers without this action.	Trợ lý nhận lời từ chối và trả lời mà không có thao tác này.
+The assistant has done many actions in a row.	Trợ lý đã thực hiện nhiều thao tác liên tiếp.
+The assistant continues where it stopped.	Trợ lý tiếp tục từ chỗ đã dừng.
+For example: show a section through the Japan Trench	Ví dụ: hiển thị mặt cắt qua rãnh Nhật Bản
+Ask	Hỏi
+Create placemarks	Tạo dấu vị trí
+Placemarks, paths and polygons by the description in the field, for example «the voyage of Columbus». The model answers with one KML document, it is written at once as a new folder in My Places.	Dấu vị trí, đường đi và đa giác theo mô tả trong ô, ví dụ "chuyến hải trình của Columbus". Mô hình trả lời bằng một tài liệu KML, tài liệu được ghi ngay thành thư mục mới trong "Địa điểm của tôi".
+The question, the view point and the turned on rows of the Layers section go to the server of the chosen model. My Places go only selected.	Câu hỏi, điểm nhìn và các dòng đang bật của mục "Lớp" được gửi đến máy chủ của mô hình đã chọn. Từ "Địa điểm của tôi" chỉ gửi những mục đã chọn.
+Denied.	Đã từ chối.
+Assistant settings	Cài đặt trợ lý
+Service	Dịch vụ
+Through which service the assistant works. Each service has its own key, address and model. OpenRouter models with «:free» in the name are free with a limit of requests a day. The own service works in the OpenAI Chat format, on this computer no key is needed.	Trợ lý làm việc qua dịch vụ nào. Mỗi dịch vụ có khóa, địa chỉ và mô hình riêng. Các mô hình OpenRouter có ":free" trong tên được miễn phí với giới hạn số yêu cầu mỗi ngày. Dịch vụ riêng làm việc theo định dạng OpenAI Chat, trên máy tính này không cần khóa.
+The address of the service. For Anthropic, xAI, DeepSeek and OpenRouter it does not need a change. For an own service - the address of its OpenAI format entry, for example http://localhost:11434/v1 for Ollama.	Địa chỉ của dịch vụ. Với Anthropic, xAI, DeepSeek và OpenRouter không cần thay đổi. Với dịch vụ riêng - địa chỉ lối vào định dạng OpenAI của nó, ví dụ http://localhost:11434/v1 cho Ollama.
+The name of the model at the chosen service. The model must be able to call tools, otherwise the assistant only answers with text.	Tên mô hình tại dịch vụ đã chọn. Mô hình phải biết gọi công cụ, nếu không trợ lý chỉ trả lời bằng văn bản.
+Key	Khóa
+the key is saved	đã lưu khóa
+no key is needed	không cần khóa
+enter the API key	nhập khóa API
+The API key of the chosen service. It is kept as plain text in the settings of the program and goes only to the address of the service.	Khóa API của dịch vụ đã chọn. Khóa được lưu dưới dạng văn bản thường trong cài đặt của chương trình và chỉ được gửi đến địa chỉ của dịch vụ.
+Save key	Lưu khóa
+Delete key	Xóa khóa
+Answer requests from the Search line	Trả lời yêu cầu từ dòng "Tìm"
+A request in words in the Search line goes to the assistant, the answer appears under the line. Without the tick the line finds only places and coordinates.	Yêu cầu bằng lời trong dòng "Tìm" được gửi đến trợ lý, câu trả lời hiện dưới dòng. Không có dấu chọn thì dòng chỉ tìm địa điểm và tọa độ.
+GPS track {time}	Vết GPS {time}
+Length {km} km, time {minutes} min, points {count}.	Chiều dài {km} km, thời gian {minutes} phút, số điểm {count}.
+My location	Vị trí của tôi
+The location is not available: {error}	Vị trí không khả dụng: {error}
+Accuracy {m} m	Độ chính xác {m} m
+height {m} m	độ cao {m} m
+Waiting for the location…	Đang chờ vị trí…
+The camera keeps the location in the middle, the distance and the tilt stay.	Camera giữ vị trí ở giữa, khoảng cách và độ nghiêng giữ nguyên.
+Record a track	Ghi vết
+Locations go into the track while the tick stands. Rough locations are skipped.	Khi dấu chọn còn bật, các vị trí được đưa vào vết. Các vị trí thô bị bỏ qua.
+Track: points {count}, {km} km.	Vết: số điểm {count}, {km} km.
+Save track	Lưu vết
+The track goes as a path to My Places, with the time from the first to the last point.	Vết được đưa vào "Địa điểm của tôi" dưới dạng đường đi, kèm thời gian từ điểm đầu đến điểm cuối.
+Clear track	Xóa vết
+The location is given by the browser and goes only to the globe.	Vị trí do trình duyệt cung cấp và chỉ được gửi đến quả địa cầu.
+Explain what this object is and why this place is interesting. {kind} «{name}», point {lat}, {lon}.	Hãy giải thích đối tượng này là gì và vì sao địa điểm này thú vị. {kind} "{name}", điểm {lat}, {lon}.
+The description of the placemark - {text}	Mô tả của dấu vị trí - {text}
+Object fields - {fields}.	Các trường của đối tượng - {fields}.
+Explain this	Giải thích điều này
+A question to the assistant about this placemark: its name, kind, point, description and fields go to the server of the chosen model.	Câu hỏi gửi trợ lý về dấu vị trí này. Tên, loại, điểm, mô tả và các trường của nó được gửi đến máy chủ của mô hình đã chọn.
+Placemarks written to My Places: {count}.	Số dấu vị trí đã ghi vào "Địa điểm của tôi": {count}.
+Assistant section	Mục "Trợ lý"
+The assistant offers the folder «{name}», placemarks {count}.	Trợ lý đề xuất thư mục "{name}", số dấu vị trí {count}.
+My location: the location of this device on the globe, the camera follows, a track can be recorded.	Vị trí của tôi: vị trí của thiết bị này trên quả địa cầu, camera đi theo, có thể ghi vết.
+The track is in My Places: {name}.	Vết đã ở trong "Địa điểm của tôi": {name}.
+Create placemarks by the description in the line with the assistant, Ctrl+Enter. The right button - the conversation and the assistant settings.	Tạo dấu vị trí theo mô tả trong dòng với trợ lý, Ctrl+Enter. Nút phải - cuộc trò chuyện và cài đặt trợ lý.
+Conversation with the assistant…	Trò chuyện với trợ lý…
+Assistant settings…	Cài đặt trợ lý…
+Write	Ghi
+Conversation…	Trò chuyện…

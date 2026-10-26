@@ -98,6 +98,10 @@ pub trait Request {
         let _ = (headers, body);
         self.start(url);
     }
+    /// Ответ с кодом ошибки HTTP приходит ошибкой «HTTP код: тело», а не
+    /// одним кодом. Нужен помощнику ИИ: причину отказа сервис пишет
+    /// в теле ответа. Без своей реализации ничего не меняет.
+    fn keep_error_bodies(&mut self) {}
     /// Пришедший ответ: байты или ошибка.
     fn take(&self) -> Option<Result<Vec<u8>, String>>;
     fn stats(&self) -> &Stats;

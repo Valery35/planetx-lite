@@ -1617,3 +1617,83 @@ Trend maps	Peta-peta tren
 On the ground	Di tanah
 above sea level	di atas permukaan laut
 metres	meter
+OpenRouter (has free models)	OpenRouter (ada model gratis)
+Own service, for example Ollama	Layanan sendiri, misalnya Ollama
+No API key. It is entered in the window «Assistant settings».	Tidak ada kunci API. Kunci dimasukkan di jendela "Pengaturan asisten".
+The service is busy ({error}), a repeat in {seconds} s.	Layanan sedang sibuk ({error}), diulang dalam {seconds} dtk.
+The assistant asks to run {name} {args}.	Asisten meminta untuk menjalankan {name} {args}.
+The assistant has done many actions in a row and waits for «Continue».	Asisten telah melakukan banyak tindakan berturut-turut dan menunggu "Lanjutkan".
+The model did not answer: {error}	Model tidak menjawab: {error}
+The service on this computer does not answer. Check that it is running, for example Ollama, and that the address in the assistant settings is right.	Layanan di komputer ini tidak menjawab. Periksa bahwa layanan berjalan, misalnya Ollama, dan bahwa alamat di pengaturan asisten benar.
+The service did not accept a long answer, the request is repeated with a smaller length limit.	Layanan tidak menerima jawaban panjang, permintaan diulang dengan batas panjang yang lebih kecil.
+The model did not return a KML document.	Model tidak mengembalikan dokumen KML.
+The answer of the model hit the length limit. The placemarks that came whole are taken.	Jawaban model mencapai batas panjang. Penanda yang tiba utuh diambil.
+Assistant	Asisten
+Service: {service}, model {model}.	Layanan: {service}, model {model}.
+No API key.	Tidak ada kunci API.
+Settings…	Pengaturan…
+Service, model and API key of the assistant.	Layanan, model, dan kunci API asisten.
+Here goes the conversation: your questions, the actions of the assistant on the globe and its answers. A question is asked in the field below or in the Search line.	Di sini berlangsung percakapan: pertanyaan Anda, tindakan asisten di globe, dan jawabannya. Pertanyaan diajukan di kolom di bawah atau di baris "Cari".
+You	Anda
+Action	Tindakan
+PlanetX Lite	PlanetX Lite
+Waiting for the answer…	Menunggu jawaban…
+Write to My Places	Tulis ke "Tempat Saya"
+Allow	Izinkan
+Run this action once.	Jalankan tindakan ini sekali.
+Allow in this conversation	Izinkan dalam percakapan ini
+Exactly the same request is not asked again until a new conversation.	Permintaan yang persis sama tidak ditanyakan lagi sampai percakapan baru.
+Deny	Tolak
+The assistant gets a refusal and answers without this action.	Asisten menerima penolakan dan menjawab tanpa tindakan ini.
+The assistant has done many actions in a row.	Asisten telah melakukan banyak tindakan berturut-turut.
+The assistant continues where it stopped.	Asisten melanjutkan dari tempat ia berhenti.
+For example: show a section through the Japan Trench	Misalnya: tampilkan penampang melintasi Palung Jepang
+Ask	Tanya
+Create placemarks	Buat penanda
+Placemarks, paths and polygons by the description in the field, for example «the voyage of Columbus». The model answers with one KML document, it is written at once as a new folder in My Places.	Penanda, jalur, dan poligon menurut deskripsi di kolom, misalnya "pelayaran Columbus". Model menjawab dengan satu dokumen KML, yang langsung ditulis sebagai folder baru di "Tempat Saya".
+The question, the view point and the turned on rows of the Layers section go to the server of the chosen model. My Places go only selected.	Pertanyaan, titik pandang, dan baris yang menyala di bagian "Lapisan" dikirim ke server model yang dipilih. Dari "Tempat Saya" hanya yang dipilih yang dikirim.
+Denied.	Ditolak.
+Assistant settings	Pengaturan asisten
+Service	Layanan
+Through which service the assistant works. Each service has its own key, address and model. OpenRouter models with «:free» in the name are free with a limit of requests a day. The own service works in the OpenAI Chat format, on this computer no key is needed.	Melalui layanan mana asisten bekerja. Setiap layanan punya kunci, alamat, dan model sendiri. Model OpenRouter dengan ":free" di namanya gratis dengan batas permintaan per hari. Layanan sendiri bekerja dalam format OpenAI Chat, di komputer ini kunci tidak diperlukan.
+The address of the service. For Anthropic, xAI, DeepSeek and OpenRouter it does not need a change. For an own service - the address of its OpenAI format entry, for example http://localhost:11434/v1 for Ollama.	Alamat layanan. Untuk Anthropic, xAI, DeepSeek, dan OpenRouter alamat tidak perlu diubah. Untuk layanan sendiri - alamat pintu masuknya dalam format OpenAI, misalnya http://localhost:11434/v1 untuk Ollama.
+The name of the model at the chosen service. The model must be able to call tools, otherwise the assistant only answers with text.	Nama model di layanan yang dipilih. Model harus dapat memanggil alat, jika tidak asisten hanya menjawab dengan teks.
+Key	Kunci
+the key is saved	kunci tersimpan
+no key is needed	kunci tidak diperlukan
+enter the API key	masukkan kunci API
+The API key of the chosen service. It is kept as plain text in the settings of the program and goes only to the address of the service.	Kunci API layanan yang dipilih. Kunci disimpan sebagai teks biasa di pengaturan program dan hanya dikirim ke alamat layanan.
+Save key	Simpan kunci
+Delete key	Hapus kunci
+Answer requests from the Search line	Jawab permintaan dari baris "Cari"
+A request in words in the Search line goes to the assistant, the answer appears under the line. Without the tick the line finds only places and coordinates.	Permintaan berupa kata di baris "Cari" dikirim ke asisten, jawabannya muncul di bawah baris. Tanpa centang baris hanya menemukan tempat dan koordinat.
+GPS track {time}	Jejak GPS {time}
+Length {km} km, time {minutes} min, points {count}.	Panjang {km} km, waktu {minutes} mnt, titik {count}.
+My location	Lokasi saya
+The location is not available: {error}	Lokasi tidak tersedia: {error}
+Accuracy {m} m	Akurasi {m} m
+height {m} m	ketinggian {m} m
+Waiting for the location…	Menunggu lokasi…
+The camera keeps the location in the middle, the distance and the tilt stay.	Kamera menjaga lokasi di tengah, jarak dan kemiringan tetap.
+Record a track	Rekam jejak
+Locations go into the track while the tick stands. Rough locations are skipped.	Selama centang terpasang, lokasi masuk ke jejak. Lokasi yang kasar dilewati.
+Track: points {count}, {km} km.	Jejak: titik {count}, {km} km.
+Save track	Simpan jejak
+The track goes as a path to My Places, with the time from the first to the last point.	Jejak dikirim sebagai jalur ke "Tempat Saya", dengan waktu dari titik pertama sampai titik terakhir.
+Clear track	Bersihkan jejak
+The location is given by the browser and goes only to the globe.	Lokasi diberikan oleh peramban dan hanya dikirim ke globe.
+Explain what this object is and why this place is interesting. {kind} «{name}», point {lat}, {lon}.	Jelaskan apa objek ini dan mengapa tempat ini menarik. {kind} "{name}", titik {lat}, {lon}.
+The description of the placemark - {text}	Deskripsi penanda - {text}
+Object fields - {fields}.	Kolom objek - {fields}.
+Explain this	Jelaskan ini
+A question to the assistant about this placemark: its name, kind, point, description and fields go to the server of the chosen model.	Pertanyaan kepada asisten tentang penanda ini. Nama, jenis, titik, deskripsi, dan kolomnya dikirim ke server model yang dipilih.
+Placemarks written to My Places: {count}.	Penanda yang ditulis ke "Tempat Saya": {count}.
+Assistant section	Bagian "Asisten"
+The assistant offers the folder «{name}», placemarks {count}.	Asisten menawarkan folder "{name}", penanda {count}.
+My location: the location of this device on the globe, the camera follows, a track can be recorded.	Lokasi saya: lokasi perangkat ini di globe, kamera mengikuti, jejak dapat direkam.
+The track is in My Places: {name}.	Jejak ada di "Tempat Saya": {name}.
+Create placemarks by the description in the line with the assistant, Ctrl+Enter. The right button - the conversation and the assistant settings.	Buat penanda menurut deskripsi di baris dengan asisten, Ctrl+Enter. Tombol kanan - percakapan dan pengaturan asisten.
+Conversation with the assistant…	Percakapan dengan asisten…
+Assistant settings…	Pengaturan asisten…
+Write	Tulis
+Conversation…	Percakapan…

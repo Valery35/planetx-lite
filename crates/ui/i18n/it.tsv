@@ -1617,3 +1617,83 @@ Trend maps	Mappe di tendenza
 On the ground	Al suolo
 above sea level	sul livello del mare
 metres	metri
+OpenRouter (has free models)	OpenRouter (ha modelli gratuiti)
+Own service, for example Ollama	Servizio proprio, per esempio Ollama
+No API key. It is entered in the window «Assistant settings».	Nessuna chiave API. Si inserisce nella finestra «Impostazioni dell’assistente».
+The service is busy ({error}), a repeat in {seconds} s.	Il servizio è occupato ({error}), nuovo tentativo tra {seconds} s.
+The assistant asks to run {name} {args}.	L’assistente chiede di eseguire {name} {args}.
+The assistant has done many actions in a row and waits for «Continue».	L’assistente ha fatto molte azioni di seguito e attende «Continua».
+The model did not answer: {error}	Il modello non ha risposto: {error}
+The service on this computer does not answer. Check that it is running, for example Ollama, and that the address in the assistant settings is right.	Il servizio su questo computer non risponde. Verificare che sia avviato, per esempio Ollama, e che l’indirizzo nelle impostazioni dell’assistente sia corretto.
+The service did not accept a long answer, the request is repeated with a smaller length limit.	Il servizio non ha accettato una risposta lunga, la richiesta viene ripetuta con un limite di lunghezza minore.
+The model did not return a KML document.	Il modello non ha restituito un documento KML.
+The answer of the model hit the length limit. The placemarks that came whole are taken.	La risposta del modello ha raggiunto il limite di lunghezza. Si prendono i segnaposto arrivati interi.
+Assistant	Assistente
+Service: {service}, model {model}.	Servizio: {service}, modello {model}.
+No API key.	Nessuna chiave API.
+Settings…	Impostazioni…
+Service, model and API key of the assistant.	Servizio, modello e chiave API dell’assistente.
+Here goes the conversation: your questions, the actions of the assistant on the globe and its answers. A question is asked in the field below or in the Search line.	Qui si svolge la conversazione: le tue domande, le azioni dell’assistente sul globo e le sue risposte. La domanda si pone nel campo sotto o nella riga «Cerca».
+You	Tu
+Action	Azione
+PlanetX Lite	PlanetX Lite
+Waiting for the answer…	In attesa della risposta…
+Write to My Places	Scrivi in «I miei luoghi»
+Allow	Consenti
+Run this action once.	Esegui questa azione una volta.
+Allow in this conversation	Consenti in questa conversazione
+Exactly the same request is not asked again until a new conversation.	La stessa identica richiesta non viene più chiesta fino a una nuova conversazione.
+Deny	Rifiuta
+The assistant gets a refusal and answers without this action.	L’assistente riceve un rifiuto e risponde senza questa azione.
+The assistant has done many actions in a row.	L’assistente ha fatto molte azioni di seguito.
+The assistant continues where it stopped.	L’assistente riprende da dove si era fermato.
+For example: show a section through the Japan Trench	Per esempio: mostra una sezione attraverso la fossa del Giappone
+Ask	Chiedi
+Create placemarks	Crea segnaposto
+Placemarks, paths and polygons by the description in the field, for example «the voyage of Columbus». The model answers with one KML document, it is written at once as a new folder in My Places.	Segnaposto, percorsi e poligoni secondo la descrizione nel campo, per esempio «il viaggio di Colombo». Il modello risponde con un solo documento KML, che viene scritto subito come nuova cartella in «I miei luoghi».
+The question, the view point and the turned on rows of the Layers section go to the server of the chosen model. My Places go only selected.	La domanda, il punto di vista e le righe attive della sezione «Livelli» vanno al server del modello scelto. «I miei luoghi» vanno solo se selezionati.
+Denied.	Rifiutato.
+Assistant settings	Impostazioni dell’assistente
+Service	Servizio
+Through which service the assistant works. Each service has its own key, address and model. OpenRouter models with «:free» in the name are free with a limit of requests a day. The own service works in the OpenAI Chat format, on this computer no key is needed.	Il servizio tramite cui lavora l’assistente. Ogni servizio ha la propria chiave, il proprio indirizzo e il proprio modello. I modelli OpenRouter con «:free» nel nome sono gratuiti con un limite di richieste al giorno. Il servizio proprio funziona nel formato OpenAI Chat, su questo computer non serve alcuna chiave.
+The address of the service. For Anthropic, xAI, DeepSeek and OpenRouter it does not need a change. For an own service - the address of its OpenAI format entry, for example http://localhost:11434/v1 for Ollama.	L’indirizzo del servizio. Per Anthropic, xAI, DeepSeek e OpenRouter non va cambiato. Per un servizio proprio - l’indirizzo del suo ingresso in formato OpenAI, per esempio http://localhost:11434/v1 per Ollama.
+The name of the model at the chosen service. The model must be able to call tools, otherwise the assistant only answers with text.	Il nome del modello presso il servizio scelto. Il modello deve saper chiamare strumenti, altrimenti l’assistente risponde solo con testo.
+Key	Chiave
+the key is saved	chiave salvata
+no key is needed	nessuna chiave necessaria
+enter the API key	inserisci la chiave API
+The API key of the chosen service. It is kept as plain text in the settings of the program and goes only to the address of the service.	La chiave API del servizio scelto. È conservata in chiaro nelle impostazioni del programma e va solo all’indirizzo del servizio.
+Save key	Salva chiave
+Delete key	Elimina chiave
+Answer requests from the Search line	Rispondi alle richieste dalla riga «Cerca»
+A request in words in the Search line goes to the assistant, the answer appears under the line. Without the tick the line finds only places and coordinates.	Una richiesta a parole nella riga «Cerca» va all’assistente, la risposta appare sotto la riga. Senza la spunta la riga trova solo luoghi e coordinate.
+GPS track {time}	Traccia GPS {time}
+Length {km} km, time {minutes} min, points {count}.	Lunghezza {km} km, tempo {minutes} min, punti {count}.
+My location	La mia posizione
+The location is not available: {error}	La posizione non è disponibile: {error}
+Accuracy {m} m	Precisione {m} m
+height {m} m	altezza {m} m
+Waiting for the location…	In attesa della posizione…
+The camera keeps the location in the middle, the distance and the tilt stay.	La fotocamera tiene la posizione al centro, la distanza e l’inclinazione restano.
+Record a track	Registra traccia
+Locations go into the track while the tick stands. Rough locations are skipped.	Finché la spunta è attiva, le posizioni entrano nella traccia. Le posizioni approssimative vengono saltate.
+Track: points {count}, {km} km.	Traccia: punti {count}, {km} km.
+Save track	Salva traccia
+The track goes as a path to My Places, with the time from the first to the last point.	La traccia va come percorso in «I miei luoghi», con il tempo dal primo all’ultimo punto.
+Clear track	Cancella traccia
+The location is given by the browser and goes only to the globe.	La posizione è fornita dal browser e va solo al globo.
+Explain what this object is and why this place is interesting. {kind} «{name}», point {lat}, {lon}.	Spiega che cos’è questo oggetto e perché questo luogo è interessante. {kind} «{name}», punto {lat}, {lon}.
+The description of the placemark - {text}	La descrizione del segnaposto - {text}
+Object fields - {fields}.	Campi dell’oggetto - {fields}.
+Explain this	Spiega questo
+A question to the assistant about this placemark: its name, kind, point, description and fields go to the server of the chosen model.	Una domanda all’assistente su questo segnaposto. Nome, tipo, punto, descrizione e campi vanno al server del modello scelto.
+Placemarks written to My Places: {count}.	Segnaposto scritti in «I miei luoghi»: {count}.
+Assistant section	Sezione «Assistente»
+The assistant offers the folder «{name}», placemarks {count}.	L’assistente propone la cartella «{name}», segnaposto {count}.
+My location: the location of this device on the globe, the camera follows, a track can be recorded.	La mia posizione: la posizione di questo dispositivo sul globo, la fotocamera la segue, si può registrare una traccia.
+The track is in My Places: {name}.	La traccia è in «I miei luoghi»: {name}.
+Create placemarks by the description in the line with the assistant, Ctrl+Enter. The right button - the conversation and the assistant settings.	Crea segnaposto secondo la descrizione nella riga con l’assistente, Ctrl+Invio. Il tasto destro - la conversazione e le impostazioni dell’assistente.
+Conversation with the assistant…	Conversazione con l’assistente…
+Assistant settings…	Impostazioni dell’assistente…
+Write	Scrivi
+Conversation…	Conversazione…

@@ -1617,3 +1617,83 @@ Trend maps	ტრენდის რუკები
 On the ground	მიწაზე
 above sea level	ზღვის დონის ზემოთ
 metres	მეტრი
+OpenRouter (has free models)	OpenRouter (აქვს უფასო მოდელები)
+Own service, for example Ollama	საკუთარი სერვისი, მაგალითად Ollama
+No API key. It is entered in the window «Assistant settings».	API გასაღები არ არის. ის შეიყვანება ფანჯარაში „ასისტენტის პარამეტრები“.
+The service is busy ({error}), a repeat in {seconds} s.	სერვისი დაკავებულია ({error}), გამეორება {seconds} წმ-ში.
+The assistant asks to run {name} {args}.	ასისტენტი ითხოვს შესრულდეს {name} {args}.
+The assistant has done many actions in a row and waits for «Continue».	ასისტენტმა ზედიზედ ბევრი მოქმედება შეასრულა და ელოდება „გაგრძელებას“.
+The model did not answer: {error}	მოდელმა არ უპასუხა: {error}
+The service on this computer does not answer. Check that it is running, for example Ollama, and that the address in the assistant settings is right.	ამ კომპიუტერზე სერვისი არ პასუხობს. შეამოწმეთ, რომ ის გაშვებულია, მაგალითად Ollama, და რომ ასისტენტის პარამეტრებში მისამართი სწორია.
+The service did not accept a long answer, the request is repeated with a smaller length limit.	სერვისმა გრძელი პასუხი არ მიიღო, მოთხოვნა მეორდება სიგრძის უფრო მცირე ზღვრით.
+The model did not return a KML document.	მოდელმა KML დოკუმენტი არ დააბრუნა.
+The answer of the model hit the length limit. The placemarks that came whole are taken.	მოდელის პასუხი სიგრძის ზღვარს მიაღწია. აღებულია მთლიანად მოსული ნიშნები.
+Assistant	ასისტენტი
+Service: {service}, model {model}.	სერვისი: {service}, მოდელი {model}.
+No API key.	API გასაღები არ არის.
+Settings…	პარამეტრები…
+Service, model and API key of the assistant.	ასისტენტის სერვისი, მოდელი და API გასაღები.
+Here goes the conversation: your questions, the actions of the assistant on the globe and its answers. A question is asked in the field below or in the Search line.	აქ მიმდინარეობს საუბარი: თქვენი კითხვები, ასისტენტის მოქმედებები გლობუსზე და მისი პასუხები. კითხვა ისმება ქვემოთ ველში ან სტრიქონში „ძიება“.
+You	თქვენ
+Action	მოქმედება
+PlanetX Lite	PlanetX Lite
+Waiting for the answer…	პასუხის მოლოდინი…
+Write to My Places	ჩაწერა „ჩემს ნიშნებში“
+Allow	დაშვება
+Run this action once.	ამ მოქმედების ერთხელ შესრულება.
+Allow in this conversation	დაშვება ამ საუბარში
+Exactly the same request is not asked again until a new conversation.	ზუსტად იგივე მოთხოვნა ახალ საუბრამდე აღარ იკითხება.
+Deny	უარყოფა
+The assistant gets a refusal and answers without this action.	ასისტენტი იღებს უარს და პასუხობს ამ მოქმედების გარეშე.
+The assistant has done many actions in a row.	ასისტენტმა ზედიზედ ბევრი მოქმედება შეასრულა.
+The assistant continues where it stopped.	ასისტენტი აგრძელებს იქიდან, სადაც გაჩერდა.
+For example: show a section through the Japan Trench	მაგალითად: აჩვენე ჭრილი იაპონიის ღრმულზე
+Ask	კითხვა
+Create placemarks	ნიშნების შექმნა
+Placemarks, paths and polygons by the description in the field, for example «the voyage of Columbus». The model answers with one KML document, it is written at once as a new folder in My Places.	ნიშნები, გზები და მრავალკუთხედები ველში არსებული აღწერით, მაგალითად „კოლუმბის მოგზაურობა“. მოდელი პასუხობს ერთი KML დოკუმენტით, ის მაშინვე იწერება ახალ საქაღალდედ „ჩემს ნიშნებში“.
+The question, the view point and the turned on rows of the Layers section go to the server of the chosen model. My Places go only selected.	კითხვა, ხედვის წერტილი და განყოფილების „ფენები“ ჩართული სტრიქონები მიდის არჩეული მოდელის სერვერზე. „ჩემი ნიშნებიდან“ მიდის მხოლოდ მონიშნული.
+Denied.	უარყოფილია.
+Assistant settings	ასისტენტის პარამეტრები
+Service	სერვისი
+Through which service the assistant works. Each service has its own key, address and model. OpenRouter models with «:free» in the name are free with a limit of requests a day. The own service works in the OpenAI Chat format, on this computer no key is needed.	რომელი სერვისით მუშაობს ასისტენტი. თითოეულ სერვისს აქვს საკუთარი გასაღები, მისამართი და მოდელი. OpenRouter-ის მოდელები, რომელთა სახელშიც არის „:free“, უფასოა დღიური მოთხოვნების ზღვრით. საკუთარი სერვისი მუშაობს OpenAI Chat ფორმატში, ამ კომპიუტერზე გასაღები საჭირო არ არის.
+The address of the service. For Anthropic, xAI, DeepSeek and OpenRouter it does not need a change. For an own service - the address of its OpenAI format entry, for example http://localhost:11434/v1 for Ollama.	სერვისის მისამართი. Anthropic, xAI, DeepSeek და OpenRouter-ისთვის მისი შეცვლა საჭირო არ არის. საკუთარი სერვისისთვის - მისი OpenAI ფორმატის შესასვლელის მისამართი, მაგალითად http://localhost:11434/v1 Ollama-სთვის.
+The name of the model at the chosen service. The model must be able to call tools, otherwise the assistant only answers with text.	მოდელის სახელი არჩეულ სერვისთან. მოდელს უნდა შეეძლოს ხელსაწყოების გამოძახება, თორემ ასისტენტი მხოლოდ ტექსტით პასუხობს.
+Key	გასაღები
+the key is saved	გასაღები შენახულია
+no key is needed	გასაღები საჭირო არ არის
+enter the API key	შეიყვანეთ API გასაღები
+The API key of the chosen service. It is kept as plain text in the settings of the program and goes only to the address of the service.	არჩეული სერვისის API გასაღები. ის ინახება ღია ტექსტად პროგრამის პარამეტრებში და მიდის მხოლოდ სერვისის მისამართზე.
+Save key	გასაღების შენახვა
+Delete key	გასაღების წაშლა
+Answer requests from the Search line	პასუხი სტრიქონ „ძიებიდან“ მოსულ თხოვნებზე
+A request in words in the Search line goes to the assistant, the answer appears under the line. Without the tick the line finds only places and coordinates.	სიტყვებით დაწერილი თხოვნა სტრიქონში „ძიება“ მიდის ასისტენტთან, პასუხი ჩნდება სტრიქონის ქვეშ. ალმის გარეშე სტრიქონი პოულობს მხოლოდ ადგილებს და კოორდინატებს.
+GPS track {time}	GPS ტრეკი {time}
+Length {km} km, time {minutes} min, points {count}.	სიგრძე {km} კმ, დრო {minutes} წთ, წერტილები {count}.
+My location	ჩემი ადგილი
+The location is not available: {error}	ადგილი მიუწვდომელია: {error}
+Accuracy {m} m	სიზუსტე {m} მ
+height {m} m	სიმაღლე {m} მ
+Waiting for the location…	ადგილის მოლოდინი…
+The camera keeps the location in the middle, the distance and the tilt stay.	კამერა ადგილს ცენტრში იჭერს, მანძილი და დახრა რჩება.
+Record a track	ტრეკის ჩაწერა
+Locations go into the track while the tick stands. Rough locations are skipped.	სანამ ალამი დგას, ადგილები ტრეკში ხვდება. უხეში ადგილები გამოტოვებულია.
+Track: points {count}, {km} km.	ტრეკი: წერტილები {count}, {km} კმ.
+Save track	ტრეკის შენახვა
+The track goes as a path to My Places, with the time from the first to the last point.	ტრეკი მიდის გზად „ჩემს ნიშნებში“, დროით პირველიდან ბოლო წერტილამდე.
+Clear track	ტრეკის გასუფთავება
+The location is given by the browser and goes only to the globe.	ადგილს იძლევა ბრაუზერი და ის მიდის მხოლოდ გლობუსზე.
+Explain what this object is and why this place is interesting. {kind} «{name}», point {lat}, {lon}.	ახსენი, რა არის ეს ობიექტი და რით არის საინტერესო ეს ადგილი. {kind} „{name}“, წერტილი {lat}, {lon}.
+The description of the placemark - {text}	ნიშნის აღწერა - {text}
+Object fields - {fields}.	ობიექტის ველები - {fields}.
+Explain this	ახსენი ეს
+A question to the assistant about this placemark: its name, kind, point, description and fields go to the server of the chosen model.	კითხვა ასისტენტს ამ ნიშნის შესახებ. მისი სახელი, სახე, წერტილი, აღწერა და ველები მიდის არჩეული მოდელის სერვერზე.
+Placemarks written to My Places: {count}.	„ჩემს ნიშნებში“ ჩაწერილი ნიშნები: {count}.
+Assistant section	განყოფილება „ასისტენტი“
+The assistant offers the folder «{name}», placemarks {count}.	ასისტენტი გთავაზობთ საქაღალდეს „{name}“, ნიშნები {count}.
+My location: the location of this device on the globe, the camera follows, a track can be recorded.	ჩემი ადგილი: ამ მოწყობილობის ადგილი გლობუსზე, კამერა მიჰყვება, შეიძლება ტრეკის ჩაწერა.
+The track is in My Places: {name}.	ტრეკი „ჩემს ნიშნებშია“: {name}.
+Create placemarks by the description in the line with the assistant, Ctrl+Enter. The right button - the conversation and the assistant settings.	ნიშნების შექმნა სტრიქონში აღწერით ასისტენტის დახმარებით, Ctrl+Enter. მარჯვენა ღილაკი - საუბარი და ასისტენტის პარამეტრები.
+Conversation with the assistant…	საუბარი ასისტენტთან…
+Assistant settings…	ასისტენტის პარამეტრები…
+Write	ჩაწერა
+Conversation…	საუბარი…

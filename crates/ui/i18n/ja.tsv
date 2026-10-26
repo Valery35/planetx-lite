@@ -1617,3 +1617,83 @@ Trend maps	トレンドマップ集
 On the ground	地表
 above sea level	海抜
 metres	メートル
+OpenRouter (has free models)	OpenRouter（無料モデルあり）
+Own service, for example Ollama	独自のサービス、たとえば Ollama
+No API key. It is entered in the window «Assistant settings».	API キーがありません。キーは「アシスタントの設定」ウィンドウで入力します。
+The service is busy ({error}), a repeat in {seconds} s.	サービスが混雑しています（{error}）。{seconds} 秒後に再試行します。
+The assistant asks to run {name} {args}.	アシスタントが {name} {args} の実行を求めています。
+The assistant has done many actions in a row and waits for «Continue».	アシスタントは続けて多くの操作を行い、「続行」を待っています。
+The model did not answer: {error}	モデルが応答しませんでした：{error}
+The service on this computer does not answer. Check that it is running, for example Ollama, and that the address in the assistant settings is right.	このコンピューター上のサービスが応答しません。サービス、たとえば Ollama が起動していること、アシスタントの設定のアドレスが正しいことを確認してください。
+The service did not accept a long answer, the request is repeated with a smaller length limit.	サービスが長い回答を受け付けなかったため、より小さい長さの上限で要求を繰り返します。
+The model did not return a KML document.	モデルが KML ドキュメントを返しませんでした。
+The answer of the model hit the length limit. The placemarks that came whole are taken.	モデルの回答が長さの上限に達しました。完全に届いた目印を取り込みました。
+Assistant	アシスタント
+Service: {service}, model {model}.	サービス：{service}、モデル {model}。
+No API key.	API キーがありません。
+Settings…	設定…
+Service, model and API key of the assistant.	アシスタントのサービス、モデル、API キー。
+Here goes the conversation: your questions, the actions of the assistant on the globe and its answers. A question is asked in the field below or in the Search line.	ここに会話が表示されます：あなたの質問、地球儀上でのアシスタントの操作、その回答。質問は下の欄または「検索」欄で入力します。
+You	あなた
+Action	操作
+PlanetX Lite	PlanetX Lite
+Waiting for the answer…	回答を待っています…
+Write to My Places	「マイプレイス」に書き込む
+Allow	許可
+Run this action once.	この操作を 1 回実行します。
+Allow in this conversation	この会話で許可
+Exactly the same request is not asked again until a new conversation.	まったく同じ要求は、新しい会話まで再び尋ねられません。
+Deny	拒否
+The assistant gets a refusal and answers without this action.	アシスタントは拒否を受け取り、この操作なしで回答します。
+The assistant has done many actions in a row.	アシスタントは続けて多くの操作を行いました。
+The assistant continues where it stopped.	アシスタントは止まったところから続けます。
+For example: show a section through the Japan Trench	例：日本海溝を横切る断面を表示して
+Ask	質問
+Create placemarks	目印を作成
+Placemarks, paths and polygons by the description in the field, for example «the voyage of Columbus». The model answers with one KML document, it is written at once as a new folder in My Places.	欄の説明に従った目印、パス、ポリゴン。たとえば「コロンブスの航海」。モデルは 1 つの KML ドキュメントで回答し、それはすぐに「マイプレイス」に新しいフォルダーとして書き込まれます。
+The question, the view point and the turned on rows of the Layers section go to the server of the chosen model. My Places go only selected.	質問、視点、「レイヤー」セクションのオンの行は、選択したモデルのサーバーに送られます。「マイプレイス」は選択したものだけが送られます。
+Denied.	拒否しました。
+Assistant settings	アシスタントの設定
+Service	サービス
+Through which service the assistant works. Each service has its own key, address and model. OpenRouter models with «:free» in the name are free with a limit of requests a day. The own service works in the OpenAI Chat format, on this computer no key is needed.	アシスタントが使うサービス。サービスごとに独自のキー、アドレス、モデルがあります。名前に「:free」が付いた OpenRouter のモデルは、1 日の要求数の上限付きで無料です。独自のサービスは OpenAI Chat 形式で動作し、このコンピューター上ではキーは不要です。
+The address of the service. For Anthropic, xAI, DeepSeek and OpenRouter it does not need a change. For an own service - the address of its OpenAI format entry, for example http://localhost:11434/v1 for Ollama.	サービスのアドレス。Anthropic、xAI、DeepSeek、OpenRouter では変更不要です。独自のサービスでは - その OpenAI 形式の入口のアドレス、たとえば Ollama では http://localhost:11434/v1。
+The name of the model at the chosen service. The model must be able to call tools, otherwise the assistant only answers with text.	選択したサービスでのモデル名。モデルはツールを呼び出せる必要があります。できない場合、アシスタントはテキストでのみ回答します。
+Key	キー
+the key is saved	キーは保存済み
+no key is needed	キーは不要
+enter the API key	API キーを入力
+The API key of the chosen service. It is kept as plain text in the settings of the program and goes only to the address of the service.	選択したサービスの API キー。プログラムの設定に平文で保存され、サービスのアドレスにだけ送られます。
+Save key	キーを保存
+Delete key	キーを削除
+Answer requests from the Search line	「検索」欄からの依頼に答える
+A request in words in the Search line goes to the assistant, the answer appears under the line. Without the tick the line finds only places and coordinates.	「検索」欄に言葉で書いた依頼はアシスタントに送られ、回答は欄の下に表示されます。チェックなしでは、欄は場所と座標だけを検索します。
+GPS track {time}	GPS トラック {time}
+Length {km} km, time {minutes} min, points {count}.	長さ {km} km、時間 {minutes} 分、点 {count}。
+My location	現在地
+The location is not available: {error}	現在地を取得できません：{error}
+Accuracy {m} m	精度 {m} m
+height {m} m	高さ {m} m
+Waiting for the location…	現在地を待っています…
+The camera keeps the location in the middle, the distance and the tilt stay.	カメラは現在地を中央に保ち、距離と傾きは変わりません。
+Record a track	トラックを記録
+Locations go into the track while the tick stands. Rough locations are skipped.	チェックが入っている間、現在地がトラックに追加されます。精度の低い位置はスキップされます。
+Track: points {count}, {km} km.	トラック：点 {count}、{km} km。
+Save track	トラックを保存
+The track goes as a path to My Places, with the time from the first to the last point.	トラックはパスとして「マイプレイス」に送られ、最初の点から最後の点までの時刻が付きます。
+Clear track	トラックをクリア
+The location is given by the browser and goes only to the globe.	現在地はブラウザーから提供され、地球儀にだけ送られます。
+Explain what this object is and why this place is interesting. {kind} «{name}», point {lat}, {lon}.	このオブジェクトが何か、この場所がなぜ興味深いかを説明して。{kind}「{name}」、地点 {lat}, {lon}。
+The description of the placemark - {text}	目印の説明 - {text}
+Object fields - {fields}.	オブジェクトのフィールド - {fields}。
+Explain this	これを説明
+A question to the assistant about this placemark: its name, kind, point, description and fields go to the server of the chosen model.	この目印についてのアシスタントへの質問。名前、種類、地点、説明、フィールドが選択したモデルのサーバーに送られます。
+Placemarks written to My Places: {count}.	「マイプレイス」に書き込んだ目印：{count}。
+Assistant section	「アシスタント」セクション
+The assistant offers the folder «{name}», placemarks {count}.	アシスタントがフォルダー「{name}」を提案しています。目印 {count}。
+My location: the location of this device on the globe, the camera follows, a track can be recorded.	現在地：このデバイスの地球儀上の位置。カメラが追従し、トラックを記録できます。
+The track is in My Places: {name}.	トラックは「マイプレイス」にあります：{name}。
+Create placemarks by the description in the line with the assistant, Ctrl+Enter. The right button - the conversation and the assistant settings.	行の説明に従ってアシスタントで目印を作成、Ctrl+Enter。右ボタン - 会話とアシスタントの設定。
+Conversation with the assistant…	アシスタントとの会話…
+Assistant settings…	アシスタントの設定…
+Write	書き込む
+Conversation…	会話…
