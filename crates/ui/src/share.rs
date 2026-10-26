@@ -92,6 +92,30 @@ pub fn system_share(_link: &str) -> bool {
     false
 }
 
+/// Страница открыта на устройстве, где главный ввод - касание пальцем:
+/// телефон или планшет. У программы - всегда false.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn touch_screen() -> bool {
+    false
+}
+
+/// Страница открыта на устройстве, где главный ввод - касание пальцем:
+/// телефон или планшет. Запрос CSS `(pointer: coarse)` вместе
+/// с `(hover: none)` - у ноутбука с сенсорным экраном главный ввод
+/// мышь, он сюда не попадает.
+#[cfg(target_arch = "wasm32")]
+pub fn touch_screen() -> bool {
+    use js_sys::{Function, Reflect};
+    use wasm_bindgen::{JsCast, JsValue};
+    let global = js_sys::global();
+    let get = |target: &JsValue, key: &str| Reflect::get(target, &key.into()).ok().filter(|v| !v.is_undefined());
+    get(&global, "matchMedia")
+        .and_then(|f| f.dyn_into::<Function>().ok())
+        .and_then(|f| f.call1(&global, &"(pointer: coarse) and (hover: none)".into()).ok())
+        .and_then(|list| get(&list, "matches"))
+        .is_some_and(|m| m.is_truthy())
+}
+
 /// Окно «Поделиться» системы - на устройстве с касанием, где браузер
 /// его даёт (`navigator.share`). На компьютере ссылка идёт в буфер
 /// обмена. false - окна нет.
@@ -101,18 +125,13 @@ pub fn system_share(link: &str) -> bool {
     use wasm_bindgen::{JsCast, JsValue};
     let global = js_sys::global();
     let get = |target: &JsValue, key: &str| Reflect::get(target, &key.into()).ok().filter(|v| !v.is_undefined());
-    let touch = get(&global, "matchMedia")
-        .and_then(|f| f.dyn_into::<Function>().ok())
-        .and_then(|f| f.call1(&global, &"(pointer: coarse)".into()).ok())
-        .and_then(|list| get(&list, "matches"))
-        .is_some_and(|m| m.is_truthy());
     let Some(navigator) = get(&global, "navigator") else {
         return false;
     };
     let Some(share) = get(&navigator, "share").and_then(|f| f.dyn_into::<Function>().ok()) else {
         return false;
     };
-    if !touch {
+    if !touch_screen() {
         return false;
     }
     let data = Object::new();

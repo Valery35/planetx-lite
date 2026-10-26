@@ -510,6 +510,9 @@ pub struct LiteApp {
     tool: Option<crate::tool::Tool>,
     /// Экранные органы навигации, как у модуля.
     navpad: crate::navpad::NavPad,
+    /// Страница на телефоне или планшете: органов навигации нет, глобус
+    /// ведут пальцы.
+    touch: bool,
     /// «Определить объекты» включено: щелчок по глобусу - сведения
     /// о точке, как кнопка `identify` модуля.
     identify: bool,
@@ -1045,6 +1048,7 @@ impl LiteApp {
             tool: None,
             suggesting: false,
             navpad: crate::navpad::NavPad::default(),
+            touch: crate::share::touch_screen(),
             identify: false,
             vector: crate::vector::VectorBase::from_text(&vector_text),
             extras: extras_on.clone(),
@@ -6552,7 +6556,7 @@ impl eframe::App for LiteApp {
         } else {
             // Органы навигации и вершина инструмента держат мышь - Землю
             // она не двигает.
-            let padded = self.shows_ui() && self.navpad.input(&ctx, rect, globe_response.layer_id, &mut self.nav, now);
+            let padded = self.shows_ui() && !self.touch && self.navpad.input(&ctx, rect, globe_response.layer_id, &mut self.nav, now);
             self.globe_width_px = rect.width() * ppp as f32;
             let swiped = self.swipe_input(&ctx, rect);
             let busy = padded
@@ -7001,7 +7005,7 @@ impl eframe::App for LiteApp {
         blocked.extend(self.credits.rect);
         blocked.extend(self.toolbar_rect);
         let hiding = matches!(self.snapshot, Some(Snapshot::Hide(_)));
-        let pad = self.shows_ui() && !hiding;
+        let pad = self.shows_ui() && !hiding && !self.touch;
         if pad {
             blocked.push(crate::navpad::rect(rect));
         }
