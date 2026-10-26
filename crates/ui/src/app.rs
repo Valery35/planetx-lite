@@ -87,6 +87,10 @@ pub const HAUL_RATE: f64 = 10.0;
 /// За столько секунд до конца рейса момент возвращается к началу,
 /// `HAUL_END` модуля: момент упирается в конец шкалы, и показ там встаёт.
 pub const HAUL_END: f64 = 1.0;
+/// Азимут и наклон камеры к охвату треков, градусы. Как вид сцены
+/// самосвалов слоем QGIS модуля.
+pub const TRACK_HEADING: f64 = 25.0;
+pub const TRACK_TILT: f64 = 55.0;
 /// Окно уже этого, логические пиксели, - узкое: панель при запуске
 /// скрыта.
 pub const NARROW: f32 = 700.0;
@@ -607,6 +611,13 @@ pub struct LiteApp {
     /// Магнитные полюса, линии склонения, скорости плит и сетки их линий.
     geo: crate::geophysics::Geo,
     geo_meshes: Vec<render::FeatureMesh>,
+    /// Растущие треки точечных слоёв и сетки их путей.
+    tracks: crate::tracks::Tracks,
+    track_meshes: Vec<render::FeatureMesh>,
+    /// Точки объектов треков надо собрать заново.
+    track_dots_dirty: bool,
+    /// Подписи объектов треков: название и точка ECEF.
+    track_labels: Vec<(String, DVec3)>,
     /// Копия строк KML для пункта «Вставить».
     clip_kml: Option<String>,
     /// Вопрос перед удалением: заголовок, текст, что удалить.
@@ -686,6 +697,8 @@ enum Pick {
     New(scene::overlays::Kind, Vec<usize>),
     /// «Обзор…» открытого окна свойств наложения.
     Browse,
+    /// «3D-модель…» слоя-трека с этим номером окна «Треки».
+    TrackModel(usize),
 }
 
 /// Выбранный файл: имя, путь на диске (в программе) и байты.
@@ -1096,6 +1109,10 @@ impl LiteApp {
             marks_meshes: Vec::new(),
             geo: crate::geophysics::Geo::default(),
             geo_meshes: Vec::new(),
+            tracks: crate::tracks::Tracks::default(),
+            track_meshes: Vec::new(),
+            track_dots_dirty: false,
+            track_labels: Vec::new(),
             confirm: None,
             folder_props: None,
             overlay_props: None,
@@ -3471,9 +3488,20 @@ impl LiteApp {
         }
         if lower.ends_with(".gpkg")
             && let Ok(layers) = data::layers::read(bytes.to_vec(), name)
-            && crate::subsurface::is_subsurface(&layers)
         {
-            return Ok(self.open_subsurface(layers, name, fly));
+            if crate::subsurface::is_subsurface(&layers) {
+                return Ok(self.open_subsurface(layers, name, fly));
+            }
+            if let Some(pose) = self.open_tracks(layers, name, fly) {
+                return Ok(pose);
+            }
+        }
+        // Модель самосвала демо ждёт слой самосвалов.
+        if name == crate::tracks::DEMO_MODEL {
+            let file = PickedFile { name: name.to_string(), path: None, bytes: bytes.to_vec() };
+            let (main, _, package) = Self::model_package(std::slice::from_ref(&file)).ok_or_else(|| trf(self.lang, "The model cannot be read: {name}", &[("name", name)]))?;
+            self.tracks.demo_model = Some(crate::tracks::Model { name: main, package: Arc::new(package) });
+            return Ok(None);
         }
         if lower.ends_with(".tif") || lower.ends_with(".tiff") {
             return self.open_relief(bytes, name, fly);
@@ -3538,6 +3566,49 @@ impl LiteApp {
     /// Открыть подземную модель из слоёв файла name, `start` модуля:
     /// прежняя модель уходит, окно режима открывается, камера летит
     /// к модели.
+    /// Точечные слои файла с полем времени - треки, остальные слои -
+    /// папкой в «Мои метки». None - треков в файле нет, иначе поза
+    /// к охвату точек треков.
+    fn open_tracks(&mut self, layers: Vec<data::layers::LayerData>, name: &str, fly: Option<f64>) -> Option<Option<Pose>> {
+        let (found, rest) = crate::tracks::Tracks::split(&layers, name);
+        if found.is_empty() {
+            return None;
+        }
+        let points: Vec<(f64, f64)> = found.iter().flat_map(crate::tracks::Layer::places).collect();
+        let others: Vec<data::layers::LayerData> = layers.into_iter().enumerate().filter(|(n, _)| rest.contains(n)).map(|(_, l)| l).collect();
+        if others.iter().any(|l| l.items.iter().any(|i| i.shape != data::layers::Shape::None)) {
+            self.marks.add(crate::gpkg::folder(others, name), name, marks::root_name(self.lang));
+            self.marks_changed();
+        }
+        let count = found.len();
+        let demo = self.tracks.demo_model.is_some();
+        self.tracks.add(found, name);
+        self.time_extent();
+        // Окно «Треки» открывается у своего файла, у демо - нет.
+        self.tracks.open |= !demo;
+        self.open_message = Some(trf(self.lang, "Tracks: {count}. The time slider grows the paths.", &[("count", &count.to_string())]));
+        let camera = &self.nav.camera;
+        let pose = marks::fit_points(&points, camera.fov_y, camera.aspect()).map(|p| Pose::new(p.lat, p.lon, p.distance, TRACK_HEADING, TRACK_TILT));
+        if let Some(pose) = pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
+            match fly {
+                Some(now) => crate::input::fly(&mut self.nav, pose, now),
+                None => self.nav.show(pose),
+            }
+        }
+        Some(pose)
+    }
+
+    /// Охват шкалы времени - время меток и треков.
+    fn time_extent(&mut self) {
+        let marks = self.marks.extent();
+        let tracks = self.tracks.span();
+        let extent = match (marks, tracks) {
+            (Some(a), Some(b)) => Some((a.0.min(b.0), a.1.max(b.1))),
+            (a, b) => a.or(b),
+        };
+        self.timebar.set_extent(extent);
+    }
+
     fn open_subsurface(&mut self, layers: Vec<data::layers::LayerData>, name: &str, fly: Option<f64>) -> Option<Pose> {
         let now = fly.unwrap_or(0.0);
         let mut sub = crate::subsurface::Subsurface::new(layers, name, self.open_dir.clone(), now);
@@ -3659,14 +3730,32 @@ impl LiteApp {
             ctx.request_repaint_after(std::time::Duration::from_millis(100));
         }
         let built = s.built.take();
-        if !s.open && !s.busy() {
+        let trend = s.series.as_mut().and_then(|x| x.built.take());
+        if !s.shown() && !s.busy() {
             self.sentinel = None;
+        }
+        let stem = |name: &str| name.chars().map(|c| if c.is_alphanumeric() || c == '-' { c } else { '_' }).collect::<String>();
+        // Карта тренда - без времени: она о всём ряде.
+        if let Some(b) = trend {
+            self.add_picture(tr(lang, "Trend maps"), &b.name, &format!("trend/{}.png", stem(&b.name)), b.png, b.bbox, None, b.credit);
         }
         let Some(b) = built else {
             return;
         };
-        let stem = b.name.chars().map(|c| if c.is_alphanumeric() || c == '-' { c } else { '_' }).collect::<String>();
-        self.add_picture(tr(lang, "Satellite images"), &b.name, &format!("images/{stem}.png"), b.png, b.bbox, Some((b.day.clone(), b.day.clone())), b.credit);
+        self.add_picture(tr(lang, "Satellite images"), &b.name, &format!("images/{}.png", stem(&b.name)), b.png, b.bbox, Some((b.day.clone(), b.day.clone())), b.credit);
+    }
+
+    /// Окно «Треки»: смена охвата времени треков - новый охват шкалы,
+    /// кнопка «3D-модель…» - выбор файла модели.
+    fn step_tracks(&mut self, ctx: &egui::Context) {
+        let before = self.tracks.span();
+        self.tracks.show(ctx, self.lang);
+        if self.tracks.span() != before {
+            self.time_extent();
+        }
+        if let Some(n) = self.tracks.pick_model.take() {
+            self.pick_for(ctx, Pick::TrackModel(n));
+        }
     }
 
     /// Картинка на поверхности в «Мои метки», в папку folder_name: у
@@ -4327,7 +4416,7 @@ impl LiteApp {
         if self.marks.all_overlays().is_empty() {
             self.models.clear();
         }
-        self.timebar.set_extent(self.marks.extent());
+        self.time_extent();
         self.marks_to_labels();
         self.places_dirty = true;
     }
@@ -4732,7 +4821,7 @@ impl LiteApp {
                     self.marks.toggled(&path);
                     let window = self.timebar.range;
                     let open = self.timebar.open;
-                    self.timebar.set_extent(self.marks.extent());
+                    self.time_extent();
                     if self.timebar.extent.is_some() {
                         self.timebar.open = open;
                         self.timebar.range = window;
@@ -4990,6 +5079,7 @@ impl LiteApp {
         let model = match &pick {
             Pick::New(kind, _) => *kind == scene::overlays::Kind::Model,
             Pick::Browse => self.overlay_props.as_ref().is_some_and(|p| p.edit.kind() == scene::overlays::Kind::Model),
+            Pick::TrackModel(_) => true,
         };
         let lang = self.lang;
         let (title, kinds): (&str, &[&str]) = if model {
@@ -5121,6 +5211,10 @@ impl LiteApp {
                         _ => {}
                     }
                 }
+                Pick::TrackModel(n) => match Self::model_package(&files) {
+                    Some((name, _, package)) => self.tracks.set_model(n, crate::tracks::Model { name, package: Arc::new(package) }),
+                    None => self.open_message = Some(trf(self.lang, "The model cannot be read: {name}", &[("name", &first_name)])),
+                },
             }
         }
     }
@@ -5164,6 +5258,7 @@ impl LiteApp {
     /// и читается заново, если изменился, как у модуля.
     fn model_overlays(&mut self, now: f64) -> Vec<scene::kml::Overlay> {
         let mut list: Vec<scene::kml::Overlay> = self.marks.overlays().to_vec();
+        list.extend(self.tracks.overlays());
         for o in list.iter_mut().filter(|o| o.kind() == scene::overlays::Kind::Model && o.image.as_ref().is_none_or(Vec::is_empty)) {
             if let Some(p) = self.linked_package(&o.href, now) {
                 o.image = Some(p.to_vec());
@@ -5857,7 +5952,7 @@ impl LiteApp {
             }
         }
         let window = self.timebar.window();
-        if (self.dots.dirty || window != self.dots_window)
+        if (self.dots.dirty || self.track_dots_dirty || window != self.dots_window)
             && let Some(globe) = &mut self.globe
         {
             self.dots.dirty = false;
@@ -5869,6 +5964,33 @@ impl LiteApp {
             all.extend(self.sat_points.iter().cloned());
 
             all.extend(self.dots.meshes(&self.nav.camera.ellipsoid, &height, window));
+            // Объекты треков: точка над землёй или на своей высоте над
+            // уровнем моря, подписи - у тех же точек.
+            self.track_dots_dirty = false;
+            let scale = self.heights.read().scale();
+            let e = &self.nav.camera.ellipsoid;
+            let level = |d: &crate::tracks::Dot| {
+                let ground = height(d.lat, d.lon);
+                match (d.alt.is_finite(), d.relative) {
+                    (false, _) => ground,
+                    (true, true) => ground + d.alt * scale,
+                    (true, false) => d.alt * scale,
+                }
+            };
+            self.track_labels = self.tracks.labels().iter().map(|d| (d.name.clone(), e.geodetic_to_ecef(d.lat, d.lon, level(d)))).collect();
+            let dots = self.tracks.dots();
+            if !dots.is_empty() {
+                let points: Vec<DVec3> = dots.iter().map(|d| e.geodetic_to_ecef(d.lat, d.lon, level(d))).collect();
+                let center = points.iter().fold(DVec3::ZERO, |a, p| a + *p) / points.len() as f64;
+                all.push(render::PointsMesh {
+                    center,
+                    offsets: points.iter().map(|p| (*p - center).as_vec3().to_array()).collect(),
+                    colors: dots.iter().map(|d| [d.color[0], d.color[1], d.color[2]]).collect(),
+                    size: crate::live::POINT_SIZE,
+                    sizes: Vec::new(),
+                    dot: Some(render::Dot { alpha: 1.0, lift: crate::dots::LIFT, space: false }),
+                });
+            }
             let poles = self.geo.points();
             if !poles.is_empty() {
                 let points: Vec<globe_core::DVec3> = poles.iter().map(|(lat, lon, _)| self.nav.camera.ellipsoid.geodetic_to_ecef(*lat, *lon, height(*lat, *lon))).collect();
@@ -6374,6 +6496,7 @@ impl LiteApp {
             Command::Sources => self.credits.sources_open = true,
             Command::About => self.credits.about_request = true,
             Command::Events => self.events.open(&*self.loaders.request),
+            Command::Tracks => self.tracks.open = true,
             Command::SceneSave => {
                 let folder = self.tree_state.selected.clone().unwrap_or_default();
                 self.save_marks(&folder, crate::export::Kind::Scene);
@@ -6726,6 +6849,7 @@ impl eframe::App for LiteApp {
         self.step_events(now);
         self.step_rumsey(&ctx, now);
         self.step_sentinel(&ctx, now);
+        self.step_tracks(&ctx);
         self.paleo_bar(&ctx, now);
         self.step_cutaway();
         self.check_linked_models(now);
@@ -6753,6 +6877,12 @@ impl eframe::App for LiteApp {
             Some(nearest_terrain(&self.nav.camera.ellipsoid, eye, self.nav.pose.terrain.as_ref()));
         // Наложения для моделей, с пакетами моделей по ссылке, - только
         // когда набор сменился.
+        // Треки на момент шкалы, сменились модели треков - модели заново.
+        self.tracks.step(self.timebar.window().map(|w| w.1));
+        let tracks_models = std::mem::take(&mut self.tracks.models_dirty);
+        if tracks_models {
+            self.overlays_built = None;
+        }
         let model_list = if self.overlays_built != Some(self.marks.overlays_version()) { self.model_overlays(now) } else { Vec::new() };
 
         let Some(globe) = &mut self.globe else {
@@ -6923,20 +7053,27 @@ impl eframe::App for LiteApp {
         }
         let fresh = self.marks.meshes(&store, now);
         let geo_stale = self.geo.shapes_dirty;
-        if fresh.is_some() || water_stale || geo_stale {
+        let tracks_stale = self.tracks.dirty;
+        if fresh.is_some() || water_stale || geo_stale || tracks_stale {
             if let Some(meshes) = &fresh {
                 self.marks_meshes = meshes.clone();
             }
-            // Линии геофизики лежат на рельефе: строятся заново и с новыми
-            // высотами.
+            // Линии геофизики и пути треков лежат на рельефе: строятся
+            // заново и с новыми высотами.
             self.geo.shapes_dirty = false;
             self.geo_meshes = self.geo.shapes().iter().filter_map(|s| crate::marks::mesh(s, &store)).collect();
+            if tracks_stale || fresh.is_some() {
+                self.tracks.dirty = false;
+                self.track_meshes = self.tracks.shapes().iter().filter_map(|s| crate::marks::mesh(s, &store)).collect();
+                self.track_dots_dirty = true;
+            }
             let mut all = self.marks_meshes.clone();
             all.extend(self.water.iter().flat_map(|(w, _)| w.iter().cloned()));
             all.extend(self.geo_meshes.iter().cloned());
+            all.extend(self.track_meshes.iter().cloned());
             globe.set_features(&all);
         }
-        if fresh.is_some() && self.overlays_built != Some(self.marks.overlays_version()) {
+        if (fresh.is_some() || tracks_models) && self.overlays_built != Some(self.marks.overlays_version()) {
             self.overlays_built = Some(self.marks.overlays_version());
             globe.set_pictures(&self.marks.picture_meshes(&store));
             let built = self.models.meshes(&model_list, &store, now);
@@ -7039,8 +7176,8 @@ impl eframe::App for LiteApp {
         // Подписи живых объектов и статей у их точек, на обращённой к глазу
         // стороне, без наложения: ближние к точке взгляда первыми.
         let mut taken: Vec<egui::Rect> = blocked.clone();
-        let wiki_from = self.live_labels.len();
-        for (n, (text, p)) in self.live_labels.iter().chain(&self.wiki_labels).enumerate() {
+        let wiki_from = self.live_labels.len() + self.track_labels.len();
+        for (n, (text, p)) in self.live_labels.iter().chain(&self.track_labels).chain(&self.wiki_labels).enumerate() {
             let (q, front) = self.nav.camera.project(*p);
             let facing = (*p - self.nav.camera.eye).dot(p.normalize_or_zero()) < 0.0;
             if !front || !facing {

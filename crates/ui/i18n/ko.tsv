@@ -1566,3 +1566,54 @@ south	남
 south-west	남서
 west	서
 north-west	북서
+Tracks	트랙
+No tracks. A track is a point layer of a GeoPackage file with a date and time field. Open such a file, and the layer becomes a track.	트랙이 없습니다. 트랙은 날짜와 시간 필드가 있는 GeoPackage 파일의 점 레이어입니다. 이런 파일을 열면 레이어가 트랙이 됩니다.
+Objects {objects}, points {points}.	객체 {objects}, 점 {points}.
+A glTF, Collada or OBJ model file. The model drives along the path of each object, its front looks along the motion.	glTF, Collada 또는 OBJ 모델 파일. 모델은 각 객체의 경로를 따라 움직이며 앞면은 이동 방향을 향합니다.
+Without the model	모델 없이
+Remove track	트랙 제거
+The layer is no longer shown as a track.	레이어가 더 이상 트랙으로 표시되지 않습니다.
+The field with the date and time of the point. Date and time fields, ISO 8601 text and a number of seconds since 1970 fit.	점의 날짜와 시간이 담긴 필드. 날짜·시간 필드, ISO 8601 텍스트, 1970년부터의 초 수를 쓸 수 있습니다.
+One object	단일 객체
+Object	객체
+The field that tells the objects apart, for example the vehicle number. Each object has its own path and label.	객체를 서로 구별하는 필드, 예를 들어 차량 번호. 각 객체는 고유한 경로와 레이블을 가집니다.
+Colour	색
+The colour of the travelled path.	지나온 경로의 색.
+A numeric field with the height of the point. On the ground - the object and the model stand on the terrain.	점의 높이가 담긴 숫자 필드. 지면 - 객체와 모델이 지형 위에 섭니다.
+Height reference	높이 기준
+above ground	지면 위
+Height units	높이 단위
+feet	피트
+without a model	모델 없음
+Model scale	모델 축척
+The size factor of the model. With the factor 1 the model stands in its own metres.	모델의 크기 배율. 배율이 1이면 모델은 자체 미터 단위로 섭니다.
+Model turn	모델 회전
+Clockwise turn of the model to the motion. Needed when the front of the model in the file does not look north.	이동 방향에 대한 모델의 시계 방향 회전. 파일 속 모델의 앞면이 북쪽을 향하지 않을 때 필요합니다.
+Computing the series: {done} of {total}, points {count}…	계열 계산 중: {done}/{total}, 점 {count}…
+Points {count} of {total}. Scenes without a point - the area is covered by clouds by more than {share} % or the files were not read.	점 {count}/{total}. 점이 없는 장면 - 구역의 {share} % 넘게 구름에 덮였거나 파일을 읽지 못했습니다.
+Scenes of another UTM zone are skipped: {count}.	다른 UTM 구역의 장면은 건너뜁니다: {count}.
+Computing the trend map from {count} scenes…	장면 {count}개로 추세 지도를 계산하는 중…
+Trend «{name}» {first} - {last}, per year	추세 "{name}" {first} - {last}, 연간
+The trend map was not built.	추세 지도를 만들지 못했습니다.
+Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	장면 {count}개에서 구한 연간 Theil-Sen 기울기, 범례는 연간 {low}부터 {high}까지. 맑은 장면이 {min}개 미만인 픽셀은 추세가 없습니다.
+The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	추세 지도가 "내 장소"에 있습니다: 추세가 있는 픽셀 {total}, 유의 (p < {p}) {share} %, 기울기 중앙값 연간 {median}.
+The series is saved: {path}	계열을 저장했습니다: {path}
+The file was not written: {error}	파일을 기록하지 못했습니다: {error}
+Series by dates	날짜별 계열
+Area: {name}, scenes {count}	구역: {name}, 장면 {count}
+The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	계열의 값. 점은 구름과 그림자가 없는 구역의 중앙값, 선분은 10번째부터 90번째 백분위수까지입니다. 값을 바꾸면 계열을 다시 계산합니다.
+CSV table…	CSV 표…
+The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	계열을 CSV 파일로 - 날짜와 장면, 중앙값, 10번째와 90번째 백분위수, 구름 없는 구역의 비율. 값이 없는 장면은 빈 행이 됩니다.
+The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	계열의 장면들에 걸친 구역 각 픽셀의 값 추세 - 연간 Theil-Sen 기울기를 "내 장소"에 지표면 이미지로 넣습니다. 맑은 장면이 {count}개 미만인 픽셀은 추세를 받지 않습니다. 한 계절의 계열은 연도 간 추세를, 모든 달의 계열은 계절과 추세가 섞인 결과를 줍니다.
+Trend map	추세 지도
+No points of the series	계열의 점이 없습니다
+{when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: 중앙값 {median}, 10-90 % {low} - {high}, 구름 없는 구역 {share} %
+Series by dates…	날짜별 계열…
+A chart of the value over the area by the found scenes and the trend map.	찾은 장면에 따른 구역 값의 그래프와 추세 지도.
+Haul trucks, Kachkanar, GeoPackage layer	덤프트럭, 카치카나르, GeoPackage 레이어
+Haul trucks, Lebedinsky, GeoPackage layer	덤프트럭, 레베딘스키, GeoPackage 레이어
+Tracks: {count}. The time slider grows the paths.	트랙: {count}. 시간 막대가 경로를 늘립니다.
+Trend maps	추세 지도 모음
+On the ground	지면
+above sea level	해수면 위
+metres	미터

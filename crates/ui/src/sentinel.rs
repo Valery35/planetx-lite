@@ -15,9 +15,9 @@
 //! индекса у индексов. Картинка пересчитывается на широту и долготу
 //! и ложится в «Мои метки», папку «Космоснимки», с днём снимка.
 //!
-//! Чего у Lite пока нет: ASTER, MODIS и Landsat MSS, облачности
-//! над участком в списке, ряда по датам, превью, скачивания сцены
-//! и файлов GeoTIFF.
+//! Ряд по датам и карта тренда - окно [`crate::series::Series`]. Чего
+//! у Lite пока нет: ASTER, MODIS и Landsat MSS, облачности над участком
+//! в списке, превью, скачивания сцены и файлов GeoTIFF.
 
 use std::collections::BTreeMap;
 
@@ -118,6 +118,8 @@ pub struct Sentinel {
     status: String,
     generation: usize,
     pub built: Option<Built>,
+    /// Окно «Ряд по датам» по найденным сценам.
+    pub series: Option<crate::series::Series>,
 }
 
 impl Sentinel {
@@ -143,6 +145,7 @@ impl Sentinel {
             status: String::new(),
             generation: 0,
             built: None,
+            series: None,
         }
     }
 
@@ -155,7 +158,35 @@ impl Sentinel {
     }
 
     pub fn busy(&self) -> bool {
-        self.search.is_some() || self.job.is_some() || self.token_ask.is_some()
+        self.search.is_some() || self.job.is_some() || self.token_ask.is_some() || self.series.as_ref().is_some_and(crate::series::Series::busy)
+    }
+
+    /// Окно снимков или окно ряда открыто.
+    pub fn shown(&self) -> bool {
+        self.open || self.series.as_ref().is_some_and(|s| s.open)
+    }
+
+    /// Шаг ряда по датам: ключ SAS для файлов Landsat, чтение сцен,
+    /// щелчок по точке - сцена в списке.
+    fn step_series(&mut self, lang: Lang, now: f64, request: &dyn Fn(u64) -> Box<dyn net::Request>) {
+        let token = if self.token_ok(now) { self.token.as_ref().map(|(t, _)| t.clone()) } else { None };
+        let Some(series) = &mut self.series else {
+            return;
+        };
+        if series.needs_key() && token.is_none() && self.token_ask.is_none() {
+            let ask = request(1 << 20);
+            ask.start(&s2::sas_url(series.mission(), series.first_href().as_deref()));
+            self.token_ask = Some(ask);
+        }
+        series.step(lang, token.as_deref(), request);
+        if let Some(id) = series.picked.take()
+            && let Some(n) = self.scenes.iter().position(|s| s.id == id)
+        {
+            self.selected = Some(n);
+        }
+        if !series.open && !series.busy() && series.built.is_none() {
+            self.series = None;
+        }
     }
 
     /// Кольцо участка (широта, долгота).
@@ -240,6 +271,7 @@ impl Sentinel {
                 }
             }
         }
+        self.step_series(lang, now, request);
         let Some(mut job) = self.job.take() else {
             return;
         };
@@ -340,12 +372,16 @@ impl Sentinel {
 
     /// Окно.
     pub fn show(&mut self, ctx: &egui::Context, lang: Lang, request: &dyn Fn(u64) -> Box<dyn net::Request>) {
+        if let Some(series) = &mut self.series {
+            series.show(ctx, lang);
+        }
         if !self.open {
             return;
         }
         let mut open = true;
         let mut find = false;
         let mut build = false;
+        let mut series = false;
         egui::Window::new(tr(lang, "Satellite images")).open(&mut open).default_size([640.0, 560.0]).show(ctx, |ui| {
             egui::Grid::new("planetx-sentinel").num_columns(4).spacing([10.0, 6.0]).show(ui, |ui| {
                 ui.label(tr(lang, "Satellite"));
@@ -410,6 +446,9 @@ impl Sentinel {
                 if ui.add_enabled(self.selected.is_some() && self.job.is_none(), egui::Button::new(tr(lang, "On the globe"))).on_hover_text(tr(lang, "The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.")).clicked() {
                     build = true;
                 }
+                if ui.add_enabled(!self.scenes.is_empty() && !data::series::products(self.mission).is_empty(), egui::Button::new(tr(lang, "Series by dates…"))).on_hover_text(tr(lang, "A chart of the value over the area by the found scenes and the trend map.")).clicked() {
+                    series = true;
+                }
             });
             ui.label(&self.status);
             ui.add(egui::Label::new(egui::RichText::new(mission_credit(lang, self.mission)).small()).wrap());
@@ -419,6 +458,11 @@ impl Sentinel {
         }
         if build {
             self.start_build(lang);
+        }
+        if series {
+            let area = format!("{:.4}, {:.4}, {:.1}{}", self.point.0, self.point.1, self.side, tr(lang, " km"));
+            let product = data::series::products(self.mission).contains(&self.product.as_str()).then_some(self.product.as_str());
+            self.series = Some(crate::series::Series::new(self.mission, self.scenes.clone(), self.ring(), area, product));
         }
         if !open {
             self.open = false;
@@ -494,7 +538,7 @@ fn colour(name: &str, product: &s2::Product) -> Option<Vec<u8>> {
 
 /// Картинка в UTM - на сетку широты и долготы участка: ближайший пиксель.
 /// Возвращает PNG и рамку (запад, юг, восток, север).
-fn to_latlon(rgba: &[u8], rows: usize, cols: usize, bbox: [f64; 4], res: f64, ring: &[(f64, f64)], epsg: u32) -> Option<(Vec<u8>, [f64; 4])> {
+pub(crate) fn to_latlon(rgba: &[u8], rows: usize, cols: usize, bbox: [f64; 4], res: f64, ring: &[(f64, f64)], epsg: u32) -> Option<(Vec<u8>, [f64; 4])> {
     let south = ring.iter().map(|p| p.0).fold(f64::INFINITY, f64::min);
     let north = ring.iter().map(|p| p.0).fold(f64::NEG_INFINITY, f64::max);
     let west = ring.iter().map(|p| p.1).fold(f64::INFINITY, f64::min);

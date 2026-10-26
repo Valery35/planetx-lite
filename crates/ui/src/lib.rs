@@ -70,6 +70,7 @@ pub mod ruler;
 pub mod satellites;
 pub mod search;
 pub mod sentinel;
+pub mod series;
 pub mod settings;
 pub mod share;
 pub mod sheets;
@@ -78,6 +79,7 @@ pub mod theme;
 pub mod timeline;
 pub mod tool;
 pub mod tours;
+pub mod tracks;
 pub mod vector;
 pub mod wiki;
 

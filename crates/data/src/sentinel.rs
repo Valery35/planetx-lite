@@ -2250,7 +2250,7 @@ pub fn stretch(values: &Grid<f32>, low: f64, high: f64) -> (f64, f64) {
 }
 
 /// Процентиль p упорядоченного непустого списка.
-fn percentile(sorted: &[f64], p: f64) -> f64 {
+pub(crate) fn percentile(sorted: &[f64], p: f64) -> f64 {
     let last = sorted.len().saturating_sub(1);
     let at = (p.clamp(0.0, 100.0) / 100.0) * last as f64;
     let below = (at.floor() as usize).min(last);

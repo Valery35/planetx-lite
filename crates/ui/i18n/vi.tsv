@@ -1566,3 +1566,54 @@ south	nam
 south-west	tây nam
 west	tây
 north-west	tây bắc
+Tracks	Vết di chuyển
+No tracks. A track is a point layer of a GeoPackage file with a date and time field. Open such a file, and the layer becomes a track.	Không có vết di chuyển. Vết di chuyển là lớp điểm của tệp GeoPackage có trường ngày và giờ. Khi mở tệp như vậy, lớp trở thành vết di chuyển.
+Objects {objects}, points {points}.	Đối tượng {objects}, điểm {points}.
+A glTF, Collada or OBJ model file. The model drives along the path of each object, its front looks along the motion.	Tệp mô hình glTF, Collada hoặc OBJ. Mô hình chạy dọc đường đi của từng đối tượng, phía trước nhìn theo hướng chuyển động.
+Without the model	Không dùng mô hình
+Remove track	Gỡ vết di chuyển
+The layer is no longer shown as a track.	Lớp không còn được hiển thị như vết di chuyển.
+The field with the date and time of the point. Date and time fields, ISO 8601 text and a number of seconds since 1970 fit.	Trường chứa ngày và giờ của điểm. Dùng được trường ngày và giờ, văn bản ISO 8601 và số giây kể từ năm 1970.
+One object	Một đối tượng
+Object	Đối tượng
+The field that tells the objects apart, for example the vehicle number. Each object has its own path and label.	Trường phân biệt các đối tượng với nhau, ví dụ biển số xe. Mỗi đối tượng có đường đi và nhãn riêng.
+Colour	Màu
+The colour of the travelled path.	Màu của đoạn đường đã đi.
+A numeric field with the height of the point. On the ground - the object and the model stand on the terrain.	Trường số chứa độ cao của điểm. Trên mặt đất - đối tượng và mô hình đứng trên địa hình.
+Height reference	Mốc độ cao
+above ground	so với mặt đất
+Height units	Đơn vị độ cao
+feet	feet
+without a model	không có mô hình
+Model scale	Tỷ lệ mô hình
+The size factor of the model. With the factor 1 the model stands in its own metres.	Hệ số kích thước của mô hình. Với hệ số 1, mô hình đứng theo mét của chính nó.
+Model turn	Góc xoay mô hình
+Clockwise turn of the model to the motion. Needed when the front of the model in the file does not look north.	Góc xoay mô hình theo chiều kim đồng hồ so với hướng chuyển động. Cần khi phía trước của mô hình trong tệp không nhìn về hướng bắc.
+Computing the series: {done} of {total}, points {count}…	Đang tính chuỗi: {done} trên {total}, điểm {count}…
+Points {count} of {total}. Scenes without a point - the area is covered by clouds by more than {share} % or the files were not read.	Điểm {count} trên {total}. Cảnh không có điểm - vùng bị mây che hơn {share} % hoặc không đọc được tệp.
+Scenes of another UTM zone are skipped: {count}.	Bỏ qua các cảnh thuộc múi UTM khác: {count}.
+Computing the trend map from {count} scenes…	Đang tính bản đồ xu hướng từ {count} cảnh…
+Trend «{name}» {first} - {last}, per year	Xu hướng "{name}" {first} - {last}, mỗi năm
+The trend map was not built.	Chưa dựng được bản đồ xu hướng.
+Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	Độ dốc Theil-Sen mỗi năm từ {count} cảnh, thang từ {low} đến {high} mỗi năm. Điểm ảnh không có {min} cảnh quang mây thì không có xu hướng.
+The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	Bản đồ xu hướng nằm trong "Địa điểm của tôi": điểm ảnh có xu hướng {total}, có ý nghĩa (p < {p}) {share} %, trung vị độ dốc {median} mỗi năm.
+The series is saved: {path}	Đã lưu chuỗi: {path}
+The file was not written: {error}	Chưa ghi được tệp: {error}
+Series by dates	Chuỗi theo ngày
+Area: {name}, scenes {count}	Vùng: {name}, cảnh {count}
+The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	Giá trị của chuỗi. Điểm là trung vị trên vùng không có mây và bóng, đoạn - từ phân vị thứ 10 đến thứ 90. Thay đổi giá trị sẽ tính lại chuỗi.
+CSV table…	Bảng CSV…
+The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	Chuỗi vào tệp CSV - ngày và cảnh, trung vị, phân vị thứ 10 và thứ 90, tỷ lệ vùng không có mây. Cảnh không có giá trị thành dòng trống.
+The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	Xu hướng của giá trị tại mỗi điểm ảnh của vùng qua các cảnh của chuỗi - độ dốc Theil-Sen mỗi năm, dưới dạng hình ảnh trên bề mặt trong "Địa điểm của tôi". Điểm ảnh không có {count} cảnh quang mây thì không nhận xu hướng. Chuỗi của một mùa cho xu hướng giữa các năm, chuỗi của tất cả các tháng trộn lẫn mùa và xu hướng.
+Trend map	Bản đồ xu hướng
+No points of the series	Không có điểm của chuỗi
+{when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: trung vị {median}, 10-90 % {low} - {high}, không mây {share} % vùng
+Series by dates…	Chuỗi theo ngày…
+A chart of the value over the area by the found scenes and the trend map.	Biểu đồ giá trị trên vùng theo các cảnh tìm được và bản đồ xu hướng.
+Haul trucks, Kachkanar, GeoPackage layer	Xe tải mỏ, Kachkanar, lớp GeoPackage
+Haul trucks, Lebedinsky, GeoPackage layer	Xe tải mỏ, Lebedinsky, lớp GeoPackage
+Tracks: {count}. The time slider grows the paths.	Vết di chuyển: {count}. Thanh thời gian làm đường đi dài ra.
+Trend maps	Các bản đồ xu hướng
+On the ground	Trên mặt đất
+above sea level	so với mực nước biển
+metres	mét

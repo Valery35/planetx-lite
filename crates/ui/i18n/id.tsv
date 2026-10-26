@@ -1566,3 +1566,54 @@ south	selatan
 south-west	barat daya
 west	barat
 north-west	barat laut
+Tracks	Jejak
+No tracks. A track is a point layer of a GeoPackage file with a date and time field. Open such a file, and the layer becomes a track.	Tidak ada jejak. Jejak adalah lapisan titik dari berkas GeoPackage dengan kolom tanggal dan waktu. Setelah berkas seperti itu dibuka, lapisannya menjadi jejak.
+Objects {objects}, points {points}.	Objek {objects}, titik {points}.
+A glTF, Collada or OBJ model file. The model drives along the path of each object, its front looks along the motion.	Berkas model glTF, Collada, atau OBJ. Model bergerak di sepanjang jalur setiap objek, bagian depannya menghadap arah gerak.
+Without the model	Tanpa model
+Remove track	Hapus jejak
+The layer is no longer shown as a track.	Lapisan tidak lagi ditampilkan sebagai jejak.
+The field with the date and time of the point. Date and time fields, ISO 8601 text and a number of seconds since 1970 fit.	Kolom dengan tanggal dan waktu titik. Yang cocok adalah kolom tanggal dan waktu, teks ISO 8601, dan jumlah detik sejak 1970.
+One object	Satu objek
+Object	Objek
+The field that tells the objects apart, for example the vehicle number. Each object has its own path and label.	Kolom yang membedakan objek satu sama lain, misalnya nomor kendaraan. Setiap objek memiliki jalur dan labelnya sendiri.
+Colour	Warna
+The colour of the travelled path.	Warna jalur yang telah dilalui.
+A numeric field with the height of the point. On the ground - the object and the model stand on the terrain.	Kolom numerik dengan ketinggian titik. Di tanah - objek dan model berdiri di atas medan.
+Height reference	Acuan ketinggian
+above ground	di atas tanah
+Height units	Satuan ketinggian
+feet	kaki
+without a model	tanpa model
+Model scale	Skala model
+The size factor of the model. With the factor 1 the model stands in its own metres.	Faktor ukuran model. Dengan faktor 1 model berdiri dalam meternya sendiri.
+Model turn	Putaran model
+Clockwise turn of the model to the motion. Needed when the front of the model in the file does not look north.	Putaran model searah jarum jam terhadap arah gerak. Diperlukan jika bagian depan model dalam berkas tidak menghadap utara.
+Computing the series: {done} of {total}, points {count}…	Menghitung deret: {done} dari {total}, titik {count}…
+Points {count} of {total}. Scenes without a point - the area is covered by clouds by more than {share} % or the files were not read.	Titik {count} dari {total}. Adegan tanpa titik - area tertutup awan lebih dari {share} % atau berkas tidak terbaca.
+Scenes of another UTM zone are skipped: {count}.	Adegan dari zona UTM lain dilewati: {count}.
+Computing the trend map from {count} scenes…	Menghitung peta tren dari {count} adegan…
+Trend «{name}» {first} - {last}, per year	Tren "{name}" {first} - {last}, per tahun
+The trend map was not built.	Peta tren tidak dibuat.
+Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	Kemiringan Theil-Sen per tahun dari {count} adegan, skala dari {low} hingga {high} per tahun. Piksel tanpa {min} adegan cerah tidak memiliki tren.
+The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	Peta tren ada di "Tempat Saya": piksel dengan tren {total}, signifikan (p < {p}) {share} %, median kemiringan {median} per tahun.
+The series is saved: {path}	Deret tersimpan: {path}
+The file was not written: {error}	Berkas tidak tertulis: {error}
+Series by dates	Deret menurut tanggal
+Area: {name}, scenes {count}	Area: {name}, adegan {count}
+The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	Nilai deret. Titik adalah median di atas area tanpa awan dan bayangan, segmen - dari persentil ke-10 hingga ke-90. Perubahan nilai menghitung ulang deret.
+CSV table…	Tabel CSV…
+The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	Deret ke berkas CSV - tanggal dan adegan, median, persentil ke-10 dan ke-90, bagian area tanpa awan. Adegan tanpa nilai menjadi baris kosong.
+The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	Tren nilai di setiap piksel area sepanjang adegan deret - kemiringan Theil-Sen per tahun, sebagai gambar di permukaan dalam "Tempat Saya". Piksel tanpa {count} adegan cerah tidak mendapat tren. Deret dari satu musim memberi tren antartahun, deret dari semua bulan mencampur musim dan tren.
+Trend map	Peta tren
+No points of the series	Tidak ada titik deret
+{when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: median {median}, 10-90 % {low} - {high}, tanpa awan {share} % area
+Series by dates…	Deret menurut tanggal…
+A chart of the value over the area by the found scenes and the trend map.	Grafik nilai di atas area menurut adegan yang ditemukan dan peta tren.
+Haul trucks, Kachkanar, GeoPackage layer	Truk angkut, Kachkanar, lapisan GeoPackage
+Haul trucks, Lebedinsky, GeoPackage layer	Truk angkut, Lebedinsky, lapisan GeoPackage
+Tracks: {count}. The time slider grows the paths.	Jejak: {count}. Bilah waktu menumbuhkan jalur.
+Trend maps	Peta-peta tren
+On the ground	Di tanah
+above sea level	di atas permukaan laut
+metres	meter

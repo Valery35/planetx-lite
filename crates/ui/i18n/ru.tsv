@@ -1566,3 +1566,54 @@ south	юг
 south-west	юго-запад
 west	запад
 north-west	северо-запад
+Tracks	Треки
+No tracks. A track is a point layer of a GeoPackage file with a date and time field. Open such a file, and the layer becomes a track.	Треков нет. Трек - точечный слой файла GeoPackage с полем даты и времени. После открытия такого файла слой становится треком.
+Objects {objects}, points {points}.	Объектов {objects}, точек {points}.
+A glTF, Collada or OBJ model file. The model drives along the path of each object, its front looks along the motion.	Файл 3D-модели glTF, Collada или OBJ. Модель едет по пути каждого объекта, перёд смотрит по ходу движения.
+Without the model	Без модели
+Remove track	Убрать трек
+The layer is no longer shown as a track.	Слой больше не показывается треком.
+The field with the date and time of the point. Date and time fields, ISO 8601 text and a number of seconds since 1970 fit.	Поле с датой и временем точки. Годятся поля даты и времени, текст в виде ISO 8601 и число секунд от 1970 года.
+One object	Один объект
+Object	Объект
+The field that tells the objects apart, for example the vehicle number. Each object has its own path and label.	Поле, которое отличает объекты друг от друга, например номер машины. У каждого объекта свой путь и своя подпись.
+Colour	Цвет
+The colour of the travelled path.	Цвет пройденного пути.
+A numeric field with the height of the point. On the ground - the object and the model stand on the terrain.	Числовое поле с высотой точки. По земле - объект и модель стоят на рельефе.
+Height reference	Отсчёт высоты
+above ground	над землёй
+Height units	Единицы высоты
+feet	футы
+without a model	без модели
+Model scale	Масштаб модели
+The size factor of the model. With the factor 1 the model stands in its own metres.	Множитель размера модели. С множителем 1 модель стоит в своих метрах.
+Model turn	Поворот модели
+Clockwise turn of the model to the motion. Needed when the front of the model in the file does not look north.	Поворот модели по часовой стрелке к ходу движения. Нужен, если перёд модели в файле смотрит не на север.
+Computing the series: {done} of {total}, points {count}…	Считается ряд: {done} из {total}, точек {count}…
+Points {count} of {total}. Scenes without a point - the area is covered by clouds by more than {share} % or the files were not read.	Точек {count} из {total}. Сцены без точки - участок закрыт облаками больше чем на {share} % или файлы не прочитаны.
+Scenes of another UTM zone are skipped: {count}.	Пропущено сцен другой зоны UTM: {count}.
+Computing the trend map from {count} scenes…	Считается карта тренда по {count} сценам…
+Trend «{name}» {first} - {last}, per year	Тренд «{name}» {first} - {last}, за год
+The trend map was not built.	Карта тренда не построена.
+Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	Наклон Тейла-Сена за год по {count} сценам, шкала от {low} до {high} за год. Пиксели без {min} чистых сцен тренда не имеют.
+The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	Карта тренда в «Моих метках»: пикселей с трендом {total}, значимых (p < {p}) {share} %, медиана наклона {median} за год.
+The series is saved: {path}	Ряд записан: {path}
+The file was not written: {error}	Файл не записан: {error}
+Series by dates	Ряд по датам
+Area: {name}, scenes {count}	Участок: {name}, сцен {count}
+The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	Величина ряда. Точка - медиана по участку без облаков и теней, отрезок - от 10-го до 90-го процентиля. Смена величины считает ряд заново.
+CSV table…	Таблица CSV…
+The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	Ряд в файл CSV - дата и сцена, медиана, 10-й и 90-й процентили, доля участка без облаков. Сцены без значения идут пустыми строками.
+The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	Тренд величины в каждом пикселе участка по сценам ряда - наклон Тейла-Сена за год, картинкой на поверхности в «Мои метки». Пиксель без {count} чистых сцен тренда не получает. Ряд из сцен одного сезона даёт тренд между годами, ряд всех месяцев смешивает сезон и тренд.
+Trend map	Карта тренда
+No points of the series	Нет точек ряда
+{when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: медиана {median}, 10-90 % {low} - {high}, без облаков {share} % участка
+Series by dates…	Ряд по датам…
+A chart of the value over the area by the found scenes and the trend map.	График величины участка по найденным сценам и карта тренда.
+Haul trucks, Kachkanar, GeoPackage layer	Самосвалы, Качканар, слой GeoPackage
+Haul trucks, Lebedinsky, GeoPackage layer	Самосвалы, Лебединский, слой GeoPackage
+Tracks: {count}. The time slider grows the paths.	Треков: {count}. Шкала времени наращивает пути.
+Trend maps	Карты тренда
+On the ground	По земле
+above sea level	над уровнем моря
+metres	метры

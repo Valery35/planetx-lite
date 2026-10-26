@@ -1566,3 +1566,54 @@ south	güney
 south-west	güneybatı
 west	batı
 north-west	kuzeybatı
+Tracks	İzler
+No tracks. A track is a point layer of a GeoPackage file with a date and time field. Open such a file, and the layer becomes a track.	İz yok. İz, tarih ve saat alanı olan bir GeoPackage dosyasının nokta katmanıdır. Böyle bir dosya açılınca katman ize dönüşür.
+Objects {objects}, points {points}.	Nesneler {objects}, noktalar {points}.
+A glTF, Collada or OBJ model file. The model drives along the path of each object, its front looks along the motion.	glTF, Collada veya OBJ model dosyası. Model her nesnenin yolu boyunca ilerler, ön tarafı hareket yönüne bakar.
+Without the model	Modelsiz
+Remove track	İzi kaldır
+The layer is no longer shown as a track.	Katman artık iz olarak gösterilmiyor.
+The field with the date and time of the point. Date and time fields, ISO 8601 text and a number of seconds since 1970 fit.	Noktanın tarih ve saatini içeren alan. Tarih ve saat alanları, ISO 8601 metni ve 1970’ten bu yana saniye sayısı uygundur.
+One object	Tek nesne
+Object	Nesne
+The field that tells the objects apart, for example the vehicle number. Each object has its own path and label.	Nesneleri birbirinden ayıran alan, örneğin araç numarası. Her nesnenin kendi yolu ve kendi etiketi vardır.
+Colour	Renk
+The colour of the travelled path.	Kat edilen yolun rengi.
+A numeric field with the height of the point. On the ground - the object and the model stand on the terrain.	Noktanın yüksekliğini içeren sayısal alan. Yerde - nesne ve model arazinin üzerinde durur.
+Height reference	Yükseklik referansı
+above ground	yerin üzerinde
+Height units	Yükseklik birimleri
+feet	fit
+without a model	model yok
+Model scale	Model ölçeği
+The size factor of the model. With the factor 1 the model stands in its own metres.	Modelin boyut çarpanı. Çarpan 1 olduğunda model kendi metrelerinde durur.
+Model turn	Model dönüşü
+Clockwise turn of the model to the motion. Needed when the front of the model in the file does not look north.	Modelin harekete göre saat yönünde dönüşü. Dosyadaki modelin önü kuzeye bakmıyorsa gerekir.
+Computing the series: {done} of {total}, points {count}…	Seri hesaplanıyor: {done} / {total}, noktalar {count}…
+Points {count} of {total}. Scenes without a point - the area is covered by clouds by more than {share} % or the files were not read.	Noktalar {count} / {total}. Noktası olmayan sahneler - alanın {share} % kadarından fazlası bulutlu ya da dosyalar okunmadı.
+Scenes of another UTM zone are skipped: {count}.	Başka bir UTM dilimindeki sahneler atlandı: {count}.
+Computing the trend map from {count} scenes…	{count} sahneden eğilim haritası hesaplanıyor…
+Trend «{name}» {first} - {last}, per year	Eğilim "{name}" {first} - {last}, yıllık
+The trend map was not built.	Eğilim haritası oluşturulmadı.
+Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	{count} sahneden yıllık Theil-Sen eğimi, ölçek yıllık {low} ile {high} arasında. {min} açık sahnesi olmayan piksellerin eğilimi yoktur.
+The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	Eğilim haritası "Yerlerim" içinde: eğilimli piksel {total}, anlamlı (p < {p}) {share} %, medyan eğim yıllık {median}.
+The series is saved: {path}	Seri kaydedildi: {path}
+The file was not written: {error}	Dosya yazılmadı: {error}
+Series by dates	Tarihlere göre seri
+Area: {name}, scenes {count}	Alan: {name}, sahne {count}
+The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	Serinin değeri. Nokta, bulutsuz ve gölgesiz alan üzerindeki medyandır, çizgi - 10. ile 90. yüzdelik arası. Değerin değişmesi seriyi yeniden hesaplar.
+CSV table…	CSV tablosu…
+The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	Seri bir CSV dosyasına - tarih ve sahne, medyan, 10. ve 90. yüzdelikler, alanın bulutsuz payı. Değeri olmayan sahneler boş satır olarak gider.
+The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	Serinin sahneleri boyunca alanın her pikselindeki değer eğilimi - yıllık Theil-Sen eğimi, "Yerlerim" içinde yüzeydeki resim olarak. {count} açık sahnesi olmayan piksel eğilim almaz. Tek mevsimlik seri yıllar arası eğilimi verir, tüm ayların serisi mevsimi ve eğilimi karıştırır.
+Trend map	Eğilim haritası
+No points of the series	Serinin noktası yok
+{when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: medyan {median}, 10-90 % {low} - {high}, bulutsuz alan {share} %
+Series by dates…	Tarihlere göre seri…
+A chart of the value over the area by the found scenes and the trend map.	Bulunan sahnelere göre alan üzerindeki değerin grafiği ve eğilim haritası.
+Haul trucks, Kachkanar, GeoPackage layer	Maden kamyonları, Kaçkanar, GeoPackage katmanı
+Haul trucks, Lebedinsky, GeoPackage layer	Maden kamyonları, Lebedinski, GeoPackage katmanı
+Tracks: {count}. The time slider grows the paths.	İzler: {count}. Zaman çubuğu yolları büyütür.
+Trend maps	Eğilim haritaları
+On the ground	Yerde
+above sea level	deniz seviyesinin üzerinde
+metres	metre

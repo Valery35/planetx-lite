@@ -1566,3 +1566,54 @@ south	南
 south-west	西南
 west	西
 north-west	西北
+Tracks	轨迹
+No tracks. A track is a point layer of a GeoPackage file with a date and time field. Open such a file, and the layer becomes a track.	没有轨迹。轨迹是 GeoPackage 文件中带有日期时间字段的点图层。打开这样的文件后，该图层即成为轨迹。
+Objects {objects}, points {points}.	对象 {objects}，点 {points}。
+A glTF, Collada or OBJ model file. The model drives along the path of each object, its front looks along the motion.	glTF、Collada 或 OBJ 模型文件。模型沿每个对象的路径行驶，前部朝向运动方向。
+Without the model	不用模型
+Remove track	移除轨迹
+The layer is no longer shown as a track.	该图层不再显示为轨迹。
+The field with the date and time of the point. Date and time fields, ISO 8601 text and a number of seconds since 1970 fit.	包含点的日期和时间的字段。可用日期时间字段、ISO 8601 文本以及自 1970 年起的秒数。
+One object	单个对象
+Object	对象
+The field that tells the objects apart, for example the vehicle number. Each object has its own path and label.	用于区分对象的字段，例如车辆编号。每个对象有自己的路径和标签。
+Colour	颜色
+The colour of the travelled path.	已行驶路径的颜色。
+A numeric field with the height of the point. On the ground - the object and the model stand on the terrain.	包含点高度的数值字段。贴地 - 对象和模型立于地形之上。
+Height reference	高度基准
+above ground	离地
+Height units	高度单位
+feet	英尺
+without a model	无模型
+Model scale	模型比例
+The size factor of the model. With the factor 1 the model stands in its own metres.	模型的尺寸系数。系数为 1 时模型按其自身的米制尺寸显示。
+Model turn	模型旋转
+Clockwise turn of the model to the motion. Needed when the front of the model in the file does not look north.	模型相对运动方向的顺时针旋转。当文件中模型的前部不朝北时需要设置。
+Computing the series: {done} of {total}, points {count}…	正在计算序列：{done}/{total}，点 {count}…
+Points {count} of {total}. Scenes without a point - the area is covered by clouds by more than {share} % or the files were not read.	点 {count}/{total}。无点的场景 - 该区域云覆盖超过 {share} % 或文件未读取。
+Scenes of another UTM zone are skipped: {count}.	已跳过其他 UTM 带的场景：{count}。
+Computing the trend map from {count} scenes…	正在根据 {count} 个场景计算趋势图…
+Trend «{name}» {first} - {last}, per year	趋势“{name}” {first} - {last}，每年
+The trend map was not built.	未能生成趋势图。
+Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	根据 {count} 个场景计算的每年 Theil-Sen 斜率，色标从每年 {low} 到 {high}。晴空场景少于 {min} 个的像素没有趋势。
+The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	趋势图已放入“我的地点”：有趋势的像素 {total}，显著 (p < {p}) {share} %，斜率中位数每年 {median}。
+The series is saved: {path}	序列已保存：{path}
+The file was not written: {error}	未能写入文件：{error}
+Series by dates	按日期序列
+Area: {name}, scenes {count}	区域：{name}，场景 {count}
+The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	序列的值。点为该区域无云无阴影部分的中位数，线段 - 从第 10 到第 90 百分位数。更改该值会重新计算序列。
+CSV table…	CSV 表格…
+The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	将序列写入 CSV 文件 - 日期和场景、中位数、第 10 和第 90 百分位数、区域无云比例。无值的场景为空行。
+The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	按序列各场景计算区域内每个像素的值趋势 - 每年 Theil-Sen 斜率，作为地表图片放入“我的地点”。晴空场景少于 {count} 个的像素不计算趋势。单一季节的序列给出年际趋势，全部月份的序列会混合季节与趋势。
+Trend map	趋势图
+No points of the series	没有序列点
+{when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}：中位数 {median}，10-90 % {low} - {high}，区域无云 {share} %
+Series by dates…	按日期序列…
+A chart of the value over the area by the found scenes and the trend map.	根据找到的场景绘制区域内值的图表，以及趋势图。
+Haul trucks, Kachkanar, GeoPackage layer	运输卡车，卡奇卡纳尔，GeoPackage 图层
+Haul trucks, Lebedinsky, GeoPackage layer	运输卡车，列别金斯基，GeoPackage 图层
+Tracks: {count}. The time slider grows the paths.	轨迹：{count}。时间条使路径增长。
+Trend maps	趋势图集
+On the ground	贴地
+above sea level	海拔
+metres	米

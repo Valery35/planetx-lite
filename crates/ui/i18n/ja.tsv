@@ -1566,3 +1566,54 @@ south	南
 south-west	南西
 west	西
 north-west	北西
+Tracks	トラック
+No tracks. A track is a point layer of a GeoPackage file with a date and time field. Open such a file, and the layer becomes a track.	トラックがありません。トラックは、日付と時刻のフィールドを持つ GeoPackage ファイルのポイントレイヤーです。そのようなファイルを開くと、レイヤーがトラックになります。
+Objects {objects}, points {points}.	オブジェクト {objects}、ポイント {points}。
+A glTF, Collada or OBJ model file. The model drives along the path of each object, its front looks along the motion.	glTF、Collada、OBJ のモデルファイル。モデルは各オブジェクトの経路に沿って進み、前面は進行方向を向きます。
+Without the model	モデルなしにする
+Remove track	トラックを削除
+The layer is no longer shown as a track.	このレイヤーはトラックとして表示されなくなります。
+The field with the date and time of the point. Date and time fields, ISO 8601 text and a number of seconds since 1970 fit.	ポイントの日付と時刻のフィールド。日付・時刻フィールド、ISO 8601 のテキスト、1970 年からの秒数が使えます。
+One object	単一のオブジェクト
+Object	オブジェクト
+The field that tells the objects apart, for example the vehicle number. Each object has its own path and label.	オブジェクトを互いに区別するフィールド。例えば車両番号。各オブジェクトに固有の経路とラベルがあります。
+Colour	色
+The colour of the travelled path.	通過した経路の色。
+A numeric field with the height of the point. On the ground - the object and the model stand on the terrain.	ポイントの高さの数値フィールド。地表 - オブジェクトとモデルは地形の上に立ちます。
+Height reference	高さの基準
+above ground	対地
+Height units	高さの単位
+feet	フィート
+without a model	モデルなし
+Model scale	モデルの縮尺
+The size factor of the model. With the factor 1 the model stands in its own metres.	モデルのサイズ係数。係数 1 ではモデルは自身のメートル単位で表示されます。
+Model turn	モデルの回転
+Clockwise turn of the model to the motion. Needed when the front of the model in the file does not look north.	進行方向に対するモデルの時計回りの回転。ファイル内のモデルの前面が北を向いていない場合に必要です。
+Computing the series: {done} of {total}, points {count}…	系列を計算中：{done}/{total}、ポイント {count}…
+Points {count} of {total}. Scenes without a point - the area is covered by clouds by more than {share} % or the files were not read.	ポイント {count}/{total}。ポイントのないシーン - 区域の {share} % を超えて雲に覆われているか、ファイルが読み込めませんでした。
+Scenes of another UTM zone are skipped: {count}.	別の UTM ゾーンのシーンをスキップ：{count}。
+Computing the trend map from {count} scenes…	{count} シーンからトレンドマップを計算中…
+Trend «{name}» {first} - {last}, per year	トレンド「{name}」{first} - {last}、年あたり
+The trend map was not built.	トレンドマップを作成できませんでした。
+Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	{count} シーンからの年あたりの Theil-Sen 傾き、スケールは年あたり {low} から {high}。晴天シーンが {min} 未満のピクセルにはトレンドがありません。
+The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	トレンドマップは「マイプレイス」にあります：トレンドのあるピクセル {total}、有意 (p < {p}) {share} %、傾きの中央値 年あたり {median}。
+The series is saved: {path}	系列を保存しました：{path}
+The file was not written: {error}	ファイルを書き込めません：{error}
+Series by dates	日付別系列
+Area: {name}, scenes {count}	区域：{name}、シーン {count}
+The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	系列の値。点は雲と影のない区域の中央値、線分は 10 から 90 パーセンタイルまで。値を変えると系列を再計算します。
+CSV table…	CSV 表…
+The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	系列を CSV ファイルへ - 日付とシーン、中央値、10 および 90 パーセンタイル、雲のない区域の割合。値のないシーンは空の行になります。
+The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	系列のシーンにわたる区域の各ピクセルの値のトレンド - 年あたりの Theil-Sen 傾きを、「マイプレイス」に地表の画像として置きます。晴天シーンが {count} 未満のピクセルにはトレンドが付きません。1 つの季節の系列は年ごとのトレンドを示し、全月の系列は季節とトレンドが混ざります。
+Trend map	トレンドマップ
+No points of the series	系列のポイントがありません
+{when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}：中央値 {median}、10-90 % {low} - {high}、雲のない区域 {share} %
+Series by dates…	日付別系列…
+A chart of the value over the area by the found scenes and the trend map.	見つかったシーンによる区域の値のグラフとトレンドマップ。
+Haul trucks, Kachkanar, GeoPackage layer	ダンプトラック、カチカナル、GeoPackage レイヤー
+Haul trucks, Lebedinsky, GeoPackage layer	ダンプトラック、レベジンスキー、GeoPackage レイヤー
+Tracks: {count}. The time slider grows the paths.	トラック：{count}。タイムバーで経路が伸びます。
+Trend maps	トレンドマップ集
+On the ground	地表
+above sea level	海抜
+metres	メートル

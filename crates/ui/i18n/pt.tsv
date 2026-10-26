@@ -1566,3 +1566,54 @@ south	sul
 south-west	sudoeste
 west	oeste
 north-west	noroeste
+Tracks	Trajetos
+No tracks. A track is a point layer of a GeoPackage file with a date and time field. Open such a file, and the layer becomes a track.	Não há trajetos. Um trajeto é uma camada de pontos de um ficheiro GeoPackage com um campo de data e hora. Ao abrir um ficheiro assim, a camada torna-se um trajeto.
+Objects {objects}, points {points}.	Objetos {objects}, pontos {points}.
+A glTF, Collada or OBJ model file. The model drives along the path of each object, its front looks along the motion.	Um ficheiro de modelo glTF, Collada ou OBJ. O modelo percorre o caminho de cada objeto, a sua frente olha no sentido do movimento.
+Without the model	Sem o modelo
+Remove track	Retirar o trajeto
+The layer is no longer shown as a track.	A camada já não é mostrada como trajeto.
+The field with the date and time of the point. Date and time fields, ISO 8601 text and a number of seconds since 1970 fit.	O campo com a data e a hora do ponto. Servem campos de data e hora, texto ISO 8601 e um número de segundos desde 1970.
+One object	Um só objeto
+Object	Objeto
+The field that tells the objects apart, for example the vehicle number. Each object has its own path and label.	O campo que distingue os objetos entre si, por exemplo o número do veículo. Cada objeto tem o seu caminho e a sua etiqueta.
+Colour	Cor
+The colour of the travelled path.	A cor do caminho percorrido.
+A numeric field with the height of the point. On the ground - the object and the model stand on the terrain.	Um campo numérico com a altitude do ponto. No solo - o objeto e o modelo assentam no relevo.
+Height reference	Referência da altitude
+above ground	acima do solo
+Height units	Unidades da altitude
+feet	pés
+without a model	sem modelo
+Model scale	Escala do modelo
+The size factor of the model. With the factor 1 the model stands in its own metres.	O fator de tamanho do modelo. Com o fator 1 o modelo fica nos seus próprios metros.
+Model turn	Rotação do modelo
+Clockwise turn of the model to the motion. Needed when the front of the model in the file does not look north.	Rotação do modelo no sentido horário em relação ao movimento. É necessária quando a frente do modelo no ficheiro não olha para norte.
+Computing the series: {done} of {total}, points {count}…	A calcular a série: {done} de {total}, pontos {count}…
+Points {count} of {total}. Scenes without a point - the area is covered by clouds by more than {share} % or the files were not read.	Pontos {count} de {total}. Cenas sem ponto - a área está coberta de nuvens em mais de {share} % ou os ficheiros não foram lidos.
+Scenes of another UTM zone are skipped: {count}.	Cenas de outra zona UTM ignoradas: {count}.
+Computing the trend map from {count} scenes…	A calcular o mapa de tendência a partir de {count} cenas…
+Trend «{name}» {first} - {last}, per year	Tendência «{name}» {first} - {last}, por ano
+The trend map was not built.	O mapa de tendência não foi construído.
+Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	Declive de Theil-Sen por ano a partir de {count} cenas, a escala de {low} a {high} por ano. Os píxeis sem {min} cenas limpas não têm tendência.
+The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	O mapa de tendência está em «Os meus lugares»: píxeis com tendência {total}, significativos (p < {p}) {share} %, declive mediano {median} por ano.
+The series is saved: {path}	A série foi guardada: {path}
+The file was not written: {error}	O ficheiro não foi gravado: {error}
+Series by dates	Série por datas
+Area: {name}, scenes {count}	Área: {name}, cenas {count}
+The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	O valor da série. O ponto é a mediana sobre a área sem nuvens nem sombras, o segmento - do percentil 10 ao 90. Uma mudança do valor calcula a série de novo.
+CSV table…	Tabela CSV…
+The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	A série num ficheiro CSV - data e cena, mediana, percentis 10 e 90, fração da área sem nuvens. As cenas sem valor ficam como linhas vazias.
+The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	A tendência do valor em cada píxel da área ao longo das cenas da série - o declive de Theil-Sen por ano, como imagem na superfície em «Os meus lugares». Um píxel sem {count} cenas limpas não recebe tendência. Uma série de uma só estação dá a tendência entre anos, uma série de todos os meses mistura a estação e a tendência.
+Trend map	Mapa de tendência
+No points of the series	Sem pontos da série
+{when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: mediana {median}, 10-90 % {low} - {high}, sem nuvens {share} % da área
+Series by dates…	Série por datas…
+A chart of the value over the area by the found scenes and the trend map.	Um gráfico do valor sobre a área pelas cenas encontradas e o mapa de tendência.
+Haul trucks, Kachkanar, GeoPackage layer	Camiões de mineração, Kachkanar, camada GeoPackage
+Haul trucks, Lebedinsky, GeoPackage layer	Camiões de mineração, Lebedinsky, camada GeoPackage
+Tracks: {count}. The time slider grows the paths.	Trajetos: {count}. A barra de tempo faz crescer os caminhos.
+Trend maps	Mapas de tendência
+On the ground	No solo
+above sea level	acima do nível do mar
+metres	metros

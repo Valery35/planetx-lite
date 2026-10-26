@@ -8,8 +8,9 @@
 //! и Lite, демо в выпуск Lite не входит. Файл демо скачивается при
 //! первом открытии. Программа хранит его в папке кэша, страница
 //! полагается на кэш браузера. Раскладка - как в папке `planetx/demo`
-//! модуля, меню - как у модуля, без самосвалов слоем QGIS: проекта
-//! QGIS у Lite нет. Сцены других тел и неба идут после разделителя.
+//! модуля, меню - как у модуля. Самосвалы слоем QGIS у Lite - трек слоя
+//! GeoPackage (`crate::tracks`): проекта QGIS у Lite нет. Сцены других
+//! тел и неба идут после разделителя.
 //! У подземного демо файл GeoPackage идёт раньше растров кровель:
 //! растры ждёт открытая им модель.
 
@@ -97,6 +98,11 @@ pub const MENU: [Section; 9] = [
             // (`_play_model_trucks`): шкала идёт ×10 по кругу рейса.
             Demo { en: "Haul trucks, Kachkanar", files: &["haul_kachkanar.planetx"] },
             Demo { en: "Haul trucks, Lebedinsky", files: &["haul_lebedinsky.planetx"] },
+            // Самосвалы - трек точечного слоя GeoPackage с моделью, как
+            // демо модуля слоем QGIS (`_demo_trucks`). Модель - раньше
+            // слоя: её ждёт трек.
+            Demo { en: "Haul trucks, Kachkanar, GeoPackage layer", files: &["haul/haul_truck.glb", "haul/haul_kachkanar.gpkg"] },
+            Demo { en: "Haul trucks, Lebedinsky, GeoPackage layer", files: &["haul/haul_truck.glb", "haul/haul_lebedinsky.gpkg"] },
         ],
     },
     Section { en: "Mars", demos: &[Demo { en: "Mars rover landing sites", files: &["mars.planetx"] }, Demo { en: "Jezero crater", files: &["jezero.planetx"] }] },

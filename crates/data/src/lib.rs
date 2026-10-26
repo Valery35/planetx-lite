@@ -63,7 +63,11 @@
 //! - [`hydro`] - затопление, линии стока, водосборы и реки у точки,
 //!   перенос `core/hydro.py`;
 //! - [`relief`] - уклон, экспозиция, вершины и ямы квадрата, перенос
-//!   `core/relief.py`.
+//!   `core/relief.py`;
+//! - [`track`] - растущие треки объектов по времени, перенос `core/track.py`;
+//! - [`series`] - ряд снимков участка по датам, перенос `core/series.py`;
+//! - [`trend`] - карта тренда ряда снимков, наклон Тейла-Сена и тест
+//!   Манна-Кендалла, перенос `core/trend.py`.
 
 pub mod areas;
 pub mod aircraft;
@@ -124,6 +128,7 @@ pub mod rumsey;
 pub mod satellites;
 pub mod section;
 pub mod sentinel;
+pub mod series;
 pub mod sgp4;
 pub mod sheets;
 pub mod skydata;
@@ -136,7 +141,9 @@ pub mod tomography;
 pub mod topo_flow;
 pub mod topo_gauge;
 pub mod topo_surface;
+pub mod track;
 pub mod trains;
+pub mod trend;
 pub mod vessels;
 pub mod viewshed;
 pub mod volcanoes;

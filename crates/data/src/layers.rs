@@ -37,6 +37,8 @@ pub struct LayerData {
     pub name: String,
     pub epsg: Option<u32>,
     pub fields: Vec<String>,
+    /// Поле числовое: все непустые значения - целые или дробные числа.
+    pub numeric: Vec<bool>,
     pub items: Vec<Item>,
 }
 
@@ -101,9 +103,22 @@ pub fn read(bytes: Vec<u8>, name: &str) -> Result<Vec<LayerData>, String> {
         let crs = SpatialRef::from_layer(layer);
         let epsg = crs.authority().filter(|(a, _)| a.eq_ignore_ascii_case("EPSG")).map(|(_, c)| c);
         let to_wgs = if crs.is_unknown() { None } else { Transformer::new(&crs, &wgs).ok() };
+        let count = layer.schema.fields().len();
+        let mut numeric = vec![true; count];
+        let mut filled = vec![false; count];
         let mut items = Vec::with_capacity(layer.features.len());
         for f in &layer.features {
             let mut raw = Vec::new();
+            for (n, v) in f.attributes.iter().enumerate().take(count) {
+                match v {
+                    FieldValue::Null => {}
+                    FieldValue::Integer(_) | FieldValue::Float(_) => filled[n] = true,
+                    _ => {
+                        filled[n] = true;
+                        numeric[n] = false;
+                    }
+                }
+            }
             let shape = f.geometry.as_ref().map_or(Shape::None, |g| parts(g, &mut raw));
             let converted: Option<Vec<Vec<(f64, f64)>>> = raw
                 .into_iter()
@@ -121,7 +136,8 @@ pub fn read(bytes: Vec<u8>, name: &str) -> Result<Vec<LayerData>, String> {
             };
             items.push(Item { shape, parts, values: f.attributes.iter().map(text).collect() });
         }
-        out.push(LayerData { name: layer.name.clone(), epsg, fields: layer.schema.fields().iter().map(|d| d.name.clone()).collect(), items });
+        let numeric = numeric.iter().zip(&filled).map(|(n, f)| *n && *f).collect();
+        out.push(LayerData { name: layer.name.clone(), epsg, fields: layer.schema.fields().iter().map(|d| d.name.clone()).collect(), numeric, items });
     }
     Ok(out)
 }

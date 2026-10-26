@@ -1566,3 +1566,54 @@ south	სამხრეთი
 south-west	სამხრეთ-დასავლეთი
 west	დასავლეთი
 north-west	ჩრდილო-დასავლეთი
+Tracks	ტრეკები
+No tracks. A track is a point layer of a GeoPackage file with a date and time field. Open such a file, and the layer becomes a track.	ტრეკები არ არის. ტრეკი არის GeoPackage ფაილის წერტილოვანი ფენა თარიღისა და დროის ველით. ასეთი ფაილის გახსნისას ფენა ტრეკად იქცევა.
+Objects {objects}, points {points}.	ობიექტები {objects}, წერტილები {points}.
+A glTF, Collada or OBJ model file. The model drives along the path of each object, its front looks along the motion.	glTF, Collada ან OBJ მოდელის ფაილი. მოდელი მიდის თითოეული ობიექტის გზაზე, მისი წინა მხარე მოძრაობის მიმართულებით იყურება.
+Without the model	მოდელის გარეშე
+Remove track	ტრეკის მოშორება
+The layer is no longer shown as a track.	ფენა აღარ ჩანს ტრეკად.
+The field with the date and time of the point. Date and time fields, ISO 8601 text and a number of seconds since 1970 fit.	ველი წერტილის თარიღითა და დროით. გამოდგება თარიღისა და დროის ველები, ISO 8601 ტექსტი და 1970 წლიდან წამების რაოდენობა.
+One object	ერთი ობიექტი
+Object	ობიექტი
+The field that tells the objects apart, for example the vehicle number. Each object has its own path and label.	ველი, რომელიც ობიექტებს ერთმანეთისგან განასხვავებს, მაგალითად მანქანის ნომერი. თითოეულ ობიექტს აქვს საკუთარი გზა და საკუთარი წარწერა.
+Colour	ფერი
+The colour of the travelled path.	გავლილი გზის ფერი.
+A numeric field with the height of the point. On the ground - the object and the model stand on the terrain.	რიცხვითი ველი წერტილის სიმაღლით. მიწაზე - ობიექტი და მოდელი რელიეფზე დგას.
+Height reference	სიმაღლის ათვლა
+above ground	მიწის ზემოთ
+Height units	სიმაღლის ერთეულები
+feet	ფუტი
+without a model	მოდელის გარეშე
+Model scale	მოდელის მასშტაბი
+The size factor of the model. With the factor 1 the model stands in its own metres.	მოდელის ზომის მამრავლი. მამრავლით 1 მოდელი საკუთარ მეტრებში დგას.
+Model turn	მოდელის შემობრუნება
+Clockwise turn of the model to the motion. Needed when the front of the model in the file does not look north.	მოდელის შემობრუნება საათის ისრის მიმართულებით მოძრაობის მიმართ. საჭიროა, თუ ფაილში მოდელის წინა მხარე ჩრდილოეთისკენ არ იყურება.
+Computing the series: {done} of {total}, points {count}…	მწკრივი ითვლება: {done} / {total}, წერტილები {count}…
+Points {count} of {total}. Scenes without a point - the area is covered by clouds by more than {share} % or the files were not read.	წერტილები {count} / {total}. სცენები წერტილის გარეშე - უბანი {share} %-ზე მეტად ღრუბლებითაა დაფარული ან ფაილები ვერ წაიკითხა.
+Scenes of another UTM zone are skipped: {count}.	სხვა UTM ზონის სცენები გამოტოვებულია: {count}.
+Computing the trend map from {count} scenes…	ტრენდის რუკა ითვლება {count} სცენით…
+Trend «{name}» {first} - {last}, per year	ტრენდი „{name}“ {first} - {last}, წელიწადში
+The trend map was not built.	ტრენდის რუკა ვერ აიგო.
+Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	Theil-Sen-ის დახრა წელიწადში {count} სცენით, შკალა {low}-დან {high}-მდე წელიწადში. პიქსელებს {min} სუფთა სცენის გარეშე ტრენდი არ აქვს.
+The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	ტრენდის რუკა „ჩემს ნიშნებშია“: ტრენდიანი პიქსელები {total}, მნიშვნელოვანი (p < {p}) {share} %, დახრის მედიანა {median} წელიწადში.
+The series is saved: {path}	მწკრივი შენახულია: {path}
+The file was not written: {error}	ფაილი არ ჩაიწერა: {error}
+Series by dates	მწკრივი თარიღების მიხედვით
+Area: {name}, scenes {count}	უბანი: {name}, სცენები {count}
+The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	მწკრივის მნიშვნელობა. წერტილი არის მედიანა უბანზე ღრუბლებისა და ჩრდილების გარეშე, მონაკვეთი - მე-10-დან მე-90 პროცენტილამდე. მნიშვნელობის შეცვლა მწკრივს ხელახლა ითვლის.
+CSV table…	CSV ცხრილი…
+The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	მწკრივი CSV ფაილში - თარიღი და სცენა, მედიანა, მე-10 და მე-90 პროცენტილები, უბნის წილი ღრუბლების გარეშე. სცენები მნიშვნელობის გარეშე ცარიელ სტრიქონებად მიდის.
+The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	მნიშვნელობის ტრენდი უბნის თითოეულ პიქსელში მწკრივის სცენების მიხედვით - Theil-Sen-ის დახრა წელიწადში, ზედაპირზე სურათად „ჩემ ნიშნებში“. პიქსელი {count} სუფთა სცენის გარეშე ტრენდს არ იღებს. ერთი სეზონის მწკრივი იძლევა ტრენდს წლებს შორის, ყველა თვის მწკრივი სეზონსა და ტრენდს ურევს.
+Trend map	ტრენდის რუკა
+No points of the series	მწკრივის წერტილები არ არის
+{when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: მედიანა {median}, 10-90 % {low} - {high}, ღრუბლების გარეშე უბნის {share} %
+Series by dates…	მწკრივი თარიღების მიხედვით…
+A chart of the value over the area by the found scenes and the trend map.	მნიშვნელობის გრაფიკი უბანზე ნაპოვნი სცენების მიხედვით და ტრენდის რუკა.
+Haul trucks, Kachkanar, GeoPackage layer	სატვირთოები, კაჩკანარი, GeoPackage-ის ფენა
+Haul trucks, Lebedinsky, GeoPackage layer	სატვირთოები, ლებედინსკი, GeoPackage-ის ფენა
+Tracks: {count}. The time slider grows the paths.	ტრეკები: {count}. დროის ზოლი გზებს ზრდის.
+Trend maps	ტრენდის რუკები
+On the ground	მიწაზე
+above sea level	ზღვის დონის ზემოთ
+metres	მეტრი

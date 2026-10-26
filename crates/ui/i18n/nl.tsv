@@ -1566,3 +1566,54 @@ south	zuid
 south-west	zuidwest
 west	west
 north-west	noordwest
+Tracks	Tracks
+No tracks. A track is a point layer of a GeoPackage file with a date and time field. Open such a file, and the layer becomes a track.	Geen tracks. Een track is een puntenlaag van een GeoPackage-bestand met een veld voor datum en tijd. Na het openen van zo’n bestand wordt de laag een track.
+Objects {objects}, points {points}.	Objecten {objects}, punten {points}.
+A glTF, Collada or OBJ model file. The model drives along the path of each object, its front looks along the motion.	Een modelbestand glTF, Collada of OBJ. Het model rijdt langs het pad van elk object, de voorkant kijkt in de bewegingsrichting.
+Without the model	Zonder model
+Remove track	Track verwijderen
+The layer is no longer shown as a track.	De laag wordt niet meer als track getoond.
+The field with the date and time of the point. Date and time fields, ISO 8601 text and a number of seconds since 1970 fit.	Het veld met de datum en tijd van het punt. Geschikt zijn datum- en tijdvelden, tekst volgens ISO 8601 en een aantal seconden sinds 1970.
+One object	Eén object
+Object	Object
+The field that tells the objects apart, for example the vehicle number. Each object has its own path and label.	Het veld dat de objecten van elkaar onderscheidt, bijvoorbeeld het voertuignummer. Elk object heeft een eigen pad en een eigen label.
+Colour	Kleur
+The colour of the travelled path.	De kleur van het afgelegde pad.
+A numeric field with the height of the point. On the ground - the object and the model stand on the terrain.	Een numeriek veld met de hoogte van het punt. Op de grond - het object en het model staan op het terrein.
+Height reference	Hoogtereferentie
+above ground	boven de grond
+Height units	Hoogte-eenheden
+feet	voet
+without a model	zonder model
+Model scale	Modelschaal
+The size factor of the model. With the factor 1 the model stands in its own metres.	De groottefactor van het model. Bij factor 1 staat het model in zijn eigen meters.
+Model turn	Modeldraaiing
+Clockwise turn of the model to the motion. Needed when the front of the model in the file does not look north.	Draaiing van het model met de klok mee ten opzichte van de beweging. Nodig als de voorkant van het model in het bestand niet naar het noorden kijkt.
+Computing the series: {done} of {total}, points {count}…	Reeks wordt berekend: {done} van {total}, punten {count}…
+Points {count} of {total}. Scenes without a point - the area is covered by clouds by more than {share} % or the files were not read.	Punten {count} van {total}. Scènes zonder punt - het gebied is voor meer dan {share} % door wolken bedekt of de bestanden zijn niet gelezen.
+Scenes of another UTM zone are skipped: {count}.	Scènes van een andere UTM-zone worden overgeslagen: {count}.
+Computing the trend map from {count} scenes…	Trendkaart wordt berekend uit {count} scènes…
+Trend «{name}» {first} - {last}, per year	Trend ‘{name}’ {first} - {last}, per jaar
+The trend map was not built.	De trendkaart is niet gemaakt.
+Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	Theil-Sen-helling per jaar uit {count} scènes, de schaal van {low} tot {high} per jaar. Pixels zonder {min} heldere scènes hebben geen trend.
+The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	De trendkaart staat in ‘Mijn plaatsen’: pixels met trend {total}, significant (p < {p}) {share} %, mediane helling {median} per jaar.
+The series is saved: {path}	De reeks is opgeslagen: {path}
+The file was not written: {error}	Het bestand is niet weggeschreven: {error}
+Series by dates	Reeks per datum
+Area: {name}, scenes {count}	Gebied: {name}, scènes {count}
+The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	De waarde van de reeks. Het punt is de mediaan over het gebied zonder wolken en schaduwen, het segment - van het 10e tot het 90e percentiel. Een wijziging van de waarde berekent de reeks opnieuw.
+CSV table…	CSV-tabel…
+The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	De reeks naar een CSV-bestand - datum en scène, mediaan, 10e en 90e percentiel, aandeel van het gebied zonder wolken. Scènes zonder waarde worden lege rijen.
+The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	De trend van de waarde in elke pixel van het gebied over de scènes van de reeks - de Theil-Sen-helling per jaar, als afbeelding op het oppervlak in ‘Mijn plaatsen’. Een pixel zonder {count} heldere scènes krijgt geen trend. Een reeks uit één seizoen geeft de trend tussen jaren, een reeks uit alle maanden mengt seizoen en trend.
+Trend map	Trendkaart
+No points of the series	Geen punten van de reeks
+{when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: mediaan {median}, 10-90 % {low} - {high}, zonder wolken {share} % van het gebied
+Series by dates…	Reeks per datum…
+A chart of the value over the area by the found scenes and the trend map.	Een grafiek van de waarde over het gebied volgens de gevonden scènes en de trendkaart.
+Haul trucks, Kachkanar, GeoPackage layer	Dumptrucks, Katsjkanar, GeoPackage-laag
+Haul trucks, Lebedinsky, GeoPackage layer	Dumptrucks, Lebedinski, GeoPackage-laag
+Tracks: {count}. The time slider grows the paths.	Tracks: {count}. De tijdbalk laat de paden groeien.
+Trend maps	Trendkaarten
+On the ground	Op de grond
+above sea level	boven zeeniveau
+metres	meters

@@ -989,6 +989,7 @@ mod tests {
             name: name.into(),
             epsg: None,
             fields: fields.iter().map(|f| f.to_string()).collect(),
+            numeric: vec![false; fields.len()],
             items: vec![data::layers::Item { shape, parts: Vec::new(), values: Vec::new() }],
         };
         assert_eq!(detect_role(&layer("Collar", &[], Shape::Point)), Some("collar"));
