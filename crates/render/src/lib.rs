@@ -1557,8 +1557,10 @@ impl Globe {
                 }
             }
         }
-        // Вода - копии тайлов после всех тайлов, только с рельефом, как
-        // у модуля.
+        // Вода - копии тайлов и полярных шапок после всех тайлов, только
+        // с рельефом, как у модуля. Без воды на шапке Северный Ледовитый
+        // океан у полюса оставался тёмным кругом среди светлой воды,
+        // снимок автора от 26 октября 2026 года.
         if let Some(color) = water
             && let Some(store) = heights.filter(|s| s.scale() > 0.0)
         {
@@ -1566,13 +1568,13 @@ impl Globe {
             let sea = [1.0, (f64::from(SHALLOW) * store.scale()).max(1.0) as f32, (f64::from(sea_level) * store.scale()) as f32, 0.0];
             let copies: Vec<Item> = out
                 .iter()
-                .filter(|i| i.kind == Kind::Tile)
+                .filter(|i| matches!(i.kind, Kind::Tile | Kind::Cap))
                 .map(|i| Item {
                     kind: Kind::Water,
                     mesh: i.mesh,
                     texture: i.texture,
                     over_pair: i.over_pair,
-                    cap: None,
+                    cap: i.cap,
                     uniform: DrawUniform { water: color, sea, ..i.uniform },
                 })
                 .collect();
