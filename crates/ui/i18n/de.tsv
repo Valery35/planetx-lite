@@ -1444,3 +1444,125 @@ Left:	Links:
 There is no event {key} in the catalogs.	In den Katalogen gibt es kein Ereignis {key}.
 Borders of countries and regions, rivers and lakes, labels on the globe.	Grenzen von Staaten und Regionen, Flüsse und Seen, Beschriftungen auf dem Globus.
 Peaks and protected areas.	Gipfel und Schutzgebiete.
+Slope from {low}° to {high}°, median {median}°.	Hangneigung von {low}° bis {high}°, Median {median}°.
+{low}-{high}° - {area} km²	{low}-{high}° - {area} km²
+Areas by slope: {parts}.	Flächen nach Hangneigung: {parts}.
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	Die Hänge sind am häufigsten nach {sides} ausgerichtet.
+Flat ground {share}.	Ebene Flächen {share}.
+There are no heights in the square.	Im Quadrat gibt es keine Höhen.
+The grid step is {step} m.	Die Gitterweite ist {step} m.
+There are no peaks and pits with such a drop in the square.	Im Quadrat gibt es keine Gipfel und Senken mit einem solchen Höhenunterschied.
+Peak {height} m	Gipfel {height} m
+Height {height} m, rise {drop} m.	Höhe {height} m, Erhebung {drop} m.
+Pit {height} m	Senke {height} m
+Height {height} m, depth {drop} m.	Höhe {height} m, Tiefe {drop} m.
+Peaks and pits {point}	Gipfel und Senken {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	In «Meine Orte» geschrieben: Gipfel {peaks} und Senken {pits}.
+Slope and aspect	Hangneigung und Exposition
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	Die halbe Seite des berechneten Quadrats. Größer - gröbere Gitterweite, sie beträgt etwa ein Sechshundertstel der Seite.
+Show	Anzeigen
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Was das Quadrat auf dem Globus zeigt - die Steilheit eines Hangs oder die Himmelsrichtung, in die er weist. Die Zeilen «Hangneigung» und «Exposition» des Abschnitts «Ebenen» werden dabei ausgeschaltet.
+Peak radius	Gipfelradius
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	Ein Gipfel ist höher als alles um ihn herum in diesem Radius, eine Senke tiefer. Größer - es bleiben nur große Gipfel und Senken.
+Drop from	Höhenunterschied ab
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	Die kleinste Erhebung eines Gipfels über den tiefsten Punkt um ihn herum oder die Tiefe einer Senke unter dem höchsten. Kleiner - mehr kleine Hügel und Mulden.
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Hangneigung und Exposition des Quadrats aus den Höhen, Kern 3 × 3 - eine Einfärbung auf dem Globus und eine Übersicht nach Neigungsklassen und Himmelsrichtungen.
+Peaks and pits	Gipfel und Senken
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	Gipfel und geschlossene Mulden des Quadrats - Punkte in «Meine Orte» mit Höhe und Höhenunterschied.
+Remove the colouring of the square from the globe.	Die Einfärbung des Quadrats vom Globus entfernen.
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	Hauptgewässer {km} km, Gefälle {fall} m, Neigung {slope} Promille.
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	Mittlere Hangneigung {slope} Promille nach SP 33-101-2003.
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	Gewässernetzdichte {dens} km pro km², Gewässer mit einem Einzugsgebiet ab {area} km².
+There are no heights at the point.	Am Punkt gibt es keine Höhen.
+Water from the point flows nowhere.	Das Wasser vom Punkt fließt nirgendwohin ab.
+Flow line	Fließlinie
+Length {km} km, drop {drop} m.	Länge {km} km, Höhenunterschied {drop} m.
+{name}: {text}	{name}: {text}
+The placemark is beyond the edge of the height data.	Die Ortsmarke liegt jenseits des Rands der Höhendaten.
+Water from the placemark flows nowhere.	Das Wasser von der Ortsmarke fließt nirgendwohin ab.
+Flow line {n}	Fließlinie {n}
+Flow lines «{name}»	Fließlinien «{name}»
+{name}: lines {count}, total length {km} km.	{name}: Linien {count}, Gesamtlänge {km} km.
+The shortest lines not included {count}.	Nicht aufgenommene kürzeste Linien {count}.
+Water does not flow to the point: there is no catchment.	Zum Punkt fließt kein Wasser, es gibt kein Einzugsgebiet.
+Catchment	Einzugsgebiet
+The outlet is moved to the channel {m} m from the point.	Der Auslass ist auf das Gerinne {m} m vom Punkt verschoben.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	Das Einzugsgebiet reicht bis an den Rand des Bereichs, sein Teil jenseits des Rands wird nicht gezählt. Ein größerer Radius ist nötig.
+Main watercourse	Hauptgewässer
+Basin {n}	Becken {n}
+Area {area} km².	Fläche {area} km².
+There are no watercourses with such a catchment at the edge of the square.	Am Rand des Quadrats gibt es keine Gewässer mit einem solchen Einzugsgebiet.
+Basins	Becken
+Basins written to «My places»: {count}, they cover {area} km² of the square.	In «Meine Orte» geschriebene Becken: {count}, sie bedecken {area} km² des Quadrats.
+There are no watercourses with such a catchment and order in the square.	Im Quadrat gibt es keine Gewässer mit einem solchen Einzugsgebiet und einer solchen Ordnung.
+Order {order}, catchment {area} km².	Ordnung {order}, Einzugsgebiet {area} km².
+Watercourse of order {order}	Gewässer der Ordnung {order}
+River network	Gewässernetz
+Watercourses written to «My places»: {count}, the largest order {order}.	In «Meine Orte» geschriebene Gewässer: {count}, höchste Ordnung {order}.
+Water does not flow to the placemark: there is no catchment.	Zur Ortsmarke fließt kein Wasser, es gibt kein Einzugsgebiet.
+Catchment «{name}»	Einzugsgebiet «{name}»
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Überflutet {area} km², Wasservolumen {volume} Mio. m³, größte Tiefe {depth} m.
+The water reached the edge of the area and can go further. A larger radius is needed.	Das Wasser hat den Rand des Bereichs erreicht und kann weiter fließen. Ein größerer Radius ist nötig.
+The level is not above the point, there is no water.	Der Wasserstand liegt nicht über dem Punkt, es gibt kein Wasser.
+Flooding	Überflutung
+Point height	Punkthöhe
+{h} m	{h} m
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	Höhe der Wasseroberfläche über dem Meeresspiegel. Das Wasser überflutet alles unterhalb des Wasserstands, was es vom Punkt aus erreicht. Mulden hinter einem höheren Kamm bleiben trocken.
+Rise	Anstieg
+Rise of the water above the point height, up to {rise} m.	Anstieg des Wassers über die Punkthöhe, bis {rise} m.
+To «My places»	In «Meine Orte»
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	Der Umriss der Überflutung - ein Polygon in «Meine Orte» mit Wasserstand, Fläche und Volumen.
+Remove the water from the globe.	Das Wasser vom Globus entfernen.
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Wasserstand {level} m, überflutet {area} km², Wasservolumen {volume} Mio. m³, größte Tiefe {depth} m.
+Flooding {level} m	Überflutung {level} m
+Water flow	Wasserabfluss
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	Die halbe Seite des berechneten Quadrats. Die Fließlinie endet an seinem Rand, ein Einzugsgebiet größer als das Quadrat wird nicht vollständig gezählt. Die Gitterweite beträgt etwa ein Sechshundertstel der Seite.
+Watercourses from	Gewässer ab
+ km²	 km²
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	Das Gewässernetz - Gewässer mit einem Einzugsgebiet von mindestens dieser Fläche. Kleiner - ein dichteres Netz mit Bächen und Rinnen.
+Order from	Ordnung ab
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	Die kleinste Strahler-Ordnung eines Gewässers im Gewässernetz. Eine Quelle hat Ordnung 1, nach dem Zusammenfluss zweier Gewässer gleicher Ordnung - eine mehr. Größer - nur große Flüsse, die Ordnungen werden über das ganze Netz gezählt.
+Channel search radius	Suchradius des Gerinnes
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	In diesem Radius um den Punkt wird das Gerinne gesucht - die Stelle mit dem größten Einzugsgebiet, von ihr aus wird das Einzugsgebiet gebildet. Ein Klick nahe einem Fluss liefert so das Einzugsgebiet des Flusses. 0 - das Einzugsgebiet genau vom Punkt.
+Stop at a watercourse	An einem Gewässer anhalten
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	Die Fließlinie endet, wenn sie ein Gewässer mit einem Einzugsgebiet ab der Fläche des Felds «Gewässer ab» erreicht. Ohne Häkchen läuft die Linie bis zum Rand des Quadrats.
+Stop on flattening	Bei Verflachung anhalten
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	Die Fließlinie endet dort, wo die mittlere Neigung über die Abschnittslänge unter dem Schwellenwert liegt - am Hangfuß, auf einer Terrasse, in einer Aue. Ein kurzer Absatz an einem steilen Hang hält die Linie nicht an.
+Flattening slope	Neigung der Verflachung
+The slope below which the terrain is counted as flattened.	Die Neigung, unterhalb der das Gelände als verflacht gilt.
+Section length	Abschnittslänge
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	Die Länge des Abschnitts, über den die mittlere Neigung gemessen wird. Größer - nur eine lange Verflachung hält die Linie an.
+Stop on merging	Beim Zusammenfluss anhalten
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	Linien von der Ortsmarke enden beim Einmünden in eine früher gebildete Linie, und das gemeinsame Gerinne verläuft als eine Linie. Ohne Häkchen läuft jede Linie bis zum Ende.
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	Der Weg des Wassers vom Punkt das Gelände hinab - eine Linie in «Meine Orte». Mulden werden bis zum Überlauf gefüllt, daher führt die Linie durch Seen und geschlossene Becken. Für einen Pfad oder ein Polygon - Linien von allen seinen Knoten, in einem Ordner.
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	Die Fläche, von der das Wasser zum Punkt fließt, und das Hauptgewässer - ein Ordner in «Meine Orte» mit Fläche, Neigungen und Gewässerlänge. Das Einzugsgebiet wird vom Gerinne nahe dem Punkt gebildet.
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	Gewässer des Quadrats mit der Strahler-Ordnung - Linien in «Meine Orte», die Linienbreite wächst mit der Ordnung.
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	Das Quadrat, aufgeteilt in Becken der Auslässe - Stellen, an denen Gewässer mit einem Einzugsgebiet ab der Fläche des Felds «Gewässer ab» das Quadrat verlassen. Polygone in «Meine Orte».
+Sea level	Meeresspiegel
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	Der Meeresspiegel gegenüber dem heutigen. Das Wasser überflutet alles unterhalb des Spiegels, unter null legt es den Schelf frei. Etwa -120 m - das letzte glaziale Maximum, etwa +70 m - das Abschmelzen aller Gletscher.
+Level	Wasserstand
+The present sea level.	Der heutige Meeresspiegel.
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	Das Wasser überflutet alles unterhalb des Spiegels auf dem ganzen Globus. Die Verbindung zum Meer wird nicht geprüft, daher werden auch Senken im Inneren der Kontinente überflutet. Das Wasser ist bei eingeschaltetem Gelände sichtbar.
+Return the present sea level.	Den heutigen Meeresspiegel wiederherstellen.
+Slope and aspect here…	Hangneigung und Exposition hier…
+Hydrology	Hydrologie
+Flooding from here…	Überflutung von hier…
+Water flow from here…	Wasserabfluss von hier…
+Sea level…	Meeresspiegel…
+Catchment of the placemark	Einzugsgebiet der Ortsmarke
+Flow lines from the placemark…	Fließlinien von der Ortsmarke…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	Hangneigung und Exposition eines Quadrats um den Punkt aus den Höhen, Übersicht, Gipfel und Senken.
+What is seen from the point in a circle of the given radius.	Was vom Punkt aus in einem Kreis mit dem gegebenen Radius sichtbar ist.
+Hours of direct sun per day around the point.	Stunden direkter Sonne pro Tag um den Punkt.
+Water from the point up to the given level, area, volume and depths.	Wasser vom Punkt bis zum gegebenen Wasserstand, Fläche, Volumen und Tiefen.
+Flow line, catchment and river network around the point.	Fließlinie, Einzugsgebiet und Gewässernetz um den Punkt.
+Raising and lowering the sea level over the whole globe.	Heben und Senken des Meeresspiegels auf dem ganzen Globus.
+north	Norden
+north-east	Nordosten
+east	Osten
+south-east	Südosten
+south	Süden
+south-west	Südwesten
+west	Westen
+north-west	Nordwesten

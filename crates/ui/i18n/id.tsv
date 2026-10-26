@@ -1444,3 +1444,125 @@ Left:	Kiri:
 There is no event {key} in the catalogs.	Tidak ada peristiwa {key} di katalog.
 Borders of countries and regions, rivers and lakes, labels on the globe.	Batas negara dan wilayah, sungai dan danau, label di bola dunia.
 Peaks and protected areas.	Puncak dan kawasan lindung.
+Slope from {low}° to {high}°, median {median}°.	Kemiringan dari {low}° hingga {high}°, median {median}°.
+{low}-{high}° - {area} km²	{low}-{high}° - {area} km²
+Areas by slope: {parts}.	Luas menurut kemiringan: {parts}.
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	Arah hadap lereng yang paling sering: {sides}.
+Flat ground {share}.	Tanah datar {share}.
+There are no heights in the square.	Tidak ada ketinggian di persegi.
+The grid step is {step} m.	Langkah grid {step} m.
+There are no peaks and pits with such a drop in the square.	Tidak ada puncak dan ceruk dengan beda tinggi seperti itu di persegi.
+Peak {height} m	Puncak {height} m
+Height {height} m, rise {drop} m.	Ketinggian {height} m, kenaikan {drop} m.
+Pit {height} m	Ceruk {height} m
+Height {height} m, depth {drop} m.	Ketinggian {height} m, kedalaman {drop} m.
+Peaks and pits {point}	Puncak dan ceruk {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	Ditulis ke «Tempat Saya»: puncak {peaks} dan ceruk {pits}.
+Slope and aspect	Kemiringan dan aspek lereng
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	Setengah sisi persegi yang dihitung. Lebih besar - langkah grid lebih kasar, sekitar seperenam ratus sisi.
+Show	Tampilkan
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Apa yang ditunjukkan persegi di globe - kecuraman lereng atau arah mata angin yang dihadapnya. Baris «Kemiringan» dan «Aspek lereng» di bagian «Lapisan» dimatikan selama itu.
+Peak radius	Jari-jari puncak
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	Puncak lebih tinggi dari semua di sekitarnya dalam jari-jari ini, ceruk lebih rendah. Lebih besar - hanya puncak dan ceruk besar yang tersisa.
+Drop from	Beda tinggi dari
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	Kenaikan terkecil puncak di atas titik terendah di sekitarnya atau kedalaman ceruk di bawah titik tertinggi. Lebih kecil - lebih banyak bukit dan lekukan kecil.
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Kemiringan dan aspek lereng persegi dari ketinggian, kernel 3 × 3 - pewarnaan di globe dan ringkasan menurut kelas kemiringan dan arah mata angin.
+Peaks and pits	Puncak dan ceruk
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	Puncak dan lekukan tertutup persegi - titik di «Tempat Saya» dengan ketinggian dan beda tinggi.
+Remove the colouring of the square from the globe.	Hapus pewarnaan persegi dari globe.
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	Alur air utama {km} km, penurunan {fall} m, kemiringan {slope} per mil.
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	Kemiringan rata-rata lereng {slope} per mil menurut SP 33-101-2003.
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	Kerapatan drainase {dens} km per km², alur air dengan daerah tangkapan mulai {area} km².
+There are no heights at the point.	Tidak ada ketinggian di titik.
+Water from the point flows nowhere.	Air dari titik tidak mengalir ke mana pun.
+Flow line	Garis aliran
+Length {km} km, drop {drop} m.	Panjang {km} km, beda tinggi {drop} m.
+{name}: {text}	{name}: {text}
+The placemark is beyond the edge of the height data.	Penanda berada di luar tepi data ketinggian.
+Water from the placemark flows nowhere.	Air dari penanda tidak mengalir ke mana pun.
+Flow line {n}	Garis aliran {n}
+Flow lines «{name}»	Garis aliran «{name}»
+{name}: lines {count}, total length {km} km.	{name}: garis {count}, panjang total {km} km.
+The shortest lines not included {count}.	Garis terpendek yang tidak disertakan {count}.
+Water does not flow to the point: there is no catchment.	Air tidak mengalir ke titik, tidak ada daerah tangkapan.
+Catchment	Daerah tangkapan
+The outlet is moved to the channel {m} m from the point.	Titik keluaran dipindahkan ke palung {m} m dari titik.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	Daerah tangkapan mencapai tepi area, bagiannya di luar tepi tidak dihitung. Diperlukan jari-jari lebih besar.
+Main watercourse	Alur air utama
+Basin {n}	Daerah aliran {n}
+Area {area} km².	Luas {area} km².
+There are no watercourses with such a catchment at the edge of the square.	Tidak ada alur air dengan daerah tangkapan seperti itu di tepi persegi.
+Basins	Daerah aliran
+Basins written to «My places»: {count}, they cover {area} km² of the square.	Daerah aliran yang ditulis ke «Tempat Saya»: {count}, mencakup {area} km² persegi.
+There are no watercourses with such a catchment and order in the square.	Tidak ada alur air dengan daerah tangkapan dan orde seperti itu di persegi.
+Order {order}, catchment {area} km².	Orde {order}, daerah tangkapan {area} km².
+Watercourse of order {order}	Alur air orde {order}
+River network	Jaringan sungai
+Watercourses written to «My places»: {count}, the largest order {order}.	Alur air yang ditulis ke «Tempat Saya»: {count}, orde terbesar {order}.
+Water does not flow to the placemark: there is no catchment.	Air tidak mengalir ke penanda, tidak ada daerah tangkapan.
+Catchment «{name}»	Daerah tangkapan «{name}»
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Tergenang {area} km², volume air {volume} juta m³, kedalaman terbesar {depth} m.
+The water reached the edge of the area and can go further. A larger radius is needed.	Air mencapai tepi area dan dapat mengalir lebih jauh. Diperlukan jari-jari lebih besar.
+The level is not above the point, there is no water.	Muka air tidak di atas titik, tidak ada air.
+Flooding	Penggenangan
+Point height	Ketinggian titik
+{h} m	{h} m
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	Ketinggian muka air di atas permukaan laut. Air menggenangi semua di bawah muka air yang dicapainya dari titik. Lekukan di balik punggungan yang lebih tinggi tetap kering.
+Rise	Kenaikan
+Rise of the water above the point height, up to {rise} m.	Kenaikan air di atas ketinggian titik, hingga {rise} m.
+To «My places»	Ke «Tempat Saya»
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	Garis batas genangan - poligon di «Tempat Saya» dengan muka air, luas, dan volume.
+Remove the water from the globe.	Hapus air dari globe.
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Muka air {level} m, tergenang {area} km², volume air {volume} juta m³, kedalaman terbesar {depth} m.
+Flooding {level} m	Penggenangan {level} m
+Water flow	Aliran air
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	Setengah sisi persegi yang dihitung. Garis aliran berakhir di tepinya, daerah tangkapan yang lebih besar dari persegi tidak dihitung penuh. Langkah grid sekitar seperenam ratus sisi.
+Watercourses from	Alur air mulai
+ km²	 km²
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	Jaringan sungai - alur air dengan daerah tangkapan paling sedikit seluas ini. Lebih kecil - jaringan lebih rapat dengan anak sungai dan jurang.
+Order from	Orde mulai
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	Orde Strahler terkecil alur air dalam jaringan sungai. Mata air berorde 1, setelah dua alur air berorde sama bertemu - satu lebih tinggi. Lebih besar - hanya sungai besar, orde dihitung di seluruh jaringan.
+Channel search radius	Jari-jari pencarian palung
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	Dalam jari-jari ini dari titik dicari palung - tempat dengan daerah tangkapan terbesar, daerah tangkapan dibangun darinya. Karena itu klik di dekat sungai memberi daerah tangkapan sungai itu. 0 - daerah tangkapan tepat dari titik.
+Stop at a watercourse	Berhenti di alur air
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	Garis aliran berakhir saat mencapai alur air dengan daerah tangkapan paling sedikit seluas isian «Alur air mulai». Tanpa centang garis berlanjut hingga tepi persegi.
+Stop on flattening	Berhenti saat melandai
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	Garis aliran berakhir di tempat kemiringan rata-rata sepanjang ruas di bawah ambang - di kaki lereng, di teras, di dataran banjir. Undakan pendek di lereng curam tidak menghentikan garis.
+Flattening slope	Kemiringan pelandaian
+The slope below which the terrain is counted as flattened.	Kemiringan yang di bawahnya medan dianggap landai.
+Section length	Panjang ruas
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	Panjang ruas tempat kemiringan rata-rata diukur. Lebih besar - hanya pelandaian panjang yang menghentikan garis.
+Stop on merging	Berhenti saat bertemu
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	Garis dari penanda berakhir saat bermuara ke garis yang dibangun lebih dulu, dan palung bersama berlanjut sebagai satu garis. Tanpa centang setiap garis berlanjut hingga akhir.
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	Jalur air dari titik menuruni medan - garis di «Tempat Saya». Lekukan diisi hingga meluap, jadi garis melewati danau dan cekungan tertutup. Untuk jalur atau poligon - garis dari semua simpulnya, dalam folder.
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	Area tempat air mengalir ke titik dan alur air utama - folder di «Tempat Saya» dengan luas, kemiringan, dan panjang alur air. Daerah tangkapan dibangun dari palung di dekat titik.
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	Alur air persegi dengan orde Strahler - garis di «Tempat Saya», tebal garis bertambah dengan orde.
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	Persegi yang dibagi menjadi daerah aliran titik keluaran - tempat alur air dengan daerah tangkapan paling sedikit seluas isian «Alur air mulai» meninggalkan persegi. Poligon di «Tempat Saya».
+Sea level	Permukaan laut
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	Permukaan laut relatif terhadap yang sekarang. Air menggenangi semua di bawah muka air, di bawah nol membuka paparan benua. Sekitar -120 m - maksimum glasial terakhir, sekitar +70 m - mencairnya semua gletser.
+Level	Muka air
+The present sea level.	Permukaan laut sekarang.
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	Air menggenangi semua di bawah muka air di seluruh globe. Hubungan dengan laut tidak diperiksa, jadi dataran rendah di dalam benua juga tergenang. Air terlihat saat relief aktif.
+Return the present sea level.	Kembalikan permukaan laut sekarang.
+Slope and aspect here…	Kemiringan dan aspek lereng di sini…
+Hydrology	Hidrologi
+Flooding from here…	Penggenangan dari sini…
+Water flow from here…	Aliran air dari sini…
+Sea level…	Permukaan laut…
+Catchment of the placemark	Daerah tangkapan penanda
+Flow lines from the placemark…	Garis aliran dari penanda…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	Kemiringan dan aspek lereng persegi di sekitar titik dari ketinggian, ringkasan, puncak dan ceruk.
+What is seen from the point in a circle of the given radius.	Apa yang terlihat dari titik dalam lingkaran berjari-jari yang diberikan.
+Hours of direct sun per day around the point.	Jam sinar matahari langsung per hari di sekitar titik.
+Water from the point up to the given level, area, volume and depths.	Air dari titik hingga muka air yang diberikan, luas, volume, dan kedalaman.
+Flow line, catchment and river network around the point.	Garis aliran, daerah tangkapan, dan jaringan sungai di sekitar titik.
+Raising and lowering the sea level over the whole globe.	Menaikkan dan menurunkan permukaan laut di seluruh globe.
+north	utara
+north-east	timur laut
+east	timur
+south-east	tenggara
+south	selatan
+south-west	barat daya
+west	barat
+north-west	barat laut

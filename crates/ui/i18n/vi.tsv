@@ -1444,3 +1444,125 @@ Left:	Bên trái:
 There is no event {key} in the catalogs.	Không có sự kiện {key} trong danh mục.
 Borders of countries and regions, rivers and lakes, labels on the globe.	Biên giới quốc gia và vùng, sông và hồ, nhãn trên quả địa cầu.
 Peaks and protected areas.	Đỉnh núi và khu bảo tồn.
+Slope from {low}° to {high}°, median {median}°.	Độ dốc từ {low}° đến {high}°, trung vị {median}°.
+{low}-{high}° - {area} km²	{low}-{high}° - {area} km²
+Areas by slope: {parts}.	Diện tích theo độ dốc: {parts}.
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	Hướng sườn thường gặp nhất: {sides}.
+Flat ground {share}.	Đất bằng {share}.
+There are no heights in the square.	Trong ô vuông không có độ cao.
+The grid step is {step} m.	Bước lưới là {step} m.
+There are no peaks and pits with such a drop in the square.	Trong ô vuông không có đỉnh và hố trũng với độ chênh như vậy.
+Peak {height} m	Đỉnh {height} m
+Height {height} m, rise {drop} m.	Độ cao {height} m, độ nhô {drop} m.
+Pit {height} m	Hố trũng {height} m
+Height {height} m, depth {drop} m.	Độ cao {height} m, độ sâu {drop} m.
+Peaks and pits {point}	Đỉnh và hố trũng {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	Đã ghi vào «Địa điểm của tôi»: đỉnh {peaks} và hố trũng {pits}.
+Slope and aspect	Độ dốc và hướng sườn
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	Một nửa cạnh của ô vuông tính toán. Lớn hơn - bước lưới thô hơn, khoảng một phần sáu trăm cạnh.
+Show	Hiển thị
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Điều ô vuông hiển thị trên quả địa cầu - độ dốc của sườn hoặc hướng mà sườn quay về. Các hàng «Độ dốc» và «Hướng sườn» của mục «Lớp» khi đó tắt đi.
+Peak radius	Bán kính đỉnh
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	Đỉnh cao hơn mọi thứ xung quanh trong bán kính này, hố trũng thấp hơn. Lớn hơn - chỉ còn đỉnh và hố trũng lớn.
+Drop from	Độ chênh từ
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	Độ nhô nhỏ nhất của đỉnh trên điểm thấp nhất xung quanh hoặc độ sâu của hố trũng dưới điểm cao nhất. Nhỏ hơn - nhiều đồi và chỗ trũng nhỏ hơn.
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Độ dốc và hướng sườn của ô vuông theo độ cao, nhân 3 × 3 - tô màu trên quả địa cầu và bản tóm tắt theo cấp độ dốc và hướng.
+Peaks and pits	Đỉnh và hố trũng
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	Đỉnh và chỗ trũng khép kín của ô vuông - các điểm trong «Địa điểm của tôi» với độ cao và độ chênh.
+Remove the colouring of the square from the globe.	Gỡ phần tô màu của ô vuông khỏi quả địa cầu.
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	Dòng nước chính {km} km, độ hạ {fall} m, độ dốc {slope} phần nghìn.
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	Độ dốc trung bình của sườn {slope} phần nghìn theo SP 33-101-2003.
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	Mật độ lưới sông {dens} km trên km², các dòng nước có lưu vực từ {area} km².
+There are no heights at the point.	Tại điểm không có độ cao.
+Water from the point flows nowhere.	Nước từ điểm không chảy đi đâu.
+Flow line	Đường dòng chảy
+Length {km} km, drop {drop} m.	Chiều dài {km} km, độ chênh {drop} m.
+{name}: {text}	{name}: {text}
+The placemark is beyond the edge of the height data.	Dấu vị trí nằm ngoài rìa dữ liệu độ cao.
+Water from the placemark flows nowhere.	Nước từ dấu vị trí không chảy đi đâu.
+Flow line {n}	Đường dòng chảy {n}
+Flow lines «{name}»	Đường dòng chảy «{name}»
+{name}: lines {count}, total length {km} km.	{name}: đường {count}, tổng chiều dài {km} km.
+The shortest lines not included {count}.	Số đường ngắn nhất không đưa vào {count}.
+Water does not flow to the point: there is no catchment.	Nước không chảy về điểm, không có lưu vực.
+Catchment	Lưu vực
+The outlet is moved to the channel {m} m from the point.	Cửa ra được dời đến lòng dẫn cách điểm {m} m.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	Lưu vực chạm tới rìa vùng, phần ngoài rìa không được tính. Cần bán kính lớn hơn.
+Main watercourse	Dòng nước chính
+Basin {n}	Lưu vực {n}
+Area {area} km².	Diện tích {area} km².
+There are no watercourses with such a catchment at the edge of the square.	Ở rìa ô vuông không có dòng nước với lưu vực như vậy.
+Basins	Các lưu vực
+Basins written to «My places»: {count}, they cover {area} km² of the square.	Số lưu vực đã ghi vào «Địa điểm của tôi»: {count}, chúng phủ {area} km² của ô vuông.
+There are no watercourses with such a catchment and order in the square.	Trong ô vuông không có dòng nước với lưu vực và cấp như vậy.
+Order {order}, catchment {area} km².	Cấp {order}, lưu vực {area} km².
+Watercourse of order {order}	Dòng nước cấp {order}
+River network	Mạng lưới sông
+Watercourses written to «My places»: {count}, the largest order {order}.	Số dòng nước đã ghi vào «Địa điểm của tôi»: {count}, cấp lớn nhất {order}.
+Water does not flow to the placemark: there is no catchment.	Nước không chảy về dấu vị trí, không có lưu vực.
+Catchment «{name}»	Lưu vực «{name}»
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Ngập {area} km², thể tích nước {volume} triệu m³, độ sâu lớn nhất {depth} m.
+The water reached the edge of the area and can go further. A larger radius is needed.	Nước đã chạm tới rìa vùng và có thể đi xa hơn. Cần bán kính lớn hơn.
+The level is not above the point, there is no water.	Mực nước không cao hơn điểm, không có nước.
+Flooding	Ngập lụt
+Point height	Độ cao điểm
+{h} m	{h} m
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	Độ cao mặt nước trên mực nước biển. Nước làm ngập mọi nơi thấp hơn mực nước mà nó tới được từ điểm. Chỗ trũng sau một sống núi cao hơn vẫn khô.
+Rise	Mức dâng
+Rise of the water above the point height, up to {rise} m.	Mức dâng của nước trên độ cao điểm, tới {rise} m.
+To «My places»	Vào «Địa điểm của tôi»
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	Đường viền vùng ngập - đa giác trong «Địa điểm của tôi» với mực nước, diện tích và thể tích.
+Remove the water from the globe.	Gỡ nước khỏi quả địa cầu.
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Mực nước {level} m, ngập {area} km², thể tích nước {volume} triệu m³, độ sâu lớn nhất {depth} m.
+Flooding {level} m	Ngập lụt {level} m
+Water flow	Dòng chảy của nước
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	Một nửa cạnh của ô vuông tính toán. Đường dòng chảy kết thúc ở rìa ô, lưu vực lớn hơn ô vuông không được tính đầy đủ. Bước lưới khoảng một phần sáu trăm cạnh.
+Watercourses from	Dòng nước từ
+ km²	 km²
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	Mạng lưới sông - các dòng nước có lưu vực ít nhất bằng diện tích này. Nhỏ hơn - mạng dày hơn với suối và khe rãnh.
+Order from	Cấp từ
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	Cấp Strahler nhỏ nhất của dòng nước trong mạng lưới sông. Nguồn có cấp 1, sau khi hai dòng nước cùng cấp nhập lại - thêm một cấp. Lớn hơn - chỉ các sông lớn, cấp được tính trên toàn mạng.
+Channel search radius	Bán kính tìm lòng dẫn
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	Trong bán kính này quanh điểm, lòng dẫn được tìm - nơi có lưu vực lớn nhất, lưu vực được dựng từ đó. Vì vậy một cú nhấp gần sông cho lưu vực của sông. 0 - lưu vực đúng từ điểm.
+Stop at a watercourse	Dừng ở dòng nước
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	Đường dòng chảy kết thúc khi tới dòng nước có lưu vực ít nhất bằng diện tích của trường «Dòng nước từ». Khi bỏ đánh dấu, đường đi tới rìa ô vuông.
+Stop on flattening	Dừng khi thoải dần
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	Đường dòng chảy kết thúc nơi độ dốc trung bình trên chiều dài đoạn thấp hơn ngưỡng - ở chân sườn, trên thềm, trên bãi bồi. Một bậc ngắn trên sườn dốc không làm dừng đường.
+Flattening slope	Độ dốc thoải
+The slope below which the terrain is counted as flattened.	Độ dốc mà dưới đó địa hình được coi là thoải.
+Section length	Chiều dài đoạn
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	Chiều dài đoạn để đo độ dốc trung bình. Lớn hơn - chỉ một đoạn thoải dài mới dừng đường.
+Stop on merging	Dừng khi nhập dòng
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	Các đường từ dấu vị trí kết thúc khi đổ vào một đường đã dựng trước, và lòng dẫn chung đi thành một đường. Khi bỏ đánh dấu, mỗi đường đi đến cuối.
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	Đường đi của nước từ điểm xuôi theo địa hình - một đường trong «Địa điểm của tôi». Chỗ trũng được lấp đầy tới mức tràn, nên đường đi qua hồ và bồn kín. Với đường đi hoặc đa giác - các đường từ mọi nút của nó, trong một thư mục.
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	Vùng mà nước từ đó chảy về điểm và dòng nước chính - một thư mục trong «Địa điểm của tôi» với diện tích, độ dốc và chiều dài dòng nước. Lưu vực được dựng từ lòng dẫn gần điểm.
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	Các dòng nước của ô vuông với cấp Strahler - các đường trong «Địa điểm của tôi», độ dày đường tăng theo cấp.
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	Ô vuông chia thành lưu vực của các cửa ra - nơi các dòng nước có lưu vực ít nhất bằng diện tích của trường «Dòng nước từ» rời ô vuông. Các đa giác trong «Địa điểm của tôi».
+Sea level	Mực nước biển
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	Mực nước biển so với hiện nay. Nước làm ngập mọi nơi thấp hơn mực nước, dưới 0 lộ ra thềm lục địa. Khoảng -120 m - cực đại băng hà cuối cùng, khoảng +70 m - toàn bộ sông băng tan.
+Level	Mực nước
+The present sea level.	Mực nước biển hiện nay.
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	Nước làm ngập mọi nơi thấp hơn mực nước trên toàn quả địa cầu. Liên thông với biển không được kiểm tra, nên vùng trũng trong lục địa cũng bị ngập. Nước hiện khi bật địa hình.
+Return the present sea level.	Trả lại mực nước biển hiện nay.
+Slope and aspect here…	Độ dốc và hướng sườn ở đây…
+Hydrology	Thủy văn
+Flooding from here…	Ngập lụt từ đây…
+Water flow from here…	Dòng chảy của nước từ đây…
+Sea level…	Mực nước biển…
+Catchment of the placemark	Lưu vực của dấu vị trí
+Flow lines from the placemark…	Đường dòng chảy từ dấu vị trí…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	Độ dốc và hướng sườn của ô vuông quanh điểm theo độ cao, tóm tắt, đỉnh và hố trũng.
+What is seen from the point in a circle of the given radius.	Những gì nhìn thấy từ điểm trong vòng tròn bán kính cho trước.
+Hours of direct sun per day around the point.	Số giờ nắng trực tiếp mỗi ngày quanh điểm.
+Water from the point up to the given level, area, volume and depths.	Nước từ điểm tới mực cho trước, diện tích, thể tích và độ sâu.
+Flow line, catchment and river network around the point.	Đường dòng chảy, lưu vực và mạng lưới sông quanh điểm.
+Raising and lowering the sea level over the whole globe.	Nâng và hạ mực nước biển trên toàn quả địa cầu.
+north	bắc
+north-east	đông bắc
+east	đông
+south-east	đông nam
+south	nam
+south-west	tây nam
+west	tây
+north-west	tây bắc

@@ -1444,3 +1444,125 @@ Left:	მარცხნივ:
 There is no event {key} in the catalogs.	კატალოგებში მოვლენა {key} არ არის.
 Borders of countries and regions, rivers and lakes, labels on the globe.	ქვეყნებისა და რეგიონების საზღვრები, მდინარეები და ტბები, წარწერები გლობუსზე.
 Peaks and protected areas.	მწვერვალები და დაცული ტერიტორიები.
+Slope from {low}° to {high}°, median {median}°.	დახრილობა {low}°-დან {high}°-მდე, მედიანა {median}°.
+{low}-{high}° - {area} km²	{low}-{high}° - {area} კმ²
+Areas by slope: {parts}.	ფართობები დახრილობის მიხედვით: {parts}.
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	ფერდობების ყველაზე ხშირი ექსპოზიცია: {sides}.
+Flat ground {share}.	სწორი ადგილები {share}.
+There are no heights in the square.	კვადრატში სიმაღლეები არ არის.
+The grid step is {step} m.	ბადის ბიჯი - {step} მ.
+There are no peaks and pits with such a drop in the square.	კვადრატში ასეთი სიმაღლეთა სხვაობის მწვერვალები და ჩაღრმავებები არ არის.
+Peak {height} m	მწვერვალი {height} მ
+Height {height} m, rise {drop} m.	სიმაღლე {height} მ, შემაღლება {drop} მ.
+Pit {height} m	ჩაღრმავება {height} მ
+Height {height} m, depth {drop} m.	სიმაღლე {height} მ, სიღრმე {drop} მ.
+Peaks and pits {point}	მწვერვალები და ჩაღრმავებები {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	ჩაიწერა «ჩემს ნიშნებში»: მწვერვალები {peaks} და ჩაღრმავებები {pits}.
+Slope and aspect	დახრილობა და ექსპოზიცია
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	გამოთვლილი კვადრატის გვერდის ნახევარი. მეტი - ბადის ბიჯი უფრო მსხვილია, ის გვერდის დაახლოებით ექვსასედი ნაწილია.
+Show	ჩვენება
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	რას აჩვენებს კვადრატი გლობუსზე - ფერდობის ციცაბოობას ან ჰორიზონტის მხარეს, რომლისკენაც ის არის მიმართული. «ფენების» განყოფილების სტრიქონები «დახრილობა» და «ექსპოზიცია» ამ დროს ითიშება.
+Peak radius	მწვერვალის რადიუსი
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	მწვერვალი ამ რადიუსში ირგვლივ ყველაფერზე მაღალია, ჩაღრმავება - დაბალი. მეტი - რჩება მხოლოდ დიდი მწვერვალები და ჩაღრმავებები.
+Drop from	სიმაღლეთა სხვაობა, მინიმუმ
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	მწვერვალის უმცირესი შემაღლება ირგვლივ ყველაზე დაბალ წერტილზე ან ჩაღრმავების სიღრმე ყველაზე მაღალი წერტილის ქვემოთ. ნაკლები - მეტი პატარა ბორცვი და ღრმული.
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	კვადრატის დახრილობა და ექსპოზიცია სიმაღლეების მიხედვით, ბირთვი 3 × 3 - შეფერადება გლობუსზე და შეჯამება დახრილობის კლასებისა და ჰორიზონტის მხარეების მიხედვით.
+Peaks and pits	მწვერვალები და ჩაღრმავებები
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	კვადრატის მწვერვალები და ჩაკეტილი ღრმულები - წერტილები «ჩემს ნიშნებში» სიმაღლით და სიმაღლეთა სხვაობით.
+Remove the colouring of the square from the globe.	კვადრატის შეფერადების მოშორება გლობუსიდან.
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	მთავარი წყალნაკადი {km} კმ, ვარდნა {fall} მ, ქანობი {slope} პრომილე.
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	ფერდობების საშუალო ქანობი {slope} პრომილე SP 33-101-2003-ის მიხედვით.
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	მდინარეთა ქსელის სიხშირე {dens} კმ კმ²-ზე, წყალნაკადები წყალშემკრები აუზით {area} კმ²-დან.
+There are no heights at the point.	წერტილში სიმაღლეები არ არის.
+Water from the point flows nowhere.	წყალი წერტილიდან არსად ჩაედინება.
+Flow line	ჩამონადენის ხაზი
+Length {km} km, drop {drop} m.	სიგრძე {km} კმ, სიმაღლეთა სხვაობა {drop} მ.
+{name}: {text}	{name}: {text}
+The placemark is beyond the edge of the height data.	ნიშანი სიმაღლის მონაცემების საზღვრის მიღმაა.
+Water from the placemark flows nowhere.	წყალი ნიშნიდან არსად ჩაედინება.
+Flow line {n}	ჩამონადენის ხაზი {n}
+Flow lines «{name}»	ჩამონადენის ხაზები «{name}»
+{name}: lines {count}, total length {km} km.	{name}: ხაზები {count}, საერთო სიგრძე {km} კმ.
+The shortest lines not included {count}.	ყველაზე მოკლე ხაზები, რომლებიც არ შევიდა: {count}.
+Water does not flow to the point: there is no catchment.	წერტილისკენ წყალი არ ჩაედინება, წყალშემკრები აუზი არ არის.
+Catchment	წყალშემკრები აუზი
+The outlet is moved to the channel {m} m from the point.	კვეთი გადატანილია კალაპოტზე წერტილიდან {m} მ-ში.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	წყალშემკრები აუზი არის კიდეს აღწევს, მისი ნაწილი კიდის მიღმა არ ითვლება. საჭიროა უფრო დიდი რადიუსი.
+Main watercourse	მთავარი წყალნაკადი
+Basin {n}	აუზი {n}
+Area {area} km².	ფართობი {area} კმ².
+There are no watercourses with such a catchment at the edge of the square.	კვადრატის კიდეზე ასეთი წყალშემკრები აუზის მქონე წყალნაკადები არ არის.
+Basins	აუზები
+Basins written to «My places»: {count}, they cover {area} km² of the square.	«ჩემს ნიშნებში» ჩაწერილი აუზები: {count}, ისინი ფარავს კვადრატის {area} კმ²-ს.
+There are no watercourses with such a catchment and order in the square.	კვადრატში ასეთი წყალშემკრები აუზისა და რიგის მქონე წყალნაკადები არ არის.
+Order {order}, catchment {area} km².	რიგი {order}, წყალშემკრები აუზი {area} კმ².
+Watercourse of order {order}	{order} რიგის წყალნაკადი
+River network	მდინარეთა ქსელი
+Watercourses written to «My places»: {count}, the largest order {order}.	«ჩემს ნიშნებში» ჩაწერილი წყალნაკადები: {count}, უდიდესი რიგი {order}.
+Water does not flow to the placemark: there is no catchment.	ნიშნისკენ წყალი არ ჩაედინება, წყალშემკრები აუზი არ არის.
+Catchment «{name}»	წყალშემკრები აუზი «{name}»
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	დაიტბორა {area} კმ², წყლის მოცულობა {volume} მლნ მ³, უდიდესი სიღრმე {depth} მ.
+The water reached the edge of the area and can go further. A larger radius is needed.	წყალმა არის კიდეს მიაღწია და შეიძლება უფრო შორს წავიდეს. საჭიროა უფრო დიდი რადიუსი.
+The level is not above the point, there is no water.	დონე წერტილზე მაღლა არ არის, წყალი არ არის.
+Flooding	დატბორვა
+Point height	წერტილის სიმაღლე
+{h} m	{h} მ
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	წყლის ზედაპირის სიმაღლე ზღვის დონიდან. წყალი ტბორავს ყველაფერს დონის ქვემოთ, სადაც წერტილიდან აღწევს. უფრო მაღალი ქედის მიღმა ღრმულები მშრალი რჩება.
+Rise	აწევა
+Rise of the water above the point height, up to {rise} m.	წყლის აწევა წერტილის სიმაღლეზე მაღლა, {rise} მ-მდე.
+To «My places»	«ჩემს ნიშნებში»
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	დატბორვის კონტური - პოლიგონი «ჩემს ნიშნებში» დონით, ფართობითა და მოცულობით.
+Remove the water from the globe.	წყლის მოშორება გლობუსიდან.
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	დონე {level} მ, დაიტბორა {area} კმ², წყლის მოცულობა {volume} მლნ მ³, უდიდესი სიღრმე {depth} მ.
+Flooding {level} m	დატბორვა {level} მ
+Water flow	წყლის ჩამონადენი
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	გამოთვლილი კვადრატის გვერდის ნახევარი. ჩამონადენის ხაზი მის კიდეზე მთავრდება, კვადრატზე დიდი წყალშემკრები აუზი სრულად არ ითვლება. ბადის ბიჯი გვერდის დაახლოებით ექვსასედი ნაწილია.
+Watercourses from	წყალნაკადები, მინიმუმ
+ km²	 კმ²
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	მდინარეთა ქსელი - წყალნაკადები, რომელთა წყალშემკრები აუზი ამ ფართობზე ნაკლები არ არის. ნაკლები - უფრო ხშირი ქსელი ნაკადულებითა და ხევებით.
+Order from	რიგი, მინიმუმ
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	წყალნაკადის უმცირესი რიგი შტრალერის მიხედვით მდინარეთა ქსელში. სათავე - რიგი 1, ერთი რიგის ორი წყალნაკადის შერთვის შემდეგ - ერთით მეტი. მეტი - მხოლოდ დიდი მდინარეები, რიგები მთელ ქსელზე ითვლება.
+Channel search radius	კალაპოტის ძებნის რადიუსი
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	ამ რადიუსში წერტილიდან იძებნება კალაპოტი - ადგილი უდიდესი წყალშემკრები აუზით, მისგან იგება წყალშემკრები აუზი. ამიტომ დაწკაპუნება მდინარესთან იძლევა მდინარის წყალშემკრებ აუზს. 0 - წყალშემკრები აუზი ზუსტად წერტილიდან.
+Stop at a watercourse	გაჩერება წყალნაკადზე
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	ჩამონადენის ხაზი მთავრდება, როცა აღწევს წყალნაკადს, რომლის წყალშემკრები აუზი ველის «წყალნაკადები, მინიმუმ» ფართობზე ნაკლები არ არის. ალმის გარეშე ხაზი კვადრატის კიდემდე მიდის.
+Stop on flattening	გაჩერება მოვაკებაზე
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	ჩამონადენის ხაზი მთავრდება იქ, სადაც საშუალო ქანობი მონაკვეთის სიგრძეზე ზღვარზე დაბალია - ფერდობის ძირში, ტერასაზე, ჭალაში. ციცაბო ფერდობზე მოკლე საფეხური ხაზს არ აჩერებს.
+Flattening slope	მოვაკების ქანობი
+The slope below which the terrain is counted as flattened.	ქანობი, რომლის ქვემოთ რელიეფი მოვაკებულად ითვლება.
+Section length	მონაკვეთის სიგრძე
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	მონაკვეთის სიგრძე, რომელზეც საშუალო ქანობი იზომება. მეტი - ხაზს მხოლოდ გრძელი მოვაკება აჩერებს.
+Stop on merging	გაჩერება შერთვისას
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	ნიშნიდან ხაზები მთავრდება ადრე აგებულ ხაზში ჩადინებისას, საერთო კალაპოტი კი ერთი ხაზით მიდის. ალმის გარეშე თითოეული ხაზი ბოლომდე მიდის.
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	წყლის გზა წერტილიდან რელიეფის დაყოლებით ქვემოთ - ხაზი «ჩემს ნიშნებში». ღრმულები გადმოდინებამდე ივსება, ამიტომ ხაზი გადის ტბებსა და ჩაკეტილ ქვაბულებში. ბილიკისა ან პოლიგონისთვის - ხაზები მისი ყველა კვანძიდან, საქაღალდეში.
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	ფართობი, საიდანაც წყალი წერტილისკენ ჩაედინება, და მთავარი წყალნაკადი - საქაღალდე «ჩემს ნიშნებში» ფართობით, ქანობებითა და წყალნაკადის სიგრძით. წყალშემკრები აუზი იგება კალაპოტიდან წერტილთან ახლოს.
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	კვადრატის წყალნაკადები შტრალერის რიგით - ხაზები «ჩემს ნიშნებში», ხაზის სისქე რიგთან ერთად იზრდება.
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	კვადრატი, დაყოფილი კვეთების აუზებად - ადგილებად, სადაც წყალნაკადები, რომელთა წყალშემკრები აუზი ველის «წყალნაკადები, მინიმუმ» ფართობზე ნაკლები არ არის, ტოვებს კვადრატს. პოლიგონები «ჩემს ნიშნებში».
+Sea level	ზღვის დონე
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	ზღვის დონე ამჟამინდელთან შედარებით. წყალი ტბორავს ყველაფერს დონის ქვემოთ, ნულის ქვემოთ შელფს აშიშვლებს. დაახლოებით -120 მ - ბოლო გამყინვარების მაქსიმუმი, დაახლოებით +70 მ - ყველა მყინვარის დნობა.
+Level	დონე
+The present sea level.	ზღვის ამჟამინდელი დონე.
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	წყალი ტბორავს ყველაფერს დონის ქვემოთ მთელ გლობუსზე. ზღვასთან კავშირი არ მოწმდება, ამიტომ კონტინენტების შიგნით დაბლობებიც იტბორება. წყალი ჩანს ჩართული რელიეფის დროს.
+Return the present sea level.	ზღვის ამჟამინდელი დონის დაბრუნება.
+Slope and aspect here…	დახრილობა და ექსპოზიცია აქ…
+Hydrology	ჰიდროლოგია
+Flooding from here…	დატბორვა აქედან…
+Water flow from here…	წყლის ჩამონადენი აქედან…
+Sea level…	ზღვის დონე…
+Catchment of the placemark	ნიშნის წყალშემკრები აუზი
+Flow lines from the placemark…	ჩამონადენის ხაზები ნიშნიდან…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	წერტილის ირგვლივ კვადრატის დახრილობა და ექსპოზიცია სიმაღლეების მიხედვით, შეჯამება, მწვერვალები და ჩაღრმავებები.
+What is seen from the point in a circle of the given radius.	რა ჩანს წერტილიდან მოცემული რადიუსის წრეში.
+Hours of direct sun per day around the point.	პირდაპირი მზის საათები დღე-ღამეში წერტილის ირგვლივ.
+Water from the point up to the given level, area, volume and depths.	წყალი წერტილიდან მოცემულ დონემდე, ფართობი, მოცულობა და სიღრმეები.
+Flow line, catchment and river network around the point.	ჩამონადენის ხაზი, წყალშემკრები აუზი და მდინარეთა ქსელი წერტილის ირგვლივ.
+Raising and lowering the sea level over the whole globe.	ზღვის დონის აწევა და დაწევა მთელ გლობუსზე.
+north	ჩრდილოეთი
+north-east	ჩრდილო-აღმოსავლეთი
+east	აღმოსავლეთი
+south-east	სამხრეთ-აღმოსავლეთი
+south	სამხრეთი
+south-west	სამხრეთ-დასავლეთი
+west	დასავლეთი
+north-west	ჩრდილო-დასავლეთი

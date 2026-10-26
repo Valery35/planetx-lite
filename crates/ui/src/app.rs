@@ -368,6 +368,10 @@ pub struct LiteApp {
     /// Окна и слои «Видимость» и «Инсоляция».
     viewshed: Option<crate::pointcalc::Calc>,
     insolation: Option<crate::pointcalc::Calc>,
+    /// Окно «Уклон и экспозиция» и его квадрат.
+    relief_calc: Option<crate::reliefcalc::ReliefCalc>,
+    /// Окна «Затопление», «Сток воды», «Уровень моря».
+    hydro: crate::hydrocalc::Hydro,
     /// Тайлы высот, которых ждут расчёты у точки.
     calc_keys: Vec<TileKey>,
     /// Окно «Старые карты «Это Место»».
@@ -974,6 +978,8 @@ impl LiteApp {
             links_window: None,
             viewshed: None,
             insolation: None,
+            relief_calc: None,
+            hydro: crate::hydrocalc::Hydro::new(),
             calc_keys: Vec::new(),
             etomesto: None,
             paleo: None,
@@ -1566,7 +1572,9 @@ impl LiteApp {
             let name = s.name_of(number).unwrap_or_else(|| number.to_string());
             Some((number, name, s.selected == Some(number), s.follow && s.selected == Some(number)))
         });
-        crate::globemenu::GlobeMenu { at: pos, point, coords, place, drawing, mover, live, sheets, links, satellite }
+        let earth = self.planet.earth;
+        let relief = earth || self.planet.terrain.is_some();
+        crate::globemenu::GlobeMenu { at: pos, point, coords, place, drawing, mover, live, sheets, links, satellite, earth, relief }
     }
 
     /// Выбор в меню на глобусе.
@@ -1694,6 +1702,19 @@ impl LiteApp {
                     }
                 }
             }
+            Choice::SlopeHere => {
+                let Some((lat, lon)) = point else {
+                    return;
+                };
+                let name = place.as_ref().map(|(_, n)| n.clone()).unwrap_or_default();
+                let coords = format!("{lat:.5}, {lon:.5}");
+                let title = if name.is_empty() { coords } else { format!("{name}  {coords}") };
+                match &mut self.relief_calc {
+                    Some(c) => c.set_point(lat, lon, title),
+                    None => self.relief_calc = Some(crate::reliefcalc::ReliefCalc::new(lat, lon, title)),
+                }
+            }
+            Choice::Flood | Choice::Flow | Choice::SeaLevel => self.hydro_choice(choice, point, place),
             Choice::SatPath(number) => {
                 if let Some(s) = &mut self.satellites {
                     s.select(number);
@@ -1839,7 +1860,7 @@ impl LiteApp {
                 globe.set_sky_bodies(&points);
             }
             let recreated = globe.resize(width, height);
-            globe.render(&camera, &globe_core::lod::Selection::default(), None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: ppp as f32, sun: None, water: None, tint: None, sky: true });
+            globe.render(&camera, &globe_core::lod::Selection::default(), None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: ppp as f32, sun: None, water: None, tint: None, sky: true, sea_level: 0.0 });
             self.show_target(recreated || self.texture.is_none());
         }
         if let Some(id) = self.texture {
@@ -3226,6 +3247,26 @@ impl LiteApp {
         Ok(self.show_cloud(&cloud, name, fly))
     }
 
+    /// Пункты подменю «Гидрология» меню на глобусе.
+    fn hydro_choice(&mut self, choice: crate::globemenu::Choice, point: Option<(f64, f64)>, place: Option<(Vec<usize>, String)>) {
+        use crate::globemenu::Choice;
+        if choice == Choice::SeaLevel {
+            self.hydro.sea_open = true;
+            return;
+        }
+        let Some((lat, lon)) = point else {
+            return;
+        };
+        let name = place.as_ref().map(|(_, n)| n.clone()).unwrap_or_default();
+        let coords = format!("{lat:.5}, {lon:.5}");
+        let title = if name.is_empty() { coords } else { format!("{name}  {coords}") };
+        if choice == Choice::Flood {
+            self.hydro.flood_here(lat, lon, title);
+        } else {
+            self.hydro.flow_here(lat, lon, title);
+        }
+    }
+
     /// Шаг снимков событий в каждом кадре, с окнами и без: каталоги,
     /// обход события, событие ключа `--event`.
     fn step_events(&mut self, now: f64) {
@@ -3912,8 +3953,45 @@ impl LiteApp {
                 keys.extend(calc.step(lang, now, &has, &heights));
                 changed |= std::mem::take(&mut calc.changed);
             }
+            // Квадраты анализа рельефа и гидрологии: радиус тела и уровень
+            // тайлов высот - у тела на глобусе.
+            let radius = self.nav.camera.ellipsoid.a;
+            let max_level = terrain_source(&self.planet).map_or(terrain::MAX_LEVEL, |s| s.max_level);
+            if let Some(calc) = &mut self.relief_calc {
+                calc.show(ctx, lang, now, radius, max_level);
+                calc.step(lang, now, &has, &heights);
+                keys.extend(calc.wanted(&has));
+                changed |= std::mem::take(&mut calc.changed);
+            }
+            keys.extend(self.hydro.step(ctx, lang, now, radius, max_level, &has, &heights));
+            changed |= std::mem::take(&mut self.hydro.changed);
         }
         self.calc_keys = keys;
+        if let Some(text) = self.hydro.message.take() {
+            self.open_message = Some(text);
+        }
+        // Уровень ниже нынешнего открывает шельф: нужны глубины морей,
+        // они включаются, как `set_sea_level` модуля.
+        if self.hydro.sea_level < 0.0 && !self.settings.sea && self.planet.earth && self.geoid.is_none() {
+            self.settings.sea = true;
+            self.settings_dirty = true;
+            self.sea_changed();
+        }
+        // Вершины и ямы, линии стока и водосборы - в «Мои метки».
+        let kml: Vec<String> = self.relief_calc.as_mut().and_then(|c| c.kml.take()).into_iter().chain(self.hydro.kml.drain(..)).collect();
+        for text in kml {
+            self.paste_kml(&text);
+        }
+        // Квадрат уклона занимает место строк «Уклон» и «Экспозиция».
+        if self.relief_calc.as_mut().is_some_and(|c| std::mem::take(&mut c.built)) {
+            for key in ["slope", "aspect"] {
+                if let Some(n) = crate::maps::index(key)
+                    && self.extras_on.contains(&crate::layers::Extra::Map(n))
+                {
+                    self.set_extra(crate::layers::Extra::Map(n), false);
+                }
+            }
+        }
         if let Some(m) = &mut self.mining {
             if let Some(message) = m.step(lang) {
                 self.open_message = Some(message);
@@ -3928,6 +4006,9 @@ impl LiteApp {
             if slot.as_ref().is_some_and(|c| !c.open && c.layer.is_none() && !c.busy()) {
                 *slot = None;
             }
+        }
+        if self.relief_calc.as_ref().is_some_and(|c| !c.open && c.layer().is_none() && !c.busy()) {
+            self.relief_calc = None;
         }
         if let Some(crate::pointcalc::Layer::Insolation(r)) = self.insolation.as_ref().and_then(|c| c.layer.as_ref()) {
             let rect = ctx.content_rect();
@@ -3950,6 +4031,10 @@ impl LiteApp {
                 painters.push((id, crate::pointcalc::painter(l)));
             }
         }
+        if let Some((r, radius)) = self.relief_calc.as_ref().and_then(crate::reliefcalc::ReliefCalc::layer) {
+            painters.push(("relief", crate::reliefcalc::painter(r, radius)));
+        }
+        painters.extend(self.hydro.painters());
         self.vector.set_painters(painters);
     }
 
@@ -4781,6 +4866,25 @@ impl LiteApp {
                             Some(s) => s.set_source(title, points),
                             None => self.section = Some(crate::section::SectionWindow::new(title, points, self.crust_cache().as_deref())),
                         }
+                    }
+                }
+                crate::marks::Action::Catchment(path) => {
+                    if let Some(place) = self.marks.place(&path) {
+                        let polygon = place.kind == scene::features::Kind::Polygon;
+                        let name = if place.name.is_empty() { tr(self.lang, "Untitled").to_string() } else { place.name.clone() };
+                        let points = place.points.clone();
+                        let radius = self.nav.camera.ellipsoid.a;
+                        let max_level = terrain_source(&self.planet).map_or(terrain::MAX_LEVEL, |s| s.max_level);
+                        self.hydro.catchment_of(points, polygon, name, radius, max_level, now);
+                    }
+                }
+                crate::marks::Action::FlowLines(path) => {
+                    if let Some(place) = self.marks.place(&path) {
+                        let polygon = place.kind == scene::features::Kind::Polygon;
+                        let name = if place.name.is_empty() { tr(self.lang, "Untitled").to_string() } else { place.name.clone() };
+                        let points = place.points.clone();
+                        let radius = self.nav.camera.ellipsoid.a;
+                        self.hydro.flow_from(points, polygon, name, radius);
                     }
                 }
                 crate::marks::Action::Copy(path) => {
@@ -6413,6 +6517,8 @@ impl eframe::App for LiteApp {
             || self.gibs_catalog.is_some()
             || self.events.busy()
             || self.lidar.as_ref().is_some_and(crate::lidarnet::Lidar::busy)
+            || self.relief_calc.as_ref().is_some_and(crate::reliefcalc::ReliefCalc::busy)
+            || self.hydro.busy()
             || self.osm_mines.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.osm_infra.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.satellites.as_ref().is_some_and(crate::satellites::Satellites::busy)
@@ -6859,7 +6965,10 @@ impl eframe::App for LiteApp {
         // Вода над дном моря, под картой аномалий поля прозрачнее: синяя
         // вода делала красное молодое дно у хребтов фиолетовым.
         // В режиме геоида воды нет, высоты - геоид, а не дно.
-        let water = (self.settings.sea && self.geoid.is_none() && self.planet.earth).then(|| {
+        // Уровень моря окна «Уровень моря»: вода и без глубин морей, когда
+        // уровень выше нынешнего.
+        let sea_level = if self.planet.earth && self.geoid.is_none() { self.hydro.sea_level as f32 } else { 0.0 };
+        let water = ((self.settings.sea || sea_level > 0.0) && self.geoid.is_none() && self.planet.earth).then(|| {
             let under_field = if self.settings.maps.iter().any(|m| m == "emag") { WATER_UNDER_FIELD } else { 1.0 };
             [WATER_COLOR[0], WATER_COLOR[1], WATER_COLOR[2], WATER_COLOR[3] * under_field]
         });
@@ -6868,7 +6977,7 @@ impl eframe::App for LiteApp {
             globe.grab();
         }
         let stats =
-            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air && self.planet.air.is_some(), ratio: ppp as f32, sun, water, tint: self.planet.air, sky: false });
+            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air && self.planet.air.is_some(), ratio: ppp as f32, sun, water, tint: self.planet.air, sky: false, sea_level });
         drop(store);
         if let Some(check) = &mut self.check
             && check.waits_frame()

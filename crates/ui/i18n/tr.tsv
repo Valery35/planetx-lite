@@ -1444,3 +1444,125 @@ Left:	Sol:
 There is no event {key} in the catalogs.	Kataloglarda {key} olayı yok.
 Borders of countries and regions, rivers and lakes, labels on the globe.	Ülke ve bölge sınırları, nehirler ve göller, küre üzerindeki etiketler.
 Peaks and protected areas.	Zirveler ve korunan alanlar.
+Slope from {low}° to {high}°, median {median}°.	Eğim {low}° ile {high}° arasında, medyan {median}°.
+{low}-{high}° - {area} km²	{low}-{high}° - {area} km²
+Areas by slope: {parts}.	Eğime göre alanlar: {parts}.
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	Yamaçların en sık bakısı: {sides}.
+Flat ground {share}.	Düz arazi {share}.
+There are no heights in the square.	Karede yükseklik yok.
+The grid step is {step} m.	Izgara adımı {step} m.
+There are no peaks and pits with such a drop in the square.	Karede bu yükseklik farkına sahip zirve ve çukur yok.
+Peak {height} m	Zirve {height} m
+Height {height} m, rise {drop} m.	Yükseklik {height} m, yükselme {drop} m.
+Pit {height} m	Çukur {height} m
+Height {height} m, depth {drop} m.	Yükseklik {height} m, derinlik {drop} m.
+Peaks and pits {point}	Zirveler ve çukurlar {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	«Yerlerim»e yazıldı: zirve {peaks} ve çukur {pits}.
+Slope and aspect	Eğim ve bakı
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	Hesaplanan karenin yarım kenarı. Daha büyük - daha kaba ızgara adımı, kenarın yaklaşık altı yüzde biridir.
+Show	Göster
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Karenin kürede gösterdiği - yamacın dikliği ya da baktığı ana yön. «Katmanlar» bölümündeki «Eğim» ve «Bakı» satırları bu sırada kapanır.
+Peak radius	Zirve yarıçapı
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	Zirve bu yarıçap içinde çevresindeki her şeyden yüksektir, çukur alçaktır. Daha büyük - yalnızca büyük zirveler ve çukurlar kalır.
+Drop from	En az yükseklik farkı
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	Bir zirvenin çevresindeki en alçak noktanın üzerindeki en küçük yükselmesi ya da bir çukurun en yüksek noktanın altındaki derinliği. Daha küçük - daha çok küçük tepe ve çukurluk.
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Karenin yüksekliklere göre eğimi ve bakısı, 3 × 3 çekirdek - kürede renklendirme ve eğim sınıflarına ve ana yönlere göre özet.
+Peaks and pits	Zirveler ve çukurlar
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	Karenin zirveleri ve kapalı çukurlukları - «Yerlerim»de yükseklik ve yükseklik farkıyla noktalar.
+Remove the colouring of the square from the globe.	Karenin renklendirmesini küreden kaldır.
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	Ana akarsu {km} km, düşü {fall} m, eğim binde {slope}.
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	Yamaçların ortalama eğimi binde {slope}, SP 33-101-2003'e göre.
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	Drenaj yoğunluğu km² başına {dens} km, su toplama alanı en az {area} km² olan akarsular.
+There are no heights at the point.	Noktada yükseklik yok.
+Water from the point flows nowhere.	Noktadan su hiçbir yere akmıyor.
+Flow line	Akış çizgisi
+Length {km} km, drop {drop} m.	Uzunluk {km} km, yükseklik farkı {drop} m.
+{name}: {text}	{name}: {text}
+The placemark is beyond the edge of the height data.	Yer işareti yükseklik verilerinin sınırının ötesinde.
+Water from the placemark flows nowhere.	Yer işaretinden su hiçbir yere akmıyor.
+Flow line {n}	Akış çizgisi {n}
+Flow lines «{name}»	Akış çizgileri «{name}»
+{name}: lines {count}, total length {km} km.	{name}: çizgi {count}, toplam uzunluk {km} km.
+The shortest lines not included {count}.	Dahil edilmeyen en kısa çizgiler {count}.
+Water does not flow to the point: there is no catchment.	Su noktaya akmıyor, su toplama alanı yok.
+Catchment	Su toplama alanı
+The outlet is moved to the channel {m} m from the point.	Çıkış noktası, noktadan {m} m uzaklıktaki yatağa taşındı.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	Su toplama alanı bölgenin kenarına ulaşıyor, kenarın ötesindeki kısmı sayılmıyor. Daha büyük bir yarıçap gerekiyor.
+Main watercourse	Ana akarsu
+Basin {n}	Havza {n}
+Area {area} km².	Alan {area} km².
+There are no watercourses with such a catchment at the edge of the square.	Karenin kenarında böyle su toplama alanına sahip akarsu yok.
+Basins	Havzalar
+Basins written to «My places»: {count}, they cover {area} km² of the square.	«Yerlerim»e yazılan havzalar: {count}, karenin {area} km² alanını kaplıyorlar.
+There are no watercourses with such a catchment and order in the square.	Karede böyle su toplama alanına ve dereceye sahip akarsu yok.
+Order {order}, catchment {area} km².	Derece {order}, su toplama alanı {area} km².
+Watercourse of order {order}	{order}. dereceden akarsu
+River network	Akarsu ağı
+Watercourses written to «My places»: {count}, the largest order {order}.	«Yerlerim»e yazılan akarsular: {count}, en yüksek derece {order}.
+Water does not flow to the placemark: there is no catchment.	Su yer işaretine akmıyor, su toplama alanı yok.
+Catchment «{name}»	Su toplama alanı «{name}»
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Su basan alan {area} km², su hacmi {volume} milyon m³, en büyük derinlik {depth} m.
+The water reached the edge of the area and can go further. A larger radius is needed.	Su bölgenin kenarına ulaştı ve daha ileri gidebilir. Daha büyük bir yarıçap gerekiyor.
+The level is not above the point, there is no water.	Seviye noktanın üzerinde değil, su yok.
+Flooding	Su baskını
+Point height	Nokta yüksekliği
+{h} m	{h} m
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	Su yüzeyinin deniz seviyesinden yüksekliği. Su, noktadan ulaştığı seviyenin altındaki her yeri basar. Daha yüksek bir sırtın ötesindeki çukurluklar kuru kalır.
+Rise	Yükselme
+Rise of the water above the point height, up to {rise} m.	Suyun nokta yüksekliğinin üzerine yükselmesi, en çok {rise} m.
+To «My places»	«Yerlerim»e
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	Su baskınının sınırı - «Yerlerim»de seviye, alan ve hacimle bir çokgen.
+Remove the water from the globe.	Suyu küreden kaldır.
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Seviye {level} m, su basan alan {area} km², su hacmi {volume} milyon m³, en büyük derinlik {depth} m.
+Flooding {level} m	Su baskını {level} m
+Water flow	Su akışı
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	Hesaplanan karenin yarım kenarı. Akış çizgisi karenin kenarında biter, kareden büyük bir su toplama alanı tam sayılmaz. Izgara adımı kenarın yaklaşık altı yüzde biridir.
+Watercourses from	Akarsular, en az
+ km²	 km²
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	Akarsu ağı - su toplama alanı en az bu kadar olan akarsular. Daha küçük - dereler ve yarlarla daha sık bir ağ.
+Order from	Derece, en az
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	Akarsu ağındaki bir akarsuyun en küçük Strahler derecesi. Kaynak 1. derecedir, aynı dereceden iki akarsu birleşince - bir fazlası. Daha büyük - yalnızca büyük nehirler, dereceler tüm ağ üzerinden sayılır.
+Channel search radius	Yatak arama yarıçapı
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	Noktadan bu yarıçap içinde yatak aranır - en büyük su toplama alanına sahip yer, su toplama alanı oradan oluşturulur. Böylece bir nehrin yanına tıklamak nehrin su toplama alanını verir. 0 - su toplama alanı tam olarak noktadan.
+Stop at a watercourse	Akarsuda dur
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	Akış çizgisi, su toplama alanı en az «Akarsular, en az» alanındaki değer kadar olan bir akarsuya ulaşınca biter. İşaret yokken çizgi karenin kenarına kadar gider.
+Stop on flattening	Düzleşmede dur
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	Akış çizgisi, kesim uzunluğu boyunca ortalama eğimin eşiğin altında kaldığı yerde biter - yamaç eteğinde, bir taraçada, bir taşkın ovasında. Dik yamaçtaki kısa bir basamak çizgiyi durdurmaz.
+Flattening slope	Düzleşme eğimi
+The slope below which the terrain is counted as flattened.	Altında arazinin düzleşmiş sayıldığı eğim.
+Section length	Kesim uzunluğu
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	Ortalama eğimin ölçüldüğü kesimin uzunluğu. Daha büyük - çizgiyi yalnızca uzun bir düzleşme durdurur.
+Stop on merging	Birleşmede dur
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	Yer işaretinden çıkan çizgiler daha önce oluşturulan bir çizgiye karışınca biter ve ortak yatak tek çizgi olarak devam eder. İşaret yokken her çizgi sonuna kadar gider.
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	Suyun noktadan arazi boyunca aşağı yolu - «Yerlerim»de bir çizgi. Çukurluklar taşma düzeyine kadar doldurulur, bu yüzden çizgi göllerden ve kapalı havzalardan geçer. Bir yol ya da çokgen için - tüm düğümlerinden çizgiler, bir klasörde.
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	Suyun noktaya aktığı alan ve ana akarsu - «Yerlerim»de alan, eğimler ve akarsu uzunluğuyla bir klasör. Su toplama alanı noktanın yakınındaki yataktan oluşturulur.
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	Karenin Strahler dereceli akarsuları - «Yerlerim»de çizgiler, çizgi kalınlığı dereceyle artar.
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	Çıkış noktalarının havzalarına bölünmüş kare - su toplama alanı en az «Akarsular, en az» alanındaki değer kadar olan akarsuların kareden çıktığı yerler. «Yerlerim»de çokgenler.
+Sea level	Deniz seviyesi
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	Deniz seviyesinin bugünküne göre farkı. Su seviyenin altındaki her yeri basar, sıfırın altında şelfi açığa çıkarır. Yaklaşık -120 m - son buzul maksimumu, yaklaşık +70 m - tüm buzulların erimesi.
+Level	Seviye
+The present sea level.	Bugünkü deniz seviyesi.
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	Su tüm kürede seviyenin altındaki her yeri basar. Denizle bağlantı denetlenmez, bu yüzden kıtaların içindeki alçak alanlar da su altında kalır. Su, arazi açıkken görünür.
+Return the present sea level.	Bugünkü deniz seviyesine dön.
+Slope and aspect here…	Burada eğim ve bakı…
+Hydrology	Hidroloji
+Flooding from here…	Buradan su baskını…
+Water flow from here…	Buradan su akışı…
+Sea level…	Deniz seviyesi…
+Catchment of the placemark	Yer işaretinin su toplama alanı
+Flow lines from the placemark…	Yer işaretinden akış çizgileri…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	Noktanın çevresindeki bir karenin yüksekliklere göre eğimi ve bakısı, özet, zirveler ve çukurlar.
+What is seen from the point in a circle of the given radius.	Noktadan verilen yarıçaplı bir dairede görünenler.
+Hours of direct sun per day around the point.	Noktanın çevresinde günlük doğrudan güneş saatleri.
+Water from the point up to the given level, area, volume and depths.	Noktadan verilen seviyeye kadar su, alan, hacim ve derinlikler.
+Flow line, catchment and river network around the point.	Noktanın çevresinde akış çizgisi, su toplama alanı ve akarsu ağı.
+Raising and lowering the sea level over the whole globe.	Tüm kürede deniz seviyesinin yükseltilmesi ve alçaltılması.
+north	kuzey
+north-east	kuzeydoğu
+east	doğu
+south-east	güneydoğu
+south	güney
+south-west	güneybatı
+west	batı
+north-west	kuzeybatı

@@ -1444,3 +1444,125 @@ Left:	À gauche :
 There is no event {key} in the catalogs.	Les catalogues n'ont pas d'événement {key}.
 Borders of countries and regions, rivers and lakes, labels on the globe.	Frontières des pays et des régions, rivières et lacs, étiquettes sur le globe.
 Peaks and protected areas.	Sommets et aires protégées.
+Slope from {low}° to {high}°, median {median}°.	Pente de {low}° à {high}°, médiane {median}°.
+{low}-{high}° - {area} km²	{low}-{high}° - {area} km²
+Areas by slope: {parts}.	Surfaces par pente : {parts}.
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	Exposition la plus fréquente des versants : {sides}.
+Flat ground {share}.	Terrain plat {share}.
+There are no heights in the square.	Il n'y a pas d'altitudes dans le carré.
+The grid step is {step} m.	Le pas de la grille est de {step} m.
+There are no peaks and pits with such a drop in the square.	Il n'y a pas de sommets ni de cuvettes avec un tel dénivelé dans le carré.
+Peak {height} m	Sommet {height} m
+Height {height} m, rise {drop} m.	Altitude {height} m, élévation {drop} m.
+Pit {height} m	Cuvette {height} m
+Height {height} m, depth {drop} m.	Altitude {height} m, profondeur {drop} m.
+Peaks and pits {point}	Sommets et cuvettes {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	Écrit dans «Mes lieux» : sommets {peaks} et cuvettes {pits}.
+Slope and aspect	Pente et exposition
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	La moitié du côté du carré calculé. Plus grand - pas de grille plus grossier, il vaut environ un six-centième du côté.
+Show	Afficher
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Ce que le carré montre sur le globe - la raideur d'une pente ou le point cardinal vers lequel elle est tournée. Les lignes «Pente» et «Exposition» de la section «Couches» se désactivent alors.
+Peak radius	Rayon des sommets
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	Un sommet est plus haut que tout ce qui l'entoure dans ce rayon, une cuvette plus basse. Plus grand - seuls les grands sommets et cuvettes restent.
+Drop from	Dénivelé à partir de
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	La plus petite élévation d'un sommet au-dessus du point le plus bas alentour ou la profondeur d'une cuvette sous le plus haut. Plus petit - davantage de petites collines et de creux.
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Pente et exposition du carré d'après les altitudes, noyau 3 × 3 - une coloration sur le globe et un résumé par classes de pente et points cardinaux.
+Peaks and pits	Sommets et cuvettes
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	Sommets et dépressions fermées du carré - des points dans «Mes lieux» avec l'altitude et le dénivelé.
+Remove the colouring of the square from the globe.	Retirer la coloration du carré du globe.
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	Cours d'eau principal {km} km, chute {fall} m, pente {slope} pour mille.
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	Pente moyenne des versants {slope} pour mille selon SP 33-101-2003.
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	Densité de drainage {dens} km par km², cours d'eau au bassin versant d'au moins {area} km².
+There are no heights at the point.	Il n'y a pas d'altitudes au point.
+Water from the point flows nowhere.	L'eau du point ne s'écoule nulle part.
+Flow line	Ligne d'écoulement
+Length {km} km, drop {drop} m.	Longueur {km} km, dénivelé {drop} m.
+{name}: {text}	{name} : {text}
+The placemark is beyond the edge of the height data.	Le repère est au-delà du bord des données d'altitude.
+Water from the placemark flows nowhere.	L'eau du repère ne s'écoule nulle part.
+Flow line {n}	Ligne d'écoulement {n}
+Flow lines «{name}»	Lignes d'écoulement «{name}»
+{name}: lines {count}, total length {km} km.	{name} : lignes {count}, longueur totale {km} km.
+The shortest lines not included {count}.	Lignes les plus courtes non incluses {count}.
+Water does not flow to the point: there is no catchment.	L'eau ne s'écoule pas vers le point, il n'y a pas de bassin versant.
+Catchment	Bassin versant
+The outlet is moved to the channel {m} m from the point.	L'exutoire est déplacé sur le chenal à {m} m du point.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	Le bassin versant atteint le bord de la zone, sa partie au-delà du bord n'est pas comptée. Un rayon plus grand est nécessaire.
+Main watercourse	Cours d'eau principal
+Basin {n}	Bassin {n}
+Area {area} km².	Surface {area} km².
+There are no watercourses with such a catchment at the edge of the square.	Il n'y a pas de cours d'eau avec un tel bassin versant au bord du carré.
+Basins	Bassins
+Basins written to «My places»: {count}, they cover {area} km² of the square.	Bassins écrits dans «Mes lieux» : {count}, ils couvrent {area} km² du carré.
+There are no watercourses with such a catchment and order in the square.	Il n'y a pas de cours d'eau avec un tel bassin versant et un tel ordre dans le carré.
+Order {order}, catchment {area} km².	Ordre {order}, bassin versant {area} km².
+Watercourse of order {order}	Cours d'eau d'ordre {order}
+River network	Réseau hydrographique
+Watercourses written to «My places»: {count}, the largest order {order}.	Cours d'eau écrits dans «Mes lieux» : {count}, ordre le plus élevé {order}.
+Water does not flow to the placemark: there is no catchment.	L'eau ne s'écoule pas vers le repère, il n'y a pas de bassin versant.
+Catchment «{name}»	Bassin versant «{name}»
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Inondé {area} km², volume d'eau {volume} millions de m³, profondeur maximale {depth} m.
+The water reached the edge of the area and can go further. A larger radius is needed.	L'eau a atteint le bord de la zone et peut aller plus loin. Un rayon plus grand est nécessaire.
+The level is not above the point, there is no water.	Le niveau n'est pas au-dessus du point, il n'y a pas d'eau.
+Flooding	Inondation
+Point height	Altitude du point
+{h} m	{h} m
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	Altitude de la surface de l'eau au-dessus du niveau de la mer. L'eau inonde tout ce qui est sous le niveau et qu'elle atteint depuis le point. Les creux derrière une crête plus haute restent secs.
+Rise	Montée
+Rise of the water above the point height, up to {rise} m.	Montée de l'eau au-dessus de l'altitude du point, jusqu'à {rise} m.
+To «My places»	Vers «Mes lieux»
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	Le contour de l'inondation - un polygone dans «Mes lieux» avec le niveau, la surface et le volume.
+Remove the water from the globe.	Retirer l'eau du globe.
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Niveau {level} m, inondé {area} km², volume d'eau {volume} millions de m³, profondeur maximale {depth} m.
+Flooding {level} m	Inondation {level} m
+Water flow	Écoulement de l'eau
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	La moitié du côté du carré calculé. La ligne d'écoulement s'arrête à son bord, un bassin versant plus grand que le carré n'est pas compté entièrement. Le pas de la grille vaut environ un six-centième du côté.
+Watercourses from	Cours d'eau à partir de
+ km²	 km²
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	Le réseau hydrographique - les cours d'eau dont le bassin versant atteint au moins cette surface. Plus petit - un réseau plus dense avec ruisseaux et ravines.
+Order from	Ordre à partir de
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	Le plus petit ordre de Strahler d'un cours d'eau du réseau hydrographique. Une source est d'ordre 1, après la confluence de deux cours d'eau du même ordre - un de plus. Plus grand - seulement les grandes rivières, les ordres sont comptés sur tout le réseau.
+Channel search radius	Rayon de recherche du chenal
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	Dans ce rayon autour du point, le chenal est recherché - l'endroit au plus grand bassin versant, le bassin versant est construit à partir de lui. Un clic près d'une rivière donne ainsi le bassin versant de la rivière. 0 - le bassin versant exactement depuis le point.
+Stop at a watercourse	S'arrêter à un cours d'eau
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	La ligne d'écoulement s'arrête en atteignant un cours d'eau dont le bassin versant atteint au moins la surface du champ «Cours d'eau à partir de». Case décochée, la ligne va jusqu'au bord du carré.
+Stop on flattening	S'arrêter à l'aplanissement
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	La ligne d'écoulement s'arrête là où la pente moyenne sur la longueur du tronçon est sous le seuil - au pied d'un versant, sur une terrasse, dans une plaine inondable. Un court replat sur une pente raide n'arrête pas la ligne.
+Flattening slope	Pente d'aplanissement
+The slope below which the terrain is counted as flattened.	La pente sous laquelle le terrain est considéré comme aplani.
+Section length	Longueur du tronçon
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	La longueur du tronçon sur lequel la pente moyenne est mesurée. Plus grand - seul un long aplanissement arrête la ligne.
+Stop on merging	S'arrêter à la confluence
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	Les lignes du repère s'arrêtent en se jetant dans une ligne construite plus tôt, et le chenal commun forme une seule ligne. Case décochée, chaque ligne va jusqu'au bout.
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	Le trajet de l'eau depuis le point en descendant le relief - une ligne dans «Mes lieux». Les creux sont remplis jusqu'au débordement, la ligne traverse donc lacs et bassins fermés. Pour un chemin ou un polygone - des lignes depuis tous ses nœuds, dans un dossier.
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	La surface d'où l'eau s'écoule vers le point et le cours d'eau principal - un dossier dans «Mes lieux» avec la surface, les pentes et la longueur du cours d'eau. Le bassin versant est construit depuis le chenal près du point.
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	Les cours d'eau du carré avec l'ordre de Strahler - des lignes dans «Mes lieux», la largeur de ligne croît avec l'ordre.
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	Le carré divisé en bassins d'exutoires - les endroits où les cours d'eau dont le bassin versant atteint au moins la surface du champ «Cours d'eau à partir de» quittent le carré. Des polygones dans «Mes lieux».
+Sea level	Niveau de la mer
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	Le niveau de la mer par rapport à l'actuel. L'eau inonde tout ce qui est sous le niveau, sous zéro elle découvre le plateau continental. Environ -120 m - le dernier maximum glaciaire, environ +70 m - la fonte de tous les glaciers.
+Level	Niveau
+The present sea level.	Le niveau actuel de la mer.
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	L'eau inonde tout ce qui est sous le niveau sur tout le globe. La liaison avec la mer n'est pas vérifiée, les basses terres à l'intérieur des continents sont donc inondées aussi. L'eau est visible avec le relief activé.
+Return the present sea level.	Rétablir le niveau actuel de la mer.
+Slope and aspect here…	Pente et exposition ici…
+Hydrology	Hydrologie
+Flooding from here…	Inondation depuis ici…
+Water flow from here…	Écoulement de l'eau depuis ici…
+Sea level…	Niveau de la mer…
+Catchment of the placemark	Bassin versant du repère
+Flow lines from the placemark…	Lignes d'écoulement depuis le repère…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	Pente et exposition d'un carré autour du point d'après les altitudes, résumé, sommets et cuvettes.
+What is seen from the point in a circle of the given radius.	Ce qui est visible depuis le point dans un cercle du rayon donné.
+Hours of direct sun per day around the point.	Heures de soleil direct par jour autour du point.
+Water from the point up to the given level, area, volume and depths.	L'eau depuis le point jusqu'au niveau donné, surface, volume et profondeurs.
+Flow line, catchment and river network around the point.	Ligne d'écoulement, bassin versant et réseau hydrographique autour du point.
+Raising and lowering the sea level over the whole globe.	Montée et baisse du niveau de la mer sur tout le globe.
+north	nord
+north-east	nord-est
+east	est
+south-east	sud-est
+south	sud
+south-west	sud-ouest
+west	ouest
+north-west	nord-ouest

@@ -1444,3 +1444,125 @@ Left:	A sinistra:
 There is no event {key} in the catalogs.	Nei cataloghi non c'è l'evento {key}.
 Borders of countries and regions, rivers and lakes, labels on the globe.	Confini di paesi e regioni, fiumi e laghi, etichette sul globo.
 Peaks and protected areas.	Vette e aree protette.
+Slope from {low}° to {high}°, median {median}°.	Pendenza da {low}° a {high}°, mediana {median}°.
+{low}-{high}° - {area} km²	{low}-{high}° - {area} km²
+Areas by slope: {parts}.	Superfici per pendenza: {parts}.
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	Esposizione più frequente dei versanti: {sides}.
+Flat ground {share}.	Terreno piano {share}.
+There are no heights in the square.	Nel quadrato non ci sono altezze.
+The grid step is {step} m.	Il passo della griglia è {step} m.
+There are no peaks and pits with such a drop in the square.	Nel quadrato non ci sono vette né conche con un tale dislivello.
+Peak {height} m	Vetta {height} m
+Height {height} m, rise {drop} m.	Altezza {height} m, elevazione {drop} m.
+Pit {height} m	Conca {height} m
+Height {height} m, depth {drop} m.	Altezza {height} m, profondità {drop} m.
+Peaks and pits {point}	Vette e conche {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	Scritto in «I miei luoghi»: vette {peaks} e conche {pits}.
+Slope and aspect	Pendenza ed esposizione
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	Metà del lato del quadrato calcolato. Più grande - passo della griglia più grossolano, è circa un seicentesimo del lato.
+Show	Mostra
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Ciò che il quadrato mostra sul globo - la ripidità di un versante o il punto cardinale verso cui è rivolto. Le righe «Pendenza» ed «Esposizione» della sezione «Livelli» si disattivano nel frattempo.
+Peak radius	Raggio della vetta
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	Una vetta è più alta di tutto ciò che la circonda in questo raggio, una conca più bassa. Più grande - restano solo vette e conche grandi.
+Drop from	Dislivello da
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	La minima elevazione di una vetta sul punto più basso intorno o la profondità di una conca sotto il più alto. Più piccolo - più colline e avvallamenti piccoli.
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Pendenza ed esposizione del quadrato dalle altezze, nucleo 3 × 3 - una colorazione sul globo e un riepilogo per classi di pendenza e punti cardinali.
+Peaks and pits	Vette e conche
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	Vette e depressioni chiuse del quadrato - punti in «I miei luoghi» con l'altezza e il dislivello.
+Remove the colouring of the square from the globe.	Togli la colorazione del quadrato dal globo.
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	Corso d'acqua principale {km} km, caduta {fall} m, pendenza {slope} per mille.
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	Pendenza media dei versanti {slope} per mille secondo SP 33-101-2003.
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	Densità di drenaggio {dens} km per km², corsi d'acqua con un bacino imbrifero da {area} km².
+There are no heights at the point.	Nel punto non ci sono altezze.
+Water from the point flows nowhere.	L'acqua dal punto non scorre da nessuna parte.
+Flow line	Linea di deflusso
+Length {km} km, drop {drop} m.	Lunghezza {km} km, dislivello {drop} m.
+{name}: {text}	{name}: {text}
+The placemark is beyond the edge of the height data.	Il segnaposto è oltre il bordo dei dati di altezza.
+Water from the placemark flows nowhere.	L'acqua dal segnaposto non scorre da nessuna parte.
+Flow line {n}	Linea di deflusso {n}
+Flow lines «{name}»	Linee di deflusso «{name}»
+{name}: lines {count}, total length {km} km.	{name}: linee {count}, lunghezza totale {km} km.
+The shortest lines not included {count}.	Linee più corte non incluse {count}.
+Water does not flow to the point: there is no catchment.	L'acqua non scorre verso il punto, non c'è bacino imbrifero.
+Catchment	Bacino imbrifero
+The outlet is moved to the channel {m} m from the point.	La sezione di chiusura è spostata sull'alveo a {m} m dal punto.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	Il bacino imbrifero raggiunge il bordo dell'area, la sua parte oltre il bordo non è contata. Serve un raggio maggiore.
+Main watercourse	Corso d'acqua principale
+Basin {n}	Bacino {n}
+Area {area} km².	Superficie {area} km².
+There are no watercourses with such a catchment at the edge of the square.	Al bordo del quadrato non ci sono corsi d'acqua con un tale bacino imbrifero.
+Basins	Bacini
+Basins written to «My places»: {count}, they cover {area} km² of the square.	Bacini scritti in «I miei luoghi»: {count}, coprono {area} km² del quadrato.
+There are no watercourses with such a catchment and order in the square.	Nel quadrato non ci sono corsi d'acqua con un tale bacino imbrifero e ordine.
+Order {order}, catchment {area} km².	Ordine {order}, bacino imbrifero {area} km².
+Watercourse of order {order}	Corso d'acqua di ordine {order}
+River network	Rete idrografica
+Watercourses written to «My places»: {count}, the largest order {order}.	Corsi d'acqua scritti in «I miei luoghi»: {count}, l'ordine massimo {order}.
+Water does not flow to the placemark: there is no catchment.	L'acqua non scorre verso il segnaposto, non c'è bacino imbrifero.
+Catchment «{name}»	Bacino imbrifero «{name}»
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Allagati {area} km², volume d'acqua {volume} milioni di m³, profondità massima {depth} m.
+The water reached the edge of the area and can go further. A larger radius is needed.	L'acqua ha raggiunto il bordo dell'area e può andare oltre. Serve un raggio maggiore.
+The level is not above the point, there is no water.	Il livello non è sopra il punto, non c'è acqua.
+Flooding	Allagamento
+Point height	Altezza del punto
+{h} m	{h} m
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	Altezza della superficie dell'acqua sul livello del mare. L'acqua allaga tutto ciò che è sotto il livello e che raggiunge dal punto. Gli avvallamenti oltre una cresta più alta restano asciutti.
+Rise	Innalzamento
+Rise of the water above the point height, up to {rise} m.	Innalzamento dell'acqua sopra l'altezza del punto, fino a {rise} m.
+To «My places»	In «I miei luoghi»
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	Il contorno dell'allagamento - un poligono in «I miei luoghi» con il livello, la superficie e il volume.
+Remove the water from the globe.	Togli l'acqua dal globo.
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Livello {level} m, allagati {area} km², volume d'acqua {volume} milioni di m³, profondità massima {depth} m.
+Flooding {level} m	Allagamento {level} m
+Water flow	Deflusso dell'acqua
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	Metà del lato del quadrato calcolato. La linea di deflusso termina al suo bordo, un bacino imbrifero più grande del quadrato non è contato per intero. Il passo della griglia è circa un seicentesimo del lato.
+Watercourses from	Corsi d'acqua da
+ km²	 km²
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	La rete idrografica - corsi d'acqua con un bacino imbrifero di almeno questa superficie. Più piccolo - una rete più fitta con ruscelli e burroni.
+Order from	Ordine da
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	Il minimo ordine di Strahler di un corso d'acqua nella rete idrografica. Una sorgente ha ordine 1, dopo la confluenza di due corsi d'acqua dello stesso ordine - uno in più. Più grande - solo i grandi fiumi, gli ordini sono contati su tutta la rete.
+Channel search radius	Raggio di ricerca dell'alveo
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	In questo raggio dal punto si cerca l'alveo - il luogo con il bacino imbrifero maggiore, da esso si costruisce il bacino imbrifero. Così un clic vicino a un fiume dà il bacino imbrifero del fiume. 0 - il bacino imbrifero esattamente dal punto.
+Stop at a watercourse	Fermarsi a un corso d'acqua
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	La linea di deflusso termina quando raggiunge un corso d'acqua con un bacino imbrifero di almeno la superficie del campo «Corsi d'acqua da». Senza la casella la linea va fino al bordo del quadrato.
+Stop on flattening	Fermarsi allo spianamento
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	La linea di deflusso termina dove la pendenza media sulla lunghezza del tratto è sotto la soglia - ai piedi di un versante, su un terrazzo, in una piana alluvionale. Un breve ripiano su un versante ripido non ferma la linea.
+Flattening slope	Pendenza di spianamento
+The slope below which the terrain is counted as flattened.	La pendenza sotto la quale il terreno è considerato spianato.
+Section length	Lunghezza del tratto
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	La lunghezza del tratto su cui si misura la pendenza media. Più grande - solo uno spianamento lungo ferma la linea.
+Stop on merging	Fermarsi alla confluenza
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	Le linee dal segnaposto terminano sfociando in una linea costruita prima, e l'alveo comune prosegue come una sola linea. Senza la casella ogni linea va fino in fondo.
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	Il percorso dell'acqua dal punto giù per il rilievo - una linea in «I miei luoghi». Gli avvallamenti si riempiono fino allo sfioro, così la linea attraversa laghi e bacini chiusi. Per un percorso o un poligono - linee da tutti i suoi nodi, in una cartella.
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	La superficie da cui l'acqua scorre verso il punto e il corso d'acqua principale - una cartella in «I miei luoghi» con la superficie, le pendenze e la lunghezza del corso d'acqua. Il bacino imbrifero si costruisce dall'alveo vicino al punto.
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	I corsi d'acqua del quadrato con l'ordine di Strahler - linee in «I miei luoghi», lo spessore della linea cresce con l'ordine.
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	Il quadrato diviso in bacini delle sezioni di chiusura - i luoghi dove i corsi d'acqua con un bacino imbrifero di almeno la superficie del campo «Corsi d'acqua da» escono dal quadrato. Poligoni in «I miei luoghi».
+Sea level	Livello del mare
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	Il livello del mare rispetto a quello attuale. L'acqua allaga tutto ciò che è sotto il livello, sotto zero scopre la piattaforma continentale. Circa -120 m - l'ultimo massimo glaciale, circa +70 m - lo scioglimento di tutti i ghiacciai.
+Level	Livello
+The present sea level.	Il livello attuale del mare.
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	L'acqua allaga tutto ciò che è sotto il livello su tutto il globo. Il collegamento con il mare non è verificato, quindi si allagano anche le pianure basse all'interno dei continenti. L'acqua si vede con il rilievo attivo.
+Return the present sea level.	Ripristina il livello attuale del mare.
+Slope and aspect here…	Pendenza ed esposizione qui…
+Hydrology	Idrologia
+Flooding from here…	Allagamento da qui…
+Water flow from here…	Deflusso dell'acqua da qui…
+Sea level…	Livello del mare…
+Catchment of the placemark	Bacino imbrifero del segnaposto
+Flow lines from the placemark…	Linee di deflusso dal segnaposto…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	Pendenza ed esposizione di un quadrato intorno al punto dalle altezze, riepilogo, vette e conche.
+What is seen from the point in a circle of the given radius.	Ciò che si vede dal punto in un cerchio del raggio dato.
+Hours of direct sun per day around the point.	Ore di sole diretto al giorno intorno al punto.
+Water from the point up to the given level, area, volume and depths.	L'acqua dal punto fino al livello dato, superficie, volume e profondità.
+Flow line, catchment and river network around the point.	Linea di deflusso, bacino imbrifero e rete idrografica intorno al punto.
+Raising and lowering the sea level over the whole globe.	Innalzamento e abbassamento del livello del mare su tutto il globo.
+north	nord
+north-east	nord-est
+east	est
+south-east	sud-est
+south	sud
+south-west	sud-ovest
+west	ovest
+north-west	nord-ovest

@@ -1444,3 +1444,125 @@ Left:	Links:
 There is no event {key} in the catalogs.	De catalogi hebben geen gebeurtenis {key}.
 Borders of countries and regions, rivers and lakes, labels on the globe.	Grenzen van landen en regio's, rivieren en meren, labels op de globe.
 Peaks and protected areas.	Toppen en beschermde gebieden.
+Slope from {low}° to {high}°, median {median}°.	Helling van {low}° tot {high}°, mediaan {median}°.
+{low}-{high}° - {area} km²	{low}-{high}° - {area} km²
+Areas by slope: {parts}.	Oppervlakten per helling: {parts}.
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	Meest voorkomende expositie van de hellingen: {sides}.
+Flat ground {share}.	Vlak terrein {share}.
+There are no heights in the square.	In het vierkant zijn geen hoogten.
+The grid step is {step} m.	De rasterstap is {step} m.
+There are no peaks and pits with such a drop in the square.	In het vierkant zijn geen toppen en kommen met zo'n hoogteverschil.
+Peak {height} m	Top {height} m
+Height {height} m, rise {drop} m.	Hoogte {height} m, verheffing {drop} m.
+Pit {height} m	Kom {height} m
+Height {height} m, depth {drop} m.	Hoogte {height} m, diepte {drop} m.
+Peaks and pits {point}	Toppen en kommen {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	Geschreven naar «Mijn plaatsen»: toppen {peaks} en kommen {pits}.
+Slope and aspect	Helling en expositie
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	De halve zijde van het berekende vierkant. Groter - een grovere rasterstap, die is ongeveer een zeshonderdste van de zijde.
+Show	Tonen
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Wat het vierkant op de globe toont - de steilheid van een helling of de windrichting waarnaar die gekeerd is. De rijen «Helling» en «Expositie» van de sectie «Lagen» gaan intussen uit.
+Peak radius	Topstraal
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	Een top is hoger dan alles eromheen binnen deze straal, een kom lager. Groter - alleen grote toppen en kommen blijven over.
+Drop from	Hoogteverschil vanaf
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	De kleinste verheffing van een top boven het laagste punt eromheen of de diepte van een kom onder het hoogste. Kleiner - meer kleine heuvels en laagten.
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Helling en expositie van het vierkant uit de hoogten, kern 3 × 3 - een kleuring op de globe en een overzicht per hellingsklasse en windrichting.
+Peaks and pits	Toppen en kommen
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	Toppen en gesloten laagten van het vierkant - punten in «Mijn plaatsen» met de hoogte en het hoogteverschil.
+Remove the colouring of the square from the globe.	De kleuring van het vierkant van de globe verwijderen.
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	Hoofdwaterloop {km} km, verval {fall} m, helling {slope} promille.
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	Gemiddelde helling van de flanken {slope} promille volgens SP 33-101-2003.
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	Drainagedichtheid {dens} km per km², waterlopen met een stroomgebied vanaf {area} km².
+There are no heights at the point.	Op het punt zijn geen hoogten.
+Water from the point flows nowhere.	Het water van het punt stroomt nergens heen.
+Flow line	Afstroomlijn
+Length {km} km, drop {drop} m.	Lengte {km} km, hoogteverschil {drop} m.
+{name}: {text}	{name}: {text}
+The placemark is beyond the edge of the height data.	De plaatsmarkering ligt buiten de rand van de hoogtegegevens.
+Water from the placemark flows nowhere.	Het water van de plaatsmarkering stroomt nergens heen.
+Flow line {n}	Afstroomlijn {n}
+Flow lines «{name}»	Afstroomlijnen «{name}»
+{name}: lines {count}, total length {km} km.	{name}: lijnen {count}, totale lengte {km} km.
+The shortest lines not included {count}.	Niet opgenomen kortste lijnen {count}.
+Water does not flow to the point: there is no catchment.	Er stroomt geen water naar het punt, er is geen stroomgebied.
+Catchment	Stroomgebied
+The outlet is moved to the channel {m} m from the point.	Het uitstroompunt is verplaatst naar de geul op {m} m van het punt.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	Het stroomgebied reikt tot de rand van het gebied, het deel buiten de rand wordt niet meegeteld. Een grotere straal is nodig.
+Main watercourse	Hoofdwaterloop
+Basin {n}	Bekken {n}
+Area {area} km².	Oppervlakte {area} km².
+There are no watercourses with such a catchment at the edge of the square.	Aan de rand van het vierkant zijn geen waterlopen met zo'n stroomgebied.
+Basins	Bekkens
+Basins written to «My places»: {count}, they cover {area} km² of the square.	Bekkens geschreven naar «Mijn plaatsen»: {count}, ze beslaan {area} km² van het vierkant.
+There are no watercourses with such a catchment and order in the square.	In het vierkant zijn geen waterlopen met zo'n stroomgebied en orde.
+Order {order}, catchment {area} km².	Orde {order}, stroomgebied {area} km².
+Watercourse of order {order}	Waterloop van orde {order}
+River network	Rivierennet
+Watercourses written to «My places»: {count}, the largest order {order}.	Waterlopen geschreven naar «Mijn plaatsen»: {count}, de hoogste orde {order}.
+Water does not flow to the placemark: there is no catchment.	Er stroomt geen water naar de plaatsmarkering, er is geen stroomgebied.
+Catchment «{name}»	Stroomgebied «{name}»
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Overstroomd {area} km², watervolume {volume} miljoen m³, grootste diepte {depth} m.
+The water reached the edge of the area and can go further. A larger radius is needed.	Het water heeft de rand van het gebied bereikt en kan verder gaan. Een grotere straal is nodig.
+The level is not above the point, there is no water.	Het peil ligt niet boven het punt, er is geen water.
+Flooding	Overstroming
+Point height	Hoogte van het punt
+{h} m	{h} m
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	Hoogte van het wateroppervlak boven zeeniveau. Het water overstroomt alles onder het peil wat het vanaf het punt bereikt. Laagten achter een hogere kam blijven droog.
+Rise	Stijging
+Rise of the water above the point height, up to {rise} m.	Stijging van het water boven de hoogte van het punt, tot {rise} m.
+To «My places»	Naar «Mijn plaatsen»
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	De omtrek van de overstroming - een polygoon in «Mijn plaatsen» met het peil, de oppervlakte en het volume.
+Remove the water from the globe.	Het water van de globe verwijderen.
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Peil {level} m, overstroomd {area} km², watervolume {volume} miljoen m³, grootste diepte {depth} m.
+Flooding {level} m	Overstroming {level} m
+Water flow	Afstroming van water
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	De halve zijde van het berekende vierkant. De afstroomlijn eindigt aan de rand ervan, een stroomgebied groter dan het vierkant wordt niet volledig meegeteld. De rasterstap is ongeveer een zeshonderdste van de zijde.
+Watercourses from	Waterlopen vanaf
+ km²	 km²
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	Het rivierennet - waterlopen met een stroomgebied van minstens deze oppervlakte. Kleiner - een dichter net met beken en ravijnen.
+Order from	Orde vanaf
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	De kleinste Strahler-orde van een waterloop in het rivierennet. Een bron heeft orde 1, na het samenvloeien van twee waterlopen van dezelfde orde - één hoger. Groter - alleen grote rivieren, de ordes worden over het hele net geteld.
+Channel search radius	Zoekstraal van de geul
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	Binnen deze straal van het punt wordt de geul gezocht - de plek met het grootste stroomgebied, van daaruit wordt het stroomgebied opgebouwd. Een klik bij een rivier geeft zo het stroomgebied van de rivier. 0 - het stroomgebied precies vanaf het punt.
+Stop at a watercourse	Stoppen bij een waterloop
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	De afstroomlijn eindigt bij het bereiken van een waterloop met een stroomgebied van minstens de oppervlakte van het veld «Waterlopen vanaf». Zonder vinkje loopt de lijn tot de rand van het vierkant.
+Stop on flattening	Stoppen bij afvlakking
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	De afstroomlijn eindigt waar de gemiddelde helling over de sectielengte onder de drempel ligt - aan de voet van een helling, op een terras, in een uiterwaard. Een korte richel op een steile helling stopt de lijn niet.
+Flattening slope	Afvlakkingshelling
+The slope below which the terrain is counted as flattened.	De helling waaronder het terrein als afgevlakt geldt.
+Section length	Sectielengte
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	De lengte van de sectie waarover de gemiddelde helling wordt gemeten. Groter - alleen een lange afvlakking stopt de lijn.
+Stop on merging	Stoppen bij samenvloeiing
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	Lijnen van de plaatsmarkering eindigen bij het uitmonden in een eerder gebouwde lijn, en de gemeenschappelijke geul loopt als één lijn. Zonder vinkje loopt elke lijn tot het einde.
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	De weg van het water vanaf het punt het reliëf af - een lijn in «Mijn plaatsen». Laagten worden tot de overloop gevuld, dus loopt de lijn door meren en gesloten bekkens. Voor een pad of polygoon - lijnen vanaf al zijn knopen, in een map.
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	Het gebied vanwaar het water naar het punt stroomt en de hoofdwaterloop - een map in «Mijn plaatsen» met de oppervlakte, hellingen en lengte van de waterloop. Het stroomgebied wordt opgebouwd vanaf de geul bij het punt.
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	Waterlopen van het vierkant met de Strahler-orde - lijnen in «Mijn plaatsen», de lijndikte groeit met de orde.
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	Het vierkant verdeeld in bekkens van uitstroompunten - plekken waar waterlopen met een stroomgebied van minstens de oppervlakte van het veld «Waterlopen vanaf» het vierkant verlaten. Polygonen in «Mijn plaatsen».
+Sea level	Zeeniveau
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	Het zeeniveau ten opzichte van het huidige. Het water overstroomt alles onder het peil, onder nul legt het het continentaal plat bloot. Ongeveer -120 m - het laatste glaciale maximum, ongeveer +70 m - het smelten van alle gletsjers.
+Level	Peil
+The present sea level.	Het huidige zeeniveau.
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	Het water overstroomt alles onder het peil op de hele globe. De verbinding met de zee wordt niet gecontroleerd, dus overstromen ook laaglanden binnen de continenten. Het water is te zien met het reliëf aan.
+Return the present sea level.	Het huidige zeeniveau herstellen.
+Slope and aspect here…	Helling en expositie hier…
+Hydrology	Hydrologie
+Flooding from here…	Overstroming vanaf hier…
+Water flow from here…	Afstroming van water vanaf hier…
+Sea level…	Zeeniveau…
+Catchment of the placemark	Stroomgebied van de plaatsmarkering
+Flow lines from the placemark…	Afstroomlijnen vanaf de plaatsmarkering…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	Helling en expositie van een vierkant rond het punt uit de hoogten, overzicht, toppen en kommen.
+What is seen from the point in a circle of the given radius.	Wat vanaf het punt te zien is in een cirkel met de gegeven straal.
+Hours of direct sun per day around the point.	Uren directe zon per dag rond het punt.
+Water from the point up to the given level, area, volume and depths.	Water vanaf het punt tot het gegeven peil, oppervlakte, volume en diepten.
+Flow line, catchment and river network around the point.	Afstroomlijn, stroomgebied en rivierennet rond het punt.
+Raising and lowering the sea level over the whole globe.	Stijgen en dalen van het zeeniveau op de hele globe.
+north	noord
+north-east	noordoost
+east	oost
+south-east	zuidoost
+south	zuid
+south-west	zuidwest
+west	west
+north-west	noordwest

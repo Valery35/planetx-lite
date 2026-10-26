@@ -221,6 +221,9 @@ pub struct FrameOptions {
     /// Кадр вида неба: камера в центре небесной сферы, тайлов и объектов
     /// глобуса нет, рисуются звёзды, линии созвездий и светила.
     pub sky: bool,
+    /// Уровень моря над нынешним, метры, окно «Уровень моря». Вода
+    /// заливает всё ниже уровня, sea_level вида модуля.
+    pub sea_level: f32,
 }
 
 /// Глубина полной воды в метрах, мельче вода прозрачнее, `SHALLOW`
@@ -1466,6 +1469,7 @@ impl Globe {
         heights: Option<&HeightStore>,
         projection: DMat4,
         water: Option<[f32; 4]>,
+        sea_level: f32,
     ) -> Vec<Item> {
         self.update_caps(selection);
         let mut out = Vec::new();
@@ -1558,7 +1562,8 @@ impl Globe {
         if let Some(color) = water
             && let Some(store) = heights.filter(|s| s.scale() > 0.0)
         {
-            let sea = [1.0, (f64::from(SHALLOW) * store.scale()).max(1.0) as f32, 0.0, 0.0];
+            // z - уровень моря на экране: уровень, умноженный на масштаб рельефа.
+            let sea = [1.0, (f64::from(SHALLOW) * store.scale()).max(1.0) as f32, (f64::from(sea_level) * store.scale()) as f32, 0.0];
             let copies: Vec<Item> = out
                 .iter()
                 .filter(|i| i.kind == Kind::Tile)
@@ -1816,7 +1821,7 @@ impl Globe {
         self.frame += 1;
         self.resize(camera.width, camera.height);
         let projection = depth_fix() * camera.projection();
-        let items = if options.sky { Vec::new() } else { self.items(camera, selection, heights, projection, options.water) };
+        let items = if options.sky { Vec::new() } else { self.items(camera, selection, heights, projection, options.water, options.sea_level) };
         let count = items.len() as u64;
         if count > self.uniform_capacity {
             let capacity = count.next_power_of_two();

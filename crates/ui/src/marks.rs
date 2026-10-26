@@ -353,6 +353,10 @@ pub enum Action {
     LinkProperties(Vec<usize>),
     /// «Загрузить заново» папки-ссылки.
     ReloadLink(Vec<usize>),
+    /// «Водосбор метки» пути или многоугольника.
+    Catchment(Vec<usize>),
+    /// «Линии стока от метки…» пути или многоугольника.
+    FlowLines(Vec<usize>),
 }
 
 /// Пункт подменю «Добавить», `_add_menu` модуля.
@@ -377,6 +381,8 @@ enum RowKind {
     Place,
     /// Путь: у него и профиль высот.
     Path,
+    /// Многоугольник: у него водосбор и линии стока.
+    Polygon,
     Overlay,
     /// Папка - сетевая ссылка: в меню «Загрузить заново».
     LinkFolder,
@@ -452,6 +458,12 @@ fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[
             item(ui, tr(lang, "Tour along the path"), Action::Tour(p()), actions);
             item(ui, tr(lang, "Elevation profile"), Action::Profile(p()), actions);
             item(ui, tr(lang, "Section down…"), Action::Section(p()), actions);
+        }
+        // Водосбор и линии стока от пути и многоугольника, у точки -
+        // меню на глобусе.
+        if matches!(kind, RowKind::Path | RowKind::Polygon) {
+            item(ui, tr(lang, "Catchment of the placemark"), Action::Catchment(p()), actions);
+            item(ui, tr(lang, "Flow lines from the placemark…"), Action::FlowLines(p()), actions);
         }
         item(ui, tr(lang, "Snapshot view"), Action::ViewSnapshot(p()), actions);
         let props = if kind == RowKind::Overlay { Action::OverlayProperties(p()) } else { Action::Properties(p()) };
@@ -652,7 +664,11 @@ pub fn tree_ui(
                     let rgba = |c: [u8; 4]| egui::Color32::from_rgba_unmultiplied(c[0], c[1], c[2], c[3]);
                     crate::theme::row_icon(ui, icon, rgba(p.color), p.fill.map(rgba));
                     let name = if p.name.is_empty() { "-" } else { p.name.as_str() };
-                    let kind = if p.kind == Kind::Line { RowKind::Path } else { RowKind::Place };
+                    let kind = match p.kind {
+                        Kind::Line => RowKind::Path,
+                        Kind::Polygon => RowKind::Polygon,
+                        _ => RowKind::Place,
+                    };
                     row_name(ui, name, path, (p.tour.is_some(), kind), lang, state, actions);
                     if p.tour.is_some() && crate::timeline::icon_button(ui, crate::timeline::Icon::Play).clicked() {
                         actions.push(Action::Tour(path.clone()));

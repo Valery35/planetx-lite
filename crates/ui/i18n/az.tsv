@@ -1444,3 +1444,125 @@ Left:	Sol:
 There is no event {key} in the catalogs.	Kataloqlarda {key} hadisəsi yoxdur.
 Borders of countries and regions, rivers and lakes, labels on the globe.	Ölkə və vilayət sərhədləri, çaylar və göllər, qlobusdakı yazılar.
 Peaks and protected areas.	Zirvələr və qorunan ərazilər.
+Slope from {low}° to {high}°, median {median}°.	Mail {low}° ilə {high}° arasında, median {median}°.
+{low}-{high}° - {area} km²	{low}-{high}° - {area} km²
+Areas by slope: {parts}.	Mailə görə sahələr: {parts}.
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	Yamacların ən çox baxdığı tərəflər: {sides}.
+Flat ground {share}.	Düz yer {share}.
+There are no heights in the square.	Kvadratda hündürlük yoxdur.
+The grid step is {step} m.	Şəbəkə addımı {step} m.
+There are no peaks and pits with such a drop in the square.	Kvadratda belə hündürlük fərqi olan zirvə və çökəklik yoxdur.
+Peak {height} m	Zirvə {height} m
+Height {height} m, rise {drop} m.	Hündürlük {height} m, yüksəlmə {drop} m.
+Pit {height} m	Çökəklik {height} m
+Height {height} m, depth {drop} m.	Hündürlük {height} m, dərinlik {drop} m.
+Peaks and pits {point}	Zirvələr və çökəkliklər {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	«Mənim yerlərim»ə yazıldı: zirvə {peaks} və çökəklik {pits}.
+Slope and aspect	Mail və ekspozisiya
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	Hesablanan kvadratın tərəfinin yarısı. Böyük - şəbəkə addımı daha iri olur, o, tərəfin təxminən altı yüzdə biridir.
+Show	Göstər
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Kvadratın qlobusda göstərdiyi - yamacın dikliyi və ya onun baxdığı dünya tərəfi. «Laylar» bölməsinin «Mail» və «Ekspozisiya» sətirləri bu zaman söndürülür.
+Peak radius	Zirvə radiusu
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	Zirvə bu radiusda ətrafındakı hər şeydən hündürdür, çökəklik isə alçaq. Böyük - yalnız iri zirvələr və çökəkliklər qalır.
+Drop from	Hündürlük fərqi, ən azı
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	Zirvənin ətrafdakı ən alçaq nöqtədən ən kiçik yüksəlməsi və ya çökəkliyin ən hündür nöqtədən dərinliyi. Kiçik - daha çox kiçik təpə və çuxur.
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Kvadratın hündürlüklərə görə mail və ekspozisiyası, 3 × 3 nüvə - qlobusda rəngləmə və mail sinifləri ilə dünya tərəfləri üzrə xülasə.
+Peaks and pits	Zirvələr və çökəkliklər
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	Kvadratın zirvələri və qapalı çökəklikləri - «Mənim yerlərim»də hündürlük və hündürlük fərqi ilə nöqtələr.
+Remove the colouring of the square from the globe.	Kvadratın rənglənməsini qlobusdan götür.
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	Əsas su axarı {km} km, düşmə {fall} m, mail {slope} promille.
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	Yamacların orta maili {slope} promille, SP 33-101-2003 üzrə.
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	Çay şəbəkəsinin sıxlığı km²-ə {dens} km, su toplayıcı sahəsi ən azı {area} km² olan su axarları.
+There are no heights at the point.	Nöqtədə hündürlük yoxdur.
+Water from the point flows nowhere.	Nöqtədən su heç yerə axmır.
+Flow line	Axın xətti
+Length {km} km, drop {drop} m.	Uzunluq {km} km, hündürlük fərqi {drop} m.
+{name}: {text}	{name}: {text}
+The placemark is beyond the edge of the height data.	Nişan hündürlük məlumatlarının hüdudundan kənardadır.
+Water from the placemark flows nowhere.	Nişandan su heç yerə axmır.
+Flow line {n}	Axın xətti {n}
+Flow lines «{name}»	Axın xətləri «{name}»
+{name}: lines {count}, total length {km} km.	{name}: xətt {count}, ümumi uzunluq {km} km.
+The shortest lines not included {count}.	Daxil edilməyən ən qısa xətlər {count}.
+Water does not flow to the point: there is no catchment.	Su nöqtəyə axmır, su toplayıcı sahə yoxdur.
+Catchment	Su toplayıcı sahə
+The outlet is moved to the channel {m} m from the point.	Çıxış nöqtəsi nöqtədən {m} m aralıdakı yatağa köçürüldü.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	Su toplayıcı sahə ərazinin kənarına çatır, onun kənardan o yandakı hissəsi sayılmır. Daha böyük radius lazımdır.
+Main watercourse	Əsas su axarı
+Basin {n}	Hövzə {n}
+Area {area} km².	Sahə {area} km².
+There are no watercourses with such a catchment at the edge of the square.	Kvadratın kənarında belə su toplayıcı sahəsi olan su axarı yoxdur.
+Basins	Hövzələr
+Basins written to «My places»: {count}, they cover {area} km² of the square.	«Mənim yerlərim»ə yazılan hövzələr: {count}, onlar kvadratın {area} km² sahəsini örtür.
+There are no watercourses with such a catchment and order in the square.	Kvadratda belə su toplayıcı sahəsi və tərtibi olan su axarı yoxdur.
+Order {order}, catchment {area} km².	Tərtib {order}, su toplayıcı sahə {area} km².
+Watercourse of order {order}	{order} tərtibli su axarı
+River network	Çay şəbəkəsi
+Watercourses written to «My places»: {count}, the largest order {order}.	«Mənim yerlərim»ə yazılan su axarları: {count}, ən böyük tərtib {order}.
+Water does not flow to the placemark: there is no catchment.	Su nişana axmır, su toplayıcı sahə yoxdur.
+Catchment «{name}»	Su toplayıcı sahə «{name}»
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Su basan sahə {area} km², su həcmi {volume} milyon m³, ən böyük dərinlik {depth} m.
+The water reached the edge of the area and can go further. A larger radius is needed.	Su ərazinin kənarına çatdı və daha uzağa gedə bilər. Daha böyük radius lazımdır.
+The level is not above the point, there is no water.	Səviyyə nöqtədən yuxarı deyil, su yoxdur.
+Flooding	Su basması
+Point height	Nöqtənin hündürlüyü
+{h} m	{h} m
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	Su səthinin dəniz səviyyəsindən hündürlüyü. Su nöqtədən çatdığı səviyyədən aşağı hər yeri basır. Daha hündür silsilənin arxasındakı çökəkliklər quru qalır.
+Rise	Qalxma
+Rise of the water above the point height, up to {rise} m.	Suyun nöqtənin hündürlüyündən yuxarı qalxması, ən çox {rise} m.
+To «My places»	«Mənim yerlərim»ə
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	Su basmasının konturu - «Mənim yerlərim»də səviyyə, sahə və həcm ilə poliqon.
+Remove the water from the globe.	Suyu qlobusdan götür.
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Səviyyə {level} m, su basan sahə {area} km², su həcmi {volume} milyon m³, ən böyük dərinlik {depth} m.
+Flooding {level} m	Su basması {level} m
+Water flow	Suyun axını
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	Hesablanan kvadratın tərəfinin yarısı. Axın xətti onun kənarında bitir, kvadratdan böyük su toplayıcı sahə tam sayılmır. Şəbəkə addımı tərəfin təxminən altı yüzdə biridir.
+Watercourses from	Su axarları, ən azı
+ km²	 km²
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	Çay şəbəkəsi - su toplayıcı sahəsi ən azı bu qədər olan su axarları. Kiçik - kiçik çaylar və yarğanlarla daha sıx şəbəkə.
+Order from	Tərtib, ən azı
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	Çay şəbəkəsində su axarının ən kiçik Strahler tərtibi. Mənbə 1-ci tərtibdir, eyni tərtibli iki su axarı birləşdikdən sonra - bir artıq. Böyük - yalnız iri çaylar, tərtiblər bütün şəbəkə üzrə sayılır.
+Channel search radius	Yatağın axtarış radiusu
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	Nöqtədən bu radiusda yataq axtarılır - ən böyük su toplayıcı sahəsi olan yer, su toplayıcı sahə ondan qurulur. Beləliklə, çayın yanında klik çayın su toplayıcı sahəsini verir. 0 - su toplayıcı sahə dəqiq nöqtədən.
+Stop at a watercourse	Su axarında dayan
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	Axın xətti su toplayıcı sahəsi ən azı «Su axarları, ən azı» sahəsindəki qiymət qədər olan su axarına çatanda bitir. Bayraqcıq olmadan xətt kvadratın kənarına qədər gedir.
+Stop on flattening	Yastılaşmada dayan
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	Axın xətti hissənin uzunluğu boyu orta mailin həddən aşağı olduğu yerdə bitir - yamacın ətəyində, terrasda, daşqın düzündə. Dik yamacdakı qısa pillə xətti dayandırmır.
+Flattening slope	Yastılaşma maili
+The slope below which the terrain is counted as flattened.	Ondan aşağı relyefin yastılaşmış sayıldığı mail.
+Section length	Hissənin uzunluğu
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	Orta mailin ölçüldüyü hissənin uzunluğu. Böyük - xətti yalnız uzun yastılaşma dayandırır.
+Stop on merging	Birləşmədə dayan
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	Nişandan çıxan xətlər əvvəl qurulmuş xəttə töküləndə bitir, ümumi yataq isə bir xətt kimi gedir. Bayraqcıq olmadan hər xətt sonadək gedir.
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	Suyun nöqtədən relyef boyu aşağı yolu - «Mənim yerlərim»də xətt. Çökəkliklər daşma səviyyəsinə qədər doldurulur, ona görə xətt göllərdən və qapalı hövzələrdən keçir. Yol və ya poliqon üçün - bütün düyünlərindən xətlər, qovluqda.
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	Suyun nöqtəyə axdığı sahə və əsas su axarı - «Mənim yerlərim»də sahə, maillər və su axarının uzunluğu ilə qovluq. Su toplayıcı sahə nöqtənin yanındakı yataqdan qurulur.
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	Kvadratın Strahler tərtibli su axarları - «Mənim yerlərim»də xətlər, xəttin qalınlığı tərtiblə artır.
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	Çıxış nöqtələrinin hövzələrinə bölünmüş kvadrat - su toplayıcı sahəsi ən azı «Su axarları, ən azı» sahəsindəki qiymət qədər olan su axarlarının kvadratı tərk etdiyi yerlər. «Mənim yerlərim»də poliqonlar.
+Sea level	Dəniz səviyyəsi
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	Dəniz səviyyəsi indikinə nisbətən. Su səviyyədən aşağı hər yeri basır, sıfırdan aşağı şelfi açır. Təxminən -120 m - son buzlaşma maksimumu, təxminən +70 m - bütün buzlaqların əriməsi.
+Level	Səviyyə
+The present sea level.	İndiki dəniz səviyyəsi.
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	Su bütün qlobusda səviyyədən aşağı hər yeri basır. Dənizlə əlaqə yoxlanılmır, ona görə materiklərin içindəki ovalıqlar da su altında qalır. Su relyef açıq olanda görünür.
+Return the present sea level.	İndiki dəniz səviyyəsini qaytar.
+Slope and aspect here…	Burada mail və ekspozisiya…
+Hydrology	Hidrologiya
+Flooding from here…	Buradan su basması…
+Water flow from here…	Buradan suyun axını…
+Sea level…	Dəniz səviyyəsi…
+Catchment of the placemark	Nişanın su toplayıcı sahəsi
+Flow lines from the placemark…	Nişandan axın xətləri…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	Nöqtə ətrafındakı kvadratın hündürlüklərə görə mail və ekspozisiyası, xülasə, zirvələr və çökəkliklər.
+What is seen from the point in a circle of the given radius.	Verilmiş radiuslu dairədə nöqtədən görünənlər.
+Hours of direct sun per day around the point.	Nöqtə ətrafında sutkada birbaşa günəş saatları.
+Water from the point up to the given level, area, volume and depths.	Nöqtədən verilmiş səviyyəyə qədər su, sahə, həcm və dərinliklər.
+Flow line, catchment and river network around the point.	Nöqtə ətrafında axın xətti, su toplayıcı sahə və çay şəbəkəsi.
+Raising and lowering the sea level over the whole globe.	Bütün qlobusda dəniz səviyyəsinin qaldırılması və endirilməsi.
+north	şimal
+north-east	şimal-şərq
+east	şərq
+south-east	cənub-şərq
+south	cənub
+south-west	cənub-qərb
+west	qərb
+north-west	şimal-qərb

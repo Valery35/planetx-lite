@@ -1444,3 +1444,125 @@ Left:	左侧：
 There is no event {key} in the catalogs.	目录中没有事件 {key}。
 Borders of countries and regions, rivers and lakes, labels on the globe.	国家和地区边界、河流和湖泊、地球上的标注。
 Peaks and protected areas.	山峰和保护区。
+Slope from {low}° to {high}°, median {median}°.	坡度 {low}° 至 {high}°，中位数 {median}°。
+{low}-{high}° - {area} km²	{low}-{high}° - {area} 平方公里
+Areas by slope: {parts}.	按坡度的面积：{parts}。
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	坡面最常见的朝向：{sides}。
+Flat ground {share}.	平地 {share}。
+There are no heights in the square.	方形区域内没有高程。
+The grid step is {step} m.	网格步长为 {step} 米。
+There are no peaks and pits with such a drop in the square.	方形区域内没有这样落差的山峰和洼地。
+Peak {height} m	山峰 {height} 米
+Height {height} m, rise {drop} m.	高度 {height} 米，高出 {drop} 米。
+Pit {height} m	洼地 {height} 米
+Height {height} m, depth {drop} m.	高度 {height} 米，深度 {drop} 米。
+Peaks and pits {point}	山峰和洼地 {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	已写入“我的地点”：山峰 {peaks} 个，洼地 {pits} 个。
+Slope and aspect	坡度和坡向
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	计算方形区域边长的一半。越大 - 网格步长越粗，约为边长的六百分之一。
+Show	显示
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	方形区域在地球上显示的内容 - 坡面的陡度或其朝向的方位。此时“图层”部分的“坡度”和“坡向”行会关闭。
+Peak radius	山峰半径
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	山峰比此半径内周围的一切都高，洼地则更低。越大 - 只保留大的山峰和洼地。
+Drop from	落差下限
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	山峰高出周围最低点的最小高度，或洼地低于最高点的深度。越小 - 小丘和凹地越多。
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	根据高程计算方形区域的坡度和坡向，3 × 3 核 - 地球上的着色以及按坡度等级和方位的汇总。
+Peaks and pits	山峰和洼地
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	方形区域的山峰和封闭凹地 - “我的地点”中带高度和落差的点。
+Remove the colouring of the square from the globe.	从地球上移除方形区域的着色。
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	主水道 {km} 公里，落差 {fall} 米，比降 {slope}‰。
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	按 SP 33-101-2003 计算的坡面平均坡度 {slope}‰。
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	河网密度 {dens} 公里/平方公里，集水面积自 {area} 平方公里起的水道。
+There are no heights at the point.	该点没有高程。
+Water from the point flows nowhere.	该点的水无处可流。
+Flow line	径流线
+Length {km} km, drop {drop} m.	长度 {km} 公里，落差 {drop} 米。
+{name}: {text}	{name}：{text}
+The placemark is beyond the edge of the height data.	地标位于高程数据边缘之外。
+Water from the placemark flows nowhere.	地标处的水无处可流。
+Flow line {n}	径流线 {n}
+Flow lines «{name}»	径流线“{name}”
+{name}: lines {count}, total length {km} km.	{name}：线 {count} 条，总长 {km} 公里。
+The shortest lines not included {count}.	未包含的最短线 {count} 条。
+Water does not flow to the point: there is no catchment.	没有水流向该点，没有集水区。
+Catchment	集水区
+The outlet is moved to the channel {m} m from the point.	出口断面已移到距该点 {m} 米的河槽上。
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	集水区到达区域边缘，边缘以外的部分未计入。需要更大的半径。
+Main watercourse	主水道
+Basin {n}	流域 {n}
+Area {area} km².	面积 {area} 平方公里。
+There are no watercourses with such a catchment at the edge of the square.	方形区域边缘没有这样集水面积的水道。
+Basins	流域
+Basins written to «My places»: {count}, they cover {area} km² of the square.	已写入“我的地点”的流域：{count} 个，覆盖方形区域的 {area} 平方公里。
+There are no watercourses with such a catchment and order in the square.	方形区域内没有这样集水面积和级别的水道。
+Order {order}, catchment {area} km².	级别 {order}，集水面积 {area} 平方公里。
+Watercourse of order {order}	{order} 级水道
+River network	河网
+Watercourses written to «My places»: {count}, the largest order {order}.	已写入“我的地点”的水道：{count} 条，最高级别 {order}。
+Water does not flow to the placemark: there is no catchment.	没有水流向地标，没有集水区。
+Catchment «{name}»	集水区“{name}”
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	淹没 {area} 平方公里，水量 {volume} 百万立方米，最大深度 {depth} 米。
+The water reached the edge of the area and can go further. A larger radius is needed.	水已到达区域边缘，还可能继续蔓延。需要更大的半径。
+The level is not above the point, there is no water.	水位不高于该点，没有水。
+Flooding	淹没
+Point height	该点高度
+{h} m	{h} 米
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	水面高于海平面的高度。水淹没从该点能到达的、低于水位的一切。更高山脊后面的凹地保持干燥。
+Rise	上涨
+Rise of the water above the point height, up to {rise} m.	水面高出该点高度的值，最多 {rise} 米。
+To «My places»	写入“我的地点”
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	淹没范围轮廓 - “我的地点”中带水位、面积和水量的多边形。
+Remove the water from the globe.	从地球上移除水。
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	水位 {level} 米，淹没 {area} 平方公里，水量 {volume} 百万立方米，最大深度 {depth} 米。
+Flooding {level} m	淹没 {level} 米
+Water flow	水流
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	计算方形区域边长的一半。径流线在其边缘结束，大于方形区域的集水区不会完整计入。网格步长约为边长的六百分之一。
+Watercourses from	水道集水面积自
+ km²	 平方公里
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	河网 - 集水面积不小于此值的水道。越小 - 河网越密，包括小溪和冲沟。
+Order from	级别下限
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	河网中水道的最小 Strahler 级别。源头为 1 级，两条同级水道汇合后 - 加一级。越大 - 只有大河，级别在整个河网上计算。
+Channel search radius	河槽搜索半径
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	在该点周围此半径内搜索河槽 - 集水面积最大的位置，集水区从那里构建。因此在河流附近点击会得到该河流的集水区。0 - 集水区严格从该点构建。
+Stop at a watercourse	遇水道停止
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	径流线到达集水面积不小于“水道集水面积自”字段值的水道时结束。不勾选时，线一直延伸到方形区域边缘。
+Stop on flattening	遇变缓停止
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	径流线在区段长度上的平均坡度低于阈值处结束 - 在坡脚、阶地、河漫滩上。陡坡上的短平台不会使线停止。
+Flattening slope	变缓坡度
+The slope below which the terrain is counted as flattened.	低于此坡度的地形视为变缓。
+Section length	区段长度
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	测量平均坡度的区段长度。越大 - 只有较长的变缓才使线停止。
+Stop on merging	汇合时停止
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	来自地标的线在汇入先前构建的线时结束，共同河槽作为一条线延续。不勾选时，每条线都延伸到终点。
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	水从该点沿地形向下的路径 - “我的地点”中的一条线。凹地填充到溢出为止，因此线会穿过湖泊和封闭盆地。对于路径或多边形 - 从其所有节点出发的线，放在一个文件夹中。
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	水流向该点的区域和主水道 - “我的地点”中的文件夹，包含面积、坡度和水道长度。集水区从该点附近的河槽构建。
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	方形区域内带 Strahler 级别的水道 - “我的地点”中的线，线宽随级别增加。
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	方形区域划分为各出口断面的流域 - 集水面积不小于“水道集水面积自”字段值的水道离开方形区域的位置。“我的地点”中的多边形。
+Sea level	海平面
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	相对于当前海平面的高度。水淹没低于该水位的一切，低于零时露出大陆架。约 -120 米 - 末次冰盛期，约 +70 米 - 所有冰川融化。
+Level	水位
+The present sea level.	当前海平面。
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	水淹没整个地球上低于该水位的一切。不检查与海洋的连通，因此大陆内部的低地也会被淹没。开启地形时可见水面。
+Return the present sea level.	恢复当前海平面。
+Slope and aspect here…	此处的坡度和坡向…
+Hydrology	水文
+Flooding from here…	从此处淹没…
+Water flow from here…	从此处的水流…
+Sea level…	海平面…
+Catchment of the placemark	地标的集水区
+Flow lines from the placemark…	从地标出发的径流线…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	根据高程计算该点周围方形区域的坡度和坡向、汇总、山峰和洼地。
+What is seen from the point in a circle of the given radius.	在给定半径的圆内从该点能看到什么。
+Hours of direct sun per day around the point.	该点周围每天的直射阳光小时数。
+Water from the point up to the given level, area, volume and depths.	从该点到给定水位的水、面积、水量和深度。
+Flow line, catchment and river network around the point.	该点周围的径流线、集水区和河网。
+Raising and lowering the sea level over the whole globe.	在整个地球上升高和降低海平面。
+north	北
+north-east	东北
+east	东
+south-east	东南
+south	南
+south-west	西南
+west	西
+north-west	西北

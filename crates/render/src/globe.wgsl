@@ -27,7 +27,8 @@ struct Draw {
     lights: vec4<f32>,
     // Проход воды: цвет rgb в значениях экрана и непрозрачность.
     water: vec4<f32>,
-    // Проход воды: x - признак, y - глубина полной воды на экране.
+    // Проход воды: x - признак, y - глубина полной воды на экране,
+    // z - уровень моря на экране, окно «Уровень моря».
     sea: vec4<f32>,
     // Маска подземного режима: сдвиг и масштаб от долей тайла к долям
     // маски по u и v.
@@ -107,7 +108,7 @@ fn tile_vs(@location(0) offset: vec3<f32>, @location(1) uv: vec2<f32>, @location
     // В проходе воды сетка опускается на уровень моря, как у модуля.
     var p = offset;
     if draw.sea.x > 0.5 {
-        p = p - sea.xyz * sea.w;
+        p = p - sea.xyz * (sea.w - draw.sea.z);
     }
     out.position = draw.mvp * vec4<f32>(p, 1.0);
     out.height = sea.w;
@@ -177,11 +178,11 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     // Вода только над рельефом ниже нуля, у берега прозрачнее.
     let water = draw.sea.x > 0.5;
     if water {
-        if in.height >= 0.0 {
+        if in.height >= draw.sea.z {
             discard;
         }
         base = draw.water.rgb;
-        alpha = alpha * draw.water.a * clamp(-in.height / draw.sea.y, 0.25, 1.0);
+        alpha = alpha * draw.water.a * clamp((draw.sea.z - in.height) / draw.sea.y, 0.25, 1.0);
         shade = 1.0;
     }
     // Со светом солнца отмывка не нужна: тени даёт само солнце.

@@ -1444,3 +1444,125 @@ Left:	左：
 There is no event {key} in the catalogs.	カタログにイベント {key} はありません。
 Borders of countries and regions, rivers and lakes, labels on the globe.	国と地域の境界、川と湖、地球儀上のラベル。
 Peaks and protected areas.	山頂と保護区。
+Slope from {low}° to {high}°, median {median}°.	傾斜 {low}° から {high}°、中央値 {median}°。
+{low}-{high}° - {area} km²	{low}-{high}° - {area} km²
+Areas by slope: {parts}.	傾斜別の面積：{parts}。
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	斜面の最も多い向き：{sides}。
+Flat ground {share}.	平坦地 {share}。
+There are no heights in the square.	正方形の範囲に標高がありません。
+The grid step is {step} m.	グリッドの間隔は {step} m です。
+There are no peaks and pits with such a drop in the square.	正方形の範囲にこの高低差の山頂とくぼ地はありません。
+Peak {height} m	山頂 {height} m
+Height {height} m, rise {drop} m.	標高 {height} m、比高 {drop} m。
+Pit {height} m	くぼ地 {height} m
+Height {height} m, depth {drop} m.	標高 {height} m、深さ {drop} m。
+Peaks and pits {point}	山頂とくぼ地 {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	「マイプレイス」に書き込みました：山頂 {peaks}、くぼ地 {pits}。
+Slope and aspect	傾斜と斜面方位
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	計算する正方形の辺の半分です。大きいほどグリッドの間隔が粗くなり、辺の約 600 分の 1 です。
+Show	表示
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	正方形が地球儀に示すもの - 斜面の急さ、または斜面が向く方位です。その間、「レイヤー」セクションの「傾斜」と「斜面方位」の行はオフになります。
+Peak radius	山頂の半径
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	山頂はこの半径内の周囲すべてより高く、くぼ地は低い地点です。大きいほど大きな山頂とくぼ地だけが残ります。
+Drop from	高低差の下限
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	周囲の最も低い地点に対する山頂の最小の比高、または最も高い地点に対するくぼ地の深さです。小さいほど小さな丘とくぼみが増えます。
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	標高による正方形の傾斜と斜面方位、3 × 3 カーネル - 地球儀上の色分けと、傾斜区分と方位ごとの集計。
+Peaks and pits	山頂とくぼ地
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	正方形の山頂と閉じたくぼみ - 標高と高低差を持つ「マイプレイス」の点。
+Remove the colouring of the square from the globe.	正方形の色分けを地球儀から取り除きます。
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	主流路 {km} km、落差 {fall} m、勾配 {slope}‰。
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	SP 33-101-2003 による斜面の平均勾配 {slope}‰。
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	水系密度 {dens} km/km²、集水面積 {area} km² 以上の水路。
+There are no heights at the point.	その地点に標高がありません。
+Water from the point flows nowhere.	その地点の水はどこにも流れません。
+Flow line	流下線
+Length {km} km, drop {drop} m.	長さ {km} km、高低差 {drop} m。
+{name}: {text}	{name}：{text}
+The placemark is beyond the edge of the height data.	目印が標高データの端の外にあります。
+Water from the placemark flows nowhere.	目印の水はどこにも流れません。
+Flow line {n}	流下線 {n}
+Flow lines «{name}»	流下線「{name}」
+{name}: lines {count}, total length {km} km.	{name}：線 {count} 本、総延長 {km} km。
+The shortest lines not included {count}.	含まれなかった最短の線 {count} 本。
+Water does not flow to the point: there is no catchment.	その地点に水は流れ込みません。集水域がありません。
+Catchment	集水域
+The outlet is moved to the channel {m} m from the point.	流出点をその地点から {m} m の河道に移しました。
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	集水域が範囲の端に達しており、端の外の部分は数えていません。より大きな半径が必要です。
+Main watercourse	主流路
+Basin {n}	流域 {n}
+Area {area} km².	面積 {area} km²。
+There are no watercourses with such a catchment at the edge of the square.	正方形の端にこの集水面積の水路はありません。
+Basins	流域
+Basins written to «My places»: {count}, they cover {area} km² of the square.	「マイプレイス」に書き込んだ流域：{count}、正方形の {area} km² を覆います。
+There are no watercourses with such a catchment and order in the square.	正方形の範囲にこの集水面積と次数の水路はありません。
+Order {order}, catchment {area} km².	次数 {order}、集水面積 {area} km²。
+Watercourse of order {order}	次数 {order} の水路
+River network	河川網
+Watercourses written to «My places»: {count}, the largest order {order}.	「マイプレイス」に書き込んだ水路：{count}、最大次数 {order}。
+Water does not flow to the placemark: there is no catchment.	目印に水は流れ込みません。集水域がありません。
+Catchment «{name}»	集水域「{name}」
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	浸水 {area} km²、水量 {volume} 百万 m³、最大深 {depth} m。
+The water reached the edge of the area and can go further. A larger radius is needed.	水が範囲の端に達し、さらに広がる可能性があります。より大きな半径が必要です。
+The level is not above the point, there is no water.	水位が地点より高くないため、水はありません。
+Flooding	浸水
+Point height	地点の標高
+{h} m	{h} m
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	海面からの水面の高さです。水は地点から到達できる、水位より低いすべての場所を浸します。より高い尾根の向こうのくぼみは乾いたままです。
+Rise	上昇
+Rise of the water above the point height, up to {rise} m.	地点の標高からの水の上昇、最大 {rise} m。
+To «My places»	「マイプレイス」へ
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	浸水の輪郭 - 水位、面積、水量を持つ「マイプレイス」のポリゴン。
+Remove the water from the globe.	水を地球儀から取り除きます。
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	水位 {level} m、浸水 {area} km²、水量 {volume} 百万 m³、最大深 {depth} m。
+Flooding {level} m	浸水 {level} m
+Water flow	水の流れ
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	計算する正方形の辺の半分です。流下線はその端で終わり、正方形より大きい集水域は完全には数えられません。グリッドの間隔は辺の約 600 分の 1 です。
+Watercourses from	水路の集水面積下限
+ km²	 km²
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	河川網 - 集水面積がこの面積以上の水路です。小さいほど小川や谷を含む密な網になります。
+Order from	次数の下限
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	河川網に含める水路の最小のストレーラー次数です。源流は次数 1、同じ次数の水路が 2 本合流すると 1 つ上がります。大きいほど大河だけになり、次数は網全体で数えます。
+Channel search radius	河道の探索半径
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	地点からこの半径内で河道を探します - 集水域が最大の場所で、そこから集水域を作ります。そのため川の近くをクリックすると川の集水域が得られます。0 - 地点そのものからの集水域。
+Stop at a watercourse	水路で止める
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	流下線は、集水面積が「水路の集水面積下限」欄の面積以上の水路に達すると終わります。チェックを外すと、線は正方形の端まで続きます。
+Stop on flattening	緩傾斜で止める
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	流下線は、区間長での平均勾配がしきい値を下回る場所で終わります - 斜面の裾、段丘、氾濫原などです。急斜面上の短い平坦部では線は止まりません。
+Flattening slope	緩傾斜の勾配
+The slope below which the terrain is counted as flattened.	これより低い勾配の地形を緩傾斜とみなします。
+Section length	区間長
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	平均勾配を測る区間の長さです。大きいほど長い緩傾斜だけが線を止めます。
+Stop on merging	合流で止める
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	目印からの線は、先に作った線に流れ込むと終わり、共通の河道は 1 本の線として続きます。チェックを外すと、各線は最後まで続きます。
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	地点から地形を下る水の経路 - 「マイプレイス」の線です。くぼみはあふれるまで満たされるため、線は湖や閉じた盆地を通ります。パスやポリゴンの場合 - そのすべての頂点からの線をフォルダーにまとめます。
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	水が地点に流れ込む範囲と主流路 - 面積、勾配、水路長を持つ「マイプレイス」のフォルダーです。集水域は地点近くの河道から作ります。
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	ストレーラー次数付きの正方形の水路 - 「マイプレイス」の線で、線の太さは次数とともに増します。
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	流出点ごとの流域に分けた正方形 - 集水面積が「水路の集水面積下限」欄の面積以上の水路が正方形を出る場所です。「マイプレイス」のポリゴン。
+Sea level	海面水位
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	現在に対する海面水位です。水は水位より低いすべてを浸し、0 未満では大陸棚が現れます。約 -120 m - 最終氷期最盛期、約 +70 m - すべての氷河の融解。
+Level	水位
+The present sea level.	現在の海面水位。
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	水は地球儀全体で水位より低いすべてを浸します。海とのつながりは確認しないため、大陸内部の低地も浸水します。水は地形をオンにすると見えます。
+Return the present sea level.	現在の海面水位に戻します。
+Slope and aspect here…	ここの傾斜と斜面方位…
+Hydrology	水文
+Flooding from here…	ここからの浸水…
+Water flow from here…	ここからの水の流れ…
+Sea level…	海面水位…
+Catchment of the placemark	目印の集水域
+Flow lines from the placemark…	目印からの流下線…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	標高による地点周辺の正方形の傾斜と斜面方位、集計、山頂とくぼ地。
+What is seen from the point in a circle of the given radius.	指定した半径の円内で地点から見える範囲。
+Hours of direct sun per day around the point.	地点周辺の 1 日あたりの直射日光の時間。
+Water from the point up to the given level, area, volume and depths.	地点から指定した水位までの水、面積、水量、深さ。
+Flow line, catchment and river network around the point.	地点周辺の流下線、集水域、河川網。
+Raising and lowering the sea level over the whole globe.	地球儀全体での海面水位の上昇と低下。
+north	北
+north-east	北東
+east	東
+south-east	南東
+south	南
+south-west	南西
+west	西
+north-west	北西

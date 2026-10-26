@@ -1444,3 +1444,125 @@ Left:	Izquierda:
 There is no event {key} in the catalogs.	No hay ningún evento {key} en los catálogos.
 Borders of countries and regions, rivers and lakes, labels on the globe.	Fronteras de países y regiones, ríos y lagos, etiquetas en el globo.
 Peaks and protected areas.	Cumbres y áreas protegidas.
+Slope from {low}° to {high}°, median {median}°.	Pendiente de {low}° a {high}°, mediana {median}°.
+{low}-{high}° - {area} km²	{low}-{high}° - {area} km²
+Areas by slope: {parts}.	Superficies por pendiente: {parts}.
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	Orientación más frecuente de las laderas: {sides}.
+Flat ground {share}.	Terreno llano {share}.
+There are no heights in the square.	En el cuadrado no hay alturas.
+The grid step is {step} m.	El paso de la malla es {step} m.
+There are no peaks and pits with such a drop in the square.	En el cuadrado no hay cumbres ni hoyas con tal desnivel.
+Peak {height} m	Cumbre {height} m
+Height {height} m, rise {drop} m.	Altura {height} m, elevación {drop} m.
+Pit {height} m	Hoya {height} m
+Height {height} m, depth {drop} m.	Altura {height} m, profundidad {drop} m.
+Peaks and pits {point}	Cumbres y hoyas {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	Escrito en «Mis lugares»: cumbres {peaks} y hoyas {pits}.
+Slope and aspect	Pendiente y orientación
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	La mitad del lado del cuadrado calculado. Mayor - paso de malla más grueso, es de aproximadamente una seiscentésima parte del lado.
+Show	Mostrar
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Lo que el cuadrado muestra en el globo - la inclinación de una ladera o el punto cardinal hacia el que mira. Las filas «Pendiente» y «Orientación» de la sección «Capas» se desactivan mientras tanto.
+Peak radius	Radio de cumbre
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	Una cumbre es más alta que todo lo que la rodea en este radio, una hoya más baja. Mayor - solo quedan las cumbres y hoyas grandes.
+Drop from	Desnivel desde
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	La menor elevación de una cumbre sobre el punto más bajo a su alrededor o la profundidad de una hoya bajo el más alto. Menor - más colinas y hondonadas pequeñas.
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Pendiente y orientación del cuadrado según las alturas, núcleo 3 × 3 - un coloreado en el globo y un resumen por clases de pendiente y puntos cardinales.
+Peaks and pits	Cumbres y hoyas
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	Cumbres y depresiones cerradas del cuadrado - puntos en «Mis lugares» con la altura y el desnivel.
+Remove the colouring of the square from the globe.	Quitar el coloreado del cuadrado del globo.
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	Curso de agua principal {km} km, caída {fall} m, pendiente {slope} por mil.
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	Pendiente media de las laderas {slope} por mil según SP 33-101-2003.
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	Densidad de drenaje {dens} km por km², cursos de agua con una cuenca desde {area} km².
+There are no heights at the point.	En el punto no hay alturas.
+Water from the point flows nowhere.	El agua del punto no fluye a ninguna parte.
+Flow line	Línea de flujo
+Length {km} km, drop {drop} m.	Longitud {km} km, desnivel {drop} m.
+{name}: {text}	{name}: {text}
+The placemark is beyond the edge of the height data.	La marca está más allá del borde de los datos de altura.
+Water from the placemark flows nowhere.	El agua de la marca no fluye a ninguna parte.
+Flow line {n}	Línea de flujo {n}
+Flow lines «{name}»	Líneas de flujo «{name}»
+{name}: lines {count}, total length {km} km.	{name}: líneas {count}, longitud total {km} km.
+The shortest lines not included {count}.	Líneas más cortas no incluidas {count}.
+Water does not flow to the point: there is no catchment.	El agua no fluye hacia el punto, no hay cuenca.
+Catchment	Cuenca
+The outlet is moved to the channel {m} m from the point.	El punto de desagüe se ha movido al cauce a {m} m del punto.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	La cuenca llega al borde del área, su parte fuera del borde no se cuenta. Se necesita un radio mayor.
+Main watercourse	Curso de agua principal
+Basin {n}	Cuenca {n}
+Area {area} km².	Superficie {area} km².
+There are no watercourses with such a catchment at the edge of the square.	En el borde del cuadrado no hay cursos de agua con tal cuenca.
+Basins	Cuencas
+Basins written to «My places»: {count}, they cover {area} km² of the square.	Cuencas escritas en «Mis lugares»: {count}, cubren {area} km² del cuadrado.
+There are no watercourses with such a catchment and order in the square.	En el cuadrado no hay cursos de agua con tal cuenca y orden.
+Order {order}, catchment {area} km².	Orden {order}, cuenca {area} km².
+Watercourse of order {order}	Curso de agua de orden {order}
+River network	Red fluvial
+Watercourses written to «My places»: {count}, the largest order {order}.	Cursos de agua escritos en «Mis lugares»: {count}, el orden mayor {order}.
+Water does not flow to the placemark: there is no catchment.	El agua no fluye hacia la marca, no hay cuenca.
+Catchment «{name}»	Cuenca «{name}»
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Inundado {area} km², volumen de agua {volume} millones de m³, profundidad máxima {depth} m.
+The water reached the edge of the area and can go further. A larger radius is needed.	El agua llegó al borde del área y puede seguir. Se necesita un radio mayor.
+The level is not above the point, there is no water.	El nivel no está por encima del punto, no hay agua.
+Flooding	Inundación
+Point height	Altura del punto
+{h} m	{h} m
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	Altura de la superficie del agua sobre el nivel del mar. El agua inunda todo lo que está bajo el nivel y que alcanza desde el punto. Las hondonadas tras una cresta más alta quedan secas.
+Rise	Subida
+Rise of the water above the point height, up to {rise} m.	Subida del agua sobre la altura del punto, hasta {rise} m.
+To «My places»	A «Mis lugares»
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	El contorno de la inundación - un polígono en «Mis lugares» con el nivel, la superficie y el volumen.
+Remove the water from the globe.	Quitar el agua del globo.
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Nivel {level} m, inundado {area} km², volumen de agua {volume} millones de m³, profundidad máxima {depth} m.
+Flooding {level} m	Inundación {level} m
+Water flow	Flujo del agua
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	La mitad del lado del cuadrado calculado. La línea de flujo termina en su borde, una cuenca mayor que el cuadrado no se cuenta por completo. El paso de la malla es de aproximadamente una seiscentésima parte del lado.
+Watercourses from	Cursos de agua desde
+ km²	 km²
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	La red fluvial - cursos de agua con una cuenca de al menos esta superficie. Menor - una red más densa con arroyos y barrancos.
+Order from	Orden desde
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	El menor orden de Strahler de un curso de agua en la red fluvial. Una fuente es de orden 1, tras unirse dos cursos de agua del mismo orden - uno más. Mayor - solo los ríos grandes, los órdenes se cuentan en toda la red.
+Channel search radius	Radio de búsqueda del cauce
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	En este radio desde el punto se busca el cauce - el lugar con la mayor cuenca, la cuenca se construye desde él. Así un clic cerca de un río da la cuenca del río. 0 - la cuenca exactamente desde el punto.
+Stop at a watercourse	Detener en un curso de agua
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	La línea de flujo termina al alcanzar un curso de agua con una cuenca de al menos la superficie del campo «Cursos de agua desde». Sin la casilla la línea llega al borde del cuadrado.
+Stop on flattening	Detener en el aplanamiento
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	La línea de flujo termina donde la pendiente media en la longitud del tramo está bajo el umbral - al pie de una ladera, en una terraza, en una llanura de inundación. Un rellano corto en una ladera empinada no detiene la línea.
+Flattening slope	Pendiente de aplanamiento
+The slope below which the terrain is counted as flattened.	La pendiente bajo la cual el terreno se considera aplanado.
+Section length	Longitud del tramo
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	La longitud del tramo en que se mide la pendiente media. Mayor - solo un aplanamiento largo detiene la línea.
+Stop on merging	Detener en la confluencia
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	Las líneas de la marca terminan al desembocar en una línea construida antes, y el cauce común sigue como una sola línea. Sin la casilla cada línea llega hasta el final.
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	El camino del agua desde el punto bajando por el relieve - una línea en «Mis lugares». Las hondonadas se llenan hasta el desborde, así la línea atraviesa lagos y cuencas cerradas. Para una ruta o un polígono - líneas desde todos sus nodos, en una carpeta.
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	La superficie desde la que el agua fluye al punto y el curso de agua principal - una carpeta en «Mis lugares» con la superficie, las pendientes y la longitud del curso de agua. La cuenca se construye desde el cauce cerca del punto.
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	Los cursos de agua del cuadrado con el orden de Strahler - líneas en «Mis lugares», el grosor de la línea crece con el orden.
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	El cuadrado dividido en cuencas de puntos de desagüe - lugares donde los cursos de agua con una cuenca de al menos la superficie del campo «Cursos de agua desde» salen del cuadrado. Polígonos en «Mis lugares».
+Sea level	Nivel del mar
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	El nivel del mar respecto al actual. El agua inunda todo lo que está bajo el nivel, bajo cero descubre la plataforma continental. Unos -120 m - el último máximo glacial, unos +70 m - el deshielo de todos los glaciares.
+Level	Nivel
+The present sea level.	El nivel actual del mar.
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	El agua inunda todo lo que está bajo el nivel en todo el globo. La conexión con el mar no se comprueba, así que también se inundan las tierras bajas del interior de los continentes. El agua se ve con el relieve activado.
+Return the present sea level.	Restablecer el nivel actual del mar.
+Slope and aspect here…	Pendiente y orientación aquí…
+Hydrology	Hidrología
+Flooding from here…	Inundación desde aquí…
+Water flow from here…	Flujo del agua desde aquí…
+Sea level…	Nivel del mar…
+Catchment of the placemark	Cuenca de la marca
+Flow lines from the placemark…	Líneas de flujo desde la marca…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	Pendiente y orientación de un cuadrado alrededor del punto según las alturas, resumen, cumbres y hoyas.
+What is seen from the point in a circle of the given radius.	Lo que se ve desde el punto en un círculo del radio dado.
+Hours of direct sun per day around the point.	Horas de sol directo por día alrededor del punto.
+Water from the point up to the given level, area, volume and depths.	El agua desde el punto hasta el nivel dado, superficie, volumen y profundidades.
+Flow line, catchment and river network around the point.	Línea de flujo, cuenca y red fluvial alrededor del punto.
+Raising and lowering the sea level over the whole globe.	Subida y bajada del nivel del mar en todo el globo.
+north	norte
+north-east	noreste
+east	este
+south-east	sureste
+south	sur
+south-west	suroeste
+west	oeste
+north-west	noroeste

@@ -1444,3 +1444,125 @@ Left:	왼쪽:
 There is no event {key} in the catalogs.	카탈로그에 사건 {key}이(가) 없습니다.
 Borders of countries and regions, rivers and lakes, labels on the globe.	국가와 지역 경계, 강과 호수, 지구본의 라벨.
 Peaks and protected areas.	봉우리와 보호구역.
+Slope from {low}° to {high}°, median {median}°.	경사 {low}°~{high}°, 중앙값 {median}°.
+{low}-{high}° - {area} km²	{low}-{high}° - {area} km²
+Areas by slope: {parts}.	경사별 면적: {parts}.
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	사면의 가장 흔한 방향: {sides}.
+Flat ground {share}.	평지 {share}.
+There are no heights in the square.	정사각형 안에 고도가 없습니다.
+The grid step is {step} m.	격자 간격은 {step} m입니다.
+There are no peaks and pits with such a drop in the square.	정사각형 안에 이런 고도차의 봉우리와 와지가 없습니다.
+Peak {height} m	봉우리 {height} m
+Height {height} m, rise {drop} m.	고도 {height} m, 비고 {drop} m.
+Pit {height} m	와지 {height} m
+Height {height} m, depth {drop} m.	고도 {height} m, 깊이 {drop} m.
+Peaks and pits {point}	봉우리와 와지 {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	«내 장소»에 기록함: 봉우리 {peaks}, 와지 {pits}.
+Slope and aspect	경사와 사면 방향
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	계산할 정사각형 한 변의 절반입니다. 클수록 격자 간격이 거칠어지며, 변의 약 600분의 1입니다.
+Show	표시
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	정사각형이 지구본에 보여 주는 것 - 사면의 가파름 또는 사면이 향하는 방위입니다. 그동안 «레이어» 섹션의 «경사»와 «사면 방향» 행은 꺼집니다.
+Peak radius	봉우리 반경
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	봉우리는 이 반경 안의 주변 모든 곳보다 높고, 와지는 낮습니다. 클수록 큰 봉우리와 와지만 남습니다.
+Drop from	고도차 하한
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	주변 최저점에 대한 봉우리의 최소 비고 또는 최고점에 대한 와지의 깊이입니다. 작을수록 작은 언덕과 우묵한 곳이 많아집니다.
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	고도에 따른 정사각형의 경사와 사면 방향, 3 × 3 커널 - 지구본 위의 색칠과 경사 등급 및 방위별 요약.
+Peaks and pits	봉우리와 와지
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	정사각형의 봉우리와 닫힌 우묵한 곳 - 고도와 고도차가 있는 «내 장소»의 점.
+Remove the colouring of the square from the globe.	정사각형의 색칠을 지구본에서 제거합니다.
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	본류 수로 {km} km, 낙차 {fall} m, 경사 {slope}‰.
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	SP 33-101-2003에 따른 사면 평균 경사 {slope}‰.
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	하천 밀도 {dens} km/km², 집수 면적 {area} km² 이상의 수로.
+There are no heights at the point.	이 지점에 고도가 없습니다.
+Water from the point flows nowhere.	이 지점의 물은 어디로도 흐르지 않습니다.
+Flow line	유하선
+Length {km} km, drop {drop} m.	길이 {km} km, 고도차 {drop} m.
+{name}: {text}	{name}: {text}
+The placemark is beyond the edge of the height data.	장소 표시가 고도 자료의 가장자리 밖에 있습니다.
+Water from the placemark flows nowhere.	장소 표시의 물은 어디로도 흐르지 않습니다.
+Flow line {n}	유하선 {n}
+Flow lines «{name}»	유하선 «{name}»
+{name}: lines {count}, total length {km} km.	{name}: 선 {count}개, 총 길이 {km} km.
+The shortest lines not included {count}.	포함되지 않은 가장 짧은 선 {count}개.
+Water does not flow to the point: there is no catchment.	이 지점으로 물이 흘러오지 않습니다. 집수역이 없습니다.
+Catchment	집수역
+The outlet is moved to the channel {m} m from the point.	유출구를 지점에서 {m} m 떨어진 하도로 옮겼습니다.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	집수역이 영역 가장자리에 닿아, 가장자리 밖 부분은 계산되지 않았습니다. 더 큰 반경이 필요합니다.
+Main watercourse	본류 수로
+Basin {n}	유역 {n}
+Area {area} km².	면적 {area} km².
+There are no watercourses with such a catchment at the edge of the square.	정사각형 가장자리에 이런 집수 면적의 수로가 없습니다.
+Basins	유역
+Basins written to «My places»: {count}, they cover {area} km² of the square.	«내 장소»에 기록한 유역: {count}, 정사각형의 {area} km²를 덮습니다.
+There are no watercourses with such a catchment and order in the square.	정사각형 안에 이런 집수 면적과 차수의 수로가 없습니다.
+Order {order}, catchment {area} km².	차수 {order}, 집수 면적 {area} km².
+Watercourse of order {order}	{order}차 수로
+River network	하천망
+Watercourses written to «My places»: {count}, the largest order {order}.	«내 장소»에 기록한 수로: {count}, 최대 차수 {order}.
+Water does not flow to the placemark: there is no catchment.	장소 표시로 물이 흘러오지 않습니다. 집수역이 없습니다.
+Catchment «{name}»	집수역 «{name}»
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	침수 {area} km², 물의 부피 {volume}백만 m³, 최대 깊이 {depth} m.
+The water reached the edge of the area and can go further. A larger radius is needed.	물이 영역 가장자리에 닿았으며 더 멀리 갈 수 있습니다. 더 큰 반경이 필요합니다.
+The level is not above the point, there is no water.	수위가 지점보다 높지 않아 물이 없습니다.
+Flooding	침수
+Point height	지점 고도
+{h} m	{h} m
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	해수면 위 수면의 높이입니다. 물은 지점에서 닿을 수 있는, 수위보다 낮은 모든 곳을 잠기게 합니다. 더 높은 능선 너머의 우묵한 곳은 마른 채로 남습니다.
+Rise	상승
+Rise of the water above the point height, up to {rise} m.	지점 고도 위로 물이 오르는 높이, 최대 {rise} m.
+To «My places»	«내 장소»로
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	침수 윤곽 - 수위, 면적, 부피가 있는 «내 장소»의 폴리곤.
+Remove the water from the globe.	물을 지구본에서 제거합니다.
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	수위 {level} m, 침수 {area} km², 물의 부피 {volume}백만 m³, 최대 깊이 {depth} m.
+Flooding {level} m	침수 {level} m
+Water flow	물의 흐름
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	계산할 정사각형 한 변의 절반입니다. 유하선은 그 가장자리에서 끝나고, 정사각형보다 큰 집수역은 완전히 계산되지 않습니다. 격자 간격은 변의 약 600분의 1입니다.
+Watercourses from	수로 집수 면적 하한
+ km²	 km²
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	하천망 - 집수 면적이 이 면적 이상인 수로입니다. 작을수록 개울과 골짜기를 포함한 더 촘촘한 망이 됩니다.
+Order from	차수 하한
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	하천망에 넣을 수로의 최소 스트랄러 차수입니다. 발원지는 1차이고, 같은 차수의 수로 두 개가 합쳐지면 하나 올라갑니다. 클수록 큰 강만 남으며, 차수는 망 전체에서 계산합니다.
+Channel search radius	하도 탐색 반경
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	지점에서 이 반경 안에서 하도를 찾습니다 - 집수역이 가장 큰 곳이며, 그곳에서 집수역을 만듭니다. 그래서 강 근처를 클릭하면 그 강의 집수역이 나옵니다. 0 - 지점 그대로부터의 집수역.
+Stop at a watercourse	수로에서 멈춤
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	유하선은 집수 면적이 «수로 집수 면적 하한» 칸의 면적 이상인 수로에 닿으면 끝납니다. 확인란을 끄면 선은 정사각형 가장자리까지 이어집니다.
+Stop on flattening	완만해지면 멈춤
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	유하선은 구간 길이에서 평균 경사가 기준값보다 낮은 곳에서 끝납니다 - 사면 기슭, 단구, 범람원 등. 가파른 사면의 짧은 평탄부에서는 선이 멈추지 않습니다.
+Flattening slope	완만 경사
+The slope below which the terrain is counted as flattened.	이보다 낮은 경사의 지형을 완만하다고 봅니다.
+Section length	구간 길이
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	평균 경사를 재는 구간의 길이입니다. 클수록 긴 완만부만 선을 멈춥니다.
+Stop on merging	합류에서 멈춤
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	장소 표시에서 나온 선은 먼저 만든 선에 흘러들면 끝나고, 공통 하도는 하나의 선으로 이어집니다. 확인란을 끄면 각 선이 끝까지 이어집니다.
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	지점에서 지형을 따라 내려가는 물의 경로 - «내 장소»의 선입니다. 우묵한 곳은 넘칠 때까지 채워지므로 선은 호수와 닫힌 분지를 지나갑니다. 경로나 폴리곤이면 - 모든 꼭짓점에서 나온 선을 폴더에 담습니다.
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	물이 지점으로 흘러드는 영역과 본류 수로 - 면적, 경사, 수로 길이가 있는 «내 장소»의 폴더입니다. 집수역은 지점 근처의 하도에서 만듭니다.
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	스트랄러 차수가 있는 정사각형의 수로 - «내 장소»의 선이며, 선 굵기는 차수에 따라 커집니다.
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	유출구별 유역으로 나눈 정사각형 - 집수 면적이 «수로 집수 면적 하한» 칸의 면적 이상인 수로가 정사각형을 벗어나는 곳입니다. «내 장소»의 폴리곤.
+Sea level	해수면
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	현재에 대한 해수면입니다. 물은 수위보다 낮은 모든 곳을 잠기게 하고, 0 아래에서는 대륙붕이 드러납니다. 약 -120 m - 마지막 빙하 극대기, 약 +70 m - 모든 빙하의 융해.
+Level	수위
+The present sea level.	현재 해수면.
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	물은 지구본 전체에서 수위보다 낮은 모든 곳을 잠기게 합니다. 바다와의 연결은 확인하지 않으므로 대륙 안의 저지대도 잠깁니다. 물은 지형을 켜면 보입니다.
+Return the present sea level.	현재 해수면으로 되돌립니다.
+Slope and aspect here…	여기의 경사와 사면 방향…
+Hydrology	수문
+Flooding from here…	여기서 침수…
+Water flow from here…	여기서 물의 흐름…
+Sea level…	해수면…
+Catchment of the placemark	장소 표시의 집수역
+Flow lines from the placemark…	장소 표시에서 유하선…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	고도에 따른 지점 주변 정사각형의 경사와 사면 방향, 요약, 봉우리와 와지.
+What is seen from the point in a circle of the given radius.	주어진 반경의 원 안에서 지점에서 보이는 곳.
+Hours of direct sun per day around the point.	지점 주변의 하루 직사광선 시간.
+Water from the point up to the given level, area, volume and depths.	지점에서 주어진 수위까지의 물, 면적, 부피, 깊이.
+Flow line, catchment and river network around the point.	지점 주변의 유하선, 집수역, 하천망.
+Raising and lowering the sea level over the whole globe.	지구본 전체에서 해수면 올리기와 내리기.
+north	북
+north-east	북동
+east	동
+south-east	남동
+south	남
+south-west	남서
+west	서
+north-west	북서

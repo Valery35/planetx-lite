@@ -56,7 +56,14 @@
 //! - [`cog`] - окна Cloud Optimized GeoTIFF по кускам файла без GDAL,
 //!   замена `/vsicurl/` модуля для каналов космоснимков;
 //! - [`warp`] - привязка изображения по опорным точкам без GDAL, полином
-//!   и тонкая пластина.
+//!   и тонкая пластина;
+//! - [`topo_surface`], [`hydro_fill`], [`topo_flow`], [`topo_gauge`] -
+//!   морфометрия, заполнение понижений, сток D8 и отчёт по створу,
+//!   перенос ядра модуля из Isoliner;
+//! - [`hydro`] - затопление, линии стока, водосборы и реки у точки,
+//!   перенос `core/hydro.py`;
+//! - [`relief`] - уклон, экспозиция, вершины и ямы квадрата, перенос
+//!   `core/relief.py`.
 
 pub mod areas;
 pub mod aircraft;
@@ -88,6 +95,8 @@ pub mod geomag;
 pub mod gibs;
 pub mod grid;
 pub mod hips;
+pub mod hydro;
+pub mod hydro_fill;
 pub mod infra;
 pub mod insolation;
 pub mod iscgem;
@@ -109,6 +118,7 @@ pub mod plates;
 pub mod pmtiles;
 pub mod quakes;
 pub mod rastermaps;
+pub mod relief;
 pub mod routing;
 pub mod rumsey;
 pub mod satellites;
@@ -123,6 +133,9 @@ pub mod slope;
 pub mod stars;
 pub mod subsurface;
 pub mod tomography;
+pub mod topo_flow;
+pub mod topo_gauge;
+pub mod topo_surface;
 pub mod trains;
 pub mod vessels;
 pub mod viewshed;

@@ -58,6 +58,13 @@ pub enum Choice {
     Sentinel,
     /// «Облака точек лидара здесь».
     Lidar,
+    /// «Уклон и экспозиция здесь…» подменю «Анализ рельефа».
+    SlopeHere,
+    /// «Затопление отсюда…», «Сток воды отсюда…», «Уровень моря…»
+    /// подменю «Гидрология».
+    Flood,
+    Flow,
+    SeaLevel,
     /// «Орбита и след» спутника: номер NORAD или None - снять.
     SatPath(Option<i64>),
     /// «Камера следом» за спутником: номер NORAD или None - отпустить.
@@ -97,6 +104,10 @@ pub struct GlobeMenu {
     /// показаны ли виток и след, идёт ли камера следом,
     /// `satellite_items` модуля.
     pub satellite: Option<(i64, String, bool, bool)>,
+    /// На глобусе Земля: пункты служб Земли.
+    pub earth: bool,
+    /// У тела есть высоты: подменю «Анализ рельефа» и «Гидрология».
+    pub relief: bool,
 }
 
 impl GlobeMenu {
@@ -198,52 +209,83 @@ impl GlobeMenu {
                                 }
                             });
                         }
-                        ui.separator();
-                        pick(ui, tr(lang, "What's here?"), Choice::WhatHere);
-                        // Окна расчёта у точки - одной группой, старые карты -
-                        // другой, как у модуля.
+                        if self.drawing.is_none() && self.earth {
+                            ui.separator();
+                            pick(ui, tr(lang, "What's here?"), Choice::WhatHere);
+                        }
+                        // Окна расчёта и снимков у точки - одной группой,
+                        // исторические карты - другой, как у модуля.
+                        // «Анализ рельефа» и «Гидрология» - подменю
+                        // `relief_items` и `hydro_items` модуля, у тела
+                        // с высотами.
                         if self.drawing.is_none() {
                             ui.separator();
-                            pick(ui, tr(lang, "Viewshed from here…"), Choice::Viewshed);
-                            pick(ui, tr(lang, "Satellite images here…"), Choice::Sentinel);
-                            pick(ui, tr(lang, "Lidar point clouds here"), Choice::Lidar);
-                            pick(ui, tr(lang, "Insolation here…"), Choice::Insolation);
-                            // Карты Рамсея (IIIF) и «Это место» не отдают данные
-                            // странице, у неё этих пунктов нет.
-                            if !cfg!(target_arch = "wasm32") {
-                                ui.separator();
-                                pick(ui, tr(lang, "Rumsey historical maps here…"), Choice::Rumsey);
-                                pick(ui, tr(lang, "Eto Mesto old maps here…"), Choice::Etomesto);
+                            if self.relief {
+                                ui.menu_button(tr(lang, "Terrain analysis"), |ui| {
+                                    let mut item = |ui: &mut egui::Ui, text: &'static str, tip: &'static str, c: Choice| {
+                                        if ui.button(tr(lang, text)).on_hover_text(tr(lang, tip)).clicked() {
+                                            follow = Some(c);
+                                        }
+                                    };
+                                    item(ui, "Slope and aspect here…", "Slope and aspect of a square around the point by the heights, a summary, peaks and pits.", Choice::SlopeHere);
+                                    item(ui, "Viewshed from here…", "What is seen from the point in a circle of the given radius.", Choice::Viewshed);
+                                    if self.earth {
+                                        item(ui, "Insolation here…", "Hours of direct sun per day around the point.", Choice::Insolation);
+                                    }
+                                });
+                                ui.menu_button(tr(lang, "Hydrology"), |ui| {
+                                    let mut item = |ui: &mut egui::Ui, text: &'static str, tip: &'static str, c: Choice| {
+                                        if ui.button(tr(lang, text)).on_hover_text(tr(lang, tip)).clicked() {
+                                            follow = Some(c);
+                                        }
+                                    };
+                                    item(ui, "Flooding from here…", "Water from the point up to the given level, area, volume and depths.", Choice::Flood);
+                                    item(ui, "Water flow from here…", "Flow line, catchment and river network around the point.", Choice::Flow);
+                                    item(ui, "Sea level…", "Raising and lowering the sea level over the whole globe.", Choice::SeaLevel);
+                                });
+                            }
+                            if self.earth {
+                                pick(ui, tr(lang, "Satellite images here…"), Choice::Sentinel);
+                                pick(ui, tr(lang, "Lidar point clouds here"), Choice::Lidar);
+                                // Карты Рамсея (IIIF) и «Это место» не отдают
+                                // данные странице, у неё этих пунктов нет.
+                                if !cfg!(target_arch = "wasm32") {
+                                    ui.separator();
+                                    pick(ui, tr(lang, "Rumsey historical maps here…"), Choice::Rumsey);
+                                    pick(ui, tr(lang, "Eto Mesto old maps here…"), Choice::Etomesto);
+                                }
                             }
                         }
-                        ui.separator();
                         // «Открыть в браузере» и «Номенклатура листа», link_items
-                        // и sheet_items модуля.
-                        ui.menu_button(tr(lang, "Open in browser"), |ui| {
-                            for (name, template) in &self.links {
-                                if ui.button(name.as_str()).clicked() {
-                                    follow = Some(Choice::OpenLink(template.clone()));
-                                }
-                            }
-                            if !self.links.is_empty() {
-                                ui.separator();
-                            }
-                            if ui.button(tr(lang, "Add or edit sites…")).clicked() {
-                                follow = Some(Choice::EditLinks);
-                            }
-                        });
-                        if self.drawing.is_none() {
-                            ui.menu_button(tr(lang, "Map sheet designation"), |ui| {
-                                for (number, label) in &self.sheets {
-                                    if ui.button(format!("{number}    {label}")).clicked() {
-                                        follow = Some(Choice::CopySheet(number.clone()));
+                        // и sheet_items модуля, только на Земле.
+                        if self.earth {
+                            ui.separator();
+                            ui.menu_button(tr(lang, "Open in browser"), |ui| {
+                                for (name, template) in &self.links {
+                                    if ui.button(name.as_str()).clicked() {
+                                        follow = Some(Choice::OpenLink(template.clone()));
                                     }
                                 }
-                                ui.separator();
-                                if ui.button(tr(lang, "All numbers in a window…")).clicked() {
-                                    follow = Some(Choice::SheetsWindow);
+                                if !self.links.is_empty() {
+                                    ui.separator();
+                                }
+                                if ui.button(tr(lang, "Add or edit sites…")).clicked() {
+                                    follow = Some(Choice::EditLinks);
                                 }
                             });
+                            if self.drawing.is_none() {
+                                ui.menu_button(tr(lang, "Map sheet designation"), |ui| {
+                                    for (number, label) in &self.sheets {
+                                        if ui.button(format!("{number}    {label}")).clicked() {
+                                            follow = Some(Choice::CopySheet(number.clone()));
+                                        }
+                                    }
+                                    ui.separator();
+                                    if ui.button(tr(lang, "All numbers in a window…")).clicked() {
+                                        follow = Some(Choice::SheetsWindow);
+                                    }
+                                });
+                            }
                         }
                     }
                 });

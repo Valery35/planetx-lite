@@ -1444,3 +1444,125 @@ Left:	Слева:
 There is no event {key} in the catalogs.	В каталогах нет события {key}.
 Borders of countries and regions, rivers and lakes, labels on the globe.	Границы стран и областей, реки и водоёмы, подписи на глобусе.
 Peaks and protected areas.	Вершины и охраняемые территории.
+Slope from {low}° to {high}°, median {median}°.	Уклон от {low}° до {high}°, медиана {median}°.
+{low}-{high}° - {area} km²	{low}-{high}° - {area} км²
+Areas by slope: {parts}.	Площади по уклону: {parts}.
+{side} {share}	{side} {share}
+Slopes face most often {sides}.	Склоны чаще всего обращены на {sides}.
+Flat ground {share}.	Ровные участки {share}.
+There are no heights in the square.	В квадрате нет высот.
+The grid step is {step} m.	Шаг сетки - {step} м.
+There are no peaks and pits with such a drop in the square.	В квадрате нет вершин и впадин с таким перепадом.
+Peak {height} m	Вершина {height} м
+Height {height} m, rise {drop} m.	Высота {height} м, превышение {drop} м.
+Pit {height} m	Впадина {height} м
+Height {height} m, depth {drop} m.	Высота {height} м, глубина {drop} м.
+Peaks and pits {point}	Вершины и впадины {point}
+Written to «My places»: peaks {peaks} and pits {pits}.	Записано в «Мои метки»: вершин {peaks} и впадин {pits}.
+Slope and aspect	Уклон и экспозиция
+Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side.	Половина стороны квадрата расчёта. Больше - шаг сетки крупнее, он около шестисотой доли стороны.
+Show	Показать
+What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Что квадрат показывает на глобусе - крутизну склона или сторону света, на которую склон обращён. Строки «Уклон» и «Экспозиция» раздела «Слои» при этом выключаются.
+Peak radius	Радиус вершины
+A peak is higher than everything around it within this radius, a pit is lower. Larger - only large peaks and pits remain.	Вершина выше всего вокруг в этом радиусе, впадина ниже. Больше - остаются только крупные вершины и впадины.
+Drop from	Перепад от
+The least rise of a peak over the lowest point around it or depth of a pit under the highest one. Smaller - more small hills and hollows.	Наименьшее превышение вершины над самой низкой точкой вокруг или глубина впадины под самой высокой. Меньше - больше мелких холмов и ложбин.
+Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Уклон и экспозиция квадрата по высотам, ядро 3 × 3 - раскраска на глобусе и сводка по классам уклона и сторонам света.
+Peaks and pits	Вершины и впадины
+Peaks and closed hollows of the square - points in «My places» with the height and the drop.	Вершины и замкнутые понижения квадрата - точки в «Моих метках» с высотой и перепадом.
+Remove the colouring of the square from the globe.	Убрать раскраску квадрата с глобуса.
+Main watercourse {km} km, fall {fall} m, slope {slope} per mille.	Главный водоток {km} км, падение {fall} м, уклон {slope} промилле.
+Mean slope of the hillsides {slope} per mille by SP 33-101-2003.	Средний уклон склонов {slope} промилле по СП 33-101-2003.
+Drainage density {dens} km per km², watercourses with a catchment from {area} km².	Густота речной сети {dens} км на км², водотоки с водосбором от {area} км².
+There are no heights at the point.	В точке нет высот.
+Water from the point flows nowhere.	Вода из точки никуда не стекает.
+Flow line	Линия стока
+Length {km} km, drop {drop} m.	Длина {km} км, перепад {drop} м.
+{name}: {text}	{name}: {text}
+The placemark is beyond the edge of the height data.	Метка за краем данных высот.
+Water from the placemark flows nowhere.	Вода от метки никуда не стекает.
+Flow line {n}	Линия стока {n}
+Flow lines «{name}»	Линии стока «{name}»
+{name}: lines {count}, total length {km} km.	{name}: линий {count}, общая длина {km} км.
+The shortest lines not included {count}.	Самых коротких линий не вошло {count}.
+Water does not flow to the point: there is no catchment.	К точке вода не стекает - водосбора нет.
+Catchment	Водосбор
+The outlet is moved to the channel {m} m from the point.	Створ перенесён на русло в {m} м от точки.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed.	Водосбор доходит до края области, его часть за краем не учтена. Нужен больший радиус.
+Main watercourse	Главный водоток
+Basin {n}	Бассейн {n}
+Area {area} km².	Площадь {area} км².
+There are no watercourses with such a catchment at the edge of the square.	На краю квадрата нет водотоков с таким водосбором.
+Basins	Бассейны
+Basins written to «My places»: {count}, they cover {area} km² of the square.	Бассейнов записано в «Мои метки»: {count}, они покрывают {area} км² квадрата.
+There are no watercourses with such a catchment and order in the square.	В квадрате нет водотоков с таким водосбором и порядком.
+Order {order}, catchment {area} km².	Порядок {order}, водосбор {area} км².
+Watercourse of order {order}	Водоток порядка {order}
+River network	Речная сеть
+Watercourses written to «My places»: {count}, the largest order {order}.	Водотоков записано в «Мои метки»: {count}, наибольший порядок {order}.
+Water does not flow to the placemark: there is no catchment.	К метке вода не стекает - водосбора нет.
+Catchment «{name}»	Водосбор «{name}»
+Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Затоплено {area} км², объём воды {volume} млн м³, наибольшая глубина {depth} м.
+The water reached the edge of the area and can go further. A larger radius is needed.	Вода дошла до края области и может пойти дальше. Нужен больший радиус.
+The level is not above the point, there is no water.	Уровень не выше точки, воды нет.
+Flooding	Затопление
+Point height	Высота точки
+{h} m	{h} м
+Height of the water surface above the sea level. The water floods everything below the level that it reaches from the point. Hollows beyond a higher ridge stay dry.	Высота поверхности воды над уровнем моря. Вода затапливает всё ниже уровня, куда доходит от точки. Понижения за более высоким гребнем остаются сухими.
+Rise	Подъём
+Rise of the water above the point height, up to {rise} m.	Подъём воды над высотой точки, до {rise} м.
+To «My places»	В «Мои метки»
+The outline of the flooding - a polygon in «My places» with the level, area and volume.	Контур затопления - полигон в «Моих метках» с уровнем, площадью и объёмом.
+Remove the water from the globe.	Убрать воду с глобуса.
+Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.	Уровень {level} м, затоплено {area} км², объём воды {volume} млн м³, наибольшая глубина {depth} м.
+Flooding {level} m	Затопление {level} м
+Water flow	Сток воды
+Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side.	Половина стороны квадрата расчёта. Линия стока кончается на его краю, водосбор больше квадрата учитывается не полностью. Шаг сетки около шестисотой доли стороны.
+Watercourses from	Водотоки от
+ km²	 км²
+The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines.	Речная сеть - водотоки с водосбором не меньше этой площади. Меньше - сеть гуще, с ручьями и оврагами.
+Order from	Порядок от
+The least Strahler order of a watercourse in the river network. A source is order 1, after two watercourses of one order merge - one more. Larger - only large rivers, the orders are counted over the whole network.	Наименьший порядок водотока по Стралеру в речной сети. Исток - порядок 1, после слияния двух водотоков одного порядка - на единицу больше. Больше - только крупные реки, порядки считаются по всей сети.
+Channel search radius	Радиус поиска русла
+Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point.	В этом радиусе от точки ищется русло - место с наибольшим водосбором, от него строится водосбор. Поэтому щелчок рядом с рекой даёт водосбор реки. 0 - водосбор точно от точки.
+Stop at a watercourse	Останавливать на водотоке
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square.	Линия стока кончается, когда доходит до водотока с водосбором от площади поля «Водотоки от». Без флажка линия идёт до края квадрата.
+Stop on flattening	Останавливать на выполаживании
+The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line.	Линия стока кончается там, где средний уклон на длине участка ниже порога - у подножия склона, на террасе, на пойме. Короткая полка на крутом склоне линию не останавливает.
+Flattening slope	Уклон выполаживания
+The slope below which the terrain is counted as flattened.	Уклон, ниже которого рельеф считается выположенным.
+Section length	Длина участка
+The length of the section over which the mean slope is measured. Larger - only a long flattening stops the line.	Длина участка, на котором измеряется средний уклон. Больше - линию останавливает только длинное выполаживание.
+Stop on merging	Останавливать при слиянии
+Lines from the placemark end flowing into a line built earlier, and the common channel goes as one line. Without the check each line goes to the end.	Линии от метки кончаются при впадении в линию, построенную раньше, и общее русло идёт одной линией. Без флажка каждая линия идёт до конца.
+The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.	Путь воды от точки вниз по рельефу - линия в «Моих метках». Понижения заполняются до перелива, поэтому линия проходит через озёра и замкнутые котловины. Для пути или полигона - линии от всех его узлов, в папке.
+The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.	Площадь, с которой вода стекает к точке, и главный водоток - папка в «Моих метках» с площадью, уклонами и длиной водотока. Водосбор строится от русла рядом с точкой.
+Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.	Водотоки квадрата с порядком по Стралеру - линии в «Моих метках», толщина линии растёт с порядком.
+The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».	Квадрат, разделённый на бассейны створов - мест, где водотоки с водосбором от площади поля «Водотоки от» покидают квадрат. Полигоны в «Моих метках».
+Sea level	Уровень моря
+The sea level above the present one. The water floods everything below the level, below zero it opens the shelf. About -120 m - the last glacial maximum, about +70 m - the melting of all glaciers.	Уровень моря относительно нынешнего. Вода затапливает всё ниже уровня, ниже нуля открывается шельф. Около -120 м - последний ледниковый максимум, около +70 м - таяние всех ледников.
+Level	Уровень
+The present sea level.	Нынешний уровень моря.
+The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	Вода затапливает всё ниже уровня по всему глобусу. Связь с морем не проверяется, поэтому затапливаются и низины внутри материков. Вода видна при включённом рельефе.
+Return the present sea level.	Вернуть нынешний уровень моря.
+Slope and aspect here…	Уклон и экспозиция здесь…
+Hydrology	Гидрология
+Flooding from here…	Затопление отсюда…
+Water flow from here…	Сток воды отсюда…
+Sea level…	Уровень моря…
+Catchment of the placemark	Водосбор метки
+Flow lines from the placemark…	Линии стока от метки…
+Slope and aspect of a square around the point by the heights, a summary, peaks and pits.	Уклон и экспозиция квадрата вокруг точки по высотам, сводка, вершины и впадины.
+What is seen from the point in a circle of the given radius.	Что видно из точки в круге заданного радиуса.
+Hours of direct sun per day around the point.	Часы прямого солнца в сутки вокруг точки.
+Water from the point up to the given level, area, volume and depths.	Вода от точки до заданного уровня, площадь, объём и глубины.
+Flow line, catchment and river network around the point.	Линия стока, водосбор и речная сеть вокруг точки.
+Raising and lowering the sea level over the whole globe.	Подъём и опускание уровня моря по всему глобусу.
+north	север
+north-east	северо-восток
+east	восток
+south-east	юго-восток
+south	юг
+south-west	юго-запад
+west	запад
+north-west	северо-запад
