@@ -407,10 +407,35 @@ pub struct Globe {
     edges: [HashMap<TileKey, Vec<[u8; 3]>>; 2],
     /// Из каких тайлов собран снимок шапки: тайл и источник снимка.
     cap_from: [Vec<(TileKey, TileKey)>; 2],
+    /// Снимки полюсов Esri, `globe_core::polar`: мозаика как пришла
+    /// (ширина, высота, RGBA), её текстура с подогнанным цветом и цвета
+    /// подложки у края по секторам, к которым она подогнана.
+    polar_raw: [Option<(usize, usize, Vec<u8>)>; 2],
+    polar_binds: [Option<wgpu::BindGroup>; 2],
+    polar_want: [Option<Vec<[f64; 3]>>; 2],
+    /// Цвета подложки у края шапки по секторам долготы из снимка шапки.
+    cap_want: [Option<Vec<[f64; 3]>>; 2],
 }
+
+/// Разница цветов края, с которой мозаика полюса подгоняется заново.
+const POLAR_REMATCH: f64 = 2.0;
 
 /// Ширина снимка шапки, столбцов на 360° долготы.
 pub const CAP_STRIP: usize = 1024;
+
+/// Средние цвета строки RGBA по count равным секторам слева направо -
+/// от долготы -180°, как столбцы снимка шапки.
+pub fn sector_colors(row: &[u8], count: usize) -> Vec<[f64; 3]> {
+    let pixels: &[[u8; 4]] = row.as_chunks::<4>().0;
+    let n = pixels.len();
+    (0..count)
+        .map(|k| {
+            let part = &pixels[k * n / count.max(1)..((k + 1) * n / count.max(1)).min(n)];
+            let len = part.len().max(1) as f64;
+            [0, 1, 2].map(|j| part.iter().map(|p| f64::from(p[j])).sum::<f64>() / len)
+        })
+        .collect()
+}
 
 /// Край тайла для шапки: среднее двух крайних строк по столбцам,
 /// верхних у северного края и нижних у южного. None - картинка не того
@@ -876,6 +901,10 @@ impl Globe {
             cap_binds: [None, None],
             edges: [HashMap::new(), HashMap::new()],
             cap_from: [Vec::new(), Vec::new()],
+            polar_raw: [None, None],
+            polar_binds: [None, None],
+            polar_want: [None, None],
+            cap_want: [None, None],
         }
     }
 
@@ -1223,6 +1252,52 @@ impl Globe {
         self.clear_textures();
     }
 
+    /// Снимок полюса north - мозаика `globe_core::polar::Layout` уровня
+    /// `polar::LEVEL`, w × h, RGBA. Шапка берёт его вместо цвета края,
+    /// цвет подгоняется к подложке у края. None - снять снимок.
+    pub fn set_polar_image(&mut self, north: bool, image: Option<(usize, usize, Vec<u8>)>) {
+        let i = usize::from(!north);
+        self.polar_raw[i] = image.filter(|(w, h, rgba)| rgba.len() == w * h * 4 && *w > 0 && *h > 0);
+        self.polar_binds[i] = None;
+        self.polar_want[i] = None;
+        // Координаты сетки шапки - другие: сетка собирается заново.
+        self.meshes.remove(&MeshId::PolarCap { north });
+        self.update_polar(i);
+    }
+
+    pub fn has_polar_image(&self, north: bool) -> bool {
+        self.polar_raw[usize::from(!north)].is_some()
+    }
+
+    /// Текстура снимка полюса i с цветом, подогнанным к краю подложки,
+    /// `_show` модуля. Без цвета края - снимок как есть.
+    fn update_polar(&mut self, i: usize) {
+        let Some((w, h, raw)) = &self.polar_raw[i] else {
+            return;
+        };
+        let want = self.cap_want[i].clone();
+        let same = match (&want, &self.polar_want[i]) {
+            (Some(a), Some(b)) => a.iter().zip(b).all(|(x, y)| (0..3).all(|k| (x[k] - y[k]).abs() < POLAR_REMATCH)),
+            (None, None) => true,
+            _ => false,
+        };
+        if same && self.polar_binds[i].is_some() {
+            return;
+        }
+        let layout = globe_core::polar::Layout::new(i == 0, globe_core::polar::LEVEL);
+        let mut image = raw.clone();
+        if let Some(want) = &want {
+            let have = globe_core::polar::rim_color(&layout, *w, *h, raw);
+            globe_core::polar::matched(&mut image, *w, *h, &layout, &have, want);
+        }
+        let (Ok(tw), Ok(th)) = (u32::try_from(*w), u32::try_from(*h)) else {
+            return;
+        };
+        let bind = Self::texture_bind(&self.device, &self.queue, &self.texture_layout, &self.sampler, tw, th, &image);
+        self.polar_binds[i] = Some(bind);
+        self.polar_want[i] = want;
+    }
+
     /// Забыть все снимки - сменилась основа.
     pub fn clear_textures(&mut self) {
         self.textures.clear();
@@ -1399,7 +1474,22 @@ impl Globe {
         let shade = &mesh.shade;
         let normals = &mesh.normals;
         let sea = &mesh.sea;
-        let mesh: TileMesh = mesh.mesh.clone();
+        let mut mesh: TileMesh = mesh.mesh.clone();
+        // Шапка со снимком полюса - координаты вершин в его мозаике.
+        if let MeshId::PolarCap { north } = id
+            && self.polar_raw[usize::from(!north)].is_some()
+        {
+            let layout = globe_core::polar::Layout::new(north, globe_core::polar::LEVEL);
+            mesh.uv = mesh
+                .positions
+                .iter()
+                .map(|p| {
+                    let (lat, lon, _) = e.ecef_to_geodetic(mesh.center + p.as_dvec3());
+                    let (u, v) = layout.uv(lat, lon);
+                    globe_core::Vec2::new(u as f32, v as f32)
+                })
+                .collect();
+        }
         let vertices: Vec<Vertex> = mesh
             .positions
             .iter()
@@ -1459,6 +1549,11 @@ impl Globe {
             let bind = Self::texture_bind(&self.device, &self.queue, &self.texture_layout, &self.sampler, width, 2, &strip);
             self.cap_binds[i] = Some(bind);
             self.cap_from[i] = sig;
+            // Цвет подложки у края по секторам - для снимка полюса.
+            self.cap_want[i] = Some(sector_colors(&strip[..CAP_STRIP * 4], globe_core::polar::SECTORS));
+        }
+        for i in 0..2 {
+            self.update_polar(i);
         }
     }
 
@@ -1529,7 +1624,7 @@ impl Globe {
         for item in out.iter_mut() {
             if let MeshId::PolarCap { north } = item.mesh {
                 let i = usize::from(!north);
-                if self.cap_binds[i].is_some() {
+                if self.cap_binds[i].is_some() || self.polar_binds[i].is_some() {
                     item.cap = Some(i);
                     item.uniform.color[3] = 0.0;
                 }
@@ -1907,7 +2002,8 @@ impl Globe {
                 let Some(mesh) = self.meshes.get(&item.mesh) else {
                     continue;
                 };
-                let texture = match item.cap.and_then(|i| self.cap_binds.get(i)).and_then(Option::as_ref) {
+                let cap = item.cap.and_then(|i| self.polar_binds.get(i).and_then(Option::as_ref).or_else(|| self.cap_binds.get(i).and_then(Option::as_ref)));
+                let texture = match cap {
                     Some(bind) => bind,
                     None => item.texture.and_then(|k| self.textures.get(&k)).map_or(&self.blank, |t| &t.bind_group),
                 };

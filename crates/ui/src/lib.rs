@@ -60,6 +60,7 @@ pub mod navpad;
 pub mod pictures;
 pub mod places;
 pub mod pointcalc;
+pub mod polar;
 pub mod profile;
 pub mod relief;
 pub mod reliefcalc;

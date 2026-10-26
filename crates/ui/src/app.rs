@@ -618,6 +618,8 @@ pub struct LiteApp {
     ai: crate::ai::Ai,
     /// «Моё место» по геолокации браузера и трек.
     gps: crate::gps::Gps,
+    /// Снимки полярных шапок Esri.
+    polar: crate::polar::PolarCaps,
     explaining: Option<(Vec<usize>, usize)>,
     /// Ответ помощника под строкой «Поиск»: реплик до вопроса.
     ai_answer_from: Option<usize>,
@@ -1135,6 +1137,7 @@ impl LiteApp {
             tracks: crate::tracks::Tracks::default(),
             ai: crate::ai::Ai::new(),
             gps: crate::gps::Gps::default(),
+            polar: crate::polar::PolarCaps::default(),
             explaining: None,
             ai_answer_from: None,
             ai_fallback: None,
@@ -7517,6 +7520,19 @@ impl eframe::App for LiteApp {
             }
         }
         globe.set_split(self.events.swipe().map(|f| f * self.globe_width_px));
+        // Снимки полюсов - при подложке-снимке на Земле, как у модуля.
+        let imagery = self.planet.earth && data::contours::is_imagery(self.basemap.key(), self.basemap.source().url, false);
+        if imagery {
+            let altitude = self.nav.camera.ellipsoid.ecef_to_geodetic(self.nav.camera.eye).2;
+            let loaders = &self.loaders;
+            self.polar.step(self.nav.pose.lat, altitude, now, &|limit| (loaders.request)(limit));
+        }
+        for north in [true, false] {
+            let image = self.polar.images[usize::from(!north)].as_ref().filter(|_| imagery);
+            if image.is_some() != globe.has_polar_image(north) {
+                globe.set_polar_image(north, image.cloned());
+            }
+        }
         for (id, loaders) in &self.map_loaders {
             for (n, (level, loader)) in loaders.iter().enumerate() {
                 let next = loaders.get(n + 1).map_or(u32::MAX, |(l, _)| *l);

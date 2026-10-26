@@ -15,6 +15,7 @@ pub mod flight;
 pub mod lod;
 pub mod navigation;
 pub mod navpad;
+pub mod polar;
 pub mod tiling;
 
 pub use glam::{DMat3, DMat4, DVec2, DVec3, DVec4, Mat4, Vec2, Vec3, Vec4};
