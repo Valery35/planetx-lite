@@ -364,6 +364,8 @@ pub enum Tool {
     Fullscreen,
     /// О программе.
     Info,
+    /// Прочие значки на узком экране: три точки.
+    More,
     /// Значки шкалы времени и панели тура: к началу, к концу,
     /// проигрывание, пауза, остановка, по кругу, подписи.
     Prev,
@@ -588,6 +590,11 @@ pub fn paint_tool(painter: &egui::Painter, rect: egui::Rect, tool: Tool, menu: b
             pen.line(&[(12.0, 10.5), (12.0, 16.5)]);
             pen.dot(12.0, 7.6, 0.9);
         }
+        Tool::More => {
+            for x in [5.5, 12.0, 18.5] {
+                pen.dot(x, 12.0, 1.1);
+            }
+        }
         Tool::Prev => {
             pen.line(&[(6.5, 6.0), (6.5, 18.0)]);
             pen.filled(&[(18.0, 6.0), (18.0, 18.0), (9.0, 12.0)]);
@@ -642,5 +649,76 @@ pub fn tool_button(ui: &mut egui::Ui, tool: Tool, on: bool, menu: bool, enabled:
     if response.hovered() {
         ui.ctx().set_cursor_icon(egui::CursorIcon::Default);
     }
+    if tip.is_empty() {
+        return response;
+    }
+    // Наведения у пальца нет: подсказку даёт долгое нажатие, кнопка
+    // при этом не срабатывает.
+    if response.long_touched() {
+        let now = ui.input(|i| i.time);
+        ui.ctx().data_mut(|d| d.insert_temp(touch_tip_id(), (tip.to_string(), now)));
+    }
+    response.on_hover_text(tip)
+}
+
+/// Подсказка долгого нажатия видна столько секунд.
+pub const TOUCH_TIP_SECONDS: f64 = 4.0;
+
+fn touch_tip_id() -> egui::Id {
+    egui::Id::unique("planetx-touch-tip")
+}
+
+/// Подсказка последнего долгого нажатия, пока она не устарела.
+pub fn touch_tip(ctx: &egui::Context) -> Option<String> {
+    let now = ctx.input(|i| i.time);
+    let (text, at) = ctx.data(|d| d.get_temp::<(String, f64)>(touch_tip_id()))?;
+    if now - at < TOUCH_TIP_SECONDS {
+        ctx.request_repaint_after(std::time::Duration::from_secs_f64(TOUCH_TIP_SECONDS - (now - at)));
+        Some(text)
+    } else {
+        None
+    }
+}
+
+/// Убрать подсказку долгого нажатия: касание в другом месте.
+pub fn clear_touch_tip(ctx: &egui::Context) {
+    ctx.data_mut(|d| d.remove::<(String, f64)>(touch_tip_id()));
+}
+
+/// Строка меню «…» узкого экрана: значок и название, как пункт меню.
+/// Нажатие закрывает меню.
+pub fn tool_row(ui: &mut egui::Ui, tool: Tool, on: bool, enabled: bool, name: &str, tip: &str) -> egui::Response {
+    let side = ICON_SIDE + 6.0;
+    let text = egui::WidgetText::from(name).into_galley(ui, Some(egui::TextWrapMode::Extend), f32::INFINITY, egui::TextStyle::Button);
+    let width = (side + 6.0 + text.size().x + 10.0).max(ui.available_width());
+    let sense = if enabled { egui::Sense::click() } else { egui::Sense::hover() };
+    let (rect, response) = ui.allocate_exact_size(egui::vec2(width, side), sense);
+    let visuals = ui.visuals();
+    let color = if enabled { visuals.text_color() } else { visuals.weak_text_color() };
+    if on {
+        ui.painter().rect_filled(rect, 4.0, visuals.selection.bg_fill.gamma_multiply(0.6));
+    } else if response.hovered() && enabled {
+        ui.painter().rect_filled(rect, 4.0, visuals.widgets.hovered.weak_bg_fill);
+    }
+    let icon = egui::Rect::from_min_size(rect.min, egui::vec2(side, side));
+    paint_tool(ui.painter(), icon.shrink(3.0), tool, false, color);
+    let at = egui::pos2(icon.max.x + 6.0, rect.center().y - text.size().y / 2.0);
+    ui.painter().galley(at, text, color);
+    if response.clicked() {
+        ui.close();
+    }
     if tip.is_empty() { response } else { response.on_hover_text(tip) }
+}
+
+/// Значок перед подменю в меню «…», как у строк [`tool_row`].
+pub fn menu_icon(ui: &mut egui::Ui, tool: Tool) {
+    let side = ICON_SIDE + 6.0;
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(side, side), egui::Sense::hover());
+    let color = ui.visuals().text_color();
+    paint_tool(ui.painter(), rect.shrink(3.0), tool, false, color);
+}
+
+/// Кнопка панели или строка меню «…»: rows - строка с названием.
+pub fn tool_item(ui: &mut egui::Ui, rows: bool, tool: Tool, on: bool, enabled: bool, name: &str, tip: &str) -> egui::Response {
+    if rows { tool_row(ui, tool, on, enabled, name, tip) } else { tool_button(ui, tool, on, false, enabled, tip) }
 }

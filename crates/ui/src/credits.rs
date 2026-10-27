@@ -39,8 +39,9 @@ const ICON_PNG: &[u8] = include_bytes!("../assets/planetx.png");
 pub const TERRAIN: (&str, &str) =
     ("Terrain: Mapzen, SRTM, GMTED, ETOPO1 and others", "https://github.com/tilezen/joerd/blob/master/docs/attribution.md");
 
-/// Строки подписи шириной не больше room: перенос только между
-/// источниками, источник не разрывается. width - ширина текста.
+/// Строки подписи шириной не больше room: перенос между источниками,
+/// источник разрывается, только когда целиком он шире room, - тогда
+/// по словам, как на узком экране телефона. width - ширина текста.
 pub fn break_lines(pieces: &[String], room: f32, mut width: impl FnMut(&str) -> f32) -> String {
     let mut lines: Vec<String> = Vec::new();
     for piece in pieces {
@@ -49,7 +50,23 @@ pub fn break_lines(pieces: &[String], room: f32, mut width: impl FnMut(&str) -> 
                 last.push_str(" · ");
                 last.push_str(piece);
             }
-            _ => lines.push(piece.clone()),
+            _ if width(piece) <= room => lines.push(piece.clone()),
+            _ => {
+                // Длинный источник - с новой строки, слова по ширине.
+                let mut line = String::new();
+                for word in piece.split_whitespace() {
+                    if !line.is_empty() && width(&format!("{line} {word}")) > room {
+                        lines.push(std::mem::take(&mut line));
+                    }
+                    if !line.is_empty() {
+                        line.push(' ');
+                    }
+                    line.push_str(word);
+                }
+                if !line.is_empty() {
+                    lines.push(line);
+                }
+            }
         }
     }
     lines.join("\n")
@@ -335,7 +352,17 @@ mod tests {
         let width = |s: &str| s.chars().count() as f32;
         assert_eq!(break_lines(&pieces, 100.0, width), "Esri · Terrain · © OpenStreetMap contributors");
         // Источник не разрывается, на новую строку переходит целиком.
-        assert_eq!(break_lines(&pieces, 20.0, width), "Esri · Terrain\n© OpenStreetMap contributors");
+        assert_eq!(break_lines(&pieces, 28.0, width), "Esri · Terrain\n© OpenStreetMap contributors");
+    }
+
+    #[test]
+    fn long_source_breaks_by_words_on_a_narrow_screen() {
+        // Подпись Esri на телефоне уходила за левый край экрана.
+        let pieces: Vec<String> = ["Esri, Vantor, Earthstar Geographics, and the GIS User Community", "Terrain"].map(String::from).to_vec();
+        let width = |s: &str| s.chars().count() as f32;
+        let text = break_lines(&pieces, 30.0, width);
+        assert_eq!(text, "Esri, Vantor, Earthstar\nGeographics, and the GIS User\nCommunity · Terrain");
+        assert!(text.lines().all(|l| width(l) <= 30.0));
     }
 
     #[test]

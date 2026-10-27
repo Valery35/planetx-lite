@@ -798,6 +798,23 @@ pub(crate) fn group_thousands(n: i64) -> String {
 
 /// Пункты меню «Демо» по разделам, как у модуля. Выбранное демо -
 /// в clicked.
+/// Пункты меню «Сцена»: сохранить, открыть, поделиться видом.
+fn scene_items(ui: &mut egui::Ui, lang: Lang, scene: &mut Option<SceneAction>) {
+    if ui.button(tr(lang, "Save Scene…")).clicked() {
+        *scene = Some(SceneAction::Save);
+        ui.close();
+    }
+    if ui.button(tr(lang, "Open Scene…")).clicked() {
+        *scene = Some(SceneAction::Open);
+        ui.close();
+    }
+    ui.separator();
+    if ui.button(tr(lang, "Share View…")).on_hover_text(tr(lang, "Link to this view")).clicked() {
+        *scene = Some(SceneAction::Share);
+        ui.close();
+    }
+}
+
 fn demo_items(ui: &mut egui::Ui, lang: Lang, clicked: &mut Option<&'static crate::demos::Demo>) {
     for (n, section) in crate::demos::MENU.iter().enumerate() {
         if n == crate::demos::BODIES_FROM {
@@ -1268,8 +1285,12 @@ impl LiteApp {
     /// от 24 октября 2026 года «порядок кнопок возьми тем же». Без
     /// кнопок QGIS: синхронизации с картой и вида в макет.
     fn toolbar(&mut self, ctx: &egui::Context, view: egui::Rect, now: f64) {
-        use crate::theme::{Tool, tool_button};
+        use crate::theme::{ICON_SIDE, Tool, tool_button, tool_item};
         let lang = self.lang;
+        // Новое касание убирает подсказку долгого нажатия.
+        if ctx.input(|i| i.pointer.any_pressed()) {
+            crate::theme::clear_touch_tip(ctx);
+        }
         // F11 - во весь экран и обратно, Esc - выход из него, как у модуля.
         let on = ctx.input(|i| i.viewport().fullscreen.unwrap_or(false));
         let (f11, esc) = ctx.input(|i| (i.key_pressed(egui::Key::F11), i.key_pressed(egui::Key::Escape)));
@@ -1299,6 +1320,15 @@ impl LiteApp {
         let mut body: Option<&'static str> = None;
         let mut sky_flags = (self.settings.constellations, self.settings.deepsky, self.settings.sky_imagery);
         let mut sky_changed = false;
+        let recording = self.recording.is_some();
+        let measuring = matches!(self.tool.as_ref().map(|t| &t.purpose), Some(crate::tool::Purpose::Ruler));
+        let other_body = !self.planet.earth;
+        let current = if self.sky.is_some() { "sky" } else { self.planet.key() };
+        // Узкий экран, телефон: все значки панели в ширину вида не входят.
+        // На панели остаются частые, прочие - строками с названиями
+        // в меню «…».
+        let buttons = if cfg!(target_arch = "wasm32") { 14.0 } else { 15.0 };
+        let narrow = view.width() < buttons * (ICON_SIDE + 8.0) + 60.0;
         // Уровень панели - как у окон: открытое окно встаёт поверх неё.
         // На уровне Foreground панель закрывала окно «Источники данных»,
         // замечание автора от 23 октября 2026 года.
@@ -1306,6 +1336,57 @@ impl LiteApp {
             .order(egui::Order::Middle)
             .fixed_pos(view.left_top() + egui::vec2(8.0, 8.0))
             .show(ctx, |ui| {
+                // Значки от «Сохранить вид» до «Демо»: на панели
+                // или строками меню «…» (rows).
+                let mut extra = |ui: &mut egui::Ui, rows: bool| {
+                    if tool_item(ui, rows, Tool::Bookmark, false, true, tr(lang, "Save view"), tr(lang, "Save view. The point of view becomes a placemark in My Places, flying to it returns the height, heading and tilt.")).clicked() {
+                        save_view = true;
+                    }
+                    if tool_item(ui, rows, Tool::Record, recording, true, tr(lang, "Record a tour"), tr(lang, "Record a tour. Camera motion by mouse, keys or flights becomes a tour in My Places, a second click stops the recording.")).clicked() {
+                        record = true;
+                    }
+                    // Шкала времени доступна, когда у видимых меток есть
+                    // время, как `set_time_available` модуля.
+                    if tool_item(ui, rows, Tool::Time, time && time_ready, time_ready, tr(lang, "Time slider"), tr(lang, "Time slider. While it is open, data outside its period is hidden. The closed slider shows all placemarks.")).clicked() {
+                        time = !time;
+                    }
+                    if tool_item(ui, rows, Tool::Camera, false, true, tr(lang, "Snapshot of the view"), tr(lang, "Snapshot of the view to a PNG file.")).clicked() {
+                        snapshot = Some(SnapshotTo::File);
+                    }
+                    if tool_item(ui, rows, Tool::Copy, false, true, tr(lang, "Copy the view to the clipboard"), tr(lang, "Copy of the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider.")).clicked() {
+                        snapshot = Some(SnapshotTo::Clipboard);
+                    }
+                    let scene_tip = tr(lang, "Scene - the camera and the selected folder of My Places with its tour. It is saved to a file and opens on another computer.");
+                    let demo_tip = tr(lang, "Demo: prepared scenes with placemarks and tours on the Earth, Mars, the Moon and in the sky. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour.");
+                    if rows {
+                        ui.horizontal(|ui| {
+                            ui.spacing_mut().item_spacing.x = 0.0;
+                            crate::theme::menu_icon(ui, Tool::Scene);
+                            ui.menu_button(tr(lang, "Scene"), |ui| scene_items(ui, lang, &mut scene)).response.on_hover_text(scene_tip);
+                        });
+                        ui.horizontal(|ui| {
+                            ui.spacing_mut().item_spacing.x = 0.0;
+                            crate::theme::menu_icon(ui, Tool::Demo);
+                            ui.menu_button(tr(lang, "Demo"), |ui| demo_items(ui, lang, &mut clicks.demo)).response.on_hover_text(demo_tip);
+                        });
+                    } else {
+                        let scene_button = tool_button(ui, Tool::Scene, false, true, true, scene_tip);
+                        egui::Popup::menu(&scene_button).show(|ui| scene_items(ui, lang, &mut scene));
+                        let demo = tool_button(ui, Tool::Demo, false, true, true, demo_tip);
+                        egui::Popup::menu(&demo).show(|ui| demo_items(ui, lang, &mut clicks.demo));
+                    }
+                };
+                // Во весь экран и «О программе» - в конце панели.
+                let mut tail = |ui: &mut egui::Ui, rows: bool| {
+                    // У страницы полный экран - средствами браузера, команда
+                    // окна eframe там ничего не делает: кнопки нет.
+                    if !cfg!(target_arch = "wasm32") && tool_item(ui, rows, Tool::Fullscreen, false, true, tr(lang, "Full screen"), tr(lang, "Full screen (F11) - the globe view for a show. Esc or F11 returns the window.")).clicked() {
+                        full = true;
+                    }
+                    if tool_item(ui, rows, Tool::Info, false, true, tr(lang, "About"), if rows { "" } else { tr(lang, "About") }).clicked() {
+                        about = true;
+                    }
+                };
                 crate::theme::plate().inner_margin(egui::Margin::same(3)).show(ui, |ui| {
                     ui.spacing_mut().item_spacing = egui::vec2(2.0, 0.0);
                     ui.horizontal(|ui| {
@@ -1316,7 +1397,6 @@ impl LiteApp {
                         if tool_button(ui, Tool::Identify, identify, false, true, tr(lang, "Identify. A click on the globe shows the coordinates, the height or depth of the point and the placemarks there.")).clicked() {
                             identify = !identify;
                         }
-                        let measuring = matches!(self.tool.as_ref().map(|t| &t.purpose), Some(crate::tool::Purpose::Ruler));
                         if tool_button(ui, Tool::Ruler, false, false, true, tr(lang, "Ruler. Length, perimeter and area on the ellipsoid, the measurement can be saved to My Places.")).clicked() {
                             new_tool = Some(if measuring { crate::tool::Tool::closed() } else { crate::tool::Tool::ruler() });
                         }
@@ -1336,46 +1416,12 @@ impl LiteApp {
                                 }
                             }
                         });
-                        if tool_button(ui, Tool::Bookmark, false, false, true, tr(lang, "Save view. The point of view becomes a placemark in My Places, flying to it returns the height, heading and tilt.")).clicked() {
-                            save_view = true;
+                        if !narrow {
+                            extra(ui, false);
                         }
-                        let recording = self.recording.is_some();
-                        if tool_button(ui, Tool::Record, recording, false, true, tr(lang, "Record a tour. Camera motion by mouse, keys or flights becomes a tour in My Places, a second click stops the recording.")).clicked() {
-                            record = true;
-                        }
-                        // Шкала времени доступна, когда у видимых меток есть
-                        // время, как `set_time_available` модуля.
-                        if tool_button(ui, Tool::Time, time && time_ready, false, time_ready, tr(lang, "Time slider. While it is open, data outside its period is hidden. The closed slider shows all placemarks.")).clicked() {
-                            time = !time;
-                        }
-                        if tool_button(ui, Tool::Camera, false, false, true, tr(lang, "Snapshot of the view to a PNG file.")).clicked() {
-                            snapshot = Some(SnapshotTo::File);
-                        }
-                        if tool_button(ui, Tool::Copy, false, false, true, tr(lang, "Copy of the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider.")).clicked() {
-                            snapshot = Some(SnapshotTo::Clipboard);
-                        }
-                        let scene_button = tool_button(ui, Tool::Scene, false, true, true, tr(lang, "Scene - the camera and the selected folder of My Places with its tour. It is saved to a file and opens on another computer."));
-                        egui::Popup::menu(&scene_button).show(|ui| {
-                            if ui.button(tr(lang, "Save Scene…")).clicked() {
-                                scene = Some(SceneAction::Save);
-                                ui.close();
-                            }
-                            if ui.button(tr(lang, "Open Scene…")).clicked() {
-                                scene = Some(SceneAction::Open);
-                                ui.close();
-                            }
-                            ui.separator();
-                            if ui.button(tr(lang, "Share View…")).on_hover_text(tr(lang, "Link to this view")).clicked() {
-                                scene = Some(SceneAction::Share);
-                                ui.close();
-                            }
-                        });
-                        let demo = tool_button(ui, Tool::Demo, false, true, true, tr(lang, "Demo: prepared scenes with placemarks and tours on the Earth, Mars, the Moon and in the sky. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour."));
-                        egui::Popup::menu(&demo).show(|ui| demo_items(ui, lang, &mut clicks.demo));
                         // Тело глобуса, меню `MENU` модуля: Земля сверху, под
                         // разделителем Луна и Марс, прочие тела - подменю.
-                        let body_button = tool_button(ui, Tool::Body, !self.planet.earth, true, true, tr(lang, "Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies."));
-                        let current = if self.sky.is_some() { "sky" } else { self.planet.key() };
+                        let body_button = tool_button(ui, Tool::Body, other_body, true, true, tr(lang, "Body of the globe - a planet, a moon or a dwarf planet. Each body has its own imagery, Mars and the Moon also have terrain. Earth layers, search and buildings are off on other bodies."));
                         egui::Popup::menu(&body_button).show(|ui| {
                             for (n, (group, keys)) in scene::planets::MENU.iter().enumerate() {
                                 let mut items = |ui: &mut egui::Ui| {
@@ -1415,18 +1461,35 @@ impl LiteApp {
                         if tool_button(ui, Tool::Settings, settings, false, true, tr(lang, "View properties: relief scale, language of labels, appearance.")).clicked() {
                             settings = !settings;
                         }
-                        // У страницы полный экран - средствами браузера, команда
-                        // окна eframe там ничего не делает: кнопки нет.
-                        if !cfg!(target_arch = "wasm32") && tool_button(ui, Tool::Fullscreen, false, false, true, tr(lang, "Full screen (F11) - the globe view for a show. Esc or F11 returns the window.")).clicked() {
-                            full = true;
-                        }
-                        if tool_button(ui, Tool::Info, false, false, true, tr(lang, "About")).clicked() {
-                            about = true;
+                        if narrow {
+                            let more = tool_button(ui, Tool::More, false, true, true, tr(lang, "More tools"));
+                            egui::Popup::menu(&more).show(|ui| {
+                                ui.spacing_mut().item_spacing.y = 2.0;
+                                extra(ui, true);
+                                ui.separator();
+                                tail(ui, true);
+                            });
+                        } else {
+                            tail(ui, false);
                         }
                     });
                 });
             });
         self.toolbar_rect = Some(area.response.rect);
+        // Подсказка долгого нажатия - под панелью, в ширину экрана.
+        if let Some(text) = crate::theme::touch_tip(ctx) {
+            let width = (view.width() - 16.0).clamp(80.0, 360.0);
+            egui::Area::new(egui::Id::unique("planetx-touch-tip-area"))
+                .order(egui::Order::Tooltip)
+                .fixed_pos(area.response.rect.left_bottom() + egui::vec2(0.0, 6.0))
+                .interactable(false)
+                .show(ctx, |ui| {
+                    egui::Frame::popup(ui.style()).show(ui, |ui| {
+                        ui.set_max_width(width);
+                        ui.label(text);
+                    });
+                });
+        }
         self.spinner(ctx, area.response.rect, now);
         self.panel_open = panel;
         self.settings_open = settings;
