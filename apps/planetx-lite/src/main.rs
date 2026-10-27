@@ -23,6 +23,11 @@
 //! высот GeoTIFF врезается своим рельефом. Файлов может быть несколько,
 //! они открываются по порядку. Файл можно и бросить в окно.
 //!
+//! `planetx-lite mcp [--port N]` - мост клиента MCP (Claude Code, Claude
+//! Desktop) к открытой программе, у которой в «Настройках помощника»
+//! стоит флажок «Пускать агентов MCP». Окна не открывает.
+//! `planetx-lite --mcp` - открыть программу с этим флажком.
+//!
 //! Сборка release под Windows - программа окна без консоли. Отчёт
 //! самопроверки тогда виден, когда вывод перенаправлен в файл.
 
@@ -70,6 +75,18 @@ fn display_server() -> Option<eframe::EventLoopBuilderHook> {
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().collect();
+    // `planetx-lite mcp` - мост stdio клиента MCP к открытой программе,
+    // без окна (`ui::mcprelay`). Порт - `--port N` или PLANETX_MCP_PORT.
+    if args.get(1).is_some_and(|a| a == "mcp") {
+        let port = args.windows(2).find(|w| w[0] == "--port").and_then(|w| w[1].parse().ok()).unwrap_or_else(ui::mcprelay::port);
+        return match ui::mcprelay::bridge(port) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("PlanetX Lite MCP: {e}");
+                ExitCode::FAILURE
+            }
+        };
+    }
     let check_arg = args.windows(2).find(|w| w[0] == "--check").map(|w| w[1].clone());
     let scenario = check_arg.as_deref().and_then(Scenario::from_name);
     if let (Some(name), None) = (&check_arg, scenario) {
@@ -175,6 +192,9 @@ fn main() -> ExitCode {
             }
             if args.iter().any(|a| a == "--ui") {
                 app = app.with_shot_ui();
+            }
+            if args.iter().any(|a| a == "--mcp") {
+                app = app.with_mcp();
             }
             if let Some(path) = shot {
                 app = app.with_shot(Box::new(move |image| {

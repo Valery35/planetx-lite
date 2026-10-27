@@ -19,6 +19,7 @@
 //! и спрашивает пользователя.
 
 mod agent;
+pub mod mcp;
 mod provider;
 mod py;
 mod stream;

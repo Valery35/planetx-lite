@@ -44,11 +44,14 @@ pub struct AiSettings {
     pub models: Vec<(String, String)>,
     pub keys: Vec<(String, String)>,
     pub search: bool,
+    /// Пускать агентов MCP к открытому глобусу, `crate::mcprelay`. По
+    /// умолчанию выключено, как у RustGIS.
+    pub mcp: bool,
 }
 
 impl Default for AiSettings {
     fn default() -> Self {
-        Self { provider: PROVIDER_DEFAULT.into(), bases: Vec::new(), models: Vec::new(), keys: Vec::new(), search: SEARCH_DEFAULT }
+        Self { provider: PROVIDER_DEFAULT.into(), bases: Vec::new(), models: Vec::new(), keys: Vec::new(), search: SEARCH_DEFAULT, mcp: false }
     }
 }
 
@@ -91,7 +94,7 @@ impl AiSettings {
 
     /// Строки настроек «ключ=значение».
     pub fn to_text(&self) -> String {
-        let mut out = format!("ai={}\nai_search={}\n", self.current(), self.search);
+        let mut out = format!("ai={}\nai_search={}\nai_mcp={}\n", self.current(), self.search, self.mcp);
         for (name, list) in [("ai_base", &self.bases), ("ai_model", &self.models), ("ai_key", &self.keys)] {
             for (p, v) in list {
                 out.push_str(&format!("{name}={p}\t{v}\n"));
@@ -106,6 +109,7 @@ impl AiSettings {
         match key {
             "ai" if aic::PROVIDERS.contains(&value) => self.provider = value.to_string(),
             "ai_search" => self.search = value != "false",
+            "ai_mcp" => self.mcp = value == "true",
             "ai_base" => {
                 if let Some((p, v)) = pair().filter(|(_, v)| v.starts_with("https://") || v.starts_with("http://")) {
                     put(&mut self.bases, p, v);
@@ -644,6 +648,22 @@ impl Ai {
             });
             ui.checkbox(&mut settings.search, tr(lang, "Answer requests from the Search line"))
                 .on_hover_text(tr(lang, "A request in words in the Search line goes to the assistant, the answer appears under the line. Without the tick the line finds only places and coordinates."));
+            // Агенты MCP - только у программы: странице входящие
+            // соединения не даны.
+            if !cfg!(target_arch = "wasm32") {
+                ui.separator();
+                ui.checkbox(&mut settings.mcp, tr(lang, "Let MCP agents in"))
+                    .on_hover_text(tr(lang, "An agent such as Claude Code or Claude Desktop drives this open globe through MCP: flights, layers, time, placemarks and a snapshot of the view. The program listens only on this computer, the key lies in its folder. Actions with file windows, flight recording and sharing stay yours."));
+                if settings.mcp {
+                    let exe = std::env::current_exe().map_or_else(|_| "planetx-lite".to_string(), |p| p.display().to_string());
+                    let mut command = format!("claude mcp add planetx-lite -- \"{exe}\" mcp");
+                    ui.label(tr(lang, "Command to connect Claude Code:"));
+                    ui.add(egui::TextEdit::singleline(&mut command).desired_width(f32::INFINITY));
+                    let mut config = format!("{{\"mcpServers\": {{\"planetx-lite\": {{\"command\": {}, \"args\": [\"mcp\"]}}}}}}", serde_json::Value::String(exe));
+                    ui.label(tr(lang, "Configuration for Claude Desktop and other clients:"));
+                    ui.add(egui::TextEdit::singleline(&mut config).desired_width(f32::INFINITY));
+                }
+            }
         });
         if !open {
             self.settings_open = false;

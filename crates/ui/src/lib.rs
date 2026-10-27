@@ -51,6 +51,8 @@ pub mod legend;
 pub mod lidarnet;
 pub mod live;
 pub mod maps;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod mcprelay;
 pub mod menulinks;
 pub mod mapvalue;
 pub mod marks;

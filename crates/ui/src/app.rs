@@ -620,6 +620,21 @@ pub struct LiteApp {
     gps: crate::gps::Gps,
     /// Снимки полярных шапок Esri.
     polar: crate::polar::PolarCaps,
+    /// Ретранслятор MCP, не запустился ли он, и сообщение агента со
+    /// снимком вида, которое ждёт картинки.
+    #[cfg(not(target_arch = "wasm32"))]
+    mcp: Option<crate::mcprelay::Relay>,
+    #[cfg(not(target_arch = "wasm32"))]
+    mcp_failed: bool,
+    /// Агенты пущены флагом `--mcp` на этот запуск.
+    #[cfg(not(target_arch = "wasm32"))]
+    mcp_cli: bool,
+    /// Сообщение со снимком, куда ответить, когда пришло и снимок уже
+    /// просили.
+    #[cfg(not(target_arch = "wasm32"))]
+    mcp_shot: Option<(String, std::sync::mpsc::Sender<Option<String>>, f64, bool)>,
+    /// Кадров подряд без загрузки и движения.
+    idle_frames: u32,
     explaining: Option<(Vec<usize>, usize)>,
     /// Ответ помощника под строкой «Поиск»: реплик до вопроса.
     ai_answer_from: Option<usize>,
@@ -815,6 +830,52 @@ enum Snapshot {
 enum SnapshotTo {
     File,
     Clipboard,
+    /// Ответ агенту MCP на `snapshot`.
+    Mcp,
+}
+
+/// Наибольшая сторона снимка вида для агента MCP, пикселей.
+pub const MCP_SHOT_SIDE: u32 = 1280;
+
+/// Окно глобуса - хозяин сервера MCP: вызовы - инструменты помощника.
+#[cfg(not(target_arch = "wasm32"))]
+struct McpHost<'a> {
+    app: &'a mut LiteApp,
+    ctx: &'a egui::Context,
+    now: f64,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl assistant::mcp::Host for McpHost<'_> {
+    fn call(&mut self, call: &assistant::Call) -> assistant::mcp::Output {
+        let text = self.app.ai_tool(self.ctx, call, self.now);
+        // Предложенные агентом метки видны в окне помощника: запись
+        // подтверждает пользователь.
+        if call.name == "add_kml" && self.app.ai.proposal_text().is_some() {
+            self.app.ai.open = true;
+        }
+        assistant::mcp::Output::Text(text)
+    }
+}
+
+/// Снимок вида для агента ждёт конца перелёта и загрузки не дольше,
+/// секунд.
+pub const MCP_SHOT_WAIT: f64 = 10.0;
+/// Качество JPEG снимка для агента.
+pub const MCP_SHOT_QUALITY: u8 = 85;
+
+/// Хозяин ответа на снимок: картинка JPEG уже снята.
+#[cfg(not(target_arch = "wasm32"))]
+struct ShotHost(Option<(Vec<u8>, String)>);
+
+#[cfg(not(target_arch = "wasm32"))]
+impl assistant::mcp::Host for ShotHost {
+    fn call(&mut self, _: &assistant::Call) -> assistant::mcp::Output {
+        match self.0.take() {
+            Some((jpeg, caption)) => assistant::mcp::Output::Image(jpeg, "image/jpeg", caption),
+            None => assistant::mcp::Output::Error("Снимок вида не снят.".into()),
+        }
+    }
 }
 
 /// Ползунок непрозрачности: путь, цвета объектов при выделении,
@@ -1138,6 +1199,15 @@ impl LiteApp {
             ai: crate::ai::Ai::new(),
             gps: crate::gps::Gps::default(),
             polar: crate::polar::PolarCaps::default(),
+            #[cfg(not(target_arch = "wasm32"))]
+            mcp: None,
+            #[cfg(not(target_arch = "wasm32"))]
+            mcp_failed: false,
+            #[cfg(not(target_arch = "wasm32"))]
+            mcp_cli: false,
+            #[cfg(not(target_arch = "wasm32"))]
+            mcp_shot: None,
+            idle_frames: 0,
             explaining: None,
             ai_answer_from: None,
             ai_fallback: None,
@@ -2321,6 +2391,27 @@ impl LiteApp {
             return;
         };
         self.snapshot = None;
+        if to == SnapshotTo::Mcp {
+            let shot = result.ok().and_then(|image| {
+                let png = to_png(&image).ok()?;
+                // Большой снимок - уменьшенный, ответ агенту не раздувается.
+                let img = image::load_from_memory(&png).ok()?;
+                let img = if img.width().max(img.height()) > MCP_SHOT_SIDE { img.resize(MCP_SHOT_SIDE, MCP_SHOT_SIDE, image::imageops::FilterType::Triangle) } else { img };
+                // JPEG: снимок снимков земли в PNG весит мегабайты.
+                let mut out = Vec::new();
+                image::codecs::jpeg::JpegEncoder::new_with_quality(&mut out, MCP_SHOT_QUALITY).encode_image(&img.to_rgb8()).ok()?;
+                let p = &self.nav.pose;
+                Some((out, format!("Точка взгляда {:.4}, {:.4}, расстояние {:.1} км, азимут {:.0}°, наклон {:.0}°.", p.lat, p.lon, p.distance / 1000.0, p.heading, p.tilt)))
+            });
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some((message, reply, _, _)) = self.mcp_shot.take() {
+                let server = assistant::mcp::Server::new(&crate::basemap::READY.map(|r| r.key));
+                let _ = reply.send(server.handle(&mut ShotHost(shot), &message));
+            }
+            #[cfg(target_arch = "wasm32")]
+            let _ = shot;
+            return;
+        }
         self.open_message = match (to, result) {
             (SnapshotTo::Clipboard, Ok(image)) => {
                 ctx.copy_image(image);
@@ -2332,7 +2423,59 @@ impl LiteApp {
                 Err(e) => Some(trf(self.lang, "Not saved: {e}", &[("e", &e)])),
             },
             (_, Err(e)) => Some(trf(self.lang, "Not saved: {e}", &[("e", &e)])),
+            (SnapshotTo::Mcp, Ok(_)) => None,
         };
+    }
+
+    /// Ретранслятор MCP: запуск и остановка по настройке, сообщения
+    /// агентов - в этом кадре, по одному. Снимок вида ждёт кадра без
+    /// окон, пока он не снят, другие сообщения ждут.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn step_mcp(&mut self, ctx: &egui::Context, now: f64) {
+        if !self.settings.ai.mcp && !self.mcp_cli {
+            self.mcp = None;
+            self.mcp_failed = false;
+            return;
+        }
+        if self.mcp.is_none() && !self.mcp_failed {
+            let port = crate::mcprelay::port();
+            let wake_ctx = ctx.clone();
+            match crate::mcprelay::Relay::start(port, crate::mcprelay::random_token(), crate::mcprelay::token_path(port), Arc::new(move || wake_ctx.request_repaint())) {
+                Ok(relay) => self.mcp = Some(relay),
+                Err(e) => {
+                    self.mcp_failed = true;
+                    self.open_message = Some(trf(self.lang, "MCP agents are not let in: {error}", &[("error", &e)]));
+                }
+            }
+        }
+        // Снимок - когда перелёт кончился и место загрузилось, как
+        // `--shot`, но не позже [`MCP_SHOT_WAIT`].
+        if let Some((_, _, since, false)) = &self.mcp_shot {
+            if self.idle_frames >= SHOT_IDLE_FRAMES || now - since > MCP_SHOT_WAIT {
+                if self.snapshot.is_none() {
+                    self.snapshot = Some(Snapshot::Hide(SnapshotTo::Mcp));
+                    if let Some(shot) = &mut self.mcp_shot {
+                        shot.3 = true;
+                    }
+                }
+            } else {
+                ctx.request_repaint();
+            }
+        }
+        while self.mcp_shot.is_none() {
+            let Some(job) = self.mcp.as_ref().and_then(crate::mcprelay::Relay::take) else {
+                break;
+            };
+            if assistant::mcp::is_snapshot(&job.message) {
+                self.mcp_shot = Some((job.message, job.reply, now, false));
+                self.idle_frames = 0;
+                ctx.request_repaint();
+                break;
+            }
+            let server = assistant::mcp::Server::new(&crate::basemap::READY.map(|r| r.key));
+            let reply = server.handle(&mut McpHost { app: self, ctx, now }, &job.message);
+            let _ = job.reply.send(reply);
+        }
     }
 
     /// Настоящие высоты точек, без масштаба рельефа, для линейки
@@ -3026,6 +3169,17 @@ impl LiteApp {
     /// «имя.planetx».
     pub fn with_scenes(mut self, source: &str) -> Self {
         self.scene_source = Some(source.to_string());
+        self
+    }
+
+    /// Пускать агентов MCP в этом запуске, `planetx-lite --mcp`, без
+    /// записи в настройки.
+    #[cfg_attr(target_arch = "wasm32", allow(unused_mut))]
+    pub fn with_mcp(mut self) -> Self {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            self.mcp_cli = true;
+        }
         self
     }
 
@@ -6129,6 +6283,7 @@ impl LiteApp {
 
     /// Шаг снимка окна. busy - загрузка или движение идёт.
     fn step_shot(&mut self, ctx: &egui::Context, busy: bool) {
+        self.idle_frames = if busy { 0 } else { self.idle_frames.saturating_add(1) };
         let Some(shot) = &mut self.shot else {
             return;
         };
@@ -7354,6 +7509,8 @@ impl eframe::App for LiteApp {
         self.step_tracks(&ctx);
         self.step_ai(&ctx, now);
         self.step_gps(&ctx, now);
+        #[cfg(not(target_arch = "wasm32"))]
+        self.step_mcp(&ctx, now);
         self.paleo_bar(&ctx, now);
         self.step_cutaway();
         self.check_linked_models(now);
