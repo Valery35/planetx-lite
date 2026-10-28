@@ -1,0 +1,158 @@
+<!-- PlanetX Lite - страница «Онлайн» для www.informpp.ru.   -->
+<!-- Собирается tools/build_pages.py, править лучше его.        -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="title"></title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700\
+&family=Golos+Text:wght@400;500;600&display=swap');
+:root{
+  --paper:#EEF2F6; --paper-2:#E2E8EF; --ink:#131C26; --ink-soft:#4A5866;
+  --teal:#1D5FA8; --teal-deep:#12457D; --amber:#C2622C;
+  --line:rgba(19,28,38,.14); --r:14px; --maxw:1080px;
+  --display:'Bitter',Georgia,serif;
+  --body:'Golos Text','Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--body);font-size:17px;line-height:1.6;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+a{color:inherit}
+h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.1;margin:0;
+  letter-spacing:-.01em}
+p{margin:0}
+code{font-size:.92em}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--teal-deep);margin-bottom:18px;
+  display:inline-flex;gap:10px;align-items:center}
+.eyebrow::before{content:"";width:26px;height:2px;background:var(--amber);
+  display:inline-block}
+.hdr{position:sticky;top:0;z-index:20;background:rgba(238,242,246,.86);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hdr .wrap{display:flex;align-items:center;justify-content:space-between;
+  height:62px;gap:18px}
+.brand{display:flex;align-items:baseline;gap:10px;
+  font-family:var(--display);font-weight:700;text-decoration:none;
+  font-size:20px}
+.brand span{font-family:var(--body);font-weight:500;font-size:13px;
+  color:var(--ink-soft)}
+.right{display:flex;align-items:center;gap:22px}
+.nav{display:flex;gap:22px;font-size:15px}
+.nav a{text-decoration:none;color:var(--ink-soft)}
+.nav a:hover{color:var(--teal-deep)}
+.nav a.on{color:var(--teal-deep);font-weight:600}
+@media(max-width:860px){.nav{display:none}}
+.lang{display:flex;border:1px solid var(--line);border-radius:10px;
+  overflow:hidden;font-size:13px;font-weight:600}
+.lang button{border:0;background:transparent;padding:6px 11px;cursor:pointer;
+  font:inherit;color:var(--ink-soft)}
+.lang button.on{background:var(--teal);color:#fff}
+.hero{padding:74px 0 48px}
+.hero h1{font-size:clamp(34px,5vw,56px);max-width:20ch}
+.hero .lead{margin-top:22px;font-size:20px;max-width:64ch;
+  color:var(--ink-soft)}
+.cta{margin-top:34px;display:flex;gap:14px;flex-wrap:wrap}
+.btn{display:inline-block;padding:13px 22px;border-radius:var(--r);
+  text-decoration:none;font-weight:600;font-size:16px}
+.btn-main{background:var(--teal);color:#fff}
+.btn-main:hover{background:var(--teal-deep)}
+.btn-ghost{border:1px solid var(--line);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--teal)}
+section{padding:56px 0;border-top:1px solid var(--line)}
+section h2{font-size:clamp(26px,3.3vw,38px);max-width:24ch}
+section .sub{margin-top:16px;max-width:70ch;color:var(--ink-soft)}
+section .sub a{color:var(--teal-deep)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:34px}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
+  margin-top:34px}
+@media(max-width:860px){.pair,.trio{grid-template-columns:1fr}}
+.pair figure,.trio figure{margin:0}
+.card{background:var(--paper-2);border:1px solid var(--line);
+  border-radius:var(--r);padding:22px 24px}
+.card h3{font-size:19px;margin-bottom:10px}
+.card p{color:var(--ink-soft);font-size:16px}
+.card p + p{margin-top:10px}
+.card a{color:var(--teal-deep)}
+.card.link{display:block;text-decoration:none;color:inherit}
+.card.link:hover{border-color:var(--teal)}
+.card.link h3{color:var(--teal-deep)}
+figure{margin:30px 0 0}
+figure img{width:100%;height:auto;display:block;border-radius:var(--r);
+  border:1px solid var(--line);background:#000}
+.shot{margin-top:38px}
+figcaption{margin-top:10px;font-size:14px;color:var(--ink-soft)}
+.tools{margin-top:34px;border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden;background:#fff}
+.row{display:grid;grid-template-columns:minmax(220px,1fr) 1.4fr;gap:14px;
+  padding:12px 20px;border-bottom:1px solid var(--line);font-size:15px}
+.row:last-child{border-bottom:0}
+.row span{color:var(--ink-soft)}
+@media(max-width:860px){.row{grid-template-columns:1fr;gap:4px}}
+.online{margin-top:30px;height:min(78vh,760px);border-radius:var(--r);
+  overflow:hidden;border:1px solid var(--line);background:#000}
+.online iframe{width:100%;height:100%;border:0;display:block}
+.release{margin-top:20px}
+.release ul{margin:10px 0;padding-left:20px;color:var(--ink-soft);
+  font-size:16px}
+.release li + li{margin-top:6px}
+.release p{color:var(--ink-soft);font-size:16px;margin-top:10px}
+.ftr{padding:40px 0 60px;border-top:1px solid var(--line);
+  color:var(--ink-soft);font-size:15px}
+.ftr a{color:var(--teal-deep)}
+</style>
+<header class="hdr"><div class="wrap">
+<a class="brand" target="_blank" href="https://www.informpp.ru/главная-страница/planetx-lite">PlanetX Lite
+<span data-i18n="brand.sub"></span></a>
+<div class="right"><nav class="nav"><a target="_blank" href="https://www.informpp.ru/главная-страница/planetx-lite" data-i18n="nav.main"></a>
+<a target="_blank" href="https://www.informpp.ru/главная-страница/planetx-lite/online" data-i18n="nav.online" class="on"></a>
+<a target="_blank" href="https://www.informpp.ru/главная-страница/planetx-lite/places" data-i18n="nav.places"></a>
+<a target="_blank" href="https://www.informpp.ru/главная-страница/planetx-lite/data" data-i18n="nav.data"></a>
+<a target="_blank" href="https://www.informpp.ru/главная-страница/planetx-lite/sky" data-i18n="nav.sky"></a>
+<a target="_blank" href="https://www.informpp.ru/главная-страница/planetx-lite/news" data-i18n="nav.news"></a></nav>
+<div class="lang"><button type="button" data-lang="ru">RU</button>
+<button type="button" data-lang="en">EN</button></div></div>
+</div></header>
+<section id="online"><div class="wrap">
+<div class="eyebrow" data-i18n="online.eyebrow"></div>
+<h2 data-i18n="online.h2"></h2>
+<p class="sub" data-i18n="online.sub"></p>
+<div class="online"><iframe src="https://valery35.github.io/planetx-lite/" title="PlanetX Lite" allow="fullscreen; geolocation; clipboard-write; web-share" allowfullscreen loading="lazy"></iframe></div>
+<p class="sub" data-i18n="online.note"></p>
+<div class="cta"><a class="btn btn-main" target="_blank" data-i18n="online.full" href="https://valery35.github.io/planetx-lite/"></a></div>
+</div></section>
+<footer class="ftr"><div class="wrap">
+PlanetX Lite 0.9.0 &middot; <span data-i18n="ftr.line1"></span><br>
+<span data-i18n="ftr.line2"></span>,
+<a target="_blank" href="https://www.informpp.ru/">www.informpp.ru</a><br>
+<span data-i18n="ftr.line3"></span>
+<a target="_blank" href="https://github.com/Valery35#%D0%BF%D0%BE%D0%B4%D0%B4%D0%B5%D1%80%D0%B6%D0%B0%D1%82%D1%8C-%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%BA%D1%83" data-i18n="ftr.support"></a>
+</div></footer>
+<script>
+var TEXTS = {"ru": {"online.full": "Открыть во весь экран", "online.note": "Глобус в рамке - та же страница, что по ссылке. Колесо внутри рамки приближает глобус, страницу сайта листает полоса справа. «Мои метки» хранятся в браузере.", "online.eyebrow": "Онлайн", "online.h2": "Глобус прямо на этой странице", "online.sub": "Без установки: перетаскивание вращает Землю, кнопка «Демо» открывает готовые сцены.", "title": "PlanetX Lite - Онлайн · Информ++", "brand.sub": "глобус без QGIS", "nav.main": "Главная", "nav.online": "Онлайн", "nav.places": "Метки и туры", "nav.data": "Данные", "nav.sky": "Небо и тела", "nav.news": "Что нового", "ftr.line1": "Лицензия Apache 2.0", "ftr.line2": "ООО «Информ++»", "ftr.line3": "Программа бесплатная и открытая.", "ftr.support": "Поддержать разработку"}, "en": {"online.full": "Open full screen", "online.note": "The globe in the frame is the same page as by the link. The wheel inside the frame zooms the globe, the scroll bar on the right scrolls the site page. My Places are kept in the browser.", "online.eyebrow": "Online", "online.h2": "The globe right on this page", "online.sub": "Nothing to install: dragging turns the Earth, the Demo button opens ready scenes.", "title": "PlanetX Lite - Online · Inform++", "brand.sub": "globe without QGIS", "nav.main": "Overview", "nav.online": "Online", "nav.places": "Places and tours", "nav.data": "Data", "nav.sky": "Sky and bodies", "nav.news": "What's new", "ftr.line1": "Apache 2.0 license", "ftr.line2": "Inform++ LLC", "ftr.line3": "The program is free and open source.", "ftr.support": "Support development"}};
+
+function apply(lang){
+  var d = TEXTS[lang] || TEXTS.ru;
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var value = d[el.getAttribute('data-i18n')];
+    if (value !== undefined) el.innerHTML = value;
+  });
+  document.querySelectorAll('[data-i18n-href]').forEach(function(el){
+    var value = d[el.getAttribute('data-i18n-href')];
+    if (value !== undefined) el.setAttribute('href', value);
+  });
+  document.querySelectorAll('.lang button').forEach(function(b){
+    b.classList.toggle('on', b.getAttribute('data-lang') === lang);
+  });
+  try { localStorage.setItem('planetx-lang', lang); } catch (e) {}
+}
+document.querySelectorAll('.lang button').forEach(function(b){
+  b.addEventListener('click', function(){ apply(b.getAttribute('data-lang')); });
+});
+// По умолчанию русский: страница живёт на русском сайте.
+var saved = null;
+try { saved = localStorage.getItem('planetx-lang'); } catch (e) {}
+apply(saved || 'ru');
+</script>

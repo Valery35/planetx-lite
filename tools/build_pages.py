@@ -2,13 +2,14 @@
 # PlanetX Lite - глобус PlanetX без QGIS.
 # Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
 # SPDX-License-Identifier: Apache-2.0
-"""Страницы PlanetX Lite для www.informpp.ru - главная и четыре раздела.
+"""Страницы PlanetX Lite для www.informpp.ru - главная и пять разделов.
 
     python tools/build_pages.py
 
 Решение автора от 28 октября 2026 года - группа страниц, как у модуля
 PlanetX (tools/build_pages.py модуля): своя страница planetx-lite
-и подстраницы «Метки и туры», «Данные», «Небо и тела», «Что нового».
+и подстраницы «Онлайн» (с того же дня), «Метки и туры», «Данные»,
+«Небо и тела», «Что нового».
 Каждая страница - самодостаточный файл HTML в site/pages для блока
 «Встроить» Google Сайтов, на двух языках с переключателем, снимки
 встроены строками data:. Песочница блока не разрешает переход верхнего
@@ -42,6 +43,7 @@ SUPPORT_URL = ("https://github.com/Valery35#%D0%BF%D0%BE%D0%B4%D0%B4%D0%B5"
 # Страница: ключ, путь подстраницы, название по-русски и по-английски.
 PAGES = (
     ("main", "", "Главная", "Overview"),
+    ("online", "online", "Онлайн", "Online"),
     ("places", "places", "Метки и туры", "Places and tours"),
     ("data", "data", "Данные", "Data"),
     ("sky", "sky", "Небо и тела", "Sky and bodies"),
@@ -588,8 +590,35 @@ def page_news(img):
                    "\n".join(blocks) + buttons(main=False))
 
 
-BUILDERS = {"main": page_main, "places": page_places, "data": page_data,
-            "sky": page_sky, "news": page_news}
+def page_online(img):
+    """Глобус страницы Lite в рамке, просьба автора от 28 октября
+    2026 года. Рамка пускает полный экран, GPS «Моего места», буфер
+    обмена и «Поделиться»."""
+    t("online.full", "Открыть во весь экран", "Open full screen")
+    t("online.note",
+      "Глобус в рамке - та же страница, что по ссылке. Колесо внутри рамки "
+      "приближает глобус, страницу сайта листает полоса справа. «Мои "
+      "метки» хранятся в браузере.",
+      "The globe in the frame is the same page as by the link. The wheel "
+      "inside the frame zooms the globe, the scroll bar on the right "
+      "scrolls the site page. My Places are kept in the browser.")
+    frame = ('<div class="online"><iframe src="%s" title="PlanetX Lite" '
+             'allow="fullscreen; geolocation; clipboard-write; web-share" '
+             'allowfullscreen loading="lazy"></iframe></div>\n'
+             '<p class="sub" data-i18n="online.note"></p>\n'
+             '<div class="cta"><a class="btn btn-main" target="_blank" '
+             'data-i18n="online.full" href="%s"></a></div>' % (WEB, WEB))
+    return section(
+        "online", ("Онлайн", "Online"),
+        ("Глобус прямо на этой странице", "The globe right on this page"),
+        ("Без установки: перетаскивание вращает Землю, кнопка «Демо» "
+         "открывает готовые сцены.",
+         "Nothing to install: dragging turns the Earth, the Demo button "
+         "opens ready scenes."), frame)
+
+
+BUILDERS = {"main": page_main, "online": page_online, "places": page_places,
+            "data": page_data, "sky": page_sky, "news": page_news}
 
 STYLE = """
 @import url('https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700\\
@@ -678,6 +707,9 @@ figcaption{margin-top:10px;font-size:14px;color:var(--ink-soft)}
 .row:last-child{border-bottom:0}
 .row span{color:var(--ink-soft)}
 @media(max-width:860px){.row{grid-template-columns:1fr;gap:4px}}
+.online{margin-top:30px;height:min(78vh,760px);border-radius:var(--r);
+  overflow:hidden;border:1px solid var(--line);background:#000}
+.online iframe{width:100%;height:100%;border:0;display:block}
 .release{margin-top:20px}
 .release ul{margin:10px 0;padding-left:20px;color:var(--ink-soft);
   font-size:16px}
