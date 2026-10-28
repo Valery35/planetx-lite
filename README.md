@@ -49,7 +49,9 @@ The program is free and open source. [Support development](https://github.com/Va
 
 ## First start without a signature
 
-The release files are not signed yet.
+The release files are not signed. The system warns about every program
+from an unknown publisher, this is not a sign of a virus. Microsoft
+checked the 0.1.0 installer and found no malware.
 
 - **Windows:** the "Windows protected your PC" window - "More info" -
   "Run anyway".
@@ -58,19 +60,21 @@ The release files are not signed yet.
 - **Linux:** make the AppImage executable:
   `chmod +x PlanetX-Lite-*.AppImage`.
 
+Every release file is built from this repository by GitHub Actions
+(`.github/workflows/release.yml`). To check a downloaded file, compare
+its checksum with `SHA256SUMS` of the same release. On Windows:
+`Get-FileHash PlanetX-Lite-*-setup.exe` in PowerShell.
+
 ## Code signing policy
 
-Windows signing is being arranged with the SignPath Foundation free code
-signing for open source. Once approved, this section will read "Free code
-signing provided by SignPath.io, certificate by SignPath Foundation".
+The files are not signed at the moment. If signing is added, only files
+built from the source code of this repository by
+`.github/workflows/release.yml` will be signed, every release approved
+by hand. Project roles:
 
-- Only files built from the source code of this repository by
-  `.github/workflows/release.yml` are signed.
-- Project roles:
-  - committer - [Valery35](https://github.com/Valery35);
-  - reviewer - [Valery35](https://github.com/Valery35);
-  - approver - [Valery35](https://github.com/Valery35).
-- Every release is approved by hand.
+- committer - [Valery35](https://github.com/Valery35);
+- reviewer - [Valery35](https://github.com/Valery35);
+- approver - [Valery35](https://github.com/Valery35).
 
 ## Privacy
 
@@ -141,7 +145,9 @@ window.
 
 ## Первый запуск без подписи
 
-Файлы выпуска пока не подписаны.
+Файлы выпуска не подписаны. Система предупреждает о любой программе
+неизвестного издателя, это не признак вируса. Microsoft проверил
+установщик 0.1.0 и вредоносного кода не нашёл.
 
 - **Windows:** окно «Система Windows защитила ваш компьютер» -
   «Подробнее» - «Выполнить в любом случае».
@@ -151,11 +157,15 @@ window.
 - **Linux:** AppImage нужно сделать исполняемым:
   `chmod +x PlanetX-Lite-*.AppImage`.
 
+Каждый файл выпуска собирается из этого хранилища в GitHub Actions
+(`.github/workflows/release.yml`). Проверка скачанного файла -
+сравнение его контрольной суммы с `SHA256SUMS` того же выпуска.
+В Windows - `Get-FileHash PlanetX-Lite-*-setup.exe` в PowerShell.
+
 ## Подпись кода
 
-Подпись Windows готовится через SignPath Foundation, бесплатную
-подпись открытых проектов. Правила подписи - раздел «Code signing
-policy» выше.
+Сейчас файлы не подписаны. Правила на случай подписи - раздел «Code
+signing policy» выше.
 
 ## Приватность
 
