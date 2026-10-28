@@ -2077,7 +2077,12 @@ impl LiteApp {
             parts.push((data::hips::DSS_CREDIT, data::hips::DSS_TERMS));
         }
         self.credits.show(ctx, rect, self.lang, &parts, 2);
-        if self.shows_ui() {
+        // Снимок вида неба - тем же путём, что у глобуса. Раньше кадр
+        // неба до него не доходил: «Снимок вида», «Копия вида» и снимок
+        // агента MCP не снимались, 28 октября 2026 года.
+        let hiding = matches!(self.snapshot, Some(Snapshot::Hide(_)));
+        self.request_snapshot(ctx, rect);
+        if self.shows_ui() && !hiding {
             self.toolbar(ctx, rect, now);
             self.settings_window(ctx);
             self.dialogs(ctx, now);
@@ -2445,6 +2450,26 @@ impl LiteApp {
     }
 
     /// Пришёл снимок вида - файлом PNG или в буфер обмена.
+    /// Снимок вида: в кадре со скрытыми окнами - запрос картинки кадра,
+    /// в следующих - запись готовой картинки.
+    fn request_snapshot(&mut self, ctx: &egui::Context, rect: egui::Rect) {
+        if let Some(Snapshot::Hide(to)) = self.snapshot {
+            // Окна скрыты в этом кадре: снимок - глобус с подписью
+            // источников.
+            let cell = Arc::new(std::sync::Mutex::new(None));
+            let sink = cell.clone();
+            let ppp_points = ctx.pixels_per_point();
+            ctx.request_screenshot(move |image| {
+                if let Ok(mut slot) = sink.lock() {
+                    *slot = Some(crop(&image, rect, ppp_points));
+                }
+            });
+            self.snapshot = Some(Snapshot::Wait(to, cell));
+        } else {
+            self.save_snapshot(ctx);
+        }
+    }
+
     fn save_snapshot(&mut self, ctx: &egui::Context) {
         let Some(Snapshot::Wait(to, cell)) = &self.snapshot else {
             return;
@@ -7336,6 +7361,12 @@ impl eframe::App for LiteApp {
         self.nav.camera.width = width;
         self.nav.camera.height = height;
         if self.sky.is_some() {
+            // Помощник и агенты MCP работают и в небе. Раньше их шаг
+            // стоял ниже выхода: в небе сообщения не шли, снимок
+            // агента не снимался, 28 октября 2026 года.
+            self.step_ai(&ctx, now);
+            #[cfg(not(target_arch = "wasm32"))]
+            self.step_mcp(&ctx, now);
             self.sky_frame(&ctx, ui, rect, &globe_response, ppp, now);
             return;
         }
@@ -8104,21 +8135,7 @@ impl eframe::App for LiteApp {
             Some(crate::legend::Closed::Dots(layer)) => self.set_extra(crate::layers::Extra::Dots(layer), false),
             None => {}
         }
-        if let Some(Snapshot::Hide(to)) = self.snapshot {
-            // Окна скрыты в этом кадре: снимок - глобус с подписью
-            // источников.
-            let cell = Arc::new(std::sync::Mutex::new(None));
-            let sink = cell.clone();
-            let ppp_points = ctx.pixels_per_point();
-            ctx.request_screenshot(move |image| {
-                if let Ok(mut slot) = sink.lock() {
-                    *slot = Some(crop(&image, rect, ppp_points));
-                }
-            });
-            self.snapshot = Some(Snapshot::Wait(to, cell));
-        } else {
-            self.save_snapshot(&ctx);
-        }
+        self.request_snapshot(&ctx, rect);
         if !hiding {
             self.overlays(&ctx, rect, now);
         }
