@@ -133,7 +133,10 @@ def buttons(main=True):
            '<a class="btn btn-ghost" target="_blank" data-i18n="cta.release" '
            'href="%s"></a>' % RELEASES]
     if main:
-        out += ['<a class="btn btn-ghost" target="_blank" data-i18n="cta.code"'
+        t("cta.pro", "PlanetX для QGIS", "PlanetX for QGIS")
+        out += ['<a class="btn btn-ghost" target="_blank" data-i18n="cta.pro"'
+                ' href="%s"></a>' % PRO,
+                '<a class="btn btn-ghost" target="_blank" data-i18n="cta.code"'
                 ' href="%s"></a>' % REPO,
                 '<a class="btn btn-ghost" target="_blank" data-i18n='
                 '"cta.manual" data-i18n-href="cta.manual.url" href="%s"></a>'
@@ -151,15 +154,18 @@ def page_main(img):
       "и на телефоне", "The PlanetX globe without QGIS - on a computer, in "
       "a browser and on a phone")
     t("hero.lead",
-      "PlanetX Lite показывает Землю, рельеф, космоснимки и подписи, "
-      "открывает сцены модуля PlanetX, файлы KML и KMZ, проигрывает туры "
-      "и показывает свои данные. Одна программа для Windows, Linux "
-      "и macOS. Та же программа работает страницей в браузере без "
-      "установки.",
-      "PlanetX Lite shows the Earth, terrain, satellite imagery and labels, "
-      "opens PlanetX plugin scenes, KML and KMZ files, plays tours and "
-      "shows your own data. One program for Windows, Linux and macOS. The "
-      "same program runs as a web page with nothing to install.")
+      "PlanetX Lite - отдельная программа, QGIS ей не нужен. По слоям "
+      "и инструментам она близка к модулю PlanetX для QGIS: тот же глобус, "
+      "каталог слоёв, метки, туры, линейка, разрез, небо и другие тела. "
+      "Сцены модуля открываются в Lite, сцены Lite - в модуле. Одна "
+      "программа для Windows, Linux и macOS, та же программа работает "
+      "страницей в браузере без установки.",
+      "PlanetX Lite is a standalone program, it needs no QGIS. In layers "
+      "and tools it is close to the PlanetX plugin for QGIS: the same "
+      "globe, layer catalog, placemarks, tours, ruler, section, sky and "
+      "other bodies. Plugin scenes open in Lite, Lite scenes open in the "
+      "plugin. One program for Windows, Linux and macOS, the same program "
+      "runs as a web page with nothing to install.")
     t("hero.shot", "Эльбрус с наклоном камеры. Снимки Esri на рельефе, "
       "подписи OpenFreeMap.", "Elbrus with a tilted camera. Esri imagery on "
       "the terrain, OpenFreeMap labels.")
@@ -765,6 +771,7 @@ def page(key, img, version):
     t("ftr.line3", "Программа бесплатная и открытая.",
       "The program is free and open source.")
     t("ftr.support", "Поддержать разработку", "Support development")
+    t("ftr.pro", "Модуль PlanetX для QGIS", "The PlanetX plugin for QGIS")
     texts = {"ru": {k: v[0] for k, v in T.items()},
              "en": {k: v[1] for k, v in T.items()}}
     return """<!-- PlanetX Lite - страница «%s» для www.informpp.ru.   -->
@@ -786,13 +793,14 @@ PlanetX Lite %s &middot; <span data-i18n="ftr.line1"></span><br>
 <span data-i18n="ftr.line2"></span>,
 <a target="_blank" href="https://www.informpp.ru/">www.informpp.ru</a><br>
 <span data-i18n="ftr.line3"></span>
-<a target="_blank" href="%s" data-i18n="ftr.support"></a>
+<a target="_blank" href="%s" data-i18n="ftr.support"></a><br>
+<a target="_blank" href="%s" data-i18n="ftr.pro"></a>
 </div></footer>
 <script>
 var TEXTS = %s;
 %s</script>
 """ % (title_ru, STYLE, url(""), "\n".join(nav), body, version, SUPPORT_URL,
-       json.dumps(texts, ensure_ascii=False), SCRIPT)
+       PRO, json.dumps(texts, ensure_ascii=False), SCRIPT)
 
 
 def version():

@@ -235,3 +235,13 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --title "PlanetX Lite ${{ needs.version.outputs.version }}" \
             --notes-file "packaging/notes/${{ needs.version.outputs.version }}.md"
+
+  # Сообщение автору в Telegram о выпуске, telegram-release.yml.
+  telegram:
+    name: Telegram
+    needs: [publish]
+    if: github.ref_type == 'tag'
+    uses: ./.github/workflows/telegram-release.yml
+    with:
+      tag: ${{ github.ref_name }}
+    secrets: inherit

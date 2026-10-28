@@ -1,0 +1,71 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Сообщение автору в Telegram о новом выпуске с кнопкой «Подготовить
+# пост». Кнопку обрабатывает бот PlanetX (bot/planetx_bot.py модуля),
+# пост в канал уходит только после «Опубликовать» в черновике. Сообщение
+# то же, что у .github/workflows/telegram-release.yml модуля.
+#
+# Выпуск Lite создаёт release.yml ключом GITHUB_TOKEN, а такое событие
+# другие сценарии не запускает. Поэтому release.yml зовёт этот сценарий
+# сам (workflow_call). Run workflow с меткой - повторное сообщение.
+# Секреты хранилища: TELEGRAM_BOT_TOKEN - токен бота, TELEGRAM_OWNER -
+# номер чата автора. Без них шаг ничего не делает.
+name: Telegram о выпуске
+
+on:
+  release:
+    types: [published]
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Метка выпуска, например v0.9.0
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Сообщение автору
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          OWNER: ${{ secrets.TELEGRAM_OWNER }}
+          TAG: ${{ inputs.tag || github.event.release.tag_name }}
+          REPO: ${{ github.event.repository.name }}
+          SLUG: ${{ github.repository }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$OWNER" ]; then
+            echo "Секреты TELEGRAM_BOT_TOKEN и TELEGRAM_OWNER не заданы"
+            exit 0
+          fi
+          python3 - <<'EOF'
+          import json, os, urllib.request
+          url = "https://github.com/{}/releases/tag/{}".format(
+              os.environ["SLUG"], os.environ["TAG"])
+          body = {
+              "chat_id": os.environ["OWNER"],
+              "text": "Вышел выпуск {} {}\n{}".format(
+                  os.environ["REPO"], os.environ["TAG"], url),
+              "disable_web_page_preview": True,
+              "reply_markup": {"inline_keyboard": [[{
+                  "text": "Подготовить пост",
+                  "callback_data": "draft:{}:{}".format(
+                      os.environ["REPO"], os.environ["TAG"])}]]},
+          }
+          request = urllib.request.Request(
+              "https://api.telegram.org/bot{}/sendMessage".format(
+                  os.environ["TOKEN"]),
+              data=json.dumps(body).encode("utf-8"),
+              headers={"Content-Type": "application/json"})
+          with urllib.request.urlopen(request, timeout=30) as answer:
+              print(json.loads(answer.read())["ok"])
+          EOF
