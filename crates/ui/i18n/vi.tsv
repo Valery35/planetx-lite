@@ -204,7 +204,7 @@ A double click on a row copies the value to the clipboard, a link opens in the b
 A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	Đường sáng màu với nét đứt tối. Biến mất cùng đường cao tốc khi thu nhỏ. Đường ga và đường nhánh không được vẽ.
 Add	Thêm
 Add data	Thêm dữ liệu
-Add placemark here	Thêm dấu vị trí tại đây
+Add placemark	Thêm dấu vị trí
 Address	Địa chỉ
 Airports	Sân bay
 All	Tất cả
@@ -253,7 +253,6 @@ Feature	Đối tượng
 Features	Các đối tượng
 Find what is typed in the line. A place - a flight to it, several found places - a list below.	Tìm nội dung đã nhập trong dòng. Một địa điểm - bay đến đó, nhiều địa điểm tìm thấy - danh sách bên dưới.
 Finish drawing	Kết thúc vẽ
-Fly here	Bay đến đây
 Folder properties	Thuộc tính thư mục
 Folder view	Khung nhìn thư mục
 Folder|add	Thư mục
@@ -386,7 +385,7 @@ View snapshot	Ảnh chụp khung nhìn
 Voyages of Columbus	Các chuyến đi của Columbus
 W	T
 Water names	Tên mặt nước
-What's here?	Ở đây có gì?
+Point details	Chi tiết điểm
 Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	Camera nhìn từ đâu khi bay đến thư mục. Khung nhìn được đặt bằng số hoặc bằng cách lấy khung nhìn hiện tại. Không có khung nhìn riêng, chuyến bay sẽ đưa tất cả dấu vị trí của thư mục vào khung hình.
 Where the camera looks. 0 - north at the top of the frame.	Hướng camera nhìn. 0 - phía bắc ở trên cùng khung hình.
 Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	Khi bỏ đánh dấu, thư mục không mở rộng trong danh sách, các dấu vị trí của nó được hiện và ẩn bằng ô đánh dấu của chính thư mục.
@@ -935,8 +934,8 @@ Clear search history	Xóa lịch sử tìm kiếm
 Erase the previous queries of the Search field.	Xóa các truy vấn trước đây của trường "Tìm".
 Sea and ocean depths	Độ sâu biển và đại dương
 With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Khi đánh dấu ô, đáy biển và đại dương nằm ở độ sâu của nó dưới lớp nước bán trong suốt, dòng trạng thái hiển thị độ sâu dưới con trỏ, mặt cắt độ cao hiển thị độ sâu và mực nước biển. Khi bỏ đánh dấu, độ cao dưới mực nước biển được tính là không và biển phẳng. Chỉ có cho Trái Đất.
-Directions from here	Chỉ đường từ đây
-Directions to here	Chỉ đường đến đây
+Route start	Điểm đầu tuyến đường
+Route end	Điểm cuối tuyến đường
 by car	bằng ô tô
 by bike	bằng xe đạp
 on foot	đi bộ
@@ -945,8 +944,8 @@ By bike	Bằng xe đạp
 On foot	Đi bộ
 {hours} h {minutes} min	{hours} giờ {minutes} phút
 {value} min	{value} phút
-The route start is set. The end is the Directions to here item of the globe menu.	Đã đặt điểm đầu của tuyến đường. Điểm cuối là mục "Chỉ đường đến đây" trong menu trên quả địa cầu.
-The route end is set. The start is the Directions from here item of the globe menu.	Đã đặt điểm cuối của tuyến đường. Điểm đầu là mục "Chỉ đường từ đây" trong menu trên quả địa cầu.
+The route start is set. The end is the Route end item of the globe menu.	Đã đặt điểm đầu của tuyến đường. Điểm cuối là mục "Điểm cuối tuyến đường" trong menu trên quả địa cầu.
+The route end is set. The start is the Route start item of the globe menu.	Đã đặt điểm cuối của tuyến đường. Điểm đầu là mục "Điểm đầu tuyến đường" trong menu trên quả địa cầu.
 Route: asking the service…	Tuyến đường: đang truy vấn dịch vụ…
 No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Không lập được tuyến đường: dịch vụ trả lời "{error}", còn theo đường của nền vector tuyến đường chỉ được lập trong phạm vi {limit} km đường chim bay.
 No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Không lập được tuyến đường: hành lang giữa các điểm gồm {count} ô đường, giới hạn là {limit}.
@@ -1069,7 +1068,7 @@ turn off	tắt
 Above ground {height} m	Trên mặt đất {height} m
 Climb {climb} m/s	Lên cao {climb} m/s
 Fighter	Máy bay chiến đấu
-Fly from here	Bay từ đây
+Flight	Bay
 Propeller plane	Máy bay cánh quạt
 Throttle {throttle} %	Lực đẩy {throttle} %
 Touched the ground - the flight is over.	Chạm đất - chuyến bay kết thúc.
@@ -1108,13 +1107,13 @@ Build	Tính
 Computing insolation: {share}	Đang tính độ chiếu nắng: {share}
 Direct sun, h per day	Nắng trực tiếp, giờ mỗi ngày
 Eto Mesto old maps	Bản đồ cũ "Eto Mesto"
-Eto Mesto old maps here…	Bản đồ cũ "Eto Mesto" ở đây…
+Eto Mesto old maps…	Bản đồ cũ "Eto Mesto"…
 First day	Ngày đầu
 Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Độ cao trên địa hình của vật cần nhìn thấy, ví dụ cột ăng-ten hoặc tòa nhà. Ở không chính mặt đất được kiểm tra.
 Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Độ cao của mắt hoặc cột ăng-ten trên địa hình tại điểm. Cao hơn - nhìn xa hơn và ít nơi bị địa hình che khuất hơn.
 Heights of the grid nodes: {share}	Độ cao các nút lưới: {share}
 Insolation	Độ chiếu nắng
-Insolation here…	Độ chiếu nắng ở đây…
+Insolation…	Độ chiếu nắng…
 Keeps the maps whose title or year holds all the words.	Giữ lại các bản đồ có tiêu đề hoặc năm chứa tất cả các từ.
 Last day	Ngày cuối
 Loading heights: {done} of {total}	Đang tải độ cao: {done} / {total}
@@ -1138,7 +1137,7 @@ The site did not answer: {error}	Trang web không trả lời: {error}
 The site has no maps at this point.	Trang web không có bản đồ tại điểm này.
 This body has no heights.	Thiên thể này không có dữ liệu độ cao.
 Viewshed from a point	Vùng nhìn thấy từ một điểm
-Viewshed from here…	Vùng nhìn thấy từ đây…
+Viewshed…	Vùng nhìn thấy…
 {share} of the circle area is visible. The computation step is {step} m.	Nhìn thấy {share} diện tích vòng tròn. Bước tính là {step} m.
 Article	Bài viết
 Encyclopedia	Bách khoa toàn thư
@@ -1229,7 +1228,7 @@ Loading map details…	Đang tải thông tin bản đồ…
 Loading the map image…	Đang tải ảnh bản đồ…
 Loading the map image: {done} of {total}	Đang tải ảnh bản đồ: {done} / {total}
 Georeferencing the map…	Đang định vị bản đồ…
-Rumsey historical maps here…	Bản đồ lịch sử Rumsey ở đây…
+Rumsey historical maps…	Bản đồ lịch sử Rumsey…
 Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	Bản đồ trong bộ sưu tập của David Rumsey, được định vị theo các điểm khống chế của bộ sưu tập. Ảnh theo giấy phép CC BY-NC-SA 3.0: chỉ dùng phi thương mại, có ghi nguồn.
 Maps at the view: {count}, by year. A click on a column header changes the order.	Bản đồ tại khung nhìn: {count}, theo năm. Nhấp vào tiêu đề cột để đổi thứ tự.
 The map was not built.	Chưa dựng được bản đồ.
@@ -1237,7 +1236,7 @@ The map is on the globe: {title}.	Bản đồ đã ở trên quả địa cầu:
 On the globe	Lên quả địa cầu
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Bản đồ được dựng từ ảnh của bộ sưu tập, được định vị và đặt làm hình ảnh trên bề mặt trong "Địa điểm của tôi", thư mục "Bản đồ Rumsey", kèm năm của bản đồ. Năm đặt bản đồ lên thanh thời gian.
 The bands were not read: {error}	Chưa đọc được các kênh: {error}
-Satellite images here…	Ảnh vệ tinh ở đây…
+Satellite images…	Ảnh vệ tinh…
 Reading the bands: {done} of {total}	Đang đọc các kênh: {done} / {total}
 Natural colour (B4 B3 B2)	Màu tự nhiên (B4 B3 B2)
 Shortwave infrared (B12 B8A B4)	Hồng ngoại sóng ngắn (B12 B8A B4)
@@ -1434,7 +1433,7 @@ Loading the images of the event «{title}»…	Đang tải ảnh sự kiện «{
 Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Ảnh động đất, lũ lụt, cháy rừng và bão từ hai danh mục mở. Vantor (trước là Maxar) cho dải WorldView, Planet - cảnh PlanetScope, SkySat và Pelican cùng ảnh ghép hằng quý của Planet trước sự kiện. Dòng này mở cửa sổ «Ảnh sự kiện» với danh sách sự kiện. Giấy phép ảnh CC BY-NC 4.0 - chỉ dùng phi thương mại.
 Imagery archive	Kho ảnh
 Images of extraordinary events from the open catalogs of Vantor and Planet.	Ảnh các sự kiện bất thường từ danh mục mở của Vantor và Planet.
-Lidar point clouds here	Đám mây điểm lidar tại đây
+Lidar point clouds	Đám mây điểm lidar
 Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Đang tìm trong danh mục lidar IGN LiDAR HD và USGS 3DEP gần điểm…
 Lidar point clouds: {error}	Đám mây điểm lidar: {error}
 There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	Gần điểm không có ô lidar của IGN LiDAR HD và USGS 3DEP.
@@ -1545,10 +1544,9 @@ Level	Mực nước
 The present sea level.	Mực nước biển hiện nay.
 The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	Nước làm ngập mọi nơi thấp hơn mực nước trên toàn quả địa cầu. Liên thông với biển không được kiểm tra, nên vùng trũng trong lục địa cũng bị ngập. Nước hiện khi bật địa hình.
 Return the present sea level.	Trả lại mực nước biển hiện nay.
-Slope and aspect here…	Độ dốc và hướng sườn ở đây…
-Hydrology	Thủy văn
-Flooding from here…	Ngập lụt từ đây…
-Water flow from here…	Dòng chảy của nước từ đây…
+Slope and aspect…	Độ dốc và hướng sườn…
+Flooding…	Ngập lụt…
+Water flow…	Dòng chảy của nước…
 Sea level…	Mực nước biển…
 Catchment of the placemark	Lưu vực của dấu vị trí
 Flow lines from the placemark…	Đường dòng chảy từ dấu vị trí…

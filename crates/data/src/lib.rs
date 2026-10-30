@@ -146,6 +146,7 @@ pub mod skyview;
 pub mod slabs;
 pub mod slope;
 pub mod stars;
+pub mod stats;
 pub mod subsurface;
 pub mod tomography;
 pub mod topo_flow;

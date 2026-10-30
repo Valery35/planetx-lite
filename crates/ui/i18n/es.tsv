@@ -204,7 +204,7 @@ A double click on a row copies the value to the clipboard, a link opens in the b
 A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	Línea clara con trazos oscuros. Desaparecen junto con las autopistas al alejar la vista. Las vías de estación y de acceso no se dibujan.
 Add	Añadir
 Add data	Añadir datos
-Add placemark here	Añadir marca aquí
+Add placemark	Añadir marca
 Address	Dirección
 Airports	Aeropuertos
 All	Todo
@@ -253,7 +253,6 @@ Feature	Objeto
 Features	Objetos
 Find what is typed in the line. A place - a flight to it, several found places - a list below.	Buscar lo escrito en la línea. Un lugar - vuelo hasta él, varios lugares encontrados - lista debajo.
 Finish drawing	Terminar el dibujo
-Fly here	Volar aquí
 Folder properties	Propiedades de la carpeta
 Folder view	Vista de la carpeta
 Folder|add	Carpeta
@@ -386,7 +385,7 @@ View snapshot	Captura de la vista
 Voyages of Columbus	Viajes de Colón
 W	O
 Water names	Nombres de masas de agua
-What's here?	¿Qué hay aquí?
+Point details	Detalles del punto
 Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	Desde dónde mira la cámara cuando vuela hacia la carpeta. La vista se fija con números o tomando la vista actual. Sin vista propia, el vuelo encuadra todas las marcas de la carpeta.
 Where the camera looks. 0 - north at the top of the frame.	Hacia dónde mira la cámara. 0 - el norte arriba del encuadre.
 Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	Sin la casilla la carpeta no se despliega en la lista, sus marcas se muestran y se ocultan con la casilla de la propia carpeta.
@@ -935,8 +934,8 @@ Clear search history	Borrar el historial de búsqueda
 Erase the previous queries of the Search field.	Borrar las consultas anteriores del campo «Buscar».
 Sea and ocean depths	Profundidades de mares y océanos
 With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Con la casilla marcada el fondo de mares y océanos está a su profundidad bajo agua semitransparente, la barra de estado muestra la profundidad bajo el cursor y el perfil de elevación muestra profundidades y nivel del mar. Sin la casilla las alturas bajo el nivel del mar cuentan como cero y el mar es plano. Solo existe para la Tierra.
-Directions from here	Ruta desde aquí
-Directions to here	Ruta hasta aquí
+Route start	Inicio de la ruta
+Route end	Final de la ruta
 by car	en coche
 by bike	en bicicleta
 on foot	a pie
@@ -945,8 +944,8 @@ By bike	En bicicleta
 On foot	A pie
 {hours} h {minutes} min	{hours} h {minutes} min
 {value} min	{value} min
-The route start is set. The end is the Directions to here item of the globe menu.	El inicio de la ruta está fijado. El final es el elemento «Ruta hasta aquí» del menú del globo.
-The route end is set. The start is the Directions from here item of the globe menu.	El final de la ruta está fijado. El inicio es el elemento «Ruta desde aquí» del menú del globo.
+The route start is set. The end is the Route end item of the globe menu.	El inicio de la ruta está fijado. El final es el elemento «Final de la ruta» del menú del globo.
+The route end is set. The start is the Route start item of the globe menu.	El final de la ruta está fijado. El inicio es el elemento «Inicio de la ruta» del menú del globo.
 Route: asking the service…	Ruta: consultando el servicio…
 No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Sin ruta: el servicio respondió «{error}», y por las carreteras de la base vectorial se calcula una ruta de hasta {limit} km en línea recta.
 No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Sin ruta: el corredor entre los puntos tiene {count} teselas de carreteras, el límite es {limit}.
@@ -1069,7 +1068,7 @@ turn off	desactivar
 Above ground {height} m	Sobre el suelo {height} m
 Climb {climb} m/s	Ascenso {climb} m/s
 Fighter	Caza
-Fly from here	Vuelo desde aquí
+Flight	Vuelo
 Propeller plane	Avión de hélice
 Throttle {throttle} %	Empuje {throttle} %
 Touched the ground - the flight is over.	Contacto con el suelo - el vuelo ha terminado.
@@ -1108,13 +1107,13 @@ Build	Calcular
 Computing insolation: {share}	Cálculo de la insolación: {share}
 Direct sun, h per day	Sol directo, h por día
 Eto Mesto old maps	Mapas antiguos de «Eto Mesto»
-Eto Mesto old maps here…	Mapas antiguos de «Eto Mesto» aquí…
+Eto Mesto old maps…	Mapas antiguos de «Eto Mesto»…
 First day	Primer día
 Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Altura sobre el relieve de lo que hay que ver, por ejemplo un mástil o un edificio. En cero se comprueba el propio suelo.
 Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Altura del ojo o del mástil sobre el relieve en el punto. Más alto - se ve más lejos y quedan menos lugares ocultos tras el relieve.
 Heights of the grid nodes: {share}	Alturas de los nodos de la malla: {share}
 Insolation	Insolación
-Insolation here…	Insolación aquí…
+Insolation…	Insolación…
 Keeps the maps whose title or year holds all the words.	Deja los mapas cuyo título o año contiene todas las palabras.
 Last day	Último día
 Loading heights: {done} of {total}	Cargando alturas: {done} de {total}
@@ -1138,7 +1137,7 @@ The site did not answer: {error}	El sitio no respondió: {error}
 The site has no maps at this point.	El sitio no tiene mapas en este punto.
 This body has no heights.	Este cuerpo no tiene alturas.
 Viewshed from a point	Visibilidad desde un punto
-Viewshed from here…	Visibilidad desde aquí…
+Viewshed…	Visibilidad…
 {share} of the circle area is visible. The computation step is {step} m.	Es visible {share} de la superficie del círculo. El paso de cálculo es {step} m.
 Article	Artículo
 Encyclopedia	Enciclopedia
@@ -1229,7 +1228,7 @@ Loading map details…	Cargando los datos del mapa…
 Loading the map image…	Cargando la imagen del mapa…
 Loading the map image: {done} of {total}	Cargando la imagen del mapa: {done} de {total}
 Georeferencing the map…	Georreferenciando el mapa…
-Rumsey historical maps here…	Mapas históricos de Rumsey aquí…
+Rumsey historical maps…	Mapas históricos de Rumsey…
 Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	Mapas de la colección de David Rumsey, georreferenciados por sus puntos de control. Las imágenes son CC BY-NC-SA 3.0: solo para uso no comercial, citando la fuente.
 Maps at the view: {count}, by year. A click on a column header changes the order.	Mapas en la vista: {count}, por año. Un clic en el encabezado de una columna cambia el orden.
 The map was not built.	El mapa no se construyó.
@@ -1237,7 +1236,7 @@ The map is on the globe: {title}.	El mapa está en el globo: {title}.
 On the globe	Al globo
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	El mapa se construye a partir de la imagen de la colección, se georreferencia y se coloca como imagen sobre la superficie en «Mis lugares», carpeta «Mapas de Rumsey», con el año del mapa. El año sitúa el mapa en la barra de tiempo.
 The bands were not read: {error}	Las bandas no se leyeron: {error}
-Satellite images here…	Imágenes de satélite aquí…
+Satellite images…	Imágenes de satélite…
 Reading the bands: {done} of {total}	Leyendo las bandas: {done} de {total}
 Natural colour (B4 B3 B2)	Color natural (B4 B3 B2)
 Shortwave infrared (B12 B8A B4)	Infrarrojo de onda corta (B12 B8A B4)
@@ -1434,7 +1433,7 @@ Loading the images of the event «{title}»…	Cargando las imágenes del evento
 Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Imágenes de terremotos, inundaciones, incendios y huracanes de dos catálogos abiertos. Vantor (antes Maxar) da franjas WorldView, Planet: escenas PlanetScope, SkySat y Pelican y el mosaico trimestral de Planet antes del evento. La fila abre la ventana «Imágenes de eventos» con la lista de eventos. Licencia de las imágenes CC BY-NC 4.0: solo uso no comercial.
 Imagery archive	Archivo de imágenes
 Images of extraordinary events from the open catalogs of Vantor and Planet.	Imágenes de eventos extraordinarios de los catálogos abiertos de Vantor y Planet.
-Lidar point clouds here	Nubes de puntos lidar aquí
+Lidar point clouds	Nubes de puntos lidar
 Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Buscando en los catálogos lidar IGN LiDAR HD y USGS 3DEP cerca del punto…
 Lidar point clouds: {error}	Nubes de puntos lidar: {error}
 There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	No hay teselas lidar de IGN LiDAR HD y USGS 3DEP cerca del punto.
@@ -1545,10 +1544,9 @@ Level	Nivel
 The present sea level.	El nivel actual del mar.
 The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	El agua inunda todo lo que está bajo el nivel en todo el globo. La conexión con el mar no se comprueba, así que también se inundan las tierras bajas del interior de los continentes. El agua se ve con el relieve activado.
 Return the present sea level.	Restablecer el nivel actual del mar.
-Slope and aspect here…	Pendiente y orientación aquí…
-Hydrology	Hidrología
-Flooding from here…	Inundación desde aquí…
-Water flow from here…	Flujo del agua desde aquí…
+Slope and aspect…	Pendiente y orientación…
+Flooding…	Inundación…
+Water flow…	Flujo del agua…
 Sea level…	Nivel del mar…
 Catchment of the placemark	Cuenca de la marca
 Flow lines from the placemark…	Líneas de flujo desde la marca…

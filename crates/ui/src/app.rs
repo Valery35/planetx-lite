@@ -378,6 +378,8 @@ pub struct LiteApp {
     aef_change: Option<crate::aefcalc::ChangeCalc>,
     /// Окно «Классификация» и его слой.
     aef_class: Option<crate::aefclass::ClassCalc>,
+    /// Общий участок окон анализа - вершины, `GlobeWindow.site` модуля.
+    area_site: Option<Vec<(f64, f64)>>,
     /// Окно «Уклон и экспозиция» и его квадрат.
     relief_calc: Option<crate::reliefcalc::ReliefCalc>,
     /// Сессии окон анализа: номер - название папки расчёта в «Анализе
@@ -1109,6 +1111,7 @@ impl LiteApp {
             shadows: None,
             aef_change: None,
             aef_class: None,
+            area_site: None,
             relief_calc: None,
             analysis_sessions: HashMap::new(),
             hydro: crate::hydrocalc::Hydro::new(),
@@ -1903,6 +1906,7 @@ impl LiteApp {
                         *slot = Some(crate::pointcalc::Calc::new(kind, lat, lon, title, unix));
                     }
                 }
+                self.join_site(&choice, lat, lon);
             }
             Choice::Changes => {
                 let Some((lat, lon)) = point else {
@@ -1915,6 +1919,7 @@ impl LiteApp {
                     Some(c) => c.set_point(lat, lon, title),
                     None => self.aef_change = Some(crate::aefcalc::ChangeCalc::new(lat, lon, title)),
                 }
+                self.join_site(&choice, lat, lon);
             }
             Choice::Classes => {
                 let Some((lat, lon)) = point else {
@@ -1927,6 +1932,7 @@ impl LiteApp {
                     Some(c) => c.set_point(lat, lon, title),
                     None => self.aef_class = Some(crate::aefclass::ClassCalc::new(lat, lon, title, self.lang)),
                 }
+                self.join_site(&choice, lat, lon);
             }
             Choice::SlopeHere => {
                 let Some((lat, lon)) = point else {
@@ -1939,6 +1945,7 @@ impl LiteApp {
                     Some(c) => c.set_point(lat, lon, title),
                     None => self.relief_calc = Some(crate::reliefcalc::ReliefCalc::new(lat, lon, title)),
                 }
+                self.join_site(&choice, lat, lon);
             }
             Choice::Flood | Choice::Flow | Choice::SeaLevel => self.hydro_choice(choice, point, place),
             Choice::SatPath(number) => {
@@ -2143,6 +2150,7 @@ impl LiteApp {
         if planet.key() == self.planet.key() {
             return;
         }
+        self.area_site = None;
         // Земные слои и векторная основа приостанавливаются, как
         // `_apply_extra` модуля на другом теле.
         if self.planet.earth {
@@ -2350,7 +2358,7 @@ impl LiteApp {
                 self.globe_menu_choice(ctx, c, point, place, now);
             }
         }
-        // Пришёл адрес «Что здесь?» - строка «Адрес» в группе «Место».
+        // Пришёл адрес «Сведения о точке» - строка «Адрес» в группе «Место».
         if let Some(objects) = &self.objects
             && let Some((at, answer)) = self.search.address.clone()
             && at == objects.at
@@ -3593,7 +3601,26 @@ impl LiteApp {
         Ok(self.show_cloud(&cloud, name, fly))
     }
 
-    /// Пункты подменю «Гидрология» меню на глобусе.
+    /// Окно анализа открыто у точки: участок окна на случай, если точка
+    /// внутри общего участка.
+    fn join_site(&mut self, choice: &crate::globemenu::Choice, lat: f64, lon: f64) {
+        use crate::globemenu::Choice;
+        let edit = match choice {
+            Choice::Insolation => self.insolation.as_mut().and_then(crate::pointcalc::Calc::site_edit),
+            Choice::Shadows => self.shadows.as_mut().and_then(crate::pointcalc::Calc::site_edit),
+            Choice::Changes => self.aef_change.as_mut().and_then(crate::aefcalc::ChangeCalc::site_edit),
+            Choice::Classes => self.aef_class.as_mut().and_then(crate::aefclass::ClassCalc::site_edit),
+            Choice::SlopeHere => self.relief_calc.as_mut().and_then(crate::reliefcalc::ReliefCalc::site_edit),
+            Choice::Flood => self.hydro.flood_site.as_mut(),
+            Choice::Flow => self.hydro.flow_site.as_mut(),
+            _ => None,
+        };
+        if let Some(edit) = edit {
+            edit.open_at(self.area_site.as_deref(), lat, lon);
+        }
+    }
+
+    /// Пункты гидрологии подменю «Анализ участка» меню на глобусе.
     fn hydro_choice(&mut self, choice: crate::globemenu::Choice, point: Option<(f64, f64)>, place: Option<(Vec<usize>, String)>) {
         use crate::globemenu::Choice;
         if choice == Choice::SeaLevel {
@@ -3611,6 +3638,7 @@ impl LiteApp {
         } else {
             self.hydro.flow_here(lat, lon, title);
         }
+        self.join_site(&choice, lat, lon);
     }
 
     /// Шаг снимков событий в каждом кадре, с окнами и без: каталоги,
@@ -7615,6 +7643,17 @@ impl eframe::App for LiteApp {
                     let nav = &self.nav;
                     self.aef_class.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav))
                 };
+            // Изменённый участок - общий для открытых окон анализа.
+            let edits = [&mut self.viewshed, &mut self.insolation, &mut self.shadows]
+                .into_iter()
+                .flatten()
+                .filter_map(crate::pointcalc::Calc::site_edit)
+                .chain(self.relief_calc.as_mut().and_then(crate::reliefcalc::ReliefCalc::site_edit))
+                .chain(self.hydro.site_edits())
+                .chain(self.aef_change.as_mut().and_then(crate::aefcalc::ChangeCalc::site_edit))
+                .chain(self.aef_class.as_mut().and_then(crate::aefclass::ClassCalc::site_edit))
+                .collect();
+            crate::analysis::share_sites(&mut self.area_site, edits);
             // Камера следом: колесо - расстояние до объекта, Esc отпускает,
             // `ChaseControl` модуля.
             if let Some((kind, _)) = self.live_follow.clone()

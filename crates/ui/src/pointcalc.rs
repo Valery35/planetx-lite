@@ -2,7 +2,7 @@
 // Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Расчёты у точки: «Видимость отсюда…» и «Инсоляция здесь…» меню на
+//! Расчёты у точки: «Видимость…» и «Инсоляция…» меню на
 //! глобусе. Перенос `ui/viewshed.py`, `ui/insolation.py` и расчётной
 //! части `ui/globe/tools.py` модуля.
 //!
@@ -247,7 +247,7 @@ impl Calc {
                     .collect();
                 let tiff = data::geotiff::write_byte(&grid, &values).unwrap_or_default();
                 let name = trf(lang, "Viewshed {time}", &[("time", &analysis::clock(stamp))]);
-                (tr(lang, "Viewshed"), circle(v.lat, v.lon, v.radius_m), ResultLayer { name, grid, rgba, tiff, stem: "viewshed".into() })
+                (tr(lang, "Viewshed"), circle(v.lat, v.lon, v.radius_m), ResultLayer { name, grid, rgba, tiff, stem: "viewshed".into(), summary: String::new() })
             }
             Layer::Insolation(r) => {
                 let (grid, hours) = r.raster(insolation::EARTH_RADIUS);
@@ -255,7 +255,8 @@ impl Calc {
                 let rgba = hours.iter().map(|h| if h.is_finite() { paint(stop_color((h / top).clamp(0.0, 1.0)), insolation::OPACITY) } else { [0; 4] }).collect();
                 let tiff = data::geotiff::write_float(&grid, &hours).unwrap_or_default();
                 let name = trf(lang, "Insolation {time}, h per day", &[("time", &analysis::clock(stamp))]);
-                (tr(lang, "Insolation"), r.ring.clone().unwrap_or_default(), ResultLayer { name, grid, rgba, tiff, stem: "insolation".into() })
+                let summary = analysis::stats_text(lang, tr(lang, "Sun hours"), &hours, tr(lang, " h"));
+                (tr(lang, "Insolation"), r.ring.clone().unwrap_or_default(), ResultLayer { name, grid, rgba, tiff, stem: "insolation".into(), summary })
             }
             Layer::Shadows(s) => {
                 let (grid, values) = s.raster();
@@ -269,7 +270,7 @@ impl Calc {
                     .collect();
                 let tiff = data::geotiff::write_byte(&grid, &values).unwrap_or_default();
                 let name = trf(lang, "Shadows {moment} UTC", &[("moment", &moment_text(s.moment))]);
-                (tr(lang, "Shadows"), s.horizon.ring.clone().unwrap_or_default(), ResultLayer { name, grid, rgba, tiff, stem: "shadows".into() })
+                (tr(lang, "Shadows"), s.horizon.ring.clone().unwrap_or_default(), ResultLayer { name, grid, rgba, tiff, stem: "shadows".into(), summary: String::new() })
             }
         };
         self.saved = Some(Saved { title: title.to_string(), ring, layers: vec![result], extra: Vec::new(), session: None });
@@ -409,6 +410,10 @@ impl Calc {
                         "Over {days} days direct sun shines from {low} to {high} h per day. The grid step is {step} m.",
                         &[("days", &r.days.to_string()), ("low", &format!("{low:.1}")), ("high", &format!("{high:.1}")), ("step", &format!("{:.0}", r.cell))],
                     );
+                    let summary = analysis::stats_text(lang, tr(lang, "Sun hours"), &r.hours, tr(lang, " h"));
+                    if !summary.is_empty() {
+                        self.status = format!("{} {summary}", self.status);
+                    }
                     if missing {
                         self.status = format!("{} {}", self.status, tr(lang, "Not all heights are loaded, the computation used less detailed ones."));
                     }
@@ -425,6 +430,9 @@ impl Calc {
     pub fn show(&mut self, ctx: &egui::Context, lang: Lang, now: f64) {
         if !self.open {
             return;
+        }
+        if let Some(text) = self.site.as_mut().and_then(|s| s.shared_note(lang)) {
+            self.status = text.to_string();
         }
         let mut open = true;
         let mut pressed = None;

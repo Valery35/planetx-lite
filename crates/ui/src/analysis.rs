@@ -6,7 +6,7 @@
 //! и `ui/results.py` модуля.
 //!
 //! Решения автора от 28 октября 2026 года, единые для всех окон
-//! подменю «Анализ участка» и «Гидрология»:
+//! подменю «Анализ участка»:
 //! - участок - многоугольник ([`SiteEdit`]). При открытии окна это
 //!   квадрат с серединой в точке окна, вершины тянутся мышью, кружок на
 //!   середине стороны ставит новую вершину. «Квадрат» возвращает
@@ -19,6 +19,10 @@
 //!   папки «Анализ участка» «Моих меток», в ней контур участка и картинки
 //!   слоёв расчёта ([`Saved::folder`]). Удаление папки убирает расчёт
 //!   целиком.
+//!
+//! Участок общий, слово автора от 30 октября 2026 года: нарисовал один
+//! раз и считаешь по нему разными окнами. Его хранит окно глобуса
+//! ([`share_sites`], [`SiteEdit::open_at`]), смена тела его снимает.
 //!
 //! Проекта QGIS у Lite нет: слой проекта заменяет картинка на
 //! поверхности в «Моих метках», она хранится в их файле KMZ. Значения
@@ -55,18 +59,52 @@ pub struct SiteEdit {
     press_at: Option<egui::Pos2>,
     /// Участок изменился: результат построен по прежнему.
     pub changed: bool,
+    /// Участок изменён в этом окне: его ещё не взяли другие окна.
+    edited: bool,
+    /// Участок взят общий: строка итога ещё не сказала об этом.
+    shared: bool,
 }
 
 impl SiteEdit {
     /// Квадрат side_km у точки, наибольший размер most_km.
     pub fn new(lat: f64, lon: f64, side_km: f64, most_km: f64) -> Self {
-        Self { site: Site::new(lat, lon, side_km, most_km), drag: None, pressed: None, press_at: None, changed: false }
+        Self { site: Site::new(lat, lon, side_km, most_km), drag: None, pressed: None, press_at: None, changed: false, edited: true, shared: false }
     }
 
     /// Новая точка окна: квадрат у неё.
     pub fn move_to(&mut self, lat: f64, lon: f64) {
         self.site.move_to(lat, lon);
+        self.touch();
+    }
+
+    /// Окно открыто у точки, `open_at` модуля: точка внутри общего
+    /// участка shared берёт его, иначе остаётся квадрат у точки.
+    pub fn open_at(&mut self, shared: Option<&[(f64, f64)]>, lat: f64, lon: f64) {
+        if let Some(ring) = shared
+            && data::site::inside(&[(lat, lon)], ring).first() == Some(&true)
+        {
+            self.adopt(ring);
+            self.shared = true;
+        }
+    }
+
+    /// Участок изменён пользователем.
+    fn touch(&mut self) {
         self.changed = true;
+        self.edited = true;
+    }
+
+    /// Участок - общий ring.
+    fn adopt(&mut self, ring: &[(f64, f64)]) {
+        self.site.ring = ring.to_vec();
+        self.site.drawing = false;
+        self.changed = true;
+        self.edited = false;
+    }
+
+    /// Строка итога окна, взявшего общий участок, один раз.
+    pub fn shared_note(&mut self, lang: Lang) -> Option<&'static str> {
+        std::mem::take(&mut self.shared).then(|| tr(lang, "The area is shared with the previous computation. «Square» and «Draw» start a new one."))
     }
 
     /// Строка «Участок» окна: сторона квадрата, «Квадрат», «Нарисовать».
@@ -80,11 +118,11 @@ impl SiteEdit {
             );
             if ui.add(egui::DragValue::new(&mut self.site.side_km).range(0.1..=most).speed(0.1).fixed_decimals(1).suffix(tr(lang, " km"))).on_hover_text(tip).changed() {
                 self.site.reset_square();
-                self.changed = true;
+                self.touch();
             }
             if ui.button(tr(lang, "Square")).on_hover_text(tr(lang, "The area is a square with the side from the field on the left.")).clicked() {
                 self.site.reset_square();
-                self.changed = true;
+                self.touch();
             }
             if ui
                 .button(tr(lang, "Draw"))
@@ -92,7 +130,7 @@ impl SiteEdit {
                 .clicked()
             {
                 self.site.start_drawing();
-                self.changed = true;
+                self.touch();
             }
         });
     }
@@ -138,7 +176,7 @@ impl SiteEdit {
                         self.site.ring.insert(at, point);
                         self.drag = Some(at);
                         self.pressed = Some((at, true));
-                        self.changed = true;
+                        self.touch();
                     }
                 }
                 None => {}
@@ -153,7 +191,7 @@ impl SiteEdit {
                     && let Some(slot) = self.site.ring.get_mut(index)
                 {
                     *slot = point;
-                    self.changed = true;
+                    self.touch();
                     if let Some((_, m)) = &mut self.pressed {
                         *m = true;
                     }
@@ -165,7 +203,7 @@ impl SiteEdit {
                 && editing::click_result(Drawing::Polygon, self.site.ring.len(), index, !self.site.drawing) == Some(Click::Close)
             {
                 self.site.drawing = false;
-                self.changed = true;
+                self.touch();
             }
             return true;
         }
@@ -174,7 +212,7 @@ impl SiteEdit {
         }
         if self.site.drawing && response.clicked() && on_globe && let Some(point) = pos.and_then(ground) {
             self.site.ring.push(point);
-            self.changed = true;
+            self.touch();
         }
         false
     }
@@ -237,6 +275,23 @@ impl SiteEdit {
     }
 }
 
+/// Изменённый замкнутый участок - общий, `_share` модуля: его хранит
+/// shared и берут открытые окна edits, кроме рисующих.
+pub fn share_sites(shared: &mut Option<Vec<(f64, f64)>>, mut edits: Vec<&mut SiteEdit>) {
+    let Some(ring) = edits.iter_mut().find(|s| s.edited && s.site.closed()).map(|s| {
+        s.edited = false;
+        s.site.ring.clone()
+    }) else {
+        return;
+    };
+    for s in edits {
+        if !s.site.drawing && s.site.ring != ring {
+            s.adopt(&ring);
+        }
+    }
+    *shared = Some(ring);
+}
+
 /// Кнопка окна анализа.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Button {
@@ -295,6 +350,20 @@ pub fn built_text(lang: Lang, unix: f64) -> String {
     trf(lang, "Built at {time} UTC.", &[("time", &clock(unix))])
 }
 
+/// Сводка значений участка строкой окна и описания слоя, `stats_text`
+/// модуля: title - величина, unit - единица. Пусто, если значений нет.
+pub fn stats_text(lang: Lang, title: &str, values: &[f64], unit: &str) -> String {
+    let Some(rep) = data::stats::describe(values) else {
+        return String::new();
+    };
+    let show = data::stats::rounded;
+    trf(
+        lang,
+        "{title} - mean {mean}{unit}, spread {std}{unit}, quantiles 10, 25, 50, 75 and 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.",
+        &[("title", title), ("mean", &show(rep.mean)), ("std", &show(rep.std)), ("p10", &show(rep.p10)), ("q1", &show(rep.q1)), ("median", &show(rep.median)), ("q3", &show(rep.q3)), ("p90", &show(rep.p90)), ("unit", unit)],
+    )
+}
+
 /// Слой результата: картинка на глобусе и значения для GeoTIFF.
 /// rgba - цвета узлов сетки без премножения, строки с севера.
 #[derive(Debug, Clone, PartialEq)]
@@ -306,6 +375,8 @@ pub struct ResultLayer {
     pub tiff: Vec<u8>,
     /// Начало имени файла: инструмент латиницей, как `stem` модуля.
     pub stem: String,
+    /// Сводка значений для описания слоя или пусто.
+    pub summary: String,
 }
 
 impl ResultLayer {
@@ -351,7 +422,7 @@ pub fn picture(name: String, stem: &str, bbox: (f64, f64, f64, f64), cell: f64, 
     let grid = LatLonGrid { north: north - dlat / 2.0, west: west + dlon / 2.0, dlat, dlon, cols, rows };
     let points: Vec<(f64, f64)> = (0..rows).flat_map(|r| (0..cols).map(move |c| (grid.north - r as f64 * dlat, grid.west + c as f64 * dlon))).collect();
     let rgba = sample(&points).into_iter().map(unpremultiply).collect();
-    ResultLayer { name, grid, rgba, tiff, stem: stem.to_string() }
+    ResultLayer { name, grid, rgba, tiff, stem: stem.to_string(), summary: String::new() }
 }
 
 /// Цвет без премножения альфы - для картинки PNG.
@@ -398,9 +469,8 @@ impl Saved {
             ground.set_box(layer.frame());
             let mut item = Overlay::new(&layer.name, ground);
             item.image = Some(png);
-            if let Some(path) = files.get(i).filter(|p| !p.is_empty()) {
-                item.description = trf(lang, "Values - the GeoTIFF file {path}.", &[("path", path)]);
-            }
+            let file = files.get(i).filter(|p| !p.is_empty()).map(|path| trf(lang, "Values - the GeoTIFF file {path}.", &[("path", path)]));
+            item.description = [Some(layer.summary.clone()).filter(|s| !s.is_empty()), file].into_iter().flatten().collect::<Vec<_>>().join(" ");
             folder.children.push(Item::Overlay(item));
         }
         folder.children.extend(self.extra.iter().cloned());
@@ -422,7 +492,7 @@ mod tests {
 
     fn layer() -> ResultLayer {
         let grid = LatLonGrid { north: 58.01, west: 56.24, dlat: 0.001, dlon: 0.002, cols: 3, rows: 2 };
-        ResultLayer { name: "Тени".into(), grid, rgba: vec![[10, 20, 30, 255]; 6], tiff: Vec::new(), stem: "shadows".into() }
+        ResultLayer { name: "Тени".into(), grid, rgba: vec![[10, 20, 30, 255]; 6], tiff: Vec::new(), stem: "shadows".into(), summary: "Тени - сводка.".into() }
     }
 
     #[test]
@@ -455,6 +525,60 @@ mod tests {
     }
 
     #[test]
+    fn point_inside_takes_the_shared_area() {
+        let ring = data::site::square_ring(58.0, 56.25, 4000.0);
+        let mut a = SiteEdit::new(58.001, 56.251, 1.0, 20.0);
+        a.open_at(Some(&ring), 58.001, 56.251);
+        assert_eq!(a.site.ring, ring);
+        assert!(a.changed);
+        assert!(a.shared_note(Lang::RU).is_some_and(|t| t.starts_with("Участок общий")));
+        assert!(a.shared_note(Lang::RU).is_none());
+        // Снаружи - свой квадрат.
+        let mut b = SiteEdit::new(60.0, 56.25, 1.0, 20.0);
+        let square = b.site.ring.clone();
+        b.open_at(Some(&ring), 60.0, 56.25);
+        assert_eq!(b.site.ring, square);
+        assert!(b.shared_note(Lang::RU).is_none());
+    }
+
+    #[test]
+    fn edited_area_goes_to_open_windows() {
+        let mut shared = None;
+        let mut a = SiteEdit::new(58.0, 56.25, 1.0, 20.0);
+        let mut b = SiteEdit::new(58.5, 56.25, 2.0, 20.0);
+        let mut drawing = SiteEdit::new(59.0, 56.25, 2.0, 20.0);
+        drawing.site.start_drawing();
+        let ring = a.site.ring.clone();
+        share_sites(&mut shared, vec![&mut a, &mut b, &mut drawing]);
+        assert_eq!(shared.as_ref(), Some(&ring));
+        assert_eq!(b.site.ring, ring);
+        assert!(b.changed);
+        assert!(drawing.site.ring.is_empty());
+        // Окно, взявшее участок, не отдаёт его обратно: второй проход
+        // ничего не меняет.
+        b.changed = false;
+        share_sites(&mut shared, vec![&mut a, &mut b, &mut drawing]);
+        assert!(!b.changed);
+        // Незамкнутый участок никому не идёт, замкнутый идёт всем.
+        drawing.site.ring = vec![(59.0, 56.0), (59.0, 56.1)];
+        drawing.touch();
+        share_sites(&mut shared, vec![&mut a, &mut b, &mut drawing]);
+        assert_eq!(a.site.ring, ring);
+        drawing.site.ring.push((59.1, 56.05));
+        drawing.site.drawing = false;
+        share_sites(&mut shared, vec![&mut a, &mut b, &mut drawing]);
+        assert_eq!(a.site.ring.len(), 3);
+        assert_eq!(shared.map(|r| r.len()), Some(3));
+    }
+
+    #[test]
+    fn stats_line_or_nothing() {
+        let text = stats_text(Lang::RU, "Уклон", &[1.0, 2.0, 3.0, f64::NAN], "°");
+        assert_eq!(text, "Уклон - среднее 2.00°, разброс 0.82°, квантили 10, 25, 50, 75 и 90 % - 1.20, 1.50, 2.00, 2.50, 2.80°.");
+        assert!(stats_text(Lang::RU, "Уклон", &[f64::NAN], "°").is_empty());
+    }
+
+    #[test]
     fn frame_covers_pixels() {
         let f = layer().frame();
         assert!((f[0] - 58.0105).abs() < 1e-12 && (f[1] - 58.0085).abs() < 1e-12);
@@ -467,7 +591,7 @@ mod tests {
         let folder = saved.folder(Lang::RU, 3723.0, &["C:/r/shadows.tif".into()]);
         assert_eq!(folder.name, "Тени 01:02:03 UTC");
         assert!(matches!(folder.children.first(), Some(Item::Place(p)) if p.points.len() == 4));
-        assert!(matches!(folder.children.get(1), Some(Item::Overlay(o)) if o.image.as_ref().is_some_and(|i| i.starts_with(b"\x89PNG")) && o.description.contains("shadows.tif")));
+        assert!(matches!(folder.children.get(1), Some(Item::Overlay(o)) if o.image.as_ref().is_some_and(|i| i.starts_with(b"\x89PNG")) && o.description.starts_with("Тени - сводка. ") && o.description.contains("shadows.tif")));
         // Папка переживает запись KMZ «Моих меток».
         let kmz = scene::kml::write_kmz(&folder);
         assert!(kmz.is_ok());

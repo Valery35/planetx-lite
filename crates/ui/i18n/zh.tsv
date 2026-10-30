@@ -207,7 +207,7 @@ A double click on a row copies the value to the clipboard, a link opens in the b
 A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	浅色线条带深色虚线。缩小时与高速公路一起消失。站线和专用线不绘制。
 Add	添加
 Add data	添加数据
-Add placemark here	在此添加地标
+Add placemark	添加地标
 Address	地址
 Airports	机场
 All	全部
@@ -255,7 +255,6 @@ Feature	对象
 Features	对象
 Find what is typed in the line. A place - a flight to it, several found places - a list below.	查找输入行中的内容。一个地点 - 飞往该处，找到多个地点 - 下方列表。
 Finish drawing	完成绘制
-Fly here	飞到这里
 Folder properties	文件夹属性
 Folder view	文件夹视图
 Folder|add	文件夹
@@ -386,7 +385,7 @@ View snapshot	视图快照
 Voyages of Columbus	哥伦布航海
 W	W
 Water names	水体名称
-What's here?	这里有什么？
+Point details	地点详情
 Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	相机飞往文件夹时从何处观看。视图通过数字或采用当前视图来设置。没有自己的视图时，飞行会将文件夹中的所有地标纳入画面。
 Where the camera looks. 0 - north at the top of the frame.	相机的朝向。0 - 北方在画面上方。
 Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	不勾选时文件夹在列表中不展开，其地标由文件夹本身的复选框显示和隐藏。
@@ -935,8 +934,8 @@ Clear search history	清除搜索历史
 Erase the previous queries of the Search field.	清除“搜索”字段之前的查询。
 Sea and ocean depths	海洋深度
 With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	勾选后，海洋底部位于其深度处，上方为半透明的水，状态栏显示光标下的深度，高程剖面显示深度和海平面。不勾选时，海平面以下的高度计为零，海面平坦。仅适用于地球。
-Directions from here	从这里规划路线
-Directions to here	到这里规划路线
+Route start	路线起点
+Route end	路线终点
 by car	驾车
 by bike	骑行
 on foot	步行
@@ -945,8 +944,8 @@ By bike	骑行
 On foot	步行
 {hours} h {minutes} min	{hours} 小时 {minutes} 分钟
 {value} min	{value} 分钟
-The route start is set. The end is the Directions to here item of the globe menu.	已设置路线起点。终点为地球菜单中的“到这里规划路线”项。
-The route end is set. The start is the Directions from here item of the globe menu.	已设置路线终点。起点为地球菜单中的“从这里规划路线”项。
+The route start is set. The end is the Route end item of the globe menu.	已设置路线起点。终点为地球菜单中的“路线终点”项。
+The route end is set. The start is the Route start item of the globe menu.	已设置路线终点。起点为地球菜单中的“路线起点”项。
 Route: asking the service…	路线：正在请求服务…
 No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	未能规划路线：服务回复“{error}”，而沿矢量底图的道路只能规划直线距离 {limit} 公里以内的路线。
 No route: the corridor between the points is {count} road tiles, the limit is {limit}.	未能规划路线：两点之间的走廊包含 {count} 个道路瓦片，上限为 {limit}。
@@ -1069,7 +1068,7 @@ turn off	关闭
 Above ground {height} m	离地 {height} 米
 Climb {climb} m/s	爬升 {climb} 米/秒
 Fighter	战斗机
-Fly from here	从这里起飞
+Flight	飞行
 Propeller plane	螺旋桨飞机
 Throttle {throttle} %	推力 {throttle} %
 Touched the ground - the flight is over.	触地 - 飞行结束。
@@ -1108,13 +1107,13 @@ Build	生成
 Computing insolation: {share}	正在计算日照：{share}
 Direct sun, h per day	直射阳光，每天小时数
 Eto Mesto old maps	“埃托·梅斯托”旧地图
-Eto Mesto old maps here…	此处的“埃托·梅斯托”旧地图…
+Eto Mesto old maps…	“埃托·梅斯托”旧地图…
 First day	第一天
 Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	需要看到的目标（如桅杆或建筑物）高出地形的高度。为零时检查地面本身。
 Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	该点处眼睛或桅杆高出地形的高度。越高看得越远，被地形遮挡的地方越少。
 Heights of the grid nodes: {share}	网格节点高度：{share}
 Insolation	日照
-Insolation here…	此处的日照…
+Insolation…	日照…
 Keeps the maps whose title or year holds all the words.	保留标题或年份包含所有词语的地图。
 Last day	最后一天
 Loading heights: {done} of {total}	正在加载高度：{done} / {total}
@@ -1138,7 +1137,7 @@ The site did not answer: {error}	网站未响应：{error}
 The site has no maps at this point.	网站在此点没有地图。
 This body has no heights.	该天体没有高度数据。
 Viewshed from a point	从一点出发的可视域
-Viewshed from here…	从这里看的可视域…
+Viewshed…	可视域…
 {share} of the circle area is visible. The computation step is {step} m.	可见圆面积的 {share}。计算步长为 {step} 米。
 Article	条目
 Encyclopedia	百科全书
@@ -1229,7 +1228,7 @@ Loading map details…	正在加载地图信息…
 Loading the map image…	正在加载地图图像…
 Loading the map image: {done} of {total}	正在加载地图图像：{done} / {total}
 Georeferencing the map…	正在配准地图…
-Rumsey historical maps here…	此处的 Rumsey 历史地图…
+Rumsey historical maps…	Rumsey 历史地图…
 Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	David Rumsey 收藏的地图，按其控制点配准。图像采用 CC BY-NC-SA 3.0：仅限非商业用途，并须注明来源。
 Maps at the view: {count}, by year. A click on a column header changes the order.	视图中的地图：{count} 幅，按年份排列。单击列标题可更改顺序。
 The map was not built.	未能生成地图。
@@ -1237,7 +1236,7 @@ The map is on the globe: {title}.	地图已在地球上：{title}。
 On the globe	到地球上
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	地图由收藏图像生成，经配准后连同地图年份作为地表图片放入“我的地点”的“Rumsey 地图”文件夹。年份把地图放到时间条上。
 The bands were not read: {error}	未能读取波段：{error}
-Satellite images here…	此处的卫星影像…
+Satellite images…	卫星影像…
 Reading the bands: {done} of {total}	正在读取波段：{done} / {total}
 Natural colour (B4 B3 B2)	真彩色 (B4 B3 B2)
 Shortwave infrared (B12 B8A B4)	短波红外 (B12 B8A B4)
@@ -1434,7 +1433,7 @@ Loading the images of the event «{title}»…	正在加载事件“{title}”�
 Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	来自两个开放目录的地震、洪水、火灾和飓风影像。Vantor（原 Maxar）提供 WorldView 条带，Planet 提供 PlanetScope、SkySat 和 Pelican 场景以及事件前的 Planet 季度镶嵌图。此行打开带有事件列表的“事件影像”窗口。影像许可为 CC BY-NC 4.0——仅限非商业用途。
 Imagery archive	影像档案
 Images of extraordinary events from the open catalogs of Vantor and Planet.	来自 Vantor 和 Planet 开放目录的突发事件影像。
-Lidar point clouds here	此处的激光雷达点云
+Lidar point clouds	激光雷达点云
 Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	正在该点附近搜索 IGN LiDAR HD 和 USGS 3DEP 激光雷达目录…
 Lidar point clouds: {error}	激光雷达点云：{error}
 There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	该点附近没有 IGN LiDAR HD 和 USGS 3DEP 激光雷达分块。
@@ -1545,10 +1544,9 @@ Level	水位
 The present sea level.	当前海平面。
 The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	水淹没整个地球上低于该水位的一切。不检查与海洋的连通，因此大陆内部的低地也会被淹没。开启地形时可见水面。
 Return the present sea level.	恢复当前海平面。
-Slope and aspect here…	此处的坡度和坡向…
-Hydrology	水文
-Flooding from here…	从此处淹没…
-Water flow from here…	从此处的水流…
+Slope and aspect…	坡度和坡向…
+Flooding…	淹没…
+Water flow…	水流…
 Sea level…	海平面…
 Catchment of the placemark	地标的集水区
 Flow lines from the placemark…	从地标出发的径流线…

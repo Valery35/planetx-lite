@@ -438,7 +438,8 @@ impl ChangeCalc {
         let shown = layer.clone();
         let sample = move |points: &[(f64, f64)]| shown.sample(points);
         let name = trf(lang, "Changes {before}-{after}", &[("before", &self.before.to_string()), ("after", &self.after.to_string())]);
-        let picture = analysis::picture(name, "aef_change", layer.bbox(), m.step, &sample, tiff);
+        let mut picture = analysis::picture(name, "aef_change", layer.bbox(), m.step, &sample, tiff);
+        picture.summary = analysis::stats_text(lang, tr(lang, "Degree of change"), &values, "");
         self.saved = Some(Saved { title: tr(lang, "Changes of the terrain").to_string(), ring: self.ring.clone(), layers: vec![picture], extra: std::mem::take(&mut self.spots), session: None });
     }
 
@@ -446,6 +447,9 @@ impl ChangeCalc {
     pub fn show(&mut self, ctx: &egui::Context, lang: Lang, request: Request) {
         if !self.open {
             return;
+        }
+        if let Some(text) = self.site.shared_note(lang) {
+            self.status = text.to_string();
         }
         let mut open = true;
         let mut pressed = None;

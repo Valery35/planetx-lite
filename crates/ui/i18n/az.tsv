@@ -204,7 +204,7 @@ A double click on a row copies the value to the clipboard, a link opens in the b
 A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	Tünd qırıq xəttli açıq rəngli xətt. Uzaqlaşdıranda magistrallarla birlikdə yox olur. Stansiya və giriş yolları çəkilmir.
 Add	Əlavə et
 Add data	Məlumat əlavə et
-Add placemark here	Buraya nişan əlavə et
+Add placemark	Nişan əlavə et
 Address	Ünvan
 Airports	Hava limanları
 All	Hamısı
@@ -253,7 +253,6 @@ Feature	Obyekt
 Features	Obyektlər
 Find what is typed in the line. A place - a flight to it, several found places - a list below.	Sətrə yazılanı tap. Bir yer - ora uçuş, bir neçə tapılmış yer - aşağıda siyahı.
 Finish drawing	Çəkməni bitir
-Fly here	Bura uç
 Folder properties	Qovluğun xüsusiyyətləri
 Folder view	Qovluğun görünüşü
 Folder|add	Qovluq
@@ -386,7 +385,7 @@ View snapshot	Görünüşün şəkli
 Voyages of Columbus	Kolumbun səyahətləri
 W	q. u.
 Water names	Su hövzələrinin adları
-What's here?	Burada nə var?
+Point details	Nöqtə haqqında məlumat
 Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	Kamera qovluğa uçanda haradan baxır. Görünüş rəqəmlərlə və ya cari görünüşü götürməklə təyin edilir. Öz görünüşü olmadıqda uçuş qovluğun bütün nişanlarını kadra alır.
 Where the camera looks. 0 - north at the top of the frame.	Kameranın baxdığı istiqamət. 0 - kadrın yuxarısında şimal.
 Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	Bayraqcıq olmadan qovluq siyahıda açılmır, onun nişanlarını qovluğun öz bayraqcığı göstərir və gizlədir.
@@ -935,8 +934,8 @@ Clear search history	Axtarış tarixçəsini təmizlə
 Erase the previous queries of the Search field.	"Axtar" sahəsinin əvvəlki sorğularını sil.
 Sea and ocean depths	Dəniz və okeanların dərinlikləri
 With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Bayraqcıq qoyulanda dəniz və okeanların dibi yarımşəffaf suyun altında öz dərinliyində uzanır, status sətri kursorun altındakı dərinliyi, hündürlük profili dərinlikləri və dəniz səviyyəsini göstərir. Bayraqcıq olmadan dəniz səviyyəsindən aşağı hündürlüklər sıfır sayılır, dəniz düzdür. Yalnız Yer üçün var.
-Directions from here	Buradan marşrut çək
-Directions to here	Bura marşrut çək
+Route start	Marşrutun başlanğıcı
+Route end	Marşrutun sonu
 by car	maşınla
 by bike	velosipedlə
 on foot	piyada
@@ -945,8 +944,8 @@ By bike	Velosipedlə
 On foot	Piyada
 {hours} h {minutes} min	{hours} saat {minutes} dəq
 {value} min	{value} dəq
-The route start is set. The end is the Directions to here item of the globe menu.	Marşrutun başlanğıcı qoyuldu. Sonu qlobusdakı menyunun "Bura marşrut çək" bəndidir.
-The route end is set. The start is the Directions from here item of the globe menu.	Marşrutun sonu qoyuldu. Başlanğıcı qlobusdakı menyunun "Buradan marşrut çək" bəndidir.
+The route start is set. The end is the Route end item of the globe menu.	Marşrutun başlanğıcı qoyuldu. Sonu qlobusdakı menyunun "Marşrutun sonu" bəndidir.
+The route end is set. The start is the Route start item of the globe menu.	Marşrutun sonu qoyuldu. Başlanğıcı qlobusdakı menyunun "Marşrutun başlanğıcı" bəndidir.
 Route: asking the service…	Marşrut: xidmətə sorğu…
 No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Marşrut qurulmadı: xidmət "{error}" cavabını verdi, vektor əsasının yolları ilə isə marşrut düz xətt üzrə {limit} km-ə qədər qurulur.
 No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Marşrut qurulmadı: nöqtələr arasındakı dəhliz {count} yol kafelidir, hədd {limit}.
@@ -1069,7 +1068,7 @@ turn off	söndür
 Above ground {height} m	Yerdən yuxarı {height} m
 Climb {climb} m/s	Qalxma {climb} m/san
 Fighter	Qırıcı
-Fly from here	Buradan uçuş
+Flight	Uçuş
 Propeller plane	Pərli təyyarə
 Throttle {throttle} %	Dartı {throttle} %
 Touched the ground - the flight is over.	Yerə toxunma - uçuş bitdi.
@@ -1108,13 +1107,13 @@ Build	Qur
 Computing insolation: {share}	İnsolyasiyanın hesablanması: {share}
 Direct sun, h per day	Birbaşa günəş, sutkada saat
 Eto Mesto old maps	"Eto Mesto"-nun köhnə xəritələri
-Eto Mesto old maps here…	"Eto Mesto"-nun köhnə xəritələri burada…
+Eto Mesto old maps…	"Eto Mesto" köhnə xəritələri…
 First day	İlk sutka
 Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Görülməli olanın relyefdən hündürlüyü, məsələn dirək və ya bina. Sıfırda yerin özü yoxlanılır.
 Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Nöqtədə gözün və ya dirəyin relyefdən hündürlüyü. Yuxarı - daha uzaq görünür və relyefin arxasında daha az yer gizli qalır.
 Heights of the grid nodes: {share}	Şəbəkə düyünlərinin hündürlükləri: {share}
 Insolation	İnsolyasiya
-Insolation here…	Burada insolyasiya…
+Insolation…	İnsolyasiya…
 Keeps the maps whose title or year holds all the words.	Adında və ya ilində bütün sözlər olan xəritələri saxlayır.
 Last day	Son sutka
 Loading heights: {done} of {total}	Hündürlüklər yüklənir: {done} / {total}
@@ -1138,7 +1137,7 @@ The site did not answer: {error}	Sayt cavab vermədi: {error}
 The site has no maps at this point.	Saytda bu nöqtədə xəritə yoxdur.
 This body has no heights.	Bu cisim üçün hündürlüklər yoxdur.
 Viewshed from a point	Nöqtədən görünmə
-Viewshed from here…	Buradan görünmə…
+Viewshed…	Görünmə…
 {share} of the circle area is visible. The computation step is {step} m.	Dairə sahəsinin {share} hissəsi görünür. Hesablama addımı {step} m.
 Article	Məqalə
 Encyclopedia	Ensiklopediya
@@ -1229,7 +1228,7 @@ Loading map details…	Xəritə haqqında məlumat yüklənir…
 Loading the map image…	Xəritənin təsviri yüklənir…
 Loading the map image: {done} of {total}	Xəritənin təsviri yüklənir: {done} / {total}
 Georeferencing the map…	Xəritə bağlanır…
-Rumsey historical maps here…	Burada Rumsey tarixi xəritələri…
+Rumsey historical maps…	Rumsey tarixi xəritələri…
 Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	David Rumsey kolleksiyasının xəritələri, onun dayaq nöqtələri ilə bağlanıb. Təsvirlər CC BY-NC-SA 3.0 altındadır: yalnız qeyri-kommersiya istifadəsi üçün, mənbə göstərilməklə.
 Maps at the view: {count}, by year. A click on a column header changes the order.	Görünüşdə xəritələr: {count}, illər üzrə. Sütun başlığına klik sıranı dəyişir.
 The map was not built.	Xəritə qurulmadı.
@@ -1237,7 +1236,7 @@ The map is on the globe: {title}.	Xəritə qlobusdadır: {title}.
 On the globe	Qlobusa
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Xəritə kolleksiyanın təsvirindən qurulur, bağlanır və xəritənin ili ilə "Mənim yerlərim"də "Rumsey xəritələri" qovluğuna səthdə şəkil kimi qoyulur. İl xəritəni zaman şkalasına qoyur.
 The bands were not read: {error}	Kanallar oxunmadı: {error}
-Satellite images here…	Burada peyk şəkilləri…
+Satellite images…	Peyk şəkilləri…
 Reading the bands: {done} of {total}	Kanallar oxunur: {done} / {total}
 Natural colour (B4 B3 B2)	Təbii rənglər (B4 B3 B2)
 Shortwave infrared (B12 B8A B4)	Qısadalğalı İQ (B12 B8A B4)
@@ -1434,7 +1433,7 @@ Loading the images of the event «{title}»…	«{title}» hadisəsinin şəkill
 Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	İki açıq kataloqdan zəlzələ, daşqın, yanğın və qasırğa şəkilləri. Vantor (əvvəlki Maxar) WorldView zolaqlarını, Planet isə PlanetScope, SkySat və Pelican səhnələrini və hadisədən əvvəlki rüblük Planet mozaikasını verir. Sətir hadisələrin siyahısı ilə «Hadisə şəkilləri» pəncərəsini açır. Şəkillərin lisenziyası CC BY-NC 4.0 - yalnız qeyri-kommersiya istifadəsi.
 Imagery archive	Şəkil arxivi
 Images of extraordinary events from the open catalogs of Vantor and Planet.	Vantor və Planet açıq kataloqlarından fövqəladə hadisələrin şəkilləri.
-Lidar point clouds here	Burada lidar nöqtə buludları
+Lidar point clouds	Lidar nöqtə buludları
 Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Nöqtənin yanında IGN LiDAR HD və USGS 3DEP lidar kataloqlarında axtarış…
 Lidar point clouds: {error}	Lidar nöqtə buludları: {error}
 There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	Nöqtənin yanında IGN LiDAR HD və USGS 3DEP lidar kafelləri yoxdur.
@@ -1545,10 +1544,9 @@ Level	Səviyyə
 The present sea level.	İndiki dəniz səviyyəsi.
 The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	Su bütün qlobusda səviyyədən aşağı hər yeri basır. Dənizlə əlaqə yoxlanılmır, ona görə materiklərin içindəki ovalıqlar da su altında qalır. Su relyef açıq olanda görünür.
 Return the present sea level.	İndiki dəniz səviyyəsini qaytar.
-Slope and aspect here…	Burada mail və ekspozisiya…
-Hydrology	Hidrologiya
-Flooding from here…	Buradan su basması…
-Water flow from here…	Buradan suyun axını…
+Slope and aspect…	Mail və ekspozisiya…
+Flooding…	Su basması…
+Water flow…	Suyun axını…
 Sea level…	Dəniz səviyyəsi…
 Catchment of the placemark	Nişanın su toplayıcı sahəsi
 Flow lines from the placemark…	Nişandan axın xətləri…

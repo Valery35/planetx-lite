@@ -367,11 +367,10 @@ Yes	Да
 Delete vertex	Удалить вершину
 Finish drawing	Завершить рисование
 Continue drawing	Продолжить рисование
-Add placemark here	Добавить метку здесь
+Add placemark	Добавить метку
 Measure distance	Измерить расстояние
-Fly here	Подлететь сюда
 Orbit around	Облететь вокруг
-What's here?	Что здесь?
+Point details	Сведения о точке
 Copy the coordinates to the clipboard.	Скопировать координаты в буфер обмена.
 Features	Объекты
 Feature	Объект
@@ -935,8 +934,8 @@ Clear search history	Очистить историю поиска
 Erase the previous queries of the Search field.	Стереть прежние запросы строки «Поиск».
 Sea and ocean depths	Глубины морей и океанов
 With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	С флажком дно морей и океанов лежит на своих глубинах, над ним полупрозрачная вода, строка состояния показывает глубину под курсором, профиль высот - глубины и уровень моря. Без флажка высоты ниже уровня моря считаются нулём, море ровное. Есть только у Земли.
-Directions from here	Проложить маршрут отсюда
-Directions to here	Проложить маршрут сюда
+Route start	Начало маршрута
+Route end	Конец маршрута
 by car	на машине
 by bike	на велосипеде
 on foot	пешком
@@ -945,8 +944,8 @@ By bike	На велосипеде
 On foot	Пешком
 {hours} h {minutes} min	{hours} ч {minutes} мин
 {value} min	{value} мин
-The route start is set. The end is the Directions to here item of the globe menu.	Начало маршрута поставлено. Конец - пункт «Проложить маршрут сюда» меню на глобусе.
-The route end is set. The start is the Directions from here item of the globe menu.	Конец маршрута поставлен. Начало - пункт «Проложить маршрут отсюда» меню на глобусе.
+The route start is set. The end is the Route end item of the globe menu.	Начало маршрута поставлено. Конец - пункт «Конец маршрута» меню на глобусе.
+The route end is set. The start is the Route start item of the globe menu.	Конец маршрута поставлен. Начало - пункт «Начало маршрута» меню на глобусе.
 Route: asking the service…	Маршрут: запрос к сервису…
 No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Маршрут не построен: сервис ответил «{error}», а по дорогам векторной основы маршрут строится до {limit} км по прямой.
 No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Маршрут не построен: коридор между точками - {count} тайлов дорог, предел {limit}.
@@ -1069,7 +1068,7 @@ turn off	выключить
 Above ground {height} m	Над землёй {height} м
 Climb {climb} m/s	Подъём {climb} м/с
 Fighter	Истребитель
-Fly from here	Полёт отсюда
+Flight	Полёт
 Propeller plane	Винтовой самолёт
 Throttle {throttle} %	Тяга {throttle} %
 Touched the ground - the flight is over.	Касание земли - полёт окончен.
@@ -1108,13 +1107,13 @@ Build	Построить
 Computing insolation: {share}	Расчёт инсоляции: {share}
 Direct sun, h per day	Прямое солнце, ч в сутки
 Eto Mesto old maps	Старые карты «Это Место»
-Eto Mesto old maps here…	Старые карты «Это Место» здесь…
+Eto Mesto old maps…	Старые карты «Это Место»…
 First day	Первые сутки
 Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Высота того, что надо увидеть, над рельефом, например мачты или здания. При нуле проверяется сама земля.
 Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Высота глаза или мачты над рельефом в точке. Выше - дальше видно и меньше мест скрыто за рельефом.
 Heights of the grid nodes: {share}	Высоты узлов сетки: {share}
 Insolation	Инсоляция
-Insolation here…	Инсоляция здесь…
+Insolation…	Инсоляция…
 Keeps the maps whose title or year holds all the words.	Оставляет карты, в названии или годе которых есть все слова.
 Last day	Последние сутки
 Loading heights: {done} of {total}	Загрузка высот: {done} из {total}
@@ -1138,7 +1137,7 @@ The site did not answer: {error}	Сайт не ответил: {error}
 The site has no maps at this point.	У этой точки карт на сайте нет.
 This body has no heights.	Для этого тела высот нет.
 Viewshed from a point	Видимость из точки
-Viewshed from here…	Видимость отсюда…
+Viewshed…	Видимость…
 {share} of the circle area is visible. The computation step is {step} m.	Видно {share} площади круга. Шаг расчёта {step} м.
 Article	Статья
 Encyclopedia	Энциклопедия
@@ -1229,7 +1228,7 @@ Loading map details…	Загрузка сведений о карте…
 Loading the map image…	Загрузка изображения карты…
 Loading the map image: {done} of {total}	Загрузка изображения карты: {done} из {total}
 Georeferencing the map…	Привязка карты…
-Rumsey historical maps here…	Исторические карты Рамсея здесь…
+Rumsey historical maps…	Исторические карты Рамсея…
 Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	Карты коллекции Дэвида Рамсея, привязка - по его опорным точкам. Изображения - CC BY-NC-SA 3.0: только для некоммерческого использования, с указанием источника.
 Maps at the view: {count}, by year. A click on a column header changes the order.	Карт у вида: {count}, по годам. Щелчок по заголовку столбца меняет порядок.
 The map was not built.	Карта не собрана.
@@ -1237,7 +1236,7 @@ The map is on the globe: {title}.	Карта на глобусе: {title}.
 On the globe	На глобус
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Карта собирается из изображения коллекции, привязывается и ложится картинкой на поверхность в «Мои метки», папку «Карты Рамсея», с годом карты. Год ставит карту на шкалу времени.
 The bands were not read: {error}	Каналы не прочитаны: {error}
-Satellite images here…	Космоснимки здесь…
+Satellite images…	Космоснимки…
 Reading the bands: {done} of {total}	Чтение каналов: {done} из {total}
 Natural colour (B4 B3 B2)	Естественные цвета (B4 B3 B2)
 Shortwave infrared (B12 B8A B4)	Коротковолновый ИК (B12 B8A B4)
@@ -1434,7 +1433,7 @@ Loading the images of the event «{title}»…	Загрузка снимков �
 Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Снимки землетрясений, наводнений, пожаров и ураганов из двух открытых каталогов. Vantor (прежде Maxar) даёт полосы WorldView, Planet - сцены PlanetScope, SkySat и Pelican и квартальную мозаику Planet до события. Строка открывает окно «Снимки событий» со списком событий. Лицензия снимков CC BY-NC 4.0 - только некоммерческое использование.
 Imagery archive	Архив снимков
 Images of extraordinary events from the open catalogs of Vantor and Planet.	Снимки чрезвычайных событий из открытых каталогов Vantor и Planet.
-Lidar point clouds here	Облака точек лидара здесь
+Lidar point clouds	Облака точек лидара
 Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Поиск в каталогах лидара IGN LiDAR HD и USGS 3DEP у точки…
 Lidar point clouds: {error}	Облака точек лидара: {error}
 There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	У точки нет плиток лидара IGN LiDAR HD и USGS 3DEP.
@@ -1545,10 +1544,9 @@ Level	Уровень
 The present sea level.	Нынешний уровень моря.
 The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	Вода затапливает всё ниже уровня по всему глобусу. Связь с морем не проверяется, поэтому затапливаются и низины внутри материков. Вода видна при включённом рельефе.
 Return the present sea level.	Вернуть нынешний уровень моря.
-Slope and aspect here…	Уклон и экспозиция здесь…
-Hydrology	Гидрология
-Flooding from here…	Затопление отсюда…
-Water flow from here…	Сток воды отсюда…
+Slope and aspect…	Уклон и экспозиция…
+Flooding…	Затопление…
+Water flow…	Сток воды…
 Sea level…	Уровень моря…
 Catchment of the placemark	Водосбор метки
 Flow lines from the placemark…	Линии стока от метки…
@@ -1739,7 +1737,7 @@ Water from the point up to the given level on the area - a layer on the globe, t
 Flooding {level} m - depth	Затопление {level} м - глубина
 Flooding {level} m - outline	Затопление {level} м - контур
 Shadows	Тени
-Shadows here…	Тени здесь…
+Shadows…	Тени…
 Shadows {moment} UTC	Тени {moment} UTC
 {moment} UTC	{moment} UTC
 Computing the horizon: {share}	Расчёт горизонта: {share}
@@ -1764,9 +1762,9 @@ There are no strong changes in the area.	Сильных изменений на 
 Found places of changes: {count}. They go into the folder of the computation by «OK».	Найдено мест изменений: {count}. По «OK» они лягут в папку расчёта.
 Changes {before}-{after}	Изменения {before}-{after}
 Changes of the terrain	Изменения местности
-Changes of the terrain here…	Изменения местности здесь…
+Changes of the terrain…	Изменения местности…
 Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.	Где местность изменилась между двумя годами 2017-2025 - по эмбеддингам AlphaEarth, клетка 10 м.
-Classification here…	Классификация здесь…
+Classification…	Классификация…
 Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.	Классы участка по контрольным точкам на глобусе - по эмбеддингам AlphaEarth, клетка 10 м.
 Years	Годы
 The years of the comparison. Each 10 m cell is described for a year by 64 numbers - a summary of Sentinel and Landsat images and radar. The degree of change is how much the descriptions of the two years differ.	Годы сравнения. Каждая клетка 10 м за год описана 64 числами - сводкой снимков Sentinel, Landsat и радара. Степень изменения - насколько отличаются описания двух лет.
@@ -1815,3 +1813,8 @@ The line ends at a watercourse.	Линия кончается на водото�
 The line ends where the terrain flattens.	Линия кончается там, где рельеф выполаживается.
 The line flows into another flow line.	Линия вливается в другую линию стока.
 The line ends at the edge of the height data.	Линия кончается у края данных о высотах.
+{title} - mean {mean}{unit}, spread {std}{unit}, quantiles 10, 25, 50, 75 and 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.	{title} - среднее {mean}{unit}, разброс {std}{unit}, квантили 10, 25, 50, 75 и 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.
+The area is shared with the previous computation. «Square» and «Draw» start a new one.	Участок общий с прошлым расчётом. «Квадрат» и «Нарисовать» начинают новый.
+Sun hours	Часы солнца
+ h	 ч
+Degree of change	Степень изменения

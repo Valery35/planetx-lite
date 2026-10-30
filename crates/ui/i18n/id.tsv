@@ -204,7 +204,7 @@ A double click on a row copies the value to the clipboard, a link opens in the b
 A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	Garis terang dengan putus-putus gelap. Hilang bersama jalan tol saat diperkecil. Jalur stasiun dan jalur akses tidak digambar.
 Add	Tambah
 Add data	Tambah data
-Add placemark here	Tambah penanda di sini
+Add placemark	Tambah penanda
 Address	Alamat
 Airports	Bandara
 All	Semua
@@ -253,7 +253,6 @@ Feature	Objek
 Features	Objek
 Find what is typed in the line. A place - a flight to it, several found places - a list below.	Cari teks yang diketik di baris. Satu tempat - terbang ke sana, beberapa tempat ditemukan - daftar di bawah.
 Finish drawing	Selesai menggambar
-Fly here	Terbang ke sini
 Folder properties	Properti folder
 Folder view	Tampilan folder
 Folder|add	Folder
@@ -386,7 +385,7 @@ View snapshot	Cuplikan tampilan
 Voyages of Columbus	Pelayaran Columbus
 W	BB
 Water names	Nama perairan
-What's here?	Apa yang ada di sini?
+Point details	Detail titik
 Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	Dari mana kamera melihat saat terbang ke folder. Tampilan diatur dengan angka atau dengan mengambil tampilan saat ini. Tanpa tampilan sendiri, penerbangan membingkai semua penanda folder.
 Where the camera looks. 0 - north at the top of the frame.	Ke mana kamera melihat. 0 - utara di atas bingkai.
 Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	Tanpa centang, folder tidak dibuka di daftar, penandanya ditampilkan dan disembunyikan oleh centang folder itu sendiri.
@@ -935,8 +934,8 @@ Clear search history	Hapus riwayat pencarian
 Erase the previous queries of the Search field.	Hapus kueri sebelumnya dari kolom "Cari".
 Sea and ocean depths	Kedalaman laut dan samudra
 With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Dengan kotak dicentang dasar laut dan samudra berada pada kedalamannya di bawah air semitransparan, baris status menampilkan kedalaman di bawah kursor, dan profil ketinggian menampilkan kedalaman dan permukaan laut. Tanpa centang ketinggian di bawah permukaan laut dihitung nol dan laut datar. Hanya ada untuk Bumi.
-Directions from here	Rute dari sini
-Directions to here	Rute ke sini
+Route start	Awal rute
+Route end	Akhir rute
 by car	dengan mobil
 by bike	dengan sepeda
 on foot	berjalan kaki
@@ -945,8 +944,8 @@ By bike	Dengan sepeda
 On foot	Berjalan kaki
 {hours} h {minutes} min	{hours} j {minutes} mnt
 {value} min	{value} mnt
-The route start is set. The end is the Directions to here item of the globe menu.	Awal rute sudah dipasang. Akhirnya adalah item "Rute ke sini" di menu globe.
-The route end is set. The start is the Directions from here item of the globe menu.	Akhir rute sudah dipasang. Awalnya adalah item "Rute dari sini" di menu globe.
+The route start is set. The end is the Route end item of the globe menu.	Awal rute sudah dipasang. Akhirnya adalah item "Akhir rute" di menu globe.
+The route end is set. The start is the Route start item of the globe menu.	Akhir rute sudah dipasang. Awalnya adalah item "Awal rute" di menu globe.
 Route: asking the service…	Rute: menghubungi layanan…
 No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Rute tidak dibuat: layanan menjawab "{error}", dan melalui jalan dasar vektor rute dihitung hingga {limit} km garis lurus.
 No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Rute tidak dibuat: koridor antara titik berisi {count} ubin jalan, batasnya {limit}.
@@ -1069,7 +1068,7 @@ turn off	matikan
 Above ground {height} m	Di atas tanah {height} m
 Climb {climb} m/s	Naik {climb} m/dtk
 Fighter	Pesawat tempur
-Fly from here	Terbang dari sini
+Flight	Penerbangan
 Propeller plane	Pesawat baling-baling
 Throttle {throttle} %	Daya dorong {throttle} %
 Touched the ground - the flight is over.	Menyentuh tanah - penerbangan selesai.
@@ -1108,13 +1107,13 @@ Build	Hitung
 Computing insolation: {share}	Menghitung insolasi: {share}
 Direct sun, h per day	Sinar matahari langsung, jam per hari
 Eto Mesto old maps	Peta lama "Eto Mesto"
-Eto Mesto old maps here…	Peta lama "Eto Mesto" di sini…
+Eto Mesto old maps…	Peta lama "Eto Mesto"…
 First day	Hari pertama
 Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Ketinggian di atas relief dari yang harus terlihat, misalnya tiang atau bangunan. Pada nol tanah itu sendiri yang diperiksa.
 Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Ketinggian mata atau tiang di atas relief di titik. Lebih tinggi - terlihat lebih jauh dan lebih sedikit tempat tersembunyi di balik relief.
 Heights of the grid nodes: {share}	Ketinggian simpul grid: {share}
 Insolation	Insolasi
-Insolation here…	Insolasi di sini…
+Insolation…	Insolasi…
 Keeps the maps whose title or year holds all the words.	Menyisakan peta yang judul atau tahunnya memuat semua kata.
 Last day	Hari terakhir
 Loading heights: {done} of {total}	Memuat ketinggian: {done} dari {total}
@@ -1138,7 +1137,7 @@ The site did not answer: {error}	Situs tidak menjawab: {error}
 The site has no maps at this point.	Situs tidak memiliki peta di titik ini.
 This body has no heights.	Benda ini tidak memiliki data ketinggian.
 Viewshed from a point	Visibilitas dari titik
-Viewshed from here…	Visibilitas dari sini…
+Viewshed…	Visibilitas…
 {share} of the circle area is visible. The computation step is {step} m.	Terlihat {share} dari luas lingkaran. Langkah perhitungan {step} m.
 Article	Artikel
 Encyclopedia	Ensiklopedia
@@ -1229,7 +1228,7 @@ Loading map details…	Memuat keterangan peta…
 Loading the map image…	Memuat gambar peta…
 Loading the map image: {done} of {total}	Memuat gambar peta: {done} dari {total}
 Georeferencing the map…	Mengikat georeferensi peta…
-Rumsey historical maps here…	Peta sejarah Rumsey di sini…
+Rumsey historical maps…	Peta sejarah Rumsey…
 Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	Peta koleksi David Rumsey, digeoreferensikan dengan titik kontrolnya. Gambar berlisensi CC BY-NC-SA 3.0: hanya untuk penggunaan nonkomersial, dengan menyebutkan sumber.
 Maps at the view: {count}, by year. A click on a column header changes the order.	Peta di tampilan: {count}, menurut tahun. Klik pada judul kolom mengubah urutan.
 The map was not built.	Peta tidak dibuat.
@@ -1237,7 +1236,7 @@ The map is on the globe: {title}.	Peta ada di globe: {title}.
 On the globe	Ke globe
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Peta dibuat dari gambar koleksi, digeoreferensikan, dan diletakkan sebagai gambar di permukaan dalam "Tempat Saya", folder "Peta Rumsey", dengan tahun peta. Tahun menempatkan peta pada bilah waktu.
 The bands were not read: {error}	Kanal tidak terbaca: {error}
-Satellite images here…	Citra satelit di sini…
+Satellite images…	Citra satelit…
 Reading the bands: {done} of {total}	Membaca kanal: {done} dari {total}
 Natural colour (B4 B3 B2)	Warna alami (B4 B3 B2)
 Shortwave infrared (B12 B8A B4)	Inframerah gelombang pendek (B12 B8A B4)
@@ -1434,7 +1433,7 @@ Loading the images of the event «{title}»…	Memuat citra peristiwa «{title}�
 Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Citra gempa bumi, banjir, kebakaran, dan badai dari dua katalog terbuka. Vantor (dulu Maxar) memberi strip WorldView, Planet - adegan PlanetScope, SkySat, dan Pelican serta mosaik triwulanan Planet sebelum peristiwa. Baris ini membuka jendela «Citra peristiwa» dengan daftar peristiwa. Lisensi citra CC BY-NC 4.0 - hanya penggunaan nonkomersial.
 Imagery archive	Arsip citra
 Images of extraordinary events from the open catalogs of Vantor and Planet.	Citra peristiwa luar biasa dari katalog terbuka Vantor dan Planet.
-Lidar point clouds here	Awan titik lidar di sini
+Lidar point clouds	Awan titik lidar
 Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Mencari di katalog lidar IGN LiDAR HD dan USGS 3DEP di dekat titik…
 Lidar point clouds: {error}	Awan titik lidar: {error}
 There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	Tidak ada ubin lidar IGN LiDAR HD dan USGS 3DEP di dekat titik.
@@ -1545,10 +1544,9 @@ Level	Muka air
 The present sea level.	Permukaan laut sekarang.
 The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	Air menggenangi semua di bawah muka air di seluruh globe. Hubungan dengan laut tidak diperiksa, jadi dataran rendah di dalam benua juga tergenang. Air terlihat saat relief aktif.
 Return the present sea level.	Kembalikan permukaan laut sekarang.
-Slope and aspect here…	Kemiringan dan aspek lereng di sini…
-Hydrology	Hidrologi
-Flooding from here…	Penggenangan dari sini…
-Water flow from here…	Aliran air dari sini…
+Slope and aspect…	Kemiringan dan aspek lereng…
+Flooding…	Penggenangan…
+Water flow…	Aliran air…
 Sea level…	Permukaan laut…
 Catchment of the placemark	Daerah tangkapan penanda
 Flow lines from the placemark…	Garis aliran dari penanda…

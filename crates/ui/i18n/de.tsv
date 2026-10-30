@@ -203,7 +203,7 @@ A double click on a row copies the value to the clipboard, a link opens in the b
 A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	Helle Linie mit dunkler Strichelung. Beim Herauszoomen verschwinden sie zusammen mit den Autobahnen. Bahnhofs- und Anschlussgleise werden nicht gezeichnet.
 Add	Hinzufügen
 Add data	Daten hinzufügen
-Add placemark here	Ortsmarke hier hinzufügen
+Add placemark	Ortsmarke hinzufügen
 Address	Adresse
 Airports	Flughäfen
 All	Alle
@@ -252,7 +252,6 @@ Feature	Objekt
 Features	Objekte
 Find what is typed in the line. A place - a flight to it, several found places - a list below.	Den eingegebenen Text suchen. Ein Ort - Flug dorthin, mehrere gefundene Orte - Liste darunter.
 Finish drawing	Zeichnen beenden
-Fly here	Hierher fliegen
 Folder properties	Ordnereigenschaften
 Folder view	Ordneransicht
 Folder|add	Ordner
@@ -386,7 +385,7 @@ View snapshot	Bild der Ansicht
 Voyages of Columbus	Reisen des Kolumbus
 W	W
 Water names	Gewässernamen
-What's here?	Was ist hier?
+Point details	Punktdetails
 Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	Von wo die Kamera blickt, wenn sie zum Ordner fliegt. Die Ansicht wird mit Zahlen oder durch Übernahme der aktuellen Ansicht festgelegt. Ohne eigene Ansicht nimmt der Flug alle Ortsmarken des Ordners ins Bild.
 Where the camera looks. 0 - north at the top of the frame.	Wohin die Kamera blickt. 0 - Norden oben im Bild.
 Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	Ohne Häkchen klappt der Ordner in der Liste nicht auf, seine Ortsmarken werden mit dem Häkchen des Ordners gezeigt und ausgeblendet.
@@ -935,8 +934,8 @@ Clear search history	Suchverlauf löschen
 Erase the previous queries of the Search field.	Die früheren Anfragen des Feldes „Suchen“ löschen.
 Sea and ocean depths	Tiefen der Meere und Ozeane
 With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Mit dem Häkchen liegt der Meeres- und Ozeanboden in seiner Tiefe unter halbtransparentem Wasser, die Statuszeile zeigt die Tiefe unter dem Mauszeiger, das Höhenprofil zeigt Tiefen und Meeresspiegel. Ohne Häkchen zählen Höhen unter dem Meeresspiegel als null, das Meer ist eben. Nur für die Erde verfügbar.
-Directions from here	Route von hier
-Directions to here	Route hierher
+Route start	Routenstart
+Route end	Routenende
 by car	mit dem Auto
 by bike	mit dem Fahrrad
 on foot	zu Fuß
@@ -945,8 +944,8 @@ By bike	Mit dem Fahrrad
 On foot	Zu Fuß
 {hours} h {minutes} min	{hours} h {minutes} min
 {value} min	{value} min
-The route start is set. The end is the Directions to here item of the globe menu.	Der Start der Route ist gesetzt. Das Ziel ist der Punkt „Route hierher“ im Menü auf dem Globus.
-The route end is set. The start is the Directions from here item of the globe menu.	Das Ziel der Route ist gesetzt. Der Start ist der Punkt „Route von hier“ im Menü auf dem Globus.
+The route start is set. The end is the Route end item of the globe menu.	Der Start der Route ist gesetzt. Das Ziel ist der Punkt „Routenende“ im Menü auf dem Globus.
+The route end is set. The start is the Route start item of the globe menu.	Das Ziel der Route ist gesetzt. Der Start ist der Punkt „Routenstart“ im Menü auf dem Globus.
 Route: asking the service…	Route: Anfrage an den Dienst…
 No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Keine Route: Der Dienst antwortete „{error}“, und über die Straßen der Vektorgrundlage wird eine Route bis {limit} km Luftlinie berechnet.
 No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Keine Route: Der Korridor zwischen den Punkten umfasst {count} Straßenkacheln, die Grenze ist {limit}.
@@ -1069,7 +1068,7 @@ turn off	ausschalten
 Above ground {height} m	Über Grund {height} m
 Climb {climb} m/s	Steigen {climb} m/s
 Fighter	Kampfflugzeug
-Fly from here	Flug von hier
+Flight	Flug
 Propeller plane	Propellerflugzeug
 Throttle {throttle} %	Schub {throttle} %
 Touched the ground - the flight is over.	Bodenberührung - der Flug ist beendet.
@@ -1108,13 +1107,13 @@ Build	Berechnen
 Computing insolation: {share}	Berechnung der Besonnung: {share}
 Direct sun, h per day	Direkte Sonne, h pro Tag
 Eto Mesto old maps	Alte Karten von „Eto Mesto“
-Eto Mesto old maps here…	Alte Karten von „Eto Mesto“ hier…
+Eto Mesto old maps…	Alte Karten von „Eto Mesto“…
 First day	Erster Tag
 Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Höhe dessen, was gesehen werden soll, über dem Gelände, etwa eines Masts oder Gebäudes. Bei null wird der Boden selbst geprüft.
 Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Höhe des Auges oder Masts über dem Gelände am Punkt. Höher - man sieht weiter, und weniger Orte bleiben hinter dem Gelände verborgen.
 Heights of the grid nodes: {share}	Höhen der Gitterknoten: {share}
 Insolation	Besonnung
-Insolation here…	Besonnung hier…
+Insolation…	Besonnung…
 Keeps the maps whose title or year holds all the words.	Behält die Karten, deren Titel oder Jahr alle Wörter enthält.
 Last day	Letzter Tag
 Loading heights: {done} of {total}	Höhen werden geladen: {done} von {total}
@@ -1138,7 +1137,7 @@ The site did not answer: {error}	Die Website hat nicht geantwortet: {error}
 The site has no maps at this point.	Die Website hat an diesem Punkt keine Karten.
 This body has no heights.	Für diesen Körper gibt es keine Höhen.
 Viewshed from a point	Sichtbarkeit von einem Punkt
-Viewshed from here…	Sichtbarkeit von hier…
+Viewshed…	Sichtbarkeit…
 {share} of the circle area is visible. The computation step is {step} m.	Sichtbar sind {share} der Kreisfläche. Der Rechenschritt ist {step} m.
 Article	Artikel
 Encyclopedia	Enzyklopädie
@@ -1229,7 +1228,7 @@ Loading map details…	Angaben zur Karte werden geladen…
 Loading the map image…	Kartenbild wird geladen…
 Loading the map image: {done} of {total}	Kartenbild wird geladen: {done} von {total}
 Georeferencing the map…	Karte wird georeferenziert…
-Rumsey historical maps here…	Historische Rumsey-Karten hier…
+Rumsey historical maps…	Historische Rumsey-Karten…
 Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	Karten der Sammlung von David Rumsey, georeferenziert nach ihren Passpunkten. Die Bilder stehen unter CC BY-NC-SA 3.0: nur für nichtkommerzielle Nutzung, mit Quellenangabe.
 Maps at the view: {count}, by year. A click on a column header changes the order.	Karten an der Ansicht: {count}, nach Jahr. Ein Klick auf einen Spaltenkopf ändert die Reihenfolge.
 The map was not built.	Die Karte wurde nicht erstellt.
@@ -1237,7 +1236,7 @@ The map is on the globe: {title}.	Die Karte ist auf dem Globus: {title}.
 On the globe	Auf den Globus
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Die Karte wird aus dem Bild der Sammlung erstellt, georeferenziert und als Bild auf der Oberfläche in „Meine Orte“ gelegt, Ordner „Rumsey-Karten“, mit dem Jahr der Karte. Das Jahr setzt die Karte auf die Zeitleiste.
 The bands were not read: {error}	Die Kanäle wurden nicht gelesen: {error}
-Satellite images here…	Satellitenbilder hier…
+Satellite images…	Satellitenbilder…
 Reading the bands: {done} of {total}	Kanäle werden gelesen: {done} von {total}
 Natural colour (B4 B3 B2)	Natürliche Farben (B4 B3 B2)
 Shortwave infrared (B12 B8A B4)	Kurzwelliges Infrarot (B12 B8A B4)
@@ -1434,7 +1433,7 @@ Loading the images of the event «{title}»…	Bilder des Ereignisses «{title}�
 Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Bilder von Erdbeben, Überschwemmungen, Bränden und Hurrikanen aus zwei offenen Katalogen. Vantor (früher Maxar) liefert WorldView-Streifen, Planet - Szenen von PlanetScope, SkySat und Pelican und das Quartalsmosaik von Planet vor dem Ereignis. Die Zeile öffnet das Fenster «Ereignisbilder» mit der Liste der Ereignisse. Lizenz der Bilder CC BY-NC 4.0 - nur nichtkommerzielle Nutzung.
 Imagery archive	Bildarchiv
 Images of extraordinary events from the open catalogs of Vantor and Planet.	Bilder außergewöhnlicher Ereignisse aus den offenen Katalogen von Vantor und Planet.
-Lidar point clouds here	Lidar-Punktwolken hier
+Lidar point clouds	Lidar-Punktwolken
 Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Suche in den Lidar-Katalogen IGN LiDAR HD und USGS 3DEP am Punkt…
 Lidar point clouds: {error}	Lidar-Punktwolken: {error}
 There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	Am Punkt gibt es keine Lidar-Kacheln von IGN LiDAR HD und USGS 3DEP.
@@ -1545,10 +1544,9 @@ Level	Wasserstand
 The present sea level.	Der heutige Meeresspiegel.
 The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	Das Wasser überflutet alles unterhalb des Spiegels auf dem ganzen Globus. Die Verbindung zum Meer wird nicht geprüft, daher werden auch Senken im Inneren der Kontinente überflutet. Das Wasser ist bei eingeschaltetem Gelände sichtbar.
 Return the present sea level.	Den heutigen Meeresspiegel wiederherstellen.
-Slope and aspect here…	Hangneigung und Exposition hier…
-Hydrology	Hydrologie
-Flooding from here…	Überflutung von hier…
-Water flow from here…	Wasserabfluss von hier…
+Slope and aspect…	Hangneigung und Exposition…
+Flooding…	Überflutung…
+Water flow…	Wasserabfluss…
 Sea level…	Meeresspiegel…
 Catchment of the placemark	Einzugsgebiet der Ortsmarke
 Flow lines from the placemark…	Fließlinien von der Ortsmarke…

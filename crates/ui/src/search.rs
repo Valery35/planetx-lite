@@ -49,10 +49,10 @@ pub struct Search {
     pub status: Status,
     /// Время отправки каждого запроса к Nominatim, для самопроверки.
     pub sent: Vec<f64>,
-    /// Адрес точки для «Что здесь?»: ждёт очереди, отправлен.
+    /// Адрес точки для «Сведения о точке»: ждёт очереди, отправлен.
     reverse_waiting: Option<(f64, f64)>,
     reverse_in_flight: Option<(f64, f64)>,
-    /// Адрес последней точки «Что здесь?»: точка и адрес или ошибка.
+    /// Адрес последней точки «Сведения о точке»: точка и адрес или ошибка.
     pub address: Option<((f64, f64), Result<String, String>)>,
 }
 
@@ -91,7 +91,7 @@ impl Search {
         None
     }
 
-    /// Адрес точки для «Что здесь?», как `what_here` модуля: запрос
+    /// Адрес точки для «Сведения о точке», как `what_here` модуля: запрос
     /// ждёт той же очереди Nominatim.
     pub fn reverse(&mut self, lat: f64, lon: f64) {
         self.reverse_waiting = Some((lat, lon));

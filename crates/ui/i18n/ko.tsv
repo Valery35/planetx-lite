@@ -205,7 +205,7 @@ A double click on a row copies the value to the clipboard, a link opens in the b
 A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	밝은 선에 어두운 점선. 축소하면 고속도로와 함께 사라집니다. 역 구내 선로와 인입선은 그리지 않습니다.
 Add	추가
 Add data	데이터 추가
-Add placemark here	여기에 장소 표시 추가
+Add placemark	장소 표시 추가
 Address	주소
 Airports	공항
 All	전체
@@ -253,7 +253,6 @@ Feature	객체
 Features	객체
 Find what is typed in the line. A place - a flight to it, several found places - a list below.	입력란에 입력한 내용을 찾습니다. 장소 하나 - 그곳으로 이동, 찾은 장소 여러 개 - 아래 목록.
 Finish drawing	그리기 완료
-Fly here	여기로 이동
 Folder properties	폴더 속성
 Folder view	폴더 화면
 Folder|add	폴더
@@ -386,7 +385,7 @@ View snapshot	화면 스냅샷
 Voyages of Columbus	콜럼버스의 항해
 W	W
 Water names	수역 이름
-What's here?	여기는 무엇인가요?
+Point details	지점 정보
 Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	카메라가 폴더로 이동할 때 바라보는 위치. 화면은 숫자로 또는 현재 화면을 가져와서 지정합니다. 자체 화면이 없으면 폴더의 모든 장소 표시가 화면에 들어오도록 이동합니다.
 Where the camera looks. 0 - north at the top of the frame.	카메라가 바라보는 방향. 0 - 화면 위쪽이 북쪽.
 Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	확인란이 없으면 폴더가 목록에서 펼쳐지지 않으며, 장소 표시는 폴더 자체의 확인란으로 표시하고 숨깁니다.
@@ -935,8 +934,8 @@ Clear search history	검색 기록 지우기
 Erase the previous queries of the Search field.	‘검색’ 필드의 이전 검색어를 지웁니다.
 Sea and ocean depths	바다와 대양의 수심
 With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	확인란을 켜면 바다와 대양의 바닥이 반투명한 물 아래 제 수심에 놓이고, 상태 표시줄은 커서 아래 수심을, 고도 단면도는 수심과 해수면을 표시합니다. 확인란을 끄면 해수면 아래 높이는 0으로 계산되고 바다는 평평합니다. 지구에만 있습니다.
-Directions from here	여기서 출발하는 경로
-Directions to here	여기로 도착하는 경로
+Route start	경로 출발지
+Route end	경로 도착지
 by car	자동차로
 by bike	자전거로
 on foot	도보로
@@ -945,8 +944,8 @@ By bike	자전거
 On foot	도보
 {hours} h {minutes} min	{hours}시간 {minutes}분
 {value} min	{value}분
-The route start is set. The end is the Directions to here item of the globe menu.	경로 출발지를 정했습니다. 도착지는 지구본 메뉴의 ‘여기로 도착하는 경로’ 항목입니다.
-The route end is set. The start is the Directions from here item of the globe menu.	경로 도착지를 정했습니다. 출발지는 지구본 메뉴의 ‘여기서 출발하는 경로’ 항목입니다.
+The route start is set. The end is the Route end item of the globe menu.	경로 출발지를 정했습니다. 도착지는 지구본 메뉴의 ‘경로 도착지’ 항목입니다.
+The route end is set. The start is the Route start item of the globe menu.	경로 도착지를 정했습니다. 출발지는 지구본 메뉴의 ‘경로 출발지’ 항목입니다.
 Route: asking the service…	경로: 서비스에 요청 중…
 No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	경로를 만들지 못했습니다: 서비스가 ‘{error}’라고 응답했으며, 벡터 기본도의 도로로는 직선거리 {limit} km까지만 경로를 만듭니다.
 No route: the corridor between the points is {count} road tiles, the limit is {limit}.	경로를 만들지 못했습니다: 지점 사이 통로는 도로 타일 {count}개이며 한도는 {limit}입니다.
@@ -1069,7 +1068,7 @@ turn off	끄기
 Above ground {height} m	지면 위 {height} m
 Climb {climb} m/s	상승률 {climb} m/s
 Fighter	전투기
-Fly from here	여기서 비행
+Flight	비행
 Propeller plane	프로펠러기
 Throttle {throttle} %	추력 {throttle} %
 Touched the ground - the flight is over.	지면에 닿았습니다 - 비행이 끝났습니다.
@@ -1108,13 +1107,13 @@ Build	만들기
 Computing insolation: {share}	일조 계산 중: {share}
 Direct sun, h per day	직사광선, 하루 시간
 Eto Mesto old maps	‘에토 메스토’ 옛 지도
-Eto Mesto old maps here…	여기의 ‘에토 메스토’ 옛 지도…
+Eto Mesto old maps…	‘에토 메스토’ 옛 지도…
 First day	첫날
 Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	보여야 할 대상(예: 철탑이나 건물)의 지형 위 높이. 0이면 지면 자체를 확인합니다.
 Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	지점에서 눈이나 철탑의 지형 위 높이. 높을수록 더 멀리 보이고 지형 뒤에 가려지는 곳이 줄어듭니다.
 Heights of the grid nodes: {share}	격자 절점의 높이: {share}
 Insolation	일조
-Insolation here…	여기의 일조…
+Insolation…	일조…
 Keeps the maps whose title or year holds all the words.	제목이나 연도에 모든 단어가 있는 지도만 남깁니다.
 Last day	마지막 날
 Loading heights: {done} of {total}	높이 불러오는 중: {done} / {total}
@@ -1138,7 +1137,7 @@ The site did not answer: {error}	사이트가 응답하지 않았습니다: {err
 The site has no maps at this point.	이 지점에는 사이트의 지도가 없습니다.
 This body has no heights.	이 천체에는 높이 자료가 없습니다.
 Viewshed from a point	지점의 가시권
-Viewshed from here…	여기서의 가시권…
+Viewshed…	가시권…
 {share} of the circle area is visible. The computation step is {step} m.	원 면적의 {share}가 보입니다. 계산 간격은 {step} m입니다.
 Article	문서
 Encyclopedia	백과사전
@@ -1229,7 +1228,7 @@ Loading map details…	지도 정보를 불러오는 중…
 Loading the map image…	지도 이미지를 불러오는 중…
 Loading the map image: {done} of {total}	지도 이미지를 불러오는 중: {done} / {total}
 Georeferencing the map…	지도 좌표 맞춤 중…
-Rumsey historical maps here…	여기의 Rumsey 역사 지도…
+Rumsey historical maps…	Rumsey 역사 지도…
 Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	David Rumsey 컬렉션의 지도로, 그 기준점으로 좌표를 맞췄습니다. 이미지는 CC BY-NC-SA 3.0이며 비상업적 이용만 가능하고 출처를 밝혀야 합니다.
 Maps at the view: {count}, by year. A click on a column header changes the order.	화면의 지도: {count}개, 연도순. 열 머리글을 클릭하면 순서가 바뀝니다.
 The map was not built.	지도를 만들지 못했습니다.
@@ -1237,7 +1236,7 @@ The map is on the globe: {title}.	지도가 지구본에 있습니다: {title}.
 On the globe	지구본으로
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	지도는 컬렉션 이미지로 만들어지고 좌표를 맞춘 뒤 지도 연도와 함께 ‘내 장소’의 ‘Rumsey 지도’ 폴더에 지표면 이미지로 놓입니다. 연도에 따라 지도가 시간 막대에 놓입니다.
 The bands were not read: {error}	밴드를 읽지 못했습니다: {error}
-Satellite images here…	여기의 위성 영상…
+Satellite images…	위성 영상…
 Reading the bands: {done} of {total}	밴드를 읽는 중: {done} / {total}
 Natural colour (B4 B3 B2)	자연색 (B4 B3 B2)
 Shortwave infrared (B12 B8A B4)	단파 적외선 (B12 B8A B4)
@@ -1434,7 +1433,7 @@ Loading the images of the event «{title}»…	사건 «{title}»의 영상을 �
 Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	두 공개 카탈로그의 지진, 홍수, 화재, 허리케인 영상입니다. Vantor(구 Maxar)는 WorldView 띠를, Planet은 PlanetScope, SkySat, Pelican 장면과 사건 전 분기별 Planet 모자이크를 제공합니다. 이 행은 사건 목록이 있는 «사건 영상» 창을 엽니다. 영상 라이선스는 CC BY-NC 4.0이며 비상업적 이용만 허용됩니다.
 Imagery archive	영상 보관소
 Images of extraordinary events from the open catalogs of Vantor and Planet.	Vantor와 Planet 공개 카탈로그의 비상 사건 영상.
-Lidar point clouds here	여기의 라이다 점군
+Lidar point clouds	라이다 점군
 Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	지점 근처의 IGN LiDAR HD와 USGS 3DEP 라이다 카탈로그를 검색하는 중…
 Lidar point clouds: {error}	라이다 점군: {error}
 There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	지점 근처에 IGN LiDAR HD와 USGS 3DEP 라이다 타일이 없습니다.
@@ -1545,10 +1544,9 @@ Level	수위
 The present sea level.	현재 해수면.
 The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	물은 지구본 전체에서 수위보다 낮은 모든 곳을 잠기게 합니다. 바다와의 연결은 확인하지 않으므로 대륙 안의 저지대도 잠깁니다. 물은 지형을 켜면 보입니다.
 Return the present sea level.	현재 해수면으로 되돌립니다.
-Slope and aspect here…	여기의 경사와 사면 방향…
-Hydrology	수문
-Flooding from here…	여기서 침수…
-Water flow from here…	여기서 물의 흐름…
+Slope and aspect…	경사와 사면 방향…
+Flooding…	침수…
+Water flow…	물의 흐름…
 Sea level…	해수면…
 Catchment of the placemark	장소 표시의 집수역
 Flow lines from the placemark…	장소 표시에서 유하선…

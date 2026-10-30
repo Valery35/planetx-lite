@@ -205,7 +205,7 @@ A double click on a row copies the value to the clipboard, a link opens in the b
 A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	明るい線に暗い破線。縮小すると高速道路とともに消えます。駅構内の線路と引込線は描画しません。
 Add	追加
 Add data	データを追加
-Add placemark here	ここに目印を追加
+Add placemark	目印を追加
 Address	住所
 Airports	空港
 All	すべて
@@ -253,7 +253,6 @@ Feature	オブジェクト
 Features	オブジェクト
 Find what is typed in the line. A place - a flight to it, several found places - a list below.	入力欄の内容を検索します。場所が 1 つならそこへ移動し、複数見つかれば下に一覧を表示します。
 Finish drawing	描画を終了
-Fly here	ここへ移動
 Folder properties	フォルダーのプロパティ
 Folder view	フォルダーの表示
 Folder|add	フォルダー
@@ -386,7 +385,7 @@ View snapshot	表示のスナップショット
 Voyages of Columbus	コロンブスの航海
 W	W
 Water names	水域名
-What's here?	ここは何？
+Point details	地点の詳細
 Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	フォルダーへ移動するときにカメラがどこから見るか。表示は数値か、現在の表示の取得で設定します。独自の表示がなければ、フォルダーのすべての目印が画面に収まるように移動します。
 Where the camera looks. 0 - north at the top of the frame.	カメラの向き。0 - 画面上が北。
 Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	チェックなしではフォルダーはリストで展開されず、その目印はフォルダー自体のチェックで表示・非表示になります。
@@ -935,8 +934,8 @@ Clear search history	検索履歴を消去
 Erase the previous queries of the Search field.	「検索」欄の以前の検索語を消去します。
 Sea and ocean depths	海と大洋の水深
 With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	チェックを入れると、海と大洋の底は半透明の水の下でその水深に置かれ、ステータス行にカーソル位置の水深、標高断面図に水深と海面が表示されます。チェックを外すと、海面下の高さはゼロとみなされ、海は平らになります。地球でのみ使えます。
-Directions from here	ここから経路を検索
-Directions to here	ここまで経路を検索
+Route start	経路の出発地
+Route end	経路の目的地
 by car	車で
 by bike	自転車で
 on foot	徒歩で
@@ -945,8 +944,8 @@ By bike	自転車
 On foot	徒歩
 {hours} h {minutes} min	{hours} 時間 {minutes} 分
 {value} min	{value} 分
-The route start is set. The end is the Directions to here item of the globe menu.	経路の出発地を設定しました。目的地は地球儀のメニューの「ここまで経路を検索」で設定します。
-The route end is set. The start is the Directions from here item of the globe menu.	経路の目的地を設定しました。出発地は地球儀のメニューの「ここから経路を検索」で設定します。
+The route start is set. The end is the Route end item of the globe menu.	経路の出発地を設定しました。目的地は地球儀のメニューの「経路の目的地」で設定します。
+The route end is set. The start is the Route start item of the globe menu.	経路の目的地を設定しました。出発地は地球儀のメニューの「経路の出発地」で設定します。
 Route: asking the service…	経路：サービスに問い合わせ中…
 No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	経路を作成できません：サービスの応答は「{error}」で、ベクトル基図の道路による経路は直線距離 {limit} km までです。
 No route: the corridor between the points is {count} road tiles, the limit is {limit}.	経路を作成できません：地点間の回廊は道路タイル {count} 枚で、上限は {limit} です。
@@ -1069,7 +1068,7 @@ turn off	オフにする
 Above ground {height} m	対地高度 {height} m
 Climb {climb} m/s	上昇率 {climb} m/s
 Fighter	戦闘機
-Fly from here	ここから飛行
+Flight	飛行
 Propeller plane	プロペラ機
 Throttle {throttle} %	推力 {throttle} %
 Touched the ground - the flight is over.	地面に接触しました - 飛行は終了です。
@@ -1108,13 +1107,13 @@ Build	作成
 Computing insolation: {share}	日照を計算中：{share}
 Direct sun, h per day	直射日光、1 日あたりの時間
 Eto Mesto old maps	「エト・メスト」の古地図
-Eto Mesto old maps here…	ここの「エト・メスト」の古地図…
+Eto Mesto old maps…	「エト・メスト」の古地図…
 First day	最初の日
 Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	見えるべきもの (たとえばマストや建物) の地形からの高さ。ゼロでは地面そのものを確認します。
 Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	地点での目またはマストの地形からの高さ。高いほど遠くまで見え、地形の陰に隠れる場所が少なくなります。
 Heights of the grid nodes: {share}	グリッド節点の高さ：{share}
 Insolation	日照
-Insolation here…	ここの日照…
+Insolation…	日照…
 Keeps the maps whose title or year holds all the words.	タイトルまたは年にすべての語を含む地図を残します。
 Last day	最後の日
 Loading heights: {done} of {total}	高さを読み込み中：{done} / {total}
@@ -1138,7 +1137,7 @@ The site did not answer: {error}	サイトが応答しません：{error}
 The site has no maps at this point.	この地点にはサイトの地図がありません。
 This body has no heights.	この天体には高さのデータがありません。
 Viewshed from a point	地点からの可視域
-Viewshed from here…	ここからの可視域…
+Viewshed…	可視域…
 {share} of the circle area is visible. The computation step is {step} m.	円の面積の {share} が見えます。計算の間隔は {step} m です。
 Article	記事
 Encyclopedia	百科事典
@@ -1229,7 +1228,7 @@ Loading map details…	地図の情報を読み込み中…
 Loading the map image…	地図の画像を読み込み中…
 Loading the map image: {done} of {total}	地図の画像を読み込み中：{done} / {total}
 Georeferencing the map…	地図をジオリファレンス中…
-Rumsey historical maps here…	ここの Rumsey の歴史地図…
+Rumsey historical maps…	Rumsey の歴史地図…
 Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	David Rumsey コレクションの地図で、その基準点でジオリファレンスされています。画像は CC BY-NC-SA 3.0 で、非営利利用のみ、出典の表示が必要です。
 Maps at the view: {count}, by year. A click on a column header changes the order.	表示中の地図：{count}、年順。列見出しをクリックすると順序が変わります。
 The map was not built.	地図を作成できませんでした。
@@ -1237,7 +1236,7 @@ The map is on the globe: {title}.	地図は地球儀上にあります：{title}
 On the globe	地球儀へ
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	地図はコレクションの画像から作成され、ジオリファレンスされて、地図の年とともに「マイプレイス」の「Rumsey の地図」フォルダーに地表の画像として置かれます。年によって地図はタイムバーに載ります。
 The bands were not read: {error}	バンドを読み込めませんでした：{error}
-Satellite images here…	ここの衛星画像…
+Satellite images…	衛星画像…
 Reading the bands: {done} of {total}	バンドを読み込み中：{done} / {total}
 Natural colour (B4 B3 B2)	トゥルーカラー (B4 B3 B2)
 Shortwave infrared (B12 B8A B4)	短波長赤外 (B12 B8A B4)
@@ -1434,7 +1433,7 @@ Loading the images of the event «{title}»…	イベント「{title}」の画�
 Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	2つのオープンカタログによる地震、洪水、火災、ハリケーンの画像です。Vantor（旧 Maxar）は WorldView の帯、Planet は PlanetScope、SkySat、Pelican のシーンとイベント前の四半期モザイクを提供します。この行はイベント一覧のある「災害イベント画像」ウィンドウを開きます。画像のライセンスは CC BY-NC 4.0 で、非商用利用のみです。
 Imagery archive	画像アーカイブ
 Images of extraordinary events from the open catalogs of Vantor and Planet.	Vantor と Planet のオープンカタログによる非常事態の画像。
-Lidar point clouds here	ここのライダー点群
+Lidar point clouds	ライダー点群
 Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	地点付近の IGN LiDAR HD と USGS 3DEP のライダーカタログを検索中…
 Lidar point clouds: {error}	ライダー点群: {error}
 There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	地点付近に IGN LiDAR HD と USGS 3DEP のライダータイルはありません。
@@ -1545,10 +1544,9 @@ Level	水位
 The present sea level.	現在の海面水位。
 The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	水は地球儀全体で水位より低いすべてを浸します。海とのつながりは確認しないため、大陸内部の低地も浸水します。水は地形をオンにすると見えます。
 Return the present sea level.	現在の海面水位に戻します。
-Slope and aspect here…	ここの傾斜と斜面方位…
-Hydrology	水文
-Flooding from here…	ここからの浸水…
-Water flow from here…	ここからの水の流れ…
+Slope and aspect…	傾斜と斜面方位…
+Flooding…	浸水…
+Water flow…	水の流れ…
 Sea level…	海面水位…
 Catchment of the placemark	目印の集水域
 Flow lines from the placemark…	目印からの流下線…

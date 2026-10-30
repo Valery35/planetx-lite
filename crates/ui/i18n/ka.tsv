@@ -204,7 +204,7 @@ A double click on a row copies the value to the clipboard, a link opens in the b
 A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	ღია ფერის ხაზი მუქი წყვეტილით. დაშორებისას ქრება მაგისტრალებთან ერთად. სადგურის და მისასვლელი ლიანდაგები არ იხაზება.
 Add	დამატება
 Add data	მონაცემების დამატება
-Add placemark here	აქ ნიშნის დამატება
+Add placemark	ნიშნის დამატება
 Address	მისამართი
 Airports	აეროპორტები
 All	ყველა
@@ -253,7 +253,6 @@ Feature	ობიექტი
 Features	ობიექტები
 Find what is typed in the line. A place - a flight to it, several found places - a list below.	სტრიქონში აკრეფილის მოძებნა. ერთი ადგილი - გადაფრენა მასთან, რამდენიმე ნაპოვნი ადგილი - სია ქვემოთ.
 Finish drawing	ხაზვის დასრულება
-Fly here	აქ გადაფრენა
 Folder properties	საქაღალდის თვისებები
 Folder view	საქაღალდის ხედი
 Folder|add	საქაღალდე
@@ -386,7 +385,7 @@ View snapshot	ხედის სურათი
 Voyages of Columbus	კოლუმბის მოგზაურობები
 W	დას. გრძ.
 Water names	წყალსატევების სახელები
-What's here?	რა არის აქ?
+Point details	წერტილის მონაცემები
 Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	საიდან უყურებს კამერა, როცა საქაღალდისკენ მიფრინავს. ხედი ყენდება რიცხვებით ან მიმდინარე ხედის აღებით. საკუთარი ხედის გარეშე გადაფრენა კადრში იღებს საქაღალდის ყველა ნიშანს.
 Where the camera looks. 0 - north at the top of the frame.	საით უყურებს კამერა. 0 - ჩრდილოეთი კადრის ზედა მხარესაა.
 Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	ალმის გარეშე საქაღალდე სიაში არ იშლება, მის ნიშნებს აჩვენებს და მალავს თავად საქაღალდის ალამი.
@@ -935,8 +934,8 @@ Clear search history	ძიების ისტორიის გასუფ
 Erase the previous queries of the Search field.	ველის „ძიება“ წინა მოთხოვნების წაშლა.
 Sea and ocean depths	ზღვებისა და ოკეანეების სიღრმეები
 With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	ალმით ზღვებისა და ოკეანეების ფსკერი თავის სიღრმეზე დევს ნახევრად გამჭვირვალე წყლის ქვეშ, მდგომარეობის ზოლი აჩვენებს სიღრმეს კურსორის ქვეშ, სიმაღლეების პროფილი - სიღრმეებს და ზღვის დონეს. ალმის გარეშე ზღვის დონის ქვემოთ სიმაღლეები ნულად ითვლება, ზღვა სწორია. არის მხოლოდ დედამიწისთვის.
-Directions from here	მარშრუტი აქედან
-Directions to here	მარშრუტი აქამდე
+Route start	მარშრუტის დასაწყისი
+Route end	მარშრუტის დასასრული
 by car	მანქანით
 by bike	ველოსიპედით
 on foot	ფეხით
@@ -945,8 +944,8 @@ By bike	ველოსიპედით
 On foot	ფეხით
 {hours} h {minutes} min	{hours} სთ {minutes} წთ
 {value} min	{value} წთ
-The route start is set. The end is the Directions to here item of the globe menu.	მარშრუტის დასაწყისი დაყენებულია. დასასრული - პუნქტი „მარშრუტი აქამდე“ გლობუსის მენიუში.
-The route end is set. The start is the Directions from here item of the globe menu.	მარშრუტის დასასრული დაყენებულია. დასაწყისი - პუნქტი „მარშრუტი აქედან“ გლობუსის მენიუში.
+The route start is set. The end is the Route end item of the globe menu.	მარშრუტის დასაწყისი დაყენებულია. დასასრული - პუნქტი „მარშრუტის დასასრული“ გლობუსის მენიუში.
+The route end is set. The start is the Route start item of the globe menu.	მარშრუტის დასასრული დაყენებულია. დასაწყისი - პუნქტი „მარშრუტის დასაწყისი“ გლობუსის მენიუში.
 Route: asking the service…	მარშრუტი: მოთხოვნა სერვისს…
 No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	მარშრუტი ვერ აიგო: სერვისმა უპასუხა „{error}“, ვექტორული საფუძვლის გზებით კი მარშრუტი იგება {limit} კმ-მდე პირდაპირი ხაზით.
 No route: the corridor between the points is {count} road tiles, the limit is {limit}.	მარშრუტი ვერ აიგო: წერტილებს შორის დერეფანი - გზების {count} ფილაა, ზღვარი {limit}.
@@ -1069,7 +1068,7 @@ turn off	გამორთვა
 Above ground {height} m	მიწის ზემოთ {height} მ
 Climb {climb} m/s	აწევა {climb} მ/წმ
 Fighter	გამანადგურებელი
-Fly from here	ფრენა აქედან
+Flight	ფრენა
 Propeller plane	ხრახნიანი თვითმფრინავი
 Throttle {throttle} %	წევა {throttle} %
 Touched the ground - the flight is over.	მიწასთან შეხება - ფრენა დასრულდა.
@@ -1108,13 +1107,13 @@ Build	აგება
 Computing insolation: {share}	ინსოლაციის გამოთვლა: {share}
 Direct sun, h per day	პირდაპირი მზე, სთ დღე-ღამეში
 Eto Mesto old maps	„ეტო მესტოს“ ძველი რუკები
-Eto Mesto old maps here…	„ეტო მესტოს“ ძველი რუკები აქ…
+Eto Mesto old maps…	„ეტო მესტოს“ ძველი რუკები…
 First day	პირველი დღე-ღამე
 Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	იმის სიმაღლე რელიეფის ზემოთ, რაც უნდა დავინახოთ, მაგალითად ანძის ან შენობის. ნულზე მოწმდება თავად მიწა.
 Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	თვალის ან ანძის სიმაღლე რელიეფის ზემოთ წერტილში. მაღლა - უფრო შორს ჩანს და ნაკლები ადგილია დამალული რელიეფის მიღმა.
 Heights of the grid nodes: {share}	ბადის კვანძების სიმაღლეები: {share}
 Insolation	ინსოლაცია
-Insolation here…	ინსოლაცია აქ…
+Insolation…	ინსოლაცია…
 Keeps the maps whose title or year holds all the words.	ტოვებს რუკებს, რომელთა სათაურში ან წელში ყველა სიტყვაა.
 Last day	ბოლო დღე-ღამე
 Loading heights: {done} of {total}	სიმაღლეების ჩატვირთვა: {done} / {total}
@@ -1138,7 +1137,7 @@ The site did not answer: {error}	საიტმა არ უპასუხა
 The site has no maps at this point.	ამ წერტილთან საიტზე რუკები არ არის.
 This body has no heights.	ამ სხეულისთვის სიმაღლეები არ არის.
 Viewshed from a point	ხილვადობა წერტილიდან
-Viewshed from here…	ხილვადობა აქედან…
+Viewshed…	ხილვადობა…
 {share} of the circle area is visible. The computation step is {step} m.	ჩანს წრის ფართობის {share}. გამოთვლის ბიჯი {step} მ.
 Article	სტატია
 Encyclopedia	ენციკლოპედია
@@ -1229,7 +1228,7 @@ Loading map details…	რუკის ცნობების ჩატვი�
 Loading the map image…	რუკის გამოსახულების ჩატვირთვა…
 Loading the map image: {done} of {total}	რუკის გამოსახულების ჩატვირთვა: {done} / {total}
 Georeferencing the map…	რუკის მიბმა…
-Rumsey historical maps here…	Rumsey-ის ისტორიული რუკები აქ…
+Rumsey historical maps…	Rumsey-ის ისტორიული რუკები…
 Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	David Rumsey-ის კოლექციის რუკები, მიბმული მისი საყრდენი წერტილებით. გამოსახულებები - CC BY-NC-SA 3.0: მხოლოდ არაკომერციული გამოყენებისთვის, წყაროს მითითებით.
 Maps at the view: {count}, by year. A click on a column header changes the order.	რუკები ხედთან: {count}, წლების მიხედვით. სვეტის სათაურზე დაწკაპუნება რიგს ცვლის.
 The map was not built.	რუკა არ აიწყო.
@@ -1237,7 +1236,7 @@ The map is on the globe: {title}.	რუკა გლობუსზეა: {tit
 On the globe	გლობუსზე
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	რუკა იწყობა კოლექციის გამოსახულებიდან, მიებმება და რუკის წლით ზედაპირზე სურათად ჯდება „ჩემ ნიშნებში“, საქაღალდეში „Rumsey-ის რუკები“. წელი რუკას დროის ზოლზე სვამს.
 The bands were not read: {error}	არხები არ წაიკითხა: {error}
-Satellite images here…	კოსმოსური სურათები აქ…
+Satellite images…	კოსმოსური სურათები…
 Reading the bands: {done} of {total}	არხების წაკითხვა: {done} / {total}
 Natural colour (B4 B3 B2)	ბუნებრივი ფერები (B4 B3 B2)
 Shortwave infrared (B12 B8A B4)	მოკლეტალღოვანი ინფრაწითელი (B12 B8A B4)
@@ -1434,7 +1433,7 @@ Loading the images of the event «{title}»…	მოვლენის «{title
 Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	მიწისძვრების, წყალდიდობების, ხანძრებისა და ქარიშხლების სურათები ორი ღია კატალოგიდან. Vantor (ადრე Maxar) იძლევა WorldView-ის ზოლებს, Planet - PlanetScope-ის, SkySat-ისა და Pelican-ის სცენებს და Planet-ის კვარტალურ მოზაიკას მოვლენამდე. სტრიქონი ხსნის ფანჯარას «მოვლენების სურათები» მოვლენების სიით. სურათების ლიცენზია CC BY-NC 4.0 - მხოლოდ არაკომერციული გამოყენება.
 Imagery archive	სურათების არქივი
 Images of extraordinary events from the open catalogs of Vantor and Planet.	საგანგებო მოვლენების სურათები Vantor-ისა და Planet-ის ღია კატალოგებიდან.
-Lidar point clouds here	ლიდარის წერტილების ღრუბლები აქ
+Lidar point clouds	ლიდარის წერტილების ღრუბლები
 Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	ძიება ლიდარის კატალოგებში IGN LiDAR HD და USGS 3DEP წერტილთან…
 Lidar point clouds: {error}	ლიდარის წერტილების ღრუბლები: {error}
 There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	წერტილთან არ არის IGN LiDAR HD-ისა და USGS 3DEP-ის ლიდარის ფილები.
@@ -1545,10 +1544,9 @@ Level	დონე
 The present sea level.	ზღვის ამჟამინდელი დონე.
 The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	წყალი ტბორავს ყველაფერს დონის ქვემოთ მთელ გლობუსზე. ზღვასთან კავშირი არ მოწმდება, ამიტომ კონტინენტების შიგნით დაბლობებიც იტბორება. წყალი ჩანს ჩართული რელიეფის დროს.
 Return the present sea level.	ზღვის ამჟამინდელი დონის დაბრუნება.
-Slope and aspect here…	დახრილობა და ექსპოზიცია აქ…
-Hydrology	ჰიდროლოგია
-Flooding from here…	დატბორვა აქედან…
-Water flow from here…	წყლის ჩამონადენი აქედან…
+Slope and aspect…	დახრილობა და ექსპოზიცია…
+Flooding…	დატბორვა…
+Water flow…	წყლის ჩამონადენი…
 Sea level…	ზღვის დონე…
 Catchment of the placemark	ნიშნის წყალშემკრები აუზი
 Flow lines from the placemark…	ჩამონადენის ხაზები ნიშნიდან…

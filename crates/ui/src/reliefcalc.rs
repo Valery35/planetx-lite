@@ -63,10 +63,7 @@ pub struct ReliefCalc {
 
 /// Число для текста окна: целое у больших, десятые у малых.
 pub fn number(value: f64) -> String {
-    if !value.is_finite() {
-        return "-".into();
-    }
-    if value.abs() >= 100.0 { format!("{value:.0}") } else if value.abs() >= 10.0 { format!("{value:.1}") } else { format!("{value:.2}") }
+    if value.is_finite() { data::stats::rounded(value) } else { "-".into() }
 }
 
 /// Сторона света по `relief::SIDES`.
@@ -205,7 +202,8 @@ impl ReliefCalc {
                     self.status = tr(lang, "There are no heights in the area.").to_string();
                     return;
                 };
-                self.status = format!("{} {}", summary_text(lang, &rep), trf(lang, "The grid step is {step} m.", &[("step", &number(grid.cell))]));
+                let values = analysis::stats_text(lang, tr(lang, "Slope"), &result.slope, "°");
+                self.status = format!("{} {values} {}", summary_text(lang, &rep), trf(lang, "The grid step is {step} m.", &[("step", &number(grid.cell))]));
                 if partial {
                     self.status = format!("{} {}", self.status, tr(lang, "Not all heights are loaded, the computation used less detailed ones."));
                 }
@@ -277,7 +275,8 @@ impl ReliefCalc {
             Mode::Aspect => ((aspect_tiff, "aspect"), (slope_tiff, "slope")),
         };
         shown_layer.tiff = first.0;
-        let other = ResultLayer { name: String::new(), grid: shown_layer.grid, rgba: Vec::new(), tiff: second.0, stem: second.1.to_string() };
+        shown_layer.summary = analysis::stats_text(lang, tr(lang, "Slope"), &result.slope, "°");
+        let other = ResultLayer { name: String::new(), grid: shown_layer.grid, rgba: Vec::new(), tiff: second.0, stem: second.1.to_string(), summary: String::new() };
         self.saved = Some(Saved { title: tr(lang, "Slope and aspect").to_string(), ring: ring.clone(), layers: vec![shown_layer, other], extra: std::mem::take(&mut self.peaks), session: None });
     }
 
@@ -285,6 +284,9 @@ impl ReliefCalc {
     pub fn show(&mut self, ctx: &egui::Context, lang: Lang, now: f64, radius: f64, max_level: u32) {
         if !self.open {
             return;
+        }
+        if let Some(text) = self.site.shared_note(lang) {
+            self.status = text.to_string();
         }
         let mut open = true;
         let mut pressed = None;

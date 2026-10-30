@@ -472,6 +472,9 @@ impl ClassCalc {
         if !self.open {
             return;
         }
+        if let Some(text) = self.site.shared_note(lang) {
+            self.status = text.to_string();
+        }
         let mut open = true;
         let mut pressed = None;
         let opacity = self.opacity;

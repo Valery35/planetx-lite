@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Вода по рельефу: окна «Затопление», «Сток воды» и «Уровень моря» -
-//! подменю «Гидрология» меню на глобусе, перенос `ui/hydro.py` модуля.
+//! подменю «Анализ участка» меню на глобусе, перенос `ui/hydro.py` модуля.
 //! Расчёт - `data::hydro`, высоты квадрата - [`crate::gridheights`].
 //!
 //! Затопление - слой над картами: залитые узлы с цветом по глубине,
@@ -187,6 +187,11 @@ fn end_text(lang: Lang, end: LineEnd) -> &'static str {
             LineEnd::Pit => "The line ends at the edge of the height data.",
         },
     )
+}
+
+/// Глубины узлов затопления mask при уровне level, сухие узлы - нечисло.
+fn flood_depth(mask: &[bool], z: &[f64], level: f64) -> Vec<f64> {
+    mask.iter().zip(z).map(|(m, z)| if *m { level - z } else { f64::NAN }).collect()
 }
 
 fn partial_text(lang: Lang) -> &'static str {
@@ -604,6 +609,8 @@ impl Hydro {
         let any = result.mask.iter().any(|m| *m);
         let mut text = if any {
             let mut t = trf(lang, "Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.", &[("area", &number(result.area / 1e6)), ("volume", &number(result.volume / 1e6)), ("depth", &number(result.depth))]);
+            let depth = flood_depth(&result.mask, &state.z, level);
+            t = format!("{t} {}", analysis::stats_text(lang, tr(lang, "Depth"), &depth, tr(lang, " m")));
             if result.edge {
                 t = format!("{t} {}", tr(lang, "The water reached the edge of the area and can go further. A larger area is needed."));
             }
@@ -635,6 +642,9 @@ impl Hydro {
     fn flood_window(&mut self, ctx: &egui::Context, lang: Lang, now: f64, radius: f64, max_level: u32) {
         if !self.flood_open {
             return;
+        }
+        if let Some(text) = self.flood_site.as_mut().and_then(|s| s.shared_note(lang)) {
+            self.flood_status = text.to_string();
         }
         let mut open = true;
         let mut pressed = None;
@@ -730,14 +740,15 @@ impl Hydro {
             return;
         }
         let level = state.level;
-        let depth: Vec<f64> = result.mask.iter().zip(state.z.iter()).map(|(m, z)| if *m { level - z } else { f64::NAN }).collect();
+        let depth = flood_depth(&result.mask, &state.z, level);
         let tiff = data::geotiff::write_float_mercator(&data::site::mercator_of(&state.grid), &depth).unwrap_or_default();
         let (north, west) = hydro::latlon(&state.grid, -0.5, -0.5, radius);
         let (south, east) = hydro::latlon(&state.grid, state.grid.rows as f64 - 0.5, state.grid.cols as f64 - 0.5, radius);
         let (grid, flood, z) = (state.grid, result.clone(), state.z.clone());
         let sample = move |points: &[(f64, f64)]| hydro::flood_points_rgba(&grid, &flood, &z, level, points, radius);
         let name = trf(lang, "Flooding {level} m - depth", &[("level", &format!("{level:.1}"))]);
-        let layer = analysis::picture(name, "flood", (south, north, west, east), state.grid.cell, &sample, tiff);
+        let mut layer = analysis::picture(name, "flood", (south, north, west, east), state.grid.cell, &sample, tiff);
+        layer.summary = analysis::stats_text(lang, tr(lang, "Depth"), &depth, tr(lang, " m"));
         let rings = hydro::outline(&result.mask, state.grid.rows, state.grid.cols, 0.5);
         let text = trf(lang, "Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.", &[("level", &format!("{level:.1}")), ("area", &number(result.area / 1e6)), ("volume", &number(result.volume / 1e6)), ("depth", &number(result.depth))]);
         let mut body = String::new();
@@ -752,6 +763,9 @@ impl Hydro {
     fn flow_window(&mut self, ctx: &egui::Context, lang: Lang, now: f64, radius: f64, max_level: u32) {
         if !self.flow_open {
             return;
+        }
+        if let Some(text) = self.flow_site.as_mut().and_then(|s| s.shared_note(lang)) {
+            self.flow_status = text.to_string();
         }
         let mut open = true;
         let mut task = None;

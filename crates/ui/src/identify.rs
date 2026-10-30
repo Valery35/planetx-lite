@@ -2,7 +2,7 @@
 // Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Окно «Объекты» кнопки «Определить объекты» и пункта «Что здесь?»,
+//! Окно «Объекты» кнопки «Определить объекты» и пункта «Сведения о точке»,
 //! перенос `IdentifyDialog` (`ui/identify.py`) и групп «Мои метки»
 //! и «Место» (`ui/globe/identify.py`) модуля.
 //!
@@ -24,7 +24,7 @@ pub struct Objects {
     pub point: String,
     /// Группы по порядку: название и объекты.
     pub groups: Vec<(String, Vec<Feature>)>,
-    /// Точка для адреса «Что здесь?».
+    /// Точка для адреса «Сведения о точке».
     pub at: (f64, f64),
 }
 
@@ -77,7 +77,7 @@ pub fn places_group(lang: Lang, places: &[&scene::kml::Place]) -> Option<(String
     (!features.is_empty()).then(|| (tr(lang, "My Places").to_string(), features))
 }
 
-/// Группа «Место», объект «Под точкой»: адрес после «Что здесь?»,
+/// Группа «Место», объект «Под точкой»: адрес после «Сведения о точке»,
 /// высота или глубина.
 pub fn place_group(lang: Lang, height: Option<f64>, address: Option<String>) -> (String, Vec<Feature>) {
     let mut values = Vec::new();

@@ -204,7 +204,7 @@ A double click on a row copies the value to the clipboard, a link opens in the b
 A light line with a dark dash. They disappear together with motorways when zooming out. Station and access tracks are not drawn.	Lichte lijn met donkere streepjes. Ze verdwijnen samen met de snelwegen bij uitzoomen. Stations- en aansluitsporen worden niet getekend.
 Add	Toevoegen
 Add data	Gegevens toevoegen
-Add placemark here	Plaatsmarkering hier toevoegen
+Add placemark	Plaatsmarkering toevoegen
 Address	Adres
 Airports	Luchthavens
 All	Alles
@@ -253,7 +253,6 @@ Feature	Object
 Features	Objecten
 Find what is typed in the line. A place - a flight to it, several found places - a list below.	Zoeken naar wat in de regel is getypt. Eén plaats - vlucht ernaartoe, meerdere gevonden plaatsen - lijst eronder.
 Finish drawing	Tekenen beëindigen
-Fly here	Hierheen vliegen
 Folder properties	Eigenschappen van de map
 Folder view	Weergave van de map
 Folder|add	Map
@@ -386,7 +385,7 @@ View snapshot	Momentopname van de weergave
 Voyages of Columbus	Reizen van Columbus
 W	WL
 Water names	Namen van wateren
-What's here?	Wat is hier?
+Point details	Puntgegevens
 Where the camera looks from when it flies to the folder. The view is set by numbers or by a snapshot of the current view. Without its own view the flight frames all placemarks of the folder.	Vanwaar de camera kijkt als hij naar de map vliegt. De weergave wordt met getallen ingesteld of door de huidige weergave te nemen. Zonder eigen weergave brengt de vlucht alle plaatsmarkeringen van de map in beeld.
 Where the camera looks. 0 - north at the top of the frame.	Waar de camera naar kijkt. 0 - noorden boven in beeld.
 Without the check the folder does not expand in the list, its placemarks are shown and hidden by the check of the folder.	Zonder vinkje klapt de map in de lijst niet uit, haar plaatsmarkeringen worden getoond en verborgen met het vinkje van de map zelf.
@@ -935,8 +934,8 @@ Clear search history	Zoekgeschiedenis wissen
 Erase the previous queries of the Search field.	De eerdere zoekopdrachten van het veld ‘Zoeken’ wissen.
 Sea and ocean depths	Diepten van zeeën en oceanen
 With the box checked the sea and ocean floor lies at its depths under semi-transparent water, the status bar shows the depth under the cursor, and the elevation profile shows depths and sea level. Without it heights below sea level count as zero and the sea is flat. Exists only on the Earth.	Met het vinkje ligt de bodem van zeeën en oceanen op zijn diepte onder halfdoorzichtig water, de statusregel toont de diepte onder de cursor en het hoogteprofiel toont diepten en zeeniveau. Zonder vinkje tellen hoogten onder zeeniveau als nul en is de zee vlak. Alleen beschikbaar voor de aarde.
-Directions from here	Route vanaf hier
-Directions to here	Route naar hier
+Route start	Begin van de route
+Route end	Einde van de route
 by car	met de auto
 by bike	met de fiets
 on foot	te voet
@@ -945,8 +944,8 @@ By bike	Met de fiets
 On foot	Te voet
 {hours} h {minutes} min	{hours} u {minutes} min
 {value} min	{value} min
-The route start is set. The end is the Directions to here item of the globe menu.	Het begin van de route is gezet. Het einde is het item ‘Route naar hier’ in het menu op de globe.
-The route end is set. The start is the Directions from here item of the globe menu.	Het einde van de route is gezet. Het begin is het item ‘Route vanaf hier’ in het menu op de globe.
+The route start is set. The end is the Route end item of the globe menu.	Het begin van de route is gezet. Het einde is het item ‘Einde van de route’ in het menu op de globe.
+The route end is set. The start is the Route start item of the globe menu.	Het einde van de route is gezet. Het begin is het item ‘Begin van de route’ in het menu op de globe.
 Route: asking the service…	Route: dienst wordt bevraagd…
 No route: the service answered '{error}', and over the roads of the vector base a route is built up to {limit} km in a straight line.	Geen route: de dienst antwoordde ‘{error}’, en over de wegen van de vectorbasis wordt een route berekend tot {limit} km hemelsbreed.
 No route: the corridor between the points is {count} road tiles, the limit is {limit}.	Geen route: de corridor tussen de punten telt {count} wegtegels, de grens is {limit}.
@@ -1069,7 +1068,7 @@ turn off	uitschakelen
 Above ground {height} m	Boven de grond {height} m
 Climb {climb} m/s	Stijgen {climb} m/s
 Fighter	Jachtvliegtuig
-Fly from here	Vlucht vanaf hier
+Flight	Vlucht
 Propeller plane	Propellervliegtuig
 Throttle {throttle} %	Stuwkracht {throttle} %
 Touched the ground - the flight is over.	Grondcontact - de vlucht is voorbij.
@@ -1108,13 +1107,13 @@ Build	Berekenen
 Computing insolation: {share}	Bezonning berekenen: {share}
 Direct sun, h per day	Directe zon, u per dag
 Eto Mesto old maps	Oude kaarten van ‘Eto Mesto’
-Eto Mesto old maps here…	Oude kaarten van ‘Eto Mesto’ hier…
+Eto Mesto old maps…	Oude kaarten van ‘Eto Mesto’…
 First day	Eerste dag
 Height above the terrain of what has to be seen, for example a mast or a building. At zero the ground itself is checked.	Hoogte boven het reliëf van wat gezien moet worden, bijvoorbeeld een mast of gebouw. Bij nul wordt de grond zelf gecontroleerd.
 Height of the eye or mast above the terrain at the point. A higher value sees farther and fewer places stay hidden behind the terrain.	Hoogte van het oog of de mast boven het reliëf op het punt. Hoger - je ziet verder en minder plaatsen blijven achter het reliëf verborgen.
 Heights of the grid nodes: {share}	Hoogten van de rasterknopen: {share}
 Insolation	Bezonning
-Insolation here…	Bezonning hier…
+Insolation…	Bezonning…
 Keeps the maps whose title or year holds all the words.	Houdt de kaarten waarvan de titel of het jaar alle woorden bevat.
 Last day	Laatste dag
 Loading heights: {done} of {total}	Hoogten laden: {done} van {total}
@@ -1138,7 +1137,7 @@ The site did not answer: {error}	De site antwoordde niet: {error}
 The site has no maps at this point.	De site heeft geen kaarten op dit punt.
 This body has no heights.	Dit hemellichaam heeft geen hoogten.
 Viewshed from a point	Zichtbaarheid vanaf een punt
-Viewshed from here…	Zichtbaarheid vanaf hier…
+Viewshed…	Zichtbaarheid…
 {share} of the circle area is visible. The computation step is {step} m.	{share} van de cirkeloppervlakte is zichtbaar. De rekenstap is {step} m.
 Article	Artikel
 Encyclopedia	Encyclopedie
@@ -1229,7 +1228,7 @@ Loading map details…	Kaartgegevens laden…
 Loading the map image…	Kaartafbeelding laden…
 Loading the map image: {done} of {total}	Kaartafbeelding laden: {done} van {total}
 Georeferencing the map…	Kaart georefereren…
-Rumsey historical maps here…	Historische Rumsey-kaarten hier…
+Rumsey historical maps…	Historische Rumsey-kaarten…
 Maps of the David Rumsey collection, georeferenced by its control points. The images are CC BY-NC-SA 3.0: non-commercial use only, with credit to the source.	Kaarten uit de collectie van David Rumsey, gegeorefereerd met zijn paspunten. De afbeeldingen vallen onder CC BY-NC-SA 3.0: alleen voor niet-commercieel gebruik, met bronvermelding.
 Maps at the view: {count}, by year. A click on a column header changes the order.	Kaarten bij de weergave: {count}, op jaar. Een klik op een kolomkop verandert de volgorde.
 The map was not built.	De kaart is niet gemaakt.
@@ -1237,7 +1236,7 @@ The map is on the globe: {title}.	De kaart staat op de globe: {title}.
 On the globe	Naar de globe
 The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	De kaart wordt gemaakt uit de afbeelding van de collectie, gegeorefereerd en als afbeelding op het oppervlak in ‘Mijn plaatsen’ gelegd, map ‘Rumsey-kaarten’, met het jaar van de kaart. Het jaar zet de kaart op de tijdbalk.
 The bands were not read: {error}	De banden zijn niet gelezen: {error}
-Satellite images here…	Satellietbeelden hier…
+Satellite images…	Satellietbeelden…
 Reading the bands: {done} of {total}	Banden lezen: {done} van {total}
 Natural colour (B4 B3 B2)	Natuurlijke kleuren (B4 B3 B2)
 Shortwave infrared (B12 B8A B4)	Kortgolvig infrarood (B12 B8A B4)
@@ -1434,7 +1433,7 @@ Loading the images of the event «{title}»…	Beelden van de gebeurtenis «{tit
 Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.	Beelden van aardbevingen, overstromingen, branden en orkanen uit twee open catalogi. Vantor (voorheen Maxar) geeft WorldView-stroken, Planet - scènes van PlanetScope, SkySat en Pelican en het kwartaalmozaïek van Planet van voor de gebeurtenis. De rij opent het venster «Beelden van gebeurtenissen» met de lijst. Licentie van de beelden CC BY-NC 4.0 - alleen niet-commercieel gebruik.
 Imagery archive	Beeldarchief
 Images of extraordinary events from the open catalogs of Vantor and Planet.	Beelden van buitengewone gebeurtenissen uit de open catalogi van Vantor en Planet.
-Lidar point clouds here	Lidar-puntenwolken hier
+Lidar point clouds	Lidar-puntenwolken
 Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Zoeken in de lidarcatalogi IGN LiDAR HD en USGS 3DEP bij het punt…
 Lidar point clouds: {error}	Lidar-puntenwolken: {error}
 There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	Bij het punt zijn geen lidartegels van IGN LiDAR HD en USGS 3DEP.
@@ -1545,10 +1544,9 @@ Level	Peil
 The present sea level.	Het huidige zeeniveau.
 The water floods everything below the level over the whole globe. The connection with the sea is not checked, so lowlands inside continents are flooded too. The water is seen with the terrain on.	Het water overstroomt alles onder het peil op de hele globe. De verbinding met de zee wordt niet gecontroleerd, dus overstromen ook laaglanden binnen de continenten. Het water is te zien met het reliëf aan.
 Return the present sea level.	Het huidige zeeniveau herstellen.
-Slope and aspect here…	Helling en expositie hier…
-Hydrology	Hydrologie
-Flooding from here…	Overstroming vanaf hier…
-Water flow from here…	Afstroming van water vanaf hier…
+Slope and aspect…	Helling en expositie…
+Flooding…	Overstroming…
+Water flow…	Afstroming van water…
 Sea level…	Zeeniveau…
 Catchment of the placemark	Stroomgebied van de plaatsmarkering
 Flow lines from the placemark…	Afstroomlijnen vanaf de plaatsmarkering…

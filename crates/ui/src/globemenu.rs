@@ -7,7 +7,7 @@
 //! Открывается щелчком правой кнопки без протяжки. Сверху - координаты
 //! точки, щелчок копирует их. Пока рисуется фигура - пункты рисования.
 //! Над меткой - её название и «Свойства…». Над землёй - метка и линейка
-//! отсюда, перелёт и облёт, маршрут, «Что здесь?». Над моделью на пути
+//! от неё, перелёт и облёт, маршрут, «Сведения о точке». Над моделью на пути
 //! или при камере следом - «Камера следом», `model_track_items` модуля.
 
 use eframe::egui;
@@ -29,14 +29,14 @@ pub enum Choice {
     FlyHere,
     Spin,
     WhatHere,
-    /// «Проложить маршрут отсюда» и «сюда», `route_items` модуля.
+    /// «Начало маршрута» и «Конец маршрута», `route_items` модуля.
     RouteFrom,
     RouteTo,
     /// «Камера следом» за моделью на пути: номер или None - отпустить.
     Follow(Option<usize>),
     /// «Камера следом» за живым объектом: строка и ключ или None.
     FollowLive(Option<(crate::live::Kind, String)>),
-    /// «Полёт отсюда»: вид самолёта `data::flightsim`.
+    /// «Полёт»: вид самолёта `data::flightsim`.
     FlyFrom(&'static str),
     /// Номер листа из «Номенклатуры листа» - в буфер обмена.
     CopySheet(String),
@@ -46,27 +46,27 @@ pub enum Choice {
     OpenLink(String),
     /// «Добавить или изменить сайты…».
     EditLinks,
-    /// «Видимость отсюда…».
+    /// «Видимость…».
     Viewshed,
-    /// «Инсоляция здесь…».
+    /// «Инсоляция…».
     Insolation,
-    /// «Тени здесь…».
+    /// «Тени…».
     Shadows,
-    /// «Изменения местности здесь…» и «Классификация здесь…».
+    /// «Изменения местности…» и «Классификация…».
     Changes,
     Classes,
-    /// «Старые карты «Это Место» здесь…».
+    /// «Старые карты «Это Место»…».
     Etomesto,
-    /// «Исторические карты Рамсея здесь…».
+    /// «Исторические карты Рамсея…».
     Rumsey,
-    /// «Космоснимки здесь…».
+    /// «Космоснимки…».
     Sentinel,
-    /// «Облака точек лидара здесь».
+    /// «Облака точек лидара».
     Lidar,
-    /// «Уклон и экспозиция здесь…» подменю «Анализ участка».
+    /// «Уклон и экспозиция…» подменю «Анализ участка».
     SlopeHere,
-    /// «Затопление отсюда…», «Сток воды отсюда…», «Уровень моря…»
-    /// подменю «Гидрология».
+    /// «Затопление…», «Сток воды…», «Уровень моря…» подменю «Анализ
+    /// участка».
     Flood,
     Flow,
     SeaLevel,
@@ -111,7 +111,7 @@ pub struct GlobeMenu {
     pub satellite: Option<(i64, String, bool, bool)>,
     /// На глобусе Земля: пункты служб Земли.
     pub earth: bool,
-    /// У тела есть высоты: подменю «Анализ участка» и «Гидрология».
+    /// У тела есть высоты: подменю «Анализ участка».
     pub relief: bool,
 }
 
@@ -198,18 +198,18 @@ impl GlobeMenu {
                     if self.point.is_some() {
                         ui.separator();
                         if self.drawing.is_none() {
-                            pick(ui, tr(lang, "Add placemark here"), Choice::AddPlacemark);
+                            pick(ui, tr(lang, "Add placemark"), Choice::AddPlacemark);
                             pick(ui, tr(lang, "Measure distance"), Choice::Measure);
                             ui.separator();
                         }
-                        pick(ui, tr(lang, "Fly here"), Choice::FlyHere);
+                        pick(ui, tr(lang, "Fly to"), Choice::FlyHere);
                         pick(ui, tr(lang, "Orbit around"), Choice::Spin);
                         if self.drawing.is_none() {
                             ui.separator();
-                            pick(ui, tr(lang, "Directions from here"), Choice::RouteFrom);
-                            pick(ui, tr(lang, "Directions to here"), Choice::RouteTo);
-                            // «Полёт отсюда», `flightsim` модуля.
-                            ui.menu_button(tr(lang, "Fly from here"), |ui| {
+                            pick(ui, tr(lang, "Route start"), Choice::RouteFrom);
+                            pick(ui, tr(lang, "Route end"), Choice::RouteTo);
+                            // «Полёт», `flightsim` модуля.
+                            ui.menu_button(tr(lang, "Flight"), |ui| {
                                 if ui.button(tr(lang, "Fighter")).on_hover_text(tr(lang, "Up to 2000 km/h, start at 900 km/h, sharp bank.")).clicked() {
                                     follow = Some(Choice::FlyFrom(data::flightsim::FIGHTER));
                                 }
@@ -220,14 +220,15 @@ impl GlobeMenu {
                         }
                         if self.drawing.is_none() && self.earth {
                             ui.separator();
-                            pick(ui, tr(lang, "What's here?"), Choice::WhatHere);
+                            pick(ui, tr(lang, "Point details"), Choice::WhatHere);
                         }
                         // Окна расчёта и снимков у точки - одной группой,
                         // исторические карты - другой, как у модуля.
-                        // «Анализ участка» и «Гидрология» - подменю
-                        // `relief_items` и `hydro_items` модуля, у тела
-                        // с высотами. Название - как у Google Earth,
-                        // решение автора от 28 октября 2026 года.
+                        // «Анализ участка» - подменю `relief_items` модуля
+                        // у тела с высотами. Название - как у Google Earth,
+                        // решение автора от 28 октября 2026 года. Все
+                        // функции в одном месте, гидрология за разделителем,
+                        // как в модуле 1.21.
                         if self.drawing.is_none() {
                             ui.separator();
                             if self.relief {
@@ -237,40 +238,34 @@ impl GlobeMenu {
                                             follow = Some(c);
                                         }
                                     };
-                                    item(ui, "Slope and aspect here…", "Slope and aspect of a square around the point by the heights, a summary, peaks and pits.", Choice::SlopeHere);
-                                    item(ui, "Viewshed from here…", "What is seen from the point in a circle of the given radius.", Choice::Viewshed);
+                                    item(ui, "Slope and aspect…", "Slope and aspect of a square around the point by the heights, a summary, peaks and pits.", Choice::SlopeHere);
+                                    item(ui, "Viewshed…", "What is seen from the point in a circle of the given radius.", Choice::Viewshed);
                                     if self.earth {
-                                        item(ui, "Insolation here…", "Hours of direct sun per day around the point.", Choice::Insolation);
-                                        item(ui, "Shadows here…", "Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.", Choice::Shadows);
+                                        item(ui, "Insolation…", "Hours of direct sun per day around the point.", Choice::Insolation);
+                                        item(ui, "Shadows…", "Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.", Choice::Shadows);
                                         // Хранилище файлов AlphaEarth не отдаёт заголовков
                                         // CORS (проверено 30 октября 2026 года), у страницы
                                         // этих пунктов нет.
                                         if !cfg!(target_arch = "wasm32") {
-                                            item(ui, "Changes of the terrain here…", "Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.", Choice::Changes);
-                                            item(ui, "Classification here…", "Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.", Choice::Classes);
+                                            item(ui, "Changes of the terrain…", "Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.", Choice::Changes);
+                                            item(ui, "Classification…", "Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.", Choice::Classes);
                                         }
                                     }
-                                });
-                                ui.menu_button(tr(lang, "Hydrology"), |ui| {
-                                    let mut item = |ui: &mut egui::Ui, text: &'static str, tip: &'static str, c: Choice| {
-                                        if ui.button(tr(lang, text)).on_hover_text(tr(lang, tip)).clicked() {
-                                            follow = Some(c);
-                                        }
-                                    };
-                                    item(ui, "Flooding from here…", "Water from the point up to the given level, area, volume and depths.", Choice::Flood);
-                                    item(ui, "Water flow from here…", "Flow line, catchment and river network around the point.", Choice::Flow);
+                                    ui.separator();
+                                    item(ui, "Flooding…", "Water from the point up to the given level, area, volume and depths.", Choice::Flood);
+                                    item(ui, "Water flow…", "Flow line, catchment and river network around the point.", Choice::Flow);
                                     item(ui, "Sea level…", "Raising and lowering the sea level over the whole globe.", Choice::SeaLevel);
                                 });
                             }
                             if self.earth {
-                                pick(ui, tr(lang, "Satellite images here…"), Choice::Sentinel);
-                                pick(ui, tr(lang, "Lidar point clouds here"), Choice::Lidar);
+                                pick(ui, tr(lang, "Satellite images…"), Choice::Sentinel);
+                                pick(ui, tr(lang, "Lidar point clouds"), Choice::Lidar);
                                 // Карты Рамсея (IIIF) и «Это место» не отдают
                                 // данные странице, у неё этих пунктов нет.
                                 if !cfg!(target_arch = "wasm32") {
                                     ui.separator();
-                                    pick(ui, tr(lang, "Rumsey historical maps here…"), Choice::Rumsey);
-                                    pick(ui, tr(lang, "Eto Mesto old maps here…"), Choice::Etomesto);
+                                    pick(ui, tr(lang, "Rumsey historical maps…"), Choice::Rumsey);
+                                    pick(ui, tr(lang, "Eto Mesto old maps…"), Choice::Etomesto);
                                 }
                             }
                         }

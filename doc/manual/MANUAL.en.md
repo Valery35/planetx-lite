@@ -206,8 +206,8 @@ A right click without dragging opens the menu:
 - while drawing - Delete vertex, Finish drawing or Continue drawing,
   Save, Clear;
 - over a placemark - its name and PropertiesвЂ¦;
-- Add placemark here, Measure distance, Fly here, Orbit around, What's
-  here?. What's here? opens the Features window with the address of the
+- Add placemark, Measure distance, Fly to, Orbit around, Point
+  details. Point details opens the Features window with the address of the
   point from Nominatim and its height.
 ## Drawing and editing
 

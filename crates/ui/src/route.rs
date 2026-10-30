@@ -5,7 +5,7 @@
 //! Маршрут по дорогам, перенос `RouteManager` (`ui/routing.py`) модуля.
 //!
 //! Расчёт - `data::routing`. Начало и конец ставит меню на глобусе,
-//! пункты «Проложить маршрут отсюда» и «Проложить маршрут сюда».
+//! пункты «Начало маршрута» и «Конец маршрута».
 //! Маршрут сначала просится у сервиса OSRM, не чаще раза в секунду.
 //! Сервис не ответил, а точки не дальше MAX_DISTANCE, - путь по тайлам
 //! дорог векторной основы. Тайлы коридора приходят через загрузчик
@@ -125,14 +125,14 @@ impl Router {
 
     pub fn set_origin(&mut self, lang: Lang, end: End, now: f64) {
         self.origin = Some(end);
-        self.show(tr(lang, "The route start is set. The end is the Directions to here item of the globe menu."), true);
+        self.show(tr(lang, "The route start is set. The end is the Route end item of the globe menu."), true);
         self.maybe_start(lang, now);
     }
 
     pub fn set_target(&mut self, lang: Lang, end: End, now: f64) {
         self.target = Some(end);
         if self.origin.is_none() {
-            self.show(tr(lang, "The route end is set. The start is the Directions from here item of the globe menu."), true);
+            self.show(tr(lang, "The route end is set. The start is the Route start item of the globe menu."), true);
         }
         self.maybe_start(lang, now);
     }
