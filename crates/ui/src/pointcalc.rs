@@ -14,6 +14,12 @@
 //! `ResultTiles` модуля.
 //!
 //! Флажка «Учитывать здания» модуля пока нет: слоя зданий у Lite нет.
+//!
+//! Окна - на общем каркасе анализа участка ([`crate::analysis`]):
+//! «Построить», «OK» и «Отмена». Инсоляция считается по участку
+//! многоугольником в круге, накрывающем его, вне многоугольника часов
+//! нет. Видимость - в круге радиуса из окна, контур сохранённого расчёта
+//! - этот круг, как у модуля.
 
 use std::sync::Arc;
 
@@ -21,9 +27,24 @@ use eframe::egui;
 use globe_core::lod::TileKey;
 
 use data::insolation::{self, Insolation};
+use data::shadows::{self, Horizon, Shadows};
 use data::viewshed::{self, Viewshed};
 
+use crate::analysis::{self, Button, ResultLayer, Saved, SiteEdit};
 use crate::i18n::{Lang, tr, trf};
+
+/// Участок инсоляции по умолчанию и наибольший, километры, `SIDE`
+/// и `MOST` окна модуля.
+const INSOLATION_SIDE: f64 = 10.0;
+const INSOLATION_MOST: f64 = 40.0;
+/// Участок теней по умолчанию и наибольший, километры, `SIDE` и `MOST`
+/// окна «Тени» модуля.
+const SHADOWS_SIDE: f64 = 3.0;
+const SHADOWS_MOST: f64 = 40.0;
+/// Сдвиг момента, после которого карта теней строится заново, секунды.
+const MOMENT_STEP: f64 = 30.0;
+/// Вершин круга видимости в «Моих метках», как у модуля.
+const CIRCLE_POINTS: usize = 72;
 
 /// Ожидание высот, секунды: дальше расчёт идёт по тем, что есть.
 pub const WAIT: f64 = 30.0;
@@ -39,6 +60,8 @@ const SIZE: usize = 256;
 pub enum Kind {
     Viewshed,
     Insolation,
+    /// Тени на момент шкалы времени, окно «Тени» модуля.
+    Shadows,
 }
 
 /// Готовый слой.
@@ -46,6 +69,7 @@ pub enum Kind {
 pub enum Layer {
     Viewshed(Arc<Viewshed>),
     Insolation(Arc<Insolation>),
+    Shadows(Arc<Shadows>),
 }
 
 /// Ход расчёта.
@@ -70,6 +94,8 @@ struct Job {
     /// и последних суток UTC.
     a: f64,
     b: f64,
+    /// Участок инсоляции.
+    ring: Option<Vec<(f64, f64)>>,
 }
 
 /// Окно расчёта и его слой.
@@ -88,21 +114,80 @@ pub struct Calc {
     pub layer: Option<Layer>,
     /// Слой сменился: картинки тайлов рисуются заново.
     pub changed: bool,
+    /// Участок инсоляции и теней на глобусе.
+    pub site: Option<SiteEdit>,
+    /// Расчёт по «OK» для «Моих меток», забирает окно глобуса.
+    pub saved: Option<Saved>,
+    /// Горизонт участка теней: карта на момент строится по нему.
+    horizon: Option<Arc<Horizon>>,
+    /// Момент теней, секунды UTC: правый край шкалы времени или часы.
+    moment: f64,
 }
 
 impl Calc {
     pub fn new(kind: Kind, lat: f64, lon: f64, place: String, now_unix: f64) -> Self {
         let today = civil_from_days((now_unix / insolation::DAY).floor() as i64);
-        let radius_km = if kind == Kind::Viewshed { 10.0 } else { 5.0 };
-        Self { kind, open: true, point: (lat, lon), place, observer: 2.0, target: 0.0, radius_km, first: today, last: today, status: String::new(), job: None, layer: None, changed: false }
+        let site = match kind {
+            Kind::Viewshed => None,
+            Kind::Insolation => Some(SiteEdit::new(lat, lon, INSOLATION_SIDE, INSOLATION_MOST)),
+            Kind::Shadows => Some(SiteEdit::new(lat, lon, SHADOWS_SIDE, SHADOWS_MOST)),
+        };
+        Self {
+            kind,
+            open: true,
+            point: (lat, lon),
+            place,
+            observer: 2.0,
+            target: 0.0,
+            radius_km: 10.0,
+            first: today,
+            last: today,
+            status: String::new(),
+            job: None,
+            layer: None,
+            changed: false,
+            site,
+            saved: None,
+            horizon: None,
+            moment: now_unix,
+        }
     }
 
-    /// Новая точка в открытом окне, слой остаётся до «Построить».
+    /// Момент теней: правый край шкалы времени или часы компьютера.
+    /// Карта на момент строится заново без загрузки высот, `at` модуля.
+    pub fn set_moment(&mut self, lang: Lang, moment: f64) {
+        if self.kind != Kind::Shadows || !moment.is_finite() {
+            return;
+        }
+        let moved = (moment - self.moment).abs() >= MOMENT_STEP;
+        self.moment = moment;
+        if moved && let Some(h) = self.horizon.clone() {
+            self.show_shadows(lang, &h);
+        }
+    }
+
+    /// Карта теней горизонта h на момент окна и строка итога.
+    fn show_shadows(&mut self, lang: Lang, h: &Arc<Horizon>) {
+        let result = h.at(self.moment);
+        self.status = if result.elevation <= 0.0 {
+            tr(lang, "The sun is below the horizon, the whole area is in shadow.").to_string()
+        } else {
+            trf(lang, "Sun on {share} of the area, the sun is {elevation}° above the horizon. The grid step is {step} m.", &[("share", &format!("{:.0}%", 100.0 * result.share())), ("elevation", &format!("{:.1}", result.elevation)), ("step", &format!("{:.0}", h.cell))])
+        };
+        self.layer = Some(Layer::Shadows(Arc::new(result)));
+        self.changed = true;
+    }
+
+    /// Новая точка в открытом окне: участок - квадрат у неё, слой
+    /// остаётся до «Построить».
     pub fn set_point(&mut self, lat: f64, lon: f64, place: String) {
         self.point = (lat, lon);
         self.place = place;
         self.status.clear();
         self.open = true;
+        if let Some(s) = &mut self.site {
+            s.move_to(lat, lon);
+        }
     }
 
     /// Идёт расчёт.
@@ -110,26 +195,90 @@ impl Calc {
         self.job.is_some()
     }
 
-    fn build(&mut self, now: f64) {
-        let (lat, lon) = self.point;
-        let radius_m = self.radius_km * 1000.0;
-        let (keys, a, b) = match self.kind {
+    /// Участок окна на глобусе, пока окно открыто.
+    pub fn site_edit(&mut self) -> Option<&mut SiteEdit> {
+        if self.open { self.site.as_mut() } else { None }
+    }
+
+    fn build(&mut self, lang: Lang, now: f64) {
+        let (keys, a, b, lat, lon, radius_m, ring) = match self.kind {
             Kind::Viewshed => {
+                let (lat, lon) = self.point;
+                let radius_m = self.radius_km * 1000.0;
                 let cell = radius_m / viewshed::STEPS as f64;
-                (viewshed::height_tiles(lat, lon, radius_m, cell, viewshed::EARTH_RADIUS, terrain::MAX_LEVEL).1, self.observer, self.target)
+                (viewshed::height_tiles(lat, lon, radius_m, cell, viewshed::EARTH_RADIUS, terrain::MAX_LEVEL).1, self.observer, self.target, lat, lon, radius_m, None)
             }
-            Kind::Insolation => {
+            Kind::Insolation | Kind::Shadows => {
+                let Some(site) = &self.site else {
+                    return;
+                };
+                if let Some(problem) = site.problem(lang) {
+                    self.status = problem;
+                    return;
+                }
+                // Круг, накрывающий участок, как у модуля.
+                let (lat, lon) = site.site.centre();
+                let radius_m = site.site.reach().max(100.0);
                 let (cell, margin, _) = insolation::layout(radius_m);
                 let keys = viewshed::height_tiles(lat, lon, margin as f64 * cell + radius_m, cell, viewshed::EARTH_RADIUS, terrain::MAX_LEVEL).1;
-                (keys, day_start(self.first), day_start(self.last))
+                (keys, day_start(self.first), day_start(self.last), lat, lon, radius_m, Some(site.site.ring.clone()))
             }
         };
-        self.job = Some(Job { lat, lon, radius_m, keys, started: now, missing: false, stage: Stage::Heights, a, b });
+        self.job = Some(Job { lat, lon, radius_m, keys, started: now, missing: false, stage: Stage::Heights, a, b, ring });
+    }
+
+    /// Готовый слой - расчётом для «Моих меток», `_viewshed_done`
+    /// и `_insolation_done` модуля.
+    fn save(&mut self, lang: Lang) {
+        let Some(layer) = &self.layer else {
+            return;
+        };
+        let stamp = clock_now();
+        let (title, ring, result) = match layer {
+            Layer::Viewshed(v) => {
+                let (grid, values) = viewshed::raster(v, viewshed::EARTH_RADIUS);
+                let rgba = values
+                    .iter()
+                    .map(|v| match *v {
+                        1 => paint(viewshed::VISIBLE, viewshed::OPACITY),
+                        0 => paint(viewshed::HIDDEN, viewshed::OPACITY),
+                        _ => [0; 4],
+                    })
+                    .collect();
+                let tiff = data::geotiff::write_byte(&grid, &values).unwrap_or_default();
+                let name = trf(lang, "Viewshed {time}", &[("time", &analysis::clock(stamp))]);
+                (tr(lang, "Viewshed"), circle(v.lat, v.lon, v.radius_m), ResultLayer { name, grid, rgba, tiff, stem: "viewshed".into() })
+            }
+            Layer::Insolation(r) => {
+                let (grid, hours) = r.raster(insolation::EARTH_RADIUS);
+                let top = r.top();
+                let rgba = hours.iter().map(|h| if h.is_finite() { paint(stop_color((h / top).clamp(0.0, 1.0)), insolation::OPACITY) } else { [0; 4] }).collect();
+                let tiff = data::geotiff::write_float(&grid, &hours).unwrap_or_default();
+                let name = trf(lang, "Insolation {time}, h per day", &[("time", &analysis::clock(stamp))]);
+                (tr(lang, "Insolation"), r.ring.clone().unwrap_or_default(), ResultLayer { name, grid, rgba, tiff, stem: "insolation".into() })
+            }
+            Layer::Shadows(s) => {
+                let (grid, values) = s.raster();
+                let rgba = values
+                    .iter()
+                    .map(|v| match *v {
+                        shadows::SUN => shadows::SUN_RGBA,
+                        shadows::SHADE => shadows::SHADE_RGBA,
+                        _ => [0; 4],
+                    })
+                    .collect();
+                let tiff = data::geotiff::write_byte(&grid, &values).unwrap_or_default();
+                let name = trf(lang, "Shadows {moment} UTC", &[("moment", &moment_text(s.moment))]);
+                (tr(lang, "Shadows"), s.horizon.ring.clone().unwrap_or_default(), ResultLayer { name, grid, rgba, tiff, stem: "shadows".into() })
+            }
+        };
+        self.saved = Some(Saved { title: title.to_string(), ring, layers: vec![result], extra: Vec::new(), session: None });
     }
 
     /// Убрать слой и расчёт.
     fn clear(&mut self) {
         self.job = None;
+        self.horizon = None;
         if self.layer.take().is_some() {
             self.changed = true;
         }
@@ -167,6 +316,7 @@ impl Calc {
                                 if missing {
                                     self.status = format!("{} {}", self.status, tr(lang, "Not all heights are loaded, the computation used less detailed ones."));
                                 }
+                                self.status = format!("{} {}", self.status, analysis::built_text(lang, clock_now()));
                                 self.layer = Some(Layer::Viewshed(Arc::new(r)));
                             }
                             None => {
@@ -176,7 +326,7 @@ impl Calc {
                         }
                         self.changed = true;
                     }
-                    Kind::Insolation => {
+                    Kind::Insolation | Kind::Shadows => {
                         let points = insolation::grid_points(job.lat, job.lon, job.radius_m, insolation::EARTH_RADIUS);
                         job.stage = Stage::Nodes { heights: Vec::with_capacity(points.len()), points };
                     }
@@ -199,7 +349,11 @@ impl Calc {
                     self.status = trf(lang, "Heights of the grid nodes: {share}", &[("share", &share)]);
                     return Vec::new();
                 }
-                match insolation::Work::new(job.lat, job.lon, job.radius_m, got, job.a, job.b, insolation::EARTH_RADIUS) {
+                let work = match self.kind {
+                    Kind::Shadows => insolation::Work::horizon(job.lat, job.lon, job.radius_m, got, insolation::EARTH_RADIUS),
+                    _ => insolation::Work::new(job.lat, job.lon, job.radius_m, got, job.a, job.b, insolation::EARTH_RADIUS),
+                };
+                match work {
                     Some(w) => job.stage = Stage::Work(Box::new(w)),
                     None => {
                         self.job = None;
@@ -220,15 +374,34 @@ impl Calc {
                     }
                 }
                 if !done {
-                    self.status = trf(lang, "Computing insolation: {share}", &[("share", &format!("{:.0}%", 100.0 * share))]);
+                    let text = if self.kind == Kind::Shadows { "Computing the horizon: {share}" } else { "Computing insolation: {share}" };
+                    self.status = trf(lang, text, &[("share", &format!("{:.0}%", 100.0 * share))]);
                     return Vec::new();
                 }
                 let missing = job.missing;
+                let ring = job.ring.take();
+                if self.kind == Kind::Shadows {
+                    let (lat, lon, radius_m) = (job.lat, job.lon, job.radius_m);
+                    let horizon = self.job.take().and_then(|j| match j.stage {
+                        Stage::Work(w) => Horizon::from_work(*w, lat, lon, radius_m, insolation::EARTH_RADIUS, ring),
+                        _ => None,
+                    });
+                    if let Some(h) = horizon.map(Arc::new) {
+                        self.horizon = Some(h.clone());
+                        self.show_shadows(lang, &h);
+                        if missing {
+                            self.status = format!("{} {}", self.status, tr(lang, "Not all heights are loaded, the computation used less detailed ones."));
+                        }
+                        self.status = format!("{} {}", self.status, analysis::built_text(lang, clock_now()));
+                    }
+                    return Vec::new();
+                }
                 let result = self.job.take().and_then(|j| match j.stage {
                     Stage::Work(w) => w.into_result(),
                     _ => None,
                 });
-                if let Some(r) = result {
+                if let Some(mut r) = result {
+                    r.ring = ring;
                     let low = r.hours.iter().copied().fold(f64::INFINITY, f64::min);
                     let high = r.hours.iter().copied().fold(f64::NEG_INFINITY, f64::max);
                     self.status = trf(
@@ -239,6 +412,7 @@ impl Calc {
                     if missing {
                         self.status = format!("{} {}", self.status, tr(lang, "Not all heights are loaded, the computation used less detailed ones."));
                     }
+                    self.status = format!("{} {}", self.status, analysis::built_text(lang, clock_now()));
                     self.layer = Some(Layer::Insolation(Arc::new(r)));
                     self.changed = true;
                 }
@@ -253,14 +427,14 @@ impl Calc {
             return;
         }
         let mut open = true;
-        let mut build = false;
-        let mut clear = false;
+        let mut pressed = None;
         let title = match self.kind {
             Kind::Viewshed => tr(lang, "Viewshed from a point"),
             Kind::Insolation => tr(lang, "Insolation"),
+            Kind::Shadows => tr(lang, "Shadows"),
         };
-        egui::Window::new(title).id(egui::Id::unique(("planetx-calc", self.kind == Kind::Viewshed))).open(&mut open).collapsible(false).resizable(false).min_width(360.0).show(ctx, |ui| {
-            egui::Grid::new(("planetx-calc-form", self.kind == Kind::Viewshed)).num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
+        egui::Window::new(title).id(egui::Id::unique(("planetx-calc", self.kind as u8))).open(&mut open).collapsible(false).resizable(false).min_width(360.0).show(ctx, |ui| {
+            egui::Grid::new(("planetx-calc-form", self.kind as u8)).num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
                 ui.label(tr(lang, "Point"));
                 ui.label(&self.place);
                 ui.end_row();
@@ -290,37 +464,63 @@ impl Calc {
                             self.first = self.last;
                         }
                         ui.end_row();
-                        ui.label(tr(lang, "Radius"));
-                        ui.add(egui::DragValue::new(&mut self.radius_km).range(0.2..=30.0).speed(0.1).fixed_decimals(1).suffix(tr(lang, " km")))
-                            .on_hover_text(tr(lang, "Radius of the computed circle. A larger radius gives a coarser grid. Mountain shadows are taken from a distance of at least the radius and at least 5 km."));
+                        if let Some(site) = &mut self.site {
+                            ui.label(tr(lang, "Area|site"));
+                            site.row(ui, lang);
+                            ui.end_row();
+                        }
+                    }
+                    Kind::Shadows => {
+                        ui.label(tr(lang, "Moment"));
+                        ui.label(trf(lang, "{moment} UTC", &[("moment", &moment_text(self.moment))])).on_hover_text(tr(
+                            lang,
+                            "The moment is the right handle of the time slider, without the slider - the computer clock. After «Build» the shadows follow the slider: move the handle or start the playback.",
+                        ));
                         ui.end_row();
+                        if let Some(site) = &mut self.site {
+                            ui.label(tr(lang, "Area|site"));
+                            site.row(ui, lang);
+                            ui.end_row();
+                        }
                     }
                 }
             });
             ui.add_space(4.0);
-            ui.add(egui::Label::new(&self.status).wrap());
+            let hint = self.site.as_ref().and_then(|s| s.hint(lang));
+            ui.add(egui::Label::new(hint.unwrap_or(&self.status)).wrap());
             ui.add_space(4.0);
-            ui.horizontal(|ui| {
-                if ui.button(tr(lang, "Build")).clicked() {
-                    build = true;
-                }
-                let tip = match self.kind {
-                    Kind::Viewshed => tr(lang, "Remove the viewshed layer from the globe."),
-                    Kind::Insolation => tr(lang, "Remove the insolation layer from the globe."),
-                };
-                if ui.add_enabled(self.layer.is_some() || self.job.is_some(), egui::Button::new(tr(lang, "Remove"))).on_hover_text(tip).clicked() {
-                    clear = true;
-                }
-            });
+            let build_tip = match self.kind {
+                Kind::Viewshed => tr(lang, "What is seen from the point in the circle - a layer on the globe."),
+                Kind::Insolation => tr(lang, "Hours of direct sun per day in the area - a layer on the globe. Mountain shadows are taken from a distance of at least half the area and at least 5 km."),
+                Kind::Shadows => tr(lang, "Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider. Mountain shadows are taken from a distance of at least half the area and at least 5 km."),
+            };
+            pressed = analysis::buttons(ui, lang, self.layer.is_some() && self.job.is_none(), build_tip);
         });
-        if build {
-            self.build(now);
+        match pressed {
+            Some(Button::Build) => self.build(lang, now),
+            Some(Button::Ok) => {
+                self.save(lang);
+                self.clear();
+                self.open = false;
+            }
+            Some(Button::Cancel) => {
+                self.clear();
+                self.open = false;
+            }
+            None => {}
         }
-        if clear {
-            self.clear();
-        }
+        // Крестик - как «Отмена», `reject` модуля.
         if !open {
+            self.clear();
             self.open = false;
+        }
+        // Участок сменился: прежний слой построен не по нему.
+        if let Some(site) = &mut self.site
+            && std::mem::take(&mut site.changed)
+            && self.job.is_none()
+            && self.layer.is_some()
+        {
+            self.status = tr(lang, "The area has changed. Press «Build» to compute it again.").to_string();
         }
         if self.job.is_some() {
             ctx.request_repaint();
@@ -388,8 +588,38 @@ fn day_start(date: (i64, u32, u32)) -> f64 {
     days_from_civil(date) as f64 * insolation::DAY
 }
 
+/// Дата и время UTC момента unix «ДД.ММ.ГГГГ ЧЧ:ММ», `moment_text` модуля.
+pub fn moment_text(unix: f64) -> String {
+    let (y, m, d) = civil_from_days((unix / insolation::DAY).floor() as i64);
+    format!("{d:02}.{m:02}.{y} {}", analysis::clock(unix).get(..5).unwrap_or_default())
+}
+
+/// Часы компьютера, секунды UTC.
+pub fn clock_now() -> f64 {
+    web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64())
+}
+
+/// Цвет без премножения с непрозрачностью opacity, для картинки
+/// в «Моих метках».
+fn paint(rgb: [u8; 3], opacity: f64) -> [u8; 4] {
+    [rgb[0], rgb[1], rgb[2], (opacity * 255.0).round() as u8]
+}
+
+/// Круг radius_m метров вокруг точки - CIRCLE_POINTS вершин, контур
+/// расчёта видимости, как у модуля.
+fn circle(lat: f64, lon: f64, radius_m: f64) -> Vec<(f64, f64)> {
+    let reach = radius_m / data::site::METERS_PER_DEGREE;
+    let scale = lat.to_radians().cos().max(0.01);
+    (0..CIRCLE_POINTS)
+        .map(|i| {
+            let a = std::f64::consts::TAU * i as f64 / CIRCLE_POINTS as f64;
+            (lat + reach * a.cos(), lon + reach * a.sin() / scale)
+        })
+        .collect()
+}
+
 /// Широты строк и долготы столбцов центров пикселей тайла.
-fn tile_axes(key: TileKey) -> (Vec<f64>, Vec<f64>) {
+pub fn tile_axes(key: TileKey) -> (Vec<f64>, Vec<f64>) {
     let (z, x, y) = key;
     let n = f64::from(1u32 << z.min(30));
     let lats = (0..SIZE).map(|r| (std::f64::consts::PI * (1.0 - 2.0 * (f64::from(y) + (r as f64 + 0.5) / SIZE as f64) / n)).sinh().atan().to_degrees()).collect();
@@ -403,6 +633,7 @@ pub fn painter(layer: &Layer) -> crate::vector::Painter {
     let (lat, lon, radius_m) = match &layer {
         Layer::Viewshed(v) => (v.lat, v.lon, v.radius_m),
         Layer::Insolation(r) => (r.lat, r.lon, r.radius_m),
+        Layer::Shadows(s) => (s.horizon.lat, s.horizon.lon, s.horizon.radius_m),
     };
     let (south, north, west, east) = viewshed::circle_box(lat, lon, radius_m, viewshed::EARTH_RADIUS);
     Arc::new(move |key: TileKey| {
@@ -416,6 +647,7 @@ pub fn painter(layer: &Layer) -> crate::vector::Painter {
         let pixels = match &layer {
             Layer::Viewshed(v) => viewshed::tile_rgba(v, &points, viewshed::EARTH_RADIUS),
             Layer::Insolation(r) => insolation::tile_rgba(r, &points, insolation::EARTH_RADIUS),
+            Layer::Shadows(s) => shadows::tile_rgba(s, &points, insolation::EARTH_RADIUS),
         };
         pixels.iter().any(|p| p[3] > 0).then(|| pixels.concat())
     })
@@ -476,6 +708,24 @@ mod tests {
         assert_eq!(days_from_civil((2026, 10, 24)), 20750);
         assert_eq!(civil_from_days(20750), (2026, 10, 24));
         assert_eq!(civil_from_days(days_from_civil((2024, 2, 29))), (2024, 2, 29));
+    }
+
+    #[test]
+    fn insolation_with_area_paints_its_tile() {
+        let flat = |p: &[(f64, f64)]| vec![0.0; p.len()];
+        let day = days_from_civil((2026, 6, 21)) as f64 * insolation::DAY;
+        let result = insolation::compute(58.0, 56.25, 1000.0, &flat, day, day, insolation::EARTH_RADIUS);
+        assert!(result.is_some());
+        let Some(mut r) = result else { return };
+        r.ring = Some(data::site::square_ring(58.0, 56.25, 1500.0));
+        let p = painter(&Layer::Insolation(Arc::new(r)));
+        // Тайл уровня 14 с точкой.
+        let z = 14u32;
+        let n = f64::from(1u32 << z);
+        let x = ((56.25 + 180.0) / 360.0 * n) as u32;
+        let y = ((1.0 - 58.0f64.to_radians().tan().asinh() / std::f64::consts::PI) / 2.0 * n) as u32;
+        let tile = p((z, x, y));
+        assert!(tile.is_some_and(|t| t.chunks(4).any(|px| px[3] > 0)));
     }
 
     #[test]

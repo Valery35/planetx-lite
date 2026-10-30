@@ -372,8 +372,17 @@ pub struct LiteApp {
     /// Окна и слои «Видимость» и «Инсоляция».
     viewshed: Option<crate::pointcalc::Calc>,
     insolation: Option<crate::pointcalc::Calc>,
+    /// Окно «Тени» и его слой.
+    shadows: Option<crate::pointcalc::Calc>,
+    /// Окно «Изменения местности» и его слой.
+    aef_change: Option<crate::aefcalc::ChangeCalc>,
+    /// Окно «Классификация» и его слой.
+    aef_class: Option<crate::aefclass::ClassCalc>,
     /// Окно «Уклон и экспозиция» и его квадрат.
     relief_calc: Option<crate::reliefcalc::ReliefCalc>,
+    /// Сессии окон анализа: номер - название папки расчёта в «Анализе
+    /// участка».
+    analysis_sessions: HashMap<u64, String>,
     /// Окна «Затопление», «Сток воды», «Уровень моря».
     hydro: crate::hydrocalc::Hydro,
     /// Тайлы высот, которых ждут расчёты у точки.
@@ -1097,7 +1106,11 @@ impl LiteApp {
             links_window: None,
             viewshed: None,
             insolation: None,
+            shadows: None,
+            aef_change: None,
+            aef_class: None,
             relief_calc: None,
+            analysis_sessions: HashMap::new(),
             hydro: crate::hydrocalc::Hydro::new(),
             calc_keys: Vec::new(),
             etomesto: None,
@@ -1871,20 +1884,48 @@ impl LiteApp {
                 }
             }
             Choice::EditLinks => self.links_window = Some(crate::menulinks::LinksWindow::new(self.settings.links.clone())),
-            Choice::Viewshed | Choice::Insolation => {
+            Choice::Viewshed | Choice::Insolation | Choice::Shadows => {
                 let Some((lat, lon)) = point else {
                     return;
                 };
                 let name = place.as_ref().map(|(_, n)| n.clone()).unwrap_or_default();
                 let coords = format!("{lat:.5}, {lon:.5}");
                 let title = if name.is_empty() { coords } else { format!("{name}  {coords}") };
-                let (slot, kind) = if choice == Choice::Viewshed { (&mut self.viewshed, crate::pointcalc::Kind::Viewshed) } else { (&mut self.insolation, crate::pointcalc::Kind::Insolation) };
+                let (slot, kind) = match choice {
+                    Choice::Viewshed => (&mut self.viewshed, crate::pointcalc::Kind::Viewshed),
+                    Choice::Shadows => (&mut self.shadows, crate::pointcalc::Kind::Shadows),
+                    _ => (&mut self.insolation, crate::pointcalc::Kind::Insolation),
+                };
                 match slot {
                     Some(c) => c.set_point(lat, lon, title),
                     None => {
                         let unix = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64());
                         *slot = Some(crate::pointcalc::Calc::new(kind, lat, lon, title, unix));
                     }
+                }
+            }
+            Choice::Changes => {
+                let Some((lat, lon)) = point else {
+                    return;
+                };
+                let name = place.as_ref().map(|(_, n)| n.clone()).unwrap_or_default();
+                let coords = format!("{lat:.5}, {lon:.5}");
+                let title = if name.is_empty() { coords } else { format!("{name}  {coords}") };
+                match &mut self.aef_change {
+                    Some(c) => c.set_point(lat, lon, title),
+                    None => self.aef_change = Some(crate::aefcalc::ChangeCalc::new(lat, lon, title)),
+                }
+            }
+            Choice::Classes => {
+                let Some((lat, lon)) = point else {
+                    return;
+                };
+                let name = place.as_ref().map(|(_, n)| n.clone()).unwrap_or_default();
+                let coords = format!("{lat:.5}, {lon:.5}");
+                let title = if name.is_empty() { coords } else { format!("{name}  {coords}") };
+                match &mut self.aef_class {
+                    Some(c) => c.set_point(lat, lon, title),
+                    None => self.aef_class = Some(crate::aefclass::ClassCalc::new(lat, lon, title, self.lang)),
                 }
             }
             Choice::SlopeHere => {
@@ -4689,7 +4730,13 @@ impl LiteApp {
             let store = self.heights.clone();
             let has = |k: TileKey| store.read().tile(k).is_some();
             let heights = self.true_heights();
-            for calc in [&mut self.viewshed, &mut self.insolation].into_iter().flatten() {
+            // Тени идут за правым бегунком шкалы времени, без шкалы - за
+            // часами компьютера, как у модуля.
+            let moment = self.timebar.window().map_or_else(crate::pointcalc::clock_now, |w| w.1);
+            if let Some(c) = &mut self.shadows {
+                c.set_moment(lang, moment);
+            }
+            for calc in [&mut self.viewshed, &mut self.insolation, &mut self.shadows].into_iter().flatten() {
                 calc.show(ctx, lang, now);
                 keys.extend(calc.step(lang, now, &has, &heights));
                 changed |= std::mem::take(&mut calc.changed);
@@ -4705,6 +4752,16 @@ impl LiteApp {
                 changed |= std::mem::take(&mut calc.changed);
             }
             keys.extend(self.hydro.step(ctx, lang, now, radius, max_level, &has, &heights));
+            if let Some(calc) = &mut self.aef_change {
+                calc.show(ctx, lang, &*self.loaders.request);
+                calc.step(lang, &*self.loaders.request);
+                changed |= std::mem::take(&mut calc.changed);
+            }
+            if let Some(calc) = &mut self.aef_class {
+                calc.show(ctx, lang);
+                calc.step(lang, &*self.loaders.request);
+                changed |= std::mem::take(&mut calc.changed);
+            }
             changed |= std::mem::take(&mut self.hydro.changed);
         }
         self.calc_keys = keys;
@@ -4718,10 +4775,14 @@ impl LiteApp {
             self.settings_dirty = true;
             self.sea_changed();
         }
-        // Вершины и ямы, линии стока и водосборы - в «Мои метки».
-        let kml: Vec<String> = self.relief_calc.as_mut().and_then(|c| c.kml.take()).into_iter().chain(self.hydro.kml.drain(..)).collect();
-        for text in kml {
-            self.paste_kml(&text);
+        // Расчёты по «OK» - папками «Анализа участка» и файлами GeoTIFF.
+        let mut saved: Vec<crate::analysis::Saved> = [&mut self.viewshed, &mut self.insolation, &mut self.shadows].into_iter().flatten().filter_map(|c| c.saved.take()).collect();
+        saved.extend(self.relief_calc.as_mut().and_then(|c| c.saved.take()));
+        saved.append(&mut self.hydro.saved);
+        saved.extend(self.aef_change.as_mut().and_then(|c| c.saved.take()));
+        saved.extend(self.aef_class.as_mut().and_then(|c| c.saved.take()));
+        for s in saved {
+            self.save_analysis(&s);
         }
         // Квадрат уклона занимает место строк «Уклон» и «Экспозиция».
         if self.relief_calc.as_mut().is_some_and(|c| std::mem::take(&mut c.built)) {
@@ -4743,7 +4804,7 @@ impl LiteApp {
             self.refresh_painters();
         }
         // Окно закрыто и слоя нет - расчёт забыт.
-        for slot in [&mut self.viewshed, &mut self.insolation] {
+        for slot in [&mut self.viewshed, &mut self.insolation, &mut self.shadows] {
             if slot.as_ref().is_some_and(|c| !c.open && c.layer.is_none() && !c.busy()) {
                 *slot = None;
             }
@@ -4751,9 +4812,100 @@ impl LiteApp {
         if self.relief_calc.as_ref().is_some_and(|c| !c.open && c.layer().is_none() && !c.busy()) {
             self.relief_calc = None;
         }
+        if self.aef_change.as_ref().is_some_and(|c| !c.open && c.layer.is_none() && !c.busy()) {
+            self.aef_change = None;
+        }
+        if self.aef_class.as_ref().is_some_and(|c| !c.open && c.layer.is_none() && !c.busy()) {
+            self.aef_class = None;
+        }
         if let Some(crate::pointcalc::Layer::Insolation(r)) = self.insolation.as_ref().and_then(|c| c.layer.as_ref()) {
             let rect = ctx.content_rect();
             crate::pointcalc::legend(ctx, lang, r.top(), egui::pos2(rect.left() + 12.0, rect.bottom() - 120.0));
+        }
+    }
+
+    /// Сохранённый расчёт анализа участка, `Session` и `write_lat_lon`
+    /// модуля: файлы GeoTIFF слоёв - в программе в папку results папки
+    /// данных, на странице скачиванием, папка расчёта - вверху папки
+    /// «Анализ участка» «Моих меток».
+    fn save_analysis(&mut self, saved: &crate::analysis::Saved) {
+        let lang = self.lang;
+        let unix = crate::pointcalc::clock_now();
+        let mut files = Vec::new();
+        let mut failed = None;
+        for layer in &saved.layers {
+            if layer.tiff.is_empty() {
+                files.push(String::new());
+                continue;
+            }
+            let name = crate::analysis::file_name(&layer.stem, unix);
+            match self.write_result(&name, &layer.tiff) {
+                Ok(path) => files.push(path),
+                Err(e) => {
+                    files.push(String::new());
+                    failed = Some(e);
+                }
+            }
+        }
+        let root = marks::root_name(lang);
+        let group = tr(lang, "Area analysis");
+        let tree = self.marks.root(root);
+        let found = tree.children.iter().position(|c| matches!(c, scene::kml::Item::Folder(f) if f.name == group));
+        let at = match found {
+            Some(i) => i,
+            None => self.marks.insert_at(&[], 0, scene::kml::Item::Folder(scene::kml::Folder::new(group)), root).first().copied().unwrap_or(0),
+        };
+        let folder = saved.folder(lang, unix, &files);
+        // Расчёт той же сессии - в её папку, пока она есть, `Session.group_for`
+        // модуля: контур участка там уже лежит.
+        let earlier = saved.session.and_then(|s| self.analysis_sessions.get(&s).cloned()).and_then(|name| {
+            let group = self.marks.folder(&[at])?;
+            group.children.iter().position(|c| matches!(c, scene::kml::Item::Folder(f) if f.name == name))
+        });
+        match earlier {
+            Some(i) => {
+                for item in folder.children.into_iter().skip(usize::from(saved.ring.len() >= 3)) {
+                    self.marks.insert(&[at, i], item, root);
+                }
+            }
+            None => {
+                if let Some(s) = saved.session {
+                    self.analysis_sessions.insert(s, folder.name.clone());
+                }
+                self.marks.insert_at(&[at], 0, scene::kml::Item::Folder(folder), root);
+            }
+        }
+        self.marks_changed();
+        let written: Vec<&str> = files.iter().map(String::as_str).filter(|f| !f.is_empty()).collect();
+        self.open_message = Some(match failed {
+            Some(e) => trf(lang, "Saved to «My places». The GeoTIFF file is not written: {e}", &[("e", &e)]),
+            None if written.is_empty() => tr(lang, "Saved to «My places».").to_string(),
+            None => trf(lang, "Saved to «My places», the values - {path}.", &[("path", &written.join(", "))]),
+        });
+    }
+
+    /// Файл результата name: в программе - в папку results папки данных,
+    /// повтор имени получает номер, на странице - скачиванием. Возвращает
+    /// путь или имя файла.
+    fn write_result(&self, name: &str, bytes: &[u8]) -> Result<String, String> {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let folder = self.data_dir().ok_or("нет папки данных")?.join(crate::analysis::FOLDER);
+            std::fs::create_dir_all(&folder).map_err(|e| format!("{}: {e}", folder.display()))?;
+            let stem = name.trim_end_matches(".tif");
+            let mut path = folder.join(name);
+            let mut number = 2;
+            while path.exists() {
+                path = folder.join(format!("{stem}_{number}.tif"));
+                number += 1;
+            }
+            std::fs::write(&path, bytes).map_err(|e| format!("{}: {e}", path.display()))?;
+            Ok(path.display().to_string())
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            crate::export::save_bytes(name, ("GeoTIFF", "tif"), bytes)?;
+            Ok(name.to_string())
         }
     }
 
@@ -4767,7 +4919,7 @@ impl LiteApp {
         if let Some(mines) = self.mining.as_ref().and_then(crate::mining::Mining::mines) {
             painters.push(("mining", crate::mining::painter(mines)));
         }
-        for (id, c) in [("viewshed", &self.viewshed), ("insolation", &self.insolation)] {
+        for (id, c) in [("viewshed", &self.viewshed), ("insolation", &self.insolation), ("shadows", &self.shadows)] {
             if let Some(l) = c.as_ref().and_then(|c| c.layer.as_ref()) {
                 painters.push((id, crate::pointcalc::painter(l)));
             }
@@ -4776,6 +4928,12 @@ impl LiteApp {
             painters.push(("relief", crate::reliefcalc::painter(r, radius)));
         }
         painters.extend(self.hydro.painters());
+        if let Some(l) = self.aef_change.as_ref().and_then(|c| c.layer.clone()) {
+            painters.push(("aef_change", crate::aefcalc::painter(l)));
+        }
+        if let Some(l) = self.aef_class.as_ref().and_then(|c| c.layer.clone()) {
+            painters.push(("aef_class", crate::aefclass::painter(l)));
+        }
         self.vector.set_painters(painters);
     }
 
@@ -7402,6 +7560,9 @@ impl eframe::App for LiteApp {
             || self.satellites.as_ref().is_some_and(crate::satellites::Satellites::busy)
             || self.viewshed.as_ref().is_some_and(crate::pointcalc::Calc::busy)
             || self.insolation.as_ref().is_some_and(crate::pointcalc::Calc::busy)
+            || self.shadows.as_ref().is_some_and(crate::pointcalc::Calc::busy)
+            || self.aef_change.as_ref().is_some_and(crate::aefcalc::ChangeCalc::busy)
+            || self.aef_class.as_ref().is_some_and(crate::aefclass::ClassCalc::busy)
             || self.section.as_ref().is_some_and(crate::section::SectionWindow::busy)
             || self.cog_base.as_ref().is_some_and(crate::cogtiles::CogTiles::busy)
             || self.relief.busy();
@@ -7436,7 +7597,24 @@ impl eframe::App for LiteApp {
             let busy = padded
                 || swiped
                 || self.tool.as_mut().is_some_and(|t| t.input(&ctx, &globe_response, rect, ppp, &self.nav))
-                || self.overlay_props.as_mut().is_some_and(|p| p.input(&ctx, &globe_response, rect, ppp, &self.nav));
+                || self.overlay_props.as_mut().is_some_and(|p| p.input(&ctx, &globe_response, rect, ppp, &self.nav))
+                || {
+                    // Участки окон анализа: вершины тянутся мышью.
+                    let nav = &self.nav;
+                    [&mut self.viewshed, &mut self.insolation, &mut self.shadows]
+                        .into_iter()
+                        .flatten()
+                        .filter_map(crate::pointcalc::Calc::site_edit)
+                        .chain(self.relief_calc.as_mut().and_then(crate::reliefcalc::ReliefCalc::site_edit))
+                        .chain(self.hydro.site_edits())
+                        .chain(self.aef_change.as_mut().and_then(crate::aefcalc::ChangeCalc::site_edit))
+                        .any(|s| s.input(&ctx, &globe_response, rect, ppp, nav))
+                }
+                || {
+                    // Классификация: участок и контрольные точки щелчком.
+                    let nav = &self.nav;
+                    self.aef_class.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav))
+                };
             // Камера следом: колесо - расстояние до объекта, Esc отпускает,
             // `ChaseControl` модуля.
             if let Some((kind, _)) = self.live_follow.clone()
@@ -8069,6 +8247,25 @@ impl eframe::App for LiteApp {
         }
         if let Some(props) = &self.overlay_props {
             props.paint(&painter, rect, ppp, &self.nav, self.lang);
+        }
+        for calc in [&self.viewshed, &self.insolation, &self.shadows].into_iter().flatten() {
+            if calc.open
+                && let Some(site) = &calc.site
+            {
+                site.paint(&painter, rect, ppp, &self.nav);
+            }
+        }
+        if let Some(calc) = self.relief_calc.as_ref().filter(|c| c.open) {
+            calc.site.paint(&painter, rect, ppp, &self.nav);
+        }
+        for site in self.hydro.sites() {
+            site.paint(&painter, rect, ppp, &self.nav);
+        }
+        if let Some(calc) = self.aef_change.as_ref().filter(|c| c.open) {
+            calc.site.paint(&painter, rect, ppp, &self.nav);
+        }
+        if let Some(calc) = &self.aef_class {
+            calc.paint(&painter, rect, ppp, &self.nav);
         }
         // Точка пути под курсором графика профиля, как у модуля.
         if let Some((lat, lon)) = self.profile.as_ref().and_then(|p| p.hovered) {

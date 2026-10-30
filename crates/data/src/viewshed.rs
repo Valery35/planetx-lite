@@ -241,6 +241,20 @@ pub fn compute(lat: f64, lon: f64, radius_m: f64, cell: f64, heights: Heights, p
     Some(Viewshed { lat, lon, radius_m, step, rays, steps, visible })
 }
 
+/// Видимость сеткой широт и долгот для GeoTIFF, `raster` модуля: байты -
+/// 1 видно, 0 скрыто, 255 вне круга, строки с севера. Шаг - шаг расчёта.
+pub fn raster(result: &Viewshed, radius: f64) -> (crate::geotiff::LatLonGrid, Vec<u8>) {
+    let (south, north, west, east) = circle_box(result.lat, result.lon, result.radius_m, radius);
+    let dlat = (result.step / radius).to_degrees();
+    let dlon = dlat / result.lat.to_radians().cos().max(0.01);
+    let rows = ((north - south) / dlat).ceil().max(1.0) as usize;
+    let cols = ((east - west) / dlon).ceil().max(1.0) as usize;
+    let grid = crate::geotiff::LatLonGrid { north: north - 0.5 * dlat, west: west + 0.5 * dlon, dlat, dlon, cols, rows };
+    let points: Vec<(f64, f64)> = (0..rows).flat_map(|r| (0..cols).map(move |c| (grid.north - r as f64 * dlat, grid.west + c as f64 * dlon))).collect();
+    let values = result.at(&points, radius).into_iter().map(|(seen, inside)| if inside { u8::from(seen) } else { crate::geotiff::BYTE_NODATA }).collect();
+    (grid, values)
+}
+
 /// Картинка тайла: видимое зелёное, скрытое красное, вне круга
 /// прозрачно. RGBA с премноженной альфой, пиксель на точку points.
 pub fn tile_rgba(viewshed: &Viewshed, points: &[(f64, f64)], radius: f64) -> Vec<[u8; 4]> {

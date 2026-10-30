@@ -19,9 +19,16 @@ use data::hydro::{self, Grid, LineEnd};
 use eframe::egui;
 use globe_core::lod::TileKey;
 
+use crate::analysis::{self, Button, Saved, SiteEdit};
 use crate::gridheights::{GridHeights, Step};
 use crate::i18n::{Lang, tr, trf};
 use crate::reliefcalc::{escape, kml_color, number};
+
+/// Участки окон по умолчанию и наибольший, километры, `FLOOD_SIDE`,
+/// `FLOW_SIDE` и `MOST` модуля.
+const FLOOD_SIDE: f64 = 10.0;
+const FLOW_SIDE: f64 = 20.0;
+const MOST: f64 = 100.0;
 
 /// Число отчёта водосбора, «-» без значения.
 fn num(value: Option<f64>) -> String {
@@ -62,6 +69,9 @@ enum Task {
     ShapeBasin(Vec<(f64, f64)>, bool, String, f64),
 }
 
+/// Участок для расчёта: середина, полусторона рамки, вершины.
+type SiteJob = (f64, f64, f64, Vec<(f64, f64)>);
+
 /// Метка окна «Сток воды»: точки, многоугольник ли, название.
 type FlowItem = (Vec<(f64, f64)>, bool, String);
 
@@ -95,14 +105,20 @@ pub struct Hydro {
     pub sea_open: bool,
     flood_point: (f64, f64),
     flood_place: String,
-    flood_radius: f64,
     flood_status: String,
     flood: Option<FloodState>,
+    /// Участок окна «Затопление».
+    pub flood_site: Option<SiteEdit>,
     flow_point: (f64, f64),
     flow_place: String,
     /// Метка окна «Сток воды»: точки, многоугольник ли, название.
     flow_item: Option<FlowItem>,
-    flow_radius: f64,
+    /// Участок окна «Сток воды».
+    pub flow_site: Option<SiteEdit>,
+    /// Сессия окна «Сток воды» и её участок: расчёты ложатся в одну папку.
+    flow_session: Option<(u64, Vec<(f64, f64)>)>,
+    /// Участок идущего расчёта, пусто - без участка.
+    job_ring: Vec<(f64, f64)>,
     net_km2: f64,
     order: u32,
     snap_m: f64,
@@ -119,8 +135,8 @@ pub struct Hydro {
     water: Option<Water>,
     /// Слой сменился: картинки тайлов рисуются заново.
     pub changed: bool,
-    /// Новые метки KML для «Моих меток».
-    pub kml: Vec<String>,
+    /// Расчёты для «Моих меток», забирает окно глобуса.
+    pub saved: Vec<Saved>,
     /// Текст для строки сообщений окна глобуса: расчёт по метке без окна.
     pub message: Option<String>,
 }
@@ -201,28 +217,36 @@ fn basin_text(lang: Lang, rep: &data::topo_gauge::Report) -> String {
 
 impl Hydro {
     pub fn new() -> Self {
-        Self { flood_radius: 5.0, flow_radius: 10.0, net_km2: hydro::NET_AREA / 1e6, order: 1, snap_m: hydro::SNAP_METRES, flat_slope: FLAT_SLOPE, flat_len: FLAT_LENGTH, merge: true, ..Default::default() }
+        Self { net_km2: hydro::NET_AREA / 1e6, order: 1, snap_m: hydro::SNAP_METRES, flat_slope: FLAT_SLOPE, flat_len: FLAT_LENGTH, merge: true, ..Default::default() }
     }
 
-    /// Окно «Затопление» для точки.
+    /// Окно «Затопление» для точки: участок - квадрат у неё.
     pub fn flood_here(&mut self, lat: f64, lon: f64, place: String) {
         self.flood_point = (lat, lon);
         self.flood_place = place;
         self.flood_status.clear();
         self.flood_open = true;
+        match &mut self.flood_site {
+            Some(s) => s.move_to(lat, lon),
+            None => self.flood_site = Some(SiteEdit::new(lat, lon, FLOOD_SIDE, MOST)),
+        }
     }
 
-    /// Окно «Сток воды» для точки.
+    /// Окно «Сток воды» для точки: участок - квадрат у неё.
     pub fn flow_here(&mut self, lat: f64, lon: f64, place: String) {
         self.flow_point = (lat, lon);
         self.flow_place = place;
         self.flow_item = None;
         self.flow_status.clear();
         self.flow_open = true;
+        match &mut self.flow_site {
+            Some(s) => s.move_to(lat, lon),
+            None => self.flow_site = Some(SiteEdit::new(lat, lon, FLOW_SIDE, MOST)),
+        }
     }
 
     /// Окно «Сток воды» для пути или многоугольника «Моих меток»,
-    /// `flow_from` модуля: квадрат расчёта накрывает метку.
+    /// `flow_from` модуля: участок - квадрат, накрывающий метку.
     pub fn flow_from(&mut self, points: Vec<(f64, f64)>, polygon: bool, name: String, radius: f64) {
         if points.is_empty() {
             return;
@@ -231,8 +255,71 @@ impl Hydro {
             return;
         };
         self.flow_here(lat, lon, name.clone());
-        self.flow_radius = self.flow_radius.max(side / 1000.0);
+        if let Some(s) = &mut self.flow_site {
+            s.site.side_km = (2.0 * side / 1000.0).max(s.site.side_km);
+            s.site.reset_square();
+        }
         self.flow_item = Some((points, polygon, name));
+    }
+
+    /// Участки открытых окон на глобусе.
+    pub fn site_edits(&mut self) -> Vec<&mut SiteEdit> {
+        let mut out = Vec::new();
+        if self.flood_open
+            && let Some(s) = &mut self.flood_site
+        {
+            out.push(s);
+        }
+        if self.flow_open
+            && let Some(s) = &mut self.flow_site
+        {
+            out.push(s);
+        }
+        out
+    }
+
+    /// Участки открытых окон для рисования.
+    pub fn sites(&self) -> Vec<&SiteEdit> {
+        let mut out = Vec::new();
+        if self.flood_open
+            && let Some(s) = &self.flood_site
+        {
+            out.push(s);
+        }
+        if self.flow_open
+            && let Some(s) = &self.flow_site
+        {
+            out.push(s);
+        }
+        out
+    }
+
+    /// Метки KML расчёта стока - в папку сессии окна, `_group_of` модуля:
+    /// сессия служит, пока участок прежний.
+    fn emit_flow(&mut self, lang: Lang, kml: &str) {
+        let ring = self.flow_site.as_ref().map(|s| s.site.ring.clone()).unwrap_or_default();
+        let session = match &self.flow_session {
+            Some((id, r)) if *r == ring => *id,
+            _ => {
+                let id = analysis::new_session();
+                self.flow_session = Some((id, ring.clone()));
+                id
+            }
+        };
+        self.saved.push(Saved { title: tr(lang, "Water flow").to_string(), ring, layers: Vec::new(), extra: analysis::kml_items(kml), session: Some(session) });
+    }
+
+    /// Участок окна для расчёта: середина, полусторона и вершины, или
+    /// текст, почему считать нельзя.
+    fn site_job(site: Option<&SiteEdit>, lang: Lang) -> Result<SiteJob, String> {
+        let Some(s) = site else {
+            return Err(tr(lang, "Close the area by a click on its first vertex.").to_string());
+        };
+        if let Some(problem) = s.problem(lang) {
+            return Err(problem);
+        }
+        let (lat, lon) = s.site.centre();
+        Ok((lat, lon, s.site.size() / 2.0, s.site.ring.clone()))
     }
 
     /// Водосбор метки, `catchment_of` модуля: итог - многоугольник
@@ -263,9 +350,12 @@ impl Hydro {
         }
     }
 
+    /// Расчёт по участку окна: полусторона рамки и вершины участка, вне
+    /// него высот нет.
     #[allow(clippy::too_many_arguments)]
-    fn start(&mut self, task: Task, lat: f64, lon: f64, radius_m: f64, radius: f64, max_level: u32, now: f64) {
+    fn start(&mut self, task: Task, lat: f64, lon: f64, radius_m: f64, ring: Vec<(f64, f64)>, radius: f64, max_level: u32, now: f64) {
         self.radius = radius;
+        self.job_ring = ring;
         self.job = Some((GridHeights::new(lat, lon, radius_m, radius, max_level, now), task));
     }
 
@@ -312,9 +402,11 @@ impl Hydro {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn finish(&mut self, lang: Lang, task: Task, grid: Grid, z: Vec<f64>, partial: bool, max_level: u32, now: f64) {
+    fn finish(&mut self, lang: Lang, task: Task, grid: Grid, mut z: Vec<f64>, partial: bool, max_level: u32, now: f64) {
         let radius = self.radius;
-        let tail = |text: String| if partial { format!("{text} {}", partial_text(lang)) } else { text };
+        data::site::mask_grid(&mut z, &grid, &std::mem::take(&mut self.job_ring), radius);
+        let built = analysis::built_text(lang, crate::pointcalc::clock_now());
+        let tail = |text: String| if partial { format!("{text} {} {built}", partial_text(lang)) } else { format!("{text} {built}") };
         let to_points = |rows: &[f64], cols: &[f64]| -> Vec<(f64, f64)> { rows.iter().zip(cols).map(|(r, c)| crate::gridheights::node(&grid, *r, *c, radius)).collect() };
         let ring_points = |ring: &[[f64; 2]]| -> Vec<(f64, f64)> { ring.iter().map(|p| crate::gridheights::node(&grid, p[0], p[1], radius)).collect() };
         match task {
@@ -322,7 +414,7 @@ impl Hydro {
                 let seed = hydro::index_of(&grid, self.flood_point.0, self.flood_point.1, radius);
                 let base = z.get(seed.0 * grid.cols + seed.1).copied().unwrap_or(f64::NAN);
                 if !base.is_finite() {
-                    self.flood_status = tr(lang, "There are no heights at the point.").to_string();
+                    self.flood_status = tr(lang, "The point is outside the area or has no heights.").to_string();
                     return;
                 }
                 let levels = hydro::spill_levels(&z, grid.rows, grid.cols, seed);
@@ -347,7 +439,7 @@ impl Hydro {
                 let points = to_points(&line.rows.iter().map(|v| *v as f64).collect::<Vec<_>>(), &line.cols.iter().map(|v| *v as f64).collect::<Vec<_>>());
                 let name = tr(lang, "Flow line").to_string();
                 let text = tail(format!("{} {}", trf(lang, "Length {km} km, drop {drop} m.", &[("km", &number(line.length / 1000.0)), ("drop", &number(line.drop))]), end_text(lang, line.end)));
-                self.kml.push(document_kml(&line_kml(&name, &text, &points, LINE_COLOR, 3.0)));
+                self.emit_flow(lang, &document_kml(&line_kml(&name, &text, &points, LINE_COLOR, 3.0)));
                 self.flow_status = trf(lang, "{name}: {text}", &[("name", &name), ("text", &text)]);
             }
             Task::ShapeLines(points, polygon, name) => {
@@ -373,7 +465,7 @@ impl Hydro {
                     body.push_str(&line_kml(&trf(lang, "Flow line {n}", &[("n", &(n + 1).to_string())]), &text, &pts, LINE_COLOR, 2.0));
                 }
                 let title = trf(lang, "Flow lines «{name}»", &[("name", &name)]);
-                self.kml.push(folder_kml(&title, &body));
+                self.emit_flow(lang, &folder_kml(&title, &body));
                 let total: f64 = lines.iter().map(|l| l.length).sum();
                 let mut text = trf(lang, "{name}: lines {count}, total length {km} km.", &[("name", &title), ("count", &lines.len().to_string()), ("km", &number(total / 1000.0))]);
                 if dropped > 0 {
@@ -404,7 +496,7 @@ impl Hydro {
                     text = format!("{text} {}", trf(lang, "The outlet is moved to the channel {m} m from the point.", &[("m", &number(moved))]));
                 }
                 if basin.edge {
-                    text = format!("{text} {}", tr(lang, "The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed."));
+                    text = format!("{text} {}", tr(lang, "The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger area is needed."));
                 }
                 text = tail(text);
                 let mut body = polygon_kml(&name, &text, &ring_points(ring), BASIN_FILL);
@@ -413,7 +505,7 @@ impl Hydro {
                     let cols: Vec<f64> = basin.stream_cols.iter().rev().map(|v| *v as f64).collect();
                     body.push_str(&line_kml(tr(lang, "Main watercourse"), &stream_text(lang, &basin.report), &to_points(&rows, &cols), LINE_COLOR, 3.0));
                 }
-                self.kml.push(folder_kml(&name, &body));
+                self.emit_flow(lang, &folder_kml(&name, &body));
                 self.flow_status = trf(lang, "{name}: {text}", &[("name", &name), ("text", &text)]);
             }
             Task::Basins => {
@@ -434,16 +526,16 @@ impl Hydro {
                     body.push_str(&polygon_kml(&label, &trf(lang, "Area {area} km².", &[("area", &number(region.area / 1e6))]), &ring_points(ring), [r, g, b, 115]));
                 }
                 if count == 0 {
-                    self.flow_status = tr(lang, "There are no watercourses with such a catchment at the edge of the square.").to_string();
+                    self.flow_status = tr(lang, "There are no watercourses with such a catchment at the edge of the area.").to_string();
                     return;
                 }
-                self.kml.push(folder_kml(tr(lang, "Basins"), &body));
-                self.flow_status = tail(trf(lang, "Basins written to «My places»: {count}, they cover {area} km² of the square.", &[("count", &count.to_string()), ("area", &number(covered))]));
+                self.emit_flow(lang, &folder_kml(tr(lang, "Basins"), &body));
+                self.flow_status = tail(trf(lang, "Basins written to «My places»: {count}, they cover {area} km² of the area.", &[("count", &count.to_string()), ("area", &number(covered))]));
             }
             Task::Rivers => {
                 let streams = hydro::rivers(&z, grid.rows, grid.cols, grid.cell, self.net_km2 * 1e6, self.order);
                 if streams.is_empty() {
-                    self.flow_status = tr(lang, "There are no watercourses with such a catchment and order in the square.").to_string();
+                    self.flow_status = tr(lang, "There are no watercourses with such a catchment and order in the area.").to_string();
                     return;
                 }
                 let mut body = String::new();
@@ -453,7 +545,7 @@ impl Hydro {
                     // Толщина растёт с порядком, `style_rivers` модуля.
                     body.push_str(&line_kml(&trf(lang, "Watercourse of order {order}", &[("order", &s.order.to_string())]), &text, &pts, LINE_COLOR, 0.6 + 0.8 * f64::from(s.order)));
                 }
-                self.kml.push(folder_kml(tr(lang, "River network"), &body));
+                self.emit_flow(lang, &folder_kml(tr(lang, "River network"), &body));
                 let top = streams.iter().map(|s| s.order).max().unwrap_or(1);
                 self.flow_status = tail(trf(lang, "Watercourses written to «My places»: {count}, the largest order {order}.", &[("count", &streams.len().to_string()), ("order", &top.to_string())]));
             }
@@ -485,11 +577,12 @@ impl Hydro {
                     &[("area", &num(rep.get("area_km2"))), ("low", &num(rep.get("z_min"))), ("high", &num(rep.get("z_max"))), ("mean", &num(rep.get("z_mean")))],
                 );
                 if result.edge {
-                    text = format!("{text} {}", tr(lang, "The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger radius is needed."));
+                    text = format!("{text} {}", tr(lang, "The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger area is needed."));
                 }
                 text = tail(text);
                 let title = trf(lang, "Catchment «{name}»", &[("name", &name)]);
-                self.kml.push(document_kml(&polygon_kml(&title, &text, &ring_points(ring), BASIN_FILL)));
+                let square = data::site::square_ring(grid.lat, grid.lon, 2.0 * side);
+                self.saved.push(Saved { title: tr(lang, "Catchment of a placemark").to_string(), ring: square, layers: Vec::new(), extra: analysis::kml_items(&document_kml(&polygon_kml(&title, &text, &ring_points(ring), BASIN_FILL))), session: None });
                 self.message = Some(trf(lang, "{name}: {text}", &[("name", &title), ("text", &text)]));
             }
         }
@@ -512,7 +605,7 @@ impl Hydro {
         let mut text = if any {
             let mut t = trf(lang, "Flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.", &[("area", &number(result.area / 1e6)), ("volume", &number(result.volume / 1e6)), ("depth", &number(result.depth))]);
             if result.edge {
-                t = format!("{t} {}", tr(lang, "The water reached the edge of the area and can go further. A larger radius is needed."));
+                t = format!("{t} {}", tr(lang, "The water reached the edge of the area and can go further. A larger area is needed."));
             }
             t
         } else {
@@ -544,7 +637,7 @@ impl Hydro {
             return;
         }
         let mut open = true;
-        let (mut build, mut clear, mut keep) = (false, false, false);
+        let mut pressed = None;
         let mut level = self.flood.as_ref().map(|s| s.level);
         let base = self.flood.as_ref().map(|s| s.base);
         egui::Window::new(tr(lang, "Flooding")).id(egui::Id::unique("planetx-flood")).open(&mut open).collapsible(false).resizable(false).min_width(380.0).show(ctx, |ui| {
@@ -555,10 +648,11 @@ impl Hydro {
                 ui.label(tr(lang, "Point height"));
                 ui.label(base.map_or("-".to_string(), |b| trf(lang, "{h} m", &[("h", &format!("{b:.1}"))])));
                 ui.end_row();
-                ui.label(tr(lang, "Radius"));
-                ui.add(egui::DragValue::new(&mut self.flood_radius).range(0.5..=50.0).speed(0.1).fixed_decimals(1).suffix(tr(lang, " km")))
-                    .on_hover_text(tr(lang, "Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side."));
-                ui.end_row();
+                if let Some(site) = &mut self.flood_site {
+                    ui.label(tr(lang, "Area|site"));
+                    site.row(ui, lang);
+                    ui.end_row();
+                }
                 ui.label(tr(lang, "Water level"));
                 ui.add_enabled_ui(level.is_some(), |ui| {
                     if let Some(v) = &mut level {
@@ -581,43 +675,50 @@ impl Hydro {
                 ui.end_row();
             });
             ui.add_space(4.0);
-            ui.add(egui::Label::new(&self.flood_status).wrap());
+            let hint = self.flood_site.as_ref().and_then(|s| s.hint(lang));
+            ui.add(egui::Label::new(hint.unwrap_or(&self.flood_status)).wrap());
             ui.add_space(4.0);
-            ui.horizontal(|ui| {
-                if ui.button(tr(lang, "Build")).clicked() {
-                    build = true;
-                }
-                if ui.add_enabled(self.water.is_some(), egui::Button::new(tr(lang, "To «My places»"))).on_hover_text(tr(lang, "The outline of the flooding - a polygon in «My places» with the level, area and volume.")).clicked() {
-                    keep = true;
-                }
-                if ui.add_enabled(self.flood.is_some() || self.job.is_some(), egui::Button::new(tr(lang, "Remove"))).on_hover_text(tr(lang, "Remove the water from the globe.")).clicked() {
-                    clear = true;
-                }
-            });
+            pressed = analysis::buttons(ui, lang, self.water.is_some() && self.job.is_none(), tr(lang, "Water from the point up to the given level on the area - a layer on the globe, the level changes without a new computation."));
         });
         if let Some(v) = level
             && self.flood.as_ref().is_some_and(|s| (s.level - v).abs() > 1e-9)
         {
             self.set_level(lang, v);
         }
-        if build {
-            let (lat, lon) = self.flood_point;
-            self.start(Task::Flood, lat, lon, self.flood_radius * 1000.0, radius, max_level, now);
+        match pressed {
+            Some(Button::Build) => match Self::site_job(self.flood_site.as_ref(), lang) {
+                Ok((lat, lon, half, ring)) => self.start(Task::Flood, lat, lon, half, ring, radius, max_level, now),
+                Err(text) => self.flood_status = text,
+            },
+            Some(Button::Ok) => {
+                self.save_flood(lang);
+                self.clear_flood();
+                self.flood_open = false;
+            }
+            Some(Button::Cancel) => {
+                self.clear_flood();
+                self.flood_open = false;
+            }
+            None => {}
         }
-        if keep {
-            self.keep_flood(lang);
-        }
-        if clear {
-            self.clear_flood();
-        }
+        // Крестик - как «Отмена».
         if !open {
+            self.clear_flood();
             self.flood_open = false;
+        }
+        if let Some(site) = &mut self.flood_site
+            && std::mem::take(&mut site.changed)
+            && self.flood.is_some()
+            && self.job.is_none()
+        {
+            self.flood_status = tr(lang, "The area has changed. Press «Build» to compute it again.").to_string();
         }
     }
 
-    /// Контур затопления многоугольником в «Мои метки» - у модуля растр
-    /// глубин и контур идут в проект QGIS.
-    fn keep_flood(&mut self, lang: Lang) {
+    /// Затопление - расчётом для «Моих меток», `export_flood` модуля:
+    /// растр глубин GeoTIFF EPSG:3857, вода картинкой и контур
+    /// многоугольниками.
+    fn save_flood(&mut self, lang: Lang) {
         let radius = self.radius;
         let Some(state) = &self.flood else {
             return;
@@ -625,18 +726,29 @@ impl Hydro {
         let Some(result) = &state.flood else {
             return;
         };
+        if !result.mask.iter().any(|m| *m) {
+            return;
+        }
+        let level = state.level;
+        let depth: Vec<f64> = result.mask.iter().zip(state.z.iter()).map(|(m, z)| if *m { level - z } else { f64::NAN }).collect();
+        let tiff = data::geotiff::write_float_mercator(&data::site::mercator_of(&state.grid), &depth).unwrap_or_default();
+        let (north, west) = hydro::latlon(&state.grid, -0.5, -0.5, radius);
+        let (south, east) = hydro::latlon(&state.grid, state.grid.rows as f64 - 0.5, state.grid.cols as f64 - 0.5, radius);
+        let (grid, flood, z) = (state.grid, result.clone(), state.z.clone());
+        let sample = move |points: &[(f64, f64)]| hydro::flood_points_rgba(&grid, &flood, &z, level, points, radius);
+        let name = trf(lang, "Flooding {level} m - depth", &[("level", &format!("{level:.1}"))]);
+        let layer = analysis::picture(name, "flood", (south, north, west, east), state.grid.cell, &sample, tiff);
         let rings = hydro::outline(&result.mask, state.grid.rows, state.grid.cols, 0.5);
+        let text = trf(lang, "Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.", &[("level", &format!("{level:.1}")), ("area", &number(result.area / 1e6)), ("volume", &number(result.volume / 1e6)), ("depth", &number(result.depth))]);
         let mut body = String::new();
-        let text = trf(lang, "Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.", &[("level", &format!("{:.1}", state.level)), ("area", &number(result.area / 1e6)), ("volume", &number(result.volume / 1e6)), ("depth", &number(result.depth))]);
         for ring in &rings {
             let pts: Vec<(f64, f64)> = ring.iter().map(|p| crate::gridheights::node(&state.grid, p[0], p[1], radius)).collect();
-            body.push_str(&polygon_kml(&trf(lang, "Flooding {level} m", &[("level", &format!("{:.1}", state.level))]), &text, &pts, [60, 140, 255, 110]));
+            body.push_str(&polygon_kml(&trf(lang, "Flooding {level} m - outline", &[("level", &format!("{level:.1}"))]), &text, &pts, [60, 140, 255, 0]));
         }
-        if !body.is_empty() {
-            self.kml.push(folder_kml(&trf(lang, "Flooding {level} m", &[("level", &format!("{:.1}", state.level))]), &body));
-        }
+        let extra = if body.is_empty() { Vec::new() } else { analysis::kml_items(&document_kml(&body)) };
+        let ring = self.flood_site.as_ref().map(|s| s.site.ring.clone()).unwrap_or_default();
+        self.saved.push(Saved { title: tr(lang, "Flooding").to_string(), ring, layers: vec![layer], extra, session: None });
     }
-
     fn flow_window(&mut self, ctx: &egui::Context, lang: Lang, now: f64, radius: f64, max_level: u32) {
         if !self.flow_open {
             return;
@@ -649,10 +761,11 @@ impl Hydro {
                 ui.label(tr(lang, if item { "Placemark" } else { "Point" }));
                 ui.label(&self.flow_place);
                 ui.end_row();
-                ui.label(tr(lang, "Radius"));
-                ui.add(egui::DragValue::new(&mut self.flow_radius).range(0.5..=50.0).speed(0.1).fixed_decimals(1).suffix(tr(lang, " km")))
-                    .on_hover_text(tr(lang, "Half the side of the computed square. The flow line ends at its edge, a catchment larger than the square is not counted fully. The grid step is about one six-hundredth of the side."));
-                ui.end_row();
+                if let Some(site) = &mut self.flow_site {
+                    ui.label(tr(lang, "Area|site"));
+                    site.row(ui, lang);
+                    ui.end_row();
+                }
                 ui.label(tr(lang, "Watercourses from"));
                 ui.add(egui::DragValue::new(&mut self.net_km2).range(0.1..=1000.0).speed(0.1).fixed_decimals(1).suffix(tr(lang, " km²")))
                     .on_hover_text(tr(lang, "The river network - watercourses with a catchment of at least this area. Smaller - a denser network with brooks and ravines."));
@@ -666,7 +779,7 @@ impl Hydro {
                     .on_hover_text(tr(lang, "Within this radius from the point the channel is searched - the place with the largest catchment, the catchment is built from it. A click near a river so gives the catchment of the river. 0 - the catchment exactly from the point."));
                 ui.end_row();
                 ui.label("");
-                ui.checkbox(&mut self.on_stream, tr(lang, "Stop at a watercourse")).on_hover_text(tr(lang, "The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the square."));
+                ui.checkbox(&mut self.on_stream, tr(lang, "Stop at a watercourse")).on_hover_text(tr(lang, "The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the area."));
                 ui.end_row();
                 ui.label("");
                 ui.checkbox(&mut self.on_flat, tr(lang, "Stop on flattening")).on_hover_text(tr(lang, "The flow line ends where the mean slope over the section length is below the threshold - at the foot of a slope, on a terrace, on a flood plain. A short shelf on a steep slope does not stop the line."));
@@ -684,7 +797,8 @@ impl Hydro {
                 }
             });
             ui.add_space(4.0);
-            ui.add(egui::Label::new(&self.flow_status).wrap());
+            let hint = self.flow_site.as_ref().and_then(|s| s.hint(lang));
+            ui.add(egui::Label::new(hint.unwrap_or(&self.flow_status)).wrap());
             ui.add_space(4.0);
             ui.horizontal_wrapped(|ui| {
                 if ui.button(tr(lang, "Flow line")).on_hover_text(tr(lang, "The path of the water from the point down the terrain - a line in «My places». Hollows are filled up to the overflow, so the line passes through lakes and closed basins. For a path or polygon - lines from all its nodes, in a folder.")).clicked() {
@@ -696,20 +810,24 @@ impl Hydro {
                 if ui.add_enabled(!item, egui::Button::new(tr(lang, "Catchment"))).on_hover_text(tr(lang, "The area from which the water flows to the point and the main watercourse - a folder in «My places» with the area, slopes and the watercourse length. The catchment is built from the channel near the point.")).clicked() {
                     task = Some(Task::Basin);
                 }
-                if ui.button(tr(lang, "River network")).on_hover_text(tr(lang, "Watercourses of the square with the Strahler order - lines in «My places», the line width grows with the order.")).clicked() {
+                if ui.button(tr(lang, "River network")).on_hover_text(tr(lang, "Watercourses of the area with the Strahler order - lines in «My places», the line width grows with the order.")).clicked() {
                     task = Some(Task::Rivers);
                 }
-                if ui.button(tr(lang, "Basins")).on_hover_text(tr(lang, "The square divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the square. Polygons in «My places».")).clicked() {
+                if ui.button(tr(lang, "Basins")).on_hover_text(tr(lang, "The area divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the area. Polygons in «My places».")).clicked() {
                     task = Some(Task::Basins);
                 }
             });
         });
         if let Some(t) = task {
-            let (lat, lon) = self.flow_point;
-            self.start(t, lat, lon, self.flow_radius * 1000.0, radius, max_level, now);
+            match Self::site_job(self.flow_site.as_ref(), lang) {
+                Ok((lat, lon, half, ring)) => self.start(t, lat, lon, half, ring, radius, max_level, now),
+                Err(text) => self.flow_status = text,
+            }
         }
+        // Окно закрыто: следующий расчёт - новая папка, `session.reset`.
         if !open {
             self.flow_open = false;
+            self.flow_session = None;
         }
     }
 
@@ -784,7 +902,7 @@ mod tests {
     /// Прогон расчёта задачи task на рельефе height до конца.
     fn run(h: &mut Hydro, task: Task, radius_m: f64, height: fn(f64, f64) -> f64) {
         let ctx = egui::Context::default();
-        h.start(task, LAT, LON, radius_m, R, 14, 0.0);
+        h.start(task, LAT, LON, radius_m, Vec::new(), R, 14, 0.0);
         let heights = |pts: &[(f64, f64)]| -> Vec<f64> {
             pts.iter().map(|(la, lo)| {
                 let (x, y) = local(*la, *lo);
@@ -813,8 +931,9 @@ mod tests {
         100.0 + y * 0.02 + 15.0 * (x / 600.0 * std::f64::consts::TAU).cos()
     }
 
-    fn well_formed(kml: &str) {
-        scene::kml::read_kml(kml.as_bytes(), "test").expect("KML читается");
+    /// Метки расчёта: строки KML дошли до «Моих меток».
+    fn items_of(s: &Saved) -> usize {
+        s.extra.len()
     }
 
     #[test]
@@ -836,6 +955,35 @@ mod tests {
         // Подъём меняет воду без пересчёта.
         h.set_level(Lang::EN, h.flood.as_ref().unwrap().base + 5.0);
         assert!(h.water.as_ref().unwrap().flood.area > water.flood.area);
+        // «OK»: глубины файлом GeoTIFF, вода картинкой, контур метками.
+        h.save_flood(Lang::EN);
+        let saved = h.saved.pop().expect("расчёт");
+        assert_eq!(saved.layers.len(), 1);
+        assert!(!saved.layers[0].tiff.is_empty() && saved.layers[0].png().is_some());
+        assert!(saved.layers[0].rgba.iter().any(|p| p[3] > 0));
+        assert!(items_of(&saved) > 0);
+    }
+
+    #[test]
+    fn flood_stays_inside_the_area() {
+        // Участок - квадрат 600 м: вода +5 м над дном чаши (круг 500 м)
+        // за его край не выходит.
+        let mut h = Hydro::new();
+        h.flood_point = (LAT, LON);
+        let ctx = egui::Context::default();
+        h.start(Task::Flood, LAT, LON, 2000.0, data::site::square_ring(LAT, LON, 600.0), R, 14, 0.0);
+        let heights = |pts: &[(f64, f64)]| -> Vec<f64> { pts.iter().map(|(la, lo)| { let (x, y) = local(*la, *lo); bowl(x, y) }).collect() };
+        while h.busy() {
+            let mut out = ctx.run_pass(egui::RawInput::default(), |ctx| {
+                h.step(ctx, Lang::EN, 0.0, R, 14, &|_| true, &heights);
+            });
+            out.textures_delta.clear();
+        }
+        let base = h.flood.as_ref().unwrap().base;
+        h.set_level(Lang::EN, base + 5.0);
+        let water = h.water.clone().expect("вода");
+        let wet = water.flood.mask.iter().filter(|m| **m).count() as f64 * water.grid.cell.powi(2);
+        assert!(wet <= 600.0 * 600.0 * 1.05, "{wet}");
     }
 
     #[test]
@@ -843,19 +991,17 @@ mod tests {
         let mut h = Hydro::new();
         h.flow_point = (LAT + 0.005, LON + 0.001);
         run(&mut h, Task::Line, 3000.0, valleys);
-        assert_eq!(h.kml.len(), 1, "{}", h.flow_status);
-        assert!(h.kml[0].contains("<LineString>"));
-        well_formed(&h.kml[0]);
+        assert_eq!(h.saved.len(), 1, "{}", h.flow_status);
+        assert!(matches!(h.saved[0].extra.first(), Some(scene::kml::Item::Place(p)) if p.kind == scene::features::Kind::Line));
         run(&mut h, Task::Basin, 3000.0, valleys);
-        assert_eq!(h.kml.len(), 2, "{}", h.flow_status);
-        assert!(h.kml[1].contains("<Polygon>") && h.flow_status.contains("Area"));
-        well_formed(&h.kml[1]);
+        assert_eq!(h.saved.len(), 2, "{}", h.flow_status);
+        assert!(h.flow_status.contains("Area"));
         run(&mut h, Task::Rivers, 3000.0, valleys);
-        assert_eq!(h.kml.len(), 3, "{}", h.flow_status);
-        well_formed(&h.kml[2]);
+        assert_eq!(h.saved.len(), 3, "{}", h.flow_status);
         run(&mut h, Task::Basins, 3000.0, valleys);
-        assert_eq!(h.kml.len(), 4, "{}", h.flow_status);
-        well_formed(&h.kml[3]);
+        assert_eq!(h.saved.len(), 4, "{}", h.flow_status);
+        // Одна сессия - одна папка расчёта.
+        assert!(h.saved.iter().all(|s| s.session.is_some() && s.session == h.saved[0].session && items_of(s) > 0));
     }
 
     #[test]
@@ -875,16 +1021,16 @@ mod tests {
             });
             out.textures_delta.clear();
         }
-        assert!(h.kml.iter().any(|k| k.contains("<Polygon>")), "{:?}", h.message);
-        h.kml.clear();
+        let basin = h.saved.pop().expect("водосбор метки");
+        assert!(matches!(basin.extra.first(), Some(scene::kml::Item::Place(p)) if p.kind == scene::features::Kind::Polygon), "{:?}", h.message);
+        assert_eq!(basin.ring.len(), 4);
         h.flow_from(path, false, "отвал".into(), R);
         let item = h.flow_item.clone().unwrap();
-        let side = h.flow_radius * 1000.0;
+        let side = h.flow_site.as_ref().unwrap().site.side_km * 500.0;
         run(&mut h, Task::ShapeLines(item.0, item.1, item.2), side, valleys);
-        assert_eq!(h.kml.len(), 1, "{}", h.flow_status);
-        well_formed(&h.kml[0]);
+        assert_eq!(h.saved.len(), 1, "{}", h.flow_status);
+        assert!(items_of(&h.saved[0]) > 0);
     }
-
     #[test]
     fn hsl_primaries() {
         assert_eq!(hsl(0.0, 1.0, 0.5), [255, 0, 0]);

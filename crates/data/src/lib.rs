@@ -64,11 +64,18 @@
 //!   перенос `core/hydro.py`;
 //! - [`relief`] - уклон, экспозиция, вершины и ямы квадрата, перенос
 //!   `core/relief.py`;
+//! - [`shadows`] - тени на момент по рельефу, перенос `core/shadows.py`;
+//! - [`site`] - участок окон анализа участка многоугольником, перенос
+//!   геометрии `ui/area.py`;
+//! - [`geotiff`] - запись результата анализа файлом GeoTIFF EPSG:4326;
+//! - [`aef`] - изменения местности и классификация по эмбеддингам
+//!   AlphaEarth, перенос `core/aef.py`;
 //! - [`track`] - растущие треки объектов по времени, перенос `core/track.py`;
 //! - [`series`] - ряд снимков участка по датам, перенос `core/series.py`;
 //! - [`trend`] - карта тренда ряда снимков, наклон Тейла-Сена и тест
 //!   Манна-Кендалла, перенос `core/trend.py`.
 
+pub mod aef;
 pub mod areas;
 pub mod aircraft;
 pub mod bathymetry;
@@ -94,6 +101,7 @@ pub mod flightsim;
 pub mod flow;
 pub mod geocode;
 pub mod geoid;
+pub mod geotiff;
 pub mod geology;
 pub mod geomag;
 pub mod gibs;
@@ -130,7 +138,9 @@ pub mod section;
 pub mod sentinel;
 pub mod series;
 pub mod sgp4;
+pub mod shadows;
 pub mod sheets;
+pub mod site;
 pub mod skydata;
 pub mod skyview;
 pub mod slabs;

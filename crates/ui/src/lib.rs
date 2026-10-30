@@ -7,7 +7,11 @@
 //! Программа и страница дают загрузчик тайлов своей платформы и место
 //! для отчёта самопроверки, остальное общее.
 
+pub mod aefcalc;
+pub mod aefclass;
+pub mod aefread;
 pub mod ai;
+pub mod analysis;
 pub mod app;
 pub mod basemap;
 pub mod buildings;

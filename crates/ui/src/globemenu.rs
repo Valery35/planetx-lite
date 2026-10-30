@@ -50,6 +50,11 @@ pub enum Choice {
     Viewshed,
     /// «Инсоляция здесь…».
     Insolation,
+    /// «Тени здесь…».
+    Shadows,
+    /// «Изменения местности здесь…» и «Классификация здесь…».
+    Changes,
+    Classes,
     /// «Старые карты «Это Место» здесь…».
     Etomesto,
     /// «Исторические карты Рамсея здесь…».
@@ -58,7 +63,7 @@ pub enum Choice {
     Sentinel,
     /// «Облака точек лидара здесь».
     Lidar,
-    /// «Уклон и экспозиция здесь…» подменю «Анализ рельефа».
+    /// «Уклон и экспозиция здесь…» подменю «Анализ участка».
     SlopeHere,
     /// «Затопление отсюда…», «Сток воды отсюда…», «Уровень моря…»
     /// подменю «Гидрология».
@@ -106,7 +111,7 @@ pub struct GlobeMenu {
     pub satellite: Option<(i64, String, bool, bool)>,
     /// На глобусе Земля: пункты служб Земли.
     pub earth: bool,
-    /// У тела есть высоты: подменю «Анализ рельефа» и «Гидрология».
+    /// У тела есть высоты: подменю «Анализ участка» и «Гидрология».
     pub relief: bool,
 }
 
@@ -116,7 +121,11 @@ impl GlobeMenu {
         let mut choice = None;
         let mut copy = false;
         let mut follow = None;
-        let area = egui::Area::new(egui::Id::unique("planetx-globe-menu")).order(egui::Order::Foreground).fixed_pos(self.at).show(ctx, |ui| {
+        // Область - меню: подменю открываются наведением справа, как
+        // у контекстного меню egui. Простая область делала из подменю
+        // всплывающее окно по щелчку: оно ложилось поверх своего меню,
+        // а у меню ниже середины окна не открывалось, 30 октября 2026 года.
+        let area = egui::Area::new(egui::Id::unique("planetx-globe-menu")).kind(egui::UiKind::Menu).order(egui::Order::Foreground).fixed_pos(self.at).show(ctx, |ui| {
             egui::Frame::menu(ui.style()).show(ui, |ui| {
                 // Пункты - строки меню без рамок во всю ширину, как
                 // у контекстного меню egui.
@@ -215,13 +224,14 @@ impl GlobeMenu {
                         }
                         // Окна расчёта и снимков у точки - одной группой,
                         // исторические карты - другой, как у модуля.
-                        // «Анализ рельефа» и «Гидрология» - подменю
+                        // «Анализ участка» и «Гидрология» - подменю
                         // `relief_items` и `hydro_items` модуля, у тела
-                        // с высотами.
+                        // с высотами. Название - как у Google Earth,
+                        // решение автора от 28 октября 2026 года.
                         if self.drawing.is_none() {
                             ui.separator();
                             if self.relief {
-                                ui.menu_button(tr(lang, "Terrain analysis"), |ui| {
+                                ui.menu_button(tr(lang, "Area analysis"), |ui| {
                                     let mut item = |ui: &mut egui::Ui, text: &'static str, tip: &'static str, c: Choice| {
                                         if ui.button(tr(lang, text)).on_hover_text(tr(lang, tip)).clicked() {
                                             follow = Some(c);
@@ -231,6 +241,9 @@ impl GlobeMenu {
                                     item(ui, "Viewshed from here…", "What is seen from the point in a circle of the given radius.", Choice::Viewshed);
                                     if self.earth {
                                         item(ui, "Insolation here…", "Hours of direct sun per day around the point.", Choice::Insolation);
+                                        item(ui, "Shadows here…", "Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.", Choice::Shadows);
+                                        item(ui, "Changes of the terrain here…", "Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.", Choice::Changes);
+                                        item(ui, "Classification here…", "Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.", Choice::Classes);
                                     }
                                 });
                                 ui.menu_button(tr(lang, "Hydrology"), |ui| {
@@ -297,7 +310,10 @@ impl GlobeMenu {
         if follow.is_some() {
             choice = follow;
         }
-        let outside = ctx.input(|i| i.pointer.any_pressed() && i.pointer.interact_pos().is_some_and(|p| !area.response.rect.contains(p)));
+        // Нажатие вне меню и его подменю закрывает меню. Подменю - свои
+        // области того же слоя поверх всего, их нажатие меню не закрывает.
+        let pressed_at = ctx.input(|i| i.pointer.interact_pos().filter(|_| i.pointer.any_pressed()));
+        let outside = pressed_at.is_some_and(|p| !area.response.rect.contains(p) && ctx.layer_id_at(p).is_none_or(|l| l.order != egui::Order::Foreground));
         let escape = ctx.input(|i| i.key_pressed(egui::Key::Escape));
         let open = choice.is_none() && !outside && !escape;
         (choice, open)

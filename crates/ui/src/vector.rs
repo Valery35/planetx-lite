@@ -694,7 +694,7 @@ impl VectorBase {
             if self.drawn.contains_key(key) || self.pending.contains(key) {
                 continue;
             }
-            let sources = lines::sources(*key, &groups);
+            let sources = job_sources(*key, &groups);
             if !sources.iter().all(|s| self.tiles.contains_key(s) || self.raw.contains_key(s)) {
                 continue;
             }
@@ -817,6 +817,15 @@ impl VectorBase {
     }
 }
 
+/// Векторные тайлы, которых ждёт картинка тайла key. Без групп линий -
+/// никаких: их тогда никто не просит ([`VectorBase::wanted`]), и карты,
+/// линии слоёв и слои расчёта ждали бы вечно. Так было до 30 октября
+/// 2026 года - при выключенной векторной основе предпросмотр уклона,
+/// видимости и инсоляции не появлялся.
+fn job_sources(key: TileKey, groups: &HashSet<Group>) -> Vec<TileKey> {
+    if groups.is_empty() { Vec::new() } else { lines::sources(key, groups) }
+}
+
 /// Восемь соседей тайла key того же уровня, по долготе через край.
 fn neighbours(key: TileKey) -> impl Iterator<Item = TileKey> {
     let (z, x, y) = key;
@@ -829,8 +838,20 @@ fn neighbours(key: TileKey) -> impl Iterator<Item = TileKey> {
 
 #[cfg(test)]
 mod tests {
-    use super::{Row, VectorBase};
+    use super::{Row, VectorBase, job_sources};
     use data::places::Kind;
+
+    /// Без групп линий картинка тайла не ждёт векторных тайлов: их никто
+    /// не просит. Прежде ждала - и слои расчёта не появлялись.
+    #[test]
+    fn no_line_groups_wait_for_nothing() {
+        let v = VectorBase::from_text(";0");
+        assert!(v.line_groups().is_empty());
+        assert!(v.wanted(&[(12, 3000, 1200)]).is_empty());
+        assert!(job_sources((12, 3000, 1200), &v.line_groups()).is_empty());
+        let w = VectorBase::default();
+        assert!(!job_sources((12, 3000, 1200), &w.line_groups()).is_empty());
+    }
 
     #[test]
     fn defaults_and_text_round_trip() {

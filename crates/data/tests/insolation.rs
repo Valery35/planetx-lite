@@ -206,3 +206,21 @@ fn hostile_input_gives_nothing() {
     assert!(ins::ray_steps(0.0, 100.0).is_empty());
     assert!(ins::ray_steps(f64::NAN, 100.0).is_empty());
 }
+
+#[test]
+fn ring_limits_hours_and_raster() {
+    // Участок многоугольником: вне него часов нет, растр с севера.
+    let result = compute(1000.0, &flat, summer(), summer());
+    assert!(result.is_some());
+    let Some(mut result) = result else { return };
+    result.ring = Some(data::site::square_ring(LAT, LON, 600.0));
+    let out = result.at(&[(LAT, LON), (LAT + 0.005, LON)], R);
+    assert!(out[0].1 && out[0].0 > 10.0);
+    assert!(!out[1].1 && out[1].0.is_nan());
+    let (grid, hours) = result.raster(R);
+    assert_eq!((grid.cols, grid.rows), (result.n, result.n));
+    assert!(grid.north > LAT && grid.west < LON);
+    assert!(hours[0].is_nan());
+    let middle = hours[(result.n / 2) * result.n + result.n / 2];
+    assert!(middle > 10.0, "{middle}");
+}

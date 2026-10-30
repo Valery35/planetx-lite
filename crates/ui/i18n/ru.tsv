@@ -1703,3 +1703,115 @@ Command to connect Claude Code:	Команда подключения Claude Cod
 Configuration for Claude Desktop and other clients:	Настройка для Claude Desktop и других клиентов:
 MCP agents are not let in: {error}	Агентов MCP пустить не удалось - {error}
 More tools	Другие инструменты
+Area|site	Участок
+Area analysis	Анализ участка
+Square	Квадрат
+Draw	Нарисовать
+Side of the square of the area with its middle at the point of the window. Vertices of the area are dragged with the mouse, the circle in the middle of a side adds a new vertex. The area is not larger than {km} km.	Сторона квадрата участка с серединой в точке окна. Вершины участка тянутся мышью, кружок на середине стороны ставит новую вершину. Участок не больше {km} км.
+The area is a square with the side from the field on the left.	Участок - квадрат стороной из поля слева.
+Draw the area as a polygon by clicks on the globe. A click on the first vertex closes it. The result is computed only inside the area.	Нарисовать участок многоугольником щелчками по глобусу. Щелчок по первой вершине замыкает его. Результат считается только внутри участка.
+Click the vertices of the area on the globe. A click on the first vertex closes it.	Щёлкайте по глобусу вершины участка. Щелчок по первой вершине замыкает его.
+Close the area by a click on its first vertex.	Замкните участок щелчком по его первой вершине.
+The area is larger than {km} km, make it smaller.	Участок больше {km} км, уменьшите его.
+Save the result and close the window. The computation goes as a folder into the folder «Area analysis» of «My places» together with the outline of the area, the values - as a GeoTIFF file. Deleting the folder removes the computation entirely.	Сохранить результат и закрыть окно. Расчёт ложится папкой в папку «Анализ участка» «Моих меток» вместе с контуром участка, значения - файлом GeoTIFF. Удаление папки убирает расчёт целиком.
+Remove the result from the globe and close the window.	Убрать результат с глобуса и закрыть окно.
+Built at {time} UTC.	Построено в {time} UTC.
+Values - the GeoTIFF file {path}.	Значения - файл GeoTIFF {path}.
+Viewshed	Видимость
+Viewshed {time}	Видимость {time}
+Insolation {time}, h per day	Инсоляция {time}, ч в сутки
+What is seen from the point in the circle - a layer on the globe.	Что видно из точки в круге - слой на глобусе.
+Hours of direct sun per day in the area - a layer on the globe. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	Часы прямого солнца в сутки на участке - слой на глобусе. Тени гор берутся с расстояния не меньше половины участка и не меньше 5 км.
+The area has changed. Press «Build» to compute it again.	Участок изменился. «Построить» пересчитает его.
+Saved to «My places», the values - {path}.	Сохранено в «Мои метки», значения - {path}.
+Saved to «My places». The GeoTIFF file is not written: {e}	Сохранено в «Мои метки». Файл GeoTIFF не записан: {e}
+There are no heights in the area.	На участке нет высот.
+There are no peaks and pits with such a drop in the area.	Вершин и ям с таким перепадом на участке нет.
+Found peaks {peaks} and pits {pits}. They go into the folder of the computation by «OK».	Найдено вершин {peaks} и ям {pits}. По «OK» они лягут в папку расчёта.
+Aspect, °	Экспозиция, °
+Peaks and closed hollows of the area - points with the height and the drop in the folder of the computation.	Вершины и замкнутые понижения участка - точки с отметкой и перепадом в папке расчёта.
+What the area shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Что показывает участок на глобусе - крутизну склона или сторону света, куда он обращён. Строки «Уклон» и «Экспозиция» раздела «Слои» на это время гаснут.
+Slope and aspect of the area by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Уклон и экспозиция участка по высотам, ядро 3 × 3 - раскраска на глобусе и сводка по классам уклона и сторонам света.
+The point is outside the area or has no heights.	Точка вне участка или в ней нет высот.
+Catchment of a placemark	Водосбор метки
+Saved to «My places».	Сохранено в «Мои метки».
+Water from the point up to the given level on the area - a layer on the globe, the level changes without a new computation.	Вода от точки до заданной отметки на участке - слой на глобусе, уровень меняется без пересчёта.
+Flooding {level} m - depth	Затопление {level} м - глубина
+Flooding {level} m - outline	Затопление {level} м - контур
+Shadows	Тени
+Shadows here…	Тени здесь…
+Shadows {moment} UTC	Тени {moment} UTC
+{moment} UTC	{moment} UTC
+Computing the horizon: {share}	Расчёт горизонта: {share}
+The sun is below the horizon, the whole area is in shadow.	Солнце ниже горизонта, весь участок в тени.
+Sun on {share} of the area, the sun is {elevation}° above the horizon. The grid step is {step} m.	Солнце на {share} участка, высота солнца {elevation}°. Шаг сетки - {step} м.
+The moment is the right handle of the time slider, without the slider - the computer clock. After «Build» the shadows follow the slider: move the handle or start the playback.	Момент - правый бегунок шкалы времени, без шкалы - часы компьютера. После «Построить» тени идут за шкалой: двигайте бегунок или пустите показ.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	Где тень и где солнце на момент шкалы времени - по рельефу, тени идут за шкалой. Тени гор берутся с расстояния не меньше половины участка и не меньше 5 км.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.	Где тень и где солнце на момент шкалы времени - по рельефу, тени идут за шкалой.
+Loading the index of files…	Загружается указатель файлов…
+There are no files of the data set for this zone.	Для этой зоны файлов набора нет.
+Download about {mb} MB, pixel {pixel} m.	Загрузка около {mb} МБ, пиксель {pixel} м.
+The area is not closed.	Участок не замкнут.
+Choose two different years.	Выберите два разных года.
+The files are not read: {e}	Файлы не прочитаны: {e}
+Block {n} of {total}: loading.	Блок {n} из {total}: загрузка.
+Block {n} of {total}: channel {band} of 64.	Блок {n} из {total}: канал {band} из 64.
+There are no data of the data set in the area for these years.	За эти годы данных набора на участке нет.
+Mean degree of change {mean}, strong changes (from 0.5) on {share} of the area. The pixel is {pixel} m.	Средняя степень изменения {mean}, сильные изменения (от 0.5) на {share} участка. Пиксель - {pixel} м.
+Change {n}	Изменение {n}
+Degree of change {value}.	Степень изменения {value}.
+There are no strong changes in the area.	Сильных изменений на участке нет.
+Found places of changes: {count}. They go into the folder of the computation by «OK».	Найдено мест изменений: {count}. По «OK» они лягут в папку расчёта.
+Changes {before}-{after}	Изменения {before}-{after}
+Changes of the terrain	Изменения местности
+Changes of the terrain here…	Изменения местности здесь…
+Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.	Где местность изменилась между двумя годами 2017-2025 - по эмбеддингам AlphaEarth, клетка 10 м.
+Classification here…	Классификация здесь…
+Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.	Классы участка по контрольным точкам на глобусе - по эмбеддингам AlphaEarth, клетка 10 м.
+Years	Годы
+The years of the comparison. Each 10 m cell is described for a year by 64 numbers - a summary of Sentinel and Landsat images and radar. The degree of change is how much the descriptions of the two years differ.	Годы сравнения. Каждая клетка 10 м за год описана 64 числами - сводкой снимков Sentinel, Landsat и радара. Степень изменения - насколько отличаются описания двух лет.
+Degree from	Степень от
+Show cells with a degree of change in this span, the rest are transparent. Unchanged terrain has a degree about 0.05, a building site, a clearing, a new quarry - 0.5 and more.	Показывать клетки со степенью изменения в этом промежутке, прочие прозрачны. У неизменённой местности степень около 0.05, у стройки, вырубки, нового карьера - 0.5 и выше.
+Area pixel	Пиксель участка
+Auto	Авто
+{pixel} m	{pixel} м
+The pixel of the area. The files of the data set keep blocks of 1024 × 1024 pixels, a block for a year is 40-50 MB at any pixel: 10 m cover 10 km by a block, 80 m - 82 km. «Auto» takes the pixel with the least download.	Пиксель участка. Файлы набора хранят блоки 1024 × 1024 пикселя, блок за год - 40-50 МБ при любом пикселе: 10 м покрывают 10 км блоком, 80 м - 82 км. «Авто» берёт пиксель с наименьшей загрузкой.
+Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.	Данные - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.
+Places of changes	Места изменений
+Places of the strongest changes of the area - points in the folder of the computation. Then they are handy to look at with the image archive and the swipe.	Места самых сильных изменений участка - точки в папке расчёта. Дальше их удобно смотреть архивом снимков и шторкой.
+The degree of change of the area between the two years - a layer on the globe.	Степень изменения участка между двумя годами - слой на глобусе.
+Class {n}	Класс {n}
+At least two classes of three points each are needed.	Нужно хотя бы два класса по три точки.
+Loading the vectors of the area: block {n} of {total}.	Загружаются векторы участка: блок {n} из {total}.
+There are no data of the data set in the area for this year.	За этот год данных набора на участке нет.
+All points are outside the area.	Все точки вне участка.
+Classes of the year {year}: {parts}.	Классы {year} года: {parts}.
+Points outside the area: {n}.	Точек вне участка: {n}.
+Classification {year}	Классификация {year}
+{n} - {name}	{n} - {name}
+Value {n} in the GeoTIFF file.	Значение {n} в файле GeoTIFF.
+Classification	Классификация
+The year by whose vectors the cells are divided into classes. The points are put by the image of the globe, it may be of another year.	Год, по векторам которого клетки делятся на классы. Точки ставятся по снимку глобуса, он может быть другого года.
+Pixel	Пиксель
+The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells.	Пиксель классификации. Блок файла за год - 40-50 МБ при любом пикселе. «Авто» берёт пиксель с наименьшей загрузкой, при котором на участке от 14 до 640 тысяч клеток.
+Opacity of the classes on the globe.	Непрозрачность классов на глобусе.
+Classes	Классы
+A click on the globe puts a point of this class.	Щелчок по глобусу ставит точку этого класса.
+points {n}	точек {n}
+Remove the class and its points.	Убрать класс и его точки.
+Add a class	Добавить класс
+Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.	Щёлкните по глобусу, чтобы поставить точку выбранного класса, щелчок по точке убирает её. Нужно хотя бы два класса по три точки.
+Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors.	Каждая клетка участка относится к классу ближайших контрольных точек по векторам AlphaEarth.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger area is needed.	Водосбор доходит до края участка, его часть за краем не учтена. Нужен больший участок.
+There are no watercourses with such a catchment at the edge of the area.	На краю участка нет водотоков с таким водосбором.
+Basins written to «My places»: {count}, they cover {area} km² of the area.	Бассейнов записано в «Мои метки»: {count}, они покрывают {area} км² участка.
+There are no watercourses with such a catchment and order in the area.	На участке нет водотоков с таким водосбором и порядком.
+The water reached the edge of the area and can go further. A larger area is needed.	Вода дошла до края участка и может пойти дальше. Нужен больший участок.
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the area.	Линия стока кончается, когда доходит до водотока с водосбором от площади поля «Водотоки от». Без флажка линия идёт до края участка.
+Watercourses of the area with the Strahler order - lines in «My places», the line width grows with the order.	Водотоки участка с порядком по Стралеру - линии в «Моих метках», толщина линии растёт с порядком.
+The area divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the area. Polygons in «My places».	Участок, разделённый на бассейны створов - мест, где водотоки с водосбором от площади поля «Водотоки от» покидают участок. Полигоны в «Моих метках».
+The line reached the edge of the area, further the water goes beyond it.	Линия дошла до края участка, дальше вода уходит за него.
+The line ends at a watercourse.	Линия кончается на водотоке.
+The line ends where the terrain flattens.	Линия кончается там, где рельеф выполаживается.
+The line flows into another flow line.	Линия вливается в другую линию стока.
+The line ends at the edge of the height data.	Линия кончается у края данных о высотах.

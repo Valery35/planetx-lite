@@ -202,6 +202,8 @@ pub struct Insolation {
     /// Шаг сетки в градусах широты и долготы.
     pub dlat: f64,
     pub dlon: f64,
+    /// Участок многоугольником (широта, долгота): вне него часов нет.
+    pub ring: Option<Vec<(f64, f64)>>,
 }
 
 impl Insolation {
@@ -211,22 +213,34 @@ impl Insolation {
         self.hours.iter().copied().filter(|v| !v.is_nan()).fold(f64::NEG_INFINITY, f64::max).ceil().max(1.0)
     }
 
-    /// Часы в точках (широта, долгота) и признак «внутри круга». Вне
-    /// круга часы - нечисло.
+    /// Часы в точках (широта, долгота) и признак «внутри круга»
+    /// и участка. Вне них часы - нечисло.
     pub fn at(&self, points: &[(f64, f64)], radius: f64) -> Vec<(f64, bool)> {
         let n = self.n as i64;
         let middle = (self.n as f64 - 1.0) / 2.0;
+        let in_ring = self.ring.as_ref().map(|r| crate::site::inside(points, r));
         points
             .iter()
-            .map(|&(lat, lon)| {
+            .enumerate()
+            .map(|(i, &(lat, lon))| {
                 let row = ((lat - self.lat) / self.dlat + middle).round_ties_even() as i64;
                 let col = ((lon - self.lon) / self.dlon + middle).round_ties_even() as i64;
                 let (dist, _) = distance_bearing(self.lat, self.lon, lat, lon, radius);
-                let inside = dist <= self.radius_m && (0..n).contains(&row) && (0..n).contains(&col);
+                let ringed = in_ring.as_ref().is_none_or(|r| r.get(i).copied().unwrap_or(false));
+                let inside = dist <= self.radius_m && ringed && (0..n).contains(&row) && (0..n).contains(&col);
                 let value = if inside { self.hours.get((row * n + col) as usize).copied().unwrap_or(f64::NAN) } else { f64::NAN };
                 (value, inside)
             })
             .collect()
+    }
+
+    /// Часы сеткой широт и долгот для GeoTIFF, `raster` модуля: строки
+    /// с севера, вне круга и участка нечисло.
+    pub fn raster(&self, radius: f64) -> (crate::geotiff::LatLonGrid, Vec<f64>) {
+        let half = (self.n as f64 - 1.0) / 2.0;
+        let grid = crate::geotiff::LatLonGrid { north: self.lat + half * self.dlat, west: self.lon - half * self.dlon, dlat: self.dlat, dlon: self.dlon, cols: self.n, rows: self.n };
+        let points: Vec<(f64, f64)> = (0..self.n).flat_map(|r| (0..self.n).map(move |c| (grid.north - r as f64 * grid.dlat, grid.west + c as f64 * grid.dlon))).collect();
+        (grid, self.at(&points, radius).into_iter().map(|(v, _)| v).collect())
     }
 
     /// Доля шкалы 0-1 для количества часов.
@@ -306,6 +320,10 @@ enum Phase {
     Done,
 }
 
+/// Горизонт расчёта: тангенсы горизонта азимуты × узлы, нормали узлов,
+/// узлов на сторону, шаг сетки.
+pub type HorizonParts = (Vec<f32>, Vec<[f64; 3]>, usize, f64);
+
 /// Расчёт инсоляции частями, замена генератора `parts` модуля. Шаг -
 /// один сдвиг сетки горизонта или одно положение солнца, 1-2 мс в
 /// оптимизированной сборке.
@@ -342,6 +360,9 @@ pub struct Work {
     hours: Vec<f64>,
     phase: Phase,
     result: Option<Insolation>,
+    /// Только горизонт и нормали, без солнца: тени на момент
+    /// ([`crate::shadows`]).
+    horizon_only: bool,
 }
 
 impl Work {
@@ -388,7 +409,25 @@ impl Work {
             hours: vec![0.0; inner * inner],
             phase: Phase::Horizon,
             result: None,
+            horizon_only: false,
         })
+    }
+
+    /// Только горизонт и нормали узлов, без положений солнца, как
+    /// `shadows.parts` модуля. Величины - как у [`Work::new`].
+    pub fn horizon(lat: f64, lon: f64, radius_m: f64, heights: &[f64], radius: f64) -> Option<Self> {
+        let mut work = Self::new(lat, lon, radius_m, heights, 0.0, 0.0, radius)?;
+        work.times.clear();
+        work.total = work.shifts.iter().map(Vec::len).sum::<usize>() + 1;
+        work.horizon_only = true;
+        Some(work)
+    }
+
+    /// Горизонт кончен: (тангенс горизонта азимуты × узлы, нормали узлов,
+    /// узлов на сторону, шаг сетки). None - расчёт не кончен или это не
+    /// расчёт горизонта.
+    pub fn into_horizon(self) -> Option<HorizonParts> {
+        (self.horizon_only && self.phase == Phase::Done).then_some((self.hor, self.normals, self.inner, self.cell))
     }
 
     fn share(&self) -> f64 {
@@ -422,6 +461,11 @@ impl Work {
                 }
                 Phase::Normals => {
                     self.normals = self.surface_normals();
+                    if self.horizon_only {
+                        self.done += 1;
+                        self.phase = Phase::Done;
+                        return Step::Done;
+                    }
                     self.phase = Phase::Sun;
                     return Step::Going(self.share());
                 }
@@ -453,6 +497,7 @@ impl Work {
                         days: self.days,
                         dlat: (cell / radius).to_degrees(),
                         dlon: (cell / (radius * lat.to_radians().cos())).to_degrees(),
+                        ring: None,
                     });
                     self.phase = Phase::Done;
                     return Step::Done;

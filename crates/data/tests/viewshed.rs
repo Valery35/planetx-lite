@@ -133,3 +133,24 @@ fn hostile_input_gives_nothing() {
     let (level, keys) = vs::height_tiles(LAT, LON, f64::INFINITY, 0.0, R, 40);
     assert!(level <= 30 && keys.len() <= vs::MAX_TILES.max(4), "{level} {}", keys.len());
 }
+
+#[test]
+fn raster_marks_seen_hidden_and_outside() {
+    // Растр GeoTIFF, `raster` модуля: 1 видно, 0 скрыто, 255 вне круга.
+    let result = compute(5000.0, 10.0, &wall, 2.0);
+    assert!(result.is_some());
+    let Some(result) = result else { return };
+    let (grid, values) = vs::raster(&result, R);
+    assert_eq!(values.len(), grid.cols * grid.rows);
+    assert!(values.iter().all(|v| matches!(*v, 0 | 1 | 255)));
+    // Угол рамки - вне круга, середина видна, за стеной на востоке скрыто.
+    assert_eq!(values[0], 255);
+    let at = |lat: f64, lon: f64| {
+        let r = ((grid.north - lat) / grid.dlat).round() as usize;
+        let c = ((lon - grid.west) / grid.dlon).round() as usize;
+        values[r * grid.cols + c]
+    };
+    assert_eq!(at(LAT, LON), 1);
+    let behind = along(90.0, &[3000.0])[0];
+    assert_eq!(at(behind.0, behind.1), 0);
+}

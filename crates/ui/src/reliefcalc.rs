@@ -2,49 +2,63 @@
 // Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Окно «Уклон и экспозиция» - пункт подменю «Анализ рельефа» меню
+//! Окно «Уклон и экспозиция» - пункт подменю «Анализ участка» меню
 //! на глобусе, перенос `ui/relief.py` модуля. Расчёт - `data::relief`
-//! по высотам квадрата ([`crate::gridheights`]).
+//! по высотам рамки участка ([`crate::gridheights`]), вне многоугольника
+//! высот нет.
 //!
-//! Квадрат на глобусе - слой над картами с раскраской строк «Уклон»
-//! и «Экспозиция»: строки на это время снимаются, как у модуля.
-//! Вершины и ямы ложатся папкой точек в «Мои метки». Растров в проект
-//! QGIS у Lite нет.
+//! Окно - на общем каркасе анализа участка ([`crate::analysis`]):
+//! участок многоугольником, «Построить», «OK» и «Отмена». Участок на
+//! глобусе - слой над картами с раскраской строк «Уклон» и «Экспозиция»:
+//! строки на это время снимаются, как у модуля. «OK» кладёт в папку
+//! расчёта картинку показанного слоя, вершины и ямы, если их искали,
+//! и пишет растры уклона и экспозиции GeoTIFF EPSG:3857, как модуль.
 
 use std::sync::Arc;
 
 use data::relief::{self, Mode, Relief};
 use eframe::egui;
 use globe_core::lod::TileKey;
+use scene::features::Kind;
+use scene::kml::{Item, Place};
 
+use crate::analysis::{self, Button, ResultLayer, Saved, SiteEdit};
 use crate::gridheights::{GridHeights, Step};
 use crate::i18n::{Lang, tr, trf};
 
 /// Цвета вершин и ям в «Моих метках», `PEAK_COLOR` и `PIT_COLOR` модуля.
 const PEAK_COLOR: [u8; 4] = [200, 40, 40, 255];
 const PIT_COLOR: [u8; 4] = [40, 90, 220, 255];
+/// Участок по умолчанию и наибольший, километры, `SIDE` и `MOST` модуля.
+const SIDE: f64 = 4.0;
+const MOST: f64 = 100.0;
 
-/// Окно «Уклон и экспозиция» и его квадрат на глобусе.
+/// Расчёт, высоты его сетки и участок.
+type State = (Arc<Relief>, Arc<Vec<f64>>, Vec<(f64, f64)>);
+
+/// Окно «Уклон и экспозиция» и его участок на глобусе.
 pub struct ReliefCalc {
     pub open: bool,
-    point: (f64, f64),
     place: String,
-    radius_km: f64,
     mode: Mode,
     peak_radius: f64,
     peak_drop: f64,
     status: String,
-    job: Option<GridHeights>,
-    /// Расчёт и высоты его сетки.
-    state: Option<(Arc<Relief>, Arc<Vec<f64>>)>,
+    job: Option<(GridHeights, Vec<(f64, f64)>)>,
+    /// Расчёт, высоты его сетки и участок.
+    state: Option<State>,
     /// Радиус тела расчёта, метры.
     radius: f64,
     /// Слой сменился: картинки тайлов рисуются заново.
     pub changed: bool,
-    /// Вершины и ямы в KML для «Моих меток», забирает окно глобуса.
-    pub kml: Option<String>,
-    /// Квадрат построен: строки «Уклон» и «Экспозиция» снимаются.
+    /// Участок построен: строки «Уклон» и «Экспозиция» снимаются.
     pub built: bool,
+    /// Участок окна на глобусе.
+    pub site: SiteEdit,
+    /// Найденные вершины и ямы - в папку расчёта по «OK».
+    peaks: Vec<Item>,
+    /// Расчёт по «OK» для «Моих меток», забирает окно глобуса.
+    pub saved: Option<Saved>,
 }
 
 /// Число для текста окна: целое у больших, десятые у малых.
@@ -116,9 +130,7 @@ impl ReliefCalc {
     pub fn new(lat: f64, lon: f64, place: String) -> Self {
         Self {
             open: true,
-            point: (lat, lon),
             place,
-            radius_km: 2.0,
             mode: Mode::Slope,
             peak_radius: relief::PEAK_RADIUS,
             peak_drop: relief::PEAK_DROP,
@@ -126,46 +138,55 @@ impl ReliefCalc {
             job: None,
             state: None,
             changed: false,
-            kml: None,
             built: false,
             radius: viewshed_radius(),
+            site: SiteEdit::new(lat, lon, SIDE, MOST),
+            peaks: Vec::new(),
+            saved: None,
         }
     }
 
-    /// Новая точка в открытом окне, квадрат остаётся до «Построить».
+    /// Новая точка в открытом окне: участок - квадрат у неё, слой
+    /// остаётся до «Построить».
     pub fn set_point(&mut self, lat: f64, lon: f64, place: String) {
-        self.point = (lat, lon);
         self.place = place;
         self.status.clear();
         self.open = true;
+        self.site.move_to(lat, lon);
     }
 
     pub fn busy(&self) -> bool {
         self.job.is_some()
     }
 
-    /// Квадрат на глобусе.
+    /// Участок окна на глобусе, пока окно открыто.
+    pub fn site_edit(&mut self) -> Option<&mut SiteEdit> {
+        if self.open { Some(&mut self.site) } else { None }
+    }
+
+    /// Участок на глобусе.
     pub fn layer(&self) -> Option<(Arc<Relief>, f64)> {
         self.state.as_ref().map(|s| (s.0.clone(), self.radius))
     }
 
-    /// Убрать квадрат, `clear` модуля.
+    /// Убрать участок, `clear` модуля.
     pub fn clear(&mut self) {
         self.job = None;
         if self.state.take().is_some() {
             self.changed = true;
         }
+        self.peaks.clear();
         self.status.clear();
     }
 
     /// Тайлы высот, которых ждёт расчёт.
     pub fn wanted(&self, has: &dyn Fn(TileKey) -> bool) -> Vec<TileKey> {
-        self.job.as_ref().map_or(Vec::new(), |j| j.wanted(has))
+        self.job.as_ref().map_or(Vec::new(), |j| j.0.wanted(has))
     }
 
     /// Шаг расчёта.
     pub fn step(&mut self, lang: Lang, now: f64, has: &dyn Fn(TileKey) -> bool, heights: data::viewshed::Heights) {
-        let Some(job) = &mut self.job else {
+        let Some((job, _)) = &mut self.job else {
             return;
         };
         match job.step(lang, now, has, heights) {
@@ -174,39 +195,43 @@ impl ReliefCalc {
                 self.status = text;
                 self.job = None;
             }
-            Step::Done(z) => {
+            Step::Done(mut z) => {
                 let (grid, radius, partial) = (job.grid, job.radius, job.partial);
+                let ring = self.job.take().map(|j| j.1).unwrap_or_default();
                 self.radius = radius;
-                self.job = None;
+                data::site::mask_grid(&mut z, &grid, &ring, radius);
                 let result = relief::analyse(&z, &grid, radius, self.mode);
                 let Some(rep) = relief::summary(&result) else {
-                    self.status = tr(lang, "There are no heights in the square.").to_string();
+                    self.status = tr(lang, "There are no heights in the area.").to_string();
                     return;
                 };
                 self.status = format!("{} {}", summary_text(lang, &rep), trf(lang, "The grid step is {step} m.", &[("step", &number(grid.cell))]));
                 if partial {
                     self.status = format!("{} {}", self.status, tr(lang, "Not all heights are loaded, the computation used less detailed ones."));
                 }
-                self.state = Some((Arc::new(result), Arc::new(z)));
+                self.status = format!("{} {}", self.status, analysis::built_text(lang, crate::pointcalc::clock_now()));
+                self.state = Some((Arc::new(result), Arc::new(z), ring));
+                self.peaks.clear();
                 self.changed = true;
                 self.built = true;
             }
         }
     }
 
-    /// Вершины и ямы квадрата папкой KML, `find_peaks` модуля.
+    /// Вершины и ямы участка точками для папки расчёта, `find_peaks`
+    /// модуля.
     fn find_peaks(&mut self, lang: Lang) {
-        let Some((result, z)) = &self.state else {
+        let Some((result, z, _)) = &self.state else {
             return;
         };
         let grid = &result.grid;
         let found = relief::extremes(z, grid, self.peak_radius, self.peak_drop);
         if found.is_empty() {
-            self.status = tr(lang, "There are no peaks and pits with such a drop in the square.").to_string();
+            self.status = tr(lang, "There are no peaks and pits with such a drop in the area.").to_string();
             return;
         }
         let (mut peaks, mut pits) = (0, 0);
-        let mut body = String::new();
+        self.peaks.clear();
         for (row, col, height, drop, kind) in found {
             let (lat, lon) = crate::gridheights::node(grid, row as f64, col as f64, self.radius);
             let (name, text, color) = match kind {
@@ -219,16 +244,41 @@ impl ReliefCalc {
                     (trf(lang, "Pit {height} m", &[("height", &format!("{height:.0}"))]), trf(lang, "Height {height} m, depth {drop} m.", &[("height", &format!("{height:.0}")), ("drop", &number(drop))]), PIT_COLOR)
                 }
             };
-            body.push_str(&format!(
-                "<Placemark><name>{}</name><description>{}</description><Style><IconStyle><color>{}</color></IconStyle></Style><Point><coordinates>{lon:.7},{lat:.7},0</coordinates></Point></Placemark>",
-                escape(&name),
-                escape(&text),
-                kml_color(color)
-            ));
+            let mut place = Place::new(&name, Kind::Point, vec![(lat, lon)]);
+            place.color = color;
+            place.description = text;
+            self.peaks.push(Item::Place(place));
         }
-        let title = trf(lang, "Peaks and pits {point}", &[("point", &format!("{:.4}, {:.4}", grid.lat, grid.lon))]);
-        self.kml = Some(format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?><kml xmlns=\"http://www.opengis.net/kml/2.2\"><Folder><name>{}</name>{body}</Folder></kml>", escape(&title)));
-        self.status = trf(lang, "Written to «My places»: peaks {peaks} and pits {pits}.", &[("peaks", &peaks.to_string()), ("pits", &pits.to_string())]);
+        self.status = trf(lang, "Found peaks {peaks} and pits {pits}. They go into the folder of the computation by «OK».", &[("peaks", &peaks.to_string()), ("pits", &pits.to_string())]);
+    }
+
+    /// Готовый участок - расчётом для «Моих меток», `export` модуля:
+    /// растры уклона и экспозиции GeoTIFF EPSG:3857, на глобусе - то, что
+    /// показывал участок.
+    fn save(&mut self, lang: Lang) {
+        let Some((result, _, ring)) = &self.state else {
+            return;
+        };
+        let radius = self.radius;
+        let mercator = data::site::mercator_of(&result.grid);
+        let slope_tiff = data::geotiff::write_float_mercator(&mercator, &result.slope).unwrap_or_default();
+        let aspect_tiff = data::geotiff::write_float_mercator(&mercator, &result.aspect).unwrap_or_default();
+        let (south, north, west, east) = result.bbox;
+        let shown = result.clone();
+        let sample = move |points: &[(f64, f64)]| relief::points_rgba(&shown, points, radius).as_chunks::<4>().0.to_vec();
+        let (name, stem) = match result.mode {
+            Mode::Slope => (tr(lang, "Slope, °"), "slope"),
+            Mode::Aspect => (tr(lang, "Aspect, °"), "aspect"),
+        };
+        let mut shown_layer = analysis::picture(name.to_string(), stem, (south, north, west, east), result.grid.cell, &sample, Vec::new());
+        // Файлы обоих растров, картинка - только показанного, как у модуля.
+        let (first, second) = match result.mode {
+            Mode::Slope => ((slope_tiff, "slope"), (aspect_tiff, "aspect")),
+            Mode::Aspect => ((aspect_tiff, "aspect"), (slope_tiff, "slope")),
+        };
+        shown_layer.tiff = first.0;
+        let other = ResultLayer { name: String::new(), grid: shown_layer.grid, rgba: Vec::new(), tiff: second.0, stem: second.1.to_string() };
+        self.saved = Some(Saved { title: tr(lang, "Slope and aspect").to_string(), ring: ring.clone(), layers: vec![shown_layer, other], extra: std::mem::take(&mut self.peaks), session: None });
     }
 
     /// Окно. radius - радиус тела, max_level - уровень тайлов высот.
@@ -237,16 +287,16 @@ impl ReliefCalc {
             return;
         }
         let mut open = true;
-        let (mut build, mut clear, mut peaks) = (false, false, false);
+        let mut pressed = None;
+        let mut peaks = false;
         let before = self.mode;
         egui::Window::new(tr(lang, "Slope and aspect")).id(egui::Id::unique("planetx-relief")).open(&mut open).collapsible(false).resizable(false).min_width(380.0).show(ctx, |ui| {
             egui::Grid::new("planetx-relief-form").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
                 ui.label(tr(lang, "Point"));
                 ui.label(&self.place);
                 ui.end_row();
-                ui.label(tr(lang, "Radius"));
-                ui.add(egui::DragValue::new(&mut self.radius_km).range(0.2..=50.0).speed(0.1).fixed_decimals(1).suffix(tr(lang, " km")))
-                    .on_hover_text(tr(lang, "Half the side of the computed square. Larger - a coarser grid step, it is about one six-hundredth of the side."));
+                ui.label(tr(lang, "Area|site"));
+                self.site.row(ui, lang);
                 ui.end_row();
                 ui.label(tr(lang, "Show"));
                 egui::ComboBox::from_id_salt("planetx-relief-mode").selected_text(tr(lang, if self.mode == Mode::Slope { "Slope" } else { "Aspect" })).show_ui(ui, |ui| {
@@ -254,7 +304,7 @@ impl ReliefCalc {
                     ui.selectable_value(&mut self.mode, Mode::Aspect, tr(lang, "Aspect"));
                 })
                 .response
-                .on_hover_text(tr(lang, "What the square shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile."));
+                .on_hover_text(tr(lang, "What the area shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile."));
                 ui.end_row();
                 ui.label(tr(lang, "Peak radius"));
                 ui.add(egui::DragValue::new(&mut self.peak_radius).range(20.0..=5000.0).speed(5.0).fixed_decimals(0).suffix(tr(lang, " m")))
@@ -266,41 +316,62 @@ impl ReliefCalc {
                 ui.end_row();
             });
             ui.add_space(4.0);
-            ui.add(egui::Label::new(&self.status).wrap());
+            ui.add(egui::Label::new(self.site.hint(lang).unwrap_or(&self.status)).wrap());
             ui.add_space(4.0);
-            ui.horizontal(|ui| {
-                if ui.button(tr(lang, "Build")).on_hover_text(tr(lang, "Slope and aspect of the square by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.")).clicked() {
-                    build = true;
-                }
-                if ui.add_enabled(self.state.is_some(), egui::Button::new(tr(lang, "Peaks and pits"))).on_hover_text(tr(lang, "Peaks and closed hollows of the square - points in «My places» with the height and the drop.")).clicked() {
-                    peaks = true;
-                }
-                if ui.add_enabled(self.state.is_some() || self.job.is_some(), egui::Button::new(tr(lang, "Remove"))).on_hover_text(tr(lang, "Remove the colouring of the square from the globe.")).clicked() {
-                    clear = true;
-                }
-            });
+            if ui
+                .add_enabled(self.state.is_some(), egui::Button::new(tr(lang, "Peaks and pits")))
+                .on_hover_text(tr(lang, "Peaks and closed hollows of the area - points with the height and the drop in the folder of the computation."))
+                .clicked()
+            {
+                peaks = true;
+            }
+            pressed = analysis::buttons(
+                ui,
+                lang,
+                self.state.is_some() && self.job.is_none(),
+                tr(lang, "Slope and aspect of the area by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world."),
+            );
         });
-        if build {
-            let (lat, lon) = self.point;
-            self.job = Some(GridHeights::new(lat, lon, self.radius_km * 1000.0, radius, max_level, now));
+        match pressed {
+            Some(Button::Build) => {
+                if let Some(problem) = self.site.problem(lang) {
+                    self.status = problem;
+                } else {
+                    let (lat, lon) = self.site.site.centre();
+                    let half = self.site.site.size() / 2.0;
+                    self.job = Some((GridHeights::new(lat, lon, half, radius, max_level, now), self.site.site.ring.clone()));
+                }
+            }
+            Some(Button::Ok) => {
+                self.save(lang);
+                self.clear();
+                self.open = false;
+            }
+            Some(Button::Cancel) => {
+                self.clear();
+                self.open = false;
+            }
+            None => {}
         }
         if peaks {
             self.find_peaks(lang);
         }
-        if clear {
+        // Крестик - как «Отмена».
+        if !open {
             self.clear();
+            self.open = false;
         }
         // Показ уклона или экспозиции без пересчёта.
         if self.mode != before
-            && let Some((r, z)) = self.state.take()
+            && let Some((r, z, ring)) = self.state.take()
         {
             let mut r = (*r).clone();
             r.mode = self.mode;
-            self.state = Some((Arc::new(r), z));
+            self.state = Some((Arc::new(r), z, ring));
             self.changed = true;
         }
-        if !open {
-            self.open = false;
+        if std::mem::take(&mut self.site.changed) && self.state.is_some() && self.job.is_none() {
+            self.status = tr(lang, "The area has changed. Press «Build» to compute it again.").to_string();
         }
         if self.job.is_some() {
             ctx.request_repaint();
@@ -308,7 +379,7 @@ impl ReliefCalc {
     }
 }
 
-/// Картинки тайлов квадрата: раскраска уклона или экспозиции.
+/// Картинки тайлов участка: раскраска уклона или экспозиции.
 pub fn painter(result: Arc<Relief>, radius: f64) -> crate::vector::Painter {
     Arc::new(move |key: TileKey| data::relief::tile_rgba(&result, key, radius))
 }

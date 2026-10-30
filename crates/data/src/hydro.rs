@@ -650,22 +650,46 @@ pub fn tile_cells(grid: &Grid, key: (u32, u32, u32), radius: f64) -> Option<Vec<
 /// FLOOD_OPACITY, сухое прозрачно. None - тайл не задевает сетку.
 pub fn flood_tile_rgba(grid: &Grid, flood: &Flood, z: &[f64], level: f64, key: (u32, u32, u32), radius: f64) -> Option<Vec<u8>> {
     let cells = tile_cells(grid, key, radius)?;
-    let top = flood.depth.max(0.1);
     let mut out = vec![0u8; TILE * TILE * 4];
     for (k, cell) in cells.iter().enumerate() {
-        let Some(i) = *cell else {
-            continue;
-        };
-        if !flood.mask.get(i).copied().unwrap_or(false) {
-            continue;
+        if let Some(rgba) = cell.and_then(|i| depth_color(flood, z, level, i)) {
+            out[k * 4..k * 4 + 4].copy_from_slice(&rgba);
         }
-        let depth = level - z.get(i).copied().unwrap_or(f64::NAN);
-        let t = if depth.is_finite() { (depth / top).clamp(0.0, 1.0) } else { 1.0 };
-        for ch in 0..3 {
-            let (a, b) = (f64::from(DEPTH_COLORS[0][ch]), f64::from(DEPTH_COLORS[1][ch]));
-            out[k * 4 + ch] = ((a + (b - a) * t) * FLOOD_OPACITY).round() as u8;
-        }
-        out[k * 4 + 3] = (FLOOD_OPACITY * 255.0).round() as u8;
     }
+    Some(out)
+}
+
+/// Вода затопления в точках (широта, долгота): RGBA с премноженной
+/// альфой на точку, как у [`flood_tile_rgba`], вне сетки и сухое
+/// прозрачно.
+pub fn flood_points_rgba(grid: &Grid, flood: &Flood, z: &[f64], level: f64, points: &[(f64, f64)], radius: f64) -> Vec<[u8; 4]> {
+    points
+        .iter()
+        .map(|&(lat, lon)| {
+            let (x, y) = mercator(lat, lon, radius);
+            let c = ((x - grid.x0) / grid.step).round_ties_even();
+            let r = ((grid.y0 - y) / grid.step).round_ties_even();
+            if !(r >= 0.0 && c >= 0.0 && r < grid.rows as f64 && c < grid.cols as f64) {
+                return [0; 4];
+            }
+            depth_color(flood, z, level, r as usize * grid.cols + c as usize).unwrap_or([0; 4])
+        })
+        .collect()
+}
+
+/// Цвет воды узла i по глубине или None - узел сухой.
+fn depth_color(flood: &Flood, z: &[f64], level: f64, i: usize) -> Option<[u8; 4]> {
+    if !flood.mask.get(i).copied().unwrap_or(false) {
+        return None;
+    }
+    let top = flood.depth.max(0.1);
+    let depth = level - z.get(i).copied().unwrap_or(f64::NAN);
+    let t = if depth.is_finite() { (depth / top).clamp(0.0, 1.0) } else { 1.0 };
+    let mut out = [0u8; 4];
+    for (ch, slot) in out.iter_mut().take(3).enumerate() {
+        let (a, b) = (f64::from(DEPTH_COLORS[0][ch]), f64::from(DEPTH_COLORS[1][ch]));
+        *slot = ((a + (b - a) * t) * FLOOD_OPACITY).round() as u8;
+    }
+    out[3] = (FLOOD_OPACITY * 255.0).round() as u8;
     Some(out)
 }

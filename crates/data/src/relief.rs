@@ -113,7 +113,8 @@ pub fn extremes(z: &[f64], grid: &Grid, radius_m: f64, drop: f64) -> Vec<(usize,
     topo_surface::find_extremes(z, grid.rows, grid.cols, grid.cell, radius_m, drop, None)
 }
 
-/// Значение слоя (по mode) ближайшего узла к точке, None - вне сетки.
+/// Значение слоя (по mode) ближайшего узла к точке, None - вне сетки
+/// или узел без высоты (вне участка).
 pub fn sample(relief: &Relief, lat: f64, lon: f64, radius: f64) -> Option<f64> {
     let grid = &relief.grid;
     let (x, y) = hydro::mercator(lat, lon, radius);
@@ -122,13 +123,16 @@ pub fn sample(relief: &Relief, lat: f64, lon: f64, radius: f64) -> Option<f64> {
     if !(r >= 0.0 && c >= 0.0 && r < grid.rows as f64 && c < grid.cols as f64) {
         return None;
     }
-    values(relief).get(r as usize * grid.cols + c as usize).copied()
+    value(relief, r as usize * grid.cols + c as usize)
 }
 
-fn values(relief: &Relief) -> &[f64] {
+/// Значение слоя узла i. Узел без уклона - без высоты, у экспозиции его
+/// нет тоже: экспозиция NaN там значит ровное место только при уклоне.
+fn value(relief: &Relief, i: usize) -> Option<f64> {
+    let slope = relief.slope.get(i).copied()?;
     match relief.mode {
-        Mode::Slope => &relief.slope,
-        Mode::Aspect => &relief.aspect,
+        Mode::Slope => Some(slope),
+        Mode::Aspect => slope.is_finite().then(|| relief.aspect.get(i).copied()).flatten(),
     }
 }
 
@@ -168,7 +172,6 @@ pub fn points_rgba(relief: &Relief, points: &[(f64, f64)], radius: f64) -> Vec<u
 /// вида, вне сетки прозрачно. None - тайл не задевает сетку.
 pub fn tile_rgba(relief: &Relief, key: (u32, u32, u32), radius: f64) -> Option<Vec<u8>> {
     let cells = hydro::tile_cells(&relief.grid, key, radius)?;
-    let data = values(relief);
-    let found: Vec<Option<f64>> = cells.iter().map(|c| c.and_then(|i| data.get(i).copied())).collect();
+    let found: Vec<Option<f64>> = cells.iter().map(|c| c.and_then(|i| value(relief, i))).collect();
     Some(paint(relief, &found))
 }
