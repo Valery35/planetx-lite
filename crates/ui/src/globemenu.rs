@@ -242,8 +242,13 @@ impl GlobeMenu {
                                     if self.earth {
                                         item(ui, "Insolation here…", "Hours of direct sun per day around the point.", Choice::Insolation);
                                         item(ui, "Shadows here…", "Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.", Choice::Shadows);
-                                        item(ui, "Changes of the terrain here…", "Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.", Choice::Changes);
-                                        item(ui, "Classification here…", "Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.", Choice::Classes);
+                                        // Хранилище файлов AlphaEarth не отдаёт заголовков
+                                        // CORS (проверено 30 октября 2026 года), у страницы
+                                        // этих пунктов нет.
+                                        if !cfg!(target_arch = "wasm32") {
+                                            item(ui, "Changes of the terrain here…", "Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.", Choice::Changes);
+                                            item(ui, "Classification here…", "Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.", Choice::Classes);
+                                        }
                                     }
                                 });
                                 ui.menu_button(tr(lang, "Hydrology"), |ui| {
