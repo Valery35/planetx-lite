@@ -1859,3 +1859,19 @@ terrain {value}	relevo {value}
 Between beds	Entre camadas
 Layers with Z	Camadas com Z
 Parts of objects with Z {count}.	Partes de objetos com Z: {count}.
+Reading the raster of the area…	A ler o raster da área…
+Computing the classes…	A calcular as classes…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	Classes do raster «{name}»: {parts}. Píxel {pixel} m.
+The raster covers {share} % of the area.	O raster cobre {share} % da área.
+Points without raster data: {n}.	Pontos sem dados do raster: {n}.
+The raster is not read.	O raster não foi lido.
+The raster has no coordinate system.	O raster não tem sistema de coordenadas.
+The grid of the area does not fit in memory, take a larger pixel.	A grelha da área não cabe na memória, escolha um píxel maior.
+The area is outside the raster.	A área está fora do raster.
+At least two classes with points on raster cells with data are needed.	São necessárias pelo menos duas classes com pontos em células do raster com dados.
+The raster bands do not change in the area, the classes cannot be told apart.	As bandas do raster não variam na área, as classes não se distinguem.
+The raster is no longer open.	O raster já não está aberto.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Pelo que as células são divididas. Os vetores AlphaEarth são carregados da rede. Num raster aberto no programa cada banda é uma característica e a rede não é necessária.
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	O píxel da classificação. «Auto» usa o píxel do raster se a área não tiver mais de 640 mil células.
+Each cell of the area goes to the class of the nearest control points by the raster bands.	Cada célula da área passa para a classe dos pontos de controlo mais próximos segundo as bandas do raster.
+Classes of the area by control points on the globe - by the bands of an opened raster.	Classes da área por pontos de controlo no globo, segundo as bandas de um raster aberto.

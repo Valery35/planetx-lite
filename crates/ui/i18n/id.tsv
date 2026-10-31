@@ -1859,3 +1859,19 @@ terrain {value}	relief {value}
 Between beds	Di antara lapisan
 Layers with Z	Lapisan dengan Z
 Parts of objects with Z {count}.	Bagian objek dengan Z: {count}.
+Reading the raster of the area…	Membaca raster area…
+Computing the classes…	Menghitung kelas…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	Kelas raster «{name}»: {parts}. Piksel {pixel} m.
+The raster covers {share} % of the area.	Raster mencakup {share} % area.
+Points without raster data: {n}.	Titik tanpa data raster: {n}.
+The raster is not read.	Raster tidak terbaca.
+The raster has no coordinate system.	Raster tidak memiliki sistem koordinat.
+The grid of the area does not fit in memory, take a larger pixel.	Kisi area tidak muat di memori, pilih piksel yang lebih besar.
+The area is outside the raster.	Area berada di luar raster.
+At least two classes with points on raster cells with data are needed.	Diperlukan setidaknya dua kelas dengan titik pada sel raster berdata.
+The raster bands do not change in the area, the classes cannot be told apart.	Kanal raster tidak berubah di area ini, kelas tidak dapat dibedakan.
+The raster is no longer open.	Raster tidak lagi terbuka.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Dasar pembagian sel. Vektor AlphaEarth dimuat dari jaringan. Pada raster yang dibuka di program, setiap kanal adalah fitur dan jaringan tidak diperlukan.
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Piksel klasifikasi. «Otomatis» memakai piksel raster jika area tidak lebih dari 640 ribu sel.
+Each cell of the area goes to the class of the nearest control points by the raster bands.	Setiap sel area masuk ke kelas titik kontrol terdekat menurut kanal raster.
+Classes of the area by control points on the globe - by the bands of an opened raster.	Kelas area menurut titik kontrol di globe, berdasarkan kanal raster yang terbuka.

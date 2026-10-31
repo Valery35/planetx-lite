@@ -84,6 +84,11 @@ impl Relief {
         self.pending.clear();
     }
 
+    /// Открытые растры: имя и байты файла, для классификации по каналам.
+    pub fn files(&self) -> Vec<(String, std::sync::Arc<Vec<u8>>)> {
+        self.entries.iter().map(|e| (e.name.clone(), e.bytes.clone())).collect()
+    }
+
     /// Батиметрия растра name: что в растре и уровень воды.
     pub fn lake(&self, name: &str) -> Option<(bathymetry::Kind, f64)> {
         self.entries.iter().find(|e| e.name == name).and_then(|e| e.lake)

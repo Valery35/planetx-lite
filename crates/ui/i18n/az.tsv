@@ -1859,3 +1859,19 @@ terrain {value}	relyef {value}
 Between beds	Laylar arası
 Layers with Z	Z ilə laylar
 Parts of objects with Z {count}.	Z ilə obyektlərin hissələri {count}.
+Reading the raster of the area…	Sahənin rastri oxunur…
+Computing the classes…	Siniflər hesablanır…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	«{name}» rastrının sinifləri: {parts}. Piksel {pixel} m.
+The raster covers {share} % of the area.	Rastr sahənin {share} %-ni əhatə edir.
+Points without raster data: {n}.	Rastr məlumatı olmayan nöqtələr: {n}.
+The raster is not read.	Rastr oxunmadı.
+The raster has no coordinate system.	Rastrın koordinat sistemi yoxdur.
+The grid of the area does not fit in memory, take a larger pixel.	Sahə şəbəkəsi yaddaşa sığmır, daha böyük piksel seçin.
+The area is outside the raster.	Sahə rastrdan kənardadır.
+At least two classes with points on raster cells with data are needed.	Məlumatlı rastr xanalarında nöqtələri olan ən azı iki sinif lazımdır.
+The raster bands do not change in the area, the classes cannot be told apart.	Rastr kanalları sahədə dəyişmir, sinifləri ayırmaq olmur.
+The raster is no longer open.	Rastr artıq açıq deyil.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Xanaların nəyə görə bölündüyü. AlphaEarth vektorları şəbəkədən yüklənir. Proqramda açılmış rastrda hər kanal əlamətdir, şəbəkə lazım deyil.
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Təsnifat pikseli. «Avto» sahədə 640 mindən çox xana yoxdursa rastrın pikselini götürür.
+Each cell of the area goes to the class of the nearest control points by the raster bands.	Sahənin hər xanası rastr kanallarına görə ən yaxın nəzarət nöqtələrinin sinfinə aid edilir.
+Classes of the area by control points on the globe - by the bands of an opened raster.	Qlobusdakı nəzarət nöqtələrinə görə sahə sinifləri, açıq rastrın kanalları ilə.

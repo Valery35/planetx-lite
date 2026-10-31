@@ -1859,3 +1859,19 @@ terrain {value}	địa hình {value}
 Between beds	Giữa các vỉa
 Layers with Z	Lớp có Z
 Parts of objects with Z {count}.	Phần đối tượng có Z: {count}.
+Reading the raster of the area…	Đang đọc raster của khu vực…
+Computing the classes…	Đang tính các lớp…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	Các lớp của raster «{name}»: {parts}. Điểm ảnh {pixel} m.
+The raster covers {share} % of the area.	Raster phủ {share} % khu vực.
+Points without raster data: {n}.	Điểm không có dữ liệu raster: {n}.
+The raster is not read.	Không đọc được raster.
+The raster has no coordinate system.	Raster không có hệ tọa độ.
+The grid of the area does not fit in memory, take a larger pixel.	Lưới khu vực không vừa bộ nhớ, hãy chọn điểm ảnh lớn hơn.
+The area is outside the raster.	Khu vực nằm ngoài raster.
+At least two classes with points on raster cells with data are needed.	Cần ít nhất hai lớp có điểm trên các ô raster có dữ liệu.
+The raster bands do not change in the area, the classes cannot be told apart.	Các kênh raster không thay đổi trong khu vực, không thể phân biệt các lớp.
+The raster is no longer open.	Raster không còn mở.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Cơ sở chia các ô. Vectơ AlphaEarth được tải từ mạng. Với raster mở trong chương trình, mỗi kênh là một đặc trưng, không cần mạng.
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Điểm ảnh của phân loại. «Tự động» lấy điểm ảnh của raster nếu khu vực không quá 640 nghìn ô.
+Each cell of the area goes to the class of the nearest control points by the raster bands.	Mỗi ô của khu vực thuộc về lớp của các điểm kiểm soát gần nhất theo các kênh raster.
+Classes of the area by control points on the globe - by the bands of an opened raster.	Các lớp của khu vực theo điểm kiểm soát trên quả địa cầu, dựa trên các kênh của raster đang mở.

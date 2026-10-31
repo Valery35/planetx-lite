@@ -1859,3 +1859,19 @@ terrain {value}	地形 {value}
 Between beds	地層間
 Layers with Z	Z 付きレイヤー
 Parts of objects with Z {count}.	Z 付きオブジェクトの部分 {count}。
+Reading the raster of the area…	区域のラスターを読み込んでいます…
+Computing the classes…	クラスを計算しています…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	ラスター「{name}」のクラス: {parts}。ピクセル {pixel} m。
+The raster covers {share} % of the area.	ラスターは区域の {share} % を覆っています。
+Points without raster data: {n}.	ラスターデータのない点: {n}。
+The raster is not read.	ラスターを読み込めません。
+The raster has no coordinate system.	ラスターに座標系がありません。
+The grid of the area does not fit in memory, take a larger pixel.	区域のグリッドがメモリに収まりません。より大きなピクセルを選んでください。
+The area is outside the raster.	区域はラスターの範囲外です。
+At least two classes with points on raster cells with data are needed.	データのあるラスターセル上に点を持つクラスが2つ以上必要です。
+The raster bands do not change in the area, the classes cannot be told apart.	ラスターのバンドが区域内で変化せず、クラスを区別できません。
+The raster is no longer open.	ラスターはもう開かれていません。
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	セルを分ける基準。AlphaEarth のベクトルはネットワークから読み込みます。プログラムで開いたラスターでは各バンドが特徴になり、ネットワークは不要です。
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	分類のピクセル。「自動」は区域のセルが64万以下ならラスターのピクセルを使います。
+Each cell of the area goes to the class of the nearest control points by the raster bands.	区域の各セルは、ラスターのバンドに基づいて最も近いコントロールポイントのクラスに割り当てられます。
+Classes of the area by control points on the globe - by the bands of an opened raster.	地球儀上のコントロールポイントによる区域のクラス。開いているラスターのバンドに基づきます。

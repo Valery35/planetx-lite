@@ -1859,3 +1859,19 @@ terrain {value}	relieve {value}
 Between beds	Entre capas
 Layers with Z	Capas con Z
 Parts of objects with Z {count}.	Partes de objetos con Z: {count}.
+Reading the raster of the area…	Leyendo el ráster de la zona…
+Computing the classes…	Calculando las clases…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	Clases del ráster «{name}»: {parts}. Píxel {pixel} m.
+The raster covers {share} % of the area.	El ráster cubre el {share} % de la zona.
+Points without raster data: {n}.	Puntos sin datos del ráster: {n}.
+The raster is not read.	El ráster no se ha leído.
+The raster has no coordinate system.	El ráster no tiene sistema de coordenadas.
+The grid of the area does not fit in memory, take a larger pixel.	La cuadrícula de la zona no cabe en la memoria, elija un píxel mayor.
+The area is outside the raster.	La zona está fuera del ráster.
+At least two classes with points on raster cells with data are needed.	Se necesitan al menos dos clases con puntos en celdas del ráster con datos.
+The raster bands do not change in the area, the classes cannot be told apart.	Las bandas del ráster no cambian en la zona, las clases no se distinguen.
+The raster is no longer open.	El ráster ya no está abierto.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Por qué se dividen las celdas. Los vectores AlphaEarth se cargan de la red. En un ráster abierto en el programa cada banda es un rasgo y no hace falta la red.
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	El píxel de la clasificación. «Auto» toma el píxel del ráster si la zona no supera las 640 mil celdas.
+Each cell of the area goes to the class of the nearest control points by the raster bands.	Cada celda de la zona pasa a la clase de los puntos de control más cercanos según las bandas del ráster.
+Classes of the area by control points on the globe - by the bands of an opened raster.	Clases de la zona por puntos de control en el globo, según las bandas de un ráster abierto.

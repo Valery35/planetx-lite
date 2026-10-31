@@ -1859,3 +1859,19 @@ terrain {value}	arazi {value}
 Between beds	Katmanlar arası
 Layers with Z	Z içeren katmanlar
 Parts of objects with Z {count}.	Z içeren nesne parçaları: {count}.
+Reading the raster of the area…	Alanın rasterı okunuyor…
+Computing the classes…	Sınıflar hesaplanıyor…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	«{name}» rasterının sınıfları: {parts}. Piksel {pixel} m.
+The raster covers {share} % of the area.	Raster alanın %{share} kısmını kaplıyor.
+Points without raster data: {n}.	Raster verisi olmayan noktalar: {n}.
+The raster is not read.	Raster okunamadı.
+The raster has no coordinate system.	Rasterın koordinat sistemi yok.
+The grid of the area does not fit in memory, take a larger pixel.	Alan ızgarası belleğe sığmıyor, daha büyük piksel seçin.
+The area is outside the raster.	Alan rasterın dışında.
+At least two classes with points on raster cells with data are needed.	Verili raster hücrelerinde noktası olan en az iki sınıf gerekli.
+The raster bands do not change in the area, the classes cannot be told apart.	Raster bantları alanda değişmiyor, sınıflar ayırt edilemiyor.
+The raster is no longer open.	Raster artık açık değil.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Hücrelerin neye göre ayrıldığı. AlphaEarth vektörleri ağdan yüklenir. Programda açık bir rasterda her bant bir özelliktir, ağ gerekmez.
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Sınıflandırma pikseli. «Otomatik», alanda en fazla 640 bin hücre varsa rasterın pikselini alır.
+Each cell of the area goes to the class of the nearest control points by the raster bands.	Alanın her hücresi, raster bantlarına göre en yakın kontrol noktalarının sınıfına girer.
+Classes of the area by control points on the globe - by the bands of an opened raster.	Küre üzerindeki kontrol noktalarına göre alan sınıfları, açık bir rasterın bantlarıyla.

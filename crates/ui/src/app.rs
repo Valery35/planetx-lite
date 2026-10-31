@@ -1820,7 +1820,8 @@ impl LiteApp {
         });
         let earth = self.planet.earth;
         let relief = earth || self.planet.terrain.is_some();
-        crate::globemenu::GlobeMenu { at: pos, point, coords, place, drawing, mover, live, sheets, links, satellite, earth, relief }
+        let rasters = !self.relief.names().is_empty();
+        crate::globemenu::GlobeMenu { at: pos, point, coords, place, drawing, mover, live, sheets, links, satellite, earth, relief, rasters }
     }
 
     /// Выбор в меню на глобусе.
@@ -1975,7 +1976,7 @@ impl LiteApp {
                 let title = if name.is_empty() { coords } else { format!("{name}  {coords}") };
                 match &mut self.aef_class {
                     Some(c) => c.set_point(lat, lon, title),
-                    None => self.aef_class = Some(crate::aefclass::ClassCalc::new(lat, lon, title, self.lang)),
+                    None => self.aef_class = Some(crate::aefclass::ClassCalc::new(lat, lon, title, self.relief.files(), self.lang)),
                 }
                 self.join_site(&choice, lat, lon);
             }
@@ -4950,6 +4951,7 @@ impl LiteApp {
                 changed |= std::mem::take(&mut calc.changed);
             }
             if let Some(calc) = &mut self.aef_class {
+                calc.rasters = self.relief.files();
                 calc.show(ctx, lang);
                 calc.step(lang, &*self.loaders.request);
                 changed |= std::mem::take(&mut calc.changed);

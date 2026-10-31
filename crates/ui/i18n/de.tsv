@@ -1859,3 +1859,19 @@ terrain {value}	Gelände {value}
 Between beds	Zwischen den Schichten
 Layers with Z	Layer mit Z
 Parts of objects with Z {count}.	Teile von Objekten mit Z: {count}.
+Reading the raster of the area…	Das Raster des Gebiets wird gelesen…
+Computing the classes…	Klassen werden berechnet…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	Klassen des Rasters «{name}»: {parts}. Pixel {pixel} m.
+The raster covers {share} % of the area.	Das Raster deckt {share} % des Gebiets ab.
+Points without raster data: {n}.	Punkte ohne Rasterdaten: {n}.
+The raster is not read.	Das Raster wurde nicht gelesen.
+The raster has no coordinate system.	Das Raster hat kein Koordinatensystem.
+The grid of the area does not fit in memory, take a larger pixel.	Das Raster des Gebiets passt nicht in den Speicher, wählen Sie ein größeres Pixel.
+The area is outside the raster.	Das Gebiet liegt außerhalb des Rasters.
+At least two classes with points on raster cells with data are needed.	Mindestens zwei Klassen mit Punkten auf Rasterzellen mit Daten sind nötig.
+The raster bands do not change in the area, the classes cannot be told apart.	Die Rasterkanäle ändern sich im Gebiet nicht, die Klassen sind nicht unterscheidbar.
+The raster is no longer open.	Das Raster ist nicht mehr geöffnet.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Wonach die Zellen unterteilt werden. AlphaEarth-Vektoren werden aus dem Netz geladen. Bei einem im Programm geöffneten Raster ist jeder Kanal ein Merkmal, das Netz wird nicht gebraucht.
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Das Pixel der Klassifikation. «Auto» nimmt das Pixel des Rasters, wenn das Gebiet höchstens 640 Tausend Zellen hat.
+Each cell of the area goes to the class of the nearest control points by the raster bands.	Jede Zelle des Gebiets kommt nach den Rasterkanälen zur Klasse der nächsten Kontrollpunkte.
+Classes of the area by control points on the globe - by the bands of an opened raster.	Klassen des Gebiets nach Kontrollpunkten auf dem Globus - nach den Kanälen eines geöffneten Rasters.

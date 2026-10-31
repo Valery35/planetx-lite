@@ -1859,3 +1859,19 @@ terrain {value}	рельеф {value}
 Between beds	Между пластами
 Layers with Z	Слои с Z
 Parts of objects with Z {count}.	Частей объектов с Z {count}.
+Reading the raster of the area…	Читается растр участка…
+Computing the classes…	Считаются классы…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	Классы растра «{name}»: {parts}. Пиксель {pixel} м.
+The raster covers {share} % of the area.	Растр покрывает {share} % участка.
+Points without raster data: {n}.	Точек без данных растра: {n}.
+The raster is not read.	Растр не прочитан.
+The raster has no coordinate system.	У растра не задана система координат.
+The grid of the area does not fit in memory, take a larger pixel.	Сетка участка не помещается в память, возьмите пиксель крупнее.
+The area is outside the raster.	Участок вне охвата растра.
+At least two classes with points on raster cells with data are needed.	Нужно хотя бы два класса с точками на клетках растра с данными.
+The raster bands do not change in the area, the classes cannot be told apart.	Каналы растра на участке не меняются, классы различить нельзя.
+The raster is no longer open.	Растр больше не открыт.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	По чему клетки делятся на классы. Векторы AlphaEarth загружаются из сети. У растра, открытого в программе, каждый канал - признак, сеть не нужна.
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Пиксель классификации. «Авто» берёт пиксель растра, если на участке клеток не больше 640 тысяч.
+Each cell of the area goes to the class of the nearest control points by the raster bands.	Каждая клетка участка относится к классу ближайших контрольных точек по каналам растра.
+Classes of the area by control points on the globe - by the bands of an opened raster.	Классы участка по контрольным точкам на глобусе - по каналам открытого растра.

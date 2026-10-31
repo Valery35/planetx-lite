@@ -1859,3 +1859,19 @@ terrain {value}	地形 {value}
 Between beds	地层之间
 Layers with Z	含 Z 的图层
 Parts of objects with Z {count}.	含 Z 的对象部分 {count}。
+Reading the raster of the area…	正在读取区域的栅格…
+Computing the classes…	正在计算类别…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	栅格「{name}」的类别:{parts}。像元 {pixel} 米。
+The raster covers {share} % of the area.	栅格覆盖区域的 {share} %。
+Points without raster data: {n}.	无栅格数据的点:{n}。
+The raster is not read.	未能读取栅格。
+The raster has no coordinate system.	栅格没有坐标系。
+The grid of the area does not fit in memory, take a larger pixel.	区域网格超出内存,请选择更大的像元。
+The area is outside the raster.	区域在栅格范围之外。
+At least two classes with points on raster cells with data are needed.	至少需要两个类别的点位于有数据的栅格单元上。
+The raster bands do not change in the area, the classes cannot be told apart.	栅格波段在区域内没有变化,无法区分类别。
+The raster is no longer open.	栅格已不再打开。
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	单元按什么划分。AlphaEarth 向量从网络加载。程序中打开的栅格每个波段都是特征,无需网络。
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	分类的像元。如果区域不超过 64 万个单元,「自动」采用栅格的像元。
+Each cell of the area goes to the class of the nearest control points by the raster bands.	区域的每个单元按栅格波段归入最近控制点的类别。
+Classes of the area by control points on the globe - by the bands of an opened raster.	按地球上的控制点划分区域类别,依据已打开栅格的波段。

@@ -113,6 +113,8 @@ pub struct GlobeMenu {
     pub earth: bool,
     /// У тела есть высоты: подменю «Анализ участка».
     pub relief: bool,
+    /// В программе открыт свой растр: классы по его каналам есть и у страницы.
+    pub rasters: bool,
 }
 
 impl GlobeMenu {
@@ -245,10 +247,13 @@ impl GlobeMenu {
                                         item(ui, "Shadows…", "Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.", Choice::Shadows);
                                         // Хранилище файлов AlphaEarth не отдаёт заголовков
                                         // CORS (проверено 30 октября 2026 года), у страницы
-                                        // этих пунктов нет.
+                                        // этих пунктов нет. Классы по открытому растру сети
+                                        // не просят.
                                         if !cfg!(target_arch = "wasm32") {
                                             item(ui, "Changes of the terrain…", "Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.", Choice::Changes);
                                             item(ui, "Classification…", "Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.", Choice::Classes);
+                                        } else if self.rasters {
+                                            item(ui, "Classification…", "Classes of the area by control points on the globe - by the bands of an opened raster.", Choice::Classes);
                                         }
                                     }
                                     ui.separator();

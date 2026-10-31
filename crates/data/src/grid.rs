@@ -77,31 +77,13 @@ impl Grid {
     /// Значение в точке (столбец, строка) с долями, билинейно по центрам
     /// точек. NaN - вне растра или у соседей нет данных.
     pub fn bilinear(&self, col: f64, row: f64) -> f32 {
-        let (px, py) = (col - 0.5, row - 0.5);
-        if !(px > -0.5 && py > -0.5 && px < self.width as f64 - 0.5 && py < self.height as f64 - 0.5) {
-            return f32::NAN;
-        }
-        let x0 = px.floor().clamp(0.0, (self.width.saturating_sub(2)) as f64) as usize;
-        let y0 = py.floor().clamp(0.0, (self.height.saturating_sub(2)) as f64) as usize;
-        let (x1, y1) = ((x0 + 1).min(self.width - 1), (y0 + 1).min(self.height - 1));
-        let fx = (px - x0 as f64).clamp(0.0, 1.0) as f32;
-        let fy = (py - y0 as f64).clamp(0.0, 1.0) as f32;
-        let at = |x: usize, y: usize| self.values.get(y * self.width + x).copied().unwrap_or(f32::NAN);
-        let top = at(x0, y0) * (1.0 - fx) + at(x1, y0) * fx;
-        let bottom = at(x0, y1) * (1.0 - fx) + at(x1, y1) * fx;
-        top * (1.0 - fy) + bottom * fy
+        blend(self.width, self.height, col, row, |x, y| self.values.get(y * self.width + x).copied().unwrap_or(f32::NAN))
     }
 
     /// Столбец и строка растра с долями для точки (x, y) его системы.
     /// None - привязка вырождена.
     pub fn pixel_of(&self, x: f64, y: f64) -> Option<(f64, f64)> {
-        let t = &self.transform;
-        let det = t[1] * t[5] - t[2] * t[4];
-        if det == 0.0 || !det.is_finite() {
-            return None;
-        }
-        let (dx, dy) = (x - t[0], y - t[3]);
-        Some(((dx * t[5] - dy * t[2]) / det, (dy * t[1] - dx * t[4]) / det))
+        pixel_of(&self.transform, x, y)
     }
 
     /// Пересчёт из системы EPSG code в систему растра.
@@ -166,6 +148,35 @@ impl Grid {
         }
         Some(out)
     }
+}
+
+/// Смесь четырёх соседей растра width × height в точке (столбец, строка)
+/// с долями, билинейно по центрам точек. at - значение точки. NaN - вне
+/// растра или у соседей нет данных.
+pub fn blend(width: usize, height: usize, col: f64, row: f64, at: impl Fn(usize, usize) -> f32) -> f32 {
+    let (px, py) = (col - 0.5, row - 0.5);
+    if width == 0 || height == 0 || !(px > -0.5 && py > -0.5 && px < width as f64 - 0.5 && py < height as f64 - 0.5) {
+        return f32::NAN;
+    }
+    let x0 = px.floor().clamp(0.0, (width.saturating_sub(2)) as f64) as usize;
+    let y0 = py.floor().clamp(0.0, (height.saturating_sub(2)) as f64) as usize;
+    let (x1, y1) = ((x0 + 1).min(width - 1), (y0 + 1).min(height - 1));
+    let fx = (px - x0 as f64).clamp(0.0, 1.0) as f32;
+    let fy = (py - y0 as f64).clamp(0.0, 1.0) as f32;
+    let top = at(x0, y0) * (1.0 - fx) + at(x1, y0) * fx;
+    let bottom = at(x0, y1) * (1.0 - fx) + at(x1, y1) * fx;
+    top * (1.0 - fy) + bottom * fy
+}
+
+/// Столбец и строка растра с долями для точки (x, y) его системы по
+/// привязке t. None - привязка вырождена.
+pub fn pixel_of(t: &[f64; 6], x: f64, y: f64) -> Option<(f64, f64)> {
+    let det = t[1] * t[5] - t[2] * t[4];
+    if det == 0.0 || !det.is_finite() {
+        return None;
+    }
+    let (dx, dy) = (x - t[0], y - t[3]);
+    Some(((dx * t[5] - dy * t[2]) / det, (dy * t[1] - dx * t[4]) / det))
 }
 
 /// Широта и долгота точки (x, y) системы EPSG code.

@@ -1859,3 +1859,19 @@ terrain {value}	რელიეფი {value}
 Between beds	ფენებს შორის
 Layers with Z	Z-იანი ფენები
 Parts of objects with Z {count}.	Z-იანი ობიექტების ნაწილები: {count}.
+Reading the raster of the area…	იკითხება უბნის რასტრი…
+Computing the classes…	გამოითვლება კლასები…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	რასტრის «{name}» კლასები: {parts}. პიქსელი {pixel} მ.
+The raster covers {share} % of the area.	რასტრი ფარავს უბნის {share} %-ს.
+Points without raster data: {n}.	წერტილები რასტრის მონაცემების გარეშე: {n}.
+The raster is not read.	რასტრი ვერ წაიკითხა.
+The raster has no coordinate system.	რასტრს არ აქვს კოორდინატთა სისტემა.
+The grid of the area does not fit in memory, take a larger pixel.	უბნის ბადე მეხსიერებაში არ ეტევა, აიღეთ უფრო დიდი პიქსელი.
+The area is outside the raster.	უბანი რასტრის გარეთაა.
+At least two classes with points on raster cells with data are needed.	საჭიროა მინიმუმ ორი კლასი, რომელთა წერტილები რასტრის მონაცემებიან უჯრებზეა.
+The raster bands do not change in the area, the classes cannot be told apart.	რასტრის არხები უბანზე არ იცვლება, კლასების გარჩევა შეუძლებელია.
+The raster is no longer open.	რასტრი აღარ არის გახსნილი.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	რით იყოფა უჯრები. AlphaEarth-ის ვექტორები ქსელიდან იტვირთება. პროგრამაში გახსნილ რასტრში თითოეული არხი ნიშანია, ქსელი საჭირო არ არის.
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	კლასიფიკაციის პიქსელი. «ავტო» იღებს რასტრის პიქსელს, თუ უბანზე 640 ათასზე მეტი უჯრა არ არის.
+Each cell of the area goes to the class of the nearest control points by the raster bands.	უბნის თითოეული უჯრა რასტრის არხების მიხედვით უახლოესი საკონტროლო წერტილების კლასს მიეკუთვნება.
+Classes of the area by control points on the globe - by the bands of an opened raster.	უბნის კლასები გლობუსზე საკონტროლო წერტილებით, გახსნილი რასტრის არხების მიხედვით.

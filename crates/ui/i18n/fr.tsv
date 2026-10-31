@@ -1859,3 +1859,19 @@ terrain {value}	relief {value}
 Between beds	Entre les couches
 Layers with Z	Couches avec Z
 Parts of objects with Z {count}.	Parties d’objets avec Z : {count}.
+Reading the raster of the area…	Lecture du raster de la zone…
+Computing the classes…	Calcul des classes…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	Classes du raster «{name}» : {parts}. Pixel {pixel} m.
+The raster covers {share} % of the area.	Le raster couvre {share} % de la zone.
+Points without raster data: {n}.	Points sans données du raster : {n}.
+The raster is not read.	Le raster n'a pas été lu.
+The raster has no coordinate system.	Le raster n'a pas de système de coordonnées.
+The grid of the area does not fit in memory, take a larger pixel.	La grille de la zone ne tient pas en mémoire, prenez un pixel plus grand.
+The area is outside the raster.	La zone est hors du raster.
+At least two classes with points on raster cells with data are needed.	Il faut au moins deux classes avec des points sur des cellules du raster avec données.
+The raster bands do not change in the area, the classes cannot be told apart.	Les canaux du raster ne varient pas sur la zone, les classes sont indiscernables.
+The raster is no longer open.	Le raster n'est plus ouvert.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Ce qui répartit les cellules. Les vecteurs AlphaEarth sont chargés depuis le réseau. Dans un raster ouvert dans le programme, chaque canal est un attribut, le réseau n'est pas nécessaire.
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Le pixel de la classification. «Auto» prend le pixel du raster si la zone ne dépasse pas 640 mille cellules.
+Each cell of the area goes to the class of the nearest control points by the raster bands.	Chaque cellule de la zone va à la classe des points de contrôle les plus proches selon les canaux du raster.
+Classes of the area by control points on the globe - by the bands of an opened raster.	Classes de la zone par points de contrôle sur le globe, selon les canaux d'un raster ouvert.

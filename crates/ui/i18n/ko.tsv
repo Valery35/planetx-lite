@@ -1859,3 +1859,19 @@ terrain {value}	지형 {value}
 Between beds	지층 사이
 Layers with Z	Z 포함 레이어
 Parts of objects with Z {count}.	Z 포함 객체 부분 {count}개.
+Reading the raster of the area…	영역의 래스터를 읽는 중…
+Computing the classes…	클래스를 계산하는 중…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	래스터 «{name}»의 클래스: {parts}. 픽셀 {pixel} m.
+The raster covers {share} % of the area.	래스터가 영역의 {share} %를 덮습니다.
+Points without raster data: {n}.	래스터 데이터가 없는 점: {n}.
+The raster is not read.	래스터를 읽지 못했습니다.
+The raster has no coordinate system.	래스터에 좌표계가 없습니다.
+The grid of the area does not fit in memory, take a larger pixel.	영역 격자가 메모리에 들어가지 않습니다. 더 큰 픽셀을 선택하세요.
+The area is outside the raster.	영역이 래스터 밖에 있습니다.
+At least two classes with points on raster cells with data are needed.	데이터가 있는 래스터 셀에 점이 있는 클래스가 두 개 이상 필요합니다.
+The raster bands do not change in the area, the classes cannot be told apart.	영역에서 래스터 밴드가 변하지 않아 클래스를 구분할 수 없습니다.
+The raster is no longer open.	래스터가 더 이상 열려 있지 않습니다.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	셀을 나누는 기준입니다. AlphaEarth 벡터는 네트워크에서 불러옵니다. 프로그램에서 연 래스터는 각 밴드가 특징이며 네트워크가 필요 없습니다.
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	분류 픽셀입니다. «자동»은 영역의 셀이 64만 개 이하이면 래스터의 픽셀을 사용합니다.
+Each cell of the area goes to the class of the nearest control points by the raster bands.	영역의 각 셀은 래스터 밴드 기준으로 가장 가까운 기준점의 클래스에 속합니다.
+Classes of the area by control points on the globe - by the bands of an opened raster.	지구본의 기준점으로 영역 클래스를 나눕니다. 열린 래스터의 밴드를 사용합니다.

@@ -1859,3 +1859,19 @@ terrain {value}	reliëf {value}
 Between beds	Tussen lagen
 Layers with Z	Lagen met Z
 Parts of objects with Z {count}.	Delen van objecten met Z: {count}.
+Reading the raster of the area…	Raster van het gebied wordt gelezen…
+Computing the classes…	Klassen worden berekend…
+Classes of the raster «{name}»: {parts}. Pixel {pixel} m.	Klassen van raster «{name}»: {parts}. Pixel {pixel} m.
+The raster covers {share} % of the area.	Het raster dekt {share} % van het gebied.
+Points without raster data: {n}.	Punten zonder rastergegevens: {n}.
+The raster is not read.	Het raster is niet gelezen.
+The raster has no coordinate system.	Het raster heeft geen coördinatenstelsel.
+The grid of the area does not fit in memory, take a larger pixel.	Het rooster van het gebied past niet in het geheugen, neem een grotere pixel.
+The area is outside the raster.	Het gebied ligt buiten het raster.
+At least two classes with points on raster cells with data are needed.	Er zijn minstens twee klassen nodig met punten op rastercellen met gegevens.
+The raster bands do not change in the area, the classes cannot be told apart.	De rasterbanden veranderen niet in het gebied, de klassen zijn niet te onderscheiden.
+The raster is no longer open.	Het raster is niet meer geopend.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Waarop de cellen worden ingedeeld. AlphaEarth-vectoren worden van het netwerk geladen. Bij een in het programma geopend raster is elke band een kenmerk, het netwerk is niet nodig.
+The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	De pixel van de classificatie. «Auto» neemt de pixel van het raster als het gebied niet meer dan 640 duizend cellen heeft.
+Each cell of the area goes to the class of the nearest control points by the raster bands.	Elke cel van het gebied gaat naar de klasse van de dichtstbijzijnde controlepunten volgens de rasterbanden.
+Classes of the area by control points on the globe - by the bands of an opened raster.	Klassen van het gebied via controlepunten op de globe, volgens de banden van een geopend raster.

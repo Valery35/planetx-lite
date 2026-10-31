@@ -16,10 +16,16 @@
 //! новой загрузки. Окно - на общем каркасе анализа участка
 //! ([`crate::analysis`]), «OK» кладёт в папку расчёта картинку классов
 //! и контрольные точки и пишет классы файлом GeoTIFF в зоне UTM файлов.
+//!
+//! Источник клеток - AlphaEarth или растр, открытый в программе, просьба
+//! Василия Швалёва от 31 октября 2026 года. Каналы растра - признаки
+//! клетки, расчёт - `data::rasterclass`. Растр пересчитывается на сетку
+//! участка и классы считаются частями за кадры.
 
 use std::sync::Arc;
 
 use data::aef::{self, Mosaic, Part, Piece, ZoneIndex};
+use data::rasterclass::{self, Problem, Run, Source, Warp};
 use eframe::egui;
 use globe_core::DVec3;
 use globe_core::lod::TileKey;
@@ -35,6 +41,9 @@ use crate::i18n::{Lang, tr, trf};
 /// Участок по умолчанию и наибольший, километры, `CLASS_SIDE` модуля.
 const SIDE: f64 = 3.0;
 const MOST: f64 = 10.0;
+/// Наибольший участок растра, километры, `RASTER_SIDE` модуля. Большую
+/// сетку отсекает `rasterclass::too_big`.
+const RASTER_MOST: f64 = 1000.0;
 /// Цвета новых классов по порядку - выбор помощника модуля.
 const COLORS: [[u8; 3]; 8] = [[60, 160, 70], [40, 110, 220], [240, 190, 40], [200, 60, 50], [150, 90, 200], [120, 120, 120], [240, 130, 40], [60, 200, 200]];
 const OPACITY: f64 = 0.6;
@@ -42,6 +51,9 @@ const OPACITY: f64 = 0.6;
 const BUDGET: f64 = 0.012;
 /// Логических пикселей вокруг контрольной точки, в них она убирается.
 const POINT_PIXELS: f64 = 8.0;
+/// Строк растра и клеток классов за один шаг внутри бюджета кадра.
+const WARP_ROWS: usize = 4;
+const RUN_CELLS: usize = 4096;
 
 /// Класс: название, цвет, контрольные точки.
 #[derive(Debug, Clone, PartialEq)]
@@ -49,6 +61,29 @@ pub struct Class {
     pub name: String,
     pub color: [u8; 3],
     pub points: Vec<(f64, f64)>,
+}
+
+/// Открытый растр: имя и байты файла.
+pub type Raster = (String, Arc<Vec<u8>>);
+
+/// Сетка растра на участке: ключ (растр, рамка, уровень) и сетка.
+type OwnGrid = ((String, String, Option<usize>), Arc<ZoneIndex>, Arc<Mosaic<f32>>);
+
+/// Шаг расчёта по растру.
+enum OwnStage {
+    /// Файл ещё не разобран: кадр со строкой «Читается…» уже показан.
+    Read(Arc<Vec<u8>>),
+    Warp(Box<(Source, Warp)>),
+    Classes { grid: Arc<Mosaic<f32>>, run: Box<Run>, outside: usize, share: f64 },
+}
+
+/// Расчёт по растру.
+struct OwnJob {
+    key: (String, String, Option<usize>),
+    index: Arc<ZoneIndex>,
+    bbox: (f64, f64, f64, f64),
+    side: f64,
+    stage: OwnStage,
 }
 
 /// Векторы участка: ключ (рамка, год, уровень) и мозаика.
@@ -149,10 +184,19 @@ pub struct ClassCalc {
     pub changed: bool,
     pub saved: Option<Saved>,
     indexes: Indexes,
+    /// Растры, открытые в программе, и выбранный, None - AlphaEarth.
+    pub rasters: Vec<Raster>,
+    source: Option<String>,
+    own_job: Option<OwnJob>,
+    own_grid: Option<OwnGrid>,
+    /// Подпись расчёта в «Моих метках»: год или имя растра.
+    label: String,
 }
 
 impl ClassCalc {
-    pub fn new(lat: f64, lon: f64, place: String, lang: Lang) -> Self {
+    pub fn new(lat: f64, lon: f64, place: String, rasters: Vec<Raster>, lang: Lang) -> Self {
+        // Файлы AlphaEarth странице недоступны, источник - только растр.
+        let source = if cfg!(target_arch = "wasm32") { rasters.first().map(|r| r.0.clone()) } else { None };
         let mut calc = Self {
             open: true,
             place,
@@ -169,6 +213,11 @@ impl ClassCalc {
             changed: false,
             saved: None,
             indexes: Indexes::default(),
+            rasters,
+            source,
+            own_job: None,
+            own_grid: None,
+            label: String::new(),
         };
         calc.add_class(lang);
         calc.add_class(lang);
@@ -190,7 +239,7 @@ impl ClassCalc {
     }
 
     pub fn busy(&self) -> bool {
-        self.job.is_some()
+        self.job.is_some() || self.own_job.is_some()
     }
 
     pub fn site_edit(&mut self) -> Option<&mut SiteEdit> {
@@ -199,6 +248,7 @@ impl ClassCalc {
 
     fn clear(&mut self) {
         self.job = None;
+        self.own_job = None;
         if self.layer.take().is_some() {
             self.changed = true;
         }
@@ -222,6 +272,10 @@ impl ClassCalc {
             return;
         }
         let (lat, lon) = self.site.site.centre();
+        if let Some(name) = self.source.clone() {
+            self.build_raster(lang, name, lat, lon);
+            return;
+        }
         // Векторы того же участка, года и пикселя уже есть: только классы.
         if let Some((key, _, _)) = &self.vectors
             && *key == self.key(self.level.unwrap_or(key.2))
@@ -232,8 +286,152 @@ impl ClassCalc {
         self.job = Some(Job { zone: aef::zone_of(lon, lat), bbox: self.site.site.bbox(), year: self.year, level: self.level, index: None, parts: Vec::new(), next: 0, read: None, pieces: Vec::new() });
     }
 
+    /// Классы по каналам открытого растра. Сетка того же участка и пикселя
+    /// уже есть - только классы.
+    fn build_raster(&mut self, lang: Lang, name: String, lat: f64, lon: f64) {
+        let Some(bytes) = self.rasters.iter().find(|r| r.0 == name).map(|r| r.1.clone()) else {
+            self.status = tr(lang, "The raster is no longer open.").to_string();
+            return;
+        };
+        let Some(index) = ZoneIndex::bare(&aef::zone_of(lon, lat)) else {
+            return;
+        };
+        let (w, s, e, n) = self.site.site.bbox();
+        let key = (name, format!("{w:.6},{s:.6},{e:.6},{n:.6}"), self.level);
+        self.job = None;
+        // Пиксель задан: сетка известна до чтения файла. У «Авто» её
+        // ограничивает сам пиксель.
+        if let Some((_, step)) = self.level.and_then(|l| aef::DETAIL_LEVELS.get(l)) {
+            let (_, _, cols, rows) = aef::grid_frame(&index, self.site.site.bbox(), *step);
+            if rasterclass::too_big(rows, cols, 1) {
+                self.own_problem(lang, Problem::Big);
+                return;
+            }
+        }
+        if let Some((_, index, grid)) = self.own_grid.clone().filter(|g| g.0 == key) {
+            self.start_classes(lang, key, index, grid);
+            return;
+        }
+        let (bbox, side) = (self.site.site.bbox(), self.site.site.size());
+        self.own_job = Some(OwnJob { key, index: Arc::new(index), bbox, side, stage: OwnStage::Read(bytes) });
+        self.status = tr(lang, "Reading the raster of the area…").to_string();
+    }
+
+    /// Точки на сетке растра и начало расчёта классов. Отказы - как
+    /// `_build_raster` модуля: вне охвата, нет точек на клетках с данными,
+    /// каналы без разброса.
+    fn start_classes(&mut self, lang: Lang, key: (String, String, Option<usize>), index: Arc<ZoneIndex>, grid: Arc<Mosaic<f32>>) {
+        let keep = ring_mask(&index, &grid, &self.site.site.ring);
+        let share = rasterclass::covered(&grid.values, grid.depth, &keep);
+        if share <= 0.0 {
+            self.own_problem(lang, Problem::Outside);
+            return;
+        }
+        let rows: Vec<&Class> = self.classes.iter().filter(|c| !c.points.is_empty()).collect();
+        let points: Vec<(i32, (f64, f64))> = rows.iter().enumerate().flat_map(|(n, c)| c.points.iter().map(move |p| (n as i32, *p))).collect();
+        let (samples, labels, outside) = rasterclass::samples(&grid, &index, &points);
+        let mut seen = labels.clone();
+        seen.sort_unstable();
+        seen.dedup();
+        if seen.len() < aef::MIN_CLASSES {
+            self.own_problem(lang, Problem::Points);
+            return;
+        }
+        let run = Box::new(Run::new(&grid.values, grid.depth, &samples, &labels, Some(&keep), rasterclass::KNN));
+        let (bbox, side) = (self.site.site.bbox(), self.site.site.size());
+        self.status = tr(lang, "Computing the classes…").to_string();
+        self.own_job = Some(OwnJob { key, index, bbox, side, stage: OwnStage::Classes { grid, run, outside, share } });
+    }
+
+    /// Отказ снимает прежние классы: «OK» сохранил бы их с новым участком.
+    fn own_problem(&mut self, lang: Lang, problem: Problem) {
+        self.own_job = None;
+        if self.layer.take().is_some() {
+            self.changed = true;
+        }
+        self.status = problem_text(lang, problem).to_string();
+    }
+
+    /// Шаг расчёта по растру.
+    fn step_own(&mut self, lang: Lang) {
+        let started = web_time::Instant::now();
+        let Some(job) = &mut self.own_job else {
+            return;
+        };
+        let index = job.index.clone();
+        match &mut job.stage {
+            OwnStage::Read(bytes) => {
+                let (centre, side, bbox, level) = (self.site.site.centre(), job.side, job.bbox, job.key.2);
+                let opened = Source::read(bytes, &job.key.0).and_then(|source| {
+                    let pixel = match level.and_then(|l| aef::DETAIL_LEVELS.get(l)) {
+                        Some(level) => level.1,
+                        None => rasterclass::auto_pixel(source.pixel(&index, centre.0, centre.1), side),
+                    };
+                    let warp = source.warp(&index, bbox, pixel)?;
+                    Ok((source, warp))
+                });
+                match opened {
+                    Ok(pair) => job.stage = OwnStage::Warp(Box::new(pair)),
+                    Err(problem) => self.own_problem(lang, problem),
+                }
+            }
+            OwnStage::Warp(pair) => {
+                let (source, warp) = &mut **pair;
+                let mut done = false;
+                while !done && started.elapsed().as_secs_f64() < BUDGET {
+                    done = source.warp_rows(warp, WARP_ROWS);
+                }
+                if !done {
+                    return;
+                }
+                let Some(OwnJob { key, index, stage: OwnStage::Warp(pair), .. }) = self.own_job.take() else {
+                    return;
+                };
+                let grid = Arc::new(pair.1.grid);
+                self.own_grid = Some((key.clone(), index.clone(), grid.clone()));
+                self.start_classes(lang, key, index, grid);
+            }
+            OwnStage::Classes { grid, run, .. } => {
+                let mut done = false;
+                while !done && started.elapsed().as_secs_f64() < BUDGET {
+                    done = run.step(&grid.values, RUN_CELLS);
+                }
+                if done {
+                    self.own_built(lang);
+                }
+            }
+        }
+    }
+
+    /// Классы по растру готовы, `_built` модуля.
+    fn own_built(&mut self, lang: Lang) {
+        let Some(OwnJob { key, index, stage: OwnStage::Classes { grid, run, outside, share }, .. }) = self.own_job.take() else {
+            return;
+        };
+        let (classes, _) = run.finish();
+        if !classes.iter().any(|c| *c >= 0) {
+            self.status = problem_text(lang, Problem::Flat).to_string();
+            return;
+        }
+        let rows: Vec<&Class> = self.classes.iter().filter(|c| !c.points.is_empty()).collect();
+        let parts = class_shares(&rows, &classes);
+        let pixel = format!("{}", (grid.step * 100.0).round() / 100.0);
+        let mut text = trf(lang, "Classes of the raster «{name}»: {parts}. Pixel {pixel} m.", &[("name", &key.0), ("parts", &parts), ("pixel", &pixel)]);
+        if share < rasterclass::COVERED {
+            text = format!("{text} {}", trf(lang, "The raster covers {share} % of the area.", &[("share", &format!("{:.0}", 100.0 * share))]));
+        }
+        if outside > 0 {
+            text = format!("{text} {}", trf(lang, "Points without raster data: {n}.", &[("n", &outside.to_string())]));
+        }
+        self.status = format!("{text} {}", analysis::built_text(lang, crate::pointcalc::clock_now()));
+        self.layer = Some(Arc::new(Layer { index, step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), opacity: self.opacity }));
+        self.label = key.0;
+        self.changed = true;
+    }
+
     /// Шаг загрузки векторов.
     pub fn step(&mut self, lang: Lang, request: Request) {
+        self.step_own(lang);
         self.indexes.step();
         let Some(job) = &mut self.job else {
             return;
@@ -352,23 +550,18 @@ impl ClassCalc {
         let found = aef::classify(&grid.values, grid.depth, &samples, &labels, aef::KNN);
         let mut classes: Vec<i16> = found.iter().map(|c| c.map_or(-1, |v| v.0 as i16)).collect();
         // Вне многоугольника участка классов нет.
-        for r in 0..grid.rows {
-            let y = grid.y0 - (r as f64 + 0.5) * grid.step;
-            let points: Vec<(f64, f64)> = (0..grid.cols).map(|c| aef::from_utm(index.number, index.south, grid.x0 + (c as f64 + 0.5) * grid.step, y)).collect();
-            for (c, keep) in data::site::inside(&points, &self.site.site.ring).into_iter().enumerate() {
-                if !keep && let Some(v) = classes.get_mut(r * grid.cols + c) {
-                    *v = -1;
-                }
+        for (v, keep) in classes.iter_mut().zip(ring_mask(index, grid, &self.site.site.ring)) {
+            if !keep {
+                *v = -1;
             }
         }
-        let counts: Vec<usize> = (0..rows.len()).map(|k| classes.iter().filter(|c| **c == k as i16).count()).collect();
-        let total = counts.iter().sum::<usize>().max(1);
-        let parts: Vec<String> = rows.iter().zip(&counts).map(|(c, n)| format!("{} {:.0}%", c.name, 100.0 * *n as f64 / total as f64)).collect();
-        let mut text = trf(lang, "Classes of the year {year}: {parts}.", &[("year", &self.year.to_string()), ("parts", &parts.join(", "))]);
+        let parts = class_shares(&rows, &classes);
+        let mut text = trf(lang, "Classes of the year {year}: {parts}.", &[("year", &self.year.to_string()), ("parts", &parts)]);
         if outside > 0 {
             text = format!("{text} {}", trf(lang, "Points outside the area: {n}.", &[("n", &outside.to_string())]));
         }
         self.status = format!("{text} {}", analysis::built_text(lang, crate::pointcalc::clock_now()));
+        self.label = self.year.to_string();
         self.layer = Some(Arc::new(Layer { index: index.clone(), step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), opacity: self.opacity }));
         self.changed = true;
     }
@@ -384,7 +577,7 @@ impl ClassCalc {
         let tiff = data::geotiff::write_byte_projected(&grid, utm_epsg(&layer.index), &bytes).unwrap_or_default();
         let shown = layer.clone();
         let sample = move |points: &[(f64, f64)]| shown.sample(points);
-        let name = trf(lang, "Classification {year}", &[("year", &self.year.to_string())]);
+        let name = trf(lang, "Classification {year}", &[("year", &self.label)]);
         let picture = analysis::picture(name, "aef_class", layer.bbox(), layer.step, &sample, tiff);
         let mut extra = Vec::new();
         for (n, class) in self.classes.iter().filter(|c| !c.points.is_empty()).enumerate() {
@@ -475,6 +668,7 @@ impl ClassCalc {
         if let Some(text) = self.site.shared_note(lang) {
             self.status = text.to_string();
         }
+        self.site.site.most_km = if self.source.is_some() { RASTER_MOST } else { MOST };
         let mut open = true;
         let mut pressed = None;
         let opacity = self.opacity;
@@ -485,17 +679,33 @@ impl ClassCalc {
                 ui.label(tr(lang, "Point"));
                 ui.label(&self.place);
                 ui.end_row();
-                ui.label(tr(lang, "Year"));
-                egui::ComboBox::from_id_salt("planetx-aef-class-year")
-                    .selected_text(self.year.to_string())
+                ui.label(tr(lang, "Source"));
+                egui::ComboBox::from_id_salt("planetx-aef-class-source")
+                    .selected_text(self.source.as_deref().unwrap_or("AlphaEarth"))
                     .show_ui(ui, |ui| {
-                        for y in aef::YEARS {
-                            ui.selectable_value(&mut self.year, y, y.to_string());
+                        if !cfg!(target_arch = "wasm32") {
+                            ui.selectable_value(&mut self.source, None, "AlphaEarth");
+                        }
+                        for (name, _) in &self.rasters {
+                            ui.selectable_value(&mut self.source, Some(name.clone()), name);
                         }
                     })
                     .response
-                    .on_hover_text(tr(lang, "The year by whose vectors the cells are divided into classes. The points are put by the image of the globe, it may be of another year."));
+                    .on_hover_text(tr(lang, "What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed."));
                 ui.end_row();
+                if self.source.is_none() {
+                    ui.label(tr(lang, "Year"));
+                    egui::ComboBox::from_id_salt("planetx-aef-class-year")
+                        .selected_text(self.year.to_string())
+                        .show_ui(ui, |ui| {
+                            for y in aef::YEARS {
+                                ui.selectable_value(&mut self.year, y, y.to_string());
+                            }
+                        })
+                        .response
+                        .on_hover_text(tr(lang, "The year by whose vectors the cells are divided into classes. The points are put by the image of the globe, it may be of another year."));
+                    ui.end_row();
+                }
                 ui.label(tr(lang, "Area|site"));
                 self.site.row(ui, lang);
                 ui.end_row();
@@ -513,7 +723,11 @@ impl ClassCalc {
                         }
                     })
                     .response
-                    .on_hover_text(tr(lang, "The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells."));
+                    .on_hover_text(if self.source.is_some() {
+                        tr(lang, "The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.")
+                    } else {
+                        tr(lang, "The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells.")
+                    });
                 ui.end_row();
                 ui.label(tr(lang, "Opacity"));
                 ui.add(egui::Slider::new(&mut self.opacity, 0.0..=1.0).show_value(false)).on_hover_text(tr(lang, "Opacity of the classes on the globe."));
@@ -538,9 +752,12 @@ impl ClassCalc {
             ui.add(egui::Label::new(tr(lang, "Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.")).wrap());
             ui.add_space(4.0);
             ui.add(egui::Label::new(self.site.hint(lang).unwrap_or(&self.status)).wrap());
-            ui.add(egui::Label::new(egui::RichText::new(format!("{} {}", tr(lang, "Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0."), aef::CREDIT)).small()).wrap());
+            if self.source.is_none() {
+                ui.add(egui::Label::new(egui::RichText::new(format!("{} {}", tr(lang, "Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0."), aef::CREDIT)).small()).wrap());
+            }
             ui.add_space(4.0);
-            pressed = analysis::buttons(ui, lang, self.layer.is_some() && self.job.is_none(), tr(lang, "Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors."));
+            let tip = if self.source.is_some() { tr(lang, "Each cell of the area goes to the class of the nearest control points by the raster bands.") } else { tr(lang, "Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors.") };
+            pressed = analysis::buttons(ui, lang, self.layer.is_some() && !self.busy(), tip);
         });
         if let Some(k) = remove
             && k < self.classes.len()
@@ -574,12 +791,44 @@ impl ClassCalc {
             self.clear();
             self.open = false;
         }
-        if std::mem::take(&mut self.site.changed) && self.layer.is_some() && self.job.is_none() {
+        if std::mem::take(&mut self.site.changed) && self.layer.is_some() && !self.busy() {
             self.status = tr(lang, "The area has changed. Press «Build» to compute it again.").to_string();
         }
-        if self.job.is_some() {
+        if self.busy() {
             ctx.request_repaint();
         }
+    }
+}
+
+/// Клетки сетки внутри многоугольника участка, `ring_mask` модуля.
+fn ring_mask<T: Copy>(index: &ZoneIndex, grid: &Mosaic<T>, ring: &[(f64, f64)]) -> Vec<bool> {
+    let mut out = Vec::with_capacity(grid.rows * grid.cols);
+    for r in 0..grid.rows {
+        let y = grid.y0 - (r as f64 + 0.5) * grid.step;
+        let points: Vec<(f64, f64)> = (0..grid.cols).map(|c| aef::from_utm(index.number, index.south, grid.x0 + (c as f64 + 0.5) * grid.step, y)).collect();
+        out.extend(data::site::inside(&points, ring));
+    }
+    out
+}
+
+/// Доли классов строкой итога: «Лес 60%, Вода 40%».
+fn class_shares(rows: &[&Class], classes: &[i16]) -> String {
+    let counts: Vec<usize> = (0..rows.len()).map(|k| classes.iter().filter(|c| **c == k as i16).count()).collect();
+    let total = counts.iter().sum::<usize>().max(1);
+    let parts: Vec<String> = rows.iter().zip(&counts).map(|(c, n)| format!("{} {:.0}%", c.name, 100.0 * *n as f64 / total as f64)).collect();
+    parts.join(", ")
+}
+
+/// Текст строки итога для отказа расчёта по растру, `problem_text`
+/// модуля.
+fn problem_text(lang: Lang, problem: Problem) -> &'static str {
+    match problem {
+        Problem::Unreadable => tr(lang, "The raster is not read."),
+        Problem::NoCrs => tr(lang, "The raster has no coordinate system."),
+        Problem::Big => tr(lang, "The grid of the area does not fit in memory, take a larger pixel."),
+        Problem::Outside => tr(lang, "The area is outside the raster."),
+        Problem::Points => tr(lang, "At least two classes with points on raster cells with data are needed."),
+        Problem::Flat => tr(lang, "The raster bands do not change in the area, the classes cannot be told apart."),
     }
 }
 

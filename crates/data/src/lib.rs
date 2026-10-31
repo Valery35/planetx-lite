@@ -72,6 +72,8 @@
 //!   AlphaEarth, перенос `core/aef.py`;
 //! - [`track`] - растущие треки объектов по времени, перенос `core/track.py`;
 //! - [`series`] - ряд снимков участка по датам, перенос `core/series.py`;
+//! - [`rasterclass`] - классификация участка по своему растру, перенос
+//!   `core/rasterclass.py`;
 //! - [`trend`] - карта тренда ряда снимков, наклон Тейла-Сена и тест
 //!   Манна-Кендалла, перенос `core/trend.py`.
 
@@ -129,6 +131,7 @@ pub mod platemotion;
 pub mod plates;
 pub mod pmtiles;
 pub mod quakes;
+pub mod rasterclass;
 pub mod rastermaps;
 pub mod relief;
 pub mod routing;

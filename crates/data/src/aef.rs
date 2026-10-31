@@ -206,6 +206,13 @@ impl ZoneIndex {
         Some(Self { zone, number, south, cells })
     }
 
+    /// Указатель без квадратов: только зона, «10N». Сетка своего растра,
+    /// `aef.ZoneIndex(zone, [])` модуля. None - имя не зоны.
+    pub fn bare(zone: &str) -> Option<Self> {
+        let number: u32 = zone.get(..zone.len().checked_sub(1)?)?.parse().ok().filter(|n| (1..=60).contains(n))?;
+        Some(Self { zone: zone.to_string(), number, south: zone.ends_with('S'), cells: Vec::new() })
+    }
+
     /// Точка в метры UTM зоны.
     pub fn project(&self, lat: f64, lon: f64) -> (f64, f64) {
         to_utm(lat, lon, self.number, self.south)
@@ -393,6 +400,15 @@ impl<T: Copy> Mosaic<T> {
     }
 }
 
+/// Сетка участка bbox в метрах UTM зоны с шагом step, кратная шагу:
+/// левый верхний угол (x0, y0), столбцов, строк, `grid_frame` модуля.
+pub fn grid_frame(index: &ZoneIndex, bbox: (f64, f64, f64, f64), step: f64) -> (f64, f64, usize, usize) {
+    let (xa, ya, xb, yb) = index.utm_box(bbox);
+    let x0 = (xa / step).floor() * step;
+    let y0 = (yb / step).ceil() * step;
+    (x0, y0, ((xb - x0) / step).ceil().max(1.0) as usize, ((y0 - ya) / step).ceil().max(1.0) as usize)
+}
+
 /// Куски на одной сетке участка box, `mosaic` и `vectors` модуля:
 /// квадраты одной зоны лежат на одной сетке 10 м, куски складываются без
 /// пересчёта. empty - значение «нет данных», depth - каналов на пиксель.
@@ -403,11 +419,7 @@ pub fn mosaic<T: Copy + PartialEq>(pieces: &[Piece<T>], index: &ZoneIndex, bbox:
     if !(step.is_finite() && step > 0.0) || depth == 0 {
         return None;
     }
-    let (xa, ya, xb, yb) = index.utm_box(bbox);
-    let x0 = (xa / step).floor() * step;
-    let y1 = (yb / step).ceil() * step;
-    let cols = ((xb - x0) / step).ceil().max(1.0) as usize;
-    let rows = ((y1 - ya) / step).ceil().max(1.0) as usize;
+    let (x0, y1, cols, rows) = grid_frame(index, bbox, step);
     if cols.checked_mul(rows)?.checked_mul(depth)? > 1 << 28 {
         return None;
     }
