@@ -27,6 +27,12 @@ use crate::i18n::{Lang, tr};
 
 /// Ширина полосы, логические пиксели.
 pub const TRACK_WIDTH: f32 = 320.0;
+/// Наименьшая полоса на узком экране.
+const MIN_TRACK: f32 = 120.0;
+/// Поля шкалы: от края окна и внутри её плашки.
+const BAR_MARGIN: f32 = 48.0;
+/// Сколько нужно шкале в одну строку: кнопки, полоса, момент, скорость.
+pub const ONE_ROW: f32 = 760.0;
 /// Полуширина бегунка.
 pub const HANDLE: f32 = 6.0;
 /// Цвет промежутка, как в модуле.
@@ -186,7 +192,31 @@ impl TimeBar {
             return false;
         };
         let before = self.range;
+        let room = ui.ctx().content_rect().width() - BAR_MARGIN;
+        // На узком экране полоса - своей строкой: в одну строку она уходила
+        // за край телефона вместе с кнопкой закрытия.
+        if room < ONE_ROW {
+            ui.vertical(|ui| {
+                ui.set_max_width(room);
+                ui.horizontal_wrapped(|ui| {
+                    self.buttons(ui, lang, now);
+                    self.readout(ui, lang, a, b);
+                });
+                self.track(ui, a, b, track_width(room));
+            });
+            return before != self.range;
+        }
         ui.horizontal(|ui| {
+            self.buttons(ui, lang, now);
+            self.track(ui, a, b, TRACK_WIDTH);
+            self.readout(ui, lang, a, b);
+        });
+        before != self.range
+    }
+
+    /// Кнопки показа: в начало, пуск, в конец, по кругу.
+    fn buttons(&mut self, ui: &mut egui::Ui, lang: Lang, now: f64) {
+        {
             if icon_button(ui, Icon::ToStart).on_hover_text(tr(lang, "To the start of the bar")).clicked() {
                 self.to_start();
             }
@@ -202,7 +232,12 @@ impl TimeBar {
             if looping.clicked() {
                 self.looping = !self.looping;
             }
-            self.track(ui, a, b);
+        }
+    }
+
+    /// Момент подписью, скорость показа и кнопка закрытия.
+    fn readout(&mut self, ui: &mut egui::Ui, lang: Lang, a: f64, b: f64) {
+        {
             let span = (b - a).max(1.0);
             if self.range.1 - self.range.0 < 1.0 {
                 ui.label(short(self.range.0, span));
@@ -225,13 +260,12 @@ impl TimeBar {
                 self.stop();
                 self.open = false;
             }
-        });
-        before != self.range
+        }
     }
 
     /// Полоса с бегунками.
-    fn track(&mut self, ui: &mut egui::Ui, a: f64, b: f64) {
-        let (rect, response) = ui.allocate_exact_size(egui::vec2(TRACK_WIDTH, 18.0), egui::Sense::click_and_drag());
+    fn track(&mut self, ui: &mut egui::Ui, a: f64, b: f64, width: f32) {
+        let (rect, response) = ui.allocate_exact_size(egui::vec2(width, 18.0), egui::Sense::click_and_drag());
         let span = (b - a).max(1.0);
         let x_of = |t: f64| rect.left() + ((t - a) / span).clamp(0.0, 1.0) as f32 * rect.width();
         let t_of = |x: f32| a + f64::from(((x - rect.left()) / rect.width()).clamp(0.0, 1.0)) * span;
@@ -279,6 +313,11 @@ impl TimeBar {
             self.grip = None;
         }
     }
+}
+
+/// Ширина полосы на узком экране: вся строка, но не шире обычной.
+fn track_width(room: f32) -> f32 {
+    room.clamp(MIN_TRACK, TRACK_WIDTH)
 }
 
 /// Значок кнопки, рисуется фигурой: знаков ▶ ⏸ ⏹ в шрифте программы нет.
@@ -329,6 +368,15 @@ pub fn short(seconds: f64, span: f64) -> String {
 mod tests {
     use super::{TimeBar, short};
     use scene::clock::FIT_SECONDS;
+
+    /// Полоса укладывается в ширину телефона: в 375 точек обычная шкала
+    /// уходила за край экрана.
+    #[test]
+    fn track_fits_a_narrow_screen() {
+        assert_eq!(super::track_width(375.0 - super::BAR_MARGIN), 320.0);
+        assert_eq!(super::track_width(280.0), 280.0);
+        assert_eq!(super::track_width(40.0), super::MIN_TRACK);
+    }
 
     #[test]
     fn opens_on_time_and_hides_nothing_closed() {

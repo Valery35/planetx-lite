@@ -84,6 +84,11 @@ pub const UPLOAD_TIME: f64 = 0.002;
 pub const SPINNER_DELAY: f64 = 0.4;
 /// Скорость шкалы в демо самосвалов, `HAUL_RATE` модуля.
 pub const HAUL_RATE: f64 = 10.0;
+/// Камера следом за самосвалом на сенсорном экране: расстояние, метры,
+/// `FOLLOW_REACH` модуля. Издали самосвал занимает пару пикселей.
+pub const FOLLOW_REACH: f64 = 200.0;
+/// За сколько секунд рейса сравнивается ход самосвалов при выборе.
+const HAUL_LOOK: f64 = 60.0;
 /// За столько секунд до конца рейса момент возвращается к началу,
 /// `HAUL_END` модуля: момент упирается в конец шкалы, и показ там встаёт.
 pub const HAUL_END: f64 = 1.0;
@@ -987,6 +992,17 @@ enum SceneAction {
 
 /// Ячейка снимка: часть кадра или ошибка, её заполняет egui после кадра.
 type ShotCell = Arc<std::sync::Mutex<Option<Result<egui::ColorImage, String>>>>;
+
+/// Нужен ли кадру список наложений для моделей: набор сменился или
+/// подошли высоты и набор сменится в этом кадре.
+fn needs_models(built: Option<u64>, version: u64, due: bool) -> bool {
+    built != Some(version) || due
+}
+
+/// Номер самой большой величины или None у пустого списка.
+fn busiest(values: &[f64]) -> Option<usize> {
+    values.iter().enumerate().filter(|(_, v)| v.is_finite()).max_by(|a, b| a.1.total_cmp(b.1)).map(|(i, _)| i)
+}
 
 /// Часть rect снимка окна в точках, ppp - пикселей на точку.
 pub(crate) fn crop(image: &egui::ColorImage, rect: egui::Rect, ppp: f32) -> Result<egui::ColorImage, String> {
@@ -3519,6 +3535,7 @@ impl LiteApp {
         if self.haul_pending && let Some(span) = span {
             self.haul_pending = false;
             self.haul = Some(span);
+            self.follow_truck(span.0);
             self.timebar.open = true;
             self.timebar.rate = Some(HAUL_RATE);
             self.timebar.set_point(true, Some(span.0));
@@ -3541,6 +3558,31 @@ impl LiteApp {
                 self.timebar.toggle(now);
             }
         }
+    }
+
+    /// На сенсорном экране камера идёт следом за самосвалом, который едет
+    /// в начале рейса. Попасть пальцем в самосвал над карьером нельзя,
+    /// без этого пункта «Камера следом» меню недоступен и самосвалов не
+    /// видно. Долгое нажатие открывает меню и отпускает камеру.
+    fn follow_truck(&mut self, start: f64) {
+        if !self.touch {
+            return;
+        }
+        let store = self.heights.read();
+        let at = |m: &crate::models::Mover, t: f64| m.place(Some((t, t)), &store).center;
+        let moved: Vec<f64> = self.movers.iter().map(|m| (at(m, start + HAUL_LOOK) - at(m, start)).length()).collect();
+        let index = busiest(&moved);
+        let center = index.and_then(|i| self.movers.get(i)).map(|m| at(m, start));
+        drop(store);
+        let (Some(index), Some(center)) = (index, center) else {
+            return;
+        };
+        let (lat, lon, _) = self.nav.camera.ellipsoid.ecef_to_geodetic(center);
+        let p = &self.nav.pose;
+        let pose = Pose::new(lat, lon, FOLLOW_REACH, p.heading, p.tilt);
+        self.nav.stop();
+        self.nav.show(pose);
+        self.followed = Some(index);
     }
 
     /// Адрес открытого файла - в ссылку «Поделиться», без повторов.
@@ -5418,7 +5460,10 @@ impl LiteApp {
     /// Шкала времени и управление туром сверху вида, подпись остановки
     /// снизу.
     fn overlays(&mut self, ctx: &egui::Context, rect: egui::Rect, now: f64) {
-        let show_bar = self.timebar.open && self.timebar.extent.is_some();
+        // На узком экране открытая панель занимает почти всё окно: шкала
+        // ложилась поверх её строк. Показ при этом идёт дальше.
+        let covered = self.panel_open && ctx.content_rect().width() < crate::timeline::ONE_ROW;
+        let show_bar = self.timebar.open && self.timebar.extent.is_some() && !covered;
         if !show_bar && self.player.is_none() {
             return;
         }
@@ -8086,7 +8131,12 @@ impl eframe::App for LiteApp {
         if tracks_models {
             self.overlays_built = None;
         }
-        let model_list = if self.overlays_built != Some(self.marks.overlays_version()) { self.model_overlays(now) } else { Vec::new() };
+        // Список нужен и в кадре, где подошли высоты: сетки меток ниже
+        // поднимут номер набора, и модели собрались бы из пустого списка -
+        // они исчезали, как только приходили высоты.
+        let due = self.marks.heights_due(self.heights.read().version(), now);
+        let listed = needs_models(self.overlays_built, self.marks.overlays_version(), due);
+        let model_list = if listed { self.model_overlays(now) } else { Vec::new() };
 
         let Some(globe) = &mut self.globe else {
             ui.centered_and_justified(|ui| ui.label(tr(self.lang, "The graphics card does not support wgpu, the globe cannot be drawn.")));
@@ -8297,7 +8347,7 @@ impl eframe::App for LiteApp {
             all.extend(self.track_meshes.iter().cloned());
             globe.set_features(&all);
         }
-        if (fresh.is_some() || tracks_models) && self.overlays_built != Some(self.marks.overlays_version()) {
+        if listed && (fresh.is_some() || tracks_models) && self.overlays_built != Some(self.marks.overlays_version()) {
             self.overlays_built = Some(self.marks.overlays_version());
             globe.set_pictures(&self.marks.picture_meshes(&store));
             let built = self.models.meshes(&model_list, &store, now);
@@ -8667,5 +8717,28 @@ fn extra_slot(extra: crate::layers::Extra) -> Option<u8> {
         crate::layers::Extra::Dots(crate::dots::Layer::Fires) => Some(0),
         crate::layers::Extra::Buildings | crate::layers::Extra::Overture => Some(9),
         _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{busiest, needs_models};
+
+    /// Кадр, где подошли высоты, собирает модели из настоящего списка:
+    /// из пустого самосвалы демо исчезали с глобуса.
+    #[test]
+    fn models_are_listed_when_heights_arrive() {
+        assert!(needs_models(Some(5), 5, true));
+        assert!(needs_models(Some(4), 5, false));
+        assert!(needs_models(None, 5, false));
+        assert!(!needs_models(Some(5), 5, false));
+    }
+
+    /// Камера идёт за тем самосвалом, который едет, а не стоит на погрузке.
+    #[test]
+    fn busiest_truck_is_followed() {
+        assert_eq!(busiest(&[0.0, 120.0, 30.0]), Some(1));
+        assert_eq!(busiest(&[f64::NAN, 5.0]), Some(1));
+        assert_eq!(busiest(&[]), None);
     }
 }

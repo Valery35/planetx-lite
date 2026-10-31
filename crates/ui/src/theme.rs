@@ -139,11 +139,20 @@ pub fn apply(ctx: &egui::Context, dark: bool) {
     ctx.set_visuals_of(theme, v);
     ctx.set_theme(if dark { egui::ThemePreference::Dark } else { egui::ThemePreference::Light });
     // Отступы кнопки модуля - 10 на 3 пикселя, поля - 4 на 2.
+    let (touch, height, reach) = touch_sizes(crate::share::touch_screen());
     ctx.global_style_mut(|s| {
-        s.spacing.button_padding = egui::vec2(10.0, 3.0);
+        s.spacing.button_padding = egui::vec2(10.0, if touch { 8.0 } else { 3.0 });
         s.spacing.item_spacing = egui::vec2(6.0, 5.0);
-        s.spacing.interact_size.y = 22.0;
+        s.spacing.interact_size.y = height;
     });
+    ctx.options_mut(|o| o.input_options.max_click_dist = reach);
+}
+
+/// Высота строк и кнопок и сдвиг, при котором нажатие ещё щелчок. Палец
+/// при нажатии смещается: с 6 точками мыши кнопки срабатывали через раз,
+/// с высотой 22 точки в них трудно попасть.
+fn touch_sizes(touch: bool) -> (bool, f32, f32) {
+    if touch { (true, 34.0, 16.0) } else { (false, 22.0, 6.0) }
 }
 
 /// Плашка поверх глобуса: стекло с тонкой рамкой.
@@ -743,7 +752,15 @@ pub fn tool_item(ui: &mut egui::Ui, rows: bool, tool: Tool, on: bool, enabled: b
 
 #[cfg(test)]
 mod tests {
-    use super::field_room;
+    use super::{field_room, touch_sizes};
+
+    /// Пальцу - кнопки выше и больший сдвиг при нажатии, мыши - как было.
+    #[test]
+    fn finger_gets_more_room_than_the_mouse() {
+        assert_eq!(touch_sizes(false), (false, 22.0, 6.0));
+        let (_, height, reach) = touch_sizes(true);
+        assert!(height >= 32.0 && reach >= 12.0);
+    }
 
     /// Поле и кнопки укладываются в строку и с длинной подписью: постоянный
     /// запас в 100 точек раздвигал панель кадр за кадром на «Suchen».

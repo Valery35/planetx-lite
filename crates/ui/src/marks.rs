@@ -1547,15 +1547,18 @@ impl Marks {
         self.shapes.is_empty()
     }
 
+    /// Пришли новые высоты и прошла пауза [`REBUILD_PAUSE`]: сетки меток
+    /// и наложения этого кадра собираются заново.
+    pub fn heights_due(&self, version: u64, now: f64) -> bool {
+        self.built.is_some_and(|(v, at)| v != version && now - at >= REBUILD_PAUSE)
+    }
+
     /// Сетки кадра, если их пора собрать: метки сменились или пришли
     /// новые высоты и прошла пауза [`REBUILD_PAUSE`]. None - прежние
     /// сетки годны.
     pub fn meshes(&mut self, heights: &HeightStore, now: f64) -> Option<Vec<FeatureMesh>> {
         let version = heights.version();
-        let due = match self.built {
-            None => true,
-            Some((v, at)) => v != version && now - at >= REBUILD_PAUSE,
-        };
+        let due = self.built.is_none() || self.heights_due(version, now);
         if !(self.dirty || due) {
             return None;
         }
@@ -1829,6 +1832,18 @@ mod tests {
         // Выделение со стороны, например новая метка: только она.
         state.selected = Some(vec![9]);
         assert_eq!(state.picked(), [vec![9]]);
+    }
+
+    /// Высоты пришли - наложения этого кадра собираются заново, через
+    /// паузу и только при другой версии высот.
+    #[test]
+    fn new_heights_rebuild_after_the_pause() {
+        let mut marks = super::Marks::default();
+        assert!(!marks.heights_due(1, 100.0));
+        marks.built = Some((1, 10.0));
+        assert!(!marks.heights_due(1, 100.0));
+        assert!(!marks.heights_due(2, 10.0 + super::REBUILD_PAUSE / 2.0));
+        assert!(marks.heights_due(2, 10.0 + super::REBUILD_PAUSE));
     }
 
     #[test]
