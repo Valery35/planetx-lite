@@ -1701,3 +1701,161 @@ Command to connect Claude Code:	Comando para conectar o Claude Code:
 Configuration for Claude Desktop and other clients:	Configuração para o Claude Desktop e outros clientes:
 MCP agents are not let in: {error}	Os agentes MCP não foram permitidos: {error}
 More tools	Mais ferramentas
+Area|site	Área
+Area analysis	Análise da área
+Square	Quadrado
+Draw	Desenhar
+Side of the square of the area with its middle at the point of the window. Vertices of the area are dragged with the mouse, the circle in the middle of a side adds a new vertex. The area is not larger than {km} km.	Lado do quadrado da área com o centro no ponto da janela. Os vértices da área arrastam-se com o rato, o círculo no meio de um lado acrescenta um vértice novo. A área não é maior do que {km} km.
+The area is a square with the side from the field on the left.	A área é um quadrado com o lado do campo à esquerda.
+Draw the area as a polygon by clicks on the globe. A click on the first vertex closes it. The result is computed only inside the area.	Desenhe a área como um polígono com cliques no globo. Um clique no primeiro vértice fecha-a. O resultado é calculado apenas dentro da área.
+Click the vertices of the area on the globe. A click on the first vertex closes it.	Clique nos vértices da área no globo. Um clique no primeiro vértice fecha-a.
+Close the area by a click on its first vertex.	Feche a área com um clique no seu primeiro vértice.
+The area is larger than {km} km, make it smaller.	A área é maior do que {km} km, torne-a mais pequena.
+Save the result and close the window. The computation goes as a folder into the folder «Area analysis» of «My places» together with the outline of the area, the values - as a GeoTIFF file. Deleting the folder removes the computation entirely.	Guardar o resultado e fechar a janela. O cálculo vai como uma pasta para a pasta «Análise da área» de «Os meus lugares» junto com o contorno da área, os valores - como um ficheiro GeoTIFF. Eliminar a pasta remove o cálculo por completo.
+Remove the result from the globe and close the window.	Retirar o resultado do globo e fechar a janela.
+Built at {time} UTC.	Calculado às {time} UTC.
+Values - the GeoTIFF file {path}.	Valores - o ficheiro GeoTIFF {path}.
+Viewshed	Visibilidade
+Viewshed {time}	Visibilidade {time}
+Insolation {time}, h per day	Insolação {time}, h por dia
+What is seen from the point in the circle - a layer on the globe.	O que se vê a partir do ponto no círculo - uma camada no globo.
+Hours of direct sun per day in the area - a layer on the globe. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	Horas de sol direto por dia na área - uma camada no globo. As sombras das montanhas são consideradas a partir de uma distância de pelo menos metade da área e de pelo menos 5 km.
+The area has changed. Press «Build» to compute it again.	A área mudou. Prima «Calcular» para a calcular de novo.
+Saved to «My places», the values - {path}.	Guardado em «Os meus lugares», os valores - {path}.
+Saved to «My places». The GeoTIFF file is not written: {e}	Guardado em «Os meus lugares». O ficheiro GeoTIFF não foi escrito: {e}
+There are no heights in the area.	Não há altitudes na área.
+There are no peaks and pits with such a drop in the area.	Não há picos nem depressões com tal desnível na área.
+Found peaks {peaks} and pits {pits}. They go into the folder of the computation by «OK».	Encontrados picos {peaks} e depressões {pits}. Passam para a pasta do cálculo com «OK».
+Aspect, °	Exposição, °
+Peaks and closed hollows of the area - points with the height and the drop in the folder of the computation.	Picos e depressões fechadas da área - pontos com a altitude e o desnível na pasta do cálculo.
+What the area shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	O que a área mostra no globo - o declive de uma encosta ou o lado do mundo para onde está voltada. As linhas «Declive» e «Exposição» da secção «Camadas» ficam desligadas entretanto.
+Slope and aspect of the area by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Declive e exposição da área segundo as altitudes, núcleo de 3 × 3 - uma coloração no globo e um resumo por classes de declive e lados do mundo.
+The point is outside the area or has no heights.	O ponto está fora da área ou não tem altitudes.
+Catchment of a placemark	Bacia hidrográfica de um marcador
+Saved to «My places».	Guardado em «Os meus lugares».
+Water from the point up to the given level on the area - a layer on the globe, the level changes without a new computation.	Água a partir do ponto até ao nível dado na área - uma camada no globo, o nível muda sem novo cálculo.
+Flooding {level} m - depth	Inundação {level} m - profundidade
+Flooding {level} m - outline	Inundação {level} m - contorno
+Shadows	Sombras
+Shadows…	Sombras…
+Shadows {moment} UTC	Sombras {moment} UTC
+{moment} UTC	{moment} UTC
+Computing the horizon: {share}	Cálculo do horizonte: {share}
+The sun is below the horizon, the whole area is in shadow.	O sol está abaixo do horizonte, toda a área está na sombra.
+Sun on {share} of the area, the sun is {elevation}° above the horizon. The grid step is {step} m.	Sol em {share} da área, o sol está a {elevation}° acima do horizonte. O passo da grelha é {step} m.
+The moment is the right handle of the time slider, without the slider - the computer clock. After «Build» the shadows follow the slider: move the handle or start the playback.	O momento é o controlo direito da barra de tempo, sem a barra - o relógio do computador. Depois de «Calcular» as sombras seguem a barra: mova o controlo ou inicie a reprodução.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	Onde há sombra e onde há sol no momento da barra de tempo - segundo o relevo, as sombras seguem a barra. As sombras das montanhas são consideradas a partir de uma distância de pelo menos metade da área e de pelo menos 5 km.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.	Onde há sombra e onde há sol no momento da barra de tempo - segundo o relevo, as sombras seguem a barra.
+Loading the index of files…	A carregar o índice de ficheiros…
+There are no files of the data set for this zone.	Não há ficheiros do conjunto de dados para esta zona.
+Download about {mb} MB, pixel {pixel} m.	Transferência de cerca de {mb} MB, píxel de {pixel} m.
+The area is not closed.	A área não está fechada.
+Choose two different years.	Escolha dois anos diferentes.
+The files are not read: {e}	Os ficheiros não são lidos: {e}
+Block {n} of {total}: loading.	Bloco {n} de {total}: a carregar.
+Block {n} of {total}: channel {band} of 64.	Bloco {n} de {total}: canal {band} de 64.
+There are no data of the data set in the area for these years.	Não há dados do conjunto de dados na área para estes anos.
+Mean degree of change {mean}, strong changes (from 0.5) on {share} of the area. The pixel is {pixel} m.	Grau médio de mudança {mean}, mudanças fortes (a partir de 0,5) em {share} da área. O píxel é de {pixel} m.
+Change {n}	Mudança {n}
+Degree of change {value}.	Grau de mudança {value}.
+There are no strong changes in the area.	Não há mudanças fortes na área.
+Found places of changes: {count}. They go into the folder of the computation by «OK».	Lugares de mudanças encontrados: {count}. Passam para a pasta do cálculo com «OK».
+Changes {before}-{after}	Mudanças {before}-{after}
+Changes of the terrain	Mudanças do relevo
+Changes of the terrain…	Mudanças do relevo…
+Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.	Onde o relevo mudou entre dois anos 2017-2025 - segundo os embeddings do AlphaEarth, célula de 10 m.
+Classification…	Classificação…
+Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.	Classes da área segundo pontos de controlo no globo - segundo os embeddings do AlphaEarth, célula de 10 m.
+Years	Anos
+The years of the comparison. Each 10 m cell is described for a year by 64 numbers - a summary of Sentinel and Landsat images and radar. The degree of change is how much the descriptions of the two years differ.	Os anos da comparação. Cada célula de 10 m é descrita para um ano por 64 números - um resumo de imagens Sentinel e Landsat e de radar. O grau de mudança é o quanto as descrições dos dois anos diferem.
+Degree from	Grau a partir de
+Show cells with a degree of change in this span, the rest are transparent. Unchanged terrain has a degree about 0.05, a building site, a clearing, a new quarry - 0.5 and more.	Mostrar as células com um grau de mudança neste intervalo, as restantes ficam transparentes. O relevo sem mudanças tem um grau de cerca de 0,05, um estaleiro, uma clareira, uma nova pedreira - 0,5 e mais.
+Area pixel	Píxel da área
+Auto	Auto
+{pixel} m	{pixel} m
+The pixel of the area. The files of the data set keep blocks of 1024 × 1024 pixels, a block for a year is 40-50 MB at any pixel: 10 m cover 10 km by a block, 80 m - 82 km. «Auto» takes the pixel with the least download.	O píxel da área. Os ficheiros do conjunto de dados guardam blocos de 1024 × 1024 píxeis, um bloco para um ano pesa 40-50 MB com qualquer píxel: 10 m cobrem 10 km por bloco, 80 m - 82 km. «Auto» escolhe o píxel com a menor transferência.
+Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.	Dados - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.
+Places of changes	Lugares de mudanças
+Places of the strongest changes of the area - points in the folder of the computation. Then they are handy to look at with the image archive and the swipe.	Lugares das mudanças mais fortes da área - pontos na pasta do cálculo. Depois é cómodo vê-los com o arquivo de imagens e a cortina.
+The degree of change of the area between the two years - a layer on the globe.	O grau de mudança da área entre os dois anos - uma camada no globo.
+Class {n}	Classe {n}
+At least two classes of three points each are needed.	São necessárias pelo menos duas classes de três pontos cada.
+Loading the vectors of the area: block {n} of {total}.	A carregar os vetores da área: bloco {n} de {total}.
+There are no data of the data set in the area for this year.	Não há dados do conjunto de dados na área para este ano.
+All points are outside the area.	Todos os pontos estão fora da área.
+Classes of the year {year}: {parts}.	Classes do ano {year}: {parts}.
+Points outside the area: {n}.	Pontos fora da área: {n}.
+Classification {year}	Classificação {year}
+{n} - {name}	{n} - {name}
+Value {n} in the GeoTIFF file.	Valor {n} no ficheiro GeoTIFF.
+Classification	Classificação
+The year by whose vectors the cells are divided into classes. The points are put by the image of the globe, it may be of another year.	O ano cujos vetores dividem as células em classes. Os pontos são colocados pela imagem do globo, que pode ser de outro ano.
+Pixel	Píxel
+The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells.	O píxel da classificação. Um bloco do ficheiro para um ano pesa 40-50 MB com qualquer píxel. «Auto» escolhe o píxel com a menor transferência com o qual a área tem de 14 a 640 mil células.
+Opacity of the classes on the globe.	Opacidade das classes no globo.
+Classes	Classes
+A click on the globe puts a point of this class.	Um clique no globo coloca um ponto desta classe.
+points {n}	pontos {n}
+Remove the class and its points.	Remover a classe e os seus pontos.
+Add a class	Adicionar uma classe
+Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.	Clique no globo para colocar um ponto da classe escolhida, um clique num ponto remove-o. São necessárias pelo menos duas classes de três pontos cada.
+Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors.	Cada célula da área passa para a classe dos pontos de controlo mais próximos segundo os vetores do AlphaEarth.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger area is needed.	A bacia hidrográfica chega ao limite da área, a sua parte além do limite não é contada. É preciso uma área maior.
+There are no watercourses with such a catchment at the edge of the area.	No limite da área não há cursos de água com tal bacia hidrográfica.
+Basins written to «My places»: {count}, they cover {area} km² of the area.	Bacias escritas em «Os meus lugares»: {count}, cobrem {area} km² da área.
+There are no watercourses with such a catchment and order in the area.	Na área não há cursos de água com tal bacia hidrográfica e ordem.
+The water reached the edge of the area and can go further. A larger area is needed.	A água chegou ao limite da área e pode seguir em frente. É preciso uma área maior.
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the area.	A linha de escoamento termina ao chegar a um curso de água com uma bacia hidrográfica a partir da área do campo «Cursos de água a partir de». Sem a verificação a linha vai até ao limite da área.
+Watercourses of the area with the Strahler order - lines in «My places», the line width grows with the order.	Cursos de água da área com a ordem de Strahler - linhas em «Os meus lugares», a espessura da linha cresce com a ordem.
+The area divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the area. Polygons in «My places».	A área dividida em bacias de exutórios - lugares onde os cursos de água com uma bacia hidrográfica a partir da área do campo «Cursos de água a partir de» saem da área. Polígonos em «Os meus lugares».
+The line reached the edge of the area, further the water goes beyond it.	A linha chegou ao limite da área, mais além a água sai dela.
+The line ends at a watercourse.	A linha termina num curso de água.
+The line ends where the terrain flattens.	A linha termina onde o relevo se aplana.
+The line flows into another flow line.	A linha desemboca noutra linha de escoamento.
+The line ends at the edge of the height data.	A linha termina no limite dos dados de altitude.
+{title} - mean {mean}{unit}, spread {std}{unit}, quantiles 10, 25, 50, 75 and 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.	{title} - média {mean}{unit}, dispersão {std}{unit}, quantis 10, 25, 50, 75 e 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.
+The area is shared with the previous computation. «Square» and «Draw» start a new one.	A área é partilhada com o cálculo anterior. «Quadrado» e «Desenhar» iniciam um novo.
+Sun hours	Horas de sol
+ h	 h
+Degree of change	Grau de mudança
+Temporary Places	Lugares temporários
+New placemarks, paths and measurements go here while this row is selected. When the program closes, the contents can be moved to My Places or deleted. A placemark to keep at once is dragged to My Places.	Os novos marcadores, trajetos e medições vão para aqui enquanto esta linha estiver selecionada. Ao fechar o programa, o conteúdo pode ser movido para «Os meus lugares» ou eliminado. Um marcador a conservar de imediato arrasta-se para «Os meus lugares».
+Save to My Places	Guardar em «Os meus lugares»
+Clear Temporary Places…	Limpar «Lugares temporários»…
+Delete the contents of Temporary Places, placemarks and folders {count}? Deletion cannot be undone.	Eliminar o conteúdo de «Lugares temporários», {count} marcadores e pastas? A eliminação não pode ser desfeita.
+Temporary Places contain unsaved items. Save them in My Places?	«Lugares temporários» contém itens por guardar. Guardá-los em «Os meus lugares»?
+Don't save	Não guardar
+Show selected	Mostrar os selecionados
+Hide selected	Ocultar os selecionados
+Delete selected ({count})	Eliminar os selecionados ({count})
+Delete selected	Eliminar os selecionados
+Delete the selected rows, {count}? Deletion cannot be undone.	Eliminar as linhas selecionadas, {count}? A eliminação não pode ser desfeita.
+Model section	Corte do modelo
+Model section: {name}	Corte do modelo: {name}
+Model section…	Corte do modelo…
+Model section wall	Parede do corte do modelo
+Model cut	Recorte do modelo
+Model cut along «{name}».	Recorte do modelo por «{name}».
+Model cut along «{name}» is removed.	O recorte do modelo por «{name}» foi retirado.
+Section wall along «{name}».	Parede do corte por «{name}».
+Section wall along «{name}» is removed.	A parede do corte por «{name}» foi retirada.
+Band of drill holes and objects	Faixa de sondagens e objetos
+Width of the band along the line from which drill holes and tunnels are moved onto the section. A wider band gives more drill holes, but distant ones do not lie where the line is.	Largura da faixa ao longo da linha da qual as sondagens e os túneis são transferidos para o corte. Uma faixa mais larga dá mais sondagens, mas as distantes não ficam onde está a linha.
+Roofs	Tetos
+Drill holes	Sondagens
+Drill holes of the model	Sondagens do modelo
+The model has no roofs and drill holes.	O modelo não tem tetos nem sondagens.
+A path of at least two points and an open subsurface model are needed.	São necessários um trajeto de pelo menos dois pontos e um modelo subterrâneo aberto.
+Length {length}. Roofs {beds}, drill holes in the band {holes}, tunnels {tunnels}.	Comprimento {length}. Tetos {beds}, sondagens na faixa {holes}, túneis {tunnels}.
+Heights by the points of the line - distance, latitude, longitude, terrain and bed roofs, no roof - an empty field.	Altitudes nos pontos da linha - distância, latitude, longitude, relevo e tetos das camadas, sem teto - um campo vazio.
+Picture…	Imagem…
+The section as a PNG picture of the window size.	O corte como imagem PNG do tamanho da janela.
+Color of the rock between beds	Cor da rocha entre camadas
+Color of the bed «{name}»	Cor da camada «{name}»
+Color of the line «{name}»	Cor da linha «{name}»
+Default section colors	Cores predefinidas do corte
+No data	Sem dados
+terrain {value}	relevo {value}
+Between beds	Entre camadas
+Layers with Z	Camadas com Z
+Parts of objects with Z {count}.	Partes de objetos com Z: {count}.

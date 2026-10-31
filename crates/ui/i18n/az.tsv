@@ -1701,3 +1701,161 @@ Command to connect Claude Code:	Claude Code qoşulma əmri:
 Configuration for Claude Desktop and other clients:	Claude Desktop və digər müştərilər üçün konfiqurasiya:
 MCP agents are not let in: {error}	MCP agentlərinə icazə verilmədi: {error}
 More tools	Digər alətlər
+Area|site	Sahə
+Area analysis	Sahənin təhlili
+Square	Kvadrat
+Draw	Çək
+Side of the square of the area with its middle at the point of the window. Vertices of the area are dragged with the mouse, the circle in the middle of a side adds a new vertex. The area is not larger than {km} km.	Sahənin kvadratının tərəfi, ortası pəncərənin nöqtəsindədir. Sahənin təpələri siçanla dartılır, tərəfin ortasındakı dairə yeni təpə əlavə edir. Sahə {km} km-dən böyük olmur.
+The area is a square with the side from the field on the left.	Sahə, soldakı sahədən götürülən tərəfi olan kvadratdır.
+Draw the area as a polygon by clicks on the globe. A click on the first vertex closes it. The result is computed only inside the area.	Sahəni qlobus üzərində klikləmələrlə çoxbucaqlı kimi çəkin. İlk təpəyə klik onu bağlayır. Nəticə yalnız sahənin daxilində hesablanır.
+Click the vertices of the area on the globe. A click on the first vertex closes it.	Sahənin təpələrini qlobus üzərində klikləyin. İlk təpəyə klik onu bağlayır.
+Close the area by a click on its first vertex.	Sahəni ilk təpəsinə klik etməklə bağlayın.
+The area is larger than {km} km, make it smaller.	Sahə {km} km-dən böyükdür, kiçildin.
+Save the result and close the window. The computation goes as a folder into the folder «Area analysis» of «My places» together with the outline of the area, the values - as a GeoTIFF file. Deleting the folder removes the computation entirely.	Nəticəni saxla və pəncərəni bağla. Hesablama sahənin konturu ilə birlikdə «Mənim yerlərim» daxilindəki «Sahənin təhlili» qovluğuna qovluq kimi düşür, qiymətlər - GeoTIFF faylı kimi. Qovluğun silinməsi hesablamanı tamamilə götürür.
+Remove the result from the globe and close the window.	Nəticəni qlobusdan götür və pəncərəni bağla.
+Built at {time} UTC.	{time} UTC vaxtında qurulub.
+Values - the GeoTIFF file {path}.	Qiymətlər - GeoTIFF faylı {path}.
+Viewshed	Görünürlük
+Viewshed {time}	Görünürlük {time}
+Insolation {time}, h per day	İnsolyasiya {time}, gündə saat
+What is seen from the point in the circle - a layer on the globe.	Dairədəki nöqtədən nə görünür - qlobus üzərində lay.
+Hours of direct sun per day in the area - a layer on the globe. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	Sahədə gündə birbaşa günəş saatları - qlobus üzərində lay. Dağ kölgələri sahənin ən azı yarısı qədər və ən azı 5 km məsafədən götürülür.
+The area has changed. Press «Build» to compute it again.	Sahə dəyişib. Yenidən hesablamaq üçün «Qur» düyməsini basın.
+Saved to «My places», the values - {path}.	«Mənim yerlərim» daxilində saxlanıldı, qiymətlər - {path}.
+Saved to «My places». The GeoTIFF file is not written: {e}	«Mənim yerlərim» daxilində saxlanıldı. GeoTIFF faylı yazılmadı: {e}
+There are no heights in the area.	Sahədə hündürlük yoxdur.
+There are no peaks and pits with such a drop in the area.	Sahədə belə hündürlük fərqi olan zirvə və çökəklik yoxdur.
+Found peaks {peaks} and pits {pits}. They go into the folder of the computation by «OK».	Tapılan zirvələr {peaks}, çökəkliklər {pits}. «OK» ilə hesablama qovluğuna düşürlər.
+Aspect, °	Ekspozisiya, °
+Peaks and closed hollows of the area - points with the height and the drop in the folder of the computation.	Sahənin zirvələri və qapalı çökəklikləri - hesablama qovluğunda hündürlüyü və fərqi olan nöqtələr.
+What the area shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Sahənin qlobus üzərində göstərdiyi - yamacın mailliyi və ya üzünün çevrildiyi istiqamət. «Laylar» bölməsindəki «Mail» və «Ekspozisiya» sətirləri bu vaxt söndürülür.
+Slope and aspect of the area by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Sahənin hündürlüklərə görə mailliyi və ekspozisiyası, 3 × 3 nüvə - qlobus üzərində rənglənmə və mail siniflərinə və istiqamətlərə görə xülasə.
+The point is outside the area or has no heights.	Nöqtə sahədən kənardadır və ya hündürlük yoxdur.
+Catchment of a placemark	Nişanın su toplayıcı sahəsi
+Saved to «My places».	«Mənim yerlərim» daxilində saxlanıldı.
+Water from the point up to the given level on the area - a layer on the globe, the level changes without a new computation.	Nöqtədən sahədə verilmiş səviyyəyə qədər su - qlobus üzərində lay, səviyyə yenidən hesablamadan dəyişir.
+Flooding {level} m - depth	Su basması {level} m - dərinlik
+Flooding {level} m - outline	Su basması {level} m - kontur
+Shadows	Kölgələr
+Shadows…	Kölgələr…
+Shadows {moment} UTC	Kölgələr {moment} UTC
+{moment} UTC	{moment} UTC
+Computing the horizon: {share}	Üfüqün hesablanması: {share}
+The sun is below the horizon, the whole area is in shadow.	Günəş üfüqdən aşağıdadır, bütün sahə kölgədədir.
+Sun on {share} of the area, the sun is {elevation}° above the horizon. The grid step is {step} m.	Günəş sahənin {share} hissəsindədir, günəşin hündürlüyü {elevation}°. Şəbəkə addımı {step} m.
+The moment is the right handle of the time slider, without the slider - the computer clock. After «Build» the shadows follow the slider: move the handle or start the playback.	An - vaxt şkalasının sağ sürgüsüdür, şkala yoxdursa - kompüterin saatıdır. «Qur» sonrası kölgələr şkalanı izləyir: sürgünü hərəkət etdirin və ya oxutmanı işə salın.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	Vaxt şkalasının anında kölgə və günəş harada - relyefə görə, kölgələr şkalanı izləyir. Dağ kölgələri sahənin ən azı yarısı qədər və ən azı 5 km məsafədən götürülür.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.	Vaxt şkalasının anında kölgə və günəş harada - relyefə görə, kölgələr şkalanı izləyir.
+Loading the index of files…	Faylların göstəricisi yüklənir…
+There are no files of the data set for this zone.	Bu zona üçün verilənlər toplusunun faylı yoxdur.
+Download about {mb} MB, pixel {pixel} m.	Təxminən {mb} MB yüklənmə, piksel {pixel} m.
+The area is not closed.	Sahə qapalı deyil.
+Choose two different years.	İki fərqli il seçin.
+The files are not read: {e}	Fayllar oxunmadı: {e}
+Block {n} of {total}: loading.	Blok {n} / {total}: yüklənir.
+Block {n} of {total}: channel {band} of 64.	Blok {n} / {total}: kanal {band} / 64.
+There are no data of the data set in the area for these years.	Bu illər üçün sahədə verilənlər toplusunun məlumatı yoxdur.
+Mean degree of change {mean}, strong changes (from 0.5) on {share} of the area. The pixel is {pixel} m.	Dəyişmənin orta dərəcəsi {mean}, güclü dəyişmələr (0.5-dən) sahənin {share} hissəsindədir. Piksel {pixel} m.
+Change {n}	Dəyişmə {n}
+Degree of change {value}.	Dəyişmə dərəcəsi {value}.
+There are no strong changes in the area.	Sahədə güclü dəyişmə yoxdur.
+Found places of changes: {count}. They go into the folder of the computation by «OK».	Tapılan dəyişmə yerləri: {count}. «OK» ilə hesablama qovluğuna düşürlər.
+Changes {before}-{after}	Dəyişmələr {before}-{after}
+Changes of the terrain	Ərazinin dəyişmələri
+Changes of the terrain…	Ərazinin dəyişmələri…
+Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.	Ərazinin 2017-2025 arasındakı iki il arasında harada dəyişdiyi - AlphaEarth embeddinqləri ilə, 10 m xana.
+Classification…	Təsnifat…
+Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.	Sahənin qlobus üzərindəki nəzarət nöqtələrinə görə sinifləri - AlphaEarth embeddinqləri ilə, 10 m xana.
+Years	İllər
+The years of the comparison. Each 10 m cell is described for a year by 64 numbers - a summary of Sentinel and Landsat images and radar. The degree of change is how much the descriptions of the two years differ.	Müqayisə illəri. Hər 10 m xana bir il üçün 64 rəqəmlə təsvir olunur - Sentinel və Landsat görüntülərinin və radarın xülasəsi. Dəyişmə dərəcəsi iki ilin təsvirlərinin nə qədər fərqləndiyidir.
+Degree from	Dərəcə ən azı
+Show cells with a degree of change in this span, the rest are transparent. Unchanged terrain has a degree about 0.05, a building site, a clearing, a new quarry - 0.5 and more.	Dəyişmə dərəcəsi bu aralıqda olan xanaları göstər, qalanları şəffafdır. Dəyişməmiş ərazidə dərəcə təxminən 0.05, tikinti sahəsində, meşə qırılmasında, yeni karxanada - 0.5 və yuxarı.
+Area pixel	Sahənin pikseli
+Auto	Avto
+{pixel} m	{pixel} m
+The pixel of the area. The files of the data set keep blocks of 1024 × 1024 pixels, a block for a year is 40-50 MB at any pixel: 10 m cover 10 km by a block, 80 m - 82 km. «Auto» takes the pixel with the least download.	Sahənin pikseli. Verilənlər toplusunun faylları 1024 × 1024 piksellik bloklar saxlayır, bir illik blok istənilən pikseldə 40-50 MB-dır: 10 m bir blokla 10 km, 80 m - 82 km əhatə edir. «Avto» ən az yükləmə olan pikseli seçir.
+Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.	Verilənlər - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.
+Places of changes	Dəyişmə yerləri
+Places of the strongest changes of the area - points in the folder of the computation. Then they are handy to look at with the image archive and the swipe.	Sahənin ən güclü dəyişmə yerləri - hesablama qovluğunda nöqtələr. Sonra onlara görüntü arxivi və pərdə ilə baxmaq rahatdır.
+The degree of change of the area between the two years - a layer on the globe.	Sahənin iki il arasındakı dəyişmə dərəcəsi - qlobus üzərində lay.
+Class {n}	Sinif {n}
+At least two classes of three points each are needed.	Ən azı iki sinif və hər birində üç nöqtə lazımdır.
+Loading the vectors of the area: block {n} of {total}.	Sahənin vektorları yüklənir: blok {n} / {total}.
+There are no data of the data set in the area for this year.	Bu il üçün sahədə verilənlər toplusunun məlumatı yoxdur.
+All points are outside the area.	Bütün nöqtələr sahədən kənardadır.
+Classes of the year {year}: {parts}.	{year} ilinin sinifləri: {parts}.
+Points outside the area: {n}.	Sahədən kənardakı nöqtələr: {n}.
+Classification {year}	Təsnifat {year}
+{n} - {name}	{n} - {name}
+Value {n} in the GeoTIFF file.	GeoTIFF faylında qiymət {n}.
+Classification	Təsnifat
+The year by whose vectors the cells are divided into classes. The points are put by the image of the globe, it may be of another year.	Vektorlarına görə xanaların siniflərə bölündüyü il. Nöqtələr qlobusun görüntüsünə görə qoyulur, görüntü başqa ilə aid ola bilər.
+Pixel	Piksel
+The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells.	Təsnifatın pikseli. Bir illik fayl bloku istənilən pikseldə 40-50 MB-dır. «Avto» sahədə 14-dən 640 minə qədər xana olan ən az yükləməli pikseli seçir.
+Opacity of the classes on the globe.	Siniflərin qlobus üzərində qeyri-şəffaflığı.
+Classes	Siniflər
+A click on the globe puts a point of this class.	Qlobusa klik bu sinfin nöqtəsini qoyur.
+points {n}	nöqtə {n}
+Remove the class and its points.	Sinfi və nöqtələrini götür.
+Add a class	Sinif əlavə et
+Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.	Seçilmiş sinfin nöqtəsini qoymaq üçün qlobusa klikləyin, nöqtəyə klik onu götürür. Ən azı iki sinif və hər birində üç nöqtə lazımdır.
+Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors.	Sahənin hər xanası AlphaEarth vektorlarına görə ən yaxın nəzarət nöqtələrinin sinfinə aid edilir.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger area is needed.	Su toplayıcı sahə sahənin kənarına çatır, kənardan o yanakı hissəsi nəzərə alınmayıb. Daha böyük sahə lazımdır.
+There are no watercourses with such a catchment at the edge of the area.	Sahənin kənarında belə su toplayıcı sahəsi olan su axarı yoxdur.
+Basins written to «My places»: {count}, they cover {area} km² of the area.	«Mənim yerlərim» daxilinə yazılan hövzələr: {count}, onlar sahənin {area} km² hissəsini əhatə edir.
+There are no watercourses with such a catchment and order in the area.	Sahədə belə su toplayıcı sahəsi və tərtibi olan su axarı yoxdur.
+The water reached the edge of the area and can go further. A larger area is needed.	Su sahənin kənarına çatdı və daha irəli gedə bilər. Daha böyük sahə lazımdır.
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the area.	Axın xətti «Su axarları, ən azı» sahəsindəki sahədən böyük su toplayıcı sahəsi olan su axarına çatanda bitir. İşarə olmadan xətt sahənin kənarına qədər gedir.
+Watercourses of the area with the Strahler order - lines in «My places», the line width grows with the order.	Sahənin su axarları Strahler tərtibi ilə - «Mənim yerlərim» daxilində xətlər, xəttin qalınlığı tərtiblə artır.
+The area divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the area. Polygons in «My places».	Çıxış nöqtələrinin hövzələrinə bölünmüş sahə - «Su axarları, ən azı» sahəsindəki sahədən böyük su toplayıcı sahəsi olan su axarlarının sahəni tərk etdiyi yerlər. «Mənim yerlərim» daxilində çoxbucaqlılar.
+The line reached the edge of the area, further the water goes beyond it.	Xətt sahənin kənarına çatdı, su daha sonra onun o tərəfinə gedir.
+The line ends at a watercourse.	Xətt su axarında bitir.
+The line ends where the terrain flattens.	Xətt relyefin düzləşdiyi yerdə bitir.
+The line flows into another flow line.	Xətt başqa axın xəttinə qarışır.
+The line ends at the edge of the height data.	Xətt hündürlük verilənlərinin kənarında bitir.
+{title} - mean {mean}{unit}, spread {std}{unit}, quantiles 10, 25, 50, 75 and 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.	{title} - orta {mean}{unit}, yayılma {std}{unit}, 10, 25, 50, 75 və 90 % kvantillər - {p10}, {q1}, {median}, {q3}, {p90}{unit}.
+The area is shared with the previous computation. «Square» and «Draw» start a new one.	Sahə əvvəlki hesablamayla ümumidir. «Kvadrat» və «Çək» yenisini başladır.
+Sun hours	Günəş saatları
+ h	 saat
+Degree of change	Dəyişmə dərəcəsi
+Temporary Places	Müvəqqəti yerlər
+New placemarks, paths and measurements go here while this row is selected. When the program closes, the contents can be moved to My Places or deleted. A placemark to keep at once is dragged to My Places.	Bu sətir seçili olduqca yeni nişanlar, yollar və ölçmələr bura düşür. Proqram bağlananda məzmunu «Mənim yerlərim» daxilinə köçürmək və ya silmək olar. Dərhal saxlanmalı nişanı «Mənim yerlərim» daxilinə sürüşdürün.
+Save to My Places	«Mənim yerlərim» daxilində saxla
+Clear Temporary Places…	«Müvəqqəti yerlər» təmizlə…
+Delete the contents of Temporary Places, placemarks and folders {count}? Deletion cannot be undone.	«Müvəqqəti yerlər» məzmunu, nişanlar və qovluqlar silinsin, cəmi {count}? Silməni geri qaytarmaq olmaz.
+Temporary Places contain unsaved items. Save them in My Places?	«Müvəqqəti yerlər» daxilində saxlanmamış elementlər var. «Mənim yerlərim» daxilində saxlansın?
+Don't save	Saxlama
+Show selected	Seçiləni göstər
+Hide selected	Seçiləni gizlət
+Delete selected ({count})	Seçiləni sil ({count})
+Delete selected	Seçiləni sil
+Delete the selected rows, {count}? Deletion cannot be undone.	Seçilmiş sətirlər silinsin, cəmi {count}? Silməni geri qaytarmaq olmaz.
+Model section	Modelin kəsiyi
+Model section: {name}	Modelin kəsiyi: {name}
+Model section…	Modelin kəsiyi…
+Model section wall	Modelin kəsik divarı
+Model cut	Modelin kəsilməsi
+Model cut along «{name}».	«{name}» üzrə modelin kəsilməsi.
+Model cut along «{name}» is removed.	«{name}» üzrə modelin kəsilməsi götürüldü.
+Section wall along «{name}».	«{name}» üzrə kəsik divarı.
+Section wall along «{name}» is removed.	«{name}» üzrə kəsik divarı götürüldü.
+Band of drill holes and objects	Quyuların və obyektlərin zolağı
+Width of the band along the line from which drill holes and tunnels are moved onto the section. A wider band gives more drill holes, but distant ones do not lie where the line is.	Xətt boyunca zolağın eni, bu zolaqdan quyular və tunellər kəsiyə köçürülür. Zolaq genişləndikcə quyuların sayı artır, lakin uzaqdakılar xəttin olduğu yerdə yerləşmir.
+Roofs	Tavanlar
+Drill holes	Quyular
+Drill holes of the model	Modelin quyuları
+The model has no roofs and drill holes.	Modeldə tavan və quyu yoxdur.
+A path of at least two points and an open subsurface model are needed.	Ən azı iki nöqtəli yol və açıq yeraltı model lazımdır.
+Length {length}. Roofs {beds}, drill holes in the band {holes}, tunnels {tunnels}.	Uzunluq {length}. Tavanlar {beds}, zolaqdakı quyular {holes}, tunellər {tunnels}.
+Heights by the points of the line - distance, latitude, longitude, terrain and bed roofs, no roof - an empty field.	Xəttin nöqtələri üzrə hündürlüklər - məsafə, enlik, uzunluq, relyef və lay tavanları, tavan yoxdursa - boş sahə.
+Picture…	Şəkil…
+The section as a PNG picture of the window size.	Kəsik pəncərə ölçüsündə PNG şəkli kimi.
+Color of the rock between beds	Laylar arasındakı süxurun rəngi
+Color of the bed «{name}»	«{name}» layının rəngi
+Color of the line «{name}»	«{name}» xəttinin rəngi
+Default section colors	Kəsiyin ilkin rəngləri
+No data	Verilənlər yoxdur
+terrain {value}	relyef {value}
+Between beds	Laylar arası
+Layers with Z	Z ilə laylar
+Parts of objects with Z {count}.	Z ilə obyektlərin hissələri {count}.

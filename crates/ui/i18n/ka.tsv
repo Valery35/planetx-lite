@@ -1701,3 +1701,161 @@ Command to connect Claude Code:	Claude Code-ის დაკავშირე�
 Configuration for Claude Desktop and other clients:	კონფიგურაცია Claude Desktop-ისა და სხვა კლიენტებისთვის:
 MCP agents are not let in: {error}	MCP აგენტები არ დაიშვა: {error}
 More tools	სხვა ხელსაწყოები
+Area|site	უბანი
+Area analysis	უბნის ანალიზი
+Square	კვადრატი
+Draw	ხატვა
+Side of the square of the area with its middle at the point of the window. Vertices of the area are dragged with the mouse, the circle in the middle of a side adds a new vertex. The area is not larger than {km} km.	უბნის კვადრატის გვერდი, რომლის შუა ფანჯრის წერტილშია. უბნის წვეროებს თაგვით ათრევენ, გვერდის შუაში წრე ახალ წვეროს ამატებს. უბანი არ აღემატება {km} კმ-ს.
+The area is a square with the side from the field on the left.	უბანი არის კვადრატი მარცხენა ველიდან აღებული გვერდით.
+Draw the area as a polygon by clicks on the globe. A click on the first vertex closes it. The result is computed only inside the area.	დახატეთ უბანი მრავალკუთხედად გლობუსზე დაწკაპუნებებით. პირველ წვეროზე დაწკაპუნება მას ხურავს. შედეგი გამოითვლება მხოლოდ უბნის შიგნით.
+Click the vertices of the area on the globe. A click on the first vertex closes it.	დააწკაპუნეთ გლობუსზე უბნის წვეროებზე. პირველ წვეროზე დაწკაპუნება მას ხურავს.
+Close the area by a click on its first vertex.	დახურეთ უბანი პირველ წვეროზე დაწკაპუნებით.
+The area is larger than {km} km, make it smaller.	უბანი {km} კმ-ზე დიდია, შეამცირეთ.
+Save the result and close the window. The computation goes as a folder into the folder «Area analysis» of «My places» together with the outline of the area, the values - as a GeoTIFF file. Deleting the folder removes the computation entirely.	შედეგის შენახვა და ფანჯრის დახურვა. გამოთვლა ინახება საქაღალდედ „ჩემი ნიშნების“ საქაღალდეში «უბნის ანალიზი» უბნის კონტურთან ერთად, მნიშვნელობები - GeoTIFF ფაილად. საქაღალდის წაშლა გამოთვლას მთლიანად აშორებს.
+Remove the result from the globe and close the window.	შედეგის მოშორება გლობუსიდან და ფანჯრის დახურვა.
+Built at {time} UTC.	აგებულია {time} UTC.
+Values - the GeoTIFF file {path}.	მნიშვნელობები - GeoTIFF ფაილი {path}.
+Viewshed	ხილვადობა
+Viewshed {time}	ხილვადობა {time}
+Insolation {time}, h per day	ინსოლაცია {time}, საათი დღე-ღამეში
+What is seen from the point in the circle - a layer on the globe.	რა ჩანს წრეში მდებარე წერტილიდან - ფენა გლობუსზე.
+Hours of direct sun per day in the area - a layer on the globe. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	პირდაპირი მზის საათები დღე-ღამეში უბანზე - ფენა გლობუსზე. მთების ჩრდილები აღებულია უბნის ნახევარზე არანაკლები და არანაკლებ 5 კმ მანძილიდან.
+The area has changed. Press «Build» to compute it again.	უბანი შეიცვალა. გამოსათვლელად ხელახლა დააჭირეთ «აგებას».
+Saved to «My places», the values - {path}.	შენახულია «ჩემს ნიშნებში», მნიშვნელობები - {path}.
+Saved to «My places». The GeoTIFF file is not written: {e}	შენახულია «ჩემს ნიშნებში». GeoTIFF ფაილი არ ჩაწერილა: {e}
+There are no heights in the area.	უბანზე სიმაღლეები არ არის.
+There are no peaks and pits with such a drop in the area.	უბანზე ასეთი სიმაღლეთა სხვაობის მქონე მწვერვალები და ჩაღრმავებები არ არის.
+Found peaks {peaks} and pits {pits}. They go into the folder of the computation by «OK».	ნაპოვნია მწვერვალები {peaks} და ჩაღრმავებები {pits}. «OK»-ზე ისინი გამოთვლის საქაღალდეში ხვდება.
+Aspect, °	ექსპოზიცია, °
+Peaks and closed hollows of the area - points with the height and the drop in the folder of the computation.	უბნის მწვერვალები და ჩაკეტილი ღრმულები - წერტილები სიმაღლითა და სიმაღლეთა სხვაობით გამოთვლის საქაღალდეში.
+What the area shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	რას აჩვენებს უბანი გლობუსზე - ფერდობის ციცაბოობას ან იმ ქვეყნის მხარეს, საით არის მიქცეული. «ფენების» განყოფილების სტრიქონები «დახრილობა» და «ექსპოზიცია» ამ დროს ითიშება.
+Slope and aspect of the area by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	უბნის დახრილობა და ექსპოზიცია სიმაღლეების მიხედვით, ბირთვი 3 × 3 - შეფერადება გლობუსზე და შეჯამება დახრილობის კლასებისა და ქვეყნის მხარეების მიხედვით.
+The point is outside the area or has no heights.	წერტილი უბნის გარეთაა ან სიმაღლეები არ აქვს.
+Catchment of a placemark	ნიშნის წყალშემკრები აუზი
+Saved to «My places».	შენახულია «ჩემს ნიშნებში».
+Water from the point up to the given level on the area - a layer on the globe, the level changes without a new computation.	წყალი წერტილიდან მოცემულ დონემდე უბანზე - ფენა გლობუსზე, დონე იცვლება ხელახალი გამოთვლის გარეშე.
+Flooding {level} m - depth	დატბორვა {level} მ - სიღრმე
+Flooding {level} m - outline	დატბორვა {level} მ - კონტური
+Shadows	ჩრდილები
+Shadows…	ჩრდილები…
+Shadows {moment} UTC	ჩრდილები {moment} UTC
+{moment} UTC	{moment} UTC
+Computing the horizon: {share}	ჰორიზონტის გამოთვლა: {share}
+The sun is below the horizon, the whole area is in shadow.	მზე ჰორიზონტის ქვემოთაა, მთელი უბანი ჩრდილშია.
+Sun on {share} of the area, the sun is {elevation}° above the horizon. The grid step is {step} m.	მზე ანათებს უბნის {share}-ს, მზე ჰორიზონტიდან {elevation}°-ით მაღლაა. ბადის ბიჯი {step} მ.
+The moment is the right handle of the time slider, without the slider - the computer clock. After «Build» the shadows follow the slider: move the handle or start the playback.	მომენტი არის დროის ზოლის მარჯვენა სახელური, ზოლის გარეშე - კომპიუტერის საათი. «აგების» შემდეგ ჩრდილები ზოლს მიჰყვება: გადაწიეთ სახელური ან დაიწყეთ დაკვრა.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	სად არის ჩრდილი და სად მზე დროის ზოლის მომენტში - რელიეფის მიხედვით, ჩრდილები ზოლს მიჰყვება. მთების ჩრდილები აღებულია უბნის ნახევარზე არანაკლები და არანაკლებ 5 კმ მანძილიდან.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.	სად არის ჩრდილი და სად მზე დროის ზოლის მომენტში - რელიეფის მიხედვით, ჩრდილები ზოლს მიჰყვება.
+Loading the index of files…	ფაილების ინდექსის ჩატვირთვა…
+There are no files of the data set for this zone.	ამ ზონისთვის მონაცემთა ნაკრების ფაილები არ არის.
+Download about {mb} MB, pixel {pixel} m.	ჩამოსატვირთია დაახლოებით {mb} მბ, პიქსელი {pixel} მ.
+The area is not closed.	უბანი არ არის დახურული.
+Choose two different years.	აირჩიეთ ორი სხვადასხვა წელი.
+The files are not read: {e}	ფაილები არ იკითხება: {e}
+Block {n} of {total}: loading.	ბლოკი {n} / {total}: იტვირთება.
+Block {n} of {total}: channel {band} of 64.	ბლოკი {n} / {total}: არხი {band} / 64.
+There are no data of the data set in the area for these years.	ამ წლებისთვის უბანზე მონაცემთა ნაკრების მონაცემები არ არის.
+Mean degree of change {mean}, strong changes (from 0.5) on {share} of the area. The pixel is {pixel} m.	ცვლილების საშუალო ხარისხი {mean}, ძლიერი ცვლილებები (0.5-დან) უბნის {share}-ზე. პიქსელი {pixel} მ.
+Change {n}	ცვლილება {n}
+Degree of change {value}.	ცვლილების ხარისხი {value}.
+There are no strong changes in the area.	უბანზე ძლიერი ცვლილებები არ არის.
+Found places of changes: {count}. They go into the folder of the computation by «OK».	ნაპოვნია ცვლილებების ადგილები: {count}. «OK»-ზე ისინი გამოთვლის საქაღალდეში ხვდება.
+Changes {before}-{after}	ცვლილებები {before}-{after}
+Changes of the terrain	რელიეფის ცვლილებები
+Changes of the terrain…	რელიეფის ცვლილებები…
+Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.	სად შეიცვალა რელიეფი ორ წელს შორის 2017-2025 - AlphaEarth-ის ჩაშენებათა მიხედვით, 10 მ უჯრა.
+Classification…	კლასიფიკაცია…
+Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.	უბნის კლასები გლობუსზე საკონტროლო წერტილების მიხედვით - AlphaEarth-ის ჩაშენებათა მიხედვით, 10 მ უჯრა.
+Years	წლები
+The years of the comparison. Each 10 m cell is described for a year by 64 numbers - a summary of Sentinel and Landsat images and radar. The degree of change is how much the descriptions of the two years differ.	შესადარებელი წლები. თითოეული 10 მ უჯრა წელიწადზე აღიწერება 64 რიცხვით - Sentinel-ისა და Landsat-ის სურათებისა და რადარის შეჯამება. ცვლილების ხარისხი არის, რამდენად განსხვავდება ორი წლის აღწერები.
+Degree from	ხარისხი, მინიმუმ
+Show cells with a degree of change in this span, the rest are transparent. Unchanged terrain has a degree about 0.05, a building site, a clearing, a new quarry - 0.5 and more.	აჩვენეთ უჯრები ცვლილების ხარისხით ამ დიაპაზონში, დანარჩენი გამჭვირვალეა. უცვლელი რელიეფის ხარისხი დაახლოებით 0.05-ია, მშენებლობის მოედნის, ტყის გაკაფვის, ახალი კარიერის - 0.5 და მეტი.
+Area pixel	უბნის პიქსელი
+Auto	ავტო
+{pixel} m	{pixel} მ
+The pixel of the area. The files of the data set keep blocks of 1024 × 1024 pixels, a block for a year is 40-50 MB at any pixel: 10 m cover 10 km by a block, 80 m - 82 km. «Auto» takes the pixel with the least download.	უბნის პიქსელი. მონაცემთა ნაკრების ფაილები ინახავს 1024 × 1024 პიქსელის ბლოკებს, ერთი წლის ბლოკი ნებისმიერი პიქსელისას 40-50 მბ-ია: 10 მ ბლოკზე 10 კმ-ს ფარავს, 80 მ - 82 კმ-ს. «ავტო» ირჩევს პიქსელს ყველაზე მცირე ჩამოტვირთვით.
+Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.	მონაცემები - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.
+Places of changes	ცვლილებების ადგილები
+Places of the strongest changes of the area - points in the folder of the computation. Then they are handy to look at with the image archive and the swipe.	უბნის ყველაზე ძლიერი ცვლილებების ადგილები - წერტილები გამოთვლის საქაღალდეში. შემდეგ მათი ყურება მოხერხებულია გამოსახულებათა არქივითა და შედარების გადამწევით.
+The degree of change of the area between the two years - a layer on the globe.	უბნის ცვლილების ხარისხი ორ წელს შორის - ფენა გლობუსზე.
+Class {n}	კლასი {n}
+At least two classes of three points each are needed.	საჭიროა მინიმუმ ორი კლასი სამ-სამი წერტილით.
+Loading the vectors of the area: block {n} of {total}.	უბნის ვექტორების ჩატვირთვა: ბლოკი {n} / {total}.
+There are no data of the data set in the area for this year.	ამ წლისთვის უბანზე მონაცემთა ნაკრების მონაცემები არ არის.
+All points are outside the area.	ყველა წერტილი უბნის გარეთაა.
+Classes of the year {year}: {parts}.	{year} წლის კლასები: {parts}.
+Points outside the area: {n}.	წერტილები უბნის გარეთ: {n}.
+Classification {year}	კლასიფიკაცია {year}
+{n} - {name}	{n} - {name}
+Value {n} in the GeoTIFF file.	მნიშვნელობა {n} GeoTIFF ფაილში.
+Classification	კლასიფიკაცია
+The year by whose vectors the cells are divided into classes. The points are put by the image of the globe, it may be of another year.	წელი, რომლის ვექტორებითაც უჯრები იყოფა კლასებად. წერტილები დგება გლობუსის სურათით, ის შეიძლება სხვა წლის იყოს.
+Pixel	პიქსელი
+The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells.	კლასიფიკაციის პიქსელი. ერთი წლის ფაილის ბლოკი ნებისმიერი პიქსელისას 40-50 მბ-ია. «ავტო» ირჩევს პიქსელს ყველაზე მცირე ჩამოტვირთვით, რომლის დროსაც უბანზე 14-დან 640 ათასამდე უჯრაა.
+Opacity of the classes on the globe.	კლასების გაუმჭვირვალობა გლობუსზე.
+Classes	კლასები
+A click on the globe puts a point of this class.	გლობუსზე დაწკაპუნება ამ კლასის წერტილს ათავსებს.
+points {n}	წერტილები {n}
+Remove the class and its points.	კლასისა და მისი წერტილების წაშლა.
+Add a class	კლასის დამატება
+Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.	დააწკაპუნეთ გლობუსზე არჩეული კლასის წერტილის დასადგმელად, წერტილზე დაწკაპუნება მას შლის. საჭიროა მინიმუმ ორი კლასი სამ-სამი წერტილით.
+Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors.	უბნის თითოეული უჯრა მიდის უახლოესი საკონტროლო წერტილების კლასში AlphaEarth-ის ვექტორების მიხედვით.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger area is needed.	წყალშემკრები აუზი უბნის კიდემდე აღწევს, კიდის მიღმა ნაწილი არ ითვლება. საჭიროა უფრო დიდი უბანი.
+There are no watercourses with such a catchment at the edge of the area.	უბნის კიდეზე ასეთი წყალშემკრები აუზის მქონე წყალნაკადები არ არის.
+Basins written to «My places»: {count}, they cover {area} km² of the area.	«ჩემს ნიშნებში» ჩაწერილი აუზები: {count}, ისინი ფარავს უბნის {area} კმ²-ს.
+There are no watercourses with such a catchment and order in the area.	უბანზე ასეთი წყალშემკრები აუზისა და რიგის მქონე წყალნაკადები არ არის.
+The water reached the edge of the area and can go further. A larger area is needed.	წყალი უბნის კიდემდე მივიდა და შეიძლება შემდგომაც წავიდეს. საჭიროა უფრო დიდი უბანი.
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the area.	ჩამონადენის ხაზი მთავრდება წყალნაკადთან მიღწევისას, რომლის წყალშემკრები აუზი ველის «წყალნაკადები, მინიმუმ» ფართობიდანაა. შემოწმების გარეშე ხაზი უბნის კიდემდე მიდის.
+Watercourses of the area with the Strahler order - lines in «My places», the line width grows with the order.	უბნის წყალნაკადები შტრალერის რიგით - ხაზები «ჩემს ნიშნებში», ხაზის სისქე რიგთან ერთად იზრდება.
+The area divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the area. Polygons in «My places».	უბანი, დაყოფილი გამოსასვლელების აუზებად - ადგილები, სადაც წყალნაკადები, რომელთა წყალშემკრები აუზი ველის «წყალნაკადები, მინიმუმ» ფართობიდანაა, უბანს ტოვებს. მრავალკუთხედები «ჩემს ნიშნებში».
+The line reached the edge of the area, further the water goes beyond it.	ხაზი უბნის კიდემდე მივიდა, შემდეგ წყალი მის მიღმა მიდის.
+The line ends at a watercourse.	ხაზი მთავრდება წყალნაკადთან.
+The line ends where the terrain flattens.	ხაზი მთავრდება იქ, სადაც რელიეფი ვაკდება.
+The line flows into another flow line.	ხაზი უერთდება სხვა ჩამონადენის ხაზს.
+The line ends at the edge of the height data.	ხაზი მთავრდება სიმაღლის მონაცემების კიდეზე.
+{title} - mean {mean}{unit}, spread {std}{unit}, quantiles 10, 25, 50, 75 and 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.	{title} - საშუალო {mean}{unit}, გაფანტვა {std}{unit}, კვანტილები 10, 25, 50, 75 და 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.
+The area is shared with the previous computation. «Square» and «Draw» start a new one.	უბანი წინა გამოთვლასთანაა საერთო. «კვადრატი» და «ხატვა» ახალს იწყებს.
+Sun hours	მზის საათები
+ h	 სთ
+Degree of change	ცვლილების ხარისხი
+Temporary Places	დროებითი ნიშნები
+New placemarks, paths and measurements go here while this row is selected. When the program closes, the contents can be moved to My Places or deleted. A placemark to keep at once is dragged to My Places.	ახალი ნიშნები, გზები და გაზომვები აქ ჩაიწერება, სანამ ეს სტრიქონია არჩეული. პროგრამის დახურვისას შიგთავსი შეიძლება გადავიტანოთ «ჩემს ნიშნებში» ან წავშალოთ. ნიშანი, რომელიც მაშინვე უნდა შეინახოს, გადაათრიეთ «ჩემს ნიშნებში».
+Save to My Places	შენახვა «ჩემს ნიშნებში»
+Clear Temporary Places…	«დროებითი ნიშნების» გასუფთავება…
+Delete the contents of Temporary Places, placemarks and folders {count}? Deletion cannot be undone.	წაიშალოს «დროებითი ნიშნების» შიგთავსი, ნიშნები და საქაღალდეები: {count}? წაშლის გაუქმება შეუძლებელია.
+Temporary Places contain unsaved items. Save them in My Places?	«დროებითი ნიშნები» შეიცავს შეუნახავ ელემენტებს. შეინახოს ისინი «ჩემს ნიშნებში»?
+Don't save	არ შეინახოს
+Show selected	არჩეულის ჩვენება
+Hide selected	არჩეულის დამალვა
+Delete selected ({count})	არჩეულის წაშლა ({count})
+Delete selected	არჩეულის წაშლა
+Delete the selected rows, {count}? Deletion cannot be undone.	წაიშალოს არჩეული სტრიქონები: {count}? წაშლის გაუქმება შეუძლებელია.
+Model section	მოდელის ჭრილი
+Model section: {name}	მოდელის ჭრილი: {name}
+Model section…	მოდელის ჭრილი…
+Model section wall	მოდელის ჭრილის კედელი
+Model cut	მოდელის ამონაჭერი
+Model cut along «{name}».	მოდელის ამონაჭერი «{name}»-ის გასწვრივ.
+Model cut along «{name}» is removed.	მოდელის ამონაჭერი «{name}»-ის გასწვრივ მოშორებულია.
+Section wall along «{name}».	ჭრილის კედელი «{name}»-ის გასწვრივ.
+Section wall along «{name}» is removed.	ჭრილის კედელი «{name}»-ის გასწვრივ მოშორებულია.
+Band of drill holes and objects	ჭაბურღილებისა და ობიექტების ზოლი
+Width of the band along the line from which drill holes and tunnels are moved onto the section. A wider band gives more drill holes, but distant ones do not lie where the line is.	ხაზის გასწვრივ ზოლის სიგანე, საიდანაც ჭაბურღილები და გვირაბები ჭრილზე გადაიტანება. უფრო განიერი ზოლი მეტ ჭაბურღილს იძლევა, მაგრამ შორეულები იქ არ დევს, სადაც ხაზია.
+Roofs	სახურავები
+Drill holes	ჭაბურღილები
+Drill holes of the model	მოდელის ჭაბურღილები
+The model has no roofs and drill holes.	მოდელს სახურავები და ჭაბურღილები არ აქვს.
+A path of at least two points and an open subsurface model are needed.	საჭიროა გზა მინიმუმ ორი წერტილით და გახსნილი მიწისქვეშა მოდელი.
+Length {length}. Roofs {beds}, drill holes in the band {holes}, tunnels {tunnels}.	სიგრძე {length}. სახურავები {beds}, ჭაბურღილები ზოლში {holes}, გვირაბები {tunnels}.
+Heights by the points of the line - distance, latitude, longitude, terrain and bed roofs, no roof - an empty field.	სიმაღლეები ხაზის წერტილების მიხედვით - მანძილი, განედი, გრძედი, რელიეფისა და ფენების სახურავები, სახურავის არარსებობისას - ცარიელი ველი.
+Picture…	სურათი…
+The section as a PNG picture of the window size.	ჭრილი PNG სურათად ფანჯრის ზომით.
+Color of the rock between beds	ფენებს შორის ქანის ფერი
+Color of the bed «{name}»	ფენის «{name}» ფერი
+Color of the line «{name}»	ხაზის «{name}» ფერი
+Default section colors	ჭრილის ფერები ნაგულისხმევად
+No data	მონაცემები არ არის
+terrain {value}	რელიეფი {value}
+Between beds	ფენებს შორის
+Layers with Z	Z-იანი ფენები
+Parts of objects with Z {count}.	Z-იანი ობიექტების ნაწილები: {count}.

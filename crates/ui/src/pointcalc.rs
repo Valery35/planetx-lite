@@ -662,8 +662,9 @@ pub fn painter(layer: &Layer) -> crate::vector::Painter {
 }
 
 /// Шкала инсоляции на глобусе: часы прямого света в сутки от 0 до top.
+/// Шкала лежит в слое окон: открытые окна анализа её накрывают, а не она их.
 pub fn legend(ctx: &egui::Context, lang: Lang, top: f64, at: egui::Pos2) {
-    egui::Area::new(egui::Id::unique("planetx-insolation-legend")).order(egui::Order::Foreground).fixed_pos(at).interactable(false).show(ctx, |ui| {
+    egui::Area::new(egui::Id::unique("planetx-insolation-legend")).order(egui::Order::Middle).fixed_pos(at).interactable(false).show(ctx, |ui| {
         egui::Frame::popup(ui.style()).show(ui, |ui| {
             ui.label(tr(lang, "Direct sun, h per day"));
             let (rect, _) = ui.allocate_exact_size(egui::vec2(180.0, 12.0), egui::Sense::hover());

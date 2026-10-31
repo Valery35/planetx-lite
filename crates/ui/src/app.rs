@@ -4969,8 +4969,10 @@ impl LiteApp {
             self.aef_class = None;
         }
         if let Some(crate::pointcalc::Layer::Insolation(r)) = self.insolation.as_ref().and_then(|c| c.layer.as_ref()) {
+            // Над глобусом, левая панель её не закрывает.
             let rect = ctx.content_rect();
-            crate::pointcalc::legend(ctx, lang, r.top(), egui::pos2(rect.left() + 12.0, rect.bottom() - 120.0));
+            let left = rect.right() - self.globe_width_px / ctx.pixels_per_point();
+            crate::pointcalc::legend(ctx, lang, r.top(), egui::pos2(left.max(rect.left()) + 12.0, rect.bottom() - 120.0));
         }
     }
 
@@ -7355,7 +7357,13 @@ impl LiteApp {
         let lang = self.lang;
         let edit = ui
             .horizontal(|ui| {
-                let width = ui.available_width() - 100.0;
+                // Запас - настоящая ширина кнопок на языке окна: постоянный
+                // запас короче «Suchen» раздвигал панель кадр за кадром.
+                let font = egui::TextStyle::Button.resolve(ui.style());
+                let color = ui.visuals().text_color();
+                let labels = [button, "✦"].map(|t| ui.fonts_mut(|f| f.layout_no_wrap(t.to_string(), font.clone(), color)).size().x);
+                let spacing = ui.spacing();
+                let width = crate::theme::field_room(ui.available_width(), &labels, spacing.button_padding.x, spacing.item_spacing.x);
                 // Поиск места - земной, на другом теле строка - только
                 // для помощника. В небе строка ищет объекты неба, как
                 // у модуля.

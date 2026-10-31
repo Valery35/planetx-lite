@@ -563,7 +563,7 @@ mod tests {
             numeric: vec![false, false, true],
             items: rows
                 .iter()
-                .map(|(truck, time, lat, lon)| LayerItem { shape: LayerShape::Point, parts: vec![vec![(*lat, *lon)]], values: vec![truck.to_string(), time.to_string(), "10".into()] })
+                .map(|(truck, time, lat, lon)| LayerItem { shape: LayerShape::Point, parts: vec![vec![(*lat, *lon)]], heights: Vec::new(), values: vec![truck.to_string(), time.to_string(), "10".into()] })
                 .collect(),
         }
     }

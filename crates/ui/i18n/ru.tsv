@@ -1857,3 +1857,5 @@ Default section colors	Цвета разреза по умолчанию
 No data	Нет данных
 terrain {value}	рельеф {value}
 Between beds	Между пластами
+Layers with Z	Слои с Z
+Parts of objects with Z {count}.	Частей объектов с Z {count}.

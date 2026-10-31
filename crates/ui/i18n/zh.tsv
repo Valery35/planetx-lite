@@ -1701,3 +1701,161 @@ Command to connect Claude Code:	连接 Claude Code 的命令：
 Configuration for Claude Desktop and other clients:	Claude Desktop 及其他客户端的配置：
 MCP agents are not let in: {error}	未允许 MCP 代理接入：{error}
 More tools	更多工具
+Area|site	区域
+Area analysis	区域分析
+Square	方形
+Draw	绘制
+Side of the square of the area with its middle at the point of the window. Vertices of the area are dragged with the mouse, the circle in the middle of a side adds a new vertex. The area is not larger than {km} km.	以窗口中心点为中心的区域方形的边长。拖动鼠标可移动区域顶点，边中间的圆圈可添加新顶点。区域不超过 {km} 公里。
+The area is a square with the side from the field on the left.	区域为方形，边长取自左侧字段。
+Draw the area as a polygon by clicks on the globe. A click on the first vertex closes it. The result is computed only inside the area.	在地球上单击，将区域绘制为多边形。单击第一个顶点即闭合。仅在区域内进行计算。
+Click the vertices of the area on the globe. A click on the first vertex closes it.	在地球上单击区域的各顶点。单击第一个顶点即闭合。
+Close the area by a click on its first vertex.	单击区域的第一个顶点以闭合区域。
+The area is larger than {km} km, make it smaller.	区域超过 {km} 公里，请缩小。
+Save the result and close the window. The computation goes as a folder into the folder «Area analysis» of «My places» together with the outline of the area, the values - as a GeoTIFF file. Deleting the folder removes the computation entirely.	保存结果并关闭窗口。计算以文件夹形式放入“我的地点”的“区域分析”文件夹，连同区域轮廓，数值保存为 GeoTIFF 文件。删除该文件夹即整体移除该计算。
+Remove the result from the globe and close the window.	从地球上移除结果并关闭窗口。
+Built at {time} UTC.	构建于 {time} UTC。
+Values - the GeoTIFF file {path}.	数值 - GeoTIFF 文件 {path}。
+Viewshed	可视域
+Viewshed {time}	可视域 {time}
+Insolation {time}, h per day	日照 {time}，每天小时数
+What is seen from the point in the circle - a layer on the globe.	从圆圈中的点可以看到的范围 - 地球上的图层。
+Hours of direct sun per day in the area - a layer on the globe. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	区域内每天的直射阳光小时数 - 地球上的图层。山体阴影取自不小于区域一半且不小于 5 公里的距离。
+The area has changed. Press «Build» to compute it again.	区域已更改。按“生成”重新计算。
+Saved to «My places», the values - {path}.	已保存到“我的地点”，数值 - {path}。
+Saved to «My places». The GeoTIFF file is not written: {e}	已保存到“我的地点”。GeoTIFF 文件未写入：{e}
+There are no heights in the area.	区域内没有高程。
+There are no peaks and pits with such a drop in the area.	区域内没有这样落差的山峰和洼地。
+Found peaks {peaks} and pits {pits}. They go into the folder of the computation by «OK».	找到山峰 {peaks} 个，洼地 {pits} 个。点“确定”后它们将放入该计算的文件夹。
+Aspect, °	坡向，°
+Peaks and closed hollows of the area - points with the height and the drop in the folder of the computation.	区域的山峰和封闭凹地 - 计算文件夹中带高度和落差的点。
+What the area shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	区域在地球上显示的内容 - 坡面的陡度或其朝向的方位。“图层”部分的“坡度”和“坡向”行此时关闭。
+Slope and aspect of the area by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	根据高程计算区域的坡度和坡向，3 × 3 核 - 地球上的着色以及按坡度等级和方位的汇总。
+The point is outside the area or has no heights.	该点在区域外或没有高程。
+Catchment of a placemark	地标的集水区
+Saved to «My places».	已保存到“我的地点”。
+Water from the point up to the given level on the area - a layer on the globe, the level changes without a new computation.	区域内从该点到给定水位的水 - 地球上的图层，水位变化无需重新计算。
+Flooding {level} m - depth	淹没 {level} 米 - 深度
+Flooding {level} m - outline	淹没 {level} 米 - 轮廓
+Shadows	阴影
+Shadows…	阴影…
+Shadows {moment} UTC	阴影 {moment} UTC
+{moment} UTC	{moment} UTC
+Computing the horizon: {share}	正在计算地平线：{share}
+The sun is below the horizon, the whole area is in shadow.	太阳在地平线以下，整个区域处于阴影中。
+Sun on {share} of the area, the sun is {elevation}° above the horizon. The grid step is {step} m.	区域的 {share} 有阳光，太阳高度角 {elevation}°。网格步长为 {step} 米。
+The moment is the right handle of the time slider, without the slider - the computer clock. After «Build» the shadows follow the slider: move the handle or start the playback.	时刻为时间条的右滑块；没有时间条时为计算机时钟。点“生成”后阴影随时间条变化：移动滑块或开始播放。
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	按地形显示时间条所示时刻哪里是阴影、哪里有阳光，阴影随时间条变化。山体阴影取自不小于区域一半且不小于 5 公里的距离。
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.	按地形显示时间条所示时刻哪里是阴影、哪里有阳光，阴影随时间条变化。
+Loading the index of files…	正在加载文件索引…
+There are no files of the data set for this zone.	该区带没有数据集文件。
+Download about {mb} MB, pixel {pixel} m.	下载约 {mb} MB，像素 {pixel} 米。
+The area is not closed.	区域未闭合。
+Choose two different years.	请选择两个不同的年份。
+The files are not read: {e}	文件未能读取：{e}
+Block {n} of {total}: loading.	第 {n} 块，共 {total} 块：正在加载。
+Block {n} of {total}: channel {band} of 64.	第 {n} 块，共 {total} 块：第 {band} 通道，共 64 个。
+There are no data of the data set in the area for these years.	这些年份内区域没有数据集的数据。
+Mean degree of change {mean}, strong changes (from 0.5) on {share} of the area. The pixel is {pixel} m.	平均变化程度 {mean}，强变化（0.5 起）占区域的 {share}。像素为 {pixel} 米。
+Change {n}	变化 {n}
+Degree of change {value}.	变化程度 {value}。
+There are no strong changes in the area.	区域内没有强变化。
+Found places of changes: {count}. They go into the folder of the computation by «OK».	找到变化地点：{count} 个。点“确定”后它们将放入该计算的文件夹。
+Changes {before}-{after}	变化 {before}-{after}
+Changes of the terrain	地形变化
+Changes of the terrain…	地形变化…
+Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.	地形在 2017-2025 年的两个年份之间哪里发生了变化 - 基于 AlphaEarth 嵌入，10 米单元。
+Classification…	分类…
+Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.	根据地球上的控制点划分区域的类别 - 基于 AlphaEarth 嵌入，10 米单元。
+Years	年份
+The years of the comparison. Each 10 m cell is described for a year by 64 numbers - a summary of Sentinel and Landsat images and radar. The degree of change is how much the descriptions of the two years differ.	对比的年份。每个 10 米单元每年由 64 个数字描述 - 即 Sentinel 和 Landsat 影像及雷达的汇总。变化程度表示两个年份的描述相差多少。
+Degree from	变化程度从
+Show cells with a degree of change in this span, the rest are transparent. Unchanged terrain has a degree about 0.05, a building site, a clearing, a new quarry - 0.5 and more.	显示变化程度在此区间内的单元，其余透明。未变化的地形变化程度约为 0.05，工地、采伐迹地、新采石场为 0.5 及以上。
+Area pixel	区域像素
+Auto	自动
+{pixel} m	{pixel} 米
+The pixel of the area. The files of the data set keep blocks of 1024 × 1024 pixels, a block for a year is 40-50 MB at any pixel: 10 m cover 10 km by a block, 80 m - 82 km. «Auto» takes the pixel with the least download.	区域的像素。数据集文件按 1024 × 1024 像素存储块，任一像素下每年一块为 40-50 MB：10 米时一块覆盖 10 公里，80 米时为 82 公里。“自动”选择下载量最小的像素。
+Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.	数据 - AlphaEarth Foundations Satellite Embedding，CC BY 4.0。
+Places of changes	变化地点
+Places of the strongest changes of the area - points in the folder of the computation. Then they are handy to look at with the image archive and the swipe.	区域中变化最强的地点 - 计算文件夹中的点。之后可方便地用影像档案和卷帘查看。
+The degree of change of the area between the two years - a layer on the globe.	区域在两个年份之间的变化程度 - 地球上的图层。
+Class {n}	类别 {n}
+At least two classes of three points each are needed.	至少需要两个类别，每类三个点。
+Loading the vectors of the area: block {n} of {total}.	正在加载区域的向量：第 {n} 块，共 {total} 块。
+There are no data of the data set in the area for this year.	该年份内区域没有数据集的数据。
+All points are outside the area.	所有点都在区域外。
+Classes of the year {year}: {parts}.	{year} 年的类别：{parts}。
+Points outside the area: {n}.	区域外的点：{n}。
+Classification {year}	分类 {year}
+{n} - {name}	{n} - {name}
+Value {n} in the GeoTIFF file.	GeoTIFF 文件中的值 {n}。
+Classification	分类
+The year by whose vectors the cells are divided into classes. The points are put by the image of the globe, it may be of another year.	用于将单元划分为类别的向量所属年份。点按地球影像放置，其年份可能不同。
+Pixel	像素
+The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells.	分类的像素。任一像素下，文件中一年的块为 40-50 MB。“自动”选择下载量最小且区域内有 14 至 64 万个单元的像素。
+Opacity of the classes on the globe.	类别在地球上的不透明度。
+Classes	类别
+A click on the globe puts a point of this class.	在地球上单击将放置此类别的点。
+points {n}	点 {n} 个
+Remove the class and its points.	移除该类别及其点。
+Add a class	添加类别
+Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.	单击地球放置所选类别的点，单击点将其移除。至少需要两个类别，每类三个点。
+Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors.	区域的每个单元按 AlphaEarth 向量归入最近控制点所在的类别。
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger area is needed.	集水区到达区域边缘，边缘以外的部分未计入。需要更大的区域。
+There are no watercourses with such a catchment at the edge of the area.	区域边缘没有这样集水面积的水道。
+Basins written to «My places»: {count}, they cover {area} km² of the area.	已写入“我的地点”的流域：{count} 个，覆盖区域的 {area} 平方公里。
+There are no watercourses with such a catchment and order in the area.	区域内没有这样集水面积和级别的水道。
+The water reached the edge of the area and can go further. A larger area is needed.	水已到达区域边缘，可能继续向外流。需要更大的区域。
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the area.	水流线在到达集水面积不小于字段“水道集水面积自”的水道时结束。不勾选时，线延伸到区域边缘。
+Watercourses of the area with the Strahler order - lines in «My places», the line width grows with the order.	区域内带 Strahler 级别的水道 - “我的地点”中的线，线宽随级别增加。
+The area divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the area. Polygons in «My places».	区域被划分为出水口流域 - 集水面积不小于字段“水道集水面积自”的水道离开区域的地点。多边形位于“我的地点”。
+The line reached the edge of the area, further the water goes beyond it.	线到达区域边缘，水从此流出区域。
+The line ends at a watercourse.	线在水道处结束。
+The line ends where the terrain flattens.	线在地形变平处结束。
+The line flows into another flow line.	线汇入另一条水流线。
+The line ends at the edge of the height data.	线在高程数据边缘处结束。
+{title} - mean {mean}{unit}, spread {std}{unit}, quantiles 10, 25, 50, 75 and 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.	{title} - 平均 {mean}{unit}，离散度 {std}{unit}，10、25、50、75 和 90 % 分位数 - {p10}、{q1}、{median}、{q3}、{p90}{unit}。
+The area is shared with the previous computation. «Square» and «Draw» start a new one.	区域与上一次计算共用。“方形”和“绘制”开始新的计算。
+Sun hours	日照小时数
+ h	 小时
+Degree of change	变化程度
+Temporary Places	临时地点
+New placemarks, paths and measurements go here while this row is selected. When the program closes, the contents can be moved to My Places or deleted. A placemark to keep at once is dragged to My Places.	选中此行时，新地标、路径和测量放在这里。程序关闭时，内容可移到“我的地点”或删除。需要立即保存的地标，请拖到“我的地点”。
+Save to My Places	保存到“我的地点”
+Clear Temporary Places…	清空“临时地点”…
+Delete the contents of Temporary Places, placemarks and folders {count}? Deletion cannot be undone.	删除“临时地点”的内容，共 {count} 个地标和文件夹？删除后无法撤销。
+Temporary Places contain unsaved items. Save them in My Places?	“临时地点”中有未保存的项目。保存到“我的地点”吗？
+Don't save	不保存
+Show selected	显示所选项
+Hide selected	隐藏所选项
+Delete selected ({count})	删除所选项（{count}）
+Delete selected	删除所选项
+Delete the selected rows, {count}? Deletion cannot be undone.	删除所选的行，共 {count} 行？删除后无法撤销。
+Model section	模型剖面
+Model section: {name}	模型剖面：{name}
+Model section…	模型剖面…
+Model section wall	模型剖面墙
+Model cut	模型切口
+Model cut along «{name}».	沿“{name}”的模型切口。
+Model cut along «{name}» is removed.	沿“{name}”的模型切口已移除。
+Section wall along «{name}».	沿“{name}”的剖面墙。
+Section wall along «{name}» is removed.	沿“{name}”的剖面墙已移除。
+Band of drill holes and objects	钻孔和对象的带宽
+Width of the band along the line from which drill holes and tunnels are moved onto the section. A wider band gives more drill holes, but distant ones do not lie where the line is.	沿线条的带宽，带内的钻孔和隧道投影到剖面上。带越宽钻孔越多，但远处的钻孔并不位于线所在的位置。
+Roofs	顶面
+Drill holes	钻孔
+Drill holes of the model	模型的钻孔
+The model has no roofs and drill holes.	模型中没有顶面和钻孔。
+A path of at least two points and an open subsurface model are needed.	需要至少两点的路径和已打开的地下模型。
+Length {length}. Roofs {beds}, drill holes in the band {holes}, tunnels {tunnels}.	长度 {length}。顶面 {beds} 个，带内钻孔 {holes} 个，隧道 {tunnels} 条。
+Heights by the points of the line - distance, latitude, longitude, terrain and bed roofs, no roof - an empty field.	沿线上各点的高程 - 距离、纬度、经度、地形和地层顶面，无顶面则为空字段。
+Picture…	图片…
+The section as a PNG picture of the window size.	将剖面导出为窗口大小的 PNG 图片。
+Color of the rock between beds	地层之间岩石的颜色
+Color of the bed «{name}»	地层“{name}”的颜色
+Color of the line «{name}»	线“{name}”的颜色
+Default section colors	默认剖面颜色
+No data	无数据
+terrain {value}	地形 {value}
+Between beds	地层之间
+Layers with Z	含 Z 的图层
+Parts of objects with Z {count}.	含 Z 的对象部分 {count}。

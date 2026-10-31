@@ -267,7 +267,7 @@ pub fn show(
     }
     let rect = egui::Rect::from_min_size(egui::pos2(view.left() + crate::credits::MARGIN, bottom - height), egui::vec2(width, height));
     let mut closed = None;
-    egui::Area::new(egui::Id::unique("planetx-legends")).order(egui::Order::Foreground).fixed_pos(rect.min).show(ctx, |ui| {
+    egui::Area::new(egui::Id::unique("planetx-legends")).order(egui::Order::Middle).fixed_pos(rect.min).show(ctx, |ui| {
         let (rect, _) = ui.allocate_exact_size(rect.size(), egui::Sense::hover());
         ui.painter().rect_filled(rect, 3.0, p.plate);
         let mut top = rect.top() + PAD / 2.0;

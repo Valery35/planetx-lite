@@ -27,6 +27,8 @@ pub struct Item {
     pub shape: Shape,
     /// Части геометрии, точки (широта, долгота).
     pub parts: Vec<Vec<(f64, f64)>>,
+    /// Отметки Z точек частей, у части без отметок пусто.
+    pub heights: Vec<Vec<f64>>,
     /// Значения полей текстом в порядке полей слоя.
     pub values: Vec<String>,
 }
@@ -53,20 +55,23 @@ fn text(v: &FieldValue) -> String {
     }
 }
 
+/// Точки частей в системе слоя с отметками Z.
+type RawParts = Vec<Vec<(f64, f64, Option<f64>)>>;
+
 /// Части и вид геометрии в системе слоя.
-fn parts(g: &Geometry, out: &mut Vec<Vec<(f64, f64)>>) -> Shape {
+fn parts(g: &Geometry, out: &mut RawParts) -> Shape {
     macro_rules! line {
         ($c:expr) => {
-            $c.iter().map(|p| (p.x, p.y)).collect::<Vec<_>>()
+            $c.iter().map(|p| (p.x, p.y, p.z)).collect::<Vec<_>>()
         };
     }
     match g {
         Geometry::Point(p) => {
-            out.push(vec![(p.x, p.y)]);
+            out.push(vec![(p.x, p.y, p.z)]);
             Shape::Point
         }
         Geometry::MultiPoint(ps) => {
-            out.extend(ps.iter().map(|p| vec![(p.x, p.y)]));
+            out.extend(ps.iter().map(|p| vec![(p.x, p.y, p.z)]));
             Shape::Point
         }
         Geometry::LineString(c) => {
@@ -120,11 +125,12 @@ pub fn read(bytes: Vec<u8>, name: &str) -> Result<Vec<LayerData>, String> {
                 }
             }
             let shape = f.geometry.as_ref().map_or(Shape::None, |g| parts(g, &mut raw));
+            let heights = raw.iter().map(|part| part.iter().map(|p| p.2).collect::<Option<Vec<f64>>>().unwrap_or_default()).collect();
             let converted: Option<Vec<Vec<(f64, f64)>>> = raw
                 .into_iter()
                 .map(|part| {
                     part.into_iter()
-                        .map(|(x, y)| match &to_wgs {
+                        .map(|(x, y, _)| match &to_wgs {
                             Some(t) => t.transform(x, y).ok().map(|(lon, lat)| (lat, lon)),
                             None => Some((y, x)),
                         })
@@ -134,7 +140,7 @@ pub fn read(bytes: Vec<u8>, name: &str) -> Result<Vec<LayerData>, String> {
             let Some(parts) = converted else {
                 continue;
             };
-            items.push(Item { shape, parts, values: f.attributes.iter().map(text).collect() });
+            items.push(Item { shape, parts, heights, values: f.attributes.iter().map(text).collect() });
         }
         let numeric = numeric.iter().zip(&filled).map(|(n, f)| *n && *f).collect();
         out.push(LayerData { name: layer.name.clone(), epsg, fields: layer.schema.fields().iter().map(|d| d.name.clone()).collect(), numeric, items });

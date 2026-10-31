@@ -1701,3 +1701,161 @@ Command to connect Claude Code:	Claude Code 연결 명령:
 Configuration for Claude Desktop and other clients:	Claude Desktop 및 기타 클라이언트용 설정:
 MCP agents are not let in: {error}	MCP 에이전트를 허용하지 못했습니다: {error}
 More tools	기타 도구
+Area|site	영역
+Area analysis	영역 분석
+Square	정사각형
+Draw	그리기
+Side of the square of the area with its middle at the point of the window. Vertices of the area are dragged with the mouse, the circle in the middle of a side adds a new vertex. The area is not larger than {km} km.	창의 중심점을 중심으로 하는 영역 정사각형의 한 변. 영역의 꼭짓점은 마우스로 끌 수 있고, 변 가운데의 원을 누르면 새 꼭짓점이 추가됩니다. 영역은 {km} km를 넘을 수 없습니다.
+The area is a square with the side from the field on the left.	영역은 왼쪽 필드의 변 길이를 가진 정사각형입니다.
+Draw the area as a polygon by clicks on the globe. A click on the first vertex closes it. The result is computed only inside the area.	지구본을 클릭하여 영역을 다각형으로 그립니다. 첫 꼭짓점을 클릭하면 닫힙니다. 계산은 영역 안에서만 이루어집니다.
+Click the vertices of the area on the globe. A click on the first vertex closes it.	지구본에서 영역의 꼭짓점을 클릭합니다. 첫 꼭짓점을 클릭하면 닫힙니다.
+Close the area by a click on its first vertex.	영역의 첫 꼭짓점을 클릭하여 영역을 닫습니다.
+The area is larger than {km} km, make it smaller.	영역이 {km} km보다 큽니다. 더 작게 줄이세요.
+Save the result and close the window. The computation goes as a folder into the folder «Area analysis» of «My places» together with the outline of the area, the values - as a GeoTIFF file. Deleting the folder removes the computation entirely.	결과를 저장하고 창을 닫습니다. 계산은 영역의 윤곽과 함께 폴더로 «내 장소»의 «영역 분석» 폴더에 들어가고, 값은 GeoTIFF 파일로 저장됩니다. 폴더를 삭제하면 계산 전체가 제거됩니다.
+Remove the result from the globe and close the window.	결과를 지구본에서 제거하고 창을 닫습니다.
+Built at {time} UTC.	{time} UTC에 생성했습니다.
+Values - the GeoTIFF file {path}.	값 - GeoTIFF 파일 {path}.
+Viewshed	가시권
+Viewshed {time}	가시권 {time}
+Insolation {time}, h per day	일조 {time}, 하루당 시간
+What is seen from the point in the circle - a layer on the globe.	원 안의 지점에서 보이는 범위 - 지구본 위의 레이어.
+Hours of direct sun per day in the area - a layer on the globe. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	영역에서 하루 동안 직사광선을 받는 시간 - 지구본 위의 레이어. 산의 그림자는 영역의 절반 이상이며 5 km 이상인 거리에서 가져옵니다.
+The area has changed. Press «Build» to compute it again.	영역이 바뀌었습니다. «만들기»를 눌러 다시 계산하세요.
+Saved to «My places», the values - {path}.	«내 장소»에 저장했습니다. 값 - {path}.
+Saved to «My places». The GeoTIFF file is not written: {e}	«내 장소»에 저장했습니다. GeoTIFF 파일은 기록되지 않았습니다: {e}
+There are no heights in the area.	영역에 고도가 없습니다.
+There are no peaks and pits with such a drop in the area.	영역에 이 정도 고도차의 봉우리와 와지가 없습니다.
+Found peaks {peaks} and pits {pits}. They go into the folder of the computation by «OK».	봉우리 {peaks}개와 와지 {pits}개를 찾았습니다. «확인»을 누르면 계산 폴더에 들어갑니다.
+Aspect, °	사면 방향, °
+Peaks and closed hollows of the area - points with the height and the drop in the folder of the computation.	영역의 봉우리와 닫힌 우묵한 곳 - 계산 폴더에 있는, 고도와 고도차가 있는 점.
+What the area shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	영역이 지구본에 보여 주는 것 - 사면의 경사 또는 사면이 향하는 방위. 그동안 «레이어» 섹션의 «경사»와 «사면 방향» 행은 꺼집니다.
+Slope and aspect of the area by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	고도에 따른 영역의 경사와 사면 방향, 3 × 3 커널 - 지구본 위의 색칠과 경사 등급 및 방위별 요약.
+The point is outside the area or has no heights.	지점이 영역 밖에 있거나 고도가 없습니다.
+Catchment of a placemark	장소 표시의 집수역
+Saved to «My places».	«내 장소»에 저장했습니다.
+Water from the point up to the given level on the area - a layer on the globe, the level changes without a new computation.	영역에서 지점부터 지정한 수위까지의 물 - 지구본 위의 레이어. 수위는 다시 계산하지 않고 바꿀 수 있습니다.
+Flooding {level} m - depth	침수 {level} m - 깊이
+Flooding {level} m - outline	침수 {level} m - 윤곽
+Shadows	그림자
+Shadows…	그림자…
+Shadows {moment} UTC	그림자 {moment} UTC
+{moment} UTC	{moment} UTC
+Computing the horizon: {share}	지평선 계산 중: {share}
+The sun is below the horizon, the whole area is in shadow.	태양이 지평선 아래에 있어 영역 전체가 그림자 속에 있습니다.
+Sun on {share} of the area, the sun is {elevation}° above the horizon. The grid step is {step} m.	영역의 {share}에 햇빛이 비칩니다. 태양 고도는 {elevation}°입니다. 그리드 간격은 {step} m입니다.
+The moment is the right handle of the time slider, without the slider - the computer clock. After «Build» the shadows follow the slider: move the handle or start the playback.	시각은 시간 막대의 오른쪽 핸들이며, 시간 막대가 없으면 컴퓨터 시계입니다. «만들기» 후 그림자는 시간 막대를 따라갑니다. 핸들을 움직이거나 재생을 시작하세요.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	시간 막대의 시각에 어디가 그늘이고 어디가 양지인지 - 지형으로 계산합니다. 그림자는 시간 막대를 따라갑니다. 산의 그림자는 영역의 절반 이상이며 5 km 이상인 거리에서 가져옵니다.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.	시간 막대의 시각에 어디가 그늘이고 어디가 양지인지 - 지형으로 계산합니다. 그림자는 시간 막대를 따라갑니다.
+Loading the index of files…	파일 색인을 불러오는 중…
+There are no files of the data set for this zone.	이 구역에는 데이터 세트 파일이 없습니다.
+Download about {mb} MB, pixel {pixel} m.	다운로드 약 {mb} MB, 픽셀 {pixel} m.
+The area is not closed.	영역이 닫혀 있지 않습니다.
+Choose two different years.	서로 다른 두 연도를 선택하세요.
+The files are not read: {e}	파일을 읽지 못했습니다: {e}
+Block {n} of {total}: loading.	블록 {n}/{total}: 불러오는 중.
+Block {n} of {total}: channel {band} of 64.	블록 {n}/{total}: 채널 {band}/64.
+There are no data of the data set in the area for these years.	이 연도들에 대해 영역에 데이터 세트의 데이터가 없습니다.
+Mean degree of change {mean}, strong changes (from 0.5) on {share} of the area. The pixel is {pixel} m.	평균 변화 정도 {mean}, 강한 변화(0.5 이상)는 영역의 {share}. 픽셀은 {pixel} m입니다.
+Change {n}	변화 {n}
+Degree of change {value}.	변화 정도 {value}.
+There are no strong changes in the area.	영역에 강한 변화가 없습니다.
+Found places of changes: {count}. They go into the folder of the computation by «OK».	변화 지점 {count}개를 찾았습니다. «확인»을 누르면 계산 폴더에 들어갑니다.
+Changes {before}-{after}	변화 {before}-{after}
+Changes of the terrain	지형 변화
+Changes of the terrain…	지형 변화…
+Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.	2017-2025년 두 연도 사이에 지형이 어디서 바뀌었는지 - AlphaEarth 임베딩 기준, 10 m 셀.
+Classification…	분류…
+Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.	지구본의 기준점으로 나눈 영역의 등급 - AlphaEarth 임베딩 기준, 10 m 셀.
+Years	연도
+The years of the comparison. Each 10 m cell is described for a year by 64 numbers - a summary of Sentinel and Landsat images and radar. The degree of change is how much the descriptions of the two years differ.	비교하는 연도. 10 m 셀마다 한 해가 64개의 숫자로 기술됩니다 - Sentinel과 Landsat 영상 및 레이더의 요약입니다. 변화 정도는 두 연도의 기술이 얼마나 다른지를 나타냅니다.
+Degree from	변화 정도 하한
+Show cells with a degree of change in this span, the rest are transparent. Unchanged terrain has a degree about 0.05, a building site, a clearing, a new quarry - 0.5 and more.	변화 정도가 이 구간에 있는 셀을 표시하고 나머지는 투명하게 합니다. 변하지 않은 지형의 변화 정도는 약 0.05이고, 공사장, 벌채지, 새 채석장은 0.5 이상입니다.
+Area pixel	영역 픽셀
+Auto	자동
+{pixel} m	{pixel} m
+The pixel of the area. The files of the data set keep blocks of 1024 × 1024 pixels, a block for a year is 40-50 MB at any pixel: 10 m cover 10 km by a block, 80 m - 82 km. «Auto» takes the pixel with the least download.	영역의 픽셀. 데이터 세트 파일은 1024 × 1024 픽셀 블록으로 저장되며, 한 해의 블록은 어떤 픽셀에서도 40-50 MB입니다. 10 m는 블록 하나가 10 km, 80 m는 82 km를 덮습니다. «자동»은 다운로드가 가장 적은 픽셀을 고릅니다.
+Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.	데이터 - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.
+Places of changes	변화 지점
+Places of the strongest changes of the area - points in the folder of the computation. Then they are handy to look at with the image archive and the swipe.	영역에서 변화가 가장 강한 지점 - 계산 폴더의 점. 이후 영상 보관소와 스와이프로 살펴보기 편합니다.
+The degree of change of the area between the two years - a layer on the globe.	두 연도 사이 영역의 변화 정도 - 지구본 위의 레이어.
+Class {n}	등급 {n}
+At least two classes of three points each are needed.	점 세 개씩인 등급이 두 개 이상 필요합니다.
+Loading the vectors of the area: block {n} of {total}.	영역의 벡터를 불러오는 중: 블록 {n}/{total}.
+There are no data of the data set in the area for this year.	이 연도에는 영역에 데이터 세트의 데이터가 없습니다.
+All points are outside the area.	모든 점이 영역 밖에 있습니다.
+Classes of the year {year}: {parts}.	{year}년의 등급: {parts}.
+Points outside the area: {n}.	영역 밖의 점: {n}.
+Classification {year}	분류 {year}
+{n} - {name}	{n} - {name}
+Value {n} in the GeoTIFF file.	GeoTIFF 파일의 값 {n}.
+Classification	분류
+The year by whose vectors the cells are divided into classes. The points are put by the image of the globe, it may be of another year.	셀을 등급으로 나누는 데 쓰는 벡터의 연도. 점은 지구본 영상을 보고 찍으므로 영상은 다른 연도일 수 있습니다.
+Pixel	픽셀
+The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells.	분류의 픽셀. 한 해의 파일 블록은 어떤 픽셀에서도 40-50 MB입니다. «자동»은 영역의 셀이 1만 4천 개에서 64만 개가 되는 픽셀 중 다운로드가 가장 적은 것을 고릅니다.
+Opacity of the classes on the globe.	지구본에서 등급의 불투명도.
+Classes	등급
+A click on the globe puts a point of this class.	지구본을 클릭하면 이 등급의 점이 찍힙니다.
+points {n}	점 {n}개
+Remove the class and its points.	등급과 그 점을 제거합니다.
+Add a class	등급 추가
+Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.	지구본을 클릭하면 선택한 등급의 점이 찍히고, 점을 클릭하면 제거됩니다. 점 세 개씩인 등급이 두 개 이상 필요합니다.
+Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors.	영역의 각 셀은 AlphaEarth 벡터상 가장 가까운 기준점의 등급에 속합니다.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger area is needed.	집수역이 영역 가장자리에 닿아 있어 가장자리 밖 부분은 계산되지 않았습니다. 더 큰 영역이 필요합니다.
+There are no watercourses with such a catchment at the edge of the area.	영역 가장자리에 이런 집수 면적의 수로가 없습니다.
+Basins written to «My places»: {count}, they cover {area} km² of the area.	«내 장소»에 기록한 유역: {count}, 영역의 {area} km²를 덮습니다.
+There are no watercourses with such a catchment and order in the area.	영역에 이런 집수 면적과 차수의 수로가 없습니다.
+The water reached the edge of the area and can go further. A larger area is needed.	물이 영역 가장자리에 닿았으며 더 흘러갈 수 있습니다. 더 큰 영역이 필요합니다.
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the area.	흐름선은 «수로 집수 면적 하한» 필드의 면적 이상인 집수역을 가진 수로에 닿으면 끝납니다. 확인란이 없으면 선은 영역 가장자리까지 이어집니다.
+Watercourses of the area with the Strahler order - lines in «My places», the line width grows with the order.	스트랄러 차수가 있는 영역의 수로 - «내 장소»의 선이며, 선 굵기는 차수에 따라 커집니다.
+The area divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the area. Polygons in «My places».	출구 유역으로 나눈 영역 - «수로 집수 면적 하한» 필드의 면적 이상인 집수역을 가진 수로가 영역을 벗어나는 지점. 다각형은 «내 장소»에 들어갑니다.
+The line reached the edge of the area, further the water goes beyond it.	선이 영역 가장자리에 닿았으며, 물은 그 너머로 흘러갑니다.
+The line ends at a watercourse.	선은 수로에서 끝납니다.
+The line ends where the terrain flattens.	선은 지형이 평탄해지는 곳에서 끝납니다.
+The line flows into another flow line.	선은 다른 흐름선으로 합류합니다.
+The line ends at the edge of the height data.	선은 고도 데이터의 가장자리에서 끝납니다.
+{title} - mean {mean}{unit}, spread {std}{unit}, quantiles 10, 25, 50, 75 and 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.	{title} - 평균 {mean}{unit}, 산포 {std}{unit}, 분위수 10, 25, 50, 75, 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.
+The area is shared with the previous computation. «Square» and «Draw» start a new one.	영역은 이전 계산과 공유됩니다. «정사각형»과 «그리기»는 새 계산을 시작합니다.
+Sun hours	일조 시간
+ h	 시간
+Degree of change	변화 정도
+Temporary Places	임시 장소
+New placemarks, paths and measurements go here while this row is selected. When the program closes, the contents can be moved to My Places or deleted. A placemark to keep at once is dragged to My Places.	이 행이 선택되어 있는 동안 새 장소 표시, 경로, 측정이 여기에 들어갑니다. 프로그램을 닫을 때 내용을 "내 장소"로 옮기거나 삭제할 수 있습니다. 바로 보관할 장소 표시는 "내 장소"로 끌어 놓으세요.
+Save to My Places	"내 장소"에 저장
+Clear Temporary Places…	"임시 장소" 비우기…
+Delete the contents of Temporary Places, placemarks and folders {count}? Deletion cannot be undone.	"임시 장소"의 내용, 장소 표시와 폴더 총 {count}개를 삭제할까요? 삭제는 되돌릴 수 없습니다.
+Temporary Places contain unsaved items. Save them in My Places?	"임시 장소"에 저장하지 않은 항목이 있습니다. "내 장소"에 저장할까요?
+Don't save	저장 안 함
+Show selected	선택 항목 표시
+Hide selected	선택 항목 숨기기
+Delete selected ({count})	선택 항목 삭제({count})
+Delete selected	선택 항목 삭제
+Delete the selected rows, {count}? Deletion cannot be undone.	선택한 행 총 {count}개를 삭제할까요? 삭제는 되돌릴 수 없습니다.
+Model section	모델 단면
+Model section: {name}	모델 단면: {name}
+Model section…	모델 단면…
+Model section wall	모델 단면 벽
+Model cut	모델 절단
+Model cut along «{name}».	«{name}»을(를) 따른 모델 절단.
+Model cut along «{name}» is removed.	«{name}»을(를) 따른 모델 절단을 제거했습니다.
+Section wall along «{name}».	«{name}»을(를) 따른 단면 벽.
+Section wall along «{name}» is removed.	«{name}»을(를) 따른 단면 벽을 제거했습니다.
+Band of drill holes and objects	시추공과 객체의 띠
+Width of the band along the line from which drill holes and tunnels are moved onto the section. A wider band gives more drill holes, but distant ones do not lie where the line is.	선을 따라 시추공과 터널을 단면으로 옮겨 오는 띠의 너비. 띠가 넓을수록 시추공이 많아지지만, 먼 시추공은 선이 있는 위치에 있지 않습니다.
+Roofs	상면
+Drill holes	시추공
+Drill holes of the model	모델의 시추공
+The model has no roofs and drill holes.	모델에 상면과 시추공이 없습니다.
+A path of at least two points and an open subsurface model are needed.	점 두 개 이상의 경로와 열려 있는 지하 모델이 필요합니다.
+Length {length}. Roofs {beds}, drill holes in the band {holes}, tunnels {tunnels}.	길이 {length}. 상면 {beds}개, 띠 안의 시추공 {holes}개, 터널 {tunnels}개.
+Heights by the points of the line - distance, latitude, longitude, terrain and bed roofs, no roof - an empty field.	선 위 점별 고도 - 거리, 위도, 경도, 지형과 지층 상면. 상면이 없으면 빈 필드.
+Picture…	이미지…
+The section as a PNG picture of the window size.	창 크기의 PNG 이미지로 저장하는 단면.
+Color of the rock between beds	지층 사이 암석의 색상
+Color of the bed «{name}»	지층 «{name}»의 색상
+Color of the line «{name}»	선 «{name}»의 색상
+Default section colors	기본 단면 색상
+No data	데이터 없음
+terrain {value}	지형 {value}
+Between beds	지층 사이
+Layers with Z	Z 포함 레이어
+Parts of objects with Z {count}.	Z 포함 객체 부분 {count}개.

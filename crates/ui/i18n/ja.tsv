@@ -1701,3 +1701,161 @@ Command to connect Claude Code:	Claude Code を接続するコマンド：
 Configuration for Claude Desktop and other clients:	Claude Desktop とその他のクライアントの設定：
 MCP agents are not let in: {error}	MCP エージェントを許可できません：{error}
 More tools	その他のツール
+Area|site	範囲
+Area analysis	範囲の解析
+Square	正方形
+Draw	描画
+Side of the square of the area with its middle at the point of the window. Vertices of the area are dragged with the mouse, the circle in the middle of a side adds a new vertex. The area is not larger than {km} km.	ウィンドウの中心点を中心とする範囲の正方形の一辺。範囲の頂点はマウスでドラッグでき、辺の中央の円で新しい頂点を追加できます。範囲は {km} km を超えられません。
+The area is a square with the side from the field on the left.	範囲は、左のフィールドの辺の長さの正方形です。
+Draw the area as a polygon by clicks on the globe. A click on the first vertex closes it. The result is computed only inside the area.	地球儀をクリックして範囲をポリゴンとして描きます。最初の頂点をクリックすると閉じます。計算は範囲の内側だけで行われます。
+Click the vertices of the area on the globe. A click on the first vertex closes it.	地球儀上で範囲の頂点をクリックします。最初の頂点をクリックすると閉じます。
+Close the area by a click on its first vertex.	最初の頂点をクリックして範囲を閉じます。
+The area is larger than {km} km, make it smaller.	範囲が {km} km を超えています。小さくしてください。
+Save the result and close the window. The computation goes as a folder into the folder «Area analysis» of «My places» together with the outline of the area, the values - as a GeoTIFF file. Deleting the folder removes the computation entirely.	結果を保存してウィンドウを閉じます。計算は範囲の輪郭とともに「マイプレイス」の「範囲の解析」フォルダーにフォルダーとして入り、値は GeoTIFF ファイルになります。フォルダーを削除すると計算全体が削除されます。
+Remove the result from the globe and close the window.	結果を地球儀から取り除いてウィンドウを閉じます。
+Built at {time} UTC.	{time} UTC に作成しました。
+Values - the GeoTIFF file {path}.	値 - GeoTIFF ファイル {path}。
+Viewshed	可視域
+Viewshed {time}	可視域 {time}
+Insolation {time}, h per day	日照 {time}、1 日あたりの時間
+What is seen from the point in the circle - a layer on the globe.	円の中の点から見える範囲 - 地球儀上のレイヤー。
+Hours of direct sun per day in the area - a layer on the globe. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	範囲内の 1 日あたりの直射日光の時間 - 地球儀上のレイヤー。山の影は、範囲の半分以上かつ 5 km 以上の距離から取り込みます。
+The area has changed. Press «Build» to compute it again.	範囲が変わりました。「作成」を押すと再計算します。
+Saved to «My places», the values - {path}.	「マイプレイス」に保存しました。値 - {path}。
+Saved to «My places». The GeoTIFF file is not written: {e}	「マイプレイス」に保存しました。GeoTIFF ファイルは書き込まれていません：{e}
+There are no heights in the area.	範囲内に標高がありません。
+There are no peaks and pits with such a drop in the area.	範囲内に、この高低差の山頂とくぼ地はありません。
+Found peaks {peaks} and pits {pits}. They go into the folder of the computation by «OK».	山頂 {peaks} 個、くぼ地 {pits} 個が見つかりました。「OK」で計算のフォルダーに入ります。
+Aspect, °	斜面方位、°
+Peaks and closed hollows of the area - points with the height and the drop in the folder of the computation.	範囲の山頂と閉じたくぼみ - 計算のフォルダー内の、標高と高低差を持つ点。
+What the area shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	範囲が地球儀上に示すもの - 斜面の傾斜、または斜面が向く方位。この間、「レイヤー」セクションの「傾斜」と「斜面方位」の行はオフになります。
+Slope and aspect of the area by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	標高による範囲の傾斜と斜面方位、3 × 3 カーネル - 地球儀上の色分けと、傾斜区分と方位ごとの集計。
+The point is outside the area or has no heights.	地点が範囲の外にあるか、標高がありません。
+Catchment of a placemark	目印の集水域
+Saved to «My places».	「マイプレイス」に保存しました。
+Water from the point up to the given level on the area - a layer on the globe, the level changes without a new computation.	範囲内で、地点から指定した水位までの水 - 地球儀上のレイヤー。水位は再計算なしで変更できます。
+Flooding {level} m - depth	浸水 {level} m - 深さ
+Flooding {level} m - outline	浸水 {level} m - 輪郭
+Shadows	影
+Shadows…	影…
+Shadows {moment} UTC	影 {moment} UTC
+{moment} UTC	{moment} UTC
+Computing the horizon: {share}	地平線を計算中：{share}
+The sun is below the horizon, the whole area is in shadow.	太陽は地平線の下にあり、範囲全体が影の中です。
+Sun on {share} of the area, the sun is {elevation}° above the horizon. The grid step is {step} m.	範囲の {share} に日が当たっています。太陽高度は {elevation}° です。グリッドの間隔は {step} m です。
+The moment is the right handle of the time slider, without the slider - the computer clock. After «Build» the shadows follow the slider: move the handle or start the playback.	時刻はタイムバーの右のハンドルで、タイムバーがない場合はコンピューターの時計です。「作成」の後、影はタイムバーに連動します。ハンドルを動かすか、再生を開始してください。
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	タイムバーの時刻に、どこが影でどこが日向か - 地形から求めます。影はタイムバーに連動します。山の影は、範囲の半分以上かつ 5 km 以上の距離から取り込みます。
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.	タイムバーの時刻に、どこが影でどこが日向か - 地形から求めます。影はタイムバーに連動します。
+Loading the index of files…	ファイルのインデックスを読み込み中…
+There are no files of the data set for this zone.	このゾーンにはデータセットのファイルがありません。
+Download about {mb} MB, pixel {pixel} m.	ダウンロード約 {mb} MB、ピクセル {pixel} m。
+The area is not closed.	範囲が閉じていません。
+Choose two different years.	異なる 2 つの年を選んでください。
+The files are not read: {e}	ファイルを読み込めません：{e}
+Block {n} of {total}: loading.	ブロック {n}/{total}：読み込み中。
+Block {n} of {total}: channel {band} of 64.	ブロック {n}/{total}：チャンネル {band}/64。
+There are no data of the data set in the area for these years.	これらの年の範囲にはデータセットのデータがありません。
+Mean degree of change {mean}, strong changes (from 0.5) on {share} of the area. The pixel is {pixel} m.	平均変化度 {mean}、強い変化（0.5 以上）は範囲の {share}。ピクセルは {pixel} m です。
+Change {n}	変化 {n}
+Degree of change {value}.	変化度 {value}。
+There are no strong changes in the area.	範囲内に強い変化はありません。
+Found places of changes: {count}. They go into the folder of the computation by «OK».	変化の場所が {count} 件見つかりました。「OK」で計算のフォルダーに入ります。
+Changes {before}-{after}	変化 {before}-{after}
+Changes of the terrain	地形の変化
+Changes of the terrain…	地形の変化…
+Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.	2017-2025 年の 2 つの年の間で地形がどこで変わったか - AlphaEarth の埋め込みによる、10 m セル。
+Classification…	分類…
+Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.	地球儀上の参照点による範囲のクラス分け - AlphaEarth の埋め込みによる、10 m セル。
+Years	年
+The years of the comparison. Each 10 m cell is described for a year by 64 numbers - a summary of Sentinel and Landsat images and radar. The degree of change is how much the descriptions of the two years differ.	比較する年。10 m の各セルは 1 年ごとに 64 個の数値で表されます - Sentinel と Landsat の画像およびレーダーの集計です。変化度は、2 つの年の記述がどれだけ異なるかを示します。
+Degree from	変化度の下限
+Show cells with a degree of change in this span, the rest are transparent. Unchanged terrain has a degree about 0.05, a building site, a clearing, a new quarry - 0.5 and more.	この区間の変化度のセルを表示し、残りは透明にします。変わっていない地形の変化度は約 0.05、工事現場、伐採地、新しい採石場は 0.5 以上です。
+Area pixel	範囲のピクセル
+Auto	自動
+{pixel} m	{pixel} m
+The pixel of the area. The files of the data set keep blocks of 1024 × 1024 pixels, a block for a year is 40-50 MB at any pixel: 10 m cover 10 km by a block, 80 m - 82 km. «Auto» takes the pixel with the least download.	範囲のピクセル。データセットのファイルは 1024 × 1024 ピクセルのブロックで保存され、1 年分のブロックはどのピクセルでも 40-50 MB です。10 m では 1 ブロックが 10 km、80 m では 82 km を覆います。「自動」はダウンロード量が最小のピクセルを選びます。
+Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.	データ - AlphaEarth Foundations Satellite Embedding、CC BY 4.0。
+Places of changes	変化の場所
+Places of the strongest changes of the area - points in the folder of the computation. Then they are handy to look at with the image archive and the swipe.	範囲内で最も変化が強い場所 - 計算のフォルダー内の点。その後、画像アーカイブとスワイプで見るのに便利です。
+The degree of change of the area between the two years - a layer on the globe.	2 つの年の間の範囲の変化度 - 地球儀上のレイヤー。
+Class {n}	クラス {n}
+At least two classes of three points each are needed.	3 点ずつの 2 つ以上のクラスが必要です。
+Loading the vectors of the area: block {n} of {total}.	範囲のベクトルを読み込み中：ブロック {n}/{total}。
+There are no data of the data set in the area for this year.	この年の範囲にはデータセットのデータがありません。
+All points are outside the area.	すべての点が範囲の外にあります。
+Classes of the year {year}: {parts}.	{year} 年のクラス：{parts}。
+Points outside the area: {n}.	範囲外の点：{n}。
+Classification {year}	分類 {year}
+{n} - {name}	{n} - {name}
+Value {n} in the GeoTIFF file.	GeoTIFF ファイルの値 {n}。
+Classification	分類
+The year by whose vectors the cells are divided into classes. The points are put by the image of the globe, it may be of another year.	セルをクラスに分けるときに使うベクトルの年。点は地球儀の画像を見て置くため、画像は別の年のものでもかまいません。
+Pixel	ピクセル
+The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells.	分類のピクセル。1 年分のファイルのブロックは、どのピクセルでも 40-50 MB です。「自動」は、範囲のセル数が 1.4 万から 64 万になる中でダウンロード量が最小のピクセルを選びます。
+Opacity of the classes on the globe.	クラスの地球儀上での不透明度。
+Classes	クラス
+A click on the globe puts a point of this class.	地球儀をクリックすると、このクラスの点を置きます。
+points {n}	点 {n}
+Remove the class and its points.	クラスとその点を削除します。
+Add a class	クラスを追加
+Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.	地球儀をクリックして選択中のクラスの点を置き、点をクリックすると削除します。3 点ずつの 2 つ以上のクラスが必要です。
+Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors.	範囲の各セルは、AlphaEarth のベクトルで最も近い参照点のクラスに分類されます。
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger area is needed.	集水域が範囲の端に達しており、端の外側の部分は計上されていません。より大きな範囲が必要です。
+There are no watercourses with such a catchment at the edge of the area.	範囲の端に、この集水面積の水路はありません。
+Basins written to «My places»: {count}, they cover {area} km² of the area.	「マイプレイス」に書き込んだ流域：{count}、範囲の {area} km² を覆います。
+There are no watercourses with such a catchment and order in the area.	範囲内に、この集水面積と次数の水路はありません。
+The water reached the edge of the area and can go further. A larger area is needed.	水が範囲の端に達し、さらに先へ流れる可能性があります。より大きな範囲が必要です。
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the area.	流線は、「水路の集水面積下限」フィールドの面積以上の集水域を持つ水路に達すると終わります。チェックがない場合、線は範囲の端まで続きます。
+Watercourses of the area with the Strahler order - lines in «My places», the line width grows with the order.	ストレーラー次数付きの範囲の水路 - 「マイプレイス」の線で、線の太さは次数とともに増します。
+The area divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the area. Polygons in «My places».	出口の流域に分けた範囲 - 「水路の集水面積下限」フィールドの面積以上の集水域を持つ水路が範囲から出る場所。ポリゴンは「マイプレイス」に入ります。
+The line reached the edge of the area, further the water goes beyond it.	線は範囲の端に達しており、水はその先へ流れます。
+The line ends at a watercourse.	線は水路で終わります。
+The line ends where the terrain flattens.	線は地形が平らになる場所で終わります。
+The line flows into another flow line.	線は別の流線に合流します。
+The line ends at the edge of the height data.	線は標高データの端で終わります。
+{title} - mean {mean}{unit}, spread {std}{unit}, quantiles 10, 25, 50, 75 and 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.	{title} - 平均 {mean}{unit}、散らばり {std}{unit}、10、25、50、75、90 % 分位数 - {p10}、{q1}、{median}、{q3}、{p90}{unit}。
+The area is shared with the previous computation. «Square» and «Draw» start a new one.	範囲は前の計算と共通です。「正方形」と「描画」で新しい計算を始めます。
+Sun hours	日照時間
+ h	 時間
+Degree of change	変化度
+Temporary Places	一時的な場所
+New placemarks, paths and measurements go here while this row is selected. When the program closes, the contents can be moved to My Places or deleted. A placemark to keep at once is dragged to My Places.	この行を選択している間、新しい目印、パス、測定がここに入ります。プログラムを閉じるとき、内容は「マイプレイス」に移すか削除できます。すぐに保存したい目印は「マイプレイス」にドラッグしてください。
+Save to My Places	「マイプレイス」に保存
+Clear Temporary Places…	「一時的な場所」を空にする…
+Delete the contents of Temporary Places, placemarks and folders {count}? Deletion cannot be undone.	「一時的な場所」の内容、目印とフォルダー合計 {count} 個を削除しますか？削除は元に戻せません。
+Temporary Places contain unsaved items. Save them in My Places?	「一時的な場所」に未保存の項目があります。「マイプレイス」に保存しますか？
+Don't save	保存しない
+Show selected	選択項目を表示
+Hide selected	選択項目を隠す
+Delete selected ({count})	選択項目を削除（{count}）
+Delete selected	選択項目を削除
+Delete the selected rows, {count}? Deletion cannot be undone.	選択した行、合計 {count} 行を削除しますか？削除は元に戻せません。
+Model section	モデルの断面
+Model section: {name}	モデルの断面：{name}
+Model section…	モデルの断面…
+Model section wall	モデルの断面壁
+Model cut	モデルの切り取り
+Model cut along «{name}».	「{name}」に沿ったモデルの切り取り。
+Model cut along «{name}» is removed.	「{name}」に沿ったモデルの切り取りを取り除きました。
+Section wall along «{name}».	「{name}」に沿った断面壁。
+Section wall along «{name}» is removed.	「{name}」に沿った断面壁を取り除きました。
+Band of drill holes and objects	ボーリング孔とオブジェクトの帯
+Width of the band along the line from which drill holes and tunnels are moved onto the section. A wider band gives more drill holes, but distant ones do not lie where the line is.	線に沿った帯の幅で、この帯の中のボーリング孔とトンネルが断面に投影されます。帯を広くするとボーリング孔が増えますが、遠いものは線のある位置にはありません。
+Roofs	上面
+Drill holes	ボーリング孔
+Drill holes of the model	モデルのボーリング孔
+The model has no roofs and drill holes.	モデルに上面とボーリング孔がありません。
+A path of at least two points and an open subsurface model are needed.	2 点以上のパスと、開いている地下モデルが必要です。
+Length {length}. Roofs {beds}, drill holes in the band {holes}, tunnels {tunnels}.	長さ {length}。上面 {beds}、帯内のボーリング孔 {holes}、トンネル {tunnels}。
+Heights by the points of the line - distance, latitude, longitude, terrain and bed roofs, no roof - an empty field.	線上の点ごとの標高 - 距離、緯度、経度、地形と地層の上面。上面がない場合は空欄。
+Picture…	画像…
+The section as a PNG picture of the window size.	ウィンドウと同じサイズの PNG 画像としての断面。
+Color of the rock between beds	地層間の岩石の色
+Color of the bed «{name}»	地層「{name}」の色
+Color of the line «{name}»	線「{name}」の色
+Default section colors	断面の既定の色
+No data	データなし
+terrain {value}	地形 {value}
+Between beds	地層間
+Layers with Z	Z 付きレイヤー
+Parts of objects with Z {count}.	Z 付きオブジェクトの部分 {count}。

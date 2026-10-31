@@ -221,7 +221,8 @@ act on all of them.
 
 The placemark menu works with the subsurface model. Model section… of
 a path opens a section window in metres: terrain, beds, drill holes and
-tunnels from a band along the line. The checkboxes on the left choose
+tunnels from a band along the line, lines and polygons with Z from the
+model file. The checkboxes on the left choose
 the layers, the right button on the chart sets a color, the section is
 saved as a picture and a CSV table. Model section wall puts a wall along
 the path on the globe, Model cut cuts the model by a polygon. Choosing

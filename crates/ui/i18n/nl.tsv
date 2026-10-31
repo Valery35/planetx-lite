@@ -1701,3 +1701,161 @@ Command to connect Claude Code:	Opdracht om Claude Code te verbinden:
 Configuration for Claude Desktop and other clients:	Configuratie voor Claude Desktop en andere clients:
 MCP agents are not let in: {error}	MCP-agents worden niet toegelaten: {error}
 More tools	Meer gereedschap
+Area|site	Gebied
+Area analysis	Gebiedsanalyse
+Square	Vierkant
+Draw	Tekenen
+Side of the square of the area with its middle at the point of the window. Vertices of the area are dragged with the mouse, the circle in the middle of a side adds a new vertex. The area is not larger than {km} km.	Zijde van het vierkant van het gebied met het midden in het punt van het venster. De hoekpunten van het gebied worden met de muis versleept, de cirkel midden op een zijde voegt een nieuw hoekpunt toe. Het gebied is niet groter dan {km} km.
+The area is a square with the side from the field on the left.	Het gebied is een vierkant met de zijde uit het veld links.
+Draw the area as a polygon by clicks on the globe. A click on the first vertex closes it. The result is computed only inside the area.	Teken het gebied als veelhoek met klikken op de globe. Een klik op het eerste hoekpunt sluit het. Het resultaat wordt alleen binnen het gebied berekend.
+Click the vertices of the area on the globe. A click on the first vertex closes it.	Klik op de hoekpunten van het gebied op de globe. Een klik op het eerste hoekpunt sluit het.
+Close the area by a click on its first vertex.	Sluit het gebied met een klik op het eerste hoekpunt.
+The area is larger than {km} km, make it smaller.	Het gebied is groter dan {km} km, maak het kleiner.
+Save the result and close the window. The computation goes as a folder into the folder «Area analysis» of «My places» together with the outline of the area, the values - as a GeoTIFF file. Deleting the folder removes the computation entirely.	Het resultaat opslaan en het venster sluiten. De berekening gaat als map naar de map ‘Gebiedsanalyse’ in ‘Mijn plaatsen’, samen met de omtrek van het gebied, de waarden - als GeoTIFF-bestand. Het verwijderen van de map verwijdert de berekening geheel.
+Remove the result from the globe and close the window.	Het resultaat van de globe verwijderen en het venster sluiten.
+Built at {time} UTC.	Berekend om {time} UTC.
+Values - the GeoTIFF file {path}.	Waarden - het GeoTIFF-bestand {path}.
+Viewshed	Zichtbaarheid
+Viewshed {time}	Zichtbaarheid {time}
+Insolation {time}, h per day	Bezonning {time}, u per dag
+What is seen from the point in the circle - a layer on the globe.	Wat te zien is vanaf het punt in de cirkel - een laag op de globe.
+Hours of direct sun per day in the area - a layer on the globe. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	Uren directe zon per dag in het gebied - een laag op de globe. Bergschaduwen worden meegenomen vanaf een afstand van minstens de helft van het gebied en minstens 5 km.
+The area has changed. Press «Build» to compute it again.	Het gebied is gewijzigd. Druk op ‘Berekenen’ om opnieuw te berekenen.
+Saved to «My places», the values - {path}.	Opgeslagen in ‘Mijn plaatsen’, de waarden - {path}.
+Saved to «My places». The GeoTIFF file is not written: {e}	Opgeslagen in ‘Mijn plaatsen’. Het GeoTIFF-bestand is niet geschreven: {e}
+There are no heights in the area.	Er zijn geen hoogten in het gebied.
+There are no peaks and pits with such a drop in the area.	Er zijn geen toppen en kommen met zo'n hoogteverschil in het gebied.
+Found peaks {peaks} and pits {pits}. They go into the folder of the computation by «OK».	Gevonden toppen {peaks} en kommen {pits}. Ze gaan met ‘OK’ naar de map van de berekening.
+Aspect, °	Expositie, °
+Peaks and closed hollows of the area - points with the height and the drop in the folder of the computation.	Toppen en gesloten laagten van het gebied - punten met de hoogte en het hoogteverschil in de map van de berekening.
+What the area shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Wat het gebied op de globe toont - de steilheid van een helling of de windrichting waarop deze ligt. De rijen ‘Helling’ en ‘Expositie’ van de sectie ‘Lagen’ staan intussen uit.
+Slope and aspect of the area by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Helling en expositie van het gebied volgens de hoogten, kernel van 3 × 3 - een kleuring op de globe en een overzicht per hellingklassen en windrichtingen.
+The point is outside the area or has no heights.	Het punt ligt buiten het gebied of heeft geen hoogten.
+Catchment of a placemark	Stroomgebied van een plaatsmarkering
+Saved to «My places».	Opgeslagen in ‘Mijn plaatsen’.
+Water from the point up to the given level on the area - a layer on the globe, the level changes without a new computation.	Water vanaf het punt tot het opgegeven niveau in het gebied - een laag op de globe, het niveau verandert zonder nieuwe berekening.
+Flooding {level} m - depth	Overstroming {level} m - diepte
+Flooding {level} m - outline	Overstroming {level} m - omtrek
+Shadows	Schaduwen
+Shadows…	Schaduwen…
+Shadows {moment} UTC	Schaduwen {moment} UTC
+{moment} UTC	{moment} UTC
+Computing the horizon: {share}	Horizon berekenen: {share}
+The sun is below the horizon, the whole area is in shadow.	De zon staat onder de horizon, het hele gebied ligt in de schaduw.
+Sun on {share} of the area, the sun is {elevation}° above the horizon. The grid step is {step} m.	Zon op {share} van het gebied, de zon staat {elevation}° boven de horizon. De rasterstap is {step} m.
+The moment is the right handle of the time slider, without the slider - the computer clock. After «Build» the shadows follow the slider: move the handle or start the playback.	Het moment is de rechterhendel van de tijdbalk, zonder de balk - de klok van de computer. Na ‘Berekenen’ volgen de schaduwen de balk: verplaats de hendel of start het afspelen.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	Waar het schaduw is en waar zon op het moment van de tijdbalk - volgens het reliëf, de schaduwen volgen de balk. Bergschaduwen worden meegenomen vanaf een afstand van minstens de helft van het gebied en minstens 5 km.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.	Waar het schaduw is en waar zon op het moment van de tijdbalk - volgens het reliëf, de schaduwen volgen de balk.
+Loading the index of files…	Index van bestanden laden…
+There are no files of the data set for this zone.	Er zijn geen bestanden van de dataset voor deze zone.
+Download about {mb} MB, pixel {pixel} m.	Download van ongeveer {mb} MB, pixel van {pixel} m.
+The area is not closed.	Het gebied is niet gesloten.
+Choose two different years.	Kies twee verschillende jaren.
+The files are not read: {e}	De bestanden worden niet gelezen: {e}
+Block {n} of {total}: loading.	Blok {n} van {total}: laden.
+Block {n} of {total}: channel {band} of 64.	Blok {n} van {total}: kanaal {band} van 64.
+There are no data of the data set in the area for these years.	Er zijn geen gegevens van de dataset in het gebied voor deze jaren.
+Mean degree of change {mean}, strong changes (from 0.5) on {share} of the area. The pixel is {pixel} m.	Gemiddelde veranderingsgraad {mean}, sterke veranderingen (vanaf 0,5) op {share} van het gebied. De pixel is {pixel} m.
+Change {n}	Verandering {n}
+Degree of change {value}.	Veranderingsgraad {value}.
+There are no strong changes in the area.	Er zijn geen sterke veranderingen in het gebied.
+Found places of changes: {count}. They go into the folder of the computation by «OK».	Gevonden plaatsen van veranderingen: {count}. Ze gaan met ‘OK’ naar de map van de berekening.
+Changes {before}-{after}	Veranderingen {before}-{after}
+Changes of the terrain	Veranderingen van het reliëf
+Changes of the terrain…	Veranderingen van het reliëf…
+Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.	Waar het reliëf tussen twee jaren 2017-2025 is veranderd - volgens AlphaEarth-embeddings, cel van 10 m.
+Classification…	Classificatie…
+Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.	Klassen van het gebied volgens controlepunten op de globe - volgens AlphaEarth-embeddings, cel van 10 m.
+Years	Jaren
+The years of the comparison. Each 10 m cell is described for a year by 64 numbers - a summary of Sentinel and Landsat images and radar. The degree of change is how much the descriptions of the two years differ.	De jaren van de vergelijking. Elke cel van 10 m wordt voor een jaar beschreven met 64 getallen - een samenvatting van Sentinel- en Landsat-opnamen en radar. De veranderingsgraad is hoeveel de beschrijvingen van de twee jaren verschillen.
+Degree from	Graad vanaf
+Show cells with a degree of change in this span, the rest are transparent. Unchanged terrain has a degree about 0.05, a building site, a clearing, a new quarry - 0.5 and more.	Cellen tonen met een veranderingsgraad in dit bereik, de rest is transparant. Onveranderd reliëf heeft een graad van ongeveer 0,05, een bouwplaats, een kaalslag, een nieuwe groeve - 0,5 en meer.
+Area pixel	Pixel van het gebied
+Auto	Auto
+{pixel} m	{pixel} m
+The pixel of the area. The files of the data set keep blocks of 1024 × 1024 pixels, a block for a year is 40-50 MB at any pixel: 10 m cover 10 km by a block, 80 m - 82 km. «Auto» takes the pixel with the least download.	De pixel van het gebied. De bestanden van de dataset bevatten blokken van 1024 × 1024 pixels, een blok voor een jaar is bij elke pixel 40-50 MB: 10 m beslaan 10 km per blok, 80 m - 82 km. ‘Auto’ kiest de pixel met de kleinste download.
+Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.	Gegevens - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.
+Places of changes	Plaatsen van veranderingen
+Places of the strongest changes of the area - points in the folder of the computation. Then they are handy to look at with the image archive and the swipe.	Plaatsen van de sterkste veranderingen van het gebied - punten in de map van de berekening. Daarna zijn ze handig te bekijken met het beeldarchief en het gordijn.
+The degree of change of the area between the two years - a layer on the globe.	De veranderingsgraad van het gebied tussen de twee jaren - een laag op de globe.
+Class {n}	Klasse {n}
+At least two classes of three points each are needed.	Er zijn minstens twee klassen van elk drie punten nodig.
+Loading the vectors of the area: block {n} of {total}.	Vectoren van het gebied laden: blok {n} van {total}.
+There are no data of the data set in the area for this year.	Er zijn geen gegevens van de dataset in het gebied voor dit jaar.
+All points are outside the area.	Alle punten liggen buiten het gebied.
+Classes of the year {year}: {parts}.	Klassen van het jaar {year}: {parts}.
+Points outside the area: {n}.	Punten buiten het gebied: {n}.
+Classification {year}	Classificatie {year}
+{n} - {name}	{n} - {name}
+Value {n} in the GeoTIFF file.	Waarde {n} in het GeoTIFF-bestand.
+Classification	Classificatie
+The year by whose vectors the cells are divided into classes. The points are put by the image of the globe, it may be of another year.	Het jaar waarvan de vectoren de cellen in klassen verdelen. De punten worden op de opname van de globe gezet, die van een ander jaar kan zijn.
+Pixel	Pixel
+The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells.	De pixel van de classificatie. Een blok van het bestand voor een jaar is bij elke pixel 40-50 MB. ‘Auto’ kiest de pixel met de kleinste download waarbij het gebied 14 tot 640 duizend cellen heeft.
+Opacity of the classes on the globe.	Dekking van de klassen op de globe.
+Classes	Klassen
+A click on the globe puts a point of this class.	Een klik op de globe plaatst een punt van deze klasse.
+points {n}	punten {n}
+Remove the class and its points.	De klasse en haar punten verwijderen.
+Add a class	Een klasse toevoegen
+Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.	Klik op de globe om een punt van de gekozen klasse te plaatsen, een klik op een punt verwijdert het. Er zijn minstens twee klassen van elk drie punten nodig.
+Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors.	Elke cel van het gebied gaat naar de klasse van de dichtstbijzijnde controlepunten volgens de AlphaEarth-vectoren.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger area is needed.	Het stroomgebied reikt tot de rand van het gebied, het deel buiten de rand wordt niet meegeteld. Een groter gebied is nodig.
+There are no watercourses with such a catchment at the edge of the area.	Aan de rand van het gebied zijn geen waterlopen met zo'n stroomgebied.
+Basins written to «My places»: {count}, they cover {area} km² of the area.	Bekkens geschreven naar ‘Mijn plaatsen’: {count}, ze beslaan {area} km² van het gebied.
+There are no watercourses with such a catchment and order in the area.	In het gebied zijn geen waterlopen met zo'n stroomgebied en orde.
+The water reached the edge of the area and can go further. A larger area is needed.	Het water bereikte de rand van het gebied en kan verder stromen. Een groter gebied is nodig.
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the area.	De afstroomlijn eindigt bij het bereiken van een waterloop met een stroomgebied vanaf de oppervlakte uit het veld ‘Waterlopen vanaf’. Zonder de controle loopt de lijn tot de rand van het gebied.
+Watercourses of the area with the Strahler order - lines in «My places», the line width grows with the order.	Waterlopen van het gebied met de Strahler-orde - lijnen in ‘Mijn plaatsen’, de lijndikte neemt toe met de orde.
+The area divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the area. Polygons in «My places».	Het gebied verdeeld in bekkens van uitstroompunten - plaatsen waar waterlopen met een stroomgebied vanaf de oppervlakte uit het veld ‘Waterlopen vanaf’ het gebied verlaten. Veelhoeken in ‘Mijn plaatsen’.
+The line reached the edge of the area, further the water goes beyond it.	De lijn bereikte de rand van het gebied, verder stroomt het water daarbuiten.
+The line ends at a watercourse.	De lijn eindigt bij een waterloop.
+The line ends where the terrain flattens.	De lijn eindigt waar het reliëf vlak wordt.
+The line flows into another flow line.	De lijn stroomt in een andere afstroomlijn.
+The line ends at the edge of the height data.	De lijn eindigt aan de rand van de hoogtegegevens.
+{title} - mean {mean}{unit}, spread {std}{unit}, quantiles 10, 25, 50, 75 and 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.	{title} - gemiddelde {mean}{unit}, spreiding {std}{unit}, kwantielen 10, 25, 50, 75 en 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.
+The area is shared with the previous computation. «Square» and «Draw» start a new one.	Het gebied is gedeeld met de vorige berekening. ‘Vierkant’ en ‘Tekenen’ starten een nieuwe.
+Sun hours	Zonuren
+ h	 u
+Degree of change	Veranderingsgraad
+Temporary Places	Tijdelijke plaatsen
+New placemarks, paths and measurements go here while this row is selected. When the program closes, the contents can be moved to My Places or deleted. A placemark to keep at once is dragged to My Places.	Nieuwe plaatsmarkeringen, paden en metingen komen hier terecht zolang deze rij is geselecteerd. Bij het afsluiten van het programma kan de inhoud naar ‘Mijn plaatsen’ worden verplaatst of verwijderd. Een plaatsmarkering die meteen moet blijven, wordt naar ‘Mijn plaatsen’ gesleept.
+Save to My Places	Opslaan in ‘Mijn plaatsen’
+Clear Temporary Places…	‘Tijdelijke plaatsen’ leegmaken…
+Delete the contents of Temporary Places, placemarks and folders {count}? Deletion cannot be undone.	De inhoud van ‘Tijdelijke plaatsen’ verwijderen, plaatsmarkeringen en mappen {count}? Verwijderen kan niet ongedaan worden gemaakt.
+Temporary Places contain unsaved items. Save them in My Places?	‘Tijdelijke plaatsen’ bevat niet-opgeslagen items. Opslaan in ‘Mijn plaatsen’?
+Don't save	Niet opslaan
+Show selected	Geselecteerde tonen
+Hide selected	Geselecteerde verbergen
+Delete selected ({count})	Geselecteerde verwijderen ({count})
+Delete selected	Geselecteerde verwijderen
+Delete the selected rows, {count}? Deletion cannot be undone.	De geselecteerde rijen verwijderen, {count}? Verwijderen kan niet ongedaan worden gemaakt.
+Model section	Doorsnede van het model
+Model section: {name}	Doorsnede van het model: {name}
+Model section…	Doorsnede van het model…
+Model section wall	Doorsnedewand van het model
+Model cut	Uitsnede van het model
+Model cut along «{name}».	Uitsnede van het model langs ‘{name}’.
+Model cut along «{name}» is removed.	De uitsnede van het model langs ‘{name}’ is verwijderd.
+Section wall along «{name}».	Doorsnedewand langs ‘{name}’.
+Section wall along «{name}» is removed.	De doorsnedewand langs ‘{name}’ is verwijderd.
+Band of drill holes and objects	Strook van boorgaten en objecten
+Width of the band along the line from which drill holes and tunnels are moved onto the section. A wider band gives more drill holes, but distant ones do not lie where the line is.	Breedte van de strook langs de lijn waaruit boorgaten en tunnels op de doorsnede worden geprojecteerd. Een bredere strook geeft meer boorgaten, maar verre liggen niet waar de lijn ligt.
+Roofs	Daken
+Drill holes	Boorgaten
+Drill holes of the model	Boorgaten van het model
+The model has no roofs and drill holes.	Het model heeft geen daken en boorgaten.
+A path of at least two points and an open subsurface model are needed.	Een pad van minstens twee punten en een geopend ondergrondmodel zijn nodig.
+Length {length}. Roofs {beds}, drill holes in the band {holes}, tunnels {tunnels}.	Lengte {length}. Daken {beds}, boorgaten in de strook {holes}, tunnels {tunnels}.
+Heights by the points of the line - distance, latitude, longitude, terrain and bed roofs, no roof - an empty field.	Hoogten op de punten van de lijn - afstand, breedtegraad, lengtegraad, reliëf en laagdaken, geen dak - een leeg veld.
+Picture…	Afbeelding…
+The section as a PNG picture of the window size.	De doorsnede als PNG-afbeelding ter grootte van het venster.
+Color of the rock between beds	Kleur van het gesteente tussen lagen
+Color of the bed «{name}»	Kleur van de laag ‘{name}’
+Color of the line «{name}»	Kleur van de lijn ‘{name}’
+Default section colors	Standaardkleuren van de doorsnede
+No data	Geen gegevens
+terrain {value}	reliëf {value}
+Between beds	Tussen lagen
+Layers with Z	Lagen met Z
+Parts of objects with Z {count}.	Delen van objecten met Z: {count}.

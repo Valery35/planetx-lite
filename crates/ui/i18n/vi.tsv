@@ -1701,3 +1701,161 @@ Command to connect Claude Code:	Lệnh kết nối Claude Code:
 Configuration for Claude Desktop and other clients:	Cấu hình cho Claude Desktop và các ứng dụng khách khác:
 MCP agents are not let in: {error}	Không cho phép tác tử MCP: {error}
 More tools	Công cụ khác
+Area|site	Khu vực
+Area analysis	Phân tích khu vực
+Square	Ô vuông
+Draw	Vẽ
+Side of the square of the area with its middle at the point of the window. Vertices of the area are dragged with the mouse, the circle in the middle of a side adds a new vertex. The area is not larger than {km} km.	Cạnh của ô vuông khu vực với tâm tại điểm giữa cửa sổ. Các đỉnh của khu vực được kéo bằng chuột, vòng tròn ở giữa cạnh thêm đỉnh mới. Khu vực không lớn hơn {km} km.
+The area is a square with the side from the field on the left.	Khu vực là ô vuông có cạnh lấy từ trường bên trái.
+Draw the area as a polygon by clicks on the globe. A click on the first vertex closes it. The result is computed only inside the area.	Vẽ khu vực dạng đa giác bằng các cú nhấp trên quả địa cầu. Nhấp vào đỉnh đầu tiên để đóng lại. Kết quả chỉ được tính bên trong khu vực.
+Click the vertices of the area on the globe. A click on the first vertex closes it.	Nhấp vào các đỉnh của khu vực trên quả địa cầu. Nhấp vào đỉnh đầu tiên để đóng lại.
+Close the area by a click on its first vertex.	Đóng khu vực bằng cú nhấp vào đỉnh đầu tiên.
+The area is larger than {km} km, make it smaller.	Khu vực lớn hơn {km} km, hãy thu nhỏ lại.
+Save the result and close the window. The computation goes as a folder into the folder «Area analysis» of «My places» together with the outline of the area, the values - as a GeoTIFF file. Deleting the folder removes the computation entirely.	Lưu kết quả và đóng cửa sổ. Phép tính được ghi thành một thư mục trong thư mục «Phân tích khu vực» của «Địa điểm của tôi» cùng với đường viền khu vực, các giá trị - dưới dạng tệp GeoTIFF. Xóa thư mục sẽ gỡ toàn bộ phép tính.
+Remove the result from the globe and close the window.	Gỡ kết quả khỏi quả địa cầu và đóng cửa sổ.
+Built at {time} UTC.	Dựng lúc {time} UTC.
+Values - the GeoTIFF file {path}.	Các giá trị - tệp GeoTIFF {path}.
+Viewshed	Vùng nhìn thấy
+Viewshed {time}	Vùng nhìn thấy {time}
+Insolation {time}, h per day	Độ chiếu nắng {time}, giờ mỗi ngày
+What is seen from the point in the circle - a layer on the globe.	Những gì nhìn thấy từ điểm trong vòng tròn - một lớp trên quả địa cầu.
+Hours of direct sun per day in the area - a layer on the globe. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	Số giờ nắng trực tiếp mỗi ngày trong khu vực - một lớp trên quả địa cầu. Bóng núi được lấy từ khoảng cách ít nhất bằng nửa khu vực và không dưới 5 km.
+The area has changed. Press «Build» to compute it again.	Khu vực đã thay đổi. Nhấn «Tính» để tính lại.
+Saved to «My places», the values - {path}.	Đã lưu vào «Địa điểm của tôi», các giá trị - {path}.
+Saved to «My places». The GeoTIFF file is not written: {e}	Đã lưu vào «Địa điểm của tôi». Tệp GeoTIFF chưa được ghi: {e}
+There are no heights in the area.	Trong khu vực không có độ cao.
+There are no peaks and pits with such a drop in the area.	Trong khu vực không có đỉnh và hố trũng với độ chênh như vậy.
+Found peaks {peaks} and pits {pits}. They go into the folder of the computation by «OK».	Tìm thấy đỉnh {peaks} và hố trũng {pits}. Chúng được đưa vào thư mục của phép tính khi nhấn «OK».
+Aspect, °	Hướng sườn, °
+Peaks and closed hollows of the area - points with the height and the drop in the folder of the computation.	Đỉnh và chỗ trũng khép kín của khu vực - các điểm với độ cao và độ chênh trong thư mục của phép tính.
+What the area shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Điều khu vực hiển thị trên quả địa cầu - độ dốc của sườn hoặc phương hướng mà sườn quay về. Các dòng «Độ dốc» và «Hướng sườn» của mục «Lớp» tạm thời tắt.
+Slope and aspect of the area by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Độ dốc và hướng sườn của khu vực theo độ cao, nhân 3 × 3 - tô màu trên quả địa cầu và bảng tóm tắt theo lớp độ dốc và phương hướng.
+The point is outside the area or has no heights.	Điểm nằm ngoài khu vực hoặc không có độ cao.
+Catchment of a placemark	Lưu vực của dấu vị trí
+Saved to «My places».	Đã lưu vào «Địa điểm của tôi».
+Water from the point up to the given level on the area - a layer on the globe, the level changes without a new computation.	Nước từ điểm đến mức đã cho trên khu vực - một lớp trên quả địa cầu, mức thay đổi mà không cần tính lại.
+Flooding {level} m - depth	Ngập lụt {level} m - độ sâu
+Flooding {level} m - outline	Ngập lụt {level} m - đường viền
+Shadows	Bóng đổ
+Shadows…	Bóng đổ…
+Shadows {moment} UTC	Bóng đổ {moment} UTC
+{moment} UTC	{moment} UTC
+Computing the horizon: {share}	Đang tính đường chân trời: {share}
+The sun is below the horizon, the whole area is in shadow.	Mặt Trời dưới đường chân trời, toàn bộ khu vực nằm trong bóng.
+Sun on {share} of the area, the sun is {elevation}° above the horizon. The grid step is {step} m.	Nắng chiếu {share} khu vực, Mặt Trời cao {elevation}° trên đường chân trời. Bước lưới là {step} m.
+The moment is the right handle of the time slider, without the slider - the computer clock. After «Build» the shadows follow the slider: move the handle or start the playback.	Thời điểm là tay cầm bên phải của thanh thời gian, nếu không có thanh - đồng hồ máy tính. Sau «Tính» bóng đổ đi theo thanh: kéo tay cầm hoặc bắt đầu phát.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	Nơi nào có bóng, nơi nào có nắng tại thời điểm của thanh thời gian - theo địa hình, bóng đổ đi theo thanh. Bóng núi được lấy từ khoảng cách ít nhất bằng nửa khu vực và không dưới 5 km.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.	Nơi nào có bóng, nơi nào có nắng tại thời điểm của thanh thời gian - theo địa hình, bóng đổ đi theo thanh.
+Loading the index of files…	Đang tải chỉ mục tệp…
+There are no files of the data set for this zone.	Không có tệp của tập dữ liệu cho vùng này.
+Download about {mb} MB, pixel {pixel} m.	Tải xuống khoảng {mb} MB, pixel {pixel} m.
+The area is not closed.	Khu vực chưa được đóng.
+Choose two different years.	Hãy chọn hai năm khác nhau.
+The files are not read: {e}	Không đọc được tệp: {e}
+Block {n} of {total}: loading.	Khối {n}/{total}: đang tải.
+Block {n} of {total}: channel {band} of 64.	Khối {n}/{total}: kênh {band}/64.
+There are no data of the data set in the area for these years.	Không có dữ liệu của tập dữ liệu trong khu vực cho các năm này.
+Mean degree of change {mean}, strong changes (from 0.5) on {share} of the area. The pixel is {pixel} m.	Mức thay đổi trung bình {mean}, thay đổi mạnh (từ 0.5) trên {share} khu vực. Pixel là {pixel} m.
+Change {n}	Thay đổi {n}
+Degree of change {value}.	Mức thay đổi {value}.
+There are no strong changes in the area.	Trong khu vực không có thay đổi mạnh.
+Found places of changes: {count}. They go into the folder of the computation by «OK».	Tìm thấy nơi thay đổi: {count}. Chúng được đưa vào thư mục của phép tính khi nhấn «OK».
+Changes {before}-{after}	Thay đổi {before}-{after}
+Changes of the terrain	Thay đổi của địa hình
+Changes of the terrain…	Thay đổi của địa hình…
+Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.	Nơi địa hình thay đổi giữa hai năm 2017-2025 - theo vectơ nhúng AlphaEarth, ô 10 m.
+Classification…	Phân loại…
+Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.	Các lớp của khu vực theo điểm kiểm soát trên quả địa cầu - theo vectơ nhúng AlphaEarth, ô 10 m.
+Years	Năm
+The years of the comparison. Each 10 m cell is described for a year by 64 numbers - a summary of Sentinel and Landsat images and radar. The degree of change is how much the descriptions of the two years differ.	Các năm so sánh. Mỗi ô 10 m được mô tả cho một năm bằng 64 số - tóm tắt từ ảnh Sentinel, Landsat và radar. Mức thay đổi là mức độ khác nhau giữa mô tả của hai năm.
+Degree from	Mức từ
+Show cells with a degree of change in this span, the rest are transparent. Unchanged terrain has a degree about 0.05, a building site, a clearing, a new quarry - 0.5 and more.	Hiện các ô có mức thay đổi trong khoảng này, các ô còn lại trong suốt. Địa hình không đổi có mức khoảng 0.05, công trường, bãi đốn rừng, mỏ đá mới - 0.5 trở lên.
+Area pixel	Pixel khu vực
+Auto	Tự động
+{pixel} m	{pixel} m
+The pixel of the area. The files of the data set keep blocks of 1024 × 1024 pixels, a block for a year is 40-50 MB at any pixel: 10 m cover 10 km by a block, 80 m - 82 km. «Auto» takes the pixel with the least download.	Pixel của khu vực. Các tệp của tập dữ liệu lưu khối 1024 × 1024 pixel, một khối cho một năm nặng 40-50 MB với mọi pixel: 10 m phủ 10 km mỗi khối, 80 m - 82 km. «Tự động» chọn pixel có lượng tải xuống ít nhất.
+Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.	Dữ liệu - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.
+Places of changes	Nơi thay đổi
+Places of the strongest changes of the area - points in the folder of the computation. Then they are handy to look at with the image archive and the swipe.	Những nơi thay đổi mạnh nhất của khu vực - các điểm trong thư mục của phép tính. Sau đó tiện xem chúng cùng kho ảnh và thanh so sánh.
+The degree of change of the area between the two years - a layer on the globe.	Mức thay đổi của khu vực giữa hai năm - một lớp trên quả địa cầu.
+Class {n}	Lớp {n}
+At least two classes of three points each are needed.	Cần ít nhất hai lớp, mỗi lớp ba điểm.
+Loading the vectors of the area: block {n} of {total}.	Đang tải các vectơ của khu vực: khối {n}/{total}.
+There are no data of the data set in the area for this year.	Không có dữ liệu của tập dữ liệu trong khu vực cho năm này.
+All points are outside the area.	Tất cả các điểm nằm ngoài khu vực.
+Classes of the year {year}: {parts}.	Các lớp của năm {year}: {parts}.
+Points outside the area: {n}.	Điểm ngoài khu vực: {n}.
+Classification {year}	Phân loại {year}
+{n} - {name}	{n} - {name}
+Value {n} in the GeoTIFF file.	Giá trị {n} trong tệp GeoTIFF.
+Classification	Phân loại
+The year by whose vectors the cells are divided into classes. The points are put by the image of the globe, it may be of another year.	Năm có vectơ dùng để chia các ô thành lớp. Các điểm được đặt theo ảnh của quả địa cầu, ảnh có thể thuộc năm khác.
+Pixel	Pixel
+The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells.	Pixel của phép phân loại. Khối tệp cho một năm nặng 40-50 MB với mọi pixel. «Tự động» chọn pixel có lượng tải xuống ít nhất mà khu vực có từ 14 đến 640 nghìn ô.
+Opacity of the classes on the globe.	Độ mờ đục của các lớp trên quả địa cầu.
+Classes	Các lớp
+A click on the globe puts a point of this class.	Nhấp vào quả địa cầu để đặt điểm của lớp này.
+points {n}	điểm {n}
+Remove the class and its points.	Xóa lớp và các điểm của lớp.
+Add a class	Thêm lớp
+Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.	Nhấp vào quả địa cầu để đặt điểm của lớp đã chọn, nhấp vào điểm để xóa nó. Cần ít nhất hai lớp, mỗi lớp ba điểm.
+Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors.	Mỗi ô của khu vực thuộc về lớp có các điểm kiểm soát gần nhất theo vectơ AlphaEarth.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger area is needed.	Lưu vực chạm tới rìa khu vực, phần ngoài rìa không được tính. Cần khu vực lớn hơn.
+There are no watercourses with such a catchment at the edge of the area.	Ở rìa khu vực không có dòng nước với lưu vực như vậy.
+Basins written to «My places»: {count}, they cover {area} km² of the area.	Số lưu vực đã ghi vào «Địa điểm của tôi»: {count}, chúng phủ {area} km² của khu vực.
+There are no watercourses with such a catchment and order in the area.	Trong khu vực không có dòng nước với lưu vực và cấp như vậy.
+The water reached the edge of the area and can go further. A larger area is needed.	Nước chạm tới rìa khu vực và có thể chảy tiếp. Cần khu vực lớn hơn.
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the area.	Đường dòng chảy kết thúc khi gặp dòng nước có lưu vực từ diện tích của trường «Dòng nước từ». Nếu không kiểm tra, đường chạy tới rìa khu vực.
+Watercourses of the area with the Strahler order - lines in «My places», the line width grows with the order.	Các dòng nước của khu vực với cấp Strahler - các đường trong «Địa điểm của tôi», độ dày đường tăng theo cấp.
+The area divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the area. Polygons in «My places».	Khu vực chia thành các lưu vực của điểm thoát - nơi các dòng nước có lưu vực từ diện tích của trường «Dòng nước từ» rời khỏi khu vực. Các đa giác trong «Địa điểm của tôi».
+The line reached the edge of the area, further the water goes beyond it.	Đường chạy tới rìa khu vực, nước tiếp tục chảy ra ngoài.
+The line ends at a watercourse.	Đường kết thúc ở một dòng nước.
+The line ends where the terrain flattens.	Đường kết thúc nơi địa hình thoải dần.
+The line flows into another flow line.	Đường nhập vào một đường dòng chảy khác.
+The line ends at the edge of the height data.	Đường kết thúc ở rìa dữ liệu độ cao.
+{title} - mean {mean}{unit}, spread {std}{unit}, quantiles 10, 25, 50, 75 and 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.	{title} - trung bình {mean}{unit}, độ phân tán {std}{unit}, phân vị 10, 25, 50, 75 và 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.
+The area is shared with the previous computation. «Square» and «Draw» start a new one.	Khu vực dùng chung với phép tính trước. «Ô vuông» và «Vẽ» bắt đầu phép tính mới.
+Sun hours	Giờ nắng
+ h	 giờ
+Degree of change	Mức thay đổi
+Temporary Places	Địa điểm tạm
+New placemarks, paths and measurements go here while this row is selected. When the program closes, the contents can be moved to My Places or deleted. A placemark to keep at once is dragged to My Places.	Dấu vị trí, đường đi và phép đo mới được đặt vào đây khi dòng này được chọn. Khi đóng chương trình, nội dung có thể chuyển sang «Địa điểm của tôi» hoặc xóa. Dấu vị trí cần giữ ngay thì kéo vào «Địa điểm của tôi».
+Save to My Places	Lưu vào «Địa điểm của tôi»
+Clear Temporary Places…	Xóa sạch «Địa điểm tạm»…
+Delete the contents of Temporary Places, placemarks and folders {count}? Deletion cannot be undone.	Xóa nội dung «Địa điểm tạm», dấu vị trí và thư mục: {count}? Không thể hoàn tác việc xóa.
+Temporary Places contain unsaved items. Save them in My Places?	«Địa điểm tạm» chứa các mục chưa lưu. Lưu chúng vào «Địa điểm của tôi»?
+Don't save	Không lưu
+Show selected	Hiện các mục đã chọn
+Hide selected	Ẩn các mục đã chọn
+Delete selected ({count})	Xóa các mục đã chọn ({count})
+Delete selected	Xóa các mục đã chọn
+Delete the selected rows, {count}? Deletion cannot be undone.	Xóa các dòng đã chọn: {count}? Không thể hoàn tác việc xóa.
+Model section	Mặt cắt mô hình
+Model section: {name}	Mặt cắt mô hình: {name}
+Model section…	Mặt cắt mô hình…
+Model section wall	Tường mặt cắt mô hình
+Model cut	Cắt mô hình
+Model cut along «{name}».	Cắt mô hình dọc «{name}».
+Model cut along «{name}» is removed.	Đã gỡ vết cắt mô hình dọc «{name}».
+Section wall along «{name}».	Tường mặt cắt dọc «{name}».
+Section wall along «{name}» is removed.	Đã gỡ tường mặt cắt dọc «{name}».
+Band of drill holes and objects	Dải giếng khoan và đối tượng
+Width of the band along the line from which drill holes and tunnels are moved onto the section. A wider band gives more drill holes, but distant ones do not lie where the line is.	Chiều rộng của dải dọc đường mà giếng khoan và đường hầm được chiếu lên mặt cắt. Dải rộng hơn cho nhiều giếng khoan hơn, nhưng các giếng ở xa không nằm ở vị trí của đường.
+Roofs	Mái
+Drill holes	Giếng khoan
+Drill holes of the model	Giếng khoan của mô hình
+The model has no roofs and drill holes.	Mô hình không có mái và giếng khoan.
+A path of at least two points and an open subsurface model are needed.	Cần đường đi có ít nhất hai điểm và mô hình dưới lòng đất đang mở.
+Length {length}. Roofs {beds}, drill holes in the band {holes}, tunnels {tunnels}.	Chiều dài {length}. Mái {beds}, giếng khoan trong dải {holes}, đường hầm {tunnels}.
+Heights by the points of the line - distance, latitude, longitude, terrain and bed roofs, no roof - an empty field.	Độ cao theo các điểm của đường - khoảng cách, vĩ độ, kinh độ, địa hình và mái các vỉa, không có mái - trường trống.
+Picture…	Hình ảnh…
+The section as a PNG picture of the window size.	Mặt cắt dưới dạng ảnh PNG cỡ cửa sổ.
+Color of the rock between beds	Màu của đá giữa các vỉa
+Color of the bed «{name}»	Màu của vỉa «{name}»
+Color of the line «{name}»	Màu của đường «{name}»
+Default section colors	Màu mặt cắt mặc định
+No data	Không có dữ liệu
+terrain {value}	địa hình {value}
+Between beds	Giữa các vỉa
+Layers with Z	Lớp có Z
+Parts of objects with Z {count}.	Phần đối tượng có Z: {count}.

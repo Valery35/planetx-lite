@@ -13,7 +13,8 @@
 //! пластами и линии кровли. Разрез пишется картинкой PNG и таблицей CSV
 //! отметок по точкам линии.
 //!
-//! Слоёв с Z и растров проекта QGIS у Lite нет: на разрезе - слои модели.
+//! Слои с Z - линии и многоугольники с отметками из файла модели. Растров
+//! проекта QGIS у Lite нет, кровли - из таблицы пластов модели.
 
 use std::collections::{BTreeSet, HashMap};
 use std::sync::{Arc, Mutex};
@@ -54,6 +55,8 @@ pub type Bed = (String, [u8; 3], Vec<f64>, Vec<f64>);
 pub type Piece = (Vec<f64>, Vec<f64>, [u8; 3]);
 /// Тоннель на разрезе: название, расстояния, отметки, цвет.
 pub type TunnelRun = (String, Vec<f64>, Vec<f64>, [u8; 3]);
+/// Часть объекта с Z: слой, расстояния, отметки, цвет, многоугольник ли.
+pub type Fence = (String, Vec<f64>, Vec<f64>, [u8; 3], bool);
 
 /// Разрез модели, `ModelSection` модуля. distance - м от начала линии.
 pub struct ModelSection {
@@ -75,6 +78,13 @@ pub struct ModelSection {
     pub tunnels: Vec<TunnelRun>,
     /// Диаметр тоннеля по названию, м.
     pub diameters: HashMap<String, f64>,
+    /// Части объектов с Z в полосе.
+    pub fences: Vec<Fence>,
+}
+
+/// Ключ слоя с Z среди выключенных: коды кровель с ним не совпадут.
+fn z_key(layer: &str) -> String {
+    format!("z:{layer}")
 }
 
 /// Отрезки подряд идущих true: (начало, конец не включая).
@@ -96,7 +106,8 @@ fn runs(mask: &[bool]) -> Vec<(usize, usize)> {
 
 /// Разрез модели вдоль points (широта, долгота) или None, `build` модуля.
 /// ground - настоящие отметки рельефа, band - полоса скважин и тоннелей,
-/// м, off - коды выключенных кровель, holes_on - скважины на разрезе.
+/// м, off - коды выключенных кровель и ключи слоёв с Z, holes_on -
+/// скважины на разрезе.
 pub fn build(model: &Model, ground: &Ground<'_>, points: &[(f64, f64)], band: f64, off: &BTreeSet<String>, holes_on: bool) -> Option<ModelSection> {
     let (km, lats, lons) = section::along(points, SAMPLES)?;
     let distance: Vec<f64> = km.iter().map(|k| k * 1000.0).collect();
@@ -169,7 +180,15 @@ pub fn build(model: &Model, ground: &Ground<'_>, points: &[(f64, f64)], band: f6
             tunnels.push((t.name.clone(), found[a..b].iter().map(|p| p.0).collect(), z[a..b].to_vec(), t.color));
         }
     }
-    Some(ModelSection { distance, lats, lons, ground: g, beds, owners, lines, bottom, holes, tunnels, diameters })
+    let mut fences = Vec::new();
+    for shape in model.zshapes.iter().filter(|s| !off.contains(&z_key(&s.layer))) {
+        for part in &shape.parts {
+            if let Some((d, z)) = core::fence_part(part, &lats, &lons, &distance, band) {
+                fences.push((shape.layer.clone(), d, z, shape.color, shape.polygon));
+            }
+        }
+    }
+    Some(ModelSection { distance, lats, lons, ground: g, beds, owners, lines, bottom, holes, tunnels, diameters, fences })
 }
 
 /// Поле CSV: в кавычках, если в нём запятая, кавычка или перевод строки.
@@ -228,6 +247,8 @@ pub struct ModelSectionWindow {
     /// Кровли модели и есть ли скважины - для списка слоёв.
     roofs: Vec<String>,
     has_holes: bool,
+    /// Слои с Z модели.
+    zlayers: Vec<String>,
     plot_rect: egui::Rect,
     shot: Option<Shot>,
     status: String,
@@ -263,6 +284,7 @@ impl ModelSectionWindow {
             menu: (None, None),
             roofs: Vec::new(),
             has_holes: false,
+            zlayers: Vec::new(),
             plot_rect: egui::Rect::NOTHING,
             shot: None,
             status: String::new(),
@@ -294,6 +316,12 @@ impl ModelSectionWindow {
         };
         self.roofs = model.horizons.iter().map(|h| h.code.clone()).collect();
         self.has_holes = !model.holes.is_empty();
+        self.zlayers.clear();
+        for shape in &model.zshapes {
+            if !self.zlayers.contains(&shape.layer) {
+                self.zlayers.push(shape.layer.clone());
+            }
+        }
         let key = (self.band.to_bits(), self.off.clone(), self.holes_on, generation);
         let newer = version != self.built_version && now - self.built_at > subsurface::REBUILD_GAP;
         if self.key.as_ref() == Some(&key) && !newer {
@@ -398,7 +426,21 @@ impl ModelSectionWindow {
                 ui.strong(tr(lang, "Drill holes"));
                 ui.checkbox(&mut self.holes_on, tr(lang, "Drill holes of the model"));
             }
-            if roofs.is_empty() && !self.has_holes {
+            if !self.zlayers.is_empty() {
+                ui.strong(tr(lang, "Layers with Z"));
+                for layer in self.zlayers.clone() {
+                    let key = z_key(&layer);
+                    let mut on = !self.off.contains(&key);
+                    if ui.checkbox(&mut on, layer).changed() {
+                        if on {
+                            self.off.remove(&key);
+                        } else {
+                            self.off.insert(key);
+                        }
+                    }
+                }
+            }
+            if roofs.is_empty() && !self.has_holes && self.zlayers.is_empty() {
                 ui.label(tr(lang, "The model has no roofs and drill holes."));
             }
         });
@@ -420,6 +462,8 @@ impl ModelSectionWindow {
                     ],
                 ),
             };
+            let fences = self.built.as_ref().map_or(0, |s| s.fences.len());
+            let text = if fences > 0 { format!("{text} {}", trf(lang, "Parts of objects with Z {count}.", &[("count", &fences.to_string())])) } else { text };
             ui.label(if self.status.is_empty() { text } else { format!("{text} {}", self.status) });
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 let table = ui.add_enabled(self.built.is_some(), egui::Button::new(tr(lang, "CSV table…"))).on_hover_text(tr(lang, "Heights by the points of the line - distance, latitude, longitude, terrain and bed roofs, no roof - an empty field."));
@@ -532,6 +576,10 @@ impl ModelSectionWindow {
         let x1 = s.distance.last().copied().unwrap_or(1.0).max(1.0);
         let top = s.ground.iter().copied().filter(|v| v.is_finite()).fold(f64::NEG_INFINITY, f64::max);
         let (top, low) = if top.is_finite() { (top, s.bottom.min(top - 1.0)) } else { (s.bottom + 1.0, s.bottom) };
+        // Объекты с Z тоже входят в график.
+        let fence_z = || s.fences.iter().flat_map(|f| f.2.iter().copied()).filter(|z| z.is_finite());
+        let top = fence_z().fold(top, f64::max);
+        let low = fence_z().fold(low, f64::min);
         let high = top + (top - low) * HEAD;
         let range = (high, low);
         // Отметка вверх: заливка общая с окном «Разрез» идёт по глубине -z.
@@ -544,6 +592,22 @@ impl ModelSectionWindow {
             crate::section::fill(painter, &to_screen, &s.distance, &negative(upper), &negative(lower), self.fill_of(s, k));
         }
         let path = |d: &[f64], z: &[f64]| -> Vec<egui::Pos2> { d.iter().zip(z).map(|(d, z)| to_screen(*d, -*z)).collect() };
+        // Стенки и линии с отметками - цветом объекта.
+        for (_, d, z, color, polygon) in &s.fences {
+            let points = path(d, z);
+            if *polygon {
+                let flat: Vec<(f64, f64)> = points.iter().map(|p| (f64::from(p.x), f64::from(p.y))).collect();
+                let mut mesh = egui::Mesh::default();
+                for p in &points {
+                    mesh.colored_vertex(*p, rgb(*color));
+                }
+                mesh.indices = scene::features::triangulate(&flat);
+                painter.add(egui::Shape::mesh(mesh));
+                painter.add(egui::Shape::closed_line(points, egui::Stroke::new(0.8, rgb(core::line_color(*color)))));
+            } else {
+                painter.add(egui::Shape::line(points, egui::Stroke::new(2.0, rgb(*color))));
+            }
+        }
         // Кровли и подошвы - линиями своего цвета.
         for (code, _, z) in &s.lines {
             let good: Vec<bool> = z.iter().map(|v| v.is_finite()).collect();
@@ -627,6 +691,11 @@ impl ModelSectionWindow {
                 rows.push((name, self.fill_of(s, k)));
             }
         }
+        for (name, _, _, color, _) in &s.fences {
+            if !rows.iter().any(|r| r.0 == *name) {
+                rows.push((name.clone(), *color));
+            }
+        }
         rows.truncate(LEGEND_ROWS);
         if rows.is_empty() {
             return;
@@ -653,7 +722,7 @@ mod tests {
     use std::collections::BTreeSet;
 
     use super::{build, runs, table_text};
-    use crate::subsurface::{Model, Tunnel};
+    use crate::subsurface::{Model, Tunnel, ZShape};
 
     fn tunnel(name: &str, lat: f64) -> Tunnel {
         Tunnel { name: name.into(), points: vec![[lat, 56.0], [lat, 56.01]], depths: (30.0, 50.0), diameter: 4.0, color: [10, 20, 30] }
@@ -685,6 +754,23 @@ mod tests {
         assert!(s.lines.is_empty());
         // Путь из одной точки разреза не даёт.
         assert!(build(&model, &ground, &[(58.0, 56.0)], 200.0, &BTreeSet::new(), true).is_none());
+    }
+
+    /// Часть объекта с Z в полосе ложится на разрез и в график, дальняя
+    /// и выключенная - нет.
+    #[test]
+    fn z_layers_in_the_band() {
+        let part = |lat: f64| vec![[lat, 56.002, -300.0], [lat, 56.004, -320.0]];
+        let shape = |layer: &str, lat: f64| ZShape { layer: layer.into(), color: [1, 2, 3], polygon: false, parts: vec![part(lat)] };
+        let model = Model { tunnels: vec![tunnel("Т", 58.0)], zshapes: vec![shape("Рядом", 58.0), shape("Далеко", 58.1)], ..Model::default() };
+        let ground = |points: &[(f64, f64)]| vec![100.0; points.len()];
+        let line = [(58.0, 56.0), (58.0, 56.01)];
+        let s = build(&model, &ground, &line, 200.0, &BTreeSet::new(), true).unwrap();
+        assert_eq!(s.fences.len(), 1);
+        assert_eq!(s.fences[0].0, "Рядом");
+        assert_eq!(s.fences[0].2, [-300.0, -320.0]);
+        let off = BTreeSet::from([super::z_key("Рядом")]);
+        assert!(build(&model, &ground, &line, 200.0, &off, true).unwrap().fences.is_empty());
     }
 
     #[test]

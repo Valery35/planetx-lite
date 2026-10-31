@@ -1701,3 +1701,161 @@ Command to connect Claude Code:	Perintah untuk menghubungkan Claude Code:
 Configuration for Claude Desktop and other clients:	Konfigurasi untuk Claude Desktop dan klien lain:
 MCP agents are not let in: {error}	Agen MCP tidak diizinkan: {error}
 More tools	Alat lainnya
+Area|site	Area
+Area analysis	Analisis area
+Square	Persegi
+Draw	Gambar
+Side of the square of the area with its middle at the point of the window. Vertices of the area are dragged with the mouse, the circle in the middle of a side adds a new vertex. The area is not larger than {km} km.	Sisi persegi area dengan titik tengah di titik jendela. Simpul area diseret dengan mouse, lingkaran di tengah sisi menambah simpul baru. Area tidak lebih besar dari {km} km.
+The area is a square with the side from the field on the left.	Area berupa persegi dengan sisi dari kolom di sebelah kiri.
+Draw the area as a polygon by clicks on the globe. A click on the first vertex closes it. The result is computed only inside the area.	Gambar area sebagai poligon dengan klik pada globe. Klik pada simpul pertama menutupnya. Hasil dihitung hanya di dalam area.
+Click the vertices of the area on the globe. A click on the first vertex closes it.	Klik simpul-simpul area pada globe. Klik pada simpul pertama menutupnya.
+Close the area by a click on its first vertex.	Tutup area dengan klik pada simpul pertamanya.
+The area is larger than {km} km, make it smaller.	Area lebih besar dari {km} km, perkecil.
+Save the result and close the window. The computation goes as a folder into the folder «Area analysis» of «My places» together with the outline of the area, the values - as a GeoTIFF file. Deleting the folder removes the computation entirely.	Simpan hasil dan tutup jendela. Perhitungan masuk sebagai folder ke folder «Analisis area» di «Tempat Saya» bersama garis batas area, nilainya - sebagai berkas GeoTIFF. Menghapus folder menghilangkan perhitungan seluruhnya.
+Remove the result from the globe and close the window.	Hapus hasil dari globe dan tutup jendela.
+Built at {time} UTC.	Dibuat pada {time} UTC.
+Values - the GeoTIFF file {path}.	Nilai - berkas GeoTIFF {path}.
+Viewshed	Keterlihatan
+Viewshed {time}	Keterlihatan {time}
+Insolation {time}, h per day	Insolasi {time}, jam per hari
+What is seen from the point in the circle - a layer on the globe.	Apa yang terlihat dari titik di dalam lingkaran - lapisan di globe.
+Hours of direct sun per day in the area - a layer on the globe. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	Jam sinar matahari langsung per hari di area - lapisan di globe. Bayangan gunung diambil dari jarak paling sedikit setengah area dan paling sedikit 5 km.
+The area has changed. Press «Build» to compute it again.	Area berubah. Tekan «Hitung» untuk menghitung ulang.
+Saved to «My places», the values - {path}.	Disimpan ke «Tempat Saya», nilainya - {path}.
+Saved to «My places». The GeoTIFF file is not written: {e}	Disimpan ke «Tempat Saya». Berkas GeoTIFF tidak ditulis: {e}
+There are no heights in the area.	Tidak ada data ketinggian di area.
+There are no peaks and pits with such a drop in the area.	Tidak ada puncak dan ceruk dengan selisih seperti itu di area.
+Found peaks {peaks} and pits {pits}. They go into the folder of the computation by «OK».	Ditemukan puncak {peaks} dan ceruk {pits}. Dengan «OK» semuanya masuk ke folder perhitungan.
+Aspect, °	Aspek lereng, °
+Peaks and closed hollows of the area - points with the height and the drop in the folder of the computation.	Puncak dan cekungan tertutup area - titik dengan ketinggian dan selisih di folder perhitungan.
+What the area shows on the globe - the steepness of a slope or the side of the world it faces. The rows «Slope» and «Aspect» of the section «Layers» go off meanwhile.	Yang ditunjukkan area di globe - kemiringan lereng atau arah mata angin yang dihadapinya. Baris «Kemiringan» dan «Aspek lereng» di bagian «Lapisan» sementara dimatikan.
+Slope and aspect of the area by the heights, a 3 × 3 kernel - a colouring on the globe and a summary by slope classes and sides of the world.	Kemiringan dan aspek lereng area menurut ketinggian, kernel 3 × 3 - pewarnaan di globe dan ringkasan menurut kelas kemiringan dan arah mata angin.
+The point is outside the area or has no heights.	Titik berada di luar area atau tidak ada data ketinggian.
+Catchment of a placemark	Daerah tangkapan penanda
+Saved to «My places».	Disimpan ke «Tempat Saya».
+Water from the point up to the given level on the area - a layer on the globe, the level changes without a new computation.	Air dari titik sampai tingkat yang ditentukan di area - lapisan di globe, tingkat berubah tanpa perhitungan ulang.
+Flooding {level} m - depth	Penggenangan {level} m - kedalaman
+Flooding {level} m - outline	Penggenangan {level} m - garis batas
+Shadows	Bayangan
+Shadows…	Bayangan…
+Shadows {moment} UTC	Bayangan {moment} UTC
+{moment} UTC	{moment} UTC
+Computing the horizon: {share}	Menghitung cakrawala: {share}
+The sun is below the horizon, the whole area is in shadow.	Matahari di bawah cakrawala, seluruh area berada dalam bayangan.
+Sun on {share} of the area, the sun is {elevation}° above the horizon. The grid step is {step} m.	Matahari menyinari {share} area, tinggi matahari {elevation}°. Langkah grid {step} m.
+The moment is the right handle of the time slider, without the slider - the computer clock. After «Build» the shadows follow the slider: move the handle or start the playback.	Saat adalah penggeser kanan skala waktu, tanpa skala - jam komputer. Setelah «Hitung» bayangan mengikuti skala: geser penggeser atau mulai pemutaran.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider. Mountain shadows are taken from a distance of at least half the area and at least 5 km.	Di mana bayangan dan di mana matahari pada saat skala waktu - menurut relief, bayangan mengikuti skala. Bayangan gunung diambil dari jarak paling sedikit setengah area dan paling sedikit 5 km.
+Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.	Di mana bayangan dan di mana matahari pada saat skala waktu - menurut relief, bayangan mengikuti skala.
+Loading the index of files…	Memuat indeks berkas…
+There are no files of the data set for this zone.	Tidak ada berkas kumpulan data untuk zona ini.
+Download about {mb} MB, pixel {pixel} m.	Unduhan sekitar {mb} MB, piksel {pixel} m.
+The area is not closed.	Area tidak tertutup.
+Choose two different years.	Pilih dua tahun yang berbeda.
+The files are not read: {e}	Berkas tidak terbaca: {e}
+Block {n} of {total}: loading.	Blok {n} dari {total}: memuat.
+Block {n} of {total}: channel {band} of 64.	Blok {n} dari {total}: kanal {band} dari 64.
+There are no data of the data set in the area for these years.	Tidak ada data kumpulan data di area untuk tahun-tahun ini.
+Mean degree of change {mean}, strong changes (from 0.5) on {share} of the area. The pixel is {pixel} m.	Rata-rata tingkat perubahan {mean}, perubahan kuat (dari 0.5) pada {share} area. Piksel {pixel} m.
+Change {n}	Perubahan {n}
+Degree of change {value}.	Tingkat perubahan {value}.
+There are no strong changes in the area.	Tidak ada perubahan kuat di area.
+Found places of changes: {count}. They go into the folder of the computation by «OK».	Ditemukan tempat perubahan: {count}. Dengan «OK» semuanya masuk ke folder perhitungan.
+Changes {before}-{after}	Perubahan {before}-{after}
+Changes of the terrain	Perubahan medan
+Changes of the terrain…	Perubahan medan…
+Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.	Di mana medan berubah antara dua tahun 2017-2025 - menurut embedding AlphaEarth, sel 10 m.
+Classification…	Klasifikasi…
+Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.	Kelas area menurut titik kontrol di globe - menurut embedding AlphaEarth, sel 10 m.
+Years	Tahun
+The years of the comparison. Each 10 m cell is described for a year by 64 numbers - a summary of Sentinel and Landsat images and radar. The degree of change is how much the descriptions of the two years differ.	Tahun perbandingan. Setiap sel 10 m untuk satu tahun dijelaskan dengan 64 angka - ringkasan citra Sentinel dan Landsat serta radar. Tingkat perubahan adalah seberapa berbeda deskripsi dua tahun.
+Degree from	Tingkat mulai
+Show cells with a degree of change in this span, the rest are transparent. Unchanged terrain has a degree about 0.05, a building site, a clearing, a new quarry - 0.5 and more.	Tampilkan sel dengan tingkat perubahan dalam rentang ini, sisanya transparan. Medan yang tidak berubah punya tingkat sekitar 0.05, lokasi konstruksi, penebangan, tambang baru - 0.5 ke atas.
+Area pixel	Piksel area
+Auto	Otomatis
+{pixel} m	{pixel} m
+The pixel of the area. The files of the data set keep blocks of 1024 × 1024 pixels, a block for a year is 40-50 MB at any pixel: 10 m cover 10 km by a block, 80 m - 82 km. «Auto» takes the pixel with the least download.	Piksel area. Berkas kumpulan data menyimpan blok 1024 × 1024 piksel, blok untuk satu tahun berukuran 40-50 MB pada piksel apa pun: 10 m mencakup 10 km per blok, 80 m - 82 km. «Otomatis» memilih piksel dengan unduhan paling sedikit.
+Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.	Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0.
+Places of changes	Tempat perubahan
+Places of the strongest changes of the area - points in the folder of the computation. Then they are handy to look at with the image archive and the swipe.	Tempat perubahan terkuat di area - titik di folder perhitungan. Selanjutnya mudah dilihat dengan arsip citra dan tirai geser.
+The degree of change of the area between the two years - a layer on the globe.	Tingkat perubahan area antara dua tahun - lapisan di globe.
+Class {n}	Kelas {n}
+At least two classes of three points each are needed.	Diperlukan paling sedikit dua kelas dengan tiga titik masing-masing.
+Loading the vectors of the area: block {n} of {total}.	Memuat vektor area: blok {n} dari {total}.
+There are no data of the data set in the area for this year.	Tidak ada data kumpulan data di area untuk tahun ini.
+All points are outside the area.	Semua titik berada di luar area.
+Classes of the year {year}: {parts}.	Kelas tahun {year}: {parts}.
+Points outside the area: {n}.	Titik di luar area: {n}.
+Classification {year}	Klasifikasi {year}
+{n} - {name}	{n} - {name}
+Value {n} in the GeoTIFF file.	Nilai {n} dalam berkas GeoTIFF.
+Classification	Klasifikasi
+The year by whose vectors the cells are divided into classes. The points are put by the image of the globe, it may be of another year.	Tahun yang vektornya dipakai untuk membagi sel menjadi kelas. Titik ditempatkan menurut citra globe, yang bisa berasal dari tahun lain.
+Pixel	Piksel
+The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells.	Piksel klasifikasi. Blok berkas untuk satu tahun berukuran 40-50 MB pada piksel apa pun. «Otomatis» memilih piksel dengan unduhan paling sedikit yang membuat area punya 14 sampai 640 ribu sel.
+Opacity of the classes on the globe.	Opasitas kelas di globe.
+Classes	Kelas
+A click on the globe puts a point of this class.	Klik pada globe menempatkan titik kelas ini.
+points {n}	titik {n}
+Remove the class and its points.	Hapus kelas dan titik-titiknya.
+Add a class	Tambah kelas
+Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.	Klik globe untuk menempatkan titik kelas yang dipilih, klik pada titik menghapusnya. Diperlukan paling sedikit dua kelas dengan tiga titik masing-masing.
+Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors.	Setiap sel area masuk ke kelas titik kontrol terdekat menurut vektor AlphaEarth.
+The catchment reaches the edge of the area, its part beyond the edge is not counted. A larger area is needed.	Daerah tangkapan mencapai tepi area, bagiannya di luar tepi tidak dihitung. Diperlukan area yang lebih besar.
+There are no watercourses with such a catchment at the edge of the area.	Tidak ada alur air dengan daerah tangkapan seperti itu di tepi area.
+Basins written to «My places»: {count}, they cover {area} km² of the area.	Daerah aliran yang ditulis ke «Tempat Saya»: {count}, mencakup {area} km² area.
+There are no watercourses with such a catchment and order in the area.	Tidak ada alur air dengan daerah tangkapan dan orde seperti itu di area.
+The water reached the edge of the area and can go further. A larger area is needed.	Air mencapai tepi area dan dapat mengalir lebih jauh. Diperlukan area yang lebih besar.
+The flow line ends on reaching a watercourse with a catchment from the area of the field «Watercourses from». Without the check the line goes to the edge of the area.	Garis aliran berakhir saat mencapai alur air dengan daerah tangkapan dari luas di kolom «Alur air mulai». Tanpa tanda centang garis berlanjut sampai tepi area.
+Watercourses of the area with the Strahler order - lines in «My places», the line width grows with the order.	Alur air area dengan orde Strahler - garis di «Tempat Saya», lebar garis bertambah sesuai orde.
+The area divided into basins of outlets - places where watercourses with a catchment from the area of the field «Watercourses from» leave the area. Polygons in «My places».	Area yang dibagi menjadi daerah aliran titik keluar - tempat alur air dengan daerah tangkapan dari luas di kolom «Alur air mulai» meninggalkan area. Poligon di «Tempat Saya».
+The line reached the edge of the area, further the water goes beyond it.	Garis mencapai tepi area, selanjutnya air mengalir keluar darinya.
+The line ends at a watercourse.	Garis berakhir di alur air.
+The line ends where the terrain flattens.	Garis berakhir di tempat relief mendatar.
+The line flows into another flow line.	Garis mengalir ke garis aliran lain.
+The line ends at the edge of the height data.	Garis berakhir di tepi data ketinggian.
+{title} - mean {mean}{unit}, spread {std}{unit}, quantiles 10, 25, 50, 75 and 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.	{title} - rata-rata {mean}{unit}, sebaran {std}{unit}, kuantil 10, 25, 50, 75 dan 90 % - {p10}, {q1}, {median}, {q3}, {p90}{unit}.
+The area is shared with the previous computation. «Square» and «Draw» start a new one.	Area sama dengan perhitungan sebelumnya. «Persegi» dan «Gambar» memulai yang baru.
+Sun hours	Jam matahari
+ h	 j
+Degree of change	Tingkat perubahan
+Temporary Places	Tempat sementara
+New placemarks, paths and measurements go here while this row is selected. When the program closes, the contents can be moved to My Places or deleted. A placemark to keep at once is dragged to My Places.	Penanda, jalur, dan pengukuran baru masuk ke sini selama baris ini dipilih. Saat program ditutup, isinya dapat dipindahkan ke «Tempat Saya» atau dihapus. Penanda yang harus langsung disimpan, seret ke «Tempat Saya».
+Save to My Places	Simpan ke «Tempat Saya»
+Clear Temporary Places…	Kosongkan «Tempat sementara»…
+Delete the contents of Temporary Places, placemarks and folders {count}? Deletion cannot be undone.	Hapus isi «Tempat sementara», penanda dan folder berjumlah {count}? Penghapusan tidak dapat dibatalkan.
+Temporary Places contain unsaved items. Save them in My Places?	Di «Tempat sementara» ada item yang belum disimpan. Simpan di «Tempat Saya»?
+Don't save	Jangan simpan
+Show selected	Tampilkan yang dipilih
+Hide selected	Sembunyikan yang dipilih
+Delete selected ({count})	Hapus yang dipilih ({count})
+Delete selected	Hapus yang dipilih
+Delete the selected rows, {count}? Deletion cannot be undone.	Hapus baris yang dipilih, berjumlah {count}? Penghapusan tidak dapat dibatalkan.
+Model section	Penampang model
+Model section: {name}	Penampang model: {name}
+Model section…	Penampang model…
+Model section wall	Dinding penampang model
+Model cut	Potongan model
+Model cut along «{name}».	Potongan model menurut «{name}».
+Model cut along «{name}» is removed.	Potongan model menurut «{name}» dihapus.
+Section wall along «{name}».	Dinding penampang menurut «{name}».
+Section wall along «{name}» is removed.	Dinding penampang menurut «{name}» dihapus.
+Band of drill holes and objects	Jalur lubang bor dan objek
+Width of the band along the line from which drill holes and tunnels are moved onto the section. A wider band gives more drill holes, but distant ones do not lie where the line is.	Lebar jalur di sepanjang garis, dari jalur ini lubang bor dan terowongan dipindahkan ke penampang. Jalur lebih lebar memberi lebih banyak lubang bor, tetapi yang jauh tidak terletak di tempat garis berada.
+Roofs	Atap
+Drill holes	Lubang bor
+Drill holes of the model	Lubang bor model
+The model has no roofs and drill holes.	Model tidak memiliki atap dan lubang bor.
+A path of at least two points and an open subsurface model are needed.	Diperlukan jalur dengan paling sedikit dua titik dan model bawah tanah yang terbuka.
+Length {length}. Roofs {beds}, drill holes in the band {holes}, tunnels {tunnels}.	Panjang {length}. Atap {beds}, lubang bor di jalur {holes}, terowongan {tunnels}.
+Heights by the points of the line - distance, latitude, longitude, terrain and bed roofs, no roof - an empty field.	Ketinggian menurut titik garis - jarak, lintang, bujur, relief dan atap lapisan, tanpa atap - kolom kosong.
+Picture…	Gambar…
+The section as a PNG picture of the window size.	Penampang sebagai gambar PNG seukuran jendela.
+Color of the rock between beds	Warna batuan di antara lapisan
+Color of the bed «{name}»	Warna lapisan «{name}»
+Color of the line «{name}»	Warna garis «{name}»
+Default section colors	Warna penampang bawaan
+No data	Tidak ada data
+terrain {value}	relief {value}
+Between beds	Di antara lapisan
+Layers with Z	Lapisan dengan Z
+Parts of objects with Z {count}.	Bagian objek dengan Z: {count}.

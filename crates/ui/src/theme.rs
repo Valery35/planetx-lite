@@ -209,6 +209,13 @@ pub fn star(ui: &mut egui::Ui) {
     }
 }
 
+/// Ширина поля в строке с кнопками: что остаётся от available после
+/// кнопок с подписями шириной labels, padding - поле кнопки с одной
+/// стороны, gap - промежуток в строке.
+pub fn field_room(available: f32, labels: &[f32], padding: f32, gap: f32) -> f32 {
+    available - labels.iter().map(|w| w + 2.0 * padding + gap).sum::<f32>()
+}
+
 /// Часы строки «Временные метки», как значок истории у модуля.
 pub fn clock_icon(ui: &mut egui::Ui) {
     let (rect, _) = ui.allocate_exact_size(egui::vec2(16.0, 16.0), egui::Sense::hover());
@@ -732,4 +739,21 @@ pub fn menu_icon(ui: &mut egui::Ui, tool: Tool) {
 /// Кнопка панели или строка меню «…»: rows - строка с названием.
 pub fn tool_item(ui: &mut egui::Ui, rows: bool, tool: Tool, on: bool, enabled: bool, name: &str, tip: &str) -> egui::Response {
     if rows { tool_row(ui, tool, on, enabled, name, tip) } else { tool_button(ui, tool, on, false, enabled, tip) }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::field_room;
+
+    /// Поле и кнопки укладываются в строку и с длинной подписью: постоянный
+    /// запас в 100 точек раздвигал панель кадр за кадром на «Suchen».
+    #[test]
+    fn field_leaves_room_for_buttons() {
+        let (padding, gap) = (4.0, 8.0);
+        let labels = [90.0, 14.0];
+        let field = field_room(300.0, &labels, padding, gap);
+        let buttons: f32 = labels.iter().map(|w| w + 2.0 * padding + gap).sum();
+        assert_eq!(field + buttons, 300.0);
+        assert!(field < 300.0 - 100.0);
+    }
 }

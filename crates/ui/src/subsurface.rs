@@ -35,6 +35,8 @@ use crate::i18n::{Lang, tr, trf};
 pub const ROLES: [&str; 7] = ["collar", "interval", "survey", "beds", "sections", "cut", "tunnels"];
 /// Узлов растра кровли на сторону, больше - прорежение.
 pub const MAX_NODES: usize = 300;
+/// Объектов слоя с Z, не больше, `ZLAYER_MAX` модуля.
+pub const ZLAYER_MAX: usize = 20_000;
 /// Радиус ствола - доля поперечника модели, не меньше MIN_TUBE метров.
 pub const TUBE_SHARE: f64 = 1.0 / 400.0;
 pub const MIN_TUBE: f64 = 2.0;
@@ -148,6 +150,15 @@ pub struct Tunnel {
     pub color: [u8; 3],
 }
 
+/// Объект слоя с Z, `ZShape` модуля: название слоя, цвет поля color,
+/// многоугольник ли, части - широта, долгота, отметка.
+pub struct ZShape {
+    pub layer: String,
+    pub color: [u8; 3],
+    pub polygon: bool,
+    pub parts: Vec<Vec<[f64; 3]>>,
+}
+
 /// Подземные данные: скважины, кровли, разрезы, вырез, пласты.
 #[derive(Default)]
 pub struct Model {
@@ -164,6 +175,8 @@ pub struct Model {
     /// Те же кольца по вершинам, для маски.
     pub mask_rings: Vec<Vec<[f64; 2]>>,
     pub tunnels: Vec<Tunnel>,
+    /// Объекты слоёв с Z файла - на разрез модели.
+    pub zshapes: Vec<ZShape>,
     /// Растры кровель из таблицы пластов: код и имя файла.
     pub surfaces: Vec<(String, String)>,
     /// Не найденные растры.
@@ -360,6 +373,22 @@ impl Model {
                     diameter: number(l, v, "diameter", TUNNEL_DIAMETER),
                     color: hex_color(field(l, v, "color").unwrap_or(""), TUNNEL_COLOR),
                 });
+            }
+        }
+        // Линии и многоугольники с отметками Z без роли в модели.
+        for l in layers.iter().filter(|l| detect_role(l).is_none()) {
+            for item in l.items.iter().filter(|i| matches!(i.shape, Shape::Line | Shape::Polygon)).take(ZLAYER_MAX) {
+                let parts: Vec<Vec<[f64; 3]>> = item
+                    .parts
+                    .iter()
+                    .zip(&item.heights)
+                    .filter(|(p, z)| p.len() == z.len() && p.len() >= 2)
+                    .map(|(p, z)| p.iter().zip(z).map(|(q, z)| [q.0, q.1, *z]).collect())
+                    .collect();
+                if !parts.is_empty() {
+                    let color = hex_color(field(l, &item.values, "color").unwrap_or(""), EMPTY_COLOR);
+                    model.zshapes.push(ZShape { layer: l.name.clone(), color, polygon: item.shape == Shape::Polygon, parts });
+                }
             }
         }
         model
@@ -1081,7 +1110,7 @@ mod tests {
             epsg: None,
             fields: fields.iter().map(|f| f.to_string()).collect(),
             numeric: vec![false; fields.len()],
-            items: vec![data::layers::Item { shape, parts: Vec::new(), values: Vec::new() }],
+            items: vec![data::layers::Item { shape, parts: Vec::new(), heights: Vec::new(), values: Vec::new() }],
         };
         assert_eq!(detect_role(&layer("Collar", &[], Shape::Point)), Some("collar"));
         assert_eq!(detect_role(&layer("holes", &["hole_id", "eoh"], Shape::Point)), Some("collar"));
