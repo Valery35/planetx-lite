@@ -379,7 +379,7 @@ fn legend(ui: &mut egui::Ui, lang: Lang, s: &Section, missing: bool) {
 
 /// Слой между линиями top и bottom (глубины по точкам линии), кусками
 /// там, где обе определены и слой не нулевой.
-fn fill(painter: &egui::Painter, to_screen: &dyn Fn(f64, f64) -> egui::Pos2, distance: &[f64], top: &[f64], bottom: &[f64], color: [u8; 3]) {
+pub(crate) fn fill(painter: &egui::Painter, to_screen: &dyn Fn(f64, f64) -> egui::Pos2, distance: &[f64], top: &[f64], bottom: &[f64], color: [u8; 3]) {
     let n = distance.len().min(top.len()).min(bottom.len());
     let good = |i: usize| top[i].is_finite() && bottom[i].is_finite() && bottom[i] > top[i];
     let color = rgb(color);

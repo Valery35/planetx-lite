@@ -209,6 +209,17 @@ pub fn star(ui: &mut egui::Ui) {
     }
 }
 
+/// Часы строки «Временные метки», как значок истории у модуля.
+pub fn clock_icon(ui: &mut egui::Ui) {
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(16.0, 16.0), egui::Sense::hover());
+    let c = rect.center();
+    let stroke = Stroke::new(1.5, pal().icon);
+    let painter = ui.painter();
+    painter.circle_stroke(c, 6.0, stroke);
+    painter.line_segment([c, c + egui::vec2(0.0, -4.0)], stroke);
+    painter.line_segment([c, c + egui::vec2(3.0, 1.5)], stroke);
+}
+
 /// Значок папки с ушком, чтобы папку было видно среди меток.
 pub fn folder_icon(ui: &mut egui::Ui) {
     let (rect, _) = ui.allocate_exact_size(egui::vec2(16.0, 16.0), egui::Sense::hover());

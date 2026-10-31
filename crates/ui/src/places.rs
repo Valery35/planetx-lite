@@ -13,6 +13,8 @@ use scene::kml::{self, Folder};
 
 /// Ключ хранилища.
 pub const KEY: &str = "planetx_my_places_kmz";
+/// Ключ «Временных меток»: в файлы и общие метки они не входят.
+pub const TEMP_KEY: &str = "planetx_temporary_places_kmz";
 
 const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 

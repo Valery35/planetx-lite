@@ -209,6 +209,24 @@ A right click without dragging opens the menu:
 - Add placemark, Measure distance, Fly to, Orbit around, Point
   details. Point details opens the Features window with the address of the
   point from Nominatim and its height.
+
+Temporary Places stand as a row of their own under My Places. The row
+is selected at start, so new placemarks, paths and measurements go
+there. New items go into the selected folder, next to a selected
+placemark. The menu of the row moves the contents to My Places or
+clears them. When the program closes with items in the folder, it asks:
+Save, Don't save or Cancel. A placemark to keep at once is dragged to
+My Places. Ctrl and Shift select several rows, the menu and dragging
+act on all of them.
+
+The placemark menu works with the subsurface model. Model section… of
+a path opens a section window in metres: terrain, beds, drill holes and
+tunnels from a band along the line. The checkboxes on the left choose
+the layers, the right button on the chart sets a color, the section is
+saved as a picture and a CSV table. Model section wall puts a wall along
+the path on the globe, Model cut cuts the model by a polygon. Choosing
+the item again removes them.
+
 ## Drawing and editing
 
 The New placemark button opens a window with tabs Placemark, Path,

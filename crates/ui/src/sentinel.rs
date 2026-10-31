@@ -157,6 +157,13 @@ impl Sentinel {
         self.selected = None;
     }
 
+    /// Участок окна - рамка метки: середина и наибольший размер в метрах,
+    /// `show_place` модуля.
+    pub fn show_place(&mut self, lat: f64, lon: f64, size: f64) {
+        self.side = (size / 1000.0).clamp(s2::SIDE_MIN, s2::SIDE_MAX);
+        self.show_point(lat, lon);
+    }
+
     pub fn busy(&self) -> bool {
         self.search.is_some() || self.job.is_some() || self.token_ask.is_some() || self.series.as_ref().is_some_and(crate::series::Series::busy)
     }

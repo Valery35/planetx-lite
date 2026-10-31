@@ -72,6 +72,7 @@ pub mod relief;
 pub mod reliefcalc;
 pub mod route;
 pub mod rumsey;
+pub mod modelsection;
 pub mod section;
 pub mod sky;
 pub mod skysurvey;

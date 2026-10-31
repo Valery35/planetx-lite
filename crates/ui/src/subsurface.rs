@@ -477,7 +477,7 @@ fn window(cells: &[bool], ny: usize, nx: usize, all: bool) -> Vec<bool> {
 }
 
 /// Смещения в метрах от устья в широту и долготу.
-fn to_latlon(lat0: f64, lon0: f64, east: f64, north: f64) -> (f64, f64) {
+pub(crate) fn to_latlon(lat0: f64, lon0: f64, east: f64, north: f64) -> (f64, f64) {
     (lat0 + (north / core::A).to_degrees(), lon0 + (east / (core::A * lat0.to_radians().cos())).to_degrees())
 }
 
@@ -784,6 +784,17 @@ impl Default for Options {
     }
 }
 
+/// Что метка делает с моделью, `toggle_place` модуля: вырез или стенка
+/// разреза.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PlacePart {
+    Cut,
+    Section,
+}
+
+/// Точки метки по её рабочему номеру или None - метки больше нет.
+pub type FindPlace<'a> = dyn Fn(u64) -> Option<Vec<(f64, f64)>> + 'a;
+
 /// Подземный режим окна глобуса.
 pub struct Subsurface {
     /// Слои файла и его имя: модель собирается заново, когда приходят
@@ -806,6 +817,14 @@ pub struct Subsurface {
     built_scale: f64,
     pub status: String,
     pub window_open: bool,
+    /// Метки выреза и стенок разреза: рабочий номер и что делает.
+    place_parts: Vec<(u64, PlacePart)>,
+    /// Формы этих меток в модели.
+    place_shapes: Vec<(PlacePart, Vec<(f64, f64)>)>,
+    /// Сколько разрезов, колец и колец маски пришло из файла.
+    file_parts: (usize, usize, usize),
+    /// Номер модели: растёт, когда она собрана заново.
+    pub generation: u64,
 }
 
 impl Subsurface {
@@ -826,6 +845,10 @@ impl Subsurface {
             built_scale: f64::NAN,
             status: String::new(),
             window_open: false,
+            place_parts: Vec::new(),
+            place_shapes: Vec::new(),
+            file_parts: (0, 0, 0),
+            generation: 0,
         };
         s.reload();
         s
@@ -841,9 +864,77 @@ impl Subsurface {
             }
             read_near(folder.as_deref(), name)
         };
-        self.model = Some(Model::load(&self.layers, &read));
+        let model = Model::load(&self.layers, &read);
+        self.file_parts = (model.sections.len(), model.rings.len(), model.mask_rings.len());
+        self.model = Some(model);
+        self.apply_places();
+    }
+
+    /// Вырезы и стенки меток - в модель, поверх данных файла, `_with_places`
+    /// модуля. Сетки и маска собираются заново.
+    fn apply_places(&mut self) {
+        let (sections, rings, masks) = self.file_parts;
+        if let Some(model) = &mut self.model {
+            model.sections.truncate(sections);
+            model.rings.truncate(rings);
+            model.mask_rings.truncate(masks);
+            let step = (model.extent() / SECTION_POINTS).max(5.0) / DEGREE;
+            for (part, points) in &self.place_shapes {
+                let pts: Vec<[f64; 2]> = points.iter().map(|p| [p.0, p.1]).collect();
+                match part {
+                    PlacePart::Cut if pts.len() >= 3 => {
+                        let mut closed = pts.clone();
+                        closed.extend(pts.first().copied());
+                        let mut ring = core::densify(&closed, step);
+                        ring.pop();
+                        model.rings.push(ring);
+                        model.mask_rings.push(pts);
+                    }
+                    PlacePart::Section if pts.len() >= 2 => model.sections.push(core::densify(&pts, step)),
+                    _ => {}
+                }
+            }
+        }
+        self.generation += 1;
         self.dirty = true;
         self.mask_dirty = true;
+    }
+
+    /// Формы меток выреза и стенок по текущему дереву.
+    fn shapes_now(&self, find: &FindPlace<'_>) -> Vec<(PlacePart, Vec<(f64, f64)>)> {
+        self.place_parts.iter().filter_map(|(uid, part)| find(*uid).map(|p| (*part, p))).collect()
+    }
+
+    /// Метка uid - вырез или стенка разреза модели, повторный вызов
+    /// убирает, `toggle_place` модуля. Возвращает, включена ли.
+    pub fn toggle_place(&mut self, uid: u64, part: PlacePart, find: &FindPlace<'_>) -> bool {
+        let was = self.place_parts.iter().position(|p| p.0 == uid);
+        let same = was.is_some_and(|i| self.place_parts[i].1 == part);
+        if let Some(i) = was {
+            self.place_parts.remove(i);
+        }
+        if !same {
+            self.place_parts.push((uid, part));
+            if part == PlacePart::Cut {
+                self.options.cut = true;
+            }
+        }
+        self.place_shapes = self.shapes_now(find);
+        self.apply_places();
+        !same
+    }
+
+    /// «Мои метки» изменились: форма метки выреза или разреза могла стать
+    /// другой, метку могли удалить, `places_changed` модуля.
+    pub fn places_changed(&mut self, find: &FindPlace<'_>) {
+        if self.place_parts.is_empty() {
+            return;
+        }
+        let shapes = self.shapes_now(find);
+        if shapes != self.place_shapes {
+            self.place_shapes = shapes;
+            self.apply_places();
+        }
     }
 
     /// Ждёт ли модель файл name (растр кровли из таблицы пластов).
@@ -1056,6 +1147,46 @@ mod tests {
         assert_eq!(f.at(59.5, 56.5, 2.0, || 100.0), Some(-600.0));
         assert_eq!(f.at(59.5, 56.5, 0.0, || 100.0), Some(-400.0));
         assert_eq!(f.at(61.0, 56.5, 2.0, || 100.0), None);
+    }
+
+    /// Вырез и стенка по меткам ложатся поверх данных файла, повторный
+    /// выбор убирает, изменённая метка меняет модель, удалённая уходит.
+    #[test]
+    #[allow(clippy::unwrap_used)]
+    fn places_cut_and_wall_the_model() {
+        use super::{PlacePart, Subsurface};
+        use std::cell::RefCell;
+        let square = vec![(58.0, 56.0), (58.0, 56.01), (58.01, 56.01), (58.01, 56.0)];
+        let line = vec![(58.0, 56.0), (58.01, 56.01)];
+        let shapes = RefCell::new(vec![(1_u64, square.clone()), (2, line)]);
+        let find = |uid: u64| shapes.borrow().iter().find(|s| s.0 == uid).map(|s| s.1.clone());
+        let mut sub = Subsurface::new(Vec::new(), "m", None, 0.0);
+        sub.options.cut = false;
+        let rings = |s: &Subsurface| s.model.as_ref().map_or((0, 0, 0), |m| (m.rings.len(), m.mask_rings.len(), m.sections.len()));
+        assert!(sub.toggle_place(1, PlacePart::Cut, &find));
+        assert_eq!(rings(&sub), (1, 1, 0));
+        assert!(sub.options.cut && sub.cut_on());
+        assert!(sub.toggle_place(2, PlacePart::Section, &find));
+        assert_eq!(rings(&sub), (1, 1, 1));
+        // Кольцо маски - вершины метки, кольцо стенок - сгущённое и не
+        // повторяет первую точку.
+        let model = sub.model.as_ref().unwrap();
+        assert_eq!(model.mask_rings[0].len(), 4);
+        assert!(model.rings[0].len() > 4 && model.rings[0].first() != model.rings[0].last());
+        // Форма изменилась - модель новая, та же - нет.
+        let before = sub.generation;
+        sub.places_changed(&find);
+        assert_eq!(sub.generation, before);
+        shapes.borrow_mut()[0].1.push((58.02, 56.0));
+        sub.places_changed(&find);
+        assert_eq!(sub.generation, before + 1);
+        assert_eq!(sub.model.as_ref().unwrap().mask_rings[0].len(), 5);
+        // Повторный выбор убирает вырез, удалённая метка уходит из модели.
+        assert!(!sub.toggle_place(1, PlacePart::Cut, &find));
+        assert_eq!(rings(&sub), (0, 0, 1));
+        shapes.borrow_mut().clear();
+        sub.places_changed(&find);
+        assert_eq!(rings(&sub), (0, 0, 0));
     }
 
     #[test]

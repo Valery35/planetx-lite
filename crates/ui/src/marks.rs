@@ -23,6 +23,9 @@ use scene::kml::{self, Folder, Item, Place};
 use scene::when::{self, Time};
 use terrain::HeightStore;
 
+/// Путь строки «Временные метки»: первая строка корня.
+pub const TEMPORARY: [usize; 1] = [0];
+
 /// Пауза между пересадками сеток на новые высоты, секунды.
 pub const REBUILD_PAUSE: f64 = 0.5;
 
@@ -311,8 +314,8 @@ pub enum Action {
     Rename(Vec<usize>, String),
     /// Переименование отменено.
     CancelRename,
-    /// Перетащили строку: откуда, куда, в папку или перед строкой.
-    Move(Vec<usize>, Vec<usize>, bool),
+    /// Перетащили строки: откуда, куда, в папку или перед строкой.
+    Move(Vec<Vec<usize>>, Vec<usize>, bool),
     /// Сохранить строку как KML или KMZ, пустой путь - все «Мои метки».
     SaveKml(Vec<usize>),
     /// Сохранить строку сценой с текущей камерой.
@@ -357,6 +360,21 @@ pub enum Action {
     Catchment(Vec<usize>),
     /// «Линии стока от метки…» пути или многоугольника.
     FlowLines(Vec<usize>),
+    /// «Космоснимки…» пути или многоугольника: участок - метка.
+    Sentinel(Vec<usize>),
+    /// «Разрез модели…» пути.
+    ModelSection(Vec<usize>),
+    /// «Стенка разреза модели» пути и «Вырез модели» многоугольника.
+    ModelPart(Vec<usize>, crate::subsurface::PlacePart),
+    /// «Сохранить в «Мои метки»» строки «Временные метки».
+    TempSave,
+    /// «Очистить «Временные метки»…».
+    TempClear,
+    /// Общее меню нескольких строк: копировать, показать или скрыть,
+    /// удалить.
+    CopyMany(Vec<Vec<usize>>),
+    ShowMany(Vec<Vec<usize>>, bool),
+    RemoveMany(Vec<Vec<usize>>),
 }
 
 /// Пункт подменю «Добавить», `_add_menu` модуля.
@@ -386,6 +404,8 @@ enum RowKind {
     Overlay,
     /// Папка - сетевая ссылка: в меню «Загрузить заново».
     LinkFolder,
+    /// Строка «Временные метки»: не удаляется и не переносится.
+    Temporary,
 }
 
 /// Название корня «Мои метки».
@@ -423,12 +443,32 @@ fn add_menu(ui: &mut eframe::egui::Ui, lang: crate::i18n::Lang, path: &[usize], 
 }
 
 /// Меню правой кнопки строки, как `_menu` модуля: порядок меню папки
-/// Google Earth, у метки сверху «Подлететь». Пунктов QGIS, разреза
-/// модели, космоснимков и вырезов модели у Lite нет.
-fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[usize], tour: bool, kind: RowKind, actions: &mut Vec<Action>) {
-    use crate::i18n::tr;
+/// Google Earth, у метки сверху «Подлететь». Пунктов QGIS у Lite нет.
+/// many - выбранные строки, если их несколько и эта среди них: тогда
+/// меню общее для всех.
+fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[usize], tour: bool, kind: RowKind, many: &[Vec<usize>], actions: &mut Vec<Action>) {
+    use crate::i18n::{tr, trf};
     response.context_menu(|ui| {
         let p = || path.to_vec();
+        if many.len() > 1 {
+            item(ui, tr(lang, "Copy"), Action::CopyMany(many.to_vec()), actions);
+            item(ui, tr(lang, "Show selected"), Action::ShowMany(many.to_vec(), true), actions);
+            item(ui, tr(lang, "Hide selected"), Action::ShowMany(many.to_vec(), false), actions);
+            item(ui, &trf(lang, "Delete selected ({count})", &[("count", &many.len().to_string())]), Action::RemoveMany(many.to_vec()), actions);
+            return;
+        }
+        if kind == RowKind::Temporary {
+            // Строка не удаляется и не переименовывается.
+            add_menu(ui, lang, path, actions);
+            item(ui, tr(lang, "Paste"), Action::Paste(p()), actions);
+            ui.separator();
+            item(ui, tr(lang, "Save to My Places"), Action::TempSave, actions);
+            item(ui, tr(lang, "Clear Temporary Places…"), Action::TempClear, actions);
+            ui.separator();
+            item(ui, tr(lang, "Save as KML…"), Action::SaveKml(p()), actions);
+            item(ui, tr(lang, "Play tour"), Action::Tour(p()), actions);
+            return;
+        }
         if kind == RowKind::LinkFolder {
             item(ui, tr(lang, "Reload"), Action::ReloadLink(p()), actions);
         }
@@ -458,10 +498,14 @@ fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[
             item(ui, tr(lang, "Tour along the path"), Action::Tour(p()), actions);
             item(ui, tr(lang, "Elevation profile"), Action::Profile(p()), actions);
             item(ui, tr(lang, "Section down…"), Action::Section(p()), actions);
+            item(ui, tr(lang, "Model section…"), Action::ModelSection(p()), actions);
+            item(ui, tr(lang, "Model section wall"), Action::ModelPart(p(), crate::subsurface::PlacePart::Section), actions);
+        } else if kind == RowKind::Polygon {
+            item(ui, tr(lang, "Model cut"), Action::ModelPart(p(), crate::subsurface::PlacePart::Cut), actions);
         }
-        // Водосбор и линии стока от пути и многоугольника, у точки -
-        // меню на глобусе.
+        // Участок по контуру метки. У точки - меню на глобусе.
         if matches!(kind, RowKind::Path | RowKind::Polygon) {
+            item(ui, tr(lang, "Satellite images…"), Action::Sentinel(p()), actions);
             item(ui, tr(lang, "Catchment of the placemark"), Action::Catchment(p()), actions);
             item(ui, tr(lang, "Flow lines from the placemark…"), Action::FlowLines(p()), actions);
         }
@@ -482,6 +526,58 @@ pub struct TreeState {
     pub selected: Option<Vec<usize>>,
     /// Строка, которая переименовывается: путь и новое название.
     pub renaming: Option<(Vec<usize>, String)>,
+    /// Выбранные строки Ctrl и Shift, как `selected_keys` модуля. Действуют,
+    /// пока среди них есть текущая строка `selected`.
+    pub chosen: Vec<Vec<usize>>,
+    /// Выбранные строки кадра для подсветки.
+    marked: std::collections::HashSet<Vec<usize>>,
+    /// Показанные строки этого и прошлого кадра: диапазон Shift.
+    rows: Vec<Vec<usize>>,
+    shown: Vec<Vec<usize>>,
+}
+
+impl TreeState {
+    /// Выбранные строки: несколько или одна текущая.
+    pub fn picked(&self) -> Vec<Vec<usize>> {
+        match &self.selected {
+            Some(p) if self.chosen.contains(p) => self.chosen.clone(),
+            Some(p) => vec![p.clone()],
+            None => Vec::new(),
+        }
+    }
+
+    fn is_picked(&self, path: &[usize]) -> bool {
+        self.selected.as_deref() == Some(path) || self.marked.contains(path)
+    }
+
+    /// Щелчок по строке: простой выбирает её одну, ctrl добавляет или
+    /// снимает, shift выбирает показанные строки от текущей до неё.
+    pub fn click(&mut self, path: &[usize], ctrl: bool, shift: bool) {
+        if shift
+            && let Some(from) = self.selected.as_ref().and_then(|s| self.shown.iter().position(|r| r == s))
+            && let Some(to) = self.shown.iter().position(|r| r == path)
+        {
+            self.chosen = self.shown.get(from.min(to)..=from.max(to)).unwrap_or(&[]).to_vec();
+            return;
+        }
+        if ctrl {
+            let mut set = self.picked();
+            match set.iter().position(|p| p == path) {
+                Some(i) => {
+                    set.remove(i);
+                    self.selected = set.last().cloned();
+                }
+                None => {
+                    set.push(path.to_vec());
+                    self.selected = Some(path.to_vec());
+                }
+            }
+            self.chosen = set;
+            return;
+        }
+        self.chosen.clear();
+        self.selected = Some(path.to_vec());
+    }
 }
 
 /// Название строки: подпись или поле переименования. Enter или щелчок
@@ -512,20 +608,37 @@ fn row_name(
     }
     // Фон выделения - под текстом: место под него занимается до подписи.
     let background = ui.painter().add(egui::Shape::Noop);
-    let label = ui.add(egui::Label::new(text).truncate().selectable(false).sense(egui::Sense::click_and_drag()));
+    let temporary = kind == RowKind::Temporary;
+    let rich = if temporary { egui::RichText::new(text).strong() } else { egui::RichText::new(text) };
+    let sense = if temporary { egui::Sense::click() } else { egui::Sense::click_and_drag() };
+    let mut label = ui.add(egui::Label::new(rich).truncate().selectable(false).sense(sense));
+    if temporary {
+        label = label.on_hover_text(crate::i18n::tr(lang, "New placemarks, paths and measurements go here while this row is selected. When the program closes, the contents can be moved to My Places or deleted. A placemark to keep at once is dragged to My Places."));
+    } else {
+        state.rows.push(path.to_vec());
+    }
     if label.hovered() || label.dragged() {
         ui.ctx().set_cursor_icon(egui::CursorIcon::Default);
     }
-    let selected = state.selected.as_deref() == Some(path);
-    if selected {
+    if state.is_picked(path) {
         let rect = label.rect.expand2(egui::vec2(3.0, 1.0));
         ui.painter().set(background, egui::Shape::rect_filled(rect, 2.0, crate::theme::pal().select));
     }
-    if label.clicked() || label.secondary_clicked() || label.drag_started() {
-        state.selected = Some(path.to_vec());
+    if label.clicked() {
+        // Клавиши - на момент отпускания кнопки, из её события: к кадру
+        // щелчка Ctrl уже могут отпустить.
+        let keys = ui.input(|i| {
+            i.events.iter().rev().find_map(|e| match e {
+                egui::Event::PointerButton { pressed: false, modifiers, .. } => Some(*modifiers),
+                _ => None,
+            }).unwrap_or(i.modifiers)
+        });
+        state.click(path, keys.command && !temporary, keys.shift && !temporary);
+    } else if (label.secondary_clicked() || label.drag_started()) && !state.is_picked(path) {
+        state.click(path, false, false);
     }
     if label.drag_started() {
-        egui::DragAndDrop::set_payload(ui.ctx(), path.to_vec());
+        egui::DragAndDrop::set_payload(ui.ctx(), state.picked());
     }
     if label.dragged()
         && let Some(at) = ui.ctx().pointer_interact_pos()
@@ -541,17 +654,18 @@ fn row_name(
     if label.double_clicked() {
         actions.push(Action::Fly(path.to_vec()));
     }
-    row_menu(&label, lang, path, tour, kind, actions);
+    let many = if state.marked.contains(path) { state.chosen.as_slice() } else { &[] };
+    row_menu(&label, lang, path, tour, kind, many, actions);
 }
 
 /// Строка принимает перетащенную: линия над строкой - перед ней,
 /// рамка папки - в неё.
 fn drop_target(ui: &eframe::egui::Ui, row: &eframe::egui::Response, path: &[usize], into: bool, actions: &mut Vec<Action>) {
     use eframe::egui;
-    let Some(dragged) = row.dnd_hover_payload::<Vec<usize>>() else {
+    let Some(dragged) = row.dnd_hover_payload::<Vec<Vec<usize>>>() else {
         return;
     };
-    if path.starts_with(&dragged) {
+    if dragged.iter().any(|d| path.starts_with(d)) {
         return;
     }
     let stroke = egui::Stroke::new(2.0, crate::theme::pal().accent);
@@ -560,21 +674,57 @@ fn drop_target(ui: &eframe::egui::Ui, row: &eframe::egui::Response, path: &[usiz
     } else {
         ui.painter().hline(row.rect.x_range(), row.rect.top(), stroke);
     }
-    if let Some(from) = row.dnd_release_payload::<Vec<usize>>() {
+    if let Some(from) = row.dnd_release_payload::<Vec<Vec<usize>>>() {
         actions.push(Action::Move((*from).clone(), path.to_vec(), into));
     }
 }
 
+/// Меню пустого места под списком, как у модуля: папка в конец «Моих
+/// меток». height - высота пустого места.
+pub fn empty_ui(ui: &mut eframe::egui::Ui, height: f32, lang: crate::i18n::Lang, actions: &mut Vec<Action>) {
+    use crate::i18n::tr;
+    let size = eframe::egui::vec2(ui.available_width(), height);
+    let (_, response) = ui.allocate_exact_size(size, eframe::egui::Sense::click());
+    response.context_menu(|ui| {
+        item(ui, tr(lang, "New folder"), Action::NewFolder(Vec::new()), actions);
+        item(ui, tr(lang, "Open KML or KMZ…"), Action::Open, actions);
+        item(ui, tr(lang, "Paste"), Action::Paste(Vec::new()), actions);
+    });
+}
+
+/// Строка «Временные метки» своим корнем под «Моими метками», значок
+/// часов, полужирное название, как `_temp_holder` модуля.
+fn temporary_ui(ui: &mut eframe::egui::Ui, folder: &mut Folder, lang: crate::i18n::Lang, state: &mut TreeState, actions: &mut Vec<Action>) {
+    use eframe::egui;
+    let id = ui.make_persistent_id("marks-temporary");
+    let header = egui::collapsing_header::CollapsingState::load_with_default_open(ui.ctx(), id, true);
+    let (_, head, _) = header
+        .show_header(ui, |ui| {
+            if crate::theme::checkbox(ui, &mut folder.visible).changed() {
+                actions.push(Action::Toggled(TEMPORARY.to_vec()));
+            }
+            crate::theme::clock_icon(ui);
+            row_name(ui, &folder.name, &TEMPORARY, (true, RowKind::Temporary), lang, state, actions);
+        })
+        .body(|ui| tree_ui(ui, folder, &mut TEMPORARY.to_vec(), 0, lang, state, actions));
+    drop_target(ui, &head.response, &TEMPORARY, true, actions);
+}
+
 /// Корень «Мои метки» со звездой, флажком всего дерева и меню: открыть
-/// файл, тур, очистить. Внутри - дерево [`tree_ui`].
+/// файл, тур, очистить. Внутри - дерево [`tree_ui`], ниже - «Временные
+/// метки», если они есть: temporary - первая строка корня это они.
 pub fn root_ui(
     ui: &mut eframe::egui::Ui,
     root: &mut Folder,
+    temporary: bool,
     lang: crate::i18n::Lang,
     state: &mut TreeState,
     actions: &mut Vec<Action>,
 ) {
     use eframe::egui;
+    state.shown = std::mem::take(&mut state.rows);
+    let many = state.selected.as_ref().is_some_and(|s| state.chosen.contains(s));
+    state.marked = if many { state.chosen.iter().cloned().collect() } else { Default::default() };
     let id = ui.make_persistent_id("marks-root");
     let header = egui::collapsing_header::CollapsingState::load_with_default_open(ui.ctx(), id, true);
     let (_, head, _) = header
@@ -612,23 +762,28 @@ pub fn root_ui(
                 item(ui, tr(lang, "Clear My Places…"), Action::Clear, actions);
             });
         })
-        .body(|ui| tree_ui(ui, root, &mut Vec::new(), lang, state, actions));
+        .body(|ui| tree_ui(ui, root, &mut Vec::new(), usize::from(temporary), lang, state, actions));
     // Брошенная на корень строка ложится в конец «Моих меток».
     drop_target(ui, &head.response, &[], true, actions);
+    if temporary && let Some(Item::Folder(folder)) = root.children.first_mut() {
+        temporary_ui(ui, folder, lang, state, actions);
+    }
 }
 
 /// Дерево меток в панели: флажки и названия, папки со значком
-/// раскрываются, у строк - меню правой кнопки.
+/// раскрываются, у строк - меню правой кнопки. skip - сколько первых
+/// строк папки не показывать.
 pub fn tree_ui(
     ui: &mut eframe::egui::Ui,
     folder: &mut Folder,
     path: &mut Vec<usize>,
+    skip: usize,
     lang: crate::i18n::Lang,
     state: &mut TreeState,
     actions: &mut Vec<Action>,
 ) {
     use eframe::egui;
-    for (i, item) in folder.children.iter_mut().enumerate() {
+    for (i, item) in folder.children.iter_mut().enumerate().skip(skip) {
         path.push(i);
         match item {
             Item::Folder(f) => {
@@ -644,7 +799,7 @@ pub fn tree_ui(
                         let kind = if f.link.trim().is_empty() { RowKind::Folder } else { RowKind::LinkFolder };
             row_name(ui, &f.name, path, (true, kind), lang, state, actions);
                     })
-                    .body(|ui| tree_ui(ui, f, path, lang, state, actions));
+                    .body(|ui| tree_ui(ui, f, path, 0, lang, state, actions));
                 drop_target(ui, &head.response, path, true, actions);
             }
             Item::Place(p) => {
@@ -723,12 +878,15 @@ pub struct Marks {
     overlays_version: u64,
     /// Название открытого файла.
     pub name: String,
+    /// Первая строка корня - «Временные метки», [`TEMPORARY`].
+    pub temporary: bool,
 }
 
 impl Marks {
     /// Показать метки дерева tree.
     pub fn set(&mut self, tree: Folder, name: &str) {
         self.tree = Some(tree);
+        self.temporary = false;
         self.name = name.to_string();
         self.refresh();
     }
@@ -748,6 +906,79 @@ impl Marks {
         self.root(root).children.push(Item::Folder(tree));
         self.name = name.to_string();
         self.refresh();
+    }
+
+    /// Завести «Временные метки» первой строкой корня, как
+    /// `temporary_key` модуля: это папка дерева, поэтому путь, перенос,
+    /// вставка и тур у неё те же, что у других папок. Панель показывает
+    /// её своим корнем, хранилище - отдельно. root - название корня.
+    pub fn set_temporary(&mut self, folder: Folder, root: &str) {
+        self.root(root).children.insert(0, Item::Folder(folder));
+        self.temporary = true;
+        self.refresh();
+    }
+
+    /// Путь - строка «Временные метки».
+    pub fn is_temporary(&self, path: &[usize]) -> bool {
+        self.temporary && path == TEMPORARY
+    }
+
+    /// Номер первой своей строки корня: «Временные метки» всегда первые.
+    pub fn first_index(&self) -> usize {
+        usize::from(self.temporary)
+    }
+
+    /// Папка «Временные метки».
+    pub fn temporary_folder(&self) -> Option<&Folder> {
+        match self.tree.as_ref()?.children.first()? {
+            Item::Folder(f) if self.temporary => Some(f),
+            _ => None,
+        }
+    }
+
+    /// Сколько строк лежит прямо во «Временных метках».
+    pub fn temporary_count(&self) -> usize {
+        self.temporary_folder().map_or(0, |f| f.children.len())
+    }
+
+    /// Содержимое «Временных меток» - в конец «Моих меток»,
+    /// `save_temporary` модуля. Возвращает количество строк.
+    pub fn save_temporary(&mut self) -> usize {
+        if !self.temporary {
+            return 0;
+        }
+        let Some(tree) = self.tree.as_mut() else {
+            return 0;
+        };
+        let items = match tree.children.first_mut() {
+            Some(Item::Folder(f)) => std::mem::take(&mut f.children),
+            _ => return 0,
+        };
+        let count = items.len();
+        tree.children.extend(items);
+        self.refresh();
+        count
+    }
+
+    /// Удалить содержимое «Временных меток». Возвращает количество строк.
+    pub fn clear_temporary(&mut self) -> usize {
+        if !self.temporary {
+            return 0;
+        }
+        let count = match self.tree.as_mut().and_then(|t| t.children.first_mut()) {
+            Some(Item::Folder(f)) => std::mem::take(&mut f.children).len(),
+            _ => 0,
+        };
+        self.refresh();
+        count
+    }
+
+    /// Сколько меток и папок в «Моих метках» без «Временных меток».
+    pub fn own_count(&self) -> usize {
+        fn walk(items: &[Item]) -> usize {
+            items.iter().map(|i| 1 + if let Item::Folder(f) = i { walk(&f.children) } else { 0 }).sum()
+        }
+        self.tree.as_ref().map_or(0, |t| walk(t.children.get(self.first_index()..).unwrap_or(&[])))
     }
 
     /// Последняя добавленная папка - открытая последней сцена.
@@ -778,6 +1009,18 @@ impl Marks {
         path.push(at);
         self.refresh();
         path
+    }
+
+    /// Точки метки по рабочему номеру, где бы она ни лежала.
+    pub fn points_of(&self, uid: u64) -> Option<Vec<(f64, f64)>> {
+        fn walk(folder: &Folder, uid: u64) -> Option<&Place> {
+            folder.children.iter().find_map(|item| match item {
+                Item::Folder(f) => walk(f, uid),
+                Item::Place(p) if p.uid.0 == uid => Some(p),
+                _ => None,
+            })
+        }
+        walk(self.tree.as_ref()?, uid).map(|p| p.points.clone())
     }
 
     /// Метка по пути или None.
@@ -867,7 +1110,10 @@ impl Marks {
                 _ => return false,
             }
         };
-        folder.children.sort_by_cached_key(|c| item_name(c).to_lowercase());
+        // «Временные метки» остаются первыми.
+        if let Some(rows) = folder.children.get_mut(usize::from(path.is_empty() && self.temporary)..) {
+            rows.sort_by_cached_key(|c| item_name(c).to_lowercase());
+        }
         self.refresh();
         true
     }
@@ -979,6 +1225,9 @@ impl Marks {
 
     /// Удалить строку по пути. false - строки нет.
     pub fn remove(&mut self, path: &[usize]) -> bool {
+        if self.is_temporary(path) {
+            return false;
+        }
         let (Some(tree), Some((last, parent))) = (self.tree.as_mut(), path.split_last()) else {
             return false;
         };
@@ -993,8 +1242,66 @@ impl Marks {
         true
     }
 
+    /// Строки без вложенных в другие выбранные и без «Временных меток»,
+    /// в порядке дерева: папка идёт вместе с содержимым.
+    fn top_paths(&self, paths: &[Vec<usize>]) -> Vec<Vec<usize>> {
+        let mut out: Vec<Vec<usize>> = paths
+            .iter()
+            .filter(|p| !p.is_empty() && !self.is_temporary(p) && !paths.iter().any(|q| !q.is_empty() && !self.is_temporary(q) && q.len() < p.len() && p.starts_with(q)))
+            .cloned()
+            .collect();
+        out.sort();
+        out.dedup();
+        out
+    }
+
+    /// Удалить выбранные строки, `remove_many` модуля. Возвращает
+    /// количество удалённых.
+    pub fn remove_many(&mut self, paths: &[Vec<usize>]) -> usize {
+        let tops = self.top_paths(paths);
+        let Some(tree) = self.tree.as_mut() else {
+            return 0;
+        };
+        let mut count = 0;
+        // С конца: пути строк выше остаются верными.
+        for path in tops.iter().rev() {
+            if let Some((last, parent)) = path.split_last()
+                && let Some(folder) = folder_at_mut(tree, parent)
+                && *last < folder.children.len()
+            {
+                folder.children.remove(*last);
+                count += 1;
+            }
+        }
+        self.refresh();
+        count
+    }
+
+    /// Показать или скрыть выбранные строки, `set_visible_many` модуля.
+    pub fn set_visible_many(&mut self, paths: &[Vec<usize>], on: bool) {
+        if let Some(tree) = self.tree.as_mut() {
+            for path in paths {
+                if let Some(item) = item_at_mut(tree, path) {
+                    *visible_mut(item) = on;
+                }
+            }
+        }
+        self.refresh();
+    }
+
+    /// Выбранные строки папкой для копирования, `export_keys` модуля.
+    pub fn export_many(&self, paths: &[Vec<usize>]) -> Option<Folder> {
+        let tree = self.tree.as_ref()?;
+        let mut folder = Folder::new("PlanetX");
+        folder.children = self.top_paths(paths).iter().filter_map(|p| item_at(tree, p).cloned()).collect();
+        Some(folder)
+    }
+
     /// Переименовать строку по пути. Пустое название не ставится.
     pub fn rename(&mut self, path: &[usize], name: &str) -> bool {
+        if self.is_temporary(path) {
+            return false;
+        }
         let name = name.trim();
         let Some(tree) = self.tree.as_mut() else {
             return false;
@@ -1016,10 +1323,18 @@ impl Marks {
     /// Перенести строку from: into - в конец папки to, иначе - перед
     /// строкой to. Папка не переносится в саму себя и в свою вложенную.
     pub fn move_to(&mut self, from: &[usize], to: &[usize], into: bool) -> bool {
+        self.move_many(&[from.to_vec()], to, into)
+    }
+
+    /// Перенести выбранные строки в порядке дерева, `move_many` модуля:
+    /// into - в конец папки to, иначе - перед строкой to. Папка не
+    /// переносится в саму себя и в свою вложенную.
+    pub fn move_many(&mut self, from: &[Vec<usize>], to: &[usize], into: bool) -> bool {
+        let tops = self.top_paths(from);
         let Some(tree) = self.tree.as_mut() else {
             return false;
         };
-        if from.is_empty() || to.starts_with(from) || item_at(tree, from).is_none() {
+        if tops.is_empty() || tops.iter().any(|p| to.starts_with(p) || item_at(tree, p).is_none()) {
             return false;
         }
         // Цель проверяется до того, как строка вынута: строка не теряется.
@@ -1031,30 +1346,34 @@ impl Marks {
         if !target_ok {
             return false;
         }
-        let (last, parent) = match from.split_last() {
-            Some(split) => split,
-            None => return false,
-        };
-        let Some(folder) = folder_at_mut(tree, parent) else {
-            return false;
-        };
-        if *last >= folder.children.len() {
-            return false;
-        }
-        let item = folder.children.remove(*last);
-        // Строки после вынутой сдвинулись на одну вверх.
         let mut to = to.to_vec();
-        let depth = parent.len();
-        if to.len() > depth && to[..depth] == *parent && to[depth] > *last {
-            to[depth] -= 1;
+        let mut items = Vec::new();
+        // С конца: пути строк выше остаются верными.
+        for path in tops.iter().rev() {
+            let Some((last, parent)) = path.split_last() else {
+                continue;
+            };
+            let Some(folder) = folder_at_mut(tree, parent) else {
+                continue;
+            };
+            if *last >= folder.children.len() {
+                continue;
+            }
+            items.push(folder.children.remove(*last));
+            // Строки после вынутой сдвинулись на одну вверх.
+            let depth = parent.len();
+            if to.len() > depth && to[..depth] == *parent && to[depth] > *last {
+                to[depth] -= 1;
+            }
         }
+        items.reverse();
         let placed = if into {
-            folder_at_mut(tree, &to).map(|f| f.children.push(item))
+            folder_at_mut(tree, &to).map(|f| f.children.extend(items))
         } else {
             match to.split_last() {
                 Some((index, dest)) => folder_at_mut(tree, dest).map(|f| {
                     let at = (*index).min(f.children.len());
-                    f.children.insert(at, item);
+                    f.children.splice(at..at, items);
                 }),
                 None => None,
             }
@@ -1069,7 +1388,10 @@ impl Marks {
     pub fn export_tree(&self, path: &[usize]) -> Option<Folder> {
         let tree = self.tree.as_ref()?;
         if path.is_empty() {
-            return Some(tree.clone());
+            // «Временные метки» в файл «Моих меток» не входят.
+            let mut own = tree.clone();
+            own.children.drain(..self.first_index().min(own.children.len()));
+            return Some(own);
         }
         let item = item_at(tree, path)?;
         let name = match item {
@@ -1082,10 +1404,12 @@ impl Marks {
         Some(folder)
     }
 
-    /// Очистить «Мои метки»: корень остаётся пустым.
+    /// Очистить «Мои метки»: корень остаётся пустым, «Временные метки» -
+    /// как были.
     pub fn clear(&mut self) {
+        let keep = self.first_index();
         if let Some(tree) = self.tree.as_mut() {
-            tree.children.clear();
+            tree.children.truncate(keep);
             tree.visible = true;
         }
         self.name.clear();
@@ -1094,7 +1418,13 @@ impl Marks {
 
     /// Объекты заново по флажкам дерева. Снятый флажок корня скрывает всё.
     pub fn refresh(&mut self) {
-        let shown = self.tree.as_ref().filter(|t| t.visible);
+        // Снятый флажок корня «Временные метки» не скрывает: у них свой.
+        let only_temporary = self.tree.as_ref().filter(|t| !t.visible && self.temporary).map(|t| {
+            let mut folder = Folder::new("");
+            folder.children.extend(t.children.first().cloned());
+            folder
+        });
+        let shown = only_temporary.as_ref().or(self.tree.as_ref().filter(|t| t.visible));
         self.timed = shown.map(timed_shapes).unwrap_or_default();
         self.shapes = in_window(&self.timed, self.window);
         self.timed_overlays = shown.map(pictures::timed_overlays).unwrap_or_default();
@@ -1397,6 +1727,108 @@ mod tests {
         marks.add(open(KML.as_bytes(), "c.kml").unwrap().tree, "c.kml", "Мои метки");
         assert!(marks.move_to(&[0], &[2], false));
         assert_eq!(names(marks.tree.as_ref().unwrap()), ["Точка", "[Первая]", "[Тест]"]);
+    }
+
+    /// Дерево с «Временными метками» и двумя строками корня.
+    fn with_temporary() -> super::Marks {
+        let mut marks = super::Marks::default();
+        let mut first = scene::kml::Folder::new("Своё");
+        first.children.push(scene::kml::Item::Place(scene::kml::Place::new("в папке", Kind::Point, vec![(58.0, 56.0)])));
+        marks.set(scene::kml::Folder::new("Мои метки"), "");
+        marks.insert(&[], scene::kml::Item::Folder(first), "Мои метки");
+        marks.insert(&[], scene::kml::Item::Place(scene::kml::Place::new("б", Kind::Point, vec![(58.0, 56.0)])), "Мои метки");
+        marks.set_temporary(scene::kml::Folder::new("Временные метки"), "Мои метки");
+        marks
+    }
+
+    /// Новое ложится в выделенную папку, строка не удаляется,
+    /// не переименовывается и не переносится, остаётся первой.
+    #[test]
+    fn temporary_row_stays_first() {
+        let mut marks = with_temporary();
+        assert_eq!(marks.first_index(), 1);
+        let at = marks.insert(&super::TEMPORARY, scene::kml::Item::Place(scene::kml::Place::new("а", Kind::Point, vec![(58.0, 56.0)])), "Мои метки");
+        assert_eq!(at, [0, 0]);
+        // Выделена метка папки: новая ложится рядом с ней.
+        let beside = marks.insert(&at, scene::kml::Item::Place(scene::kml::Place::new("в", Kind::Point, vec![(58.0, 56.0)])), "Мои метки");
+        assert_eq!(beside, [0, 1]);
+        assert_eq!(marks.temporary_count(), 2);
+        assert!(!marks.remove(&super::TEMPORARY));
+        assert!(!marks.rename(&super::TEMPORARY, "x"));
+        assert!(!marks.move_to(&super::TEMPORARY, &[1], true));
+        assert!(marks.sort(&[]));
+        assert_eq!(names(marks.tree.as_ref().unwrap())[0], "[Временные метки]");
+    }
+
+    /// «Очистить «Мои метки»» и файл «Моих меток» их не трогают,
+    /// снятый флажок корня их не скрывает.
+    #[test]
+    fn temporary_stays_apart_from_my_places() {
+        let mut marks = with_temporary();
+        marks.insert(&super::TEMPORARY, scene::kml::Item::Place(scene::kml::Place::new("а", Kind::Point, vec![(58.0, 56.0)])), "Мои метки");
+        assert_eq!(marks.own_count(), 3);
+        assert_eq!(names(&marks.export_tree(&[]).unwrap()), ["[Своё]", "б"]);
+        marks.tree.as_mut().unwrap().visible = false;
+        marks.toggled(&[]);
+        assert_eq!(marks.points().len(), 1);
+        marks.tree.as_mut().unwrap().visible = true;
+        marks.clear();
+        assert_eq!(marks.own_count(), 0);
+        assert_eq!(marks.temporary_count(), 1);
+    }
+
+    /// «Сохранить в «Мои метки»» и «Очистить «Временные метки»».
+    #[test]
+    fn temporary_save_and_clear() {
+        let mut marks = with_temporary();
+        let a = scene::kml::Item::Place(scene::kml::Place::new("а", Kind::Point, vec![(58.0, 56.0)]));
+        marks.insert(&super::TEMPORARY, a.clone(), "Мои метки");
+        assert_eq!(marks.save_temporary(), 1);
+        assert_eq!(marks.temporary_count(), 0);
+        assert_eq!(names(marks.tree.as_ref().unwrap()), ["[Временные метки]", "[Своё]", "б", "а"]);
+        marks.insert(&super::TEMPORARY, a, "Мои метки");
+        assert_eq!(marks.clear_temporary(), 1);
+        assert_eq!(marks.temporary_count(), 0);
+        assert_eq!(marks.own_count(), 4);
+    }
+
+    /// Несколько строк: перенос в порядке дерева, вложенная идёт с папкой.
+    #[test]
+    fn many_rows_move_and_remove() {
+        let mut marks = with_temporary();
+        assert!(marks.move_many(&[vec![1], vec![1, 0], vec![2]], &super::TEMPORARY, true));
+        assert_eq!(marks.temporary_count(), 2);
+        assert_eq!(marks.own_count(), 0);
+        let Some(scene::kml::Item::Folder(temp)) = marks.tree.as_ref().unwrap().children.first() else { panic!("нет папки") };
+        assert_eq!(names(temp), ["[Своё]", "б"]);
+        assert!(!marks.move_many(&[vec![0, 0]], &[0, 0], true));
+        assert_eq!(marks.remove_many(&[vec![0, 1], vec![0, 0], super::TEMPORARY.to_vec()]), 2);
+        assert_eq!(marks.temporary_count(), 0);
+        // Перед строкой, которая стоит после вынутых.
+        let mut marks = with_temporary();
+        marks.insert(&[], scene::kml::Item::Place(scene::kml::Place::new("в", Kind::Point, vec![(58.0, 56.0)])), "Мои метки");
+        assert!(marks.move_many(&[vec![1], vec![2]], &[3], false));
+        assert_eq!(names(marks.tree.as_ref().unwrap()), ["[Временные метки]", "[Своё]", "б", "в"]);
+        marks.set_visible_many(&[vec![2], vec![3]], false);
+        assert_eq!(marks.points().len(), 1);
+        assert_eq!(names(&marks.export_many(&[vec![3], vec![2]]).unwrap()), ["б", "в"]);
+    }
+
+    /// Выбор строк: простой щелчок, ctrl, shift по показанным строкам.
+    #[test]
+    fn rows_are_chosen_by_ctrl_and_shift() {
+        let mut state = super::TreeState { shown: vec![vec![1], vec![2], vec![3], vec![4]], ..Default::default() };
+        state.click(&[1], false, false);
+        assert_eq!(state.picked(), [vec![1]]);
+        state.click(&[3], true, false);
+        assert_eq!(state.picked(), [vec![1], vec![3]]);
+        state.click(&[3], true, false);
+        assert_eq!(state.picked(), [vec![1]]);
+        state.click(&[4], false, true);
+        assert_eq!(state.picked(), [vec![1], vec![2], vec![3], vec![4]]);
+        // Выделение со стороны, например новая метка: только она.
+        state.selected = Some(vec![9]);
+        assert_eq!(state.picked(), [vec![9]]);
     }
 
     #[test]

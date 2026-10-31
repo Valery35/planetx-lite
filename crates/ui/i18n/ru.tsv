@@ -1818,3 +1818,42 @@ The area is shared with the previous computation. «Square» and «Draw» start 
 Sun hours	Часы солнца
  h	 ч
 Degree of change	Степень изменения
+Temporary Places	Временные метки
+New placemarks, paths and measurements go here while this row is selected. When the program closes, the contents can be moved to My Places or deleted. A placemark to keep at once is dragged to My Places.	Новые метки, пути и измерения ложатся сюда, пока строка выделена. При закрытии программы содержимое можно перенести в «Мои метки» или удалить. Метку, которую надо сохранить сразу, перетащите в «Мои метки».
+Save to My Places	Сохранить в «Мои метки»
+Clear Temporary Places…	Очистить «Временные метки»…
+Delete the contents of Temporary Places, placemarks and folders {count}? Deletion cannot be undone.	Удалить содержимое «Временных меток», меток и папок {count}? Отменить удаление нельзя.
+Temporary Places contain unsaved items. Save them in My Places?	В папке «Временные метки» есть несохранённые элементы. Сохранить их в папке «Мои метки»?
+Don't save	Не сохранять
+Show selected	Показать выбранное
+Hide selected	Скрыть выбранное
+Delete selected ({count})	Удалить выбранное ({count})
+Delete selected	Удалить выбранное
+Delete the selected rows, {count}? Deletion cannot be undone.	Удалить выбранные строки, всего {count}? Отменить удаление нельзя.
+Model section	Разрез модели
+Model section: {name}	Разрез модели: {name}
+Model section…	Разрез модели…
+Model section wall	Стенка разреза модели
+Model cut	Вырез модели
+Model cut along «{name}».	Вырез модели по «{name}».
+Model cut along «{name}» is removed.	Вырез модели по «{name}» убран.
+Section wall along «{name}».	Стенка разреза по «{name}».
+Section wall along «{name}» is removed.	Стенка разреза по «{name}» убрана.
+Band of drill holes and objects	Полоса скважин и объектов
+Width of the band along the line from which drill holes and tunnels are moved onto the section. A wider band gives more drill holes, but distant ones do not lie where the line is.	Ширина полосы вдоль линии, из которой скважины и тоннели переносятся на разрез. Шире полоса - больше скважин, но дальние лежат не там, где линия.
+Roofs	Кровли
+Drill holes	Скважины
+Drill holes of the model	Скважины модели
+The model has no roofs and drill holes.	В модели нет кровель и скважин.
+A path of at least two points and an open subsurface model are needed.	Нужны путь хотя бы из двух точек и открытая подземная модель.
+Length {length}. Roofs {beds}, drill holes in the band {holes}, tunnels {tunnels}.	Длина {length}. Кровель {beds}, скважин в полосе {holes}, тоннелей {tunnels}.
+Heights by the points of the line - distance, latitude, longitude, terrain and bed roofs, no roof - an empty field.	Отметки по точкам линии - расстояние, широта, долгота, рельеф и кровли пластов, нет кровли - пустое поле.
+Picture…	Картинка…
+The section as a PNG picture of the window size.	Разрез картинкой PNG в размере окна.
+Color of the rock between beds	Цвет породы между пластами
+Color of the bed «{name}»	Цвет пласта «{name}»
+Color of the line «{name}»	Цвет линии «{name}»
+Default section colors	Цвета разреза по умолчанию
+No data	Нет данных
+terrain {value}	рельеф {value}
+Between beds	Между пластами

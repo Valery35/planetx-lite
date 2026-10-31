@@ -223,6 +223,8 @@ fn collect_overlays<'a>(folder: &'a mut Folder, out: &mut Vec<&'a mut Overlay>) 
 /// tour_extra - добавки записанного тура.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Place {
+    /// Рабочий номер, [`Uid`].
+    pub uid: Uid,
     pub name: String,
     pub kind: Kind,
     pub points: Vec<(f64, f64)>,
@@ -256,10 +258,30 @@ pub struct Place {
     pub highlight: Option<Highlight>,
 }
 
+/// Рабочий номер метки: живёт, пока программа открыта, у копии Rust тот
+/// же, в файлы не пишется и в равенство меток не входит. По нему окно
+/// находит метку после переноса в дереве, как по ключу у модуля.
+#[derive(Debug, Clone, Copy)]
+pub struct Uid(pub u64);
+
+impl Uid {
+    fn next() -> Self {
+        static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+        Self(NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed))
+    }
+}
+
+impl PartialEq for Uid {
+    fn eq(&self, _: &Self) -> bool {
+        true
+    }
+}
+
 impl Place {
     /// Метка со свойствами по умолчанию.
     pub fn new(name: &str, kind: Kind, points: Vec<(f64, f64)>) -> Self {
         Self {
+            uid: Uid::next(),
             name: name.into(),
             kind,
             points,

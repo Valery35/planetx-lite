@@ -660,6 +660,13 @@ pub struct LiteApp {
     clip_kml: Option<String>,
     /// Вопрос перед удалением: заголовок, текст, что удалить.
     confirm: Option<(String, String, Confirmed)>,
+    /// Окно «Разрез модели».
+    model_section: Option<crate::modelsection::ModelSectionWindow>,
+    /// Вопрос о «Временных метках» при закрытии окна, `ask_temporary`
+    /// модуля.
+    temporary_asking: bool,
+    /// На вопрос ответили: окно закрывается.
+    closing: bool,
     /// Окно «Свойства папки».
     folder_props: Option<crate::folderprops::FolderProps>,
     /// Окно свойств наложения и окно сетевой ссылки.
@@ -965,7 +972,9 @@ enum NameFor {
 #[derive(Debug, Clone)]
 enum Confirmed {
     Remove(Vec<usize>),
+    RemoveMany(Vec<Vec<usize>>),
     Clear,
+    ClearTemporary,
 }
 
 /// Пункт меню «Сцена» панели значков.
@@ -980,7 +989,7 @@ enum SceneAction {
 type ShotCell = Arc<std::sync::Mutex<Option<Result<egui::ColorImage, String>>>>;
 
 /// Часть rect снимка окна в точках, ppp - пикселей на точку.
-fn crop(image: &egui::ColorImage, rect: egui::Rect, ppp: f32) -> Result<egui::ColorImage, String> {
+pub(crate) fn crop(image: &egui::ColorImage, rect: egui::Rect, ppp: f32) -> Result<egui::ColorImage, String> {
     let [w, h] = image.size;
     let x0 = ((rect.min.x * ppp).round().max(0.0) as usize).min(w);
     let y0 = ((rect.min.y * ppp).round().max(0.0) as usize).min(h);
@@ -1248,6 +1257,9 @@ impl LiteApp {
             track_dots_dirty: false,
             track_labels: Vec::new(),
             confirm: None,
+            model_section: None,
+            temporary_asking: false,
+            closing: false,
             folder_props: None,
             overlay_props: None,
             side: SideResults::default(),
@@ -1273,6 +1285,17 @@ impl LiteApp {
             let mut root = root;
             root.name = marks::root_name(lang).to_string();
             app.marks.set(root, "");
+            app.marks_changed();
+            app.places_dirty = false;
+        }
+        // «Временные метки» прошлого запуска, строка выделена: новое
+        // ложится туда, `select_temporary` модуля. Самопроверка - без них.
+        if app.check.is_none() {
+            let saved = cc.storage.and_then(|s| s.get_string(places::TEMP_KEY)).and_then(|t| places::from_text(&t));
+            let mut folder = saved.unwrap_or_else(|| scene::kml::Folder::new(""));
+            folder.name = tr(lang, "Temporary Places").to_string();
+            app.marks.set_temporary(folder, marks::root_name(lang));
+            app.tree_state.selected = Some(marks::TEMPORARY.to_vec());
             app.marks_changed();
             app.places_dirty = false;
         }
@@ -1700,7 +1723,13 @@ impl LiteApp {
     /// вставляют в «Мои метки» или в Google Earth. Копия остаётся и для
     /// пункта меню «Вставить».
     fn copy_marks(&mut self, ctx: &egui::Context, path: &[usize]) {
-        let text = self.marks.export_tree(path).and_then(|tree| crate::export::tree_bytes(&tree, false).ok());
+        let tree = self.marks.export_tree(path);
+        self.copy_tree(ctx, tree);
+    }
+
+    /// Папка текстом KML в буфер обмена.
+    fn copy_tree(&mut self, ctx: &egui::Context, tree: Option<scene::kml::Folder>) {
+        let text = tree.and_then(|tree| crate::export::tree_bytes(&tree, false).ok());
         if let Some(text) = text.and_then(|b| String::from_utf8(b).ok()) {
             ctx.copy_text(text.clone());
             self.clip_kml = Some(text);
@@ -2330,9 +2359,62 @@ impl LiteApp {
         (heights[heights.len() / 2] * 10.0).round() / 10.0
     }
 
+    /// Выбор строк после перестройки дерева: пути устарели. Текущая строка
+    /// теперь «Временные метки», новое ложится туда.
+    fn reset_selection(&mut self) {
+        self.tree_state.chosen.clear();
+        self.tree_state.selected = self.marks.temporary.then(|| marks::TEMPORARY.to_vec());
+    }
+
+    /// Вопрос при закрытии окна, если во «Временных метках» что-то есть,
+    /// `ask_temporary` модуля. «Сохранить» переносит в «Мои метки», «Не
+    /// сохранять» удаляет, «Отмена» оставляет окно. Окно страницы браузера
+    /// этого сигнала не даёт, содержимое остаётся до следующего раза.
+    fn ask_temporary(&mut self, ctx: &egui::Context) {
+        let ask = self.check.is_none() && self.shot.is_none() && !self.closing && self.marks.temporary_count() > 0;
+        if ask && ctx.input(|i| i.viewport().close_requested()) {
+            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+            self.temporary_asking = true;
+        }
+        if !self.temporary_asking {
+            return;
+        }
+        let lang = self.lang;
+        let mut answer = None;
+        egui::Modal::new(egui::Id::unique("planetx-temporary-places")).show(ctx, |ui| {
+            ui.set_max_width(380.0);
+            ui.strong(tr(lang, "Temporary Places"));
+            ui.label(tr(lang, "Temporary Places contain unsaved items. Save them in My Places?"));
+            ui.add_space(6.0);
+            ui.horizontal(|ui| {
+                if ui.button(tr(lang, "Save")).clicked() {
+                    answer = Some(true);
+                }
+                if ui.button(tr(lang, "Don't save")).clicked() {
+                    answer = Some(false);
+                }
+                if ui.button(tr(lang, "Cancel")).clicked() {
+                    self.temporary_asking = false;
+                }
+            });
+        });
+        if let Some(save) = answer {
+            if save {
+                self.marks.save_temporary();
+            } else {
+                self.marks.clear_temporary();
+            }
+            self.reset_selection();
+            self.marks_changed();
+            self.temporary_asking = false;
+            self.closing = true;
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+        }
+    }
+
     /// Удалить всё из «Моих меток» после вопроса.
     fn clear_marks(&mut self) {
-        self.tree_state.selected = None;
+        self.reset_selection();
         self.marks.clear();
         self.shared.clear();
         self.player = None;
@@ -2433,12 +2515,25 @@ impl LiteApp {
                 match what {
                     Confirmed::Remove(path) => {
                         if self.marks.remove(&path) {
-                            self.tree_state.selected = None;
+                            self.reset_selection();
+                            self.player = None;
+                            self.marks_changed();
+                        }
+                    }
+                    Confirmed::RemoveMany(paths) => {
+                        if self.marks.remove_many(&paths) > 0 {
+                            self.reset_selection();
                             self.player = None;
                             self.marks_changed();
                         }
                     }
                     Confirmed::Clear => self.clear_marks(),
+                    Confirmed::ClearTemporary => {
+                        self.marks.clear_temporary();
+                        self.reset_selection();
+                        self.player = None;
+                        self.marks_changed();
+                    }
                 }
             }
         }
@@ -2675,6 +2770,28 @@ impl LiteApp {
         }
     }
 
+    /// Окно «Разрез модели»: разрез заново и точка на глобусе, свои цвета -
+    /// в настройки.
+    fn model_section_window(&mut self, ctx: &egui::Context, now: f64) {
+        let Some(w) = &mut self.model_section else {
+            return;
+        };
+        let version = self.heights.read().version();
+        let heights = &self.heights;
+        let ground = |pts: &[(f64, f64)]| heights.read().heights_at(pts, false);
+        let sub = self.subsurface.as_ref();
+        w.step(sub.and_then(|s| s.model.as_ref()), sub.map_or(0, |s| s.generation), &ground, version, now);
+        let mut open = true;
+        w.window(ctx, self.lang, &mut open);
+        if std::mem::take(&mut w.colors_changed) {
+            self.settings.section_colors = w.colors();
+            self.settings_dirty = true;
+        }
+        if !open {
+            self.model_section = None;
+        }
+    }
+
     /// Карточка метки. Метки по пути больше нет - карточка закрывается.
     fn card_window(&mut self, ctx: &egui::Context) {
         let Some(card) = &self.card else {
@@ -2820,6 +2937,8 @@ impl LiteApp {
             if let Some(root) = self.marks.tree.as_mut().filter(|r| r.name == old_root) {
                 root.name = new_root.to_string();
             }
+            let temporary = tr(self.lang, "Temporary Places");
+            self.marks.edit_folder(&marks::TEMPORARY, |f| f.name = temporary.to_string());
             self.marks_to_labels();
             self.fonts_dirty = true;
         }
@@ -3445,7 +3564,7 @@ impl LiteApp {
             ctx.copy_text(link);
         }
         let mut message = tr(self.lang, "The link to this view is copied.").to_string();
-        if self.shared.is_empty() && self.marks.tree.as_ref().is_some_and(|t| !t.children.is_empty()) {
+        if self.shared.is_empty() && self.marks.own_count() > 0 {
             message.push(' ');
             message.push_str(tr(self.lang, "Files opened from the disk are not in the link."));
         }
@@ -4186,7 +4305,8 @@ impl LiteApp {
         if tree.name.trim().is_empty() || tree.name == "assistant.kml" {
             tree.name = tr(lang, "Assistant").to_string();
         }
-        let at = self.marks.insert(&[], scene::kml::Item::Folder(tree), marks::root_name(lang));
+        let folder = self.tree_state.selected.clone().unwrap_or_default();
+        let at = self.marks.insert(&folder, scene::kml::Item::Folder(tree), marks::root_name(lang));
         self.marks_changed();
         self.tree_state.selected = Some(at.clone());
         self.queued.push(crate::marks::Action::Fly(at));
@@ -4450,7 +4570,8 @@ impl LiteApp {
             && let Some(place) = self.gps.track_place(lang)
         {
             let name = place.name.clone();
-            let at = self.marks.insert(&[], scene::kml::Item::Place(place), marks::root_name(lang));
+            let folder = self.tree_state.selected.clone().unwrap_or_default();
+            let at = self.marks.insert(&folder, scene::kml::Item::Place(place), marks::root_name(lang));
             self.tree_state.selected = Some(at);
             self.marks_changed();
             self.gps.track.clear();
@@ -4494,13 +4615,14 @@ impl LiteApp {
             }
         }
         let root = marks::root_name(self.lang);
+        let first = self.marks.first_index();
         let tree = self.marks.root(root);
         let at = tree.children.iter().position(|i| matches!(i, scene::kml::Item::Folder(f) if f.name == folder_name));
         let at = match at {
             Some(n) => n,
             None => {
-                tree.children.insert(0, scene::kml::Item::Folder(scene::kml::Folder::new(folder_name)));
-                0
+                tree.children.insert(first, scene::kml::Item::Folder(scene::kml::Folder::new(folder_name)));
+                first
             }
         };
         self.marks.insert(&[at], scene::kml::Item::Overlay(overlay), root);
@@ -4881,7 +5003,7 @@ impl LiteApp {
         let found = tree.children.iter().position(|c| matches!(c, scene::kml::Item::Folder(f) if f.name == group));
         let at = match found {
             Some(i) => i,
-            None => self.marks.insert_at(&[], 0, scene::kml::Item::Folder(scene::kml::Folder::new(group)), root).first().copied().unwrap_or(0),
+            None => self.marks.insert_at(&[], self.marks.first_index(), scene::kml::Item::Folder(scene::kml::Folder::new(group)), root).first().copied().unwrap_or(0),
         };
         let folder = saved.folder(lang, unix, &files);
         // Расчёт той же сессии - в её папку, пока она есть, `Session.group_for`
@@ -5241,6 +5363,11 @@ impl LiteApp {
     /// «Мои метки» изменились: картинки и модели удалённых меток
     /// забываются, шкала времени и надписи - по новому дереву.
     fn marks_changed(&mut self) {
+        // Метки, по которым режется подземная модель, могли измениться.
+        if let Some(sub) = &mut self.subsurface {
+            let marks = &self.marks;
+            sub.places_changed(&|uid| marks.points_of(uid));
+        }
         self.pictures.set(&self.marks.all_overlays());
         let keys: Vec<String> = self.pictures.states.keys().cloned().collect();
         self.screen_textures.retain(|k, _| keys.contains(k));
@@ -5501,13 +5628,17 @@ impl LiteApp {
                 let chosen = self.settings.places_height;
                 let room = if chosen > 0.0 { chosen } else { free - layers_height };
                 let room = room.min(free - SECTION_MIN).max(SECTION_MIN);
+                let temporary = self.marks.temporary;
+                let empty = self.marks.own_count() == 0;
                 let root = self.marks.root(marks::root_name(lang));
-                let empty = root.children.is_empty();
                 let shown = egui::ScrollArea::vertical()
                     .max_height(room)
                     .auto_shrink([false, chosen <= 0.0])
                     .show(ui, |ui| {
-                        crate::marks::root_ui(ui, root, lang, &mut self.tree_state, &mut actions);
+                        crate::marks::root_ui(ui, root, temporary, lang, &mut self.tree_state, &mut actions);
+                        // Заданная высота - всё пустое место под списком.
+                        let rest = if chosen > 0.0 { room - ui.min_rect().height() } else { 0.0 };
+                        crate::marks::empty_ui(ui, rest.max(16.0), lang, &mut actions);
                     })
                     .inner_rect
                     .height();
@@ -5628,12 +5759,21 @@ impl LiteApp {
         // в списке модуля. Пока пишется текст, клавиши - для текста.
         let typing = ui.ctx().memory(|m| m.focused().is_some());
         if !typing && let Some(path) = self.tree_state.selected.clone() {
+            let picked = self.tree_state.picked();
+            let many = picked.len() > 1;
+            let fixed = self.marks.is_temporary(&path);
             if ui.input(|i| i.key_pressed(egui::Key::Delete)) {
-                actions.push(crate::marks::Action::Remove(path));
+                if many {
+                    actions.push(crate::marks::Action::RemoveMany(picked));
+                } else if !fixed {
+                    actions.push(crate::marks::Action::Remove(path));
+                }
             } else if ui.input(|i| i.key_pressed(egui::Key::F2)) {
-                actions.push(crate::marks::Action::StartRename(path));
+                if !fixed {
+                    actions.push(crate::marks::Action::StartRename(path));
+                }
             } else if ui.input(|i| i.events.iter().any(|e| matches!(e, egui::Event::Copy))) {
-                actions.push(crate::marks::Action::Copy(path));
+                actions.push(if many { crate::marks::Action::CopyMany(picked) } else { crate::marks::Action::Copy(path) });
             }
         }
         // Ctrl+V: текст KML из буфера обмена - в выделенную папку, как
@@ -5700,7 +5840,7 @@ impl LiteApp {
                 crate::marks::Action::Cut(path) => {
                     self.copy_marks(ui.ctx(), &path);
                     if self.marks.remove(&path) {
-                        self.tree_state.selected = None;
+                        self.reset_selection();
                         self.player = None;
                         self.marks_changed();
                     }
@@ -5712,7 +5852,7 @@ impl LiteApp {
                 }
                 crate::marks::Action::Sort(path) => {
                     if self.marks.sort(&path) {
-                        self.tree_state.selected = None;
+                        self.reset_selection();
                         self.marks_changed();
                     }
                 }
@@ -5766,8 +5906,83 @@ impl LiteApp {
                         self.folder_props = Some(crate::folderprops::FolderProps::new(path, f));
                     }
                 }
+                crate::marks::Action::TempSave => {
+                    if self.marks.save_temporary() > 0 {
+                        self.reset_selection();
+                        self.marks_changed();
+                    }
+                }
+                crate::marks::Action::TempClear => {
+                    let count = self.marks.temporary_count();
+                    if count > 0 {
+                        self.confirm = Some((
+                            tr(self.lang, "Clear Temporary Places…").trim_end_matches('…').to_string(),
+                            trf(self.lang, "Delete the contents of Temporary Places, placemarks and folders {count}? Deletion cannot be undone.", &[("count", &count.to_string())]),
+                            Confirmed::ClearTemporary,
+                        ));
+                    }
+                }
+                crate::marks::Action::RemoveMany(paths) => {
+                    self.confirm = Some((
+                        tr(self.lang, "Delete selected").to_string(),
+                        trf(self.lang, "Delete the selected rows, {count}? Deletion cannot be undone.", &[("count", &paths.len().to_string())]),
+                        Confirmed::RemoveMany(paths),
+                    ));
+                }
+                crate::marks::Action::CopyMany(paths) => {
+                    let tree = self.marks.export_many(&paths);
+                    self.copy_tree(ui.ctx(), tree);
+                }
+                crate::marks::Action::ShowMany(paths, on) => {
+                    self.marks.set_visible_many(&paths, on);
+                    self.marks_changed();
+                }
+                crate::marks::Action::ModelSection(path) => {
+                    if self.subsurface.is_none() {
+                        self.open_message = Some(tr(self.lang, "No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.").to_string());
+                    } else if let Some(place) = self.marks.place(&path) {
+                        let (title, points) = (place.name.clone(), place.points.clone());
+                        match &mut self.model_section {
+                            Some(w) => w.set_source(title, points),
+                            None => self.model_section = Some(crate::modelsection::ModelSectionWindow::new(title, points, &self.settings.section_colors)),
+                        }
+                    }
+                }
+                // Метка режет модель или ставит стенку разреза, повторный
+                // выбор убирает, как у модуля.
+                crate::marks::Action::ModelPart(path, part) => {
+                    use crate::subsurface::PlacePart;
+                    let lang = self.lang;
+                    self.open_message = match (self.marks.place(&path), &mut self.subsurface) {
+                        (_, None) => Some(tr(lang, "No subsurface data: open a GeoPackage file with drill holes, bed roofs or tunnels.").to_string()),
+                        (None, _) => None,
+                        (Some(place), Some(sub)) => {
+                            let name = if place.name.is_empty() { tr(lang, "Untitled").to_string() } else { place.name.clone() };
+                            let marks = &self.marks;
+                            let on = sub.toggle_place(place.uid.0, part, &|uid| marks.points_of(uid));
+                            let text = match (part, on) {
+                                (PlacePart::Cut, true) => "Model cut along «{name}».",
+                                (PlacePart::Cut, false) => "Model cut along «{name}» is removed.",
+                                (PlacePart::Section, true) => "Section wall along «{name}».",
+                                (PlacePart::Section, false) => "Section wall along «{name}» is removed.",
+                            };
+                            Some(trf(lang, text, &[("name", &name)]))
+                        }
+                    };
+                }
+                // Участок окна - рамка метки, `sentinel_place` модуля.
+                crate::marks::Action::Sentinel(path) => {
+                    let width = self.view_width();
+                    if self.planet.earth
+                        && let Some(((west, south, east, north), size)) = self.marks.place(&path).and_then(|p| data::site::ring_box(&p.points))
+                    {
+                        let (lat, lon) = ((south + north) / 2.0, (west + east) / 2.0);
+                        let unix = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64());
+                        self.sentinel.get_or_insert_with(|| crate::sentinel::Sentinel::new(lat, lon, width, unix)).show_place(lat, lon, size);
+                    }
+                }
                 crate::marks::Action::Clear => {
-                    let count = self.marks.names().len();
+                    let count = self.marks.own_count();
                     self.confirm = Some((
                         tr(self.lang, "Clear My Places…").trim_end_matches('…').to_string(),
                         trf(self.lang, "Delete all placemarks and folders of My Places, placemarks in all {count}? Deletion cannot be undone.", &[("count", &count.to_string())]),
@@ -5847,8 +6062,8 @@ impl LiteApp {
                 crate::marks::Action::SaveKml(path) => self.save_marks(&path, crate::export::Kind::Kml),
                 crate::marks::Action::SaveScene(path) => self.save_marks(&path, crate::export::Kind::Scene),
                 crate::marks::Action::Move(from, to, into) => {
-                    if self.marks.move_to(&from, &to, into) {
-                        self.tree_state.selected = None;
+                    if self.marks.move_many(&from, &to, into) {
+                        self.reset_selection();
                         self.player = None;
                         self.marks_changed();
                     }
@@ -6449,7 +6664,7 @@ impl LiteApp {
         place.color = crate::route::ROUTE_COLOR;
         place.width = crate::route::ROUTE_WIDTH;
         place.description = summary.clone();
-        let folder = self.tree_state.selected.clone().filter(|p| self.marks.folder(p).is_some()).unwrap_or_default();
+        let folder = self.tree_state.selected.clone().unwrap_or_default();
         let at = self.marks.insert(&folder, scene::kml::Item::Place(place), marks::root_name(lang));
         self.tree_state.selected = Some(at.clone());
         self.marks_changed();
@@ -7496,15 +7711,22 @@ impl eframe::App for LiteApp {
         if !self.places_dirty {
             return;
         }
-        let Some(root) = self.marks.tree.as_ref() else {
+        let Some(root) = self.marks.export_tree(&[]) else {
             return;
         };
-        match places::to_text(root) {
+        // «Временные метки» - своим ключом: в корень они не входят.
+        let temporary = self.marks.temporary_folder().map_or(Ok(String::new()), places::to_text);
+        match places::to_text(&root).and_then(|own| temporary.map(|t| (own, t))) {
             // На странице предел localStorage около 5 МБ.
-            Ok(text) if cfg!(target_arch = "wasm32") && text.len() > PAGE_PLACES_LIMIT => {
+            Ok((own, t)) if cfg!(target_arch = "wasm32") && own.len() + t.len() > PAGE_PLACES_LIMIT => {
                 self.open_message = Some(tr(self.lang, "My Places exceed 4 MB, the page cannot save them").to_string());
             }
-            Ok(text) => storage.set_string(places::KEY, text),
+            Ok((own, t)) => {
+                storage.set_string(places::KEY, own);
+                if self.marks.temporary {
+                    storage.set_string(places::TEMP_KEY, t);
+                }
+            }
             Err(e) => self.open_message = Some(format!("{}: {e}", marks::root_name(self.lang))),
         }
         self.places_dirty = false;
@@ -7513,6 +7735,7 @@ impl eframe::App for LiteApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
         let now = ctx.input(|i| i.time);
+        self.ask_temporary(&ctx);
         self.upload();
         if std::mem::take(&mut self.fonts_dirty) {
             self.install_fonts(&ctx);
@@ -8315,6 +8538,17 @@ impl eframe::App for LiteApp {
                 painter.circle(at, 5.0, egui::Color32::from_rgb(220, 60, 40), egui::Stroke::new(1.5, egui::Color32::WHITE));
             }
         }
+        // Точка разреза модели под курсором графика, расстояние в метрах.
+        if let Some((lat, lon, metres)) = self.model_section.as_ref().and_then(|s| s.hovered) {
+            let h = self.nav.pose.terrain.as_ref().map_or(0.0, |t| t(lat, lon));
+            let (px, front) = self.nav.camera.project(self.nav.camera.ellipsoid.geodetic_to_ecef(lat, lon, h));
+            if front {
+                let at = rect.min + egui::vec2((px.x / ppp) as f32, (px.y / ppp) as f32);
+                painter.circle(at, 5.0, egui::Color32::from_rgb(220, 60, 40), egui::Stroke::new(1.5, egui::Color32::WHITE));
+                let text = trf(self.lang, "{value} m", &[("value", &format!("{metres:.0}"))]);
+                painter.text(at + egui::vec2(8.0, -8.0), egui::Align2::LEFT_BOTTOM, text, egui::FontId::proportional(13.0), egui::Color32::WHITE);
+            }
+        }
         // Точка разреза под курсором графика с расстоянием вдоль линии.
         if let Some((lat, lon, km)) = self.section.as_ref().and_then(|s| s.hovered) {
             let h = self.nav.pose.terrain.as_ref().map_or(0.0, |t| t(lat, lon));
@@ -8382,6 +8616,7 @@ impl eframe::App for LiteApp {
             self.card_window(&ctx);
             self.profile_window(&ctx);
             self.section_window(&ctx);
+            self.model_section_window(&ctx, now);
             self.name_window(&ctx);
             self.dialogs(&ctx, now);
             self.overlay_windows(&ctx);
