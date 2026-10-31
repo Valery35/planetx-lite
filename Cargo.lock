@@ -15,11 +15,11 @@ dependencies = [
 
 [[package]]
 name = "addin-api"
-version = "0.10.0"
+version = "0.11.0"
 
 [[package]]
 name = "addin-host"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "addin-api",
  "wasmi",
@@ -167,7 +167,7 @@ dependencies = [
 
 [[package]]
 name = "assistant"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "scene",
  "serde_json",
@@ -500,7 +500,7 @@ checksum = "f27ae1dd37df86211c42e150270f82743308803d90a6f6e6651cd730d5e1732f"
 
 [[package]]
 name = "data"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "flate2",
  "jpeg-encoder 0.7.1",
@@ -1090,7 +1090,7 @@ dependencies = [
 
 [[package]]
 name = "globe-core"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "glam",
 ]
@@ -1942,7 +1942,7 @@ dependencies = [
 
 [[package]]
 name = "net"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "dirs",
  "globe-core",
@@ -2462,7 +2462,7 @@ checksum = "b4596b6d070b27117e987119b4dac604f3c58cfb0b191112e24771b2faeac1a6"
 
 [[package]]
 name = "planetx-lite"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "eframe",
  "image",
@@ -2474,7 +2474,7 @@ dependencies = [
 
 [[package]]
 name = "planetx-web"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "eframe",
  "js-sys",
@@ -2761,7 +2761,7 @@ dependencies = [
 
 [[package]]
 name = "render"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "bytemuck",
  "globe-core",
@@ -2984,7 +2984,7 @@ dependencies = [
 
 [[package]]
 name = "scene"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "geographiclib-rs",
  "globe-core",
@@ -3309,7 +3309,7 @@ dependencies = [
 
 [[package]]
 name = "terrain"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "globe-core",
 ]
@@ -3568,7 +3568,7 @@ checksum = "bc7d623258602320d5c55d1bc22793b57daff0ec7efc270ea7d55ce1d5f5471c"
 
 [[package]]
 name = "ui"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "addin-api",
  "addin-host",

@@ -98,7 +98,7 @@ fn queue_ignores_nan_priority() {
 fn osm_rules() {
     assert_eq!(OSM.max_requests, 2);
     assert_eq!(net::tile_url(&OSM, (16, 43004, 19735)), "https://tile.openstreetmap.org/16/43004/19735.png");
-    assert_eq!(net::user_agent(), "PlanetX-Lite/0.10.0 (+https://github.com/Valery35/planetx-lite)");
+    assert_eq!(net::user_agent(), "PlanetX-Lite/0.11.0 (+https://github.com/Valery35/planetx-lite)");
     let path = net::cache_path(&PathBuf::from("c"), &OSM, (16, 43004, 19735));
     assert_eq!(path, PathBuf::from("c").join("osm").join("16").join("43004").join("19735.png"));
 }
