@@ -1875,3 +1875,4 @@ What the cells are divided by. AlphaEarth vectors are loaded from the network. E
 The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Das Pixel der Klassifikation. «Auto» nimmt das Pixel des Rasters, wenn das Gebiet höchstens 640 Tausend Zellen hat.
 Each cell of the area goes to the class of the nearest control points by the raster bands.	Jede Zelle des Gebiets kommt nach den Rasterkanälen zur Klasse der nächsten Kontrollpunkte.
 Classes of the area by control points on the globe - by the bands of an opened raster.	Klassen des Gebiets nach Kontrollpunkten auf dem Globus - nach den Kanälen eines geöffneten Rasters.
+Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	Raster {name}: Kanäle {n}. Es ist eine Quelle des Fensters «Klassifikation», das Gelände hat sich nicht geändert.

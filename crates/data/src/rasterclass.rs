@@ -326,6 +326,19 @@ impl Source {
         made.map_err(|_| Problem::NoCrs)
     }
 
+    /// Широта и долгота углов растра, как [`crate::grid::Grid::corners`].
+    pub fn corners(&self) -> Option<[(f64, f64); 4]> {
+        let to_wgs84 = Transformer::new(&self.crs, &SpatialRef::from_epsg(4326).ok()?).ok()?;
+        let (w, h) = (self.data.raster.cols as f64, self.data.raster.rows as f64);
+        let t = &self.transform;
+        let mut out = [(0.0, 0.0); 4];
+        for (slot, (c, r)) in out.iter_mut().zip([(0.0, h), (w, h), (w, 0.0), (0.0, 0.0)]) {
+            let (lon, lat) = to_wgs84.transform(t[0] + c * t[1] + r * t[2], t[3] + c * t[4] + r * t[5]).ok()?;
+            *slot = (lat, lon);
+        }
+        Some(out)
+    }
+
     /// Пиксель растра в метрах UTM около точки (широта, долгота): шаги по
     /// столбцу и строке, пересчитанные в систему участка.
     pub fn pixel(&self, index: &ZoneIndex, lat: f64, lon: f64) -> f64 {
@@ -397,11 +410,9 @@ fn utm_epsg(index: &ZoneIndex) -> u32 {
     (if index.south { 32700 } else { 32600 }) + index.number
 }
 
-/// Канал прозрачности TIFF по тегу ExtraSamples (338) первого IFD, как
-/// `GCI_AlphaBand` у GDAL: значения 1 и 2 - прозрачность. Каналы ExtraSamples
-/// идут последними. None - не TIFF или прозрачности нет.
-fn alpha_band(bytes: &[u8], bands: usize) -> Option<usize> {
-    const EXTRA_SAMPLES: u64 = 338;
+/// Значения по 2 байта тега tag первого IFD TIFF, не больше most штук.
+/// None - не TIFF, пусто - тега нет или значений больше most.
+fn tag_shorts(bytes: &[u8], tag: u64, most: usize) -> Option<Vec<u64>> {
     let little = match bytes.get(..2)? {
         b"II" => true,
         b"MM" => false,
@@ -417,27 +428,38 @@ fn alpha_band(bytes: &[u8], bands: usize) -> Option<usize> {
         43 => true,
         _ => return None,
     };
-    let (word, entry, count_at, value_at) = if big { (8, 20, 4, 12) } else { (4, 12, 4, 8) };
+    let (word, entry, value_at) = if big { (8, 20, 12) } else { (4, 12, 8) };
     let ifd = usize::try_from(number(if big { 8 } else { 4 }, word)?).ok()?;
     let count = number(ifd, if big { 8 } else { 2 })?;
-    let first = ifd + if big { 8 } else { 2 };
+    let first = ifd.checked_add(if big { 8 } else { 2 })?;
     for n in 0..usize::try_from(count).ok()?.min(4096) {
-        let at = first + n * entry;
-        if number(at, 2)? != EXTRA_SAMPLES {
+        let at = first.checked_add(n.checked_mul(entry)?)?;
+        if number(at, 2)? != tag {
             continue;
         }
-        let extra = usize::try_from(number(at + count_at, word)?).ok()?;
-        if extra == 0 || extra > bands {
-            return None;
+        let found = usize::try_from(number(at + 4, word)?).ok()?;
+        if found == 0 || found > most {
+            return Some(Vec::new());
         }
         // Значения по 2 байта: в запись или по смещению.
-        let values = if extra * 2 <= word { at + value_at } else { usize::try_from(number(at + value_at, word)?).ok()? };
-        for i in 0..extra {
-            if matches!(number(values + i * 2, 2)?, 1 | 2) {
-                return Some(bands - extra + i);
-            }
-        }
-        return None;
+        let values = if found * 2 <= word { at + value_at } else { usize::try_from(number(at + value_at, word)?).ok()? };
+        return (0..found).map(|i| number(values.checked_add(i * 2)?, 2)).collect();
     }
-    None
+    Some(Vec::new())
+}
+
+/// Канал прозрачности TIFF по тегу ExtraSamples (338), как `GCI_AlphaBand`
+/// у GDAL: значения 1 и 2 - прозрачность. Каналы ExtraSamples идут
+/// последними. None - не TIFF или прозрачности нет.
+fn alpha_band(bytes: &[u8], bands: usize) -> Option<usize> {
+    let extra = tag_shorts(bytes, 338, bands)?;
+    let at = extra.iter().position(|v| matches!(v, 1 | 2))?;
+    Some(bands - extra.len() + at)
+}
+
+/// Количество каналов-признаков TIFF по заголовку, без чтения точек:
+/// SamplesPerPixel (277) без канала прозрачности. None - не TIFF.
+pub fn feature_bands(bytes: &[u8]) -> Option<usize> {
+    let bands = tag_shorts(bytes, 277, 1)?.first().map_or(1, |v| *v as usize);
+    Some(bands - usize::from(alpha_band(bytes, bands).is_some()))
 }

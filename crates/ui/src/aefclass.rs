@@ -821,7 +821,7 @@ fn class_shares(rows: &[&Class], classes: &[i16]) -> String {
 
 /// Текст строки итога для отказа расчёта по растру, `problem_text`
 /// модуля.
-fn problem_text(lang: Lang, problem: Problem) -> &'static str {
+pub fn problem_text(lang: Lang, problem: Problem) -> &'static str {
     match problem {
         Problem::Unreadable => tr(lang, "The raster is not read."),
         Problem::NoCrs => tr(lang, "The raster has no coordinate system."),

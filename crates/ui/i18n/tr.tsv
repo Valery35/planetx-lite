@@ -1875,3 +1875,4 @@ What the cells are divided by. AlphaEarth vectors are loaded from the network. E
 The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Sınıflandırma pikseli. «Otomatik», alanda en fazla 640 bin hücre varsa rasterın pikselini alır.
 Each cell of the area goes to the class of the nearest control points by the raster bands.	Alanın her hücresi, raster bantlarına göre en yakın kontrol noktalarının sınıfına girer.
 Classes of the area by control points on the globe - by the bands of an opened raster.	Küre üzerindeki kontrol noktalarına göre alan sınıfları, açık bir rasterın bantlarıyla.
+Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	Raster {name}: bant {n}. «Sınıflandırma» penceresinin kaynağıdır, arazi değişmedi.

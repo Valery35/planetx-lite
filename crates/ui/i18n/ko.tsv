@@ -1875,3 +1875,4 @@ What the cells are divided by. AlphaEarth vectors are loaded from the network. E
 The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	분류 픽셀입니다. «자동»은 영역의 셀이 64만 개 이하이면 래스터의 픽셀을 사용합니다.
 Each cell of the area goes to the class of the nearest control points by the raster bands.	영역의 각 셀은 래스터 밴드 기준으로 가장 가까운 기준점의 클래스에 속합니다.
 Classes of the area by control points on the globe - by the bands of an opened raster.	지구본의 기준점으로 영역 클래스를 나눕니다. 열린 래스터의 밴드를 사용합니다.
+Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	래스터 {name}: 밴드 {n}개. «분류» 창의 소스가 되었으며 지형은 바뀌지 않았습니다.

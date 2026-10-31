@@ -1875,3 +1875,4 @@ What the cells are divided by. AlphaEarth vectors are loaded from the network. E
 The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Điểm ảnh của phân loại. «Tự động» lấy điểm ảnh của raster nếu khu vực không quá 640 nghìn ô.
 Each cell of the area goes to the class of the nearest control points by the raster bands.	Mỗi ô của khu vực thuộc về lớp của các điểm kiểm soát gần nhất theo các kênh raster.
 Classes of the area by control points on the globe - by the bands of an opened raster.	Các lớp của khu vực theo điểm kiểm soát trên quả địa cầu, dựa trên các kênh của raster đang mở.
+Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	Raster {name}: {n} kênh. Đây là nguồn của cửa sổ «Phân loại», địa hình không thay đổi.

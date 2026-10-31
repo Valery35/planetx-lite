@@ -1875,3 +1875,4 @@ What the cells are divided by. AlphaEarth vectors are loaded from the network. E
 The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	分類のピクセル。「自動」は区域のセルが64万以下ならラスターのピクセルを使います。
 Each cell of the area goes to the class of the nearest control points by the raster bands.	区域の各セルは、ラスターのバンドに基づいて最も近いコントロールポイントのクラスに割り当てられます。
 Classes of the area by control points on the globe - by the bands of an opened raster.	地球儀上のコントロールポイントによる区域のクラス。開いているラスターのバンドに基づきます。
+Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	ラスター {name}: バンド {n}。「分類」ウィンドウのソースになりました。地形は変わっていません。

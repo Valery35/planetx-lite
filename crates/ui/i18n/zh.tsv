@@ -1875,3 +1875,4 @@ What the cells are divided by. AlphaEarth vectors are loaded from the network. E
 The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	分类的像元。如果区域不超过 64 万个单元,「自动」采用栅格的像元。
 Each cell of the area goes to the class of the nearest control points by the raster bands.	区域的每个单元按栅格波段归入最近控制点的类别。
 Classes of the area by control points on the globe - by the bands of an opened raster.	按地球上的控制点划分区域类别,依据已打开栅格的波段。
+Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	栅格 {name}:{n} 个波段。它已成为「分类」窗口的来源,地形未改变。

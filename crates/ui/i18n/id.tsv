@@ -1875,3 +1875,4 @@ What the cells are divided by. AlphaEarth vectors are loaded from the network. E
 The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Piksel klasifikasi. «Otomatis» memakai piksel raster jika area tidak lebih dari 640 ribu sel.
 Each cell of the area goes to the class of the nearest control points by the raster bands.	Setiap sel area masuk ke kelas titik kontrol terdekat menurut kanal raster.
 Classes of the area by control points on the globe - by the bands of an opened raster.	Kelas area menurut titik kontrol di globe, berdasarkan kanal raster yang terbuka.
+Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	Raster {name}: kanal {n}. Ini sumber jendela «Klasifikasi», medan tidak berubah.

@@ -383,6 +383,8 @@ pub struct LiteApp {
     aef_change: Option<crate::aefcalc::ChangeCalc>,
     /// Окно «Классификация» и его слой.
     aef_class: Option<crate::aefclass::ClassCalc>,
+    /// Многоканальные растры: рельеф они не меняют, ждут классификации.
+    band_rasters: Vec<crate::aefclass::Raster>,
     /// Общий участок окон анализа - вершины, `GlobeWindow.site` модуля.
     area_site: Option<Vec<(f64, f64)>>,
     /// Окно «Уклон и экспозиция» и его квадрат.
@@ -1136,6 +1138,7 @@ impl LiteApp {
             shadows: None,
             aef_change: None,
             aef_class: None,
+            band_rasters: Vec::new(),
             area_site: None,
             relief_calc: None,
             analysis_sessions: HashMap::new(),
@@ -1820,7 +1823,7 @@ impl LiteApp {
         });
         let earth = self.planet.earth;
         let relief = earth || self.planet.terrain.is_some();
-        let rasters = !self.relief.names().is_empty();
+        let rasters = !self.open_rasters().is_empty();
         crate::globemenu::GlobeMenu { at: pos, point, coords, place, drawing, mover, live, sheets, links, satellite, earth, relief, rasters }
     }
 
@@ -1976,7 +1979,7 @@ impl LiteApp {
                 let title = if name.is_empty() { coords } else { format!("{name}  {coords}") };
                 match &mut self.aef_class {
                     Some(c) => c.set_point(lat, lon, title),
-                    None => self.aef_class = Some(crate::aefclass::ClassCalc::new(lat, lon, title, self.relief.files(), self.lang)),
+                    None => self.aef_class = Some(crate::aefclass::ClassCalc::new(lat, lon, title, self.open_rasters(), self.lang)),
                 }
                 self.join_site(&choice, lat, lon);
             }
@@ -3992,6 +3995,38 @@ impl LiteApp {
         Ok(pose)
     }
 
+    /// Растры для классификации: свой рельеф и многоканальные.
+    fn open_rasters(&self) -> Vec<crate::aefclass::Raster> {
+        let mut out = self.relief.files();
+        out.extend(self.band_rasters.iter().cloned());
+        out
+    }
+
+    /// Многоканальный растр: высот в нём нет, рельеф остаётся прежним.
+    /// Каналы - признаки окна «Классификация», камера - к растру.
+    fn open_bands(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
+        let source = match data::rasterclass::Source::read(bytes, name) {
+            Ok(source) => source,
+            Err(problem) => {
+                let e = crate::aefclass::problem_text(self.lang, problem);
+                self.open_message = Some(trf(self.lang, "The raster did not open: {name}: {e}", &[("name", name), ("e", e)]));
+                return Err(e.to_string());
+            }
+        };
+        self.band_rasters.retain(|r| r.0 != name);
+        self.band_rasters.push((name.to_string(), Arc::new(bytes.to_vec())));
+        let camera = &self.nav.camera;
+        let pose = source.corners().and_then(|c| marks::fit_points(&c, camera.fov_y, camera.aspect()));
+        if let Some(pose) = pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
+            match fly {
+                Some(now) => crate::input::fly(&mut self.nav, pose, now),
+                None => self.nav.show(pose),
+            }
+        }
+        self.open_message = Some(trf(self.lang, "Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.", &[("name", name), ("n", &source.bands().to_string())]));
+        Ok(pose)
+    }
+
     /// Открыть файл. fly - лететь к позе сцены, иначе встать в неё сразу.
     /// Возвращает позу сцены или ошибку.
     fn open_file(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
@@ -4019,6 +4054,9 @@ impl LiteApp {
             return Ok(None);
         }
         if lower.ends_with(".tif") || lower.ends_with(".tiff") {
+            if data::rasterclass::feature_bands(bytes).is_some_and(|n| n > 1) {
+                return self.open_bands(bytes, name, fly);
+            }
             return self.open_relief(bytes, name, fly);
         }
         if lower.ends_with(".las") || lower.ends_with(".laz") {
@@ -4950,8 +4988,9 @@ impl LiteApp {
                 calc.step(lang, &*self.loaders.request);
                 changed |= std::mem::take(&mut calc.changed);
             }
+            let rasters = self.open_rasters();
             if let Some(calc) = &mut self.aef_class {
-                calc.rasters = self.relief.files();
+                calc.rasters = rasters;
                 calc.show(ctx, lang);
                 calc.step(lang, &*self.loaders.request);
                 changed |= std::mem::take(&mut calc.changed);

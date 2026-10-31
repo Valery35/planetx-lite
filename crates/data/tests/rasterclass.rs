@@ -375,6 +375,33 @@ fn alpha_is_a_mask() {
     }
 }
 
+/// Многоканальный файл не идёт в рельеф: каналы считаются по заголовку.
+/// Серый с прозрачностью - один признак, рельеф как раньше.
+#[test]
+fn feature_bands_by_the_header() {
+    let value = |b: usize, _: usize, c: usize| (b + c) as f64;
+    let plain = RasterWriteOptions::default();
+    assert_eq!(rasterclass::feature_bands(&written(&raster(1, DataType::F32, Some(3857), value, None), &plain)), Some(1));
+    assert_eq!(rasterclass::feature_bands(&written(&raster(4, DataType::F32, Some(3857), value, None), &plain)), Some(4));
+    assert_eq!(rasterclass::feature_bands(&alpha_file(false)), Some(3));
+    assert_eq!(rasterclass::feature_bands(&alpha_file(true)), Some(3));
+    assert_eq!(rasterclass::feature_bands(b"not a tiff"), None);
+    assert_eq!(rasterclass::feature_bands(&[]), None);
+    let gray = RasterWriteOptions { creation_options: vec![("ALPHA".to_string(), "YES".to_string())], ..Default::default() };
+    assert_eq!(rasterclass::feature_bands(&written(&raster(2, DataType::U8, Some(3857), value, None), &gray)), Some(1));
+}
+
+/// Углы растра - вокруг его середины.
+#[test]
+fn corners_surround_the_raster() {
+    let bytes = written(&raster(2, DataType::F32, Some(3857), |b, _, c| (b + c) as f64, None), &RasterWriteOptions::default());
+    let corners = Source::read(&bytes, "own.tif").ok().and_then(|s| s.corners());
+    assert!(corners.is_some());
+    let Some([bottom_left, _, top_right, _]) = corners else { return };
+    assert!(bottom_left.0 < NORTH && NORTH < top_right.0);
+    assert!(bottom_left.1 < EAST && EAST < top_right.1);
+}
+
 /// Четыре канала без тега прозрачности - четыре признака.
 #[test]
 fn four_bands_without_alpha_are_features() {

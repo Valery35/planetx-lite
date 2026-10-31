@@ -1875,3 +1875,4 @@ What the cells are divided by. AlphaEarth vectors are loaded from the network. E
 The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Пиксель классификации. «Авто» берёт пиксель растра, если на участке клеток не больше 640 тысяч.
 Each cell of the area goes to the class of the nearest control points by the raster bands.	Каждая клетка участка относится к классу ближайших контрольных точек по каналам растра.
 Classes of the area by control points on the globe - by the bands of an opened raster.	Классы участка по контрольным точкам на глобусе - по каналам открытого растра.
+Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	Растр {name}: каналов {n}. Он стал источником окна «Классификация», рельеф не изменился.
