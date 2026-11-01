@@ -1868,7 +1868,6 @@ The raster is not read.	未能读取栅格。
 The raster has no coordinate system.	栅格没有坐标系。
 The grid of the area does not fit in memory, take a larger pixel.	区域网格超出内存,请选择更大的像元。
 The area is outside the raster.	区域在栅格范围之外。
-At least two classes with points on raster cells with data are needed.	至少需要两个类别的点位于有数据的栅格单元上。
 The raster bands do not change in the area, the classes cannot be told apart.	栅格波段在区域内没有变化,无法区分类别。
 The raster is no longer open.	栅格已不再打开。
 What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	单元按什么划分。AlphaEarth 向量从网络加载。程序中打开的栅格每个波段都是特征,无需网络。
@@ -1876,3 +1875,74 @@ The pixel of the classification. «Auto» takes the pixel of the raster if the a
 Each cell of the area goes to the class of the nearest control points by the raster bands.	区域的每个单元按栅格波段归入最近控制点的类别。
 Classes of the area by control points on the globe - by the bands of an opened raster.	按地球上的控制点划分区域类别,依据已打开栅格的波段。
 Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	栅格 {name}:{n} 个波段。它已成为「分类」窗口的来源,地形未改变。
+Field boundaries 2025	田块边界 2025
+Field boundaries 2024	田块边界 2024
+Boundaries of agricultural fields of the world for 2025 - a model estimate from Sentinel-2 imagery, not a cadastre. The colour is the model score from orange to green, fields with a score below 69 are not shown. Fields are seen up close, from a height of about 70 km and lower. A click in Identify features mode shows the score.	2025 年全球农田边界,由模型根据 Sentinel-2 影像估算,并非地籍。颜色表示模型评分,从橙色到绿色,评分低于 69 的田块不显示。田块在近处可见,高度约 70 公里及以下。在识别要素模式下单击可显示评分。
+Boundaries of agricultural fields of the world for 2024, the same set and the same model score as the row for 2025. Fields are seen up close, from a height of about 70 km and lower.	2024 年全球农田边界,数据集和模型评分与 2025 年一行相同。田块在近处可见,高度约 70 公里及以下。
+Field boundary score 2025	田块边界评分 2025
+Field boundary score 2024	田块边界评分 2024
+Model score	模型评分
+{score} of 100	{score} / 100
+What this is	这是什么
+A model estimate from Sentinel-2 imagery, not a cadastral parcel.	由模型根据 Sentinel-2 影像估算,并非地籍地块。
+Field of {year}	{year} 年田块
+Field boundaries	田块边界
+OpenAerialMap imagery…	OpenAerialMap 影像…
+OpenAerialMap imagery	OpenAerialMap 影像
+{value} cm	{value} 厘米
+{value} GB	{value} GB
+{value} MB	{value} MB
+OpenAerialMap did not answer.	OpenAerialMap 没有响应。
+Searching for images…	正在搜索影像…
+There are no images in the view frame. Images cover the world unevenly, zoom out and press «Search in the view».	视图范围内没有影像。影像对全球的覆盖不均匀,请缩小视图并点击「在视图中搜索」。
+Images in the view frame: {found}, in the list {count}.	视图范围内的影像:{found},列表中 {count}。
+Title or provider	标题或提供者
+File	文件
+License	许可
+Search in the view	在视图中搜索
+Images in the present view frame of the globe, newest first.	地球当前视图范围内的影像,最新的在前。
+More	更多
+The next images of the same frame, older ones.	同一范围内接下来的较旧影像。
+The image lies as a tile layer over the base map, a row in the catalogue. The file is not downloaded.	影像作为瓦片图层叠加在底图上,并成为目录中的一行。文件不会下载。
+Flight to the frame of the chosen image.	飞行到所选影像的范围。
+The images are uploaded by contributors of Open Imagery Network. Each image has its own license, it is shown in the list and written to the credit of the layer. Images with NC are for non-commercial use only.	影像由 Open Imagery Network 的贡献者上传。每幅影像都有自己的许可,显示在列表中并写入图层署名。带 NC 的影像仅限非商业使用。
+The image did not open: {title}.	影像未能打开:{title}。
+The image is on the globe: {title}.	影像已在地球上:{title}。
+An image from OpenAerialMap added in its window. It lies as tiles over the base map, the file is not downloaded. The provider and the license of the image are in the source line.	在其窗口中添加的 OpenAerialMap 影像。它以瓦片形式叠加在底图上,文件不会下载。影像的提供者和许可见来源行。
+At least two classes with points on cells with data are needed.	至少需要两个在有数据的像元上有点的类别。
+The whole area came out as one object, reduce the object scale.	整个区域成为一个对象,请减小对象尺度。
+For objects the grid of the area is too large, take a larger pixel or «Auto».	对于对象,区域网格过大,请选择更大的像素或「Auto」。
+Dividing the area into objects…	正在将区域划分为对象…
+Dividing the area into objects: {done} %.	正在将区域划分为对象:{done} %。
+Objects {n}, mean {area} ha.	对象 {n} 个,平均 {area} 公顷。
+Objects: {name}	对象:{name}
+Divide into objects	划分为对象
+The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons.	区域先划分为颜色和纹理相近的对象,类别赋予整个对象。结果为多边形。
+Object scale	对象尺度
+The allowed diversity of an object. The larger it is, the larger the objects and the more unlike things they join. The scale is related to the area, so a change of the pixel hardly changes the size of objects.	对象允许的差异程度。值越大,对象越大,合并的不同内容越多。尺度与区域相关,因此改变像素几乎不改变对象大小。
+Texture share	纹理占比
+The share of texture among the features, the rest is colour. Texture is the spread of brightness around a cell, it separates a forest from a meadow of the same colour.	纹理在特征中的占比,其余为颜色。纹理是像元周围亮度的离散程度,可区分颜色相同的森林和草地。
+Least object, cells	最小对象,像元
+An object with fewer cells merges with its most similar neighbour.	像元数较少的对象会并入最相似的相邻对象。
+Merge neighbouring objects of one class	合并同一类别的相邻对象
+Neighbouring objects of one class become one polygon. Without the flag each field or stand stays a separate object with its own values.	同一类别的相邻对象成为一个多边形。不勾选时,每块田地或林班都是具有自身数值的独立对象。
+Similar areas…	相似区域…
+Similar areas	相似区域
+Similar areas {year}	相似区域 {year}
+Outline a sample, the program finds objects of the area similar to it in colour and texture.	勾画样本,程序会在区域中查找颜色和纹理相似的对象。
+Outline a sample on the globe.	请在地球上勾画样本。
+There are no objects of the area in the sample outlines.	样本轮廓内没有区域对象。
+Found objects {n}, {area} ha, {share} % of the area.	找到对象 {n} 个,{area} 公顷,占区域 {share} %。
+Outlines outside the objects of the area: {n}.	区域对象之外的轮廓:{n}。
+Samples	样本
+Contours: {n}	轮廓:{n}
+Remove samples	移除样本
+Remove all sample outlines.	移除所有样本轮廓。
+Similarity	相似度
+How much an object must resemble the sample. The selection changes at once, nothing is computed again. To the right - only very similar objects, to the left - wider.	对象与样本需要相似到什么程度。选择立即改变,无需重新计算。向右只保留非常相似的对象,向左范围更宽。
+Merge neighbouring found objects	合并相邻的已找到对象
+Neighbouring found objects become one area. Without the flag each object stays a separate polygon.	相邻的已找到对象成为一个区域。不勾选时,每个对象都是独立的多边形。
+Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.	在地球上单击以勾画样本,单击第一个顶点闭合轮廓。可以有多个样本。
+The area is divided into objects, each object is compared with the samples in colour and texture.	区域被划分为对象,每个对象与样本比较颜色和纹理。
+The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	纹理在划分对象和与样本比较中的占比,其余为颜色。
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	颜色和纹理的来源。AlphaEarth 向量从网络加载,程序中打开的栅格的每个波段都是一个特征。

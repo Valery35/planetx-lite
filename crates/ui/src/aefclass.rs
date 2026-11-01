@@ -21,11 +21,24 @@
 //! Василия Швалёва от 31 октября 2026 года. Каналы растра - признаки
 //! клетки, расчёт - `data::rasterclass`. Растр пересчитывается на сетку
 //! участка и классы считаются частями за кадры.
+//!
+//! Флажок «Делить на объекты» - просьба автора от 1 ноября 2026 года,
+//! перенос из модуля. Участок сначала делится на объекты, похожие по цвету
+//! и текстуре (`data::segments`), класс получает объект по средним
+//! и разбросам каналов. Итог - многоугольники в «Моих метках» вместо слоя
+//! GeoPackage модуля.
+//!
+//! Окно «Похожие области» - тот же расчёт в режиме поиска по образцу
+//! ([`ClassCalc::similar`]), перенос `ui/similar.py` модуля. Источник,
+//! участок и объекты общие с классификацией, вместо классов - контуры
+//! образцов щелчками и ползунок похожести, ядро - `data::similar`.
 
 use std::sync::Arc;
 
 use data::aef::{self, Mosaic, Part, Piece, ZoneIndex};
 use data::rasterclass::{self, Problem, Run, Source, Warp};
+use data::segments::{self, Cut};
+use data::similar;
 use eframe::egui;
 use globe_core::DVec3;
 use globe_core::lod::TileKey;
@@ -54,6 +67,18 @@ const POINT_PIXELS: f64 = 8.0;
 /// Строк растра и клеток классов за один шаг внутри бюджета кадра.
 const WARP_ROWS: usize = 4;
 const RUN_CELLS: usize = 4096;
+/// Граница объектов на глобусе, `BORDER` модуля.
+const BORDER: [u8; 4] = [20, 20, 20, 255];
+/// Многоугольников в «Моих метках» не больше: большое количество меток
+/// занимает кадр. Дальше итог - растр классов.
+const MOST_OBJECTS: usize = 5000;
+/// Упрощение контура объекта, ячеек. Контур по клеткам идёт ступеньками.
+const OUTLINE: f64 = 0.75;
+/// Цвета найденного и образцов - выбор помощника модуля.
+const FOUND_COLOR: [u8; 3] = [255, 120, 30];
+const SAMPLE_COLOR: [u8; 3] = [255, 230, 60];
+/// Новая выборка после паузы ползунка, секунды, `PAUSE` модуля.
+const PAUSE: f64 = 0.15;
 
 /// Класс: название, цвет, контрольные точки.
 #[derive(Debug, Clone, PartialEq)]
@@ -75,6 +100,69 @@ enum OwnStage {
     Read(Arc<Vec<u8>>),
     Warp(Box<(Source, Warp)>),
     Classes { grid: Arc<Mosaic<f32>>, run: Box<Run>, outside: usize, share: f64 },
+    /// Деление участка на объекты проходами.
+    Cut { grid: Arc<Mosaic<f32>>, cut: Box<Cut>, start: usize, share: f64 },
+    /// Классы объектов.
+    Kinds { grid: Arc<Mosaic<f32>>, parts: Arc<Vec<i32>>, table: Vec<f32>, run: Box<Run>, outside: usize, share: f64 },
+}
+
+/// Сетка участка готова к делению на объекты.
+struct Ready {
+    key: (String, String, Option<usize>),
+    index: Arc<ZoneIndex>,
+    grid: Arc<Mosaic<f32>>,
+    share: f64,
+}
+
+/// Настройки деления на объекты: масштаб, доля текстуры в процентах,
+/// наименьший объект, слияние соседей одного класса.
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Split {
+    on: bool,
+    scale: u32,
+    weight: u32,
+    least: u32,
+    join: bool,
+}
+
+/// Объекты участка для «Моих меток».
+pub struct Objects {
+    /// Номера объектов клеток, -1 без объекта.
+    pub parts: Arc<Vec<i32>>,
+    /// Классы объектов.
+    pub kinds: Vec<i16>,
+    /// Средние и разбросы каналов объектов, по 2 канала на объект.
+    pub table: Vec<f32>,
+    /// Каналов у растра, 0 - поля каналов не пишутся.
+    pub bands: usize,
+    /// Похожесть объектов в долях, у окна «Похожие области».
+    pub similar: Option<Vec<f64>>,
+}
+
+/// Готовый поиск: от него ползунок считает выборку без расчёта.
+struct Base {
+    grid: Arc<Mosaic<f32>>,
+    index: Arc<ZoneIndex>,
+    parts: Arc<Vec<i32>>,
+    score: Vec<f64>,
+    /// Контуров вне объектов участка.
+    lost: usize,
+    /// Клеток в объектах.
+    cells: usize,
+}
+
+/// Поиск по образцу: контуры, порог, готовый расчёт.
+struct Find {
+    /// Замкнутые контуры образцов.
+    rings: Vec<Vec<(f64, f64)>>,
+    /// Контур, который сейчас обводится.
+    ring: Vec<(f64, f64)>,
+    /// Порог похожести, проценты.
+    limit: u32,
+    join: bool,
+    base: Option<Base>,
+    /// Ползунок сдвинут: когда считать новую выборку.
+    moved: Option<web_time::Instant>,
 }
 
 /// Расчёт по растру.
@@ -114,9 +202,24 @@ pub struct Layer {
     pub classes: Vec<i16>,
     pub colors: Vec<[u8; 3]>,
     pub opacity: f64,
+    /// Объекты, если участок поделён на них.
+    pub objects: Option<Arc<Objects>>,
 }
 
 impl Layer {
+    /// Номер объекта точек, -1 вне объектов. Граница - по пикселям тайла:
+    /// клетка границы на редкой выборке дала бы пунктир.
+    fn parts_at(&self, parts: &[i32], points: &[(f64, f64)]) -> Vec<i32> {
+        points
+            .iter()
+            .map(|&(lat, lon)| {
+                let (x, y) = self.index.project(lat, lon);
+                let (c, r) = (((x - self.x0) / self.step).floor(), ((self.y0 - y) / self.step).floor());
+                if c >= 0.0 && r >= 0.0 && (c as usize) < self.cols && (r as usize) < self.rows { parts.get(r as usize * self.cols + c as usize).copied().unwrap_or(-1) } else { -1 }
+            })
+            .collect()
+    }
+
     /// Цвета точек (широта, долгота) с премноженной альфой.
     pub fn sample(&self, points: &[(f64, f64)]) -> Vec<[u8; 4]> {
         let alpha = (self.opacity * 255.0).round() as u8;
@@ -161,7 +264,15 @@ pub fn painter(layer: Arc<Layer>) -> crate::vector::Painter {
             return None;
         }
         let points: Vec<(f64, f64)> = lats.iter().flat_map(|&la| lons.iter().map(move |&lo| (la, lo))).collect();
-        let pixels = layer.sample(&points);
+        let mut pixels = layer.sample(&points);
+        if let Some(objects) = &layer.objects {
+            let found = layer.parts_at(&objects.parts, &points);
+            for (pixel, edge) in pixels.iter_mut().zip(segments::borders(&found, lats.len(), lons.len())) {
+                if edge {
+                    *pixel = BORDER;
+                }
+            }
+        }
         pixels.iter().any(|p| p[3] > 0).then(|| pixels.concat())
     })
 }
@@ -191,9 +302,23 @@ pub struct ClassCalc {
     own_grid: Option<OwnGrid>,
     /// Подпись расчёта в «Моих метках»: год или имя растра.
     label: String,
+    split: Split,
+    /// Готовые объекты: ключ участка и настроек, номера объектов. Смена
+    /// точек пересчитывает только классы.
+    pieces: Option<(String, Arc<Vec<i32>>)>,
+    /// Окно «Похожие области», None - «Классификация».
+    find: Option<Find>,
 }
 
 impl ClassCalc {
+    /// Окно «Похожие области», `SimilarDialog` модуля.
+    pub fn similar(lat: f64, lon: f64, place: String, rasters: Vec<Raster>, lang: Lang) -> Self {
+        let mut calc = Self::new(lat, lon, place, rasters, lang);
+        calc.split.on = true;
+        calc.find = Some(Find { rings: Vec::new(), ring: Vec::new(), limit: similar::LIMIT, join: true, base: None, moved: None });
+        calc
+    }
+
     pub fn new(lat: f64, lon: f64, place: String, rasters: Vec<Raster>, lang: Lang) -> Self {
         // Файлы AlphaEarth странице недоступны, источник - только растр.
         let source = if cfg!(target_arch = "wasm32") { rasters.first().map(|r| r.0.clone()) } else { None };
@@ -218,6 +343,9 @@ impl ClassCalc {
             own_job: None,
             own_grid: None,
             label: String::new(),
+            split: Split { on: false, scale: segments::SCALE, weight: (100.0 * segments::WEIGHT) as u32, least: segments::LEAST, join: false },
+            pieces: None,
+            find: None,
         };
         calc.add_class(lang);
         calc.add_class(lang);
@@ -252,6 +380,11 @@ impl ClassCalc {
         if self.layer.take().is_some() {
             self.changed = true;
         }
+        if let Some(find) = &mut self.find {
+            find.base = None;
+            find.ring.clear();
+            find.moved = None;
+        }
         self.status.clear();
     }
 
@@ -262,10 +395,17 @@ impl ClassCalc {
     }
 
     fn build(&mut self, lang: Lang) {
-        let ready = self.classes.iter().filter(|c| !c.points.is_empty()).count() >= aef::MIN_CLASSES && self.classes.iter().filter(|c| !c.points.is_empty()).all(|c| c.points.len() >= aef::MIN_POINTS);
-        if !ready {
-            self.status = tr(lang, "At least two classes of three points each are needed.").to_string();
-            return;
+        if let Some(find) = &self.find {
+            if find.rings.is_empty() {
+                self.status = tr(lang, "Outline a sample on the globe.").to_string();
+                return;
+            }
+        } else {
+            let ready = self.classes.iter().filter(|c| !c.points.is_empty()).count() >= aef::MIN_CLASSES && self.classes.iter().filter(|c| !c.points.is_empty()).all(|c| c.points.len() >= aef::MIN_POINTS);
+            if !ready {
+                self.status = tr(lang, "At least two classes of three points each are needed.").to_string();
+                return;
+            }
         }
         if let Some(problem) = self.site.problem(lang) {
             self.status = problem;
@@ -329,6 +469,10 @@ impl ClassCalc {
         }
         let rows: Vec<&Class> = self.classes.iter().filter(|c| !c.points.is_empty()).collect();
         let points: Vec<(i32, (f64, f64))> = rows.iter().enumerate().flat_map(|(n, c)| c.points.iter().map(move |p| (n as i32, *p))).collect();
+        if self.split.on {
+            self.start_cut(lang, Ready { key, index, grid, share }, keep, points);
+            return;
+        }
         let (samples, labels, outside) = rasterclass::samples(&grid, &index, &points);
         let mut seen = labels.clone();
         seen.sort_unstable();
@@ -341,6 +485,175 @@ impl ClassCalc {
         let (bbox, side) = (self.site.site.bbox(), self.site.site.size());
         self.status = tr(lang, "Computing the classes…").to_string();
         self.own_job = Some(OwnJob { key, index, bbox, side, stage: OwnStage::Classes { grid, run, outside, share } });
+    }
+
+    /// Ключ готовых объектов: участок и настройки деления.
+    fn split_key(&self, key: &(String, String, Option<usize>)) -> String {
+        format!("{key:?}{:?}{:?}", self.site.site.ring, (self.split.scale, self.split.weight, self.split.least))
+    }
+
+    /// Деление участка на объекты, `_objects` модуля. Готовые объекты того
+    /// же участка и настроек не считаются заново.
+    fn start_cut(&mut self, lang: Lang, ready: Ready, keep: Vec<bool>, points: Vec<(i32, (f64, f64))>) {
+        if segments::too_big(ready.grid.rows, ready.grid.cols) {
+            self.own_problem(lang, Problem::Pieces);
+            return;
+        }
+        let (bbox, side) = (self.site.site.bbox(), self.site.site.size());
+        let split_key = self.split_key(&ready.key);
+        if let Some((_, parts)) = self.pieces.clone().filter(|p| p.0 == split_key) {
+            self.start_kinds(lang, ready, parts, &points);
+            return;
+        }
+        let Ready { key, index, grid, share } = ready;
+        let cells = keep.iter().zip(grid.values.chunks(grid.depth.max(1))).filter(|(k, c)| **k && c.iter().all(|v| v.is_finite())).count();
+        let params = segments::Params { scale: segments::site_scale(f64::from(self.split.scale), cells), weight: f64::from(self.split.weight) / 100.0, least: self.split.least, shape: segments::SHAPE };
+        let cut = Cut::new(&grid.values, grid.depth, grid.rows, grid.cols, Some(&keep), params);
+        self.status = tr(lang, "Dividing the area into objects…").to_string();
+        let start = cut.edges();
+        self.own_job = Some(OwnJob { key, index, bbox, side, stage: OwnStage::Cut { grid, cut: Box::new(cut), start, share } });
+    }
+
+    /// Объекты готовы: контрольная точка берёт признаки своего объекта.
+    fn start_kinds(&mut self, lang: Lang, ready: Ready, parts: Arc<Vec<i32>>, points: &[(i32, (f64, f64))]) {
+        let Ready { key, index, grid, share } = ready;
+        if segments::count(&parts) < 2 {
+            self.own_problem(lang, Problem::Whole);
+            return;
+        }
+        if self.find.is_some() {
+            self.start_scores(lang, key.0, index, grid, parts);
+            return;
+        }
+        let depth = grid.depth.max(1);
+        let table = segments::table(&grid.values, depth, &parts);
+        let (mut samples, mut labels, mut outside) = (Vec::new(), Vec::new(), 0);
+        for &(label, (lat, lon)) in points {
+            let (x, y) = index.project(lat, lon);
+            let object = grid.cell_of(x, y).and_then(|(r, c)| usize::try_from(*parts.get(r * grid.cols + c)?).ok());
+            match object.and_then(|o| table.get(o * 2 * depth..(o + 1) * 2 * depth)) {
+                Some(row) => {
+                    samples.push(row.to_vec());
+                    labels.push(label);
+                }
+                None => outside += 1,
+            }
+        }
+        let mut seen = labels.clone();
+        seen.sort_unstable();
+        seen.dedup();
+        if seen.len() < aef::MIN_CLASSES {
+            self.own_problem(lang, Problem::Points);
+            return;
+        }
+        let run = Box::new(Run::new(&table, 2 * depth, &samples, &labels, None, rasterclass::KNN));
+        let (bbox, side) = (self.site.site.bbox(), self.site.site.size());
+        self.status = tr(lang, "Computing the classes…").to_string();
+        self.own_job = Some(OwnJob { key, index, bbox, side, stage: OwnStage::Kinds { grid, parts, table, run, outside, share } });
+    }
+
+    /// Похожесть объектов на образцы, `work` окна модуля.
+    fn start_scores(&mut self, lang: Lang, label: String, index: Arc<ZoneIndex>, grid: Arc<Mosaic<f32>>, parts: Arc<Vec<i32>>) {
+        let depth = grid.depth.max(1);
+        let width = 2 * depth;
+        let table = segments::table(&grid.values, depth, &parts);
+        let rings = self.find.as_ref().map(|f| f.rings.clone()).unwrap_or_default();
+        let rows: Vec<Vec<Vec<f32>>> = rings.iter().map(|ring| similar::sample_rows(&table, width, &parts, &ring_mask(&index, &grid, ring))).collect();
+        let lost = rows.iter().filter(|r| r.is_empty()).count();
+        if lost == rows.len() {
+            self.own_problem(lang, Problem::Samples);
+            return;
+        }
+        let samples = rows.concat();
+        let weight = f64::from(self.split.weight) / 100.0;
+        let Some(score) = similar::scores(&table, width, &segments::areas(&parts), &samples, weight) else {
+            self.own_problem(lang, Problem::Flat);
+            return;
+        };
+        let cells = parts.iter().filter(|p| **p >= 0).count();
+        self.label = label;
+        if let Some(find) = &mut self.find {
+            find.base = Some(Base { grid, index, parts, score, lost, cells });
+        }
+        self.apply(lang);
+    }
+
+    /// Выборка по порогу и слиянию окна без расчёта, `apply` модуля.
+    fn apply(&mut self, lang: Lang) {
+        let Some(find) = &self.find else {
+            return;
+        };
+        let Some(base) = &find.base else {
+            return;
+        };
+        let grid = &base.grid;
+        let (shown, mean) = similar::pick(&base.parts, grid.rows, grid.cols, &base.score, f64::from(find.limit) / 100.0, find.join);
+        let found = shown.iter().filter(|p| **p >= 0).count();
+        let hectares = found as f64 * grid.step * grid.step / 1e4;
+        let area = if hectares >= 100.0 { format!("{hectares:.0}") } else { format!("{hectares:.3}") };
+        let share = format!("{:.0}", 100.0 * found as f64 / base.cells.max(1) as f64);
+        let mut text = trf(lang, "Found objects {n}, {area} ha, {share} % of the area.", &[("n", &mean.len().to_string()), ("area", &area), ("share", &share)]);
+        if base.lost > 0 {
+            text = format!("{text} {}", trf(lang, "Outlines outside the objects of the area: {n}.", &[("n", &base.lost.to_string())]));
+        }
+        self.status = format!("{text} {}", analysis::built_text(lang, crate::pointcalc::clock_now()));
+        let layer = (!mean.is_empty()).then(|| {
+            let classes = shown.iter().map(|p| if *p >= 0 { 0 } else { -1 }).collect();
+            let bands = if self.source.is_some() { grid.depth.max(1) } else { 0 };
+            let objects = Objects { kinds: vec![0; mean.len()], parts: Arc::new(shown), table: Vec::new(), bands, similar: Some(mean) };
+            Arc::new(Layer { index: base.index.clone(), step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: vec![FOUND_COLOR], opacity: self.opacity, objects: Some(Arc::new(objects)) })
+        });
+        self.layer = layer;
+        self.changed = true;
+    }
+
+    /// Точки классов для расчёта: номер класса и место.
+    fn points(&self) -> Vec<(i32, (f64, f64))> {
+        self.classes.iter().filter(|c| !c.points.is_empty()).enumerate().flat_map(|(n, c)| c.points.iter().map(move |p| (n as i32, *p))).collect()
+    }
+
+    /// Классы объектов готовы, `_built` модуля с объектами.
+    fn objects_built(&mut self, lang: Lang) {
+        let Some(OwnJob { key, index, stage: OwnStage::Kinds { grid, parts, table, run, outside, share }, .. }) = self.own_job.take() else {
+            return;
+        };
+        let (kinds, _) = run.finish();
+        if !kinds.iter().any(|k| *k >= 0) {
+            self.status = problem_text(lang, Problem::Flat).to_string();
+            return;
+        }
+        let classes: Vec<i16> = parts.iter().map(|p| usize::try_from(*p).ok().and_then(|o| kinds.get(o).copied()).unwrap_or(-1)).collect();
+        let depth = grid.depth.max(1);
+        let (shown, kinds, table) = if self.split.join {
+            let (joined, joined_kinds) = segments::dissolve(&parts, grid.rows, grid.cols, &kinds);
+            let joined_table = segments::table(&grid.values, depth, &joined);
+            (Arc::new(joined), joined_kinds, joined_table)
+        } else {
+            (parts, kinds, table)
+        };
+        let rows: Vec<&Class> = self.classes.iter().filter(|c| !c.points.is_empty()).collect();
+        let parts_text = class_shares(&rows, &classes);
+        let mut text = if self.source.is_some() {
+            trf(lang, "Classes of the raster «{name}»: {parts}. Pixel {pixel} m.", &[("name", &key.0), ("parts", &parts_text), ("pixel", &format!("{}", (grid.step * 100.0).round() / 100.0))])
+        } else {
+            trf(lang, "Classes of the year {year}: {parts}.", &[("year", &key.0), ("parts", &parts_text)])
+        };
+        if share < rasterclass::COVERED {
+            text = format!("{text} {}", trf(lang, "The raster covers {share} % of the area.", &[("share", &format!("{:.0}", 100.0 * share))]));
+        }
+        let sizes = segments::areas(&shown);
+        let mean = sizes.iter().sum::<u64>() as f64 / sizes.len().max(1) as f64 * grid.step * grid.step / 1e4;
+        let area = if mean >= 10.0 { format!("{mean:.0}") } else { format!("{mean:.2}") };
+        text = format!("{text} {}", trf(lang, "Objects {n}, mean {area} ha.", &[("n", &sizes.len().to_string()), ("area", &area)]));
+        if outside > 0 && self.source.is_some() {
+            text = format!("{text} {}", trf(lang, "Points without raster data: {n}.", &[("n", &outside.to_string())]));
+        }
+        self.status = format!("{text} {}", analysis::built_text(lang, crate::pointcalc::clock_now()));
+        let bands = if self.source.is_some() { depth } else { 0 };
+        let objects = Arc::new(Objects { parts: shown, kinds, table, bands, similar: None });
+        self.layer = Some(Arc::new(Layer { index, step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), opacity: self.opacity, objects: Some(objects) }));
+        self.label = key.0;
+        self.changed = true;
     }
 
     /// Отказ снимает прежние классы: «OK» сохранил бы их с новым участком.
@@ -400,6 +713,33 @@ impl ClassCalc {
                     self.own_built(lang);
                 }
             }
+            OwnStage::Cut { cut, start, .. } => {
+                let mut done = false;
+                while !done && started.elapsed().as_secs_f64() < BUDGET {
+                    done = cut.step();
+                }
+                if !done {
+                    let left = 100.0 * (1.0 - cut.edges() as f64 / (*start).max(1) as f64);
+                    self.status = trf(lang, "Dividing the area into objects: {done} %.", &[("done", &format!("{left:.0}"))]);
+                    return;
+                }
+                let Some(OwnJob { key, index, stage: OwnStage::Cut { grid, cut, share, .. }, .. }) = self.own_job.take() else {
+                    return;
+                };
+                let parts = Arc::new(cut.finish());
+                self.pieces = Some((self.split_key(&key), parts.clone()));
+                let points = self.points();
+                self.start_kinds(lang, Ready { key, index, grid, share }, parts, &points);
+            }
+            OwnStage::Kinds { table, run, .. } => {
+                let mut done = false;
+                while !done && started.elapsed().as_secs_f64() < BUDGET {
+                    done = run.step(table, RUN_CELLS);
+                }
+                if done {
+                    self.objects_built(lang);
+                }
+            }
         }
     }
 
@@ -424,7 +764,7 @@ impl ClassCalc {
             text = format!("{text} {}", trf(lang, "Points without raster data: {n}.", &[("n", &outside.to_string())]));
         }
         self.status = format!("{text} {}", analysis::built_text(lang, crate::pointcalc::clock_now()));
-        self.layer = Some(Arc::new(Layer { index, step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), opacity: self.opacity }));
+        self.layer = Some(Arc::new(Layer { index, step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), opacity: self.opacity, objects: None }));
         self.label = key.0;
         self.changed = true;
     }
@@ -529,6 +869,15 @@ impl ClassCalc {
         let Some((_, index, grid)) = &self.vectors else {
             return;
         };
+        // Объекты AlphaEarth: векторы переводятся в числа, дальше всё
+        // общее с растром.
+        if self.split.on {
+            let (index, values) = (index.clone(), Arc::new(Mosaic { x0: grid.x0, y0: grid.y0, step: grid.step, rows: grid.rows, cols: grid.cols, depth: grid.depth, values: grid.values.iter().map(|v| aef::dequantize(*v)).collect() }));
+            let (w, s, e, n) = self.site.site.bbox();
+            let key = (self.year.to_string(), format!("{w:.6},{s:.6},{e:.6},{n:.6}"), self.level);
+            self.start_classes(lang, key, index, values);
+            return;
+        }
         let rows: Vec<&Class> = self.classes.iter().filter(|c| !c.points.is_empty()).collect();
         let (mut samples, mut labels, mut outside) = (Vec::new(), Vec::new(), 0);
         for (label, class) in rows.iter().enumerate() {
@@ -562,8 +911,52 @@ impl ClassCalc {
         }
         self.status = format!("{text} {}", analysis::built_text(lang, crate::pointcalc::clock_now()));
         self.label = self.year.to_string();
-        self.layer = Some(Arc::new(Layer { index: index.clone(), step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), opacity: self.opacity }));
+        self.layer = Some(Arc::new(Layer { index: index.clone(), step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), opacity: self.opacity, objects: None }));
         self.changed = true;
+    }
+
+    /// Многоугольники объектов папками классов, `write_objects` модуля.
+    /// rows - название и цвет класса, table - признаки объектов. None -
+    /// объектов больше [`MOST_OBJECTS`].
+    fn object_places(&self, lang: Lang, layer: &Layer, objects: &Objects, rows: &[(String, [u8; 3])], table: &[f32]) -> Option<Vec<Item>> {
+        let outlines = segments::outlines(&objects.parts, layer.rows, layer.cols);
+        if outlines.len() > MOST_OBJECTS {
+            return None;
+        }
+        let sizes = segments::areas(&objects.parts);
+        let depth = objects.bands;
+        let to_degrees = |ring: &Vec<[f64; 2]>| -> Vec<(f64, f64)> { data::hydro::simplify(ring, OUTLINE).iter().map(|p| aef::from_utm(layer.index.number, layer.index.south, layer.x0 + p[0] * layer.step, layer.y0 - p[1] * layer.step)).collect() };
+        let mut folders: Vec<scene::kml::Folder> = rows.iter().map(|c| scene::kml::Folder::new(&trf(lang, "Objects: {name}", &[("name", &c.0)]))).collect();
+        for (n, rings) in outlines.iter().enumerate() {
+            let kind = objects.kinds.get(n).copied().unwrap_or(-1);
+            let (Some(first), Ok(class)) = (rings.first(), usize::try_from(kind)) else {
+                continue;
+            };
+            let (Some(row), Some(folder)) = (rows.get(class), folders.get_mut(class)) else {
+                continue;
+            };
+            let area = sizes.get(n).copied().unwrap_or(0) as f64 * layer.step * layer.step / 1e4;
+            let mut place = Place::new(&format!("{} {}", row.0, n + 1), Kind::Polygon, to_degrees(first));
+            let alpha = (self.opacity * 255.0).round() as u8;
+            let [r, g, b] = row.1;
+            place.color = [r, g, b, 255];
+            place.fill = Some([r, g, b, alpha]);
+            if rings.len() > 1 {
+                place.holes = Some(rings[1..].iter().map(to_degrees).collect());
+            }
+            let mut fields = vec![("object".to_string(), n.to_string()), ("class".to_string(), (class + 1).to_string()), ("name".to_string(), row.0.clone()), ("area_ha".to_string(), format!("{area:.4}"))];
+            if let Some(alike) = objects.similar.as_ref().and_then(|s| s.get(n)) {
+                fields.push(("similar".to_string(), format!("{:.1}", 100.0 * alike)));
+            }
+            for band in 0..depth {
+                let value = |k: usize| table.get(n * 2 * depth + k).map_or(String::new(), f32::to_string);
+                fields.push((format!("mean_{}", band + 1), value(band)));
+                fields.push((format!("sd_{}", band + 1), value(depth + band)));
+            }
+            place.data = Some(fields);
+            folder.children.push(Item::Place(place));
+        }
+        Some(folders.into_iter().map(Item::Folder).collect())
     }
 
     /// Классы - расчётом для «Моих меток»: GeoTIFF номеров классов в зоне
@@ -577,9 +970,33 @@ impl ClassCalc {
         let tiff = data::geotiff::write_byte_projected(&grid, utm_epsg(&layer.index), &bytes).unwrap_or_default();
         let shown = layer.clone();
         let sample = move |points: &[(f64, f64)]| shown.sample(points);
-        let name = trf(lang, "Classification {year}", &[("year", &self.label)]);
-        let picture = analysis::picture(name, "aef_class", layer.bbox(), layer.step, &sample, tiff);
+        let name = trf(lang, if self.find.is_some() { "Similar areas {year}" } else { "Classification {year}" }, &[("year", &self.label)]);
+        let rows: Vec<(String, [u8; 3])> = if self.find.is_some() { vec![(tr(lang, "Similar areas").to_string(), FOUND_COLOR)] } else { self.classes.iter().filter(|c| !c.points.is_empty()).map(|c| (c.name.clone(), c.color)).collect() };
+        // С объектами итог - многоугольники, растр классов не пишется.
+        // Признаки выборки считаются только здесь: ползунку они не нужны.
+        let base = self.find.as_ref().and_then(|f| f.base.as_ref());
+        let places = layer.objects.as_ref().and_then(|o| {
+            let table = base.map_or_else(|| o.table.clone(), |b| segments::table(&b.grid.values, b.grid.depth.max(1), &o.parts));
+            self.object_places(lang, layer, o, &rows, &table)
+        });
         let mut extra = Vec::new();
+        if let Some(find) = &self.find {
+            let mut folder = scene::kml::Folder::new(tr(lang, "Samples"));
+            for (n, ring) in find.rings.iter().enumerate() {
+                let mut place = Place::new(&format!("{} {}", tr(lang, "Samples"), n + 1), Kind::Polygon, ring.clone());
+                let [r, g, b] = SAMPLE_COLOR;
+                place.color = [r, g, b, 255];
+                place.fill = Some([r, g, b, 0]);
+                folder.children.push(Item::Place(place));
+            }
+            extra.push(Item::Folder(folder));
+        }
+        let layers = if let Some(places) = places {
+            extra.extend(places);
+            Vec::new()
+        } else {
+            vec![analysis::picture(name, "aef_class", layer.bbox(), layer.step, &sample, tiff)]
+        };
         for (n, class) in self.classes.iter().filter(|c| !c.points.is_empty()).enumerate() {
             let mut folder = scene::kml::Folder::new(&trf(lang, "{n} - {name}", &[("n", &n.to_string()), ("name", &class.name)]));
             folder.description = trf(lang, "Value {n} in the GeoTIFF file.", &[("n", &n.to_string())]);
@@ -590,7 +1007,8 @@ impl ClassCalc {
             }
             extra.push(Item::Folder(folder));
         }
-        self.saved = Some(Saved { title: tr(lang, "Classification").to_string(), ring: self.site.site.ring.clone(), layers: vec![picture], extra, session: None });
+        let title = tr(lang, if self.find.is_some() { "Similar areas" } else { "Classification" }).to_string();
+        self.saved = Some(Saved { title, ring: self.site.site.ring.clone(), layers, extra, session: None });
     }
 
     /// Мышь над глобусом: точки выбранного класса щелчком, щелчок по
@@ -615,8 +1033,25 @@ impl ClassCalc {
             return false;
         };
         let (px, py) = to_px(p);
-        // Щелчок по точке убирает её, `point_under` модуля.
         let radius = POINT_PIXELS * ppp;
+        // Щелчок обводит образец, по первой вершине - замыкает контур.
+        if let Some(find) = &mut self.find {
+            if find.ring.len() >= 3
+                && let Some(first) = find.ring.first()
+                && let (pix, true) = pixel(nav, *first)
+                && (pix[0] - px).hypot(pix[1] - py) <= radius
+            {
+                let ring = std::mem::take(&mut find.ring);
+                find.rings.push(ring);
+                return true;
+            }
+            if let Some(ground) = ground_under(&nav.camera, px, py, nav.pose.terrain.as_ref()) {
+                let (lat, lon, _) = nav.camera.ellipsoid.ecef_to_geodetic(ground);
+                find.ring.push((lat, lon));
+            }
+            return true;
+        }
+        // Щелчок по точке убирает её, `point_under` модуля.
         let mut hit = None;
         for (k, class) in self.classes.iter().enumerate() {
             for (i, pt) in class.points.iter().enumerate() {
@@ -649,6 +1084,30 @@ impl ClassCalc {
         }
         self.site.paint(painter, rect, ppp, nav);
         let to_screen = |p: [f64; 2]| rect.min + egui::vec2((p[0] / ppp) as f32, (p[1] / ppp) as f32);
+        if let Some(find) = &self.find {
+            let [r, g, b] = SAMPLE_COLOR;
+            let color = egui::Color32::from_rgb(r, g, b);
+            let stroke = egui::Stroke::new(2.0, color);
+            let line = |ring: &[(f64, f64)], closed: bool| {
+                let pixels: Vec<([f64; 2], bool)> = ring.iter().chain(ring.first().filter(|_| closed)).map(|p| pixel(nav, *p)).collect();
+                for w in pixels.windows(2) {
+                    if w[0].1 && w[1].1 {
+                        painter.line_segment([to_screen(w[0].0), to_screen(w[1].0)], stroke);
+                    }
+                }
+            };
+            for ring in &find.rings {
+                line(ring, true);
+            }
+            line(&find.ring, false);
+            for (n, point) in find.ring.iter().enumerate() {
+                let (p, visible) = pixel(nav, *point);
+                if visible {
+                    // Первая вершина крупнее: щелчок по ней замыкает контур.
+                    painter.circle(to_screen(p), if n == 0 { 6.0 } else { 4.0 }, color, egui::Stroke::new(1.5, egui::Color32::from_gray(30)));
+                }
+            }
+        }
         for class in &self.classes {
             let fill = egui::Color32::from_rgb(class.color[0], class.color[1], class.color[2]);
             for pt in &class.points {
@@ -674,7 +1133,11 @@ impl ClassCalc {
         let opacity = self.opacity;
         let mut remove = None;
         let mut add = false;
-        egui::Window::new(tr(lang, "Classification")).id(egui::Id::unique("planetx-aef-class")).open(&mut open).collapsible(false).resizable(false).min_width(400.0).show(ctx, |ui| {
+        let searching = self.find.is_some();
+        let mut pick_now = false;
+        let title = tr(lang, if searching { "Similar areas" } else { "Classification" });
+        let id = if searching { "planetx-similar" } else { "planetx-aef-class" };
+        egui::Window::new(title).id(egui::Id::unique(id)).open(&mut open).collapsible(false).resizable(false).min_width(400.0).show(ctx, |ui| {
             egui::Grid::new("planetx-aef-class-form").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
                 ui.label(tr(lang, "Point"));
                 ui.label(&self.place);
@@ -691,7 +1154,11 @@ impl ClassCalc {
                         }
                     })
                     .response
-                    .on_hover_text(tr(lang, "What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed."));
+                    .on_hover_text(if searching {
+                        tr(lang, "What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.")
+                    } else {
+                        tr(lang, "What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.")
+                    });
                 ui.end_row();
                 if self.source.is_none() {
                     ui.label(tr(lang, "Year"));
@@ -729,34 +1196,90 @@ impl ClassCalc {
                         tr(lang, "The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells.")
                     });
                 ui.end_row();
-                ui.label(tr(lang, "Opacity"));
-                ui.add(egui::Slider::new(&mut self.opacity, 0.0..=1.0).show_value(false)).on_hover_text(tr(lang, "Opacity of the classes on the globe."));
-                ui.end_row();
+                if !searching {
+                    ui.label("");
+                    ui.checkbox(&mut self.split.on, tr(lang, "Divide into objects")).on_hover_text(tr(lang, "The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons."));
+                    ui.end_row();
+                }
+                if self.split.on {
+                    ui.label(tr(lang, "Object scale"));
+                    ui.add(egui::DragValue::new(&mut self.split.scale).range(1..=500)).on_hover_text(tr(lang, "The allowed diversity of an object. The larger it is, the larger the objects and the more unlike things they join. The scale is related to the area, so a change of the pixel hardly changes the size of objects."));
+                    ui.end_row();
+                    ui.label(tr(lang, "Texture share"));
+                    ui.add(egui::DragValue::new(&mut self.split.weight).range(0..=100).suffix(" %")).on_hover_text(if searching {
+                        tr(lang, "The share of texture in the division into objects and in the comparison with the sample, the rest is colour.")
+                    } else {
+                        tr(lang, "The share of texture among the features, the rest is colour. Texture is the spread of brightness around a cell, it separates a forest from a meadow of the same colour.")
+                    });
+                    ui.end_row();
+                    ui.label(tr(lang, "Least object, cells"));
+                    ui.add(egui::DragValue::new(&mut self.split.least).range(1..=100_000)).on_hover_text(tr(lang, "An object with fewer cells merges with its most similar neighbour."));
+                    ui.end_row();
+                    if !searching {
+                        ui.label("");
+                        ui.checkbox(&mut self.split.join, tr(lang, "Merge neighbouring objects of one class")).on_hover_text(tr(lang, "Neighbouring objects of one class become one polygon. Without the flag each field or stand stays a separate object with its own values."));
+                        ui.end_row();
+                    }
+                }
+                if let Some(find) = &mut self.find {
+                    ui.label(tr(lang, "Samples"));
+                    ui.horizontal(|ui| {
+                        ui.label(trf(lang, "Contours: {n}", &[("n", &find.rings.len().to_string())]));
+                        if ui.button(tr(lang, "Remove samples")).on_hover_text(tr(lang, "Remove all sample outlines.")).clicked() {
+                            find.rings.clear();
+                            find.ring.clear();
+                        }
+                    });
+                    ui.end_row();
+                    ui.label(tr(lang, "Similarity"));
+                    let r = ui.add(egui::Slider::new(&mut find.limit, 1..=99).suffix(" %")).on_hover_text(tr(lang, "How much an object must resemble the sample. The selection changes at once, nothing is computed again. To the right - only very similar objects, to the left - wider."));
+                    if r.changed() {
+                        find.moved = Some(web_time::Instant::now());
+                    }
+                    ui.end_row();
+                    ui.label("");
+                    pick_now = ui.checkbox(&mut find.join, tr(lang, "Merge neighbouring found objects")).on_hover_text(tr(lang, "Neighbouring found objects become one area. Without the flag each object stays a separate polygon.")).changed();
+                    ui.end_row();
+                } else {
+                    ui.label(tr(lang, "Opacity"));
+                    ui.add(egui::Slider::new(&mut self.opacity, 0.0..=1.0).show_value(false)).on_hover_text(tr(lang, "Opacity of the classes on the globe."));
+                    ui.end_row();
+                }
             });
             ui.add_space(4.0);
-            ui.label(tr(lang, "Classes"));
-            for (k, class) in self.classes.iter_mut().enumerate() {
-                ui.horizontal(|ui| {
-                    ui.radio_value(&mut self.active, k, "").on_hover_text(tr(lang, "A click on the globe puts a point of this class."));
-                    ui.color_edit_button_srgb(&mut class.color);
-                    ui.add(egui::TextEdit::singleline(&mut class.name).desired_width(140.0));
-                    ui.label(trf(lang, "points {n}", &[("n", &class.points.len().to_string())]));
-                    if ui.small_button(tr(lang, "Remove")).on_hover_text(tr(lang, "Remove the class and its points.")).clicked() {
-                        remove = Some(k);
-                    }
-                });
+            if searching {
+                ui.add(egui::Label::new(tr(lang, "Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.")).wrap());
+            } else {
+                ui.label(tr(lang, "Classes"));
+                for (k, class) in self.classes.iter_mut().enumerate() {
+                    ui.horizontal(|ui| {
+                        ui.radio_value(&mut self.active, k, "").on_hover_text(tr(lang, "A click on the globe puts a point of this class."));
+                        ui.color_edit_button_srgb(&mut class.color);
+                        ui.add(egui::TextEdit::singleline(&mut class.name).desired_width(140.0));
+                        ui.label(trf(lang, "points {n}", &[("n", &class.points.len().to_string())]));
+                        if ui.small_button(tr(lang, "Remove")).on_hover_text(tr(lang, "Remove the class and its points.")).clicked() {
+                            remove = Some(k);
+                        }
+                    });
+                }
+                if ui.button(tr(lang, "Add a class")).clicked() {
+                    add = true;
+                }
+                ui.add(egui::Label::new(tr(lang, "Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.")).wrap());
             }
-            if ui.button(tr(lang, "Add a class")).clicked() {
-                add = true;
-            }
-            ui.add(egui::Label::new(tr(lang, "Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.")).wrap());
             ui.add_space(4.0);
             ui.add(egui::Label::new(self.site.hint(lang).unwrap_or(&self.status)).wrap());
             if self.source.is_none() {
                 ui.add(egui::Label::new(egui::RichText::new(format!("{} {}", tr(lang, "Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0."), aef::CREDIT)).small()).wrap());
             }
             ui.add_space(4.0);
-            let tip = if self.source.is_some() { tr(lang, "Each cell of the area goes to the class of the nearest control points by the raster bands.") } else { tr(lang, "Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors.") };
+            let tip = if searching {
+                tr(lang, "The area is divided into objects, each object is compared with the samples in colour and texture.")
+            } else if self.source.is_some() {
+                tr(lang, "Each cell of the area goes to the class of the nearest control points by the raster bands.")
+            } else {
+                tr(lang, "Each cell of the area goes to the class of the nearest control points by AlphaEarth vectors.")
+            };
             pressed = analysis::buttons(ui, lang, self.layer.is_some() && !self.busy(), tip);
         });
         if let Some(k) = remove
@@ -768,10 +1291,24 @@ impl ClassCalc {
         if add {
             self.add_class(lang);
         }
+        // Ползунок считает выборку после паузы, флажок - сразу.
+        if let Some(find) = &mut self.find
+            && let Some(at) = find.moved
+        {
+            if at.elapsed().as_secs_f64() >= PAUSE {
+                find.moved = None;
+                pick_now = true;
+            } else {
+                ctx.request_repaint();
+            }
+        }
+        if pick_now {
+            self.apply(lang);
+        }
         if (self.opacity - opacity).abs() > 1e-6
             && let Some(old) = &self.layer
         {
-            self.layer = Some(Arc::new(Layer { index: old.index.clone(), step: old.step, x0: old.x0, y0: old.y0, rows: old.rows, cols: old.cols, classes: old.classes.clone(), colors: old.colors.clone(), opacity: self.opacity }));
+            self.layer = Some(Arc::new(Layer { index: old.index.clone(), step: old.step, x0: old.x0, y0: old.y0, rows: old.rows, cols: old.cols, classes: old.classes.clone(), colors: old.colors.clone(), opacity: self.opacity, objects: old.objects.clone() }));
             self.changed = true;
         }
         match pressed {
@@ -827,8 +1364,11 @@ pub fn problem_text(lang: Lang, problem: Problem) -> &'static str {
         Problem::NoCrs => tr(lang, "The raster has no coordinate system."),
         Problem::Big => tr(lang, "The grid of the area does not fit in memory, take a larger pixel."),
         Problem::Outside => tr(lang, "The area is outside the raster."),
-        Problem::Points => tr(lang, "At least two classes with points on raster cells with data are needed."),
+        Problem::Points => tr(lang, "At least two classes with points on cells with data are needed."),
         Problem::Flat => tr(lang, "The raster bands do not change in the area, the classes cannot be told apart."),
+        Problem::Whole => tr(lang, "The whole area came out as one object, reduce the object scale."),
+        Problem::Pieces => tr(lang, "For objects the grid of the area is too large, take a larger pixel or «Auto»."),
+        Problem::Samples => tr(lang, "There are no objects of the area in the sample outlines."),
     }
 }
 

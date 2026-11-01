@@ -78,6 +78,12 @@ impl Overture {
         Self { open: Open::Catalog(ask), tiles: HashMap::new(), leaves: HashMap::new(), failed: HashMap::new() }
     }
 
+    /// Загрузчик тайлов архива url без каталога STAC.
+    pub fn archive(url: &str, request: &dyn Fn(u64) -> Box<dyn net::Request>) -> Self {
+        let head = ask_range(url, 0, pmtiles::HEAD, request);
+        Self { open: Open::Head(url.to_string(), head), tiles: HashMap::new(), leaves: HashMap::new(), failed: HashMap::new() }
+    }
+
     pub fn busy(&self) -> bool {
         !matches!(self.open, Open::Ready(..) | Open::Failed(_)) || !self.tiles.is_empty() || !self.leaves.is_empty()
     }

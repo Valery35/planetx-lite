@@ -1868,7 +1868,6 @@ The raster is not read.	래스터를 읽지 못했습니다.
 The raster has no coordinate system.	래스터에 좌표계가 없습니다.
 The grid of the area does not fit in memory, take a larger pixel.	영역 격자가 메모리에 들어가지 않습니다. 더 큰 픽셀을 선택하세요.
 The area is outside the raster.	영역이 래스터 밖에 있습니다.
-At least two classes with points on raster cells with data are needed.	데이터가 있는 래스터 셀에 점이 있는 클래스가 두 개 이상 필요합니다.
 The raster bands do not change in the area, the classes cannot be told apart.	영역에서 래스터 밴드가 변하지 않아 클래스를 구분할 수 없습니다.
 The raster is no longer open.	래스터가 더 이상 열려 있지 않습니다.
 What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	셀을 나누는 기준입니다. AlphaEarth 벡터는 네트워크에서 불러옵니다. 프로그램에서 연 래스터는 각 밴드가 특징이며 네트워크가 필요 없습니다.
@@ -1876,3 +1875,74 @@ The pixel of the classification. «Auto» takes the pixel of the raster if the a
 Each cell of the area goes to the class of the nearest control points by the raster bands.	영역의 각 셀은 래스터 밴드 기준으로 가장 가까운 기준점의 클래스에 속합니다.
 Classes of the area by control points on the globe - by the bands of an opened raster.	지구본의 기준점으로 영역 클래스를 나눕니다. 열린 래스터의 밴드를 사용합니다.
 Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	래스터 {name}: 밴드 {n}개. «분류» 창의 소스가 되었으며 지형은 바뀌지 않았습니다.
+Field boundaries 2025	농지 경계 2025
+Field boundaries 2024	농지 경계 2024
+Boundaries of agricultural fields of the world for 2025 - a model estimate from Sentinel-2 imagery, not a cadastre. The colour is the model score from orange to green, fields with a score below 69 are not shown. Fields are seen up close, from a height of about 70 km and lower. A click in Identify features mode shows the score.	2025년 세계 농지 경계로, Sentinel-2 영상에 의한 모델 추정이며 지적이 아닙니다. 색은 주황에서 초록까지의 모델 점수이며 점수 69 미만의 농지는 표시되지 않습니다. 농지는 고도 약 70 km 이하의 가까운 거리에서 보입니다. 객체 식별 모드에서 클릭하면 점수가 표시됩니다.
+Boundaries of agricultural fields of the world for 2024, the same set and the same model score as the row for 2025. Fields are seen up close, from a height of about 70 km and lower.	2024년 세계 농지 경계로, 2025년 행과 같은 데이터셋, 같은 모델 점수입니다. 농지는 고도 약 70 km 이하의 가까운 거리에서 보입니다.
+Field boundary score 2025	농지 경계 점수 2025
+Field boundary score 2024	농지 경계 점수 2024
+Model score	모델 점수
+{score} of 100	{score} / 100
+What this is	이것은 무엇인가
+A model estimate from Sentinel-2 imagery, not a cadastral parcel.	Sentinel-2 영상에 의한 모델 추정이며 지적 필지가 아닙니다.
+Field of {year}	{year}년 농지
+Field boundaries	농지 경계
+OpenAerialMap imagery…	OpenAerialMap 영상…
+OpenAerialMap imagery	OpenAerialMap 영상
+{value} cm	{value} cm
+{value} GB	{value} GB
+{value} MB	{value} MB
+OpenAerialMap did not answer.	OpenAerialMap이 응답하지 않았습니다.
+Searching for images…	영상 검색 중…
+There are no images in the view frame. Images cover the world unevenly, zoom out and press «Search in the view».	보기 범위에 영상이 없습니다. 영상은 세계를 고르게 덮지 않습니다. 축소한 뒤 「보기에서 검색」을 누르세요.
+Images in the view frame: {found}, in the list {count}.	보기 범위의 영상: {found}, 목록에 {count}.
+Title or provider	제목 또는 제공자
+File	파일
+License	라이선스
+Search in the view	보기에서 검색
+Images in the present view frame of the globe, newest first.	지구본의 현재 보기 범위 영상, 최신순.
+More	더 보기
+The next images of the same frame, older ones.	같은 범위의 다음, 더 오래된 영상.
+The image lies as a tile layer over the base map, a row in the catalogue. The file is not downloaded.	영상은 기본 지도 위에 타일 레이어로 놓이고 카탈로그의 행이 됩니다. 파일은 다운로드되지 않습니다.
+Flight to the frame of the chosen image.	선택한 영상의 범위로 이동합니다.
+The images are uploaded by contributors of Open Imagery Network. Each image has its own license, it is shown in the list and written to the credit of the layer. Images with NC are for non-commercial use only.	영상은 Open Imagery Network 참여자가 올린 것입니다. 영상마다 라이선스가 따로 있으며 목록에 표시되고 레이어 출처에 기록됩니다. NC가 있는 영상은 비상업적 용도로만 사용할 수 있습니다.
+The image did not open: {title}.	영상이 열리지 않았습니다: {title}.
+The image is on the globe: {title}.	영상이 지구본에 있습니다: {title}.
+An image from OpenAerialMap added in its window. It lies as tiles over the base map, the file is not downloaded. The provider and the license of the image are in the source line.	전용 창에서 추가한 OpenAerialMap 영상입니다. 기본 지도 위에 타일로 놓이며 파일은 다운로드되지 않습니다. 영상의 제공자와 라이선스는 출처 행에 있습니다.
+At least two classes with points on cells with data are needed.	데이터가 있는 셀에 점이 있는 클래스가 두 개 이상 필요합니다.
+The whole area came out as one object, reduce the object scale.	전체 구역이 하나의 객체가 되었습니다. 객체 축척을 줄이세요.
+For objects the grid of the area is too large, take a larger pixel or «Auto».	객체에는 구역 격자가 너무 큽니다. 더 큰 픽셀이나 «Auto»를 선택하세요.
+Dividing the area into objects…	구역을 객체로 나누는 중…
+Dividing the area into objects: {done} %.	구역을 객체로 나누는 중: {done} %.
+Objects {n}, mean {area} ha.	객체 {n}개, 평균 {area} ha.
+Objects: {name}	객체: {name}
+Divide into objects	객체로 나누기
+The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons.	구역을 먼저 색과 질감이 비슷한 객체로 나누고 클래스는 객체 전체에 부여합니다. 결과는 다각형입니다.
+Object scale	객체 축척
+The allowed diversity of an object. The larger it is, the larger the objects and the more unlike things they join. The scale is related to the area, so a change of the pixel hardly changes the size of objects.	객체에 허용되는 다양성입니다. 클수록 객체가 커지고 서로 다른 것을 더 많이 합칩니다. 축척은 구역에 상대적이므로 픽셀을 바꿔도 객체 크기는 거의 변하지 않습니다.
+Texture share	질감 비율
+The share of texture among the features, the rest is colour. Texture is the spread of brightness around a cell, it separates a forest from a meadow of the same colour.	특징 중 질감의 비율이며 나머지는 색입니다. 질감은 셀 주변 밝기의 분산으로, 같은 색의 숲과 초원을 구분합니다.
+Least object, cells	최소 객체, 셀
+An object with fewer cells merges with its most similar neighbour.	셀 수가 이보다 적은 객체는 가장 비슷한 이웃과 합쳐집니다.
+Merge neighbouring objects of one class	같은 클래스의 이웃 객체 병합
+Neighbouring objects of one class become one polygon. Without the flag each field or stand stays a separate object with its own values.	같은 클래스의 이웃 객체가 하나의 다각형이 됩니다. 체크하지 않으면 각 농지나 임분은 자체 값을 가진 별도 객체로 남습니다.
+Similar areas…	유사 구역…
+Similar areas	유사 구역
+Similar areas {year}	유사 구역 {year}
+Outline a sample, the program finds objects of the area similar to it in colour and texture.	견본을 그리면 프로그램이 구역에서 색과 질감이 비슷한 객체를 찾습니다.
+Outline a sample on the globe.	지구본에서 견본을 그리세요.
+There are no objects of the area in the sample outlines.	견본 윤곽 안에 구역의 객체가 없습니다.
+Found objects {n}, {area} ha, {share} % of the area.	찾은 객체 {n}개, {area} ha, 구역의 {share} %.
+Outlines outside the objects of the area: {n}.	구역 객체 밖의 윤곽: {n}.
+Samples	견본
+Contours: {n}	윤곽: {n}
+Remove samples	견본 제거
+Remove all sample outlines.	모든 견본 윤곽을 제거합니다.
+Similarity	유사도
+How much an object must resemble the sample. The selection changes at once, nothing is computed again. To the right - only very similar objects, to the left - wider.	객체가 견본과 얼마나 비슷해야 하는지 정합니다. 선택은 바로 바뀌고 다시 계산하지 않습니다. 오른쪽은 매우 비슷한 객체만, 왼쪽은 더 넓게 고릅니다.
+Merge neighbouring found objects	이웃한 찾은 객체 병합
+Neighbouring found objects become one area. Without the flag each object stays a separate polygon.	이웃한 찾은 객체가 하나의 구역이 됩니다. 체크하지 않으면 각 객체는 별도 다각형으로 남습니다.
+Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.	지구본을 클릭해 견본을 그리고 첫 꼭짓점을 클릭하면 윤곽이 닫힙니다. 견본은 여러 개일 수 있습니다.
+The area is divided into objects, each object is compared with the samples in colour and texture.	구역을 객체로 나누고 각 객체를 색과 질감으로 견본과 비교합니다.
+The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	객체 분할과 견본 비교에서 질감의 비율이며 나머지는 색입니다.
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	색과 질감을 가져오는 곳입니다. AlphaEarth 벡터는 네트워크에서 불러오고, 프로그램에서 연 래스터는 각 밴드가 특징입니다.

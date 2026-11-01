@@ -1868,7 +1868,6 @@ The raster is not read.	Không đọc được raster.
 The raster has no coordinate system.	Raster không có hệ tọa độ.
 The grid of the area does not fit in memory, take a larger pixel.	Lưới khu vực không vừa bộ nhớ, hãy chọn điểm ảnh lớn hơn.
 The area is outside the raster.	Khu vực nằm ngoài raster.
-At least two classes with points on raster cells with data are needed.	Cần ít nhất hai lớp có điểm trên các ô raster có dữ liệu.
 The raster bands do not change in the area, the classes cannot be told apart.	Các kênh raster không thay đổi trong khu vực, không thể phân biệt các lớp.
 The raster is no longer open.	Raster không còn mở.
 What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Cơ sở chia các ô. Vectơ AlphaEarth được tải từ mạng. Với raster mở trong chương trình, mỗi kênh là một đặc trưng, không cần mạng.
@@ -1876,3 +1875,74 @@ The pixel of the classification. «Auto» takes the pixel of the raster if the a
 Each cell of the area goes to the class of the nearest control points by the raster bands.	Mỗi ô của khu vực thuộc về lớp của các điểm kiểm soát gần nhất theo các kênh raster.
 Classes of the area by control points on the globe - by the bands of an opened raster.	Các lớp của khu vực theo điểm kiểm soát trên quả địa cầu, dựa trên các kênh của raster đang mở.
 Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	Raster {name}: {n} kênh. Đây là nguồn của cửa sổ «Phân loại», địa hình không thay đổi.
+Field boundaries 2025	Ranh giới đồng ruộng 2025
+Field boundaries 2024	Ranh giới đồng ruộng 2024
+Boundaries of agricultural fields of the world for 2025 - a model estimate from Sentinel-2 imagery, not a cadastre. The colour is the model score from orange to green, fields with a score below 69 are not shown. Fields are seen up close, from a height of about 70 km and lower. A click in Identify features mode shows the score.	Ranh giới đồng ruộng nông nghiệp thế giới năm 2025 - ước tính của mô hình từ ảnh Sentinel-2, không phải địa chính. Màu là điểm của mô hình từ cam đến xanh lá, các thửa có điểm dưới 69 không được hiển thị. Đồng ruộng thấy được khi ở gần, từ độ cao khoảng 70 km trở xuống. Nhấp trong chế độ Nhận dạng đối tượng để xem điểm.
+Boundaries of agricultural fields of the world for 2024, the same set and the same model score as the row for 2025. Fields are seen up close, from a height of about 70 km and lower.	Ranh giới đồng ruộng nông nghiệp thế giới năm 2024, cùng bộ dữ liệu và cùng điểm mô hình với dòng năm 2025. Đồng ruộng thấy được khi ở gần, từ độ cao khoảng 70 km trở xuống.
+Field boundary score 2025	Điểm ranh giới đồng ruộng 2025
+Field boundary score 2024	Điểm ranh giới đồng ruộng 2024
+Model score	Điểm mô hình
+{score} of 100	{score} trên 100
+What this is	Đây là gì
+A model estimate from Sentinel-2 imagery, not a cadastral parcel.	Ước tính của mô hình từ ảnh Sentinel-2, không phải thửa đất địa chính.
+Field of {year}	Ruộng năm {year}
+Field boundaries	Ranh giới đồng ruộng
+OpenAerialMap imagery…	Ảnh OpenAerialMap…
+OpenAerialMap imagery	Ảnh OpenAerialMap
+{value} cm	{value} cm
+{value} GB	{value} GB
+{value} MB	{value} MB
+OpenAerialMap did not answer.	OpenAerialMap không phản hồi.
+Searching for images…	Đang tìm ảnh…
+There are no images in the view frame. Images cover the world unevenly, zoom out and press «Search in the view».	Không có ảnh trong khung nhìn. Ảnh phủ thế giới không đều, hãy thu nhỏ và nhấn «Tìm trong khung nhìn».
+Images in the view frame: {found}, in the list {count}.	Ảnh trong khung nhìn: {found}, trong danh sách {count}.
+Title or provider	Tiêu đề hoặc nhà cung cấp
+File	Tệp
+License	Giấy phép
+Search in the view	Tìm trong khung nhìn
+Images in the present view frame of the globe, newest first.	Ảnh trong khung nhìn hiện tại của quả địa cầu, mới nhất trước.
+More	Thêm
+The next images of the same frame, older ones.	Các ảnh tiếp theo của cùng khung, cũ hơn.
+The image lies as a tile layer over the base map, a row in the catalogue. The file is not downloaded.	Ảnh nằm thành lớp tile trên bản đồ nền, một dòng trong danh mục. Tệp không được tải xuống.
+Flight to the frame of the chosen image.	Bay đến khung của ảnh đã chọn.
+The images are uploaded by contributors of Open Imagery Network. Each image has its own license, it is shown in the list and written to the credit of the layer. Images with NC are for non-commercial use only.	Ảnh do những người đóng góp của Open Imagery Network tải lên. Mỗi ảnh có giấy phép riêng, được hiển thị trong danh sách và ghi vào nguồn của lớp. Ảnh có NC chỉ dùng cho mục đích phi thương mại.
+The image did not open: {title}.	Ảnh không mở được: {title}.
+The image is on the globe: {title}.	Ảnh đã ở trên địa cầu: {title}.
+An image from OpenAerialMap added in its window. It lies as tiles over the base map, the file is not downloaded. The provider and the license of the image are in the source line.	Ảnh OpenAerialMap được thêm trong cửa sổ của nó. Ảnh nằm thành tile trên bản đồ nền, tệp không được tải xuống. Nhà cung cấp và giấy phép của ảnh nằm ở dòng nguồn.
+At least two classes with points on cells with data are needed.	Cần ít nhất hai lớp có điểm trên các ô có dữ liệu.
+The whole area came out as one object, reduce the object scale.	Toàn bộ khu vực thành một đối tượng, hãy giảm tỷ lệ đối tượng.
+For objects the grid of the area is too large, take a larger pixel or «Auto».	Với đối tượng, lưới khu vực quá lớn, hãy chọn pixel lớn hơn hoặc «Auto».
+Dividing the area into objects…	Đang chia khu vực thành đối tượng…
+Dividing the area into objects: {done} %.	Đang chia khu vực thành đối tượng: {done} %.
+Objects {n}, mean {area} ha.	Đối tượng {n}, trung bình {area} ha.
+Objects: {name}	Đối tượng: {name}
+Divide into objects	Chia thành đối tượng
+The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons.	Khu vực trước tiên được chia thành các đối tượng giống nhau về màu và kết cấu, lớp được gán cho toàn bộ đối tượng. Kết quả là các đa giác.
+Object scale	Tỷ lệ đối tượng
+The allowed diversity of an object. The larger it is, the larger the objects and the more unlike things they join. The scale is related to the area, so a change of the pixel hardly changes the size of objects.	Độ đa dạng cho phép của đối tượng. Càng lớn thì đối tượng càng lớn và gộp càng nhiều thứ khác nhau. Tỷ lệ gắn với khu vực, nên đổi pixel hầu như không đổi kích thước đối tượng.
+Texture share	Tỷ trọng kết cấu
+The share of texture among the features, the rest is colour. Texture is the spread of brightness around a cell, it separates a forest from a meadow of the same colour.	Tỷ trọng kết cấu trong các đặc trưng, phần còn lại là màu. Kết cấu là độ phân tán độ sáng quanh ô, nó tách rừng khỏi đồng cỏ cùng màu.
+Least object, cells	Đối tượng nhỏ nhất, ô
+An object with fewer cells merges with its most similar neighbour.	Đối tượng có ít ô hơn sẽ gộp với hàng xóm giống nhất.
+Merge neighbouring objects of one class	Gộp các đối tượng lân cận cùng lớp
+Neighbouring objects of one class become one polygon. Without the flag each field or stand stays a separate object with its own values.	Các đối tượng lân cận cùng lớp trở thành một đa giác. Không chọn thì mỗi thửa ruộng hoặc lô rừng là đối tượng riêng với giá trị riêng.
+Similar areas…	Khu vực tương tự…
+Similar areas	Khu vực tương tự
+Similar areas {year}	Khu vực tương tự {year}
+Outline a sample, the program finds objects of the area similar to it in colour and texture.	Khoanh một mẫu, chương trình tìm các đối tượng trong khu vực giống mẫu về màu và kết cấu.
+Outline a sample on the globe.	Khoanh một mẫu trên quả địa cầu.
+There are no objects of the area in the sample outlines.	Không có đối tượng của khu vực trong đường khoanh mẫu.
+Found objects {n}, {area} ha, {share} % of the area.	Tìm thấy {n} đối tượng, {area} ha, {share} % khu vực.
+Outlines outside the objects of the area: {n}.	Đường khoanh ngoài các đối tượng khu vực: {n}.
+Samples	Mẫu
+Contours: {n}	Đường khoanh: {n}
+Remove samples	Bỏ các mẫu
+Remove all sample outlines.	Bỏ tất cả đường khoanh mẫu.
+Similarity	Độ tương tự
+How much an object must resemble the sample. The selection changes at once, nothing is computed again. To the right - only very similar objects, to the left - wider.	Đối tượng phải giống mẫu đến mức nào. Lựa chọn đổi ngay, không tính lại. Sang phải chỉ các đối tượng rất giống, sang trái rộng hơn.
+Merge neighbouring found objects	Gộp các đối tượng tìm được lân cận
+Neighbouring found objects become one area. Without the flag each object stays a separate polygon.	Các đối tượng tìm được lân cận trở thành một khu vực. Không chọn thì mỗi đối tượng là một đa giác riêng.
+Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.	Nhấp trên quả địa cầu để khoanh mẫu, nhấp vào đỉnh đầu tiên để đóng đường khoanh. Có thể có nhiều mẫu.
+The area is divided into objects, each object is compared with the samples in colour and texture.	Khu vực được chia thành đối tượng, mỗi đối tượng được so với các mẫu về màu và kết cấu.
+The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	Tỷ trọng kết cấu khi chia đối tượng và khi so với mẫu, phần còn lại là màu.
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	Nguồn lấy màu và kết cấu. Véc-tơ AlphaEarth được tải từ mạng, mỗi kênh của raster mở trong chương trình là một đặc trưng.

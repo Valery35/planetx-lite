@@ -1868,7 +1868,6 @@ The raster is not read.	Het raster is niet gelezen.
 The raster has no coordinate system.	Het raster heeft geen coördinatenstelsel.
 The grid of the area does not fit in memory, take a larger pixel.	Het rooster van het gebied past niet in het geheugen, neem een grotere pixel.
 The area is outside the raster.	Het gebied ligt buiten het raster.
-At least two classes with points on raster cells with data are needed.	Er zijn minstens twee klassen nodig met punten op rastercellen met gegevens.
 The raster bands do not change in the area, the classes cannot be told apart.	De rasterbanden veranderen niet in het gebied, de klassen zijn niet te onderscheiden.
 The raster is no longer open.	Het raster is niet meer geopend.
 What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Waarop de cellen worden ingedeeld. AlphaEarth-vectoren worden van het netwerk geladen. Bij een in het programma geopend raster is elke band een kenmerk, het netwerk is niet nodig.
@@ -1876,3 +1875,74 @@ The pixel of the classification. «Auto» takes the pixel of the raster if the a
 Each cell of the area goes to the class of the nearest control points by the raster bands.	Elke cel van het gebied gaat naar de klasse van de dichtstbijzijnde controlepunten volgens de rasterbanden.
 Classes of the area by control points on the globe - by the bands of an opened raster.	Klassen van het gebied via controlepunten op de globe, volgens de banden van een geopend raster.
 Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	Raster {name}: banden {n}. Het is een bron van het venster «Classificatie», het terrein is niet veranderd.
+Field boundaries 2025	Veldgrenzen 2025
+Field boundaries 2024	Veldgrenzen 2024
+Boundaries of agricultural fields of the world for 2025 - a model estimate from Sentinel-2 imagery, not a cadastre. The colour is the model score from orange to green, fields with a score below 69 are not shown. Fields are seen up close, from a height of about 70 km and lower. A click in Identify features mode shows the score.	Grenzen van landbouwvelden in de wereld voor 2025 - een modelschatting uit Sentinel-2-beelden, geen kadaster. De kleur is de modelscore van oranje tot groen, velden met een score onder 69 worden niet getoond. Velden zijn van dichtbij zichtbaar, vanaf ongeveer 70 km hoogte en lager. Een klik in de modus Objecten identificeren toont de score.
+Boundaries of agricultural fields of the world for 2024, the same set and the same model score as the row for 2025. Fields are seen up close, from a height of about 70 km and lower.	Grenzen van landbouwvelden in de wereld voor 2024, dezelfde set en dezelfde modelscore als de regel voor 2025. Velden zijn van dichtbij zichtbaar, vanaf ongeveer 70 km hoogte en lager.
+Field boundary score 2025	Score van veldgrenzen 2025
+Field boundary score 2024	Score van veldgrenzen 2024
+Model score	Modelscore
+{score} of 100	{score} van 100
+What this is	Wat dit is
+A model estimate from Sentinel-2 imagery, not a cadastral parcel.	Een modelschatting uit Sentinel-2-beelden, geen kadastraal perceel.
+Field of {year}	Veld {year}
+Field boundaries	Veldgrenzen
+OpenAerialMap imagery…	OpenAerialMap-beelden…
+OpenAerialMap imagery	OpenAerialMap-beelden
+{value} cm	{value} cm
+{value} GB	{value} GB
+{value} MB	{value} MB
+OpenAerialMap did not answer.	OpenAerialMap gaf geen antwoord.
+Searching for images…	Beelden zoeken…
+There are no images in the view frame. Images cover the world unevenly, zoom out and press «Search in the view».	Er zijn geen beelden in het kader van de weergave. Beelden bedekken de wereld ongelijkmatig, zoom uit en druk op «Zoeken in de weergave».
+Images in the view frame: {found}, in the list {count}.	Beelden in het kader: {found}, in de lijst {count}.
+Title or provider	Titel of leverancier
+File	Bestand
+License	Licentie
+Search in the view	Zoeken in de weergave
+Images in the present view frame of the globe, newest first.	Beelden in het huidige kader van de globe, nieuwste eerst.
+More	Meer
+The next images of the same frame, older ones.	De volgende beelden van hetzelfde kader, oudere.
+The image lies as a tile layer over the base map, a row in the catalogue. The file is not downloaded.	Het beeld komt als tegellaag over de basiskaart te liggen, een regel in de catalogus. Het bestand wordt niet gedownload.
+Flight to the frame of the chosen image.	Vlucht naar het kader van het gekozen beeld.
+The images are uploaded by contributors of Open Imagery Network. Each image has its own license, it is shown in the list and written to the credit of the layer. Images with NC are for non-commercial use only.	De beelden zijn geüpload door deelnemers van Open Imagery Network. Elk beeld heeft een eigen licentie, die in de lijst staat en in de bronvermelding van de laag. Beelden met NC zijn alleen voor niet-commercieel gebruik.
+The image did not open: {title}.	Het beeld is niet geopend: {title}.
+The image is on the globe: {title}.	Het beeld staat op de globe: {title}.
+An image from OpenAerialMap added in its window. It lies as tiles over the base map, the file is not downloaded. The provider and the license of the image are in the source line.	Een beeld van OpenAerialMap, toegevoegd in het eigen venster. Het ligt als tegels over de basiskaart, het bestand wordt niet gedownload. Leverancier en licentie staan in de bronregel.
+At least two classes with points on cells with data are needed.	Er zijn minstens twee klassen met punten op cellen met gegevens nodig.
+The whole area came out as one object, reduce the object scale.	Het hele gebied werd één object, verlaag de objectschaal.
+For objects the grid of the area is too large, take a larger pixel or «Auto».	Voor objecten is het raster van het gebied te groot, kies een grotere pixel of «Auto».
+Dividing the area into objects…	Gebied wordt in objecten verdeeld…
+Dividing the area into objects: {done} %.	Gebied wordt in objecten verdeeld: {done} %.
+Objects {n}, mean {area} ha.	Objecten {n}, gemiddeld {area} ha.
+Objects: {name}	Objecten: {name}
+Divide into objects	In objecten verdelen
+The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons.	Het gebied wordt eerst verdeeld in objecten met gelijke kleur en textuur, een klasse geldt voor het hele object. Het resultaat zijn polygonen.
+Object scale	Objectschaal
+The allowed diversity of an object. The larger it is, the larger the objects and the more unlike things they join. The scale is related to the area, so a change of the pixel hardly changes the size of objects.	De toegestane diversiteit van een object. Hoe groter, hoe groter de objecten en hoe meer ongelijks ze samenvoegen. De schaal is gerelateerd aan het gebied, dus een andere pixel verandert de objectgrootte nauwelijks.
+Texture share	Textuuraandeel
+The share of texture among the features, the rest is colour. Texture is the spread of brightness around a cell, it separates a forest from a meadow of the same colour.	Het aandeel van textuur onder de kenmerken, de rest is kleur. Textuur is de spreiding van helderheid rond een cel, ze scheidt een bos van een weide met dezelfde kleur.
+Least object, cells	Kleinste object, cellen
+An object with fewer cells merges with its most similar neighbour.	Een object met minder cellen versmelt met zijn meest gelijkende buur.
+Merge neighbouring objects of one class	Naburige objecten van één klasse samenvoegen
+Neighbouring objects of one class become one polygon. Without the flag each field or stand stays a separate object with its own values.	Naburige objecten van één klasse worden één polygoon. Zonder het vinkje blijft elk veld of bosvak een apart object met eigen waarden.
+Similar areas…	Vergelijkbare gebieden…
+Similar areas	Vergelijkbare gebieden
+Similar areas {year}	Vergelijkbare gebieden {year}
+Outline a sample, the program finds objects of the area similar to it in colour and texture.	Omlijn een voorbeeld, het programma vindt in het gebied objecten met gelijke kleur en textuur.
+Outline a sample on the globe.	Omlijn een voorbeeld op de globe.
+There are no objects of the area in the sample outlines.	In de omlijningen van de voorbeelden liggen geen objecten van het gebied.
+Found objects {n}, {area} ha, {share} % of the area.	Gevonden objecten {n}, {area} ha, {share} % van het gebied.
+Outlines outside the objects of the area: {n}.	Omlijningen buiten de objecten van het gebied: {n}.
+Samples	Voorbeelden
+Contours: {n}	Omlijningen: {n}
+Remove samples	Voorbeelden verwijderen
+Remove all sample outlines.	Alle omlijningen van voorbeelden verwijderen.
+Similarity	Gelijkenis
+How much an object must resemble the sample. The selection changes at once, nothing is computed again. To the right - only very similar objects, to the left - wider.	Hoeveel een object op het voorbeeld moet lijken. De selectie verandert meteen, er wordt niets opnieuw berekend. Naar rechts alleen zeer gelijkende objecten, naar links breder.
+Merge neighbouring found objects	Naburige gevonden objecten samenvoegen
+Neighbouring found objects become one area. Without the flag each object stays a separate polygon.	Naburige gevonden objecten worden één gebied. Zonder het vinkje blijft elk object een aparte polygoon.
+Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.	Omlijn een voorbeeld met klikken op de globe, een klik op het eerste punt sluit de omlijning. Er kunnen meerdere voorbeelden zijn.
+The area is divided into objects, each object is compared with the samples in colour and texture.	Het gebied wordt in objecten verdeeld, elk object wordt in kleur en textuur met de voorbeelden vergeleken.
+The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	Het aandeel van textuur bij het verdelen in objecten en bij de vergelijking met het voorbeeld, de rest is kleur.
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	Waar kleur en textuur vandaan komen. AlphaEarth-vectoren worden uit het netwerk geladen, elke band van een in het programma geopend raster is een kenmerk.

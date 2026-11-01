@@ -1868,7 +1868,6 @@ The raster is not read.	Rastr oxunmadı.
 The raster has no coordinate system.	Rastrın koordinat sistemi yoxdur.
 The grid of the area does not fit in memory, take a larger pixel.	Sahə şəbəkəsi yaddaşa sığmır, daha böyük piksel seçin.
 The area is outside the raster.	Sahə rastrdan kənardadır.
-At least two classes with points on raster cells with data are needed.	Məlumatlı rastr xanalarında nöqtələri olan ən azı iki sinif lazımdır.
 The raster bands do not change in the area, the classes cannot be told apart.	Rastr kanalları sahədə dəyişmir, sinifləri ayırmaq olmur.
 The raster is no longer open.	Rastr artıq açıq deyil.
 What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Xanaların nəyə görə bölündüyü. AlphaEarth vektorları şəbəkədən yüklənir. Proqramda açılmış rastrda hər kanal əlamətdir, şəbəkə lazım deyil.
@@ -1876,3 +1875,74 @@ The pixel of the classification. «Auto» takes the pixel of the raster if the a
 Each cell of the area goes to the class of the nearest control points by the raster bands.	Sahənin hər xanası rastr kanallarına görə ən yaxın nəzarət nöqtələrinin sinfinə aid edilir.
 Classes of the area by control points on the globe - by the bands of an opened raster.	Qlobusdakı nəzarət nöqtələrinə görə sahə sinifləri, açıq rastrın kanalları ilə.
 Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	Rastr {name}: kanal {n}. «Təsnifat» pəncərəsinin mənbəyidir, relyef dəyişmədi.
+Field boundaries 2025	Tarla sərhədləri 2025
+Field boundaries 2024	Tarla sərhədləri 2024
+Boundaries of agricultural fields of the world for 2025 - a model estimate from Sentinel-2 imagery, not a cadastre. The colour is the model score from orange to green, fields with a score below 69 are not shown. Fields are seen up close, from a height of about 70 km and lower. A click in Identify features mode shows the score.	2025-ci il üçün dünya kənd təsərrüfatı tarlalarının sərhədləri - Sentinel-2 şəkillərinə görə model qiymətləndirməsidir, kadastr deyil. Rəng narıncıdan yaşıla model balıdır, balı 69-dan aşağı tarlalar göstərilmir. Tarlalar yaxından, təxminən 70 km hündürlükdən və aşağıdan görünür. Obyektləri müəyyən et rejimində klik balı göstərir.
+Boundaries of agricultural fields of the world for 2024, the same set and the same model score as the row for 2025. Fields are seen up close, from a height of about 70 km and lower.	2024-cü il üçün dünya kənd təsərrüfatı tarlalarının sərhədləri, 2025-ci il sətri ilə eyni toplu və eyni model balı. Tarlalar yaxından, təxminən 70 km hündürlükdən və aşağıdan görünür.
+Field boundary score 2025	Tarla sərhədi balı 2025
+Field boundary score 2024	Tarla sərhədi balı 2024
+Model score	Model balı
+{score} of 100	{score} / 100
+What this is	Bu nədir
+A model estimate from Sentinel-2 imagery, not a cadastral parcel.	Sentinel-2 şəkillərinə görə model qiymətləndirməsidir, kadastr sahəsi deyil.
+Field of {year}	{year} tarlası
+Field boundaries	Tarla sərhədləri
+OpenAerialMap imagery…	OpenAerialMap şəkilləri…
+OpenAerialMap imagery	OpenAerialMap şəkilləri
+{value} cm	{value} sm
+{value} GB	{value} GB
+{value} MB	{value} MB
+OpenAerialMap did not answer.	OpenAerialMap cavab vermədi.
+Searching for images…	Şəkillər axtarılır…
+There are no images in the view frame. Images cover the world unevenly, zoom out and press «Search in the view».	Görünüş çərçivəsində şəkil yoxdur. Şəkillər dünyanı qeyri-bərabər əhatə edir, uzaqlaşdırın və «Görünüşdə axtar» düyməsini basın.
+Images in the view frame: {found}, in the list {count}.	Görünüş çərçivəsində şəkil: {found}, siyahıda {count}.
+Title or provider	Ad və ya təchizatçı
+File	Fayl
+License	Lisenziya
+Search in the view	Görünüşdə axtar
+Images in the present view frame of the globe, newest first.	Qlobusun indiki görünüş çərçivəsindəki şəkillər, yeniləri əvvəl.
+More	Daha çox
+The next images of the same frame, older ones.	Eyni çərçivənin növbəti, daha köhnə şəkilləri.
+The image lies as a tile layer over the base map, a row in the catalogue. The file is not downloaded.	Şəkil əsas xəritənin üzərinə kataloqda sətir olan tayl qatı kimi düşür. Fayl endirilmir.
+Flight to the frame of the chosen image.	Seçilmiş şəklin çərçivəsinə uçuş.
+The images are uploaded by contributors of Open Imagery Network. Each image has its own license, it is shown in the list and written to the credit of the layer. Images with NC are for non-commercial use only.	Şəkillər Open Imagery Network iştirakçıları tərəfindən yüklənib. Hər şəklin öz lisenziyası var, o siyahıda göstərilir və qatın mənbə yazısına yazılır. NC şəkilləri yalnız qeyri-kommersiya istifadəsi üçündür.
+The image did not open: {title}.	Şəkil açılmadı: {title}.
+The image is on the globe: {title}.	Şəkil qlobusdadır: {title}.
+An image from OpenAerialMap added in its window. It lies as tiles over the base map, the file is not downloaded. The provider and the license of the image are in the source line.	Öz pəncərəsində əlavə edilmiş OpenAerialMap şəkli. O, əsas xəritənin üzərində taylar kimi durur, fayl endirilmir. Şəklin təchizatçısı və lisenziyası mənbə sətrindədir.
+At least two classes with points on cells with data are needed.	Məlumatlı xanalarda nöqtəsi olan ən azı iki sinif lazımdır.
+The whole area came out as one object, reduce the object scale.	Bütün sahə bir obyekt oldu, obyekt miqyasını azaldın.
+For objects the grid of the area is too large, take a larger pixel or «Auto».	Obyektlər üçün sahənin toru çox böyükdür, daha böyük piksel və ya «Auto» seçin.
+Dividing the area into objects…	Sahə obyektlərə bölünür…
+Dividing the area into objects: {done} %.	Sahə obyektlərə bölünür: {done} %.
+Objects {n}, mean {area} ha.	Obyekt {n}, orta {area} ha.
+Objects: {name}	Obyektlər: {name}
+Divide into objects	Obyektlərə böl
+The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons.	Sahə əvvəlcə rəng və toxuma görə oxşar obyektlərə bölünür, sinif bütün obyektə verilir. Nəticə çoxbucaqlılardır.
+Object scale	Obyekt miqyası
+The allowed diversity of an object. The larger it is, the larger the objects and the more unlike things they join. The scale is related to the area, so a change of the pixel hardly changes the size of objects.	Obyektin icazə verilən müxtəlifliyi. Nə qədər böyükdürsə, obyektlər o qədər böyük olur və daha fərqli şeyləri birləşdirir. Miqyas sahəyə aiddir, ona görə piksel dəyişməsi obyektlərin ölçüsünü az dəyişir.
+Texture share	Toxuma payı
+The share of texture among the features, the rest is colour. Texture is the spread of brightness around a cell, it separates a forest from a meadow of the same colour.	Əlamətlər arasında toxumanın payı, qalanı rəngdir. Toxuma xana ətrafında parlaqlığın səpələnməsidir, meşəni eyni rəngli çəmənlikdən ayırır.
+Least object, cells	Ən kiçik obyekt, xana
+An object with fewer cells merges with its most similar neighbour.	Daha az xanalı obyekt ən oxşar qonşusu ilə birləşir.
+Merge neighbouring objects of one class	Bir sinifin qonşu obyektlərini birləşdir
+Neighbouring objects of one class become one polygon. Without the flag each field or stand stays a separate object with its own values.	Bir sinifin qonşu obyektləri bir çoxbucaqlı olur. İşarəsiz hər tarla və ya sahə öz qiymətləri ilə ayrı obyekt qalır.
+Similar areas…	Oxşar sahələr…
+Similar areas	Oxşar sahələr
+Similar areas {year}	Oxşar sahələr {year}
+Outline a sample, the program finds objects of the area similar to it in colour and texture.	Nümunəni dairəyə alın, proqram sahədə rəng və toxuma görə oxşar obyektləri tapır.
+Outline a sample on the globe.	Qlobusda nümunəni dairəyə alın.
+There are no objects of the area in the sample outlines.	Nümunə konturlarında sahənin obyekti yoxdur.
+Found objects {n}, {area} ha, {share} % of the area.	Tapılan obyekt {n}, {area} ha, sahənin {share} %-i.
+Outlines outside the objects of the area: {n}.	Sahə obyektlərindən kənar konturlar: {n}.
+Samples	Nümunələr
+Contours: {n}	Konturlar: {n}
+Remove samples	Nümunələri sil
+Remove all sample outlines.	Bütün nümunə konturlarını sil.
+Similarity	Oxşarlıq
+How much an object must resemble the sample. The selection changes at once, nothing is computed again. To the right - only very similar objects, to the left - wider.	Obyektin nümunəyə nə qədər oxşamalı olduğu. Seçim dərhal dəyişir, yenidən hesablanmır. Sağa yalnız çox oxşarlar, sola daha geniş.
+Merge neighbouring found objects	Tapılan qonşu obyektləri birləşdir
+Neighbouring found objects become one area. Without the flag each object stays a separate polygon.	Tapılan qonşu obyektlər bir sahə olur. İşarəsiz hər obyekt ayrı çoxbucaqlı qalır.
+Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.	Qlobusa kliklərlə nümunəni dairəyə alın, birinci təpəyə klik konturu qapadır. Bir neçə nümunə ola bilər.
+The area is divided into objects, each object is compared with the samples in colour and texture.	Sahə obyektlərə bölünür, hər obyekt rəng və toxumaya görə nümunələrlə müqayisə edilir.
+The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	Obyektlərə bölmədə və nümunə ilə müqayisədə toxumanın payı, qalanı rəngdir.
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	Rəng və toxumanın götürüldüyü yer. AlphaEarth vektorları şəbəkədən yüklənir, proqramda açılmış rastrın hər kanalı əlamətdir.

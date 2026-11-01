@@ -1868,7 +1868,6 @@ The raster is not read.	რასტრი ვერ წაიკითხა.
 The raster has no coordinate system.	რასტრს არ აქვს კოორდინატთა სისტემა.
 The grid of the area does not fit in memory, take a larger pixel.	უბნის ბადე მეხსიერებაში არ ეტევა, აიღეთ უფრო დიდი პიქსელი.
 The area is outside the raster.	უბანი რასტრის გარეთაა.
-At least two classes with points on raster cells with data are needed.	საჭიროა მინიმუმ ორი კლასი, რომელთა წერტილები რასტრის მონაცემებიან უჯრებზეა.
 The raster bands do not change in the area, the classes cannot be told apart.	რასტრის არხები უბანზე არ იცვლება, კლასების გარჩევა შეუძლებელია.
 The raster is no longer open.	რასტრი აღარ არის გახსნილი.
 What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	რით იყოფა უჯრები. AlphaEarth-ის ვექტორები ქსელიდან იტვირთება. პროგრამაში გახსნილ რასტრში თითოეული არხი ნიშანია, ქსელი საჭირო არ არის.
@@ -1876,3 +1875,74 @@ The pixel of the classification. «Auto» takes the pixel of the raster if the a
 Each cell of the area goes to the class of the nearest control points by the raster bands.	უბნის თითოეული უჯრა რასტრის არხების მიხედვით უახლოესი საკონტროლო წერტილების კლასს მიეკუთვნება.
 Classes of the area by control points on the globe - by the bands of an opened raster.	უბნის კლასები გლობუსზე საკონტროლო წერტილებით, გახსნილი რასტრის არხების მიხედვით.
 Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	რასტრი {name}: არხი {n}. ის «კლასიფიკაციის» ფანჯრის წყაროა, რელიეფი არ შეცვლილა.
+Field boundaries 2025	მინდვრების საზღვრები 2025
+Field boundaries 2024	მინდვრების საზღვრები 2024
+Boundaries of agricultural fields of the world for 2025 - a model estimate from Sentinel-2 imagery, not a cadastre. The colour is the model score from orange to green, fields with a score below 69 are not shown. Fields are seen up close, from a height of about 70 km and lower. A click in Identify features mode shows the score.	მსოფლიოს სასოფლო-სამეურნეო მინდვრების საზღვრები 2025 წლისთვის - მოდელის შეფასება Sentinel-2-ის სურათებით და არა კადასტრი. ფერი მოდელის შეფასებაა ნარინჯისფრიდან მწვანემდე, 69-ზე დაბალი შეფასების მინდვრები არ ჩანს. მინდვრები ჩანს ახლოდან, დაახლოებით 70 კმ სიმაღლიდან და ქვემოთ. დაწკაპუნება ობიექტების ამოცნობის რეჟიმში აჩვენებს შეფასებას.
+Boundaries of agricultural fields of the world for 2024, the same set and the same model score as the row for 2025. Fields are seen up close, from a height of about 70 km and lower.	მსოფლიოს სასოფლო-სამეურნეო მინდვრების საზღვრები 2024 წლისთვის, იგივე ნაკრები და იგივე შეფასება, რაც 2025 წლის სტრიქონში. მინდვრები ჩანს ახლოდან, დაახლოებით 70 კმ სიმაღლიდან და ქვემოთ.
+Field boundary score 2025	მინდვრების საზღვრების შეფასება 2025
+Field boundary score 2024	მინდვრების საზღვრების შეფასება 2024
+Model score	მოდელის შეფასება
+{score} of 100	{score} / 100
+What this is	რა არის ეს
+A model estimate from Sentinel-2 imagery, not a cadastral parcel.	მოდელის შეფასება Sentinel-2-ის სურათებით და არა საკადასტრო ნაკვეთი.
+Field of {year}	{year} წლის მინდორი
+Field boundaries	მინდვრების საზღვრები
+OpenAerialMap imagery…	OpenAerialMap-ის სურათები…
+OpenAerialMap imagery	OpenAerialMap-ის სურათები
+{value} cm	{value} სმ
+{value} GB	{value} გბ
+{value} MB	{value} მბ
+OpenAerialMap did not answer.	OpenAerialMap-მა არ უპასუხა.
+Searching for images…	სურათების ძებნა…
+There are no images in the view frame. Images cover the world unevenly, zoom out and press «Search in the view».	ხედის ჩარჩოში სურათები არ არის. სურათები მსოფლიოს არათანაბრად ფარავს, დააშორეთ ხედი და დააჭირეთ «ხედში ძებნა».
+Images in the view frame: {found}, in the list {count}.	სურათები ხედის ჩარჩოში: {found}, სიაში {count}.
+Title or provider	სათაური ან მომწოდებელი
+File	ფაილი
+License	ლიცენზია
+Search in the view	ხედში ძებნა
+Images in the present view frame of the globe, newest first.	გლობუსის ამჟამინდელი ხედის ჩარჩოს სურათები, ახლები პირველი.
+More	მეტი
+The next images of the same frame, older ones.	იმავე ჩარჩოს შემდეგი, უფრო ძველი სურათები.
+The image lies as a tile layer over the base map, a row in the catalogue. The file is not downloaded.	სურათი იდება ფენად ძირითად რუკაზე, კატალოგის სტრიქონად. ფაილი არ ჩამოიტვირთება.
+Flight to the frame of the chosen image.	გადაფრენა არჩეული სურათის ჩარჩოსთან.
+The images are uploaded by contributors of Open Imagery Network. Each image has its own license, it is shown in the list and written to the credit of the layer. Images with NC are for non-commercial use only.	სურათები ატვირთულია Open Imagery Network-ის მონაწილეების მიერ. თითოეულ სურათს თავისი ლიცენზია აქვს, ის ჩანს სიაში და იწერება ფენის წყაროში. NC სურათები მხოლოდ არაკომერციული გამოყენებისთვისაა.
+The image did not open: {title}.	სურათი არ გაიხსნა: {title}.
+The image is on the globe: {title}.	სურათი გლობუსზეა: {title}.
+An image from OpenAerialMap added in its window. It lies as tiles over the base map, the file is not downloaded. The provider and the license of the image are in the source line.	თავის ფანჯარაში დამატებული OpenAerialMap-ის სურათი. ის ძირითად რუკაზე დევს ტაილებად, ფაილი არ ჩამოიტვირთება. მომწოდებელი და ლიცენზია წყაროს სტრიქონშია.
+At least two classes with points on cells with data are needed.	საჭიროა მინიმუმ ორი კლასი წერტილებით მონაცემიან უჯრებზე.
+The whole area came out as one object, reduce the object scale.	მთელი უბანი ერთ ობიექტად გამოვიდა, შეამცირეთ ობიექტების მასშტაბი.
+For objects the grid of the area is too large, take a larger pixel or «Auto».	ობიექტებისთვის უბნის ბადე ზედმეტად დიდია, აიღეთ უფრო დიდი პიქსელი ან «Auto».
+Dividing the area into objects…	უბანი იყოფა ობიექტებად…
+Dividing the area into objects: {done} %.	უბანი იყოფა ობიექტებად: {done} %.
+Objects {n}, mean {area} ha.	ობიექტი {n}, საშუალო {area} ჰა.
+Objects: {name}	ობიექტები: {name}
+Divide into objects	ობიექტებად დაყოფა
+The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons.	უბანი ჯერ იყოფა ფერითა და ტექსტურით მსგავს ობიექტებად, კლასი მთელ ობიექტს ენიჭება. შედეგი მრავალკუთხედებია.
+Object scale	ობიექტების მასშტაბი
+The allowed diversity of an object. The larger it is, the larger the objects and the more unlike things they join. The scale is related to the area, so a change of the pixel hardly changes the size of objects.	ობიექტის დასაშვები მრავალფეროვნება. რაც მეტია, მით უფრო დიდია ობიექტები და მით მეტ განსხვავებულს აერთიანებს. მასშტაბი უბანს ეხება, ამიტომ პიქსელის შეცვლა ობიექტების ზომას თითქმის არ ცვლის.
+Texture share	ტექსტურის წილი
+The share of texture among the features, the rest is colour. Texture is the spread of brightness around a cell, it separates a forest from a meadow of the same colour.	ტექსტურის წილი ნიშნებს შორის, დანარჩენი ფერია. ტექსტურა უჯრის გარშემო სიკაშკაშის გაფანტულობაა, ის ტყეს იმავე ფერის მდელოსგან გამოყოფს.
+Least object, cells	უმცირესი ობიექტი, უჯრა
+An object with fewer cells merges with its most similar neighbour.	უფრო ცოტა უჯრის მქონე ობიექტი უერთდება ყველაზე მსგავს მეზობელს.
+Merge neighbouring objects of one class	ერთი კლასის მეზობელი ობიექტების შერწყმა
+Neighbouring objects of one class become one polygon. Without the flag each field or stand stays a separate object with its own values.	ერთი კლასის მეზობელი ობიექტები ერთ მრავალკუთხედად იქცევა. ალმის გარეშე ყოველი მინდორი თუ კორომი ცალკე ობიექტად რჩება თავისი მნიშვნელობებით.
+Similar areas…	მსგავსი უბნები…
+Similar areas	მსგავსი უბნები
+Similar areas {year}	მსგავსი უბნები {year}
+Outline a sample, the program finds objects of the area similar to it in colour and texture.	შემოხაზეთ ნიმუში, პროგრამა უბანში იპოვის ფერითა და ტექსტურით მსგავს ობიექტებს.
+Outline a sample on the globe.	შემოხაზეთ ნიმუში გლობუსზე.
+There are no objects of the area in the sample outlines.	ნიმუშების კონტურებში უბნის ობიექტები არ არის.
+Found objects {n}, {area} ha, {share} % of the area.	ნაპოვნია ობიექტი {n}, {area} ჰა, უბნის {share} %.
+Outlines outside the objects of the area: {n}.	უბნის ობიექტების გარეთ კონტურები: {n}.
+Samples	ნიმუშები
+Contours: {n}	კონტურები: {n}
+Remove samples	ნიმუშების წაშლა
+Remove all sample outlines.	ნიმუშების ყველა კონტურის წაშლა.
+Similarity	მსგავსება
+How much an object must resemble the sample. The selection changes at once, nothing is computed again. To the right - only very similar objects, to the left - wider.	რამდენად უნდა ჰგავდეს ობიექტი ნიმუშს. არჩევანი მაშინვე იცვლება, თავიდან არაფერი ითვლება. მარჯვნივ მხოლოდ ძალიან მსგავსები, მარცხნივ უფრო ფართოდ.
+Merge neighbouring found objects	ნაპოვნი მეზობელი ობიექტების შერწყმა
+Neighbouring found objects become one area. Without the flag each object stays a separate polygon.	ნაპოვნი მეზობელი ობიექტები ერთ უბნად იქცევა. ალმის გარეშე ყოველი ობიექტი ცალკე მრავალკუთხედად რჩება.
+Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.	გლობუსზე დაწკაპუნებით შემოხაზეთ ნიმუში, პირველ წვეროზე დაწკაპუნება ხურავს კონტურს. ნიმუში შეიძლება რამდენიმე იყოს.
+The area is divided into objects, each object is compared with the samples in colour and texture.	უბანი იყოფა ობიექტებად, თითოეული ობიექტი ედრება ნიმუშებს ფერითა და ტექსტურით.
+The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	ტექსტურის წილი ობიექტებად დაყოფასა და ნიმუშთან შედარებაში, დანარჩენი ფერია.
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	საიდან მოდის ფერი და ტექსტურა. AlphaEarth-ის ვექტორები ქსელიდან იტვირთება, პროგრამაში გახსნილი რასტრის ყოველი არხი ნიშანია.

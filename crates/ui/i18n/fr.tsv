@@ -1868,7 +1868,6 @@ The raster is not read.	Le raster n'a pas été lu.
 The raster has no coordinate system.	Le raster n'a pas de système de coordonnées.
 The grid of the area does not fit in memory, take a larger pixel.	La grille de la zone ne tient pas en mémoire, prenez un pixel plus grand.
 The area is outside the raster.	La zone est hors du raster.
-At least two classes with points on raster cells with data are needed.	Il faut au moins deux classes avec des points sur des cellules du raster avec données.
 The raster bands do not change in the area, the classes cannot be told apart.	Les canaux du raster ne varient pas sur la zone, les classes sont indiscernables.
 The raster is no longer open.	Le raster n'est plus ouvert.
 What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Ce qui répartit les cellules. Les vecteurs AlphaEarth sont chargés depuis le réseau. Dans un raster ouvert dans le programme, chaque canal est un attribut, le réseau n'est pas nécessaire.
@@ -1876,3 +1875,74 @@ The pixel of the classification. «Auto» takes the pixel of the raster if the a
 Each cell of the area goes to the class of the nearest control points by the raster bands.	Chaque cellule de la zone va à la classe des points de contrôle les plus proches selon les canaux du raster.
 Classes of the area by control points on the globe - by the bands of an opened raster.	Classes de la zone par points de contrôle sur le globe, selon les canaux d'un raster ouvert.
 Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	Raster {name} : canaux {n}. Il est une source de la fenêtre «Classification», le relief n'a pas changé.
+Field boundaries 2025	Limites des champs 2025
+Field boundaries 2024	Limites des champs 2024
+Boundaries of agricultural fields of the world for 2025 - a model estimate from Sentinel-2 imagery, not a cadastre. The colour is the model score from orange to green, fields with a score below 69 are not shown. Fields are seen up close, from a height of about 70 km and lower. A click in Identify features mode shows the score.	Limites des champs agricoles du monde pour 2025 : une estimation du modèle d'après les images Sentinel-2, pas un cadastre. La couleur indique le score du modèle, de l'orange au vert ; les champs dont le score est inférieur à 69 ne sont pas affichés. Les champs se voient de près, à partir d'environ 70 km d'altitude et en dessous. Un clic en mode Identifier les objets affiche le score.
+Boundaries of agricultural fields of the world for 2024, the same set and the same model score as the row for 2025. Fields are seen up close, from a height of about 70 km and lower.	Limites des champs agricoles du monde pour 2024, le même jeu et le même score du modèle que la ligne 2025. Les champs se voient de près, à partir d'environ 70 km d'altitude et en dessous.
+Field boundary score 2025	Score des limites de champs 2025
+Field boundary score 2024	Score des limites de champs 2024
+Model score	Score du modèle
+{score} of 100	{score} sur 100
+What this is	De quoi s'agit-il
+A model estimate from Sentinel-2 imagery, not a cadastral parcel.	Une estimation du modèle d'après les images Sentinel-2, pas une parcelle cadastrale.
+Field of {year}	Champ de {year}
+Field boundaries	Limites des champs
+OpenAerialMap imagery…	Images OpenAerialMap…
+OpenAerialMap imagery	Images OpenAerialMap
+{value} cm	{value} cm
+{value} GB	{value} Go
+{value} MB	{value} Mo
+OpenAerialMap did not answer.	OpenAerialMap n'a pas répondu.
+Searching for images…	Recherche d'images…
+There are no images in the view frame. Images cover the world unevenly, zoom out and press «Search in the view».	Il n'y a pas d'images dans le cadre de la vue. Les images couvrent le monde de façon inégale, dézoomez et appuyez sur «Chercher dans la vue».
+Images in the view frame: {found}, in the list {count}.	Images dans le cadre de la vue : {found}, dans la liste {count}.
+Title or provider	Titre ou fournisseur
+File	Fichier
+License	Licence
+Search in the view	Chercher dans la vue
+Images in the present view frame of the globe, newest first.	Images dans le cadre actuel de la vue du globe, les plus récentes d'abord.
+More	Plus
+The next images of the same frame, older ones.	Les images suivantes du même cadre, plus anciennes.
+The image lies as a tile layer over the base map, a row in the catalogue. The file is not downloaded.	L'image se pose en couche de tuiles sur le fond de carte, une ligne du catalogue. Le fichier n'est pas téléchargé.
+Flight to the frame of the chosen image.	Vol vers le cadre de l'image choisie.
+The images are uploaded by contributors of Open Imagery Network. Each image has its own license, it is shown in the list and written to the credit of the layer. Images with NC are for non-commercial use only.	Les images sont déposées par les contributeurs d'Open Imagery Network. Chaque image a sa propre licence, indiquée dans la liste et inscrite dans le crédit de la couche. Les images NC sont réservées à un usage non commercial.
+The image did not open: {title}.	L'image ne s'est pas ouverte : {title}.
+The image is on the globe: {title}.	L'image est sur le globe : {title}.
+An image from OpenAerialMap added in its window. It lies as tiles over the base map, the file is not downloaded. The provider and the license of the image are in the source line.	Une image OpenAerialMap ajoutée dans sa fenêtre. Elle se pose en tuiles sur le fond de carte, le fichier n'est pas téléchargé. Le fournisseur et la licence de l'image figurent dans la ligne de source.
+At least two classes with points on cells with data are needed.	Il faut au moins deux classes avec des points sur des cellules contenant des données.
+The whole area came out as one object, reduce the object scale.	Toute la zone forme un seul objet, réduisez l'échelle des objets.
+For objects the grid of the area is too large, take a larger pixel or «Auto».	Pour les objets, la grille de la zone est trop grande, prenez un pixel plus grand ou «Auto».
+Dividing the area into objects…	Division de la zone en objets…
+Dividing the area into objects: {done} %.	Division de la zone en objets : {done} %.
+Objects {n}, mean {area} ha.	Objets {n}, moyenne {area} ha.
+Objects: {name}	Objets : {name}
+Divide into objects	Diviser en objets
+The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons.	La zone est d'abord divisée en objets de couleur et de texture voisines, la classe s'applique à l'objet entier. Le résultat est un ensemble de polygones.
+Object scale	Échelle des objets
+The allowed diversity of an object. The larger it is, the larger the objects and the more unlike things they join. The scale is related to the area, so a change of the pixel hardly changes the size of objects.	La diversité admise d'un objet. Plus elle est grande, plus les objets sont grands et réunissent des choses différentes. L'échelle est rapportée à la zone, donc changer de pixel ne change presque pas la taille des objets.
+Texture share	Part de la texture
+The share of texture among the features, the rest is colour. Texture is the spread of brightness around a cell, it separates a forest from a meadow of the same colour.	La part de la texture parmi les attributs, le reste est la couleur. La texture est la dispersion de la luminosité autour d'une cellule, elle sépare une forêt d'un pré de même couleur.
+Least object, cells	Plus petit objet, cellules
+An object with fewer cells merges with its most similar neighbour.	Un objet ayant moins de cellules fusionne avec son voisin le plus proche.
+Merge neighbouring objects of one class	Fusionner les objets voisins d'une même classe
+Neighbouring objects of one class become one polygon. Without the flag each field or stand stays a separate object with its own values.	Les objets voisins d'une même classe deviennent un seul polygone. Sans la case, chaque champ ou peuplement reste un objet séparé avec ses valeurs.
+Similar areas…	Zones similaires…
+Similar areas	Zones similaires
+Similar areas {year}	Zones similaires {year}
+Outline a sample, the program finds objects of the area similar to it in colour and texture.	Entourez un échantillon, le programme trouve dans la zone des objets de couleur et de texture voisines.
+Outline a sample on the globe.	Entourez un échantillon sur le globe.
+There are no objects of the area in the sample outlines.	Les contours des échantillons ne contiennent aucun objet de la zone.
+Found objects {n}, {area} ha, {share} % of the area.	Objets trouvés {n}, {area} ha, {share} % de la zone.
+Outlines outside the objects of the area: {n}.	Contours hors des objets de la zone : {n}.
+Samples	Échantillons
+Contours: {n}	Contours : {n}
+Remove samples	Retirer les échantillons
+Remove all sample outlines.	Retirer tous les contours d'échantillons.
+Similarity	Similarité
+How much an object must resemble the sample. The selection changes at once, nothing is computed again. To the right - only very similar objects, to the left - wider.	À quel point un objet doit ressembler à l'échantillon. La sélection change aussitôt, rien n'est recalculé. À droite, seulement des objets très proches, à gauche, plus large.
+Merge neighbouring found objects	Fusionner les objets trouvés voisins
+Neighbouring found objects become one area. Without the flag each object stays a separate polygon.	Les objets trouvés voisins forment une seule zone. Sans la case, chaque objet reste un polygone séparé.
+Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.	Entourez un échantillon par des clics sur le globe, un clic sur le premier sommet ferme le contour. Il peut y avoir plusieurs échantillons.
+The area is divided into objects, each object is compared with the samples in colour and texture.	La zone est divisée en objets, chaque objet est comparé aux échantillons en couleur et en texture.
+The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	La part de la texture dans la division en objets et dans la comparaison avec l'échantillon, le reste est la couleur.
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	D'où viennent la couleur et la texture. Les vecteurs AlphaEarth sont chargés depuis le réseau, chaque bande d'un raster ouvert dans le programme est un attribut.

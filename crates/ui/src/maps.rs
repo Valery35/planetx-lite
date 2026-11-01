@@ -32,6 +32,8 @@ pub enum Kind {
     Cadastre,
     /// Карта из службы WMS поверх подложки.
     Wms(&'static WmsMap),
+    /// Границы полей года: картинки рисует `crate::fieldmap`.
+    Fields(i32),
 }
 
 /// Анализ рельефа: на глобусе одна из двух раскрасок, как у модуля.
@@ -74,7 +76,7 @@ pub struct Entry {
 /// Строки: темы GIBS в порядке `gallery_items` модуля, за ними слои
 /// в порядке `LAYERS`. «Повторяемости воды» в списке
 /// каталога модуля нет, её нет и здесь.
-pub const ALL: [Entry; 43] = [
+pub const ALL: [Entry; 45] = [
     Entry {
         key: "clouds",
         name: "Clouds",
@@ -300,6 +302,20 @@ pub const ALL: [Entry; 43] = [
         source: "ESA WorldCover 2021",
     },
     Entry {
+        key: "ftw_2025",
+        name: "Field boundaries 2025",
+        tip: "Boundaries of agricultural fields of the world for 2025 - a model estimate from Sentinel-2 imagery, not a cadastre. The colour is the model score from orange to green, fields with a score below 69 are not shown. Fields are seen up close, from a height of about 70 km and lower. A click in Identify features mode shows the score.",
+        group: Group::Life,
+        source: "Fields of the World",
+    },
+    Entry {
+        key: "ftw_2024",
+        name: "Field boundaries 2024",
+        tip: "Boundaries of agricultural fields of the world for 2024, the same set and the same model score as the row for 2025. Fields are seen up close, from a height of about 70 km and lower.",
+        group: Group::Life,
+        source: "Fields of the World",
+    },
+    Entry {
         key: "water_transitions",
         name: "Water transitions",
         tip: "What happened to water from 1984 to 2021 in Landsat images - permanent and seasonal water, new and lost, transitions between them, JRC Global Surface Water. New reservoirs, shrunken lakes and migrating channels are visible. A click in Identify features mode shows the class.",
@@ -387,6 +403,7 @@ pub struct WmsMap {
     pub template: &'static str,
     pub bbox: Option<[f64; 4]>,
     pub min_level: u32,
+    pub max_level: u32,
     pub credit: &'static str,
 }
 
@@ -402,13 +419,15 @@ impl WmsMap {
 }
 
 /// Своя служба WMS для настроек: название, шаблон GetMap, охват
-/// в градусах, подпись.
+/// в градусах, подпись. У снимка OpenAerialMap шаблон - тайлы {z}/{x}/{y}
+/// и max_level - его глубший уровень.
 #[derive(Debug, Clone, PartialEq)]
 pub struct WmsSaved {
     pub name: String,
     pub template: String,
     pub bbox: Option<[f64; 4]>,
     pub credit: String,
+    pub max_level: Option<u32>,
 }
 
 /// Строки карт сверх [`ALL`], номера - следом за ними в порядке
@@ -423,6 +442,7 @@ static DYNAMIC: std::sync::LazyLock<std::sync::RwLock<Vec<(&'static Entry, Kind)
                 template: leak(l.template()),
                 bbox: Some(scene::wms::mercator_box(l.bbox)),
                 min_level: scene::wms::first_level(l.bbox),
+                max_level: scene::wms::MAX_LEVEL,
                 credit: l.credit,
             };
             let entry: &'static Entry = Box::leak(Box::new(Entry { key: l.key, name: l.name, tip: l.about, group: Group::Local, source: l.credit }));
@@ -438,6 +458,8 @@ static GIBS_READY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool
 pub const GIBS_TIP: &str = "A layer of the whole NASA GIBS catalog. It behaves as a theme - one map on the globe, the series of dates goes to the time slider, the colour scale is in the legend. The names of the layers are in English.";
 /// Подсказка своей службы WMS, ключ перевода.
 pub const WMS_TIP: &str = "A map from a WMS service added in the window «New tile source». The globe asks the service for a picture of each tile in Web Mercator. Outside the area of the layer the base map of the globe is seen.";
+/// Подсказка снимка OpenAerialMap, ключ перевода.
+pub const OAM_TIP: &str = "An image from OpenAerialMap added in its window. It lies as tiles over the base map, the file is not downloaded. The provider and the license of the image are in the source line.";
 
 fn leak(text: String) -> &'static str {
     Box::leak(text.into_boxed_str())
@@ -481,7 +503,8 @@ pub fn register(layers: Vec<gibs::CatalogLayer>) {
 /// Возвращает номер строки.
 pub fn register_wms(saved: &WmsSaved) -> Option<usize> {
     let template = saved.template.trim();
-    if !(template.starts_with("https://") || template.starts_with("http://")) || !template.contains("{bbox}") || template.chars().any(char::is_whitespace) {
+    let tiles = data::oam::is_layer(template) && template.contains("{z}") && template.starts_with("https://");
+    if !(template.starts_with("https://") || template.starts_with("http://")) || !(tiles || template.contains("{bbox}")) || template.chars().any(char::is_whitespace) {
         return None;
     }
     let mut h: u64 = 0xcbf2_9ce4_8422_2325;
@@ -501,9 +524,11 @@ pub fn register_wms(saved: &WmsSaved) -> Option<usize> {
         template: leak(template.to_string()),
         bbox: saved.bbox.filter(|_| !world).map(scene::wms::mercator_box),
         min_level: saved.bbox.filter(|_| !world).map_or(0, scene::wms::first_level),
+        max_level: saved.max_level.filter(|_| tiles).map_or(scene::wms::MAX_LEVEL, |l| l.min(data::oam::MAX_LEVEL)),
         credit,
     };
-    let entry: &'static Entry = Box::leak(Box::new(Entry { key, name: leak(if name.is_empty() { "WMS".into() } else { name }), tip: WMS_TIP, group: Group::Local, source: credit }));
+    let tip = if tiles { OAM_TIP } else { WMS_TIP };
+    let entry: &'static Entry = Box::leak(Box::new(Entry { key, name: leak(if name.is_empty() { "WMS".into() } else { name }), tip, group: Group::Local, source: credit }));
     push_rows(vec![(entry, Kind::Wms(Box::leak(Box::new(map))))]);
     index(key)
 }
@@ -544,6 +569,9 @@ pub fn kind(key: &str) -> Option<Kind> {
     if key == "cadastre" {
         return Some(Kind::Cadastre);
     }
+    if let Some(year) = data::fieldmap::year_of(key) {
+        return Some(Kind::Fields(year));
+    }
     if let Some(t) = gibs::theme_of(key) {
         return Some(Kind::Theme(t));
     }
@@ -566,7 +594,7 @@ impl Kind {
     pub fn slot(self) -> Option<u8> {
         match self {
             Kind::Theme(_) => Some(0),
-            Kind::Field(_) | Kind::Map(_) => Some(1),
+            Kind::Field(_) | Kind::Map(_) | Kind::Fields(_) => Some(1),
             Kind::Terrain(_) => Some(2),
             Kind::Overlay(_) | Kind::Contours(_) | Kind::Clouds | Kind::Cadastre | Kind::Wms(_) => None,
         }
@@ -597,7 +625,8 @@ impl Kind {
             Kind::Terrain(_) => net::TERRARIUM.max_level,
             Kind::Clouds => data::clouds::MAX_LEVEL,
             Kind::Cadastre => data::cadastre::MAX_LEVEL,
-            Kind::Wms(_) => scene::wms::MAX_LEVEL,
+            Kind::Wms(w) => w.max_level,
+            Kind::Fields(_) => data::fieldmap::PAINT_LEVEL,
         }
     }
 
@@ -609,6 +638,7 @@ impl Kind {
         match self {
             Kind::Cadastre => data::cadastre::MIN_LEVEL,
             Kind::Wms(w) => w.min_level,
+            Kind::Fields(_) => data::fieldmap::MIN_LEVEL,
             _ => 0,
         }
     }
@@ -623,6 +653,7 @@ impl Kind {
             Kind::Clouds => data::clouds::ATTRIBUTION.0,
             Kind::Cadastre => data::cadastre::ATTRIBUTION.0,
             Kind::Wms(w) => w.credit,
+            Kind::Fields(_) => data::fieldmap::ATTRIBUTION,
             // Подпись высот Terrarium и так стоит на экране.
             Kind::Contours(_) | Kind::Terrain(_) => "",
         }
@@ -637,6 +668,7 @@ impl Kind {
             Kind::Theme(_) => gibs::ATTRIBUTION.1,
             Kind::Clouds => data::clouds::ATTRIBUTION.1,
             Kind::Cadastre => data::cadastre::ATTRIBUTION.1,
+            Kind::Fields(_) => data::fieldmap::TERMS,
             Kind::Contours(_) | Kind::Terrain(_) | Kind::Wms(_) => "",
         }
     }
@@ -649,6 +681,8 @@ impl Kind {
             Kind::Map(m) => rastermaps::map_rgba(m, rgba, m.opacity),
             Kind::Overlay(_) | Kind::Cadastre | Kind::Wms(_) => rastermaps::overlay_rgba(rgba),
             Kind::Theme(t) => gibs::overlay_rgba(rgba, gibs::OPACITY, t.clear),
+            // Картинка полей уже с премноженной альфой.
+            Kind::Fields(_) => Some(rgba.to_vec()),
             // Картинку горизонталей рисует задание по тайлу высот.
             Kind::Contours(_) => None,
             // Облака - белое и серое снимка, по широте рядов.
@@ -684,13 +718,14 @@ impl Kind {
             // Служба отказывает на частые запросы: тайлы по одному.
             Kind::Cadastre => vec![(0, net::Source { max_requests: 1, ..source(key, data::cadastre::URL, data::cadastre::MAX_LEVEL) })],
             // Служба WMS рисует каждую картинку заново: запросов - два.
-            Kind::Wms(w) => vec![(0, net::Source { max_requests: 2, ..source(w.key, w.template, scene::wms::MAX_LEVEL) })],
+            Kind::Wms(w) => vec![(0, net::Source { max_requests: 2, ..source(w.key, w.template, w.max_level) })],
             Kind::Map(m) if !m.coarse.is_empty() && m.split > 0 => {
                 vec![(0, source(coarse_name(key), m.coarse, m.split - 1)), (m.split, source(key, m.url, m.max_level))]
             }
             Kind::Map(m) => vec![(0, source(key, m.url, m.max_level))],
             // Адрес темы - на день, источник заводит окно по ряду дат.
-            Kind::Theme(_) => Vec::new(),
+            // Поля читает `crate::fieldmap` из архива PMTiles.
+            Kind::Theme(_) | Kind::Fields(_) => Vec::new(),
             // Высоты Terrarium до уровня съёмки, кэш - общий с рельефом.
             Kind::Contours(_) => vec![(0, net::Source { max_level: data::contours::SOURCE_LEVEL, ..net::TERRARIUM })],
             Kind::Terrain(_) => vec![(0, net::TERRARIUM)],
@@ -735,11 +770,15 @@ mod tests {
 
     #[test]
     fn wms_rows_register_once() {
-        let saved = super::WmsSaved { name: "Orthos".into(), template: "https://y.org/wms?SERVICE=WMS&BBOX={bbox}".into(), bbox: Some([10.0, 50.0, 11.0, 51.0]), credit: "Y".into() };
+        let saved = super::WmsSaved { name: "Orthos".into(), template: "https://y.org/wms?SERVICE=WMS&BBOX={bbox}".into(), bbox: Some([10.0, 50.0, 11.0, 51.0]), credit: "Y".into(), max_level: None };
         let n = super::register_wms(&saved);
         assert!(n.is_some());
         assert_eq!(super::register_wms(&saved), n);
-        assert!(super::register_wms(&super::WmsSaved { template: "https://y.org/{z}/{x}/{y}".into(), ..saved }).is_none());
+        assert!(super::register_wms(&super::WmsSaved { template: "https://y.org/{z}/{x}/{y}".into(), ..saved.clone() }).is_none());
+        // Снимок OpenAerialMap: тайлы своего глубшего уровня.
+        let image = super::WmsSaved { template: "https://tiles.openaerialmap.org/a/0/b/{z}/{x}/{y}".into(), max_level: Some(21), ..saved.clone() };
+        let m = super::register_wms(&image).and_then(super::entry).and_then(|e| kind(e.key));
+        assert!(matches!(m, Some(k @ super::Kind::Wms(_)) if k.max_level() == 21));
         let Some(super::Kind::Wms(w)) = n.and_then(super::entry).and_then(|e| kind(e.key)) else {
             return;
         };
@@ -756,7 +795,7 @@ mod tests {
                 return;
             };
             let sources = k.sources(e.key);
-            assert!(!sources.is_empty() || matches!(k, super::Kind::Theme(_)));
+            assert!(!sources.is_empty() || matches!(k, super::Kind::Theme(_) | super::Kind::Fields(_)));
             assert!(sources.iter().all(|(_, s)| s.url.starts_with("https://")));
         }
         // У покрытия земель мелкие уровни - из planetx-terrain.

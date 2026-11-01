@@ -1868,7 +1868,6 @@ The raster is not read.	Растр не прочитан.
 The raster has no coordinate system.	У растра не задана система координат.
 The grid of the area does not fit in memory, take a larger pixel.	Сетка участка не помещается в память, возьмите пиксель крупнее.
 The area is outside the raster.	Участок вне охвата растра.
-At least two classes with points on raster cells with data are needed.	Нужно хотя бы два класса с точками на клетках растра с данными.
 The raster bands do not change in the area, the classes cannot be told apart.	Каналы растра на участке не меняются, классы различить нельзя.
 The raster is no longer open.	Растр больше не открыт.
 What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	По чему клетки делятся на классы. Векторы AlphaEarth загружаются из сети. У растра, открытого в программе, каждый канал - признак, сеть не нужна.
@@ -1876,3 +1875,74 @@ The pixel of the classification. «Auto» takes the pixel of the raster if the a
 Each cell of the area goes to the class of the nearest control points by the raster bands.	Каждая клетка участка относится к классу ближайших контрольных точек по каналам растра.
 Classes of the area by control points on the globe - by the bands of an opened raster.	Классы участка по контрольным точкам на глобусе - по каналам открытого растра.
 Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	Растр {name}: каналов {n}. Он стал источником окна «Классификация», рельеф не изменился.
+Field boundaries 2025	Границы полей 2025
+Field boundaries 2024	Границы полей 2024
+Boundaries of agricultural fields of the world for 2025 - a model estimate from Sentinel-2 imagery, not a cadastre. The colour is the model score from orange to green, fields with a score below 69 are not shown. Fields are seen up close, from a height of about 70 km and lower. A click in Identify features mode shows the score.	Границы сельскохозяйственных полей мира за 2025 год - оценка модели по снимкам Sentinel-2, а не кадастр. Цвет - оценка модели от оранжевого к зелёному, поля с оценкой ниже 69 не показаны. Поля видны вблизи, с высоты около 70 км и ниже. Щелчок в режиме «Определить объекты» показывает оценку.
+Boundaries of agricultural fields of the world for 2024, the same set and the same model score as the row for 2025. Fields are seen up close, from a height of about 70 km and lower.	Границы сельскохозяйственных полей мира за 2024 год, тот же набор и та же оценка модели, что у строки за 2025 год. Поля видны вблизи, с высоты около 70 км и ниже.
+Field boundary score 2025	Оценка границ полей 2025
+Field boundary score 2024	Оценка границ полей 2024
+Model score	Оценка модели
+{score} of 100	{score} из 100
+What this is	Что это
+A model estimate from Sentinel-2 imagery, not a cadastral parcel.	Оценка модели по снимкам Sentinel-2, не кадастровый участок.
+Field of {year}	Поле {year} года
+Field boundaries	Границы полей
+OpenAerialMap imagery…	Снимки OpenAerialMap…
+OpenAerialMap imagery	Снимки OpenAerialMap
+{value} cm	{value} см
+{value} GB	{value} ГБ
+{value} MB	{value} МБ
+OpenAerialMap did not answer.	Служба OpenAerialMap не ответила.
+Searching for images…	Поиск снимков…
+There are no images in the view frame. Images cover the world unevenly, zoom out and press «Search in the view».	В рамке вида снимков нет. Снимки покрывают мир неравномерно, отдалите вид и нажмите «Искать в виде».
+Images in the view frame: {found}, in the list {count}.	Снимков в рамке вида: {found}, в списке {count}.
+Title or provider	Название или поставщик
+File	Файл
+License	Лицензия
+Search in the view	Искать в виде
+Images in the present view frame of the globe, newest first.	Снимки в нынешней рамке вида глобуса, новые первыми.
+More	Ещё
+The next images of the same frame, older ones.	Следующие снимки той же рамки, более старые.
+The image lies as a tile layer over the base map, a row in the catalogue. The file is not downloaded.	Снимок ложится слоем тайлов поверх подложки, строкой каталога. Файл не скачивается.
+Flight to the frame of the chosen image.	Перелёт к рамке выбранного снимка.
+The images are uploaded by contributors of Open Imagery Network. Each image has its own license, it is shown in the list and written to the credit of the layer. Images with NC are for non-commercial use only.	Снимки загружены участниками Open Imagery Network. У каждого снимка своя лицензия, она показана в списке и записывается в подпись слоя. Снимки с NC - только для некоммерческого использования.
+The image did not open: {title}.	Снимок не открылся: {title}.
+The image is on the globe: {title}.	Снимок на глобусе: {title}.
+An image from OpenAerialMap added in its window. It lies as tiles over the base map, the file is not downloaded. The provider and the license of the image are in the source line.	Снимок OpenAerialMap, добавленный в его окне. Он лежит тайлами поверх подложки, файл не скачивается. Поставщик и лицензия снимка - в строке источника.
+At least two classes with points on cells with data are needed.	Нужно хотя бы два класса с точками на клетках с данными.
+The whole area came out as one object, reduce the object scale.	Весь участок вышел одним объектом, уменьшите масштаб объектов.
+For objects the grid of the area is too large, take a larger pixel or «Auto».	Для объектов сетка участка слишком велика, возьмите пиксель крупнее или «Авто».
+Dividing the area into objects…	Участок делится на объекты…
+Dividing the area into objects: {done} %.	Участок делится на объекты: {done} %.
+Objects {n}, mean {area} ha.	Объектов {n}, средний {area} га.
+Objects: {name}	Объекты: {name}
+Divide into objects	Делить на объекты
+The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons.	Участок сначала делится на объекты, похожие по цвету и текстуре, класс получает объект целиком. Итог - многоугольники.
+Object scale	Масштаб объектов
+The allowed diversity of an object. The larger it is, the larger the objects and the more unlike things they join. The scale is related to the area, so a change of the pixel hardly changes the size of objects.	Допустимая разнородность объекта. Чем больше, тем крупнее объекты и тем больше несхожего они объединяют. Масштаб отнесён к участку, поэтому смена пикселя размер объектов почти не меняет.
+Texture share	Доля текстуры
+The share of texture among the features, the rest is colour. Texture is the spread of brightness around a cell, it separates a forest from a meadow of the same colour.	Доля текстуры среди признаков, остальное - цвет. Текстура - разброс яркости вокруг клетки, она отделяет лес от луга того же цвета.
+Least object, cells	Наименьший объект, клеток
+An object with fewer cells merges with its most similar neighbour.	Объект меньше этого количества клеток сливается с самым похожим соседом.
+Merge neighbouring objects of one class	Сливать соседние объекты одного класса
+Neighbouring objects of one class become one polygon. Without the flag each field or stand stays a separate object with its own values.	Соседние объекты одного класса становятся одним многоугольником. Без флажка каждое поле или выдел остаётся отдельным объектом со своими значениями.
+Similar areas…	Похожие области…
+Similar areas	Похожие области
+Similar areas {year}	Похожие области {year}
+Outline a sample, the program finds objects of the area similar to it in colour and texture.	Обведите образец, программа найдёт на участке объекты, похожие на него по цвету и текстуре.
+Outline a sample on the globe.	Обведите образец на глобусе.
+There are no objects of the area in the sample outlines.	В контурах образцов нет объектов участка.
+Found objects {n}, {area} ha, {share} % of the area.	Найдено объектов {n}, {area} га, {share} % участка.
+Outlines outside the objects of the area: {n}.	Контуров вне объектов участка: {n}.
+Samples	Образцы
+Contours: {n}	Контуров: {n}
+Remove samples	Убрать образцы
+Remove all sample outlines.	Убрать все контуры образцов.
+Similarity	Похожесть
+How much an object must resemble the sample. The selection changes at once, nothing is computed again. To the right - only very similar objects, to the left - wider.	Насколько объект должен походить на образец. Выборка меняется сразу, расчёт заново не идёт. Вправо - только очень похожие, влево - шире.
+Merge neighbouring found objects	Сливать соседние найденные объекты
+Neighbouring found objects become one area. Without the flag each object stays a separate polygon.	Соседние найденные объекты становятся одной областью. Без флажка каждый объект остаётся отдельным многоугольником.
+Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.	Щелчками по глобусу обведите образец, щелчок по первой вершине замыкает контур. Образцов может быть несколько.
+The area is divided into objects, each object is compared with the samples in colour and texture.	Участок делится на объекты, каждый объект сравнивается с образцами по цвету и текстуре.
+The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	Доля текстуры в делении на объекты и в сравнении с образцом, остальное - цвет.
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	Откуда берутся цвет и текстура. Векторы AlphaEarth загружаются из сети, у растра, открытого в программе, каждый канал - признак.

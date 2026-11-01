@@ -383,6 +383,8 @@ pub struct LiteApp {
     aef_change: Option<crate::aefcalc::ChangeCalc>,
     /// Окно «Классификация» и его слой.
     aef_class: Option<crate::aefclass::ClassCalc>,
+    /// Окно «Похожие области» и его слой.
+    similar: Option<crate::aefclass::ClassCalc>,
     /// Многоканальные растры: рельеф они не меняют, ждут классификации.
     band_rasters: Vec<crate::aefclass::Raster>,
     /// Общий участок окон анализа - вершины, `GlobeWindow.site` модуля.
@@ -426,6 +428,8 @@ pub struct LiteApp {
     buildings: Option<crate::buildings::Buildings>,
     /// Загрузчик зданий Overture, когда здания из него.
     overture: Option<crate::overture::Overture>,
+    /// Картинки границ полей, когда строка включена.
+    field_tiles: Option<crate::fieldmap::FieldTiles>,
     building_keys: HashSet<TileKey>,
     building_only: HashSet<TileKey>,
     /// Сведения об участках кадастра под щелчком: точка и запрос, пришедшие
@@ -436,6 +440,8 @@ pub struct LiteApp {
     currents: Option<crate::currents::Currents>,
     /// Окно «Карты Рамсея».
     rumsey: Option<crate::rumsey::Rumsey>,
+    /// Окно «Снимки OpenAerialMap».
+    oam: Option<crate::oam::Oam>,
     /// Окно «Космоснимки».
     sentinel: Option<crate::sentinel::Sentinel>,
     /// Объекты живых строк на этот кадр, для окна «Объекты» и меню.
@@ -1138,6 +1144,7 @@ impl LiteApp {
             shadows: None,
             aef_change: None,
             aef_class: None,
+            similar: None,
             band_rasters: Vec::new(),
             area_site: None,
             relief_calc: None,
@@ -1167,12 +1174,14 @@ impl LiteApp {
             mining: None,
             buildings: None,
             overture: None,
+            field_tiles: None,
             building_keys: HashSet::new(),
             building_only: HashSet::new(),
             parcel_ask: None,
             parcels: Vec::new(),
             currents: None,
             rumsey: None,
+            oam: None,
             sentinel: None,
             live_objects: Vec::new(),
             live_follow: None,
@@ -1983,6 +1992,19 @@ impl LiteApp {
                 }
                 self.join_site(&choice, lat, lon);
             }
+            Choice::Similar => {
+                let Some((lat, lon)) = point else {
+                    return;
+                };
+                let name = place.as_ref().map(|(_, n)| n.clone()).unwrap_or_default();
+                let coords = format!("{lat:.5}, {lon:.5}");
+                let title = if name.is_empty() { coords } else { format!("{name}  {coords}") };
+                match &mut self.similar {
+                    Some(c) => c.set_point(lat, lon, title),
+                    None => self.similar = Some(crate::aefclass::ClassCalc::similar(lat, lon, title, self.open_rasters(), self.lang)),
+                }
+                self.join_site(&choice, lat, lon);
+            }
             Choice::SlopeHere => {
                 let Some((lat, lon)) = point else {
                     return;
@@ -2033,13 +2055,7 @@ impl LiteApp {
             }
             Choice::Rumsey => {
                 if let Some((lat, lon)) = point {
-                    // Рамка вида - по ширине и высоте вида у точки взгляда.
-                    let width = self.view_width();
-                    let height = width / self.nav.camera.aspect().max(0.1);
-                    let (pl, plon) = (self.nav.pose.lat, self.nav.pose.lon);
-                    let dlat = (height / 2.0 / 111_320.0).min(85.0);
-                    let dlon = (width / 2.0 / (111_320.0 * pl.to_radians().cos().max(0.05))).min(180.0);
-                    let view = [plon - dlon, (pl - dlat).max(-90.0), plon + dlon, (pl + dlat).min(90.0)];
+                    let view = self.view_box();
                     match &mut self.rumsey {
                         Some(r) => r.show_view(lat, lon, view),
                         None => {
@@ -2047,6 +2063,15 @@ impl LiteApp {
                             self.rumsey = Some(crate::rumsey::Rumsey::new(lat, lon, view, &|limit: u64| (loaders.request)(limit)));
                         }
                     }
+                }
+            }
+            Choice::Oam => {
+                let view = self.view_box();
+                let loaders = &self.loaders;
+                let request = |limit: u64| (loaders.request)(limit);
+                match &mut self.oam {
+                    Some(o) => o.show_view(view, &request),
+                    None => self.oam = Some(crate::oam::Oam::new(view, &request)),
                 }
             }
             Choice::Etomesto => {
@@ -2331,6 +2356,7 @@ impl LiteApp {
         {
             groups.extend(crate::mapvalue::group(self.lang, ask.key, answer, ask.at));
         }
+        groups.extend(self.field_tiles.as_ref().and_then(|f| f.group(self.lang, lat, lon)));
         crate::identify::Objects { point: self.point_text(lat, lon, height, 6), groups, at: (lat, lon) }
     }
 
@@ -2348,6 +2374,17 @@ impl LiteApp {
     /// Ширина вида в метрах у точки взгляда.
     fn view_width(&self) -> f64 {
         2.0 * self.nav.pose.distance * (self.nav.camera.fov_y.to_radians() / 2.0).tan() * self.nav.camera.aspect()
+    }
+
+    /// Рамка вида (запад, юг, восток, север) по ширине и высоте вида у точки
+    /// взгляда, `oam_box` модуля.
+    fn view_box(&self) -> data::rumsey::Bbox {
+        let width = self.view_width();
+        let height = width / self.nav.camera.aspect().max(0.1);
+        let (pl, plon) = (self.nav.pose.lat, self.nav.pose.lon);
+        let dlat = (height / 2.0 / 111_320.0).min(85.0);
+        let dlon = (width / 2.0 / (111_320.0 * pl.to_radians().cos().max(0.05))).min(180.0);
+        [plon - dlon, (pl - dlat).max(-90.0), plon + dlon, (pl + dlat).min(90.0)]
     }
 
     /// Значение карты значений или готовой карты под точкой, как
@@ -3287,6 +3324,12 @@ impl LiteApp {
             }
         }
         on.sort_by_key(|(_, k)| !k.is_single());
+        // Границы полей - своим загрузчиком архива PMTiles.
+        let year = on.iter().find_map(|(_, k)| if let crate::maps::Kind::Fields(y) = k { Some(*y) } else { None });
+        if self.field_tiles.as_ref().map(|f| f.year) != year {
+            let loaders = &self.loaders;
+            self.field_tiles = year.map(|y| crate::fieldmap::FieldTiles::new(y, &|limit: u64| (loaders.request)(limit)));
+        }
         self.map_loaders.retain(|k, _| on.iter().any(|(id, _)| id == k));
         for (id, kind) in &on {
             if !self.map_loaders.contains_key(id) {
@@ -3775,6 +3818,7 @@ impl LiteApp {
             Choice::Shadows => self.shadows.as_mut().and_then(crate::pointcalc::Calc::site_edit),
             Choice::Changes => self.aef_change.as_mut().and_then(crate::aefcalc::ChangeCalc::site_edit),
             Choice::Classes => self.aef_class.as_mut().and_then(crate::aefclass::ClassCalc::site_edit),
+            Choice::Similar => self.similar.as_mut().and_then(crate::aefclass::ClassCalc::site_edit),
             Choice::SlopeHere => self.relief_calc.as_mut().and_then(crate::reliefcalc::ReliefCalc::site_edit),
             Choice::Flood => self.hydro.flood_site.as_mut(),
             Choice::Flow => self.hydro.flow_site.as_mut(),
@@ -4231,6 +4275,50 @@ impl LiteApp {
         if changed {
             let age = ages[state.index.min(last)];
             self.set_basemap(Basemap::Paleo(age));
+        }
+    }
+
+    /// Окно «Снимки OpenAerialMap»: поиск, перелёт, снимок - строкой карт
+    /// поверх подложки, `add_oam_image` модуля. Тот же снимок новой строки
+    /// не даёт.
+    fn step_oam(&mut self, ctx: &egui::Context, now: f64) {
+        let lang = self.lang;
+        let view = self.view_box();
+        let Some(o) = &mut self.oam else {
+            return;
+        };
+        {
+            let loaders = &self.loaders;
+            let request = |limit: u64| (loaders.request)(limit);
+            o.step(lang, ctx);
+            o.show(ctx, lang, &request);
+            if std::mem::take(&mut o.search) {
+                o.show_view(view, &request);
+            }
+        }
+        if o.busy() {
+            ctx.request_repaint_after(std::time::Duration::from_millis(100));
+        }
+        if let Some(b) = o.fly.take() {
+            let distance = data::rumsey::fly_distance(&b, self.nav.camera.fov_y);
+            crate::input::fly(&mut self.nav, Pose::new((b[1] + b[3]) / 2.0, (b[0] + b[2]) / 2.0, distance, 0.0, 0.0), now);
+        }
+        let add = o.add.take();
+        if !o.open {
+            self.oam = None;
+        }
+        let Some(image) = add else {
+            return;
+        };
+        let name: String = [image.day.as_str(), image.title.as_str()].iter().filter(|p| !p.is_empty()).copied().collect::<Vec<_>>().join(" ").chars().take(100).collect();
+        let saved = crate::maps::WmsSaved { name: if name.is_empty() { image.url.clone() } else { name }, template: image.tiles.clone(), bbox: Some(image.bbox), credit: data::oam::rights(&image), max_level: Some(data::oam::max_level(&image)) };
+        if let Some(n) = crate::maps::register_wms(&saved) {
+            if !self.settings.wms.contains(&saved) {
+                self.settings.wms.push(saved);
+                self.settings_dirty = true;
+            }
+            self.extras.insert(crate::layers::Extra::Map(n));
+            self.set_extra(crate::layers::Extra::Map(n), true);
         }
     }
 
@@ -4989,8 +5077,8 @@ impl LiteApp {
                 changed |= std::mem::take(&mut calc.changed);
             }
             let rasters = self.open_rasters();
-            if let Some(calc) = &mut self.aef_class {
-                calc.rasters = rasters;
+            for calc in [&mut self.aef_class, &mut self.similar].into_iter().flatten() {
+                calc.rasters = rasters.clone();
                 calc.show(ctx, lang);
                 calc.step(lang, &*self.loaders.request);
                 changed |= std::mem::take(&mut calc.changed);
@@ -5014,6 +5102,7 @@ impl LiteApp {
         saved.append(&mut self.hydro.saved);
         saved.extend(self.aef_change.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.aef_class.as_mut().and_then(|c| c.saved.take()));
+        saved.extend(self.similar.as_mut().and_then(|c| c.saved.take()));
         for s in saved {
             self.save_analysis(&s);
         }
@@ -5050,6 +5139,9 @@ impl LiteApp {
         }
         if self.aef_class.as_ref().is_some_and(|c| !c.open && c.layer.is_none() && !c.busy()) {
             self.aef_class = None;
+        }
+        if self.similar.as_ref().is_some_and(|c| !c.open && c.layer.is_none() && !c.busy()) {
+            self.similar = None;
         }
         if let Some(crate::pointcalc::Layer::Insolation(r)) = self.insolation.as_ref().and_then(|c| c.layer.as_ref()) {
             // Над глобусом, левая панель её не закрывает.
@@ -5168,6 +5260,9 @@ impl LiteApp {
         }
         if let Some(l) = self.aef_class.as_ref().and_then(|c| c.layer.clone()) {
             painters.push(("aef_class", crate::aefclass::painter(l)));
+        }
+        if let Some(l) = self.similar.as_ref().and_then(|c| c.layer.clone()) {
+            painters.push(("similar", crate::aefclass::painter(l)));
         }
         self.vector.set_painters(painters);
     }
@@ -5319,7 +5414,7 @@ impl LiteApp {
         {
             let base = scene::wms::base_url(&d.asked);
             let template = scene::wms::getmap_template(&base, &caps.version, &layer.names, scene::wms::mercator_code(&layer.crs), scene::wms::pick_format(&caps.formats));
-            let saved = crate::maps::WmsSaved { name: d.name.clone(), template, bbox: layer.bbox, credit: d.credit.clone() };
+            let saved = crate::maps::WmsSaved { name: d.name.clone(), template, bbox: layer.bbox, credit: d.credit.clone(), max_level: None };
             let layer_box = layer.bbox;
             self.own_dialog = None;
             if let Some(n) = crate::maps::register_wms(&saved) {
@@ -7363,6 +7458,9 @@ impl LiteApp {
         if self.rumsey.is_some() {
             parts.push(data::rumsey::ATTRIBUTION);
         }
+        if self.oam.is_some() {
+            parts.push((data::oam::ATTRIBUTION, ""));
+        }
         if !self.wiki_labels.is_empty() {
             parts.push(data::wikipedia::ATTRIBUTION);
         }
@@ -7892,9 +7990,11 @@ impl eframe::App for LiteApp {
             || self.parcel_ask.is_some()
             || self.currents.as_ref().is_some_and(crate::currents::Currents::busy)
             || self.rumsey.as_ref().is_some_and(crate::rumsey::Rumsey::busy)
+            || self.oam.as_ref().is_some_and(crate::oam::Oam::busy)
             || self.sentinel.as_ref().is_some_and(crate::sentinel::Sentinel::busy)
             || self.buildings.as_ref().is_some_and(|b| b.busy(self.heights.read().version()))
             || self.overture.as_ref().is_some_and(crate::overture::Overture::busy)
+            || self.field_tiles.as_ref().is_some_and(crate::fieldmap::FieldTiles::busy)
             || self.gibs_catalog.is_some()
             || self.events.busy()
             || self.lidar.as_ref().is_some_and(crate::lidarnet::Lidar::busy)
@@ -7908,6 +8008,7 @@ impl eframe::App for LiteApp {
             || self.shadows.as_ref().is_some_and(crate::pointcalc::Calc::busy)
             || self.aef_change.as_ref().is_some_and(crate::aefcalc::ChangeCalc::busy)
             || self.aef_class.as_ref().is_some_and(crate::aefclass::ClassCalc::busy)
+            || self.similar.as_ref().is_some_and(crate::aefclass::ClassCalc::busy)
             || self.section.as_ref().is_some_and(crate::section::SectionWindow::busy)
             || self.cog_base.as_ref().is_some_and(crate::cogtiles::CogTiles::busy)
             || self.relief.busy();
@@ -7958,7 +8059,7 @@ impl eframe::App for LiteApp {
                 || {
                     // Классификация: участок и контрольные точки щелчком.
                     let nav = &self.nav;
-                    self.aef_class.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav))
+                    self.aef_class.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav)) || self.similar.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav))
                 };
             // Изменённый участок - общий для открытых окон анализа.
             let edits = [&mut self.viewshed, &mut self.insolation, &mut self.shadows]
@@ -7969,6 +8070,7 @@ impl eframe::App for LiteApp {
                 .chain(self.hydro.site_edits())
                 .chain(self.aef_change.as_mut().and_then(crate::aefcalc::ChangeCalc::site_edit))
                 .chain(self.aef_class.as_mut().and_then(crate::aefclass::ClassCalc::site_edit))
+                .chain(self.similar.as_mut().and_then(crate::aefclass::ClassCalc::site_edit))
                 .collect();
             crate::analysis::share_sites(&mut self.area_site, edits);
             // Камера следом: колесо - расстояние до объекта, Esc отпускает,
@@ -8054,6 +8156,7 @@ impl eframe::App for LiteApp {
             if self.tool.is_none()
                 && !self.identify
                 && !padded
+                && !busy
                 && globe_response.clicked()
                 && let (Some(pos), Some(tree)) = (globe_response.interact_pointer_pos(), self.marks.tree.as_ref())
             {
@@ -8068,6 +8171,7 @@ impl eframe::App for LiteApp {
             if self.tool.is_none()
                 && !self.identify
                 && !padded
+                && !busy
                 && self.card.is_none()
                 && globe_response.clicked()
                 && let Some(pos) = globe_response.interact_pointer_pos()
@@ -8133,6 +8237,7 @@ impl eframe::App for LiteApp {
         self.step_lidar(now);
         self.step_events(now);
         self.step_rumsey(&ctx, now);
+        self.step_oam(&ctx, now);
         self.step_sentinel(&ctx, now);
         self.step_tracks(&ctx);
         self.step_ai(&ctx, now);
@@ -8321,6 +8426,13 @@ impl eframe::App for LiteApp {
             let image = self.polar.images[usize::from(!north)].as_ref().filter(|_| imagery);
             if image.is_some() != globe.has_polar_image(north) {
                 globe.set_polar_image(north, image.cloned());
+            }
+        }
+        if let Some(fields) = &mut self.field_tiles {
+            let id = data::fieldmap::key(fields.year);
+            let keys: Vec<TileKey> = map_tiles.iter().filter(|(k, _, _)| *k == id).map(|(_, key, _)| *key).collect();
+            for (key, rgba) in fields.step(&keys, now, &*self.loaders.request) {
+                self.vector.add_map(id, key, rgba);
             }
         }
         for (id, loaders) in &self.map_loaders {
@@ -8517,9 +8629,9 @@ impl eframe::App for LiteApp {
             painter.text(at + egui::vec2(1.0, 1.0), egui::Align2::LEFT_BOTTOM, text, font.clone(), egui::Color32::from_black_alpha(200));
             painter.text(at, egui::Align2::LEFT_BOTTOM, text, font, egui::Color32::WHITE);
         }
-        // Рамки карт окна «Карты Рамсея», выбранная - ярче.
-        if let Some(r) = &self.rumsey {
-            let (boxes, selected) = r.footprints();
+        // Рамки карт окна «Карты Рамсея» и снимков OpenAerialMap, выбранная -
+        // ярче.
+        for (boxes, selected) in self.rumsey.as_ref().map(crate::rumsey::Rumsey::footprints).into_iter().chain(self.oam.as_ref().map(crate::oam::Oam::footprints)) {
             let e = self.nav.camera.ellipsoid;
             let store = self.heights.read();
             let frame = |b: &data::rumsey::Bbox, stroke: egui::Stroke| {
@@ -8625,7 +8737,7 @@ impl eframe::App for LiteApp {
         if let Some(calc) = self.aef_change.as_ref().filter(|c| c.open) {
             calc.site.paint(&painter, rect, ppp, &self.nav);
         }
-        if let Some(calc) = &self.aef_class {
+        for calc in [&self.aef_class, &self.similar].into_iter().flatten() {
             calc.paint(&painter, rect, ppp, &self.nav);
         }
         // Точка пути под курсором графика профиля, как у модуля.

@@ -186,6 +186,8 @@ pub fn title(key: &str) -> &'static str {
         "glim" => "GLiM lithology",
         "water_transitions" => "Water transitions 1984-2021, JRC",
         "worldcover" => "ESA WorldCover 2021 land cover",
+        "ftw_2025" => "Field boundary score 2025",
+        "ftw_2024" => "Field boundary score 2024",
         _ => "",
     }
 }

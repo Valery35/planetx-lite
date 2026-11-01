@@ -155,7 +155,7 @@ impl Settings {
             + &self
                 .wms
                 .iter()
-                .map(|w| format!("wms={}\t{}\t{}\t{}\n", w.name, w.template, w.bbox.map(|b| b.map(|v| v.to_string()).join(",")).unwrap_or_default(), w.credit))
+                .map(|w| format!("wms={}\t{}\t{}\t{}{}\n", w.name, w.template, w.bbox.map(|b| b.map(|v| v.to_string()).join(",")).unwrap_or_default(), w.credit, w.max_level.map_or(String::new(), |l| format!("\t{l}"))))
                 .collect::<String>()
             + &format!("sat_groups={}\n", self.sat_groups.join(","))
             + &format!("constellations={}\ndeepsky={}\nsky_imagery={}\n", self.constellations, self.deepsky, self.sky_imagery)
@@ -180,10 +180,12 @@ impl Settings {
         }
         // Свои службы WMS - раньше карт: карта может быть из них.
         for value in text.lines().filter_map(|l| l.strip_prefix("wms=")) {
-            if let [name, template, bbox, credit] = value.split('\t').collect::<Vec<&str>>().as_slice() {
+            let parts = value.split('\t').collect::<Vec<&str>>();
+            if let [name, template, bbox, credit, ..] = parts.as_slice() {
                 let numbers: Vec<f64> = bbox.split(',').filter_map(|v| v.trim().parse().ok()).filter(|v: &f64| v.is_finite()).collect();
                 let bbox = <[f64; 4]>::try_from(numbers).ok();
-                let saved = crate::maps::WmsSaved { name: name.to_string(), template: template.to_string(), bbox, credit: credit.to_string() };
+                let max_level = parts.get(4).and_then(|l| l.trim().parse().ok());
+                let saved = crate::maps::WmsSaved { name: name.to_string(), template: template.to_string(), bbox, credit: credit.to_string(), max_level };
                 if crate::maps::register_wms(&saved).is_some() && !s.wms.contains(&saved) {
                     s.wms.push(saved);
                 }
@@ -426,7 +428,7 @@ mod tests {
 
     #[test]
     fn settings_round_trip_and_hostile_text() {
-        let s = Settings { section_colors: vec![("Уголь_top".into(), Some([1, 2, 255]), None), ("@host".into(), None, Some([9, 8, 7]))], language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, stars: false, sea: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()], route: "foot".into(), opacity: vec![("emag".into(), 0.5)], stretch: false, own: Vec::new(), wms: vec![crate::maps::WmsSaved { name: "Orthos".into(), template: "https://x.org/wms?SERVICE=WMS&BBOX={bbox}".into(), bbox: Some([-76.1, 39.5, -74.4, 40.6]), credit: "X".into() }], geoid_scale: 2000.0, links: vec![("OSM".into(), "https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map={zoom}/{lat}/{lon}".into())], sat_groups: vec!["gnss".into(), "geo".into()], constellations: false, deepsky: false, sky_imagery: false, ai: crate::ai::AiSettings { provider: "anthropic".into(), keys: vec![("anthropic".into(), "sk-ant-1".into())], search: false, ..Default::default() } };
+        let s = Settings { section_colors: vec![("Уголь_top".into(), Some([1, 2, 255]), None), ("@host".into(), None, Some([9, 8, 7]))], language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, stars: false, sea: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()], route: "foot".into(), opacity: vec![("emag".into(), 0.5)], stretch: false, own: Vec::new(), wms: vec![crate::maps::WmsSaved { name: "Orthos".into(), template: "https://x.org/wms?SERVICE=WMS&BBOX={bbox}".into(), bbox: Some([-76.1, 39.5, -74.4, 40.6]), credit: "X".into(), max_level: None }, crate::maps::WmsSaved { name: "Снимок".into(), template: "https://tiles.openaerialmap.org/a/0/b/{z}/{x}/{y}".into(), bbox: Some([120.1, -8.4, 120.2, -8.3]), credit: "Y, CC BY 4.0".into(), max_level: Some(21) }], geoid_scale: 2000.0, links: vec![("OSM".into(), "https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map={zoom}/{lat}/{lon}".into())], sat_groups: vec!["gnss".into(), "geo".into()], constellations: false, deepsky: false, sky_imagery: false, ai: crate::ai::AiSettings { provider: "anthropic".into(), keys: vec![("anthropic".into(), "sk-ant-1".into())], search: false, ..Default::default() } };
         assert_eq!(Settings::from_text(&s.to_text()), s);
         let bad = Settings::from_text("language=xx\nlabels=../x\ntheme=dark\nscale=1e9\nscale=NaN\nfoo=bar\nno equals\nplaces_height=-5\nplaces_height=NaN\nmaps=emag,../x,gibs:MODIS_Terra_NDSI_Snow_Cover\nwms=a\tftp://x/{bbox}\t\tb");
         assert_eq!(bad.maps, ["emag", "gibs:MODIS_Terra_NDSI_Snow_Cover"]);

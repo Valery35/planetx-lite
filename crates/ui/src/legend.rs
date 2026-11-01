@@ -52,6 +52,7 @@ pub type ThemeScale = (&'static str, String, Option<data::gibs::Colormap>);
 fn scale_of(key: &str, kind: Kind) -> Option<Scale> {
     match kind {
         Kind::Field(f) => Some(Scale::Bar { title: crate::mapvalue::title(key), stops: f.stops, ticks: f.ticks, log: false }),
+        Kind::Fields(_) => Some(Scale::Bar { title: crate::mapvalue::title(key), stops: &data::fieldmap::STOPS, ticks: &data::fieldmap::TICKS, log: false }),
         Kind::Map(m) => match m.reading {
             Reading::Classes(classes) => Some(Scale::Rows {
                 title: crate::mapvalue::title(key),

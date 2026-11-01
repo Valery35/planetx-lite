@@ -55,6 +55,8 @@ pub enum Choice {
     /// «Изменения местности…» и «Классификация…».
     Changes,
     Classes,
+    /// «Похожие области…».
+    Similar,
     /// «Старые карты «Это Место»…».
     Etomesto,
     /// «Исторические карты Рамсея…».
@@ -63,6 +65,8 @@ pub enum Choice {
     Sentinel,
     /// «Облака точек лидара».
     Lidar,
+    /// «Снимки OpenAerialMap…».
+    Oam,
     /// «Уклон и экспозиция…» подменю «Анализ участка».
     SlopeHere,
     /// «Затопление…», «Сток воды…», «Уровень моря…» подменю «Анализ
@@ -252,8 +256,10 @@ impl GlobeMenu {
                                         if !cfg!(target_arch = "wasm32") {
                                             item(ui, "Changes of the terrain…", "Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.", Choice::Changes);
                                             item(ui, "Classification…", "Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.", Choice::Classes);
+                                            item(ui, "Similar areas…", "Outline a sample, the program finds objects of the area similar to it in colour and texture.", Choice::Similar);
                                         } else if self.rasters {
                                             item(ui, "Classification…", "Classes of the area by control points on the globe - by the bands of an opened raster.", Choice::Classes);
+                                            item(ui, "Similar areas…", "Outline a sample, the program finds objects of the area similar to it in colour and texture.", Choice::Similar);
                                         }
                                     }
                                     ui.separator();
@@ -265,9 +271,11 @@ impl GlobeMenu {
                             if self.earth {
                                 pick(ui, tr(lang, "Satellite images…"), Choice::Sentinel);
                                 pick(ui, tr(lang, "Lidar point clouds"), Choice::Lidar);
-                                // Карты Рамсея (IIIF) и «Это место» не отдают
-                                // данные странице, у неё этих пунктов нет.
+                                // Карты Рамсея (IIIF), «Это место» и поиск
+                                // OpenAerialMap не отдают данные странице,
+                                // у неё этих пунктов нет.
                                 if !cfg!(target_arch = "wasm32") {
+                                    pick(ui, tr(lang, "OpenAerialMap imagery…"), Choice::Oam);
                                     ui.separator();
                                     pick(ui, tr(lang, "Rumsey historical maps…"), Choice::Rumsey);
                                     pick(ui, tr(lang, "Eto Mesto old maps…"), Choice::Etomesto);

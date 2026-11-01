@@ -155,6 +155,8 @@ fn key_words(key: &str) -> &'static [&'static str] {
         "seafloor_age" => &["возраст дна", "возраст океанического дна", "возраст коры", "спрединг", "seafloor age", "ocean age"],
         "heatflow" => &["тепловой поток", "геотермия", "теплопоток", "heat flow", "geothermal"],
         "worldcover" => &["покрытие земель", "растительность", "лес", "пашня", "застройка", "землепользование", "worldcover", "land cover"],
+        "ftw_2025" => &["границы полей", "поля", "пашня 2025", "fields of the world", "field boundaries"],
+        "ftw_2024" => &["границы полей 2024", "поля 2024", "пашня 2024", "field boundaries 2024"],
         "water_transitions" => &["изменения воды", "исчезнувшие озёра", "новые водохранилища", "обмеление", "water change", "water transitions"],
         "soil_clay" => &["глина", "почвы", "почва", "гранулометрия", "soilgrids", "clay", "soil"],
         "soil_sand" => &["песок", "песчаные почвы", "sand"],

@@ -1868,7 +1868,6 @@ The raster is not read.	Das Raster wurde nicht gelesen.
 The raster has no coordinate system.	Das Raster hat kein Koordinatensystem.
 The grid of the area does not fit in memory, take a larger pixel.	Das Raster des Gebiets passt nicht in den Speicher, wählen Sie ein größeres Pixel.
 The area is outside the raster.	Das Gebiet liegt außerhalb des Rasters.
-At least two classes with points on raster cells with data are needed.	Mindestens zwei Klassen mit Punkten auf Rasterzellen mit Daten sind nötig.
 The raster bands do not change in the area, the classes cannot be told apart.	Die Rasterkanäle ändern sich im Gebiet nicht, die Klassen sind nicht unterscheidbar.
 The raster is no longer open.	Das Raster ist nicht mehr geöffnet.
 What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	Wonach die Zellen unterteilt werden. AlphaEarth-Vektoren werden aus dem Netz geladen. Bei einem im Programm geöffneten Raster ist jeder Kanal ein Merkmal, das Netz wird nicht gebraucht.
@@ -1876,3 +1875,74 @@ The pixel of the classification. «Auto» takes the pixel of the raster if the a
 Each cell of the area goes to the class of the nearest control points by the raster bands.	Jede Zelle des Gebiets kommt nach den Rasterkanälen zur Klasse der nächsten Kontrollpunkte.
 Classes of the area by control points on the globe - by the bands of an opened raster.	Klassen des Gebiets nach Kontrollpunkten auf dem Globus - nach den Kanälen eines geöffneten Rasters.
 Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	Raster {name}: Kanäle {n}. Es ist eine Quelle des Fensters «Klassifikation», das Gelände hat sich nicht geändert.
+Field boundaries 2025	Feldgrenzen 2025
+Field boundaries 2024	Feldgrenzen 2024
+Boundaries of agricultural fields of the world for 2025 - a model estimate from Sentinel-2 imagery, not a cadastre. The colour is the model score from orange to green, fields with a score below 69 are not shown. Fields are seen up close, from a height of about 70 km and lower. A click in Identify features mode shows the score.	Grenzen landwirtschaftlicher Felder der Welt für 2025 - eine Modellschätzung aus Sentinel-2-Bildern, kein Kataster. Die Farbe zeigt die Modellbewertung von Orange bis Grün, Felder mit einer Bewertung unter 69 werden nicht gezeigt. Felder sind aus der Nähe sichtbar, ab etwa 70 km Höhe und tiefer. Ein Klick im Modus Objekte abfragen zeigt die Bewertung.
+Boundaries of agricultural fields of the world for 2024, the same set and the same model score as the row for 2025. Fields are seen up close, from a height of about 70 km and lower.	Grenzen landwirtschaftlicher Felder der Welt für 2024, derselbe Datensatz und dieselbe Modellbewertung wie in der Zeile für 2025. Felder sind aus der Nähe sichtbar, ab etwa 70 km Höhe und tiefer.
+Field boundary score 2025	Bewertung der Feldgrenzen 2025
+Field boundary score 2024	Bewertung der Feldgrenzen 2024
+Model score	Modellbewertung
+{score} of 100	{score} von 100
+What this is	Was das ist
+A model estimate from Sentinel-2 imagery, not a cadastral parcel.	Eine Modellschätzung aus Sentinel-2-Bildern, kein Katasterflurstück.
+Field of {year}	Feld {year}
+Field boundaries	Feldgrenzen
+OpenAerialMap imagery…	OpenAerialMap-Bilder…
+OpenAerialMap imagery	OpenAerialMap-Bilder
+{value} cm	{value} cm
+{value} GB	{value} GB
+{value} MB	{value} MB
+OpenAerialMap did not answer.	OpenAerialMap hat nicht geantwortet.
+Searching for images…	Bilder werden gesucht…
+There are no images in the view frame. Images cover the world unevenly, zoom out and press «Search in the view».	Im Ansichtsrahmen gibt es keine Bilder. Die Bilder decken die Welt ungleichmäßig ab, zoomen Sie heraus und drücken Sie «In der Ansicht suchen».
+Images in the view frame: {found}, in the list {count}.	Bilder im Ansichtsrahmen: {found}, in der Liste {count}.
+Title or provider	Titel oder Anbieter
+File	Datei
+License	Lizenz
+Search in the view	In der Ansicht suchen
+Images in the present view frame of the globe, newest first.	Bilder im aktuellen Ansichtsrahmen des Globus, neueste zuerst.
+More	Mehr
+The next images of the same frame, older ones.	Die nächsten Bilder desselben Rahmens, ältere.
+The image lies as a tile layer over the base map, a row in the catalogue. The file is not downloaded.	Das Bild liegt als Kachelebene über der Grundkarte, als Zeile im Katalog. Die Datei wird nicht heruntergeladen.
+Flight to the frame of the chosen image.	Flug zum Rahmen des gewählten Bildes.
+The images are uploaded by contributors of Open Imagery Network. Each image has its own license, it is shown in the list and written to the credit of the layer. Images with NC are for non-commercial use only.	Die Bilder wurden von Mitwirkenden des Open Imagery Network hochgeladen. Jedes Bild hat seine eigene Lizenz, sie steht in der Liste und im Quellenvermerk der Ebene. Bilder mit NC sind nur für nichtkommerzielle Nutzung.
+The image did not open: {title}.	Das Bild wurde nicht geöffnet: {title}.
+The image is on the globe: {title}.	Das Bild ist auf dem Globus: {title}.
+An image from OpenAerialMap added in its window. It lies as tiles over the base map, the file is not downloaded. The provider and the license of the image are in the source line.	Ein im Fenster von OpenAerialMap hinzugefügtes Bild. Es liegt als Kacheln über der Grundkarte, die Datei wird nicht heruntergeladen. Anbieter und Lizenz des Bildes stehen in der Quellenzeile.
+At least two classes with points on cells with data are needed.	Mindestens zwei Klassen mit Punkten auf Zellen mit Daten sind nötig.
+The whole area came out as one object, reduce the object scale.	Das ganze Gebiet wurde zu einem Objekt, verringern Sie den Objektmaßstab.
+For objects the grid of the area is too large, take a larger pixel or «Auto».	Für Objekte ist das Raster des Gebiets zu groß, wählen Sie ein größeres Pixel oder «Auto».
+Dividing the area into objects…	Das Gebiet wird in Objekte geteilt…
+Dividing the area into objects: {done} %.	Das Gebiet wird in Objekte geteilt: {done} %.
+Objects {n}, mean {area} ha.	Objekte {n}, im Mittel {area} ha.
+Objects: {name}	Objekte: {name}
+Divide into objects	In Objekte teilen
+The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons.	Das Gebiet wird zuerst in Objekte ähnlicher Farbe und Textur geteilt, eine Klasse gilt für das ganze Objekt. Das Ergebnis sind Polygone.
+Object scale	Objektmaßstab
+The allowed diversity of an object. The larger it is, the larger the objects and the more unlike things they join. The scale is related to the area, so a change of the pixel hardly changes the size of objects.	Die zulässige Vielfalt eines Objekts. Je größer, desto größer die Objekte und desto Unähnlicheres fassen sie zusammen. Der Maßstab bezieht sich auf das Gebiet, daher ändert ein anderes Pixel die Objektgröße kaum.
+Texture share	Texturanteil
+The share of texture among the features, the rest is colour. Texture is the spread of brightness around a cell, it separates a forest from a meadow of the same colour.	Der Anteil der Textur an den Merkmalen, der Rest ist Farbe. Textur ist die Helligkeitsstreuung um eine Zelle, sie trennt Wald von einer Wiese derselben Farbe.
+Least object, cells	Kleinstes Objekt, Zellen
+An object with fewer cells merges with its most similar neighbour.	Ein Objekt mit weniger Zellen verschmilzt mit seinem ähnlichsten Nachbarn.
+Merge neighbouring objects of one class	Benachbarte Objekte einer Klasse zusammenführen
+Neighbouring objects of one class become one polygon. Without the flag each field or stand stays a separate object with its own values.	Benachbarte Objekte einer Klasse werden zu einem Polygon. Ohne das Häkchen bleibt jedes Feld oder jeder Bestand ein eigenes Objekt mit eigenen Werten.
+Similar areas…	Ähnliche Gebiete…
+Similar areas	Ähnliche Gebiete
+Similar areas {year}	Ähnliche Gebiete {year}
+Outline a sample, the program finds objects of the area similar to it in colour and texture.	Umreißen Sie ein Muster, das Programm findet im Gebiet Objekte ähnlicher Farbe und Textur.
+Outline a sample on the globe.	Umreißen Sie ein Muster auf dem Globus.
+There are no objects of the area in the sample outlines.	In den Musterumrissen gibt es keine Objekte des Gebiets.
+Found objects {n}, {area} ha, {share} % of the area.	Gefundene Objekte {n}, {area} ha, {share} % des Gebiets.
+Outlines outside the objects of the area: {n}.	Umrisse außerhalb der Objekte des Gebiets: {n}.
+Samples	Muster
+Contours: {n}	Umrisse: {n}
+Remove samples	Muster entfernen
+Remove all sample outlines.	Alle Musterumrisse entfernen.
+Similarity	Ähnlichkeit
+How much an object must resemble the sample. The selection changes at once, nothing is computed again. To the right - only very similar objects, to the left - wider.	Wie sehr ein Objekt dem Muster ähneln muss. Die Auswahl ändert sich sofort, nichts wird neu berechnet. Nach rechts nur sehr ähnliche Objekte, nach links breiter.
+Merge neighbouring found objects	Benachbarte gefundene Objekte zusammenführen
+Neighbouring found objects become one area. Without the flag each object stays a separate polygon.	Benachbarte gefundene Objekte werden zu einem Gebiet. Ohne das Häkchen bleibt jedes Objekt ein eigenes Polygon.
+Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.	Umreißen Sie mit Klicks auf den Globus ein Muster, ein Klick auf den ersten Punkt schließt den Umriss. Es kann mehrere Muster geben.
+The area is divided into objects, each object is compared with the samples in colour and texture.	Das Gebiet wird in Objekte geteilt, jedes Objekt wird in Farbe und Textur mit den Mustern verglichen.
+The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	Der Anteil der Textur beim Teilen in Objekte und beim Vergleich mit dem Muster, der Rest ist Farbe.
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	Woher Farbe und Textur stammen. AlphaEarth-Vektoren werden aus dem Netz geladen, bei einem im Programm geöffneten Raster ist jeder Kanal ein Merkmal.

@@ -1868,7 +1868,6 @@ The raster is not read.	ラスターを読み込めません。
 The raster has no coordinate system.	ラスターに座標系がありません。
 The grid of the area does not fit in memory, take a larger pixel.	区域のグリッドがメモリに収まりません。より大きなピクセルを選んでください。
 The area is outside the raster.	区域はラスターの範囲外です。
-At least two classes with points on raster cells with data are needed.	データのあるラスターセル上に点を持つクラスが2つ以上必要です。
 The raster bands do not change in the area, the classes cannot be told apart.	ラスターのバンドが区域内で変化せず、クラスを区別できません。
 The raster is no longer open.	ラスターはもう開かれていません。
 What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.	セルを分ける基準。AlphaEarth のベクトルはネットワークから読み込みます。プログラムで開いたラスターでは各バンドが特徴になり、ネットワークは不要です。
@@ -1876,3 +1875,74 @@ The pixel of the classification. «Auto» takes the pixel of the raster if the a
 Each cell of the area goes to the class of the nearest control points by the raster bands.	区域の各セルは、ラスターのバンドに基づいて最も近いコントロールポイントのクラスに割り当てられます。
 Classes of the area by control points on the globe - by the bands of an opened raster.	地球儀上のコントロールポイントによる区域のクラス。開いているラスターのバンドに基づきます。
 Raster {name}: bands {n}. It is a source of the Classification window, the terrain has not changed.	ラスター {name}: バンド {n}。「分類」ウィンドウのソースになりました。地形は変わっていません。
+Field boundaries 2025	圃場境界 2025
+Field boundaries 2024	圃場境界 2024
+Boundaries of agricultural fields of the world for 2025 - a model estimate from Sentinel-2 imagery, not a cadastre. The colour is the model score from orange to green, fields with a score below 69 are not shown. Fields are seen up close, from a height of about 70 km and lower. A click in Identify features mode shows the score.	2025 年の世界の農地境界。Sentinel-2 画像によるモデル推定で、地籍ではありません。色はオレンジから緑へのモデルスコアで、スコア 69 未満の圃場は表示されません。圃場は高度約 70 km 以下の近距離で見えます。地物の識別モードでクリックするとスコアを表示します。
+Boundaries of agricultural fields of the world for 2024, the same set and the same model score as the row for 2025. Fields are seen up close, from a height of about 70 km and lower.	2024 年の世界の農地境界。2025 年の行と同じデータセット、同じモデルスコアです。圃場は高度約 70 km 以下の近距離で見えます。
+Field boundary score 2025	圃場境界スコア 2025
+Field boundary score 2024	圃場境界スコア 2024
+Model score	モデルスコア
+{score} of 100	{score} / 100
+What this is	これは何か
+A model estimate from Sentinel-2 imagery, not a cadastral parcel.	Sentinel-2 画像によるモデル推定で、地籍区画ではありません。
+Field of {year}	{year} 年の圃場
+Field boundaries	圃場境界
+OpenAerialMap imagery…	OpenAerialMap 画像…
+OpenAerialMap imagery	OpenAerialMap 画像
+{value} cm	{value} cm
+{value} GB	{value} GB
+{value} MB	{value} MB
+OpenAerialMap did not answer.	OpenAerialMap から応答がありません。
+Searching for images…	画像を検索中…
+There are no images in the view frame. Images cover the world unevenly, zoom out and press «Search in the view».	表示範囲に画像はありません。画像の分布は世界で偏っています。縮小して「表示範囲を検索」を押してください。
+Images in the view frame: {found}, in the list {count}.	表示範囲の画像: {found}、リスト内 {count}。
+Title or provider	タイトルまたは提供者
+File	ファイル
+License	ライセンス
+Search in the view	表示範囲を検索
+Images in the present view frame of the globe, newest first.	地球儀の現在の表示範囲の画像。新しいものが先です。
+More	さらに
+The next images of the same frame, older ones.	同じ範囲の次の、より古い画像。
+The image lies as a tile layer over the base map, a row in the catalogue. The file is not downloaded.	画像はベースマップの上にタイルレイヤーとして重なり、カタログの行になります。ファイルはダウンロードされません。
+Flight to the frame of the chosen image.	選択した画像の範囲へ移動します。
+The images are uploaded by contributors of Open Imagery Network. Each image has its own license, it is shown in the list and written to the credit of the layer. Images with NC are for non-commercial use only.	画像は Open Imagery Network の参加者がアップロードしたものです。画像ごとにライセンスがあり、リストに表示され、レイヤーの出典に記録されます。NC 付きの画像は非商用利用に限られます。
+The image did not open: {title}.	画像を開けませんでした: {title}。
+The image is on the globe: {title}.	画像を地球儀に表示しました: {title}。
+An image from OpenAerialMap added in its window. It lies as tiles over the base map, the file is not downloaded. The provider and the license of the image are in the source line.	専用ウィンドウで追加した OpenAerialMap の画像です。ベースマップの上にタイルとして重なり、ファイルはダウンロードされません。提供者とライセンスは出典の行にあります。
+At least two classes with points on cells with data are needed.	データのあるセルに点を持つクラスが少なくとも 2 つ必要です。
+The whole area came out as one object, reduce the object scale.	区域全体が 1 つのオブジェクトになりました。オブジェクトの尺度を小さくしてください。
+For objects the grid of the area is too large, take a larger pixel or «Auto».	オブジェクトには区域のグリッドが大きすぎます。より大きなピクセルか「Auto」を選んでください。
+Dividing the area into objects…	区域をオブジェクトに分割中…
+Dividing the area into objects: {done} %.	区域をオブジェクトに分割中: {done} %。
+Objects {n}, mean {area} ha.	オブジェクト {n} 個、平均 {area} ha。
+Objects: {name}	オブジェクト: {name}
+Divide into objects	オブジェクトに分割
+The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons.	区域をまず色とテクスチャの似たオブジェクトに分割し、クラスはオブジェクト全体に与えます。結果はポリゴンです。
+Object scale	オブジェクトの尺度
+The allowed diversity of an object. The larger it is, the larger the objects and the more unlike things they join. The scale is related to the area, so a change of the pixel hardly changes the size of objects.	オブジェクトに許される多様さです。大きいほどオブジェクトは大きくなり、異なるものをまとめます。尺度は区域に対するものなので、ピクセルを変えてもオブジェクトの大きさはほとんど変わりません。
+Texture share	テクスチャの割合
+The share of texture among the features, the rest is colour. Texture is the spread of brightness around a cell, it separates a forest from a meadow of the same colour.	特徴に占めるテクスチャの割合で、残りは色です。テクスチャはセル周囲の明るさのばらつきで、同じ色の森と草地を分けます。
+Least object, cells	最小オブジェクト、セル
+An object with fewer cells merges with its most similar neighbour.	セル数がこれより少ないオブジェクトは最も似た隣接オブジェクトに統合されます。
+Merge neighbouring objects of one class	同じクラスの隣接オブジェクトを統合
+Neighbouring objects of one class become one polygon. Without the flag each field or stand stays a separate object with its own values.	同じクラスの隣接オブジェクトが 1 つのポリゴンになります。チェックなしでは、圃場や林分はそれぞれ独自の値を持つ別のオブジェクトのままです。
+Similar areas…	類似エリア…
+Similar areas	類似エリア
+Similar areas {year}	類似エリア {year}
+Outline a sample, the program finds objects of the area similar to it in colour and texture.	見本を囲むと、色とテクスチャが似たオブジェクトを区域内で探します。
+Outline a sample on the globe.	地球儀で見本を囲んでください。
+There are no objects of the area in the sample outlines.	見本の輪郭内に区域のオブジェクトがありません。
+Found objects {n}, {area} ha, {share} % of the area.	見つかったオブジェクト {n} 個、{area} ha、区域の {share} %。
+Outlines outside the objects of the area: {n}.	区域のオブジェクト外の輪郭: {n}。
+Samples	見本
+Contours: {n}	輪郭: {n}
+Remove samples	見本を削除
+Remove all sample outlines.	見本の輪郭をすべて削除します。
+Similarity	類似度
+How much an object must resemble the sample. The selection changes at once, nothing is computed again. To the right - only very similar objects, to the left - wider.	オブジェクトが見本にどれだけ似ている必要があるかを指定します。選択はすぐに変わり、再計算はありません。右はよく似たものだけ、左はより広くなります。
+Merge neighbouring found objects	隣接する検出オブジェクトを統合
+Neighbouring found objects become one area. Without the flag each object stays a separate polygon.	隣接する検出オブジェクトが 1 つの範囲になります。チェックなしでは各オブジェクトは別のポリゴンのままです。
+Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.	地球儀をクリックして見本を囲みます。最初の頂点をクリックすると輪郭が閉じます。見本は複数でも構いません。
+The area is divided into objects, each object is compared with the samples in colour and texture.	区域をオブジェクトに分割し、各オブジェクトを色とテクスチャで見本と比較します。
+The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	オブジェクト分割と見本との比較におけるテクスチャの割合で、残りは色です。
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	色とテクスチャの取得元です。AlphaEarth のベクトルはネットワークから読み込み、プログラムで開いたラスターは各バンドが特徴になります。
