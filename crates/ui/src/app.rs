@@ -2199,7 +2199,7 @@ impl LiteApp {
                 globe.set_sky_bodies(&points);
             }
             let recreated = globe.resize(width, height);
-            globe.render(&camera, &globe_core::lod::Selection::default(), None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: ppp as f32, sun: None, water: None, tint: None, sky: true, sea_level: 0.0 });
+            globe.render(&camera, &globe_core::lod::Selection::default(), None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: ppp as f32, sun: None, water: None, tint: None, sky: true, sea_level: 0.0, focus: None });
             self.show_target(recreated || self.texture.is_none());
         }
         if let Some(id) = self.texture {
@@ -4971,13 +4971,15 @@ impl LiteApp {
 
     /// Шаг течений: сутки по бегунку шкалы времени, загрузка, частицы.
     /// Поле погоды: час по шкале времени, слой над картами.
-    fn step_weather(&mut self, ctx: &egui::Context) {
+    fn step_weather(&mut self, ctx: &egui::Context, now: f64) {
         let moment = match self.timebar.window() {
             Some((_, hi)) if hi.is_finite() => Some(hi),
             _ => None,
         };
         let lang = self.lang;
         let utc = crate::pointcalc::clock_now();
+        let altitude = self.nav.camera.ellipsoid.ecef_to_geodetic(self.nav.camera.eye).2;
+        let view = (self.nav.pose.lat, self.nav.pose.lon, altitude, self.view_width());
         let Some((_, w)) = &mut self.weather else {
             return;
         };
@@ -4987,6 +4989,11 @@ impl LiteApp {
         }
         if w.busy() {
             ctx.request_repaint_after(std::time::Duration::from_millis(100));
+        }
+        if w.streaming() {
+            w.animate(now, view);
+            // Струйки бегут - кадры идут по такту частиц.
+            ctx.request_repaint_after(std::time::Duration::from_millis(u64::from(data::flow::TICK_MS)));
         }
         if std::mem::take(&mut w.changed) {
             self.refresh_painters();
@@ -8466,7 +8473,7 @@ impl eframe::App for LiteApp {
         self.step_overpass(now);
         self.step_parcels();
         self.step_currents(&ctx, now);
-        self.step_weather(&ctx);
+        self.step_weather(&ctx, now);
         self.step_lidar(now);
         self.step_events(now);
         self.step_rumsey(&ctx, now);
@@ -8787,8 +8794,12 @@ impl eframe::App for LiteApp {
         if self.check.as_mut().is_some_and(Check::take_grab_request) {
             globe.grab();
         }
+        // Тени в кадре у точки взгляда, карта теней стоит на рельефе.
+        let pose = &self.nav.pose;
+        let focus = self.nav.camera.ellipsoid.geodetic_to_ecef(pose.lat, pose.lon, store.height_at(pose.lat, pose.lon)).to_array();
+        let focus = Some((focus, pose.distance));
         let stats =
-            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air && self.planet.air.is_some(), ratio: ppp as f32, sun, water, tint: self.planet.air, sky: false, sea_level });
+            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air && self.planet.air.is_some(), ratio: ppp as f32, sun, water, tint: self.planet.air, sky: false, sea_level, focus });
         drop(store);
         if let Some(check) = &mut self.check
             && check.waits_frame()
@@ -8907,6 +8918,10 @@ impl eframe::App for LiteApp {
         // Струйки течений поверх глобуса.
         if let Some(c) = &self.currents {
             c.paint(&painter, rect, ppp, &self.nav.camera);
+        }
+        // Струйки ветра и числа поля погоды.
+        if let Some((_, w)) = &self.weather {
+            w.paint(&painter, rect, ppp, &self.nav.camera, (self.nav.pose.lat, self.nav.pose.lon, self.view_width()));
         }
         // Контуры участков кадастра под щелчком.
         if !self.parcels.is_empty() {
@@ -9050,13 +9065,19 @@ impl eframe::App for LiteApp {
             }
             _ => None,
         });
-        match crate::legend::show(&ctx, self.lang, rect, self.credits.rect, crate::legend::Shown { maps: &maps, theme, dots: &dot_layers, contours }) {
+        let weather = self.weather.as_ref().and_then(|(n, w)| w.legend(self.lang, tr(self.lang, crate::weather::ROWS.get(*n)?.name)));
+        match crate::legend::show(&ctx, self.lang, rect, self.credits.rect, crate::legend::Shown { maps: &maps, theme, dots: &dot_layers, contours, weather }) {
             Some(crate::legend::Closed::Map(key)) => {
                 if let Some(n) = crate::maps::index(key) {
                     self.set_extra(crate::layers::Extra::Map(n), false);
                 }
             }
             Some(crate::legend::Closed::Dots(layer)) => self.set_extra(crate::layers::Extra::Dots(layer), false),
+            Some(crate::legend::Closed::Weather) => {
+                if let Some((n, _)) = self.weather {
+                    self.set_extra(crate::layers::Extra::Weather(n), false);
+                }
+            }
             None => {}
         }
         self.request_snapshot(&ctx, rect);

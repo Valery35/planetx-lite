@@ -12,7 +12,8 @@
 //! рождения - вид: выше `flow::DISK_FROM` - видимый диск, ниже - рамка
 //! вида. Ширина вида сменилась больше чем в `flow::RESET_ZOOM` раз -
 //! частицы рождаются заново. Струйки рисует экран поверх глобуса,
-//! заливку - слой над картами ([`crate::vector::Painter`]).
+//! заливку - слой над картами ([`crate::vector::Painter`]). Частицы
+//! и рисунок ([`Streaks`]) общие с ветром [`crate::weather`].
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -49,9 +50,122 @@ fn day_url(day: Option<&str>) -> String {
     }
 }
 
-/// Множитель непрозрачности струйки по скорости, м/с.
-fn slow_fade(speed: f64) -> f64 {
-    (speed / CURRENT_SLOW).clamp(SLOW_FLOOR, 1.0)
+/// Бегущие струйки поля: частицы, их шаг и рисунок.
+pub struct Streaks {
+    particles: Particles,
+    width_at_reset: f64,
+    ticked: f64,
+    /// Типичная скорость поля, м/с, и предел шага в клетках поля.
+    typical: f64,
+    cell_share: Option<f64>,
+    /// Медленнее slow м/с струйка бледнее, до доли floor.
+    slow: f64,
+    floor: f64,
+}
+
+impl Streaks {
+    pub fn new(count: usize, seed: u64, typical: f64, cell_share: Option<f64>, slow: f64, floor: f64) -> Self {
+        Self { particles: Particles::new(count, seed), width_at_reset: 0.0, ticked: f64::NEG_INFINITY, typical, cell_share, slow, floor }
+    }
+
+    /// Множитель непрозрачности струйки по скорости, м/с.
+    fn slow_fade(&self, speed: f64) -> f64 {
+        (speed / self.slow).clamp(self.floor, 1.0)
+    }
+
+    /// Шаг частиц по полю grid не чаще такта. view - точка взгляда, высота
+    /// глаза и ширина вида в метрах.
+    pub fn step(&mut self, grid: &VectorGrid, now: f64, view: (f64, f64, f64, f64)) {
+        let dt = f64::from(flow::TICK_MS) / 1000.0;
+        if now - self.ticked < dt {
+            return;
+        }
+        self.ticked = now;
+        let (lat, lon, altitude, width) = view;
+        let frame = if altitude > flow::DISK_FROM {
+            let angle = (flow::RADIUS / (flow::RADIUS + altitude)).acos().to_degrees() * flow::HORIZON_SHARE;
+            flow::cap_box(lat, lon, angle)
+        } else {
+            let dlat = (width * 0.75 / flow::RADIUS).to_degrees().min(80.0);
+            let dlon = (dlat / lat.to_radians().cos().max(0.05)).min(180.0);
+            flow::rect_box(lon - dlon, (lat - dlat).max(-89.0), lon + dlon, (lat + dlat).min(89.0))
+        };
+        let zoomed = self.width_at_reset <= 0.0 || width / self.width_at_reset > flow::RESET_ZOOM || self.width_at_reset / width > flow::RESET_ZOOM;
+        if self.particles.frame.is_none() || zoomed {
+            self.particles.reset(frame);
+            self.width_at_reset = width;
+        } else {
+            self.particles.frame = Some(frame);
+        }
+        let metres = flow::display_metres(width.min(2e7), self.typical, grid.step, dt, self.cell_share);
+        self.particles.step(grid, dt, metres);
+    }
+
+    /// Струйки на экране: белые следы, голова - точка, хвост бледнеет.
+    pub fn paint(&self, painter: &egui::Painter, rect: egui::Rect, ppp: f64, camera: &globe_core::camera::Camera) {
+        let p = &self.particles;
+        if p.frame.is_none() {
+            return;
+        }
+        let e = camera.ellipsoid;
+        let eye = camera.eye;
+        let to_screen = |la: f64, lo: f64| -> Option<(egui::Pos2, DVec3)> {
+            let point = e.geodetic_to_ecef(la, lo, 0.0);
+            let (q, front) = camera.project(point);
+            front.then(|| (rect.min + egui::vec2((q.x / ppp) as f32, (q.y / ppp) as f32), point))
+        };
+        let mut mesh = egui::Mesh::default();
+        let half = LINE_WIDTH / 2.0;
+        let trail = flow::TRAIL;
+        for i in 0..p.count {
+            let Some((hlat, hlon)) = p.point(i, 0) else {
+                continue;
+            };
+            let Some((head, point)) = to_screen(hlat, hlon) else {
+                continue;
+            };
+            // Сторона шара за горизонтом отбрасывается.
+            if point.dot(eye - point) <= 0.0 || !rect.contains(head) {
+                continue;
+            }
+            let speed = p.speed.get(i).copied().unwrap_or(0.0);
+            let fade = self.slow_fade(speed);
+            let depth = (p.age.get(i).copied().unwrap_or(0).max(0) as usize).min(trail - 1);
+            let mut prev = head;
+            let mut prev_lon = hlon;
+            for j in 1..=depth {
+                let Some((la, lo)) = p.point(i, j) else {
+                    break;
+                };
+                if (lo - prev_lon).abs() >= 90.0 {
+                    break;
+                }
+                let Some((next, _)) = to_screen(la, lo) else {
+                    break;
+                };
+                let share = (j - 1) as f64 / (trail as f64 - 1.0);
+                let alpha = ((1.0 - share) * fade * 255.0) as u8;
+                let color = egui::Color32::from_white_alpha(alpha);
+                let tail = egui::Color32::from_white_alpha((f32::from(alpha) * 0.7) as u8);
+                let d = next - prev;
+                let length = d.length();
+                if length > 0.01 {
+                    let n = egui::vec2(-d.y, d.x) / length * half;
+                    let base = mesh.vertices.len() as u32;
+                    mesh.colored_vertex(prev + n, color);
+                    mesh.colored_vertex(prev - n, color);
+                    mesh.colored_vertex(next - n, tail);
+                    mesh.colored_vertex(next + n, tail);
+                    mesh.add_triangle(base, base + 1, base + 2);
+                    mesh.add_triangle(base, base + 2, base + 3);
+                }
+                prev = next;
+                prev_lon = lo;
+            }
+            painter.circle_filled(head, HEAD_SIZE / 2.0, egui::Color32::from_white_alpha((fade * 255.0) as u8));
+        }
+        painter.add(egui::Shape::mesh(mesh));
+    }
 }
 
 pub struct Currents {
@@ -65,9 +179,7 @@ pub struct Currents {
     pub day: Option<String>,
     /// Сутки, которые попросил бегунок, и когда.
     wanted: Option<(String, f64)>,
-    particles: Particles,
-    width_at_reset: f64,
-    ticked: f64,
+    streaks: Streaks,
     /// Поле сменилось: заливка рисуется заново.
     pub changed: bool,
     failed: bool,
@@ -84,9 +196,7 @@ impl Default for Currents {
             last: None,
             day: None,
             wanted: None,
-            particles: Particles::new(flow::CURRENTS_COUNT, SEED),
-            width_at_reset: 0.0,
-            ticked: f64::NEG_INFINITY,
+            streaks: Streaks::new(flow::CURRENTS_COUNT, SEED, flow::CURRENTS_TYPICAL, Some(flow::CELL_SHARE), CURRENT_SLOW, SLOW_FLOOR),
             changed: false,
             failed: false,
             missing: std::collections::HashSet::new(),
@@ -173,100 +283,15 @@ impl Currents {
             }
             _ => {}
         }
-        // Шаг частиц.
-        let dt = f64::from(flow::TICK_MS) / 1000.0;
-        if now - self.ticked < dt {
-            return message;
+        if let Some(grid) = self.grid() {
+            self.streaks.step(&grid, now, view);
         }
-        self.ticked = now;
-        let Some(grid) = self.grid() else {
-            return message;
-        };
-        let (lat, lon, altitude, width) = view;
-        let frame = if altitude > flow::DISK_FROM {
-            let angle = (flow::RADIUS / (flow::RADIUS + altitude)).acos().to_degrees() * flow::HORIZON_SHARE;
-            flow::cap_box(lat, lon, angle)
-        } else {
-            let dlat = (width * 0.75 / flow::RADIUS).to_degrees().min(80.0);
-            let dlon = (dlat / lat.to_radians().cos().max(0.05)).min(180.0);
-            flow::rect_box(lon - dlon, (lat - dlat).max(-89.0), lon + dlon, (lat + dlat).min(89.0))
-        };
-        let zoomed = self.width_at_reset <= 0.0 || width / self.width_at_reset > flow::RESET_ZOOM || self.width_at_reset / width > flow::RESET_ZOOM;
-        if self.particles.frame.is_none() || zoomed {
-            self.particles.reset(frame);
-            self.width_at_reset = width;
-        } else {
-            self.particles.frame = Some(frame);
-        }
-        let metres = flow::display_metres(width.min(2e7), flow::CURRENTS_TYPICAL, grid.step, dt, Some(flow::CELL_SHARE));
-        self.particles.step(&grid, dt, metres);
         message
     }
 
-    /// Струйки на экране: белые следы, голова - точка, хвост бледнеет.
+    /// Струйки на экране.
     pub fn paint(&self, painter: &egui::Painter, rect: egui::Rect, ppp: f64, camera: &globe_core::camera::Camera) {
-        let p = &self.particles;
-        if p.frame.is_none() {
-            return;
-        }
-        let e = camera.ellipsoid;
-        let eye = camera.eye;
-        let to_screen = |la: f64, lo: f64| -> Option<(egui::Pos2, DVec3)> {
-            let point = e.geodetic_to_ecef(la, lo, 0.0);
-            let (q, front) = camera.project(point);
-            front.then(|| (rect.min + egui::vec2((q.x / ppp) as f32, (q.y / ppp) as f32), point))
-        };
-        let mut mesh = egui::Mesh::default();
-        let half = LINE_WIDTH / 2.0;
-        let trail = flow::TRAIL;
-        for i in 0..p.count {
-            let Some((hlat, hlon)) = p.point(i, 0) else {
-                continue;
-            };
-            let Some((head, point)) = to_screen(hlat, hlon) else {
-                continue;
-            };
-            // Сторона шара за горизонтом отбрасывается.
-            if point.dot(eye - point) <= 0.0 || !rect.contains(head) {
-                continue;
-            }
-            let speed = p.speed.get(i).copied().unwrap_or(0.0);
-            let fade = slow_fade(speed);
-            let depth = (p.age.get(i).copied().unwrap_or(0).max(0) as usize).min(trail - 1);
-            let mut prev = head;
-            let mut prev_lon = hlon;
-            for j in 1..=depth {
-                let Some((la, lo)) = p.point(i, j) else {
-                    break;
-                };
-                if (lo - prev_lon).abs() >= 90.0 {
-                    break;
-                }
-                let Some((next, _)) = to_screen(la, lo) else {
-                    break;
-                };
-                let share = (j - 1) as f64 / (trail as f64 - 1.0);
-                let alpha = ((1.0 - share) * fade * 255.0) as u8;
-                let color = egui::Color32::from_white_alpha(alpha);
-                let tail = egui::Color32::from_white_alpha((f32::from(alpha) * 0.7) as u8);
-                let d = next - prev;
-                let length = d.length();
-                if length > 0.01 {
-                    let n = egui::vec2(-d.y, d.x) / length * half;
-                    let base = mesh.vertices.len() as u32;
-                    mesh.colored_vertex(prev + n, color);
-                    mesh.colored_vertex(prev - n, color);
-                    mesh.colored_vertex(next - n, tail);
-                    mesh.colored_vertex(next + n, tail);
-                    mesh.add_triangle(base, base + 1, base + 2);
-                    mesh.add_triangle(base, base + 2, base + 3);
-                }
-                prev = next;
-                prev_lon = lo;
-            }
-            painter.circle_filled(head, HEAD_SIZE / 2.0, egui::Color32::from_white_alpha((fade * 255.0) as u8));
-        }
-        painter.add(egui::Shape::mesh(mesh));
+        self.streaks.paint(painter, rect, ppp, camera);
     }
 }
 

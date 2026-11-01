@@ -2028,3 +2028,7 @@ On buildings	По зданиям
 3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	3D-измерение: точка ложится на крышу или стену здания, путь идёт прямыми отрезками, площадь многоугольника верна при любом наклоне. Нужна строка «3D-здания».
 3D length {value} m.	Длина в пространстве {value} м.
 3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	Периметр в пространстве {perimeter} м, площадь {area} м², наклон {tilt}°.
+m/s	м/с
+mm/h	мм/ч
+°C	°C
+%	%

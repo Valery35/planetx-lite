@@ -46,6 +46,9 @@ struct Draw {
     // Шторка: x - линия в пикселях кадра, y - признак. Слева от линии
     // снимки «до», справа «после».
     split: vec4<f32>,
+    // Матрица света: точка от центра тайла в координаты отсечения карты
+    // теней, нули - тайл теней не принимает.
+    light: mat4x4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> draw: Draw;
@@ -57,6 +60,9 @@ struct Draw {
 // прозрачна, альфа - вырез, поверхности нет.
 @group(2) @binding(1) var cut_texture: texture_2d<f32>;
 @group(2) @binding(2) var cut_sampler: sampler;
+// Карта теней кадра, `core/shadowmap.py` модуля.
+@group(2) @binding(3) var shadow_map: texture_depth_2d;
+@group(2) @binding(4) var shadow_sampler: sampler_comparison;
 @group(3) @binding(0) var over_texture: texture_2d<f32>;
 @group(3) @binding(1) var over_sampler: sampler;
 // Огни городов NASA Black Marble, видны на ночной стороне при солнце.
@@ -81,6 +87,8 @@ struct VertexOut {
     @location(5) height: f32,
     // Вверх по нормали эллипсоида, для разреза Земли.
     @location(6) up: vec3<f32>,
+    // Точка в координатах отсечения карты теней, w - 0 без теней.
+    @location(7) light: vec4<f32>,
 };
 
 // Свет солнца, перенос `brightness` из `core/sun.py` модуля: ламбертов
@@ -92,10 +100,33 @@ const SUN_AMBIENT: f32 = 0.35;
 const SUN_NIGHT: f32 = 0.03;
 const SUN_FLAT: f32 = 0.80961941;
 
-fn sun_brightness(cos_sun: f32) -> f32 {
+// lit гасит прямой свет, рассеянный остаётся.
+fn sun_brightness(cos_sun: f32, lit: f32) -> f32 {
     let day = smoothstep(SUN_TWILIGHT, SUN_DAYLIGHT, cos_sun);
     let ambient = SUN_NIGHT + (SUN_AMBIENT - SUN_NIGHT) * day;
-    return (ambient + (1.0 - SUN_AMBIENT) * max(cos_sun, 0.0)) / SUN_FLAT;
+    return (ambient + (1.0 - SUN_AMBIENT) * max(cos_sun, 0.0) * lit) / SUN_FLAT;
+}
+
+// Доля прямого света точки: девять выборок карты со сравнением глубины,
+// к краю круга карты тень гаснет, `shadow_lit` модуля.
+fn shadow_lit(light: vec4<f32>) -> f32 {
+    if light.w < 0.5 {
+        return 1.0;
+    }
+    let c = light.xyz;
+    let r = length(c.xy);
+    if r >= 1.0 || c.z <= -1.0 || c.z >= 1.0 {
+        return 1.0;
+    }
+    let t = vec2<f32>(c.x * 0.5 + 0.5, 0.5 - c.y * 0.5);
+    let z = c.z * 0.5 + 0.5 - air_frame.shadow.y;
+    var sum = 0.0;
+    for (var i = -1; i <= 1; i += 1) {
+        for (var j = -1; j <= 1; j += 1) {
+            sum += textureSampleCompareLevel(shadow_map, shadow_sampler, t + vec2<f32>(f32(i), f32(j)) * air_frame.shadow.x, z);
+        }
+    }
+    return mix(sum / 9.0, 1.0, smoothstep(air_frame.shadow.z, 1.0, r));
 }
 
 // Дымка считается в вершинах, а не в пикселях, как в модуле. На кадре
@@ -111,6 +142,13 @@ fn tile_vs(@location(0) offset: vec3<f32>, @location(1) uv: vec2<f32>, @location
         p = p - sea.xyz * (sea.w - draw.sea.z);
     }
     out.position = draw.mvp * vec4<f32>(p, 1.0);
+    // Сдвиг по нормали убирает самозатенение под косым солнцем.
+    let turn = dot(normal, normal);
+    var lift = vec3<f32>(0.0);
+    if turn > 0.0 {
+        lift = normal / sqrt(turn) * air_frame.shadow.w;
+    }
+    out.light = draw.light * vec4<f32>(p + lift, 1.0);
     out.height = sea.w;
     out.up = sea.xyz;
     out.uv = uv;
@@ -188,7 +226,11 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     // Со светом солнца отмывка не нужна: тени даёт само солнце.
     let n = in.normal;
     if air_frame.sun.w > 0.5 && dot(n, n) > 0.0 {
-        shade = sun_brightness(dot(normalize(n), air_frame.sun.xyz));
+        var lit = 1.0;
+        if !water {
+            lit = shadow_lit(in.light);
+        }
+        shade = sun_brightness(dot(normalize(n), air_frame.sun.xyz), lit);
     }
     var ground = clamp(base * shade, vec3<f32>(0.0), vec3<f32>(1.0));
     // Огни городов: ночью по высоте солнца над горизонтом, к дню гаснут,
@@ -200,4 +242,31 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     // Дымка: воздух между глазом и поверхностью. Белая подложка под
     // дымкой остаётся белой: through + (1 - through) = 1.
     return vec4<f32>(min(ground * in.through + in.glow, vec3<f32>(1.0)), alpha);
+}
+
+struct ShadowOut {
+    @builtin(position) position: vec4<f32>,
+    @location(0) uv: vec2<f32>,
+};
+
+// Проход карты теней: только глубина, заплатка предка отсекается по своей
+// доле, как в тайле. Глубина карты у wgpu - от 0 до 1.
+@vertex
+fn shadow_vs(@location(0) offset: vec3<f32>, @location(1) uv: vec2<f32>) -> ShadowOut {
+    var out: ShadowOut;
+    let c = draw.light * vec4<f32>(offset, 1.0);
+    out.position = vec4<f32>(c.x, c.y, c.z * 0.5 + 0.5, 1.0);
+    out.uv = uv;
+    return out;
+}
+
+@fragment
+fn shadow_fs(in: ShadowOut) {
+    if draw.hole.w > 0.5 {
+        let low = draw.hole.xy;
+        let high = draw.hole.xy + vec2<f32>(draw.hole.z, draw.hole.z);
+        if any(in.uv < low) || any(in.uv > high) {
+            discard;
+        }
+    }
 }

@@ -2028,3 +2028,7 @@ On buildings	沿建筑
 3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	3D 测量:点落在建筑的屋顶或墙面上,路径为直线段,多边形面积在任何倾斜下都准确。需要打开 3D 建筑行。
 3D length {value} m.	3D 长度 {value} m。
 3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	3D 周长 {perimeter} m,面积 {area} m²,倾斜 {tilt}°。
+m/s	米/秒
+mm/h	毫米/小时
+°C	°C
+%	%

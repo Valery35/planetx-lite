@@ -2028,3 +2028,7 @@ On buildings	Sobre edifícios
 3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	Medição 3D: um ponto fica no telhado ou parede de um edifício, o caminho vai em trechos retos, a área do polígono é verdadeira em qualquer inclinação. Requer a linha de edifícios 3D.
 3D length {value} m.	Comprimento 3D {value} m.
 3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	Perímetro 3D {perimeter} m, área {area} m², inclinação {tilt}°.
+m/s	m/s
+mm/h	mm/h
+°C	°C
+%	%

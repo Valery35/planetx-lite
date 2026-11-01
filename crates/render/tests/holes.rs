@@ -70,7 +70,7 @@ fn half_ready(key: TileKey) -> bool {
 
 /// Дыры и видимая подстилка.
 fn holes(globe: &mut Globe, camera: &Camera, selection: &lod::Selection) -> (u64, u64) {
-    let stats = globe.render(camera, selection, None, FrameOptions { count_holes: true, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: false, sea_level: 0.0 });
+    let stats = globe.render(camera, selection, None, FrameOptions { count_holes: true, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: false, sea_level: 0.0, focus: None });
     assert!(stats.draws > 0);
     (stats.holes.unwrap(), stats.underlay.unwrap())
 }
@@ -163,7 +163,7 @@ fn picture_keeps_its_brightness() {
     for key in &sel.draw {
         globe.upload(*key, 256, 256, &rgba);
     }
-    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: false, sea_level: 0.0 });
+    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: false, sea_level: 0.0, focus: None });
     let pixel = center_pixel(&device, &queue, &globe);
     eprintln!("пиксель в середине кадра: {pixel:?}");
     for c in &pixel[..3] {
@@ -337,11 +337,86 @@ fn model_is_drawn_lit_from_the_sun() {
     assert!(c[0] > 240 && c[1] < 30 && c[2] < 30, "{c:?}");
 }
 
+#[test]
+fn model_casts_a_shadow_on_the_ground() {
+    // Плита 40 × 40 м на высоте 100 м, солнце с севера на высоте 30°: тень
+    // лежит на 173 м к югу от неё. Земля там темнее, чем в стороне, вдали
+    // от точки взгляда теней нет.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 800.0, 0.0, 0.0);
+    let e = Ellipsoid::wgs84();
+    let ground = e.geodetic_to_ecef(PERM.0, PERM.1, 0.0);
+    let up = (e.geodetic_to_ecef(PERM.0, PERM.1, 1.0) - ground).normalize();
+    let east = globe_core::DVec3::Z.cross(up).normalize();
+    let north = up.cross(east);
+    let center = ground + up * 100.0;
+    let corner = |x: f64, y: f64| {
+        let p = east * x + north * y;
+        [p.x as f32, p.y as f32, p.z as f32]
+    };
+    let plate = vec![corner(-20.0, -20.0), corner(20.0, -20.0), corner(20.0, 20.0), corner(-20.0, -20.0), corner(20.0, 20.0), corner(-20.0, 20.0)];
+    let n = [up.x as f32, up.y as f32, up.z as f32];
+    let part = render::ModelPart { normals: vec![n; plate.len()], uv: vec![[0.0, 0.0]; plate.len()], positions: plate, image: None, rgba: [1.0, 0.0, 0.0, 1.0], track: None };
+    globe.set_models(&[render::ModelMesh { center, parts: vec![part], images: Vec::new(), sun: n, ..Default::default() }]);
+    let sun = north * 30f64.to_radians().cos() + up * 30f64.to_radians().sin();
+    let shot = |globe: &mut Globe, focus: Option<([f64; 3], f64)>| {
+        let sel = lod::select(&cam, &|_| true, Options::default());
+        globe.grab();
+        globe.render(&cam, &sel, None, FrameOptions { sun: Some(sun.to_array()), focus, ratio: 1.0, ..FrameOptions::default() });
+        globe.take_grab().unwrap()
+    };
+    let at = |frame: &render::Frame, p: globe_core::DVec3| {
+        let (q, front) = cam.project(p);
+        assert!(front);
+        rgb(frame, q.x, q.y)
+    };
+    let dark = ground - north * 173.2;
+    let side = dark + east * 150.0;
+    let frame = shot(&mut globe, Some((ground.to_array(), 800.0)));
+    let (d, s) = (at(&frame, dark), at(&frame, side));
+    eprintln!("тень {d:?}, сторона {s:?}");
+    assert!(i32::from(d[2]) + 30 < i32::from(s[2]), "{d:?} {s:?}");
+    let frame = shot(&mut globe, None);
+    assert_eq!(at(&frame, dark), at(&frame, side), "без точки взгляда теней нет");
+}
+
+/// Замер цены теней, запускается вручную: среднее время кадра 1920 × 1080
+/// на видеокарте с тенями и без них.
+#[test]
+#[ignore]
+fn shadow_frame_cost() {
+    let Some((device, queue, _, _gpu)) = device() else {
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 2000.0, 30.0, 70.0).with_viewport(1920, 1080);
+    let e = Ellipsoid::wgs84();
+    let ground = e.geodetic_to_ecef(PERM.0, PERM.1, 0.0);
+    let sel = lod::select(&cam, &|_| true, Options::default());
+    let sun = (ground.normalize() + globe_core::DVec3::Z).normalize().to_array();
+    let mut run = |focus: Option<([f64; 3], f64)>| {
+        let frames = 200u32;
+        let start = std::time::Instant::now();
+        for _ in 0..frames {
+            globe.render(&cam, &sel, None, FrameOptions { sun: Some(sun), focus, ratio: 1.0, ..FrameOptions::default() });
+            let _ = device.poll(wgpu::PollType::wait_indefinitely());
+        }
+        start.elapsed().as_secs_f64() * 1000.0 / f64::from(frames)
+    };
+    let plain = run(None);
+    let shadow = run(Some((ground.to_array(), 2000.0)));
+    eprintln!("кадр без теней {plain:.2} мс, с тенями {shadow:.2} мс");
+}
+
 /// Снятый кадр с атмосферой или без.
 fn grab(globe: &mut Globe, cam: &Camera, air: bool) -> render::Frame {
     let sel = lod::select(cam, &|_| true, Options::default());
     globe.grab();
-    globe.render(cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air, ratio: 1.0, sun: None, water: None, tint: None, sky: false, sea_level: 0.0 });
+    globe.render(cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air, ratio: 1.0, sun: None, water: None, tint: None, sky: false, sea_level: 0.0, focus: None });
     globe.take_grab().unwrap()
 }
 
@@ -501,7 +576,7 @@ fn sky_frame_draws_bodies_without_globe() {
     globe.set_sky_bodies(&[render::StarPoint { dir: forward, size: 16.0, color: [1.0, 0.0, 0.0, 1.0] }]);
     let sel = lod::select(&cam, &|_| true, Options::default());
     globe.grab();
-    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: true, sea_level: 0.0 });
+    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: true, sea_level: 0.0, focus: None });
     let frame = globe.take_grab().unwrap();
     let (cx, cy) = (f64::from(cam.width) / 2.0, f64::from(cam.height) / 2.0);
     let centre = rgb(&frame, cx, cy);

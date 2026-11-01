@@ -2028,3 +2028,7 @@ On buildings	Pada bangunan
 3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	Pengukuran 3D: titik berada di atap atau dinding bangunan, jalur berupa ruas lurus, luas poligon benar pada kemiringan apa pun. Memerlukan baris bangunan 3D.
 3D length {value} m.	Panjang 3D {value} m.
 3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	Keliling 3D {perimeter} m, luas {area} m², kemiringan {tilt}°.
+m/s	m/s
+mm/h	mm/jam
+°C	°C
+%	%

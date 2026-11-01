@@ -9,12 +9,14 @@
 //! же осях. Поворот `orient` переводит вершины в оси ECEF в кадре: у
 //! едущей модели меняются только точка и поворот. Картинки частей - по ключу модели и пути,
 //! грузятся при [`Models::set`]. Модели рисуются после тайлов, с проверкой
-//! и записью глубины, грани видны с обеих сторон.
+//! и записью глубины, грани видны с обеих сторон. Модели отбрасывают
+//! тени и принимают их: `draw_depth` рисует глубину в карту теней.
 
 use std::collections::HashMap;
 
 use bytemuck::{Pod, Zeroable};
 use globe_core::camera::Camera;
+use globe_core::shadowmap::{LightFrame, REACH};
 use globe_core::{DMat3, DMat4, DVec3};
 use wgpu::util::DeviceExt;
 
@@ -68,6 +70,8 @@ struct ModelUniform {
     projection: [f32; 16],
     rgba: [f32; 4],
     light: [f32; 4],
+    shadow_mvp: [f32; 16],
+    shadow: [f32; 4],
 }
 
 #[repr(C)]
@@ -90,6 +94,8 @@ struct GpuPart {
 /// Модели и их конвейер.
 pub struct Models {
     pipeline: wgpu::RenderPipeline,
+    /// Проход карты теней.
+    depth_pipeline: wgpu::RenderPipeline,
     layout: wgpu::BindGroupLayout,
     texture_layout: wgpu::BindGroupLayout,
     sampler: wgpu::Sampler,
@@ -108,7 +114,7 @@ pub struct Models {
 }
 
 impl Models {
-    pub fn new(device: &wgpu::Device, queue: &wgpu::Queue) -> Self {
+    pub fn new(device: &wgpu::Device, queue: &wgpu::Queue, shadow_layout: &wgpu::BindGroupLayout) -> Self {
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("models"),
             source: wgpu::ShaderSource::Wgsl(include_str!("models.wgsl").into()),
@@ -150,8 +156,34 @@ impl Models {
         });
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("models"),
-            bind_group_layouts: &[Some(&layout), Some(&texture_layout)],
+            bind_group_layouts: &[Some(&layout), Some(&texture_layout), Some(shadow_layout)],
             immediate_size: 0,
+        });
+        let depth_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            label: Some("models depth"),
+            bind_group_layouts: &[Some(&layout)],
+            immediate_size: 0,
+        });
+        let vertex_layout = wgpu::VertexBufferLayout {
+            array_stride: std::mem::size_of::<Vertex>() as u64,
+            step_mode: wgpu::VertexStepMode::Vertex,
+            attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x3, 2 => Float32x2],
+        };
+        let depth_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("models depth"),
+            layout: Some(&depth_layout),
+            vertex: wgpu::VertexState {
+                module: &shader,
+                entry_point: Some("model_depth_vs"),
+                compilation_options: Default::default(),
+                buffers: &[Some(vertex_layout.clone())],
+            },
+            primitive: wgpu::PrimitiveState::default(),
+            depth_stencil: Some(crate::shadow::depth_state()),
+            multisample: wgpu::MultisampleState::default(),
+            fragment: None,
+            multiview_mask: None,
+            cache: None,
         });
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("models"),
@@ -160,11 +192,7 @@ impl Models {
                 module: &shader,
                 entry_point: Some("model_vs"),
                 compilation_options: Default::default(),
-                buffers: &[Some(wgpu::VertexBufferLayout {
-                    array_stride: std::mem::size_of::<Vertex>() as u64,
-                    step_mode: wgpu::VertexStepMode::Vertex,
-                    attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x3, 2 => Float32x2],
-                })],
+                buffers: &[Some(vertex_layout)],
             },
             primitive: wgpu::PrimitiveState::default(),
             depth_stencil: Some(wgpu::DepthStencilState {
@@ -204,6 +232,7 @@ impl Models {
         let (uniform, bind) = uniform_buffer(device, &layout, stride, capacity);
         Self {
             pipeline,
+            depth_pipeline,
             layout,
             texture_layout,
             sampler,
@@ -283,11 +312,10 @@ impl Models {
         }
     }
 
-    /// Нарисовать модели в открытом проходе кадра. Возвращает
-    /// количество отрисовок.
-    pub fn draw(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, pass: &mut wgpu::RenderPass<'_>, camera: &Camera) -> usize {
+    /// Значения кадра в буфер, до прохода карты теней и прохода кадра.
+    pub fn prepare(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, camera: &Camera, light: Option<&LightFrame>) {
         if self.parts.is_empty() {
-            return 0;
+            return;
         }
         let count = self.parts.len() as u64;
         if count > self.capacity {
@@ -314,12 +342,42 @@ impl Models {
                 projection,
                 rgba: part.rgba,
                 light: [sun.x as f32, sun.y as f32, sun.z as f32, AMBIENT],
+                shadow_mvp: light.map_or([0.0; 16], |f| (f.matrix(place.center) * turn).as_mat4().to_cols_array()),
+                shadow: light.map_or([0.0; 4], LightFrame::shader_params),
             };
             let raw = bytemuck::bytes_of(&u);
             chunk[..raw.len()].copy_from_slice(raw);
         }
         queue.write_buffer(&self.uniform, 0, &bytes);
+    }
+
+    /// Глубина моделей у карты теней в открытом проходе карты. Модель
+    /// дальше [`REACH`] от края карты тени в неё не бросает.
+    pub fn draw_depth(&self, pass: &mut wgpu::RenderPass<'_>, frame: &LightFrame) {
+        if self.parts.is_empty() {
+            return;
+        }
+        pass.set_pipeline(&self.depth_pipeline);
+        let reach = 1.0 + REACH / frame.radius;
+        for (slot, part) in self.parts.iter().enumerate() {
+            let near = self.places.get(part.model).is_some_and(|p| p.shown && frame.project(p.center).truncate().length() <= reach);
+            let Some(offset) = u32::try_from(slot as u64 * self.stride).ok().filter(|_| near) else {
+                continue;
+            };
+            pass.set_bind_group(0, &self.bind, &[offset]);
+            pass.set_vertex_buffer(0, part.vertices.slice(..));
+            pass.draw(0..part.count, 0..1);
+        }
+    }
+
+    /// Нарисовать модели в открытом проходе кадра. Возвращает
+    /// количество отрисовок.
+    pub fn draw(&self, pass: &mut wgpu::RenderPass<'_>, shadow: &wgpu::BindGroup) -> usize {
+        if self.parts.is_empty() {
+            return 0;
+        }
         pass.set_pipeline(&self.pipeline);
+        pass.set_bind_group(2, shadow, &[]);
         let mut drawn = 0;
         for (slot, part) in self.parts.iter().enumerate() {
             if !self.places.get(part.model).is_some_and(|p| p.shown) {

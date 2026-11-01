@@ -202,12 +202,15 @@ pub struct Shown<'a> {
     pub theme: Option<ThemeScale>,
     pub dots: &'a [Layer],
     pub contours: Option<(f64, [u8; 3])>,
+    /// Шкала поля погоды: заголовок и цвета.
+    pub weather: Option<(String, data::gibs::Colormap)>,
 }
 
 /// Что убрать с глобуса крестиком шкалы.
 pub enum Closed {
     Map(&'static str),
     Dots(Layer),
+    Weather,
 }
 
 /// Панель шкал над подписью источников: тема, карты maps, слои точек
@@ -219,11 +222,14 @@ pub fn show(
     credits: Option<egui::Rect>,
     shown: Shown<'_>,
 ) -> Option<Closed> {
-    let Shown { maps, theme, dots, contours } = shown;
+    let Shown { maps, theme, dots, contours, weather } = shown;
     // Шкала, что убирает крестик, и признак крестика.
     let mut scales: Vec<(Option<Closed>, Scale)> = Vec::new();
     if let Some((key, title, map)) = theme {
         scales.push((Some(Closed::Map(key)), Scale::Theme { title, map }));
+    }
+    if let Some((title, map)) = weather {
+        scales.push((Some(Closed::Weather), Scale::Theme { title, map: Some(map) }));
     }
     // У шкалы уклона крестика нет, как у модуля.
     scales.extend(maps.iter().filter_map(|(k, kind)| scale_of(k, *kind).map(|s| ((!matches!(s, Scale::Cells { .. })).then_some(Closed::Map(k)), s))));

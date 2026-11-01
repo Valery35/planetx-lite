@@ -2028,3 +2028,7 @@ On buildings	건물 위
 3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	3D 측정: 점이 건물 지붕이나 벽에 놓이고 경로는 직선 구간으로 가며 다각형 면적은 어떤 기울기에서도 정확합니다. 3D 건물 행이 필요합니다.
 3D length {value} m.	3D 길이 {value} m.
 3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	3D 둘레 {perimeter} m, 면적 {area} m², 기울기 {tilt}°.
+m/s	m/s
+mm/h	mm/시
+°C	°C
+%	%

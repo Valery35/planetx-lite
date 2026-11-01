@@ -77,7 +77,7 @@ fn ranges() {
 fn world(value: impl Fn(usize, usize) -> f32) -> w::Grid {
     // Сетка 1°: узлы от -180 до 179 по долготе, от 90 до -90.
     let values = (0..181).flat_map(|r| (0..360).map(move |c| (r, c))).map(|(r, c)| value(r, c)).collect();
-    w::Grid { values, rows: 181, cols: 360, west: -180.0, north: 90.0, step: 1.0, run: 0.0, hour: 0 }
+    w::Grid { values, rows: 181, cols: 360, west: -180.0, north: 90.0, step: 1.0, run: 0.0, hour: 0, vectors: None }
 }
 
 #[test]
@@ -88,6 +88,63 @@ fn sample_bilinear_and_wrap() {
     // Между 179° и -180°: середина значений 359 и 0.
     assert!((w::sample(&grid, 0.0, 179.5) - 179.5).abs() < 1e-3);
     assert!((w::sample(&grid, 0.0, -179.5) - 0.5).abs() < 1e-3);
+}
+
+#[test]
+fn value_step_follows_view_width() {
+    assert_eq!(w::value_step(4.0e7), 30.0);
+    // 2000 км поперёк - около 3° на число, ближайший шаг не мельче - 5°.
+    assert_eq!(w::value_step(2.0e6), 5.0);
+    assert_eq!(w::value_step(100.0), 0.25);
+}
+
+#[test]
+fn value_points_stand_on_their_nodes() {
+    // Сдвиг вида меняет край окна, узлы стоят на той же решётке.
+    for (lat, lon) in [(58.1, 56.2), (58.3, 56.4)] {
+        let a = w::value_points(lat, lon, 2.0e6);
+        assert!(!a.is_empty());
+        assert!(a.iter().all(|(la, lo)| la % 5.0 == 0.0 && lo % 5.0 == 0.0));
+    }
+    // Полярная шапка без чисел, долгота в пределах круга.
+    let top = w::value_points(89.0, 170.0, 8.0e6);
+    assert!(top.iter().all(|(la, lo)| *la <= w::VALUE_LAT && (-180.0..180.0).contains(lo)));
+    assert!(!top.is_empty());
+}
+
+#[test]
+fn value_marks_skip_clear_values() {
+    let grid = world(|r, _| if r < 90 { 0.0 } else { 5.0 });
+    let marks = w::value_marks(&grid, &w::PRECIPITATION, 0.0, 0.0, 8.0e6);
+    assert!(!marks.is_empty());
+    assert!(marks.iter().all(|(la, _, v)| *la <= 0.0 && *v >= 0.1), "{marks:?}");
+}
+
+#[test]
+fn value_text_as_in_module() {
+    assert_eq!(w::value_text(&w::TEMPERATURE, 7.4), "7°");
+    assert_eq!(w::value_text(&w::TEMPERATURE, -0.3), "0°");
+    assert_eq!(w::value_text(&w::PRECIPITATION, 1.24), "1.2");
+    assert_eq!(w::value_text(&w::WIND, 5.2), "5");
+    assert_eq!(w::value_text(&w::CLOUDS, 80.0), "80%");
+}
+
+#[test]
+fn legend_has_stops_and_colors() {
+    let m = w::legend(&w::TEMPERATURE).unwrap();
+    assert_eq!(m.colors.len(), 64);
+    assert_eq!(m.colors[0], [60, 0, 130]);
+    assert_eq!(m.labels.first().map(|l| l.1.as_str()), Some("-40"));
+    assert_eq!(m.labels.last().map(|l| l.0), Some(1.0));
+    assert_eq!(m.kind, "continuous");
+}
+
+#[test]
+fn valid_text_counts_hours_from_run() {
+    let mut grid = world(|_, _| 0.0);
+    grid.run = 1_793_491_200.0;
+    grid.hour = 6;
+    assert_eq!(w::valid_text(&grid), "2026-11-01 06:00");
 }
 
 #[test]

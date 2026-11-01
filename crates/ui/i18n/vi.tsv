@@ -2028,3 +2028,7 @@ On buildings	Trên tòa nhà
 3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	Đo 3D: điểm nằm trên mái hoặc tường tòa nhà, đường đi theo các đoạn thẳng, diện tích đa giác đúng ở mọi độ dốc. Cần dòng tòa nhà 3D.
 3D length {value} m.	Chiều dài 3D {value} m.
 3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	Chu vi 3D {perimeter} m, diện tích {area} m², độ dốc {tilt}°.
+m/s	m/s
+mm/h	mm/giờ
+°C	°C
+%	%

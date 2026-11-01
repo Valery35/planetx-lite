@@ -2028,3 +2028,7 @@ On buildings	Op gebouwen
 3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	3D-meting: een punt ligt op het dak of de muur van een gebouw, het pad gaat in rechte stukken, de oppervlakte van een polygoon klopt bij elke helling. Vereist de regel 3D-gebouwen.
 3D length {value} m.	3D-lengte {value} m.
 3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	3D-omtrek {perimeter} m, oppervlakte {area} m², helling {tilt}°.
+m/s	m/s
+mm/h	mm/u
+°C	°C
+%	%

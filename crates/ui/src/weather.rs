@@ -10,17 +10,29 @@
 //! Поле просится так: индекс .idx файла часа, затем его участок заголовком
 //! Range. Поля помнятся в памяти, не больше [`MAX_GRIDS`]. Сияние - один
 //! прогноз на сейчас, шкала времени его не меняет.
+//!
+//! Шкала поля стоит в панели шкал, числа в узлах сетки - на глобусе.
+//! Над раскраской ветра бегут белые струйки [`crate::currents::Streaks`].
 
 use std::sync::Arc;
 
+use data::flow;
 use data::weather::{self, Field, Grid};
+use eframe::egui;
 
+use crate::currents::Streaks;
 use crate::i18n::{Lang, tr, trf};
 
 /// Наибольший ответ службы, байт.
 const ANSWER_BYTES: u64 = 16 << 20;
 /// Полей в памяти.
 const MAX_GRIDS: usize = 12;
+/// Медленнее этого, м/с, струйка ветра бледнеет, `WIND_SLOW` модуля.
+const WIND_SLOW: f64 = 2.0;
+/// Зерно частиц ветра.
+const WIND_SEED: u64 = 20261008;
+/// Размер чисел поля, логические пиксели.
+const VALUE_FONT: f32 = 13.0;
 
 /// Идущий запрос.
 enum Ask {
@@ -65,11 +77,14 @@ pub struct Weather {
     fetched: f64,
     /// Участок файла, который просится следующим: выпуск, час, диапазон.
     pending: Option<(f64, u32, (u64, Option<u64>))>,
+    /// Струйки ветра, у прочих полей их нет.
+    streaks: Option<Streaks>,
 }
 
 impl Weather {
     pub fn new(field: &'static Field) -> Self {
-        Self { field, ask: None, newest: None, trying: 0, grids: Vec::new(), shown: None, changed: false, failed: false, fetched: f64::NEG_INFINITY, pending: None }
+        let streaks = (field.key == weather::WIND.key).then(|| Streaks::new(flow::WIND_COUNT, WIND_SEED, flow::WIND_TYPICAL, None, WIND_SLOW, 0.0));
+        Self { field, ask: None, newest: None, trying: 0, grids: Vec::new(), shown: None, changed: false, failed: false, fetched: f64::NEG_INFINITY, pending: None, streaks }
     }
 
     pub fn busy(&self) -> bool {
@@ -82,6 +97,56 @@ impl Weather {
 
     pub fn grid(&self) -> Option<Arc<Grid>> {
         self.shown.clone()
+    }
+
+    /// Заголовок и цвета шкалы показанного поля. name - название строки
+    /// на языке интерфейса.
+    pub fn legend(&self, lang: Lang, name: &str) -> Option<(String, data::gibs::Colormap)> {
+        let grid = self.grid()?;
+        let map = weather::legend(self.field)?;
+        let day = format!("{} UTC", weather::valid_text(&grid));
+        Some((trf(lang, "{name}, {units} · {day}", &[("name", name), ("units", tr(lang, self.field.units)), ("day", &day)]), map))
+    }
+
+    /// Идут ли струйки: поле ветра пришло, кадры идут по такту частиц.
+    pub fn streaming(&self) -> bool {
+        self.streaks.is_some() && self.shown.is_some()
+    }
+
+    /// Шаг струек. view - точка взгляда, высота глаза и ширина вида в метрах.
+    pub fn animate(&mut self, now: f64, view: (f64, f64, f64, f64)) {
+        let vectors = self.shown.as_ref().and_then(|g| g.vectors.clone());
+        if let (Some(streaks), Some(grid)) = (&mut self.streaks, vectors) {
+            streaks.step(&grid, now, view);
+        }
+    }
+
+    /// Струйки и числа поверх глобуса. view - широта, долгота точки взгляда
+    /// и ширина вида в метрах.
+    pub fn paint(&self, painter: &egui::Painter, rect: egui::Rect, ppp: f64, camera: &globe_core::camera::Camera, view: (f64, f64, f64)) {
+        if let Some(streaks) = &self.streaks {
+            streaks.paint(painter, rect, ppp, camera);
+        }
+        let Some(grid) = &self.shown else {
+            return;
+        };
+        let (lat, lon, width) = view;
+        let e = camera.ellipsoid;
+        let font = egui::FontId::proportional(VALUE_FONT);
+        for (la, lo, value) in weather::value_marks(grid, self.field, lat, lon, width) {
+            let point = e.geodetic_to_ecef(la, lo, 0.0);
+            let (q, front) = camera.project(point);
+            let at = rect.min + egui::vec2((q.x / ppp) as f32, (q.y / ppp) as f32);
+            // Сторона шара за горизонтом отбрасывается.
+            if !front || point.dot(camera.eye - point) <= 0.0 || !rect.contains(at) {
+                continue;
+            }
+            let text = weather::value_text(self.field, value);
+            for shift in [egui::vec2(-1.0, 0.0), egui::vec2(1.0, 0.0), egui::vec2(0.0, -1.0), egui::vec2(0.0, 1.0)] {
+                painter.text(at + shift, egui::Align2::CENTER_CENTER, &text, font.clone(), egui::Color32::from_black_alpha(200));
+            }
+            painter.text(at, egui::Align2::CENTER_CENTER, &text, font.clone(), egui::Color32::WHITE);
+        }
     }
 
     /// Слой поля для картинок тайлов.

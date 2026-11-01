@@ -2028,3 +2028,7 @@ On buildings	Binalar üzrə
 3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	3D ölçmə: nöqtə binanın damına və ya divarına düşür, yol düz parçalarla gedir, çoxbucaqlının sahəsi istənilən mailikdə düzgündür. 3D binalar sətri lazımdır.
 3D length {value} m.	3D uzunluq {value} m.
 3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	3D perimetr {perimeter} m, sahə {area} m², mailik {tilt}°.
+m/s	m/s
+mm/h	mm/saat
+°C	°C
+%	%

@@ -23,6 +23,7 @@ use std::sync::{Arc, Mutex};
 use bytemuck::{Pod, Zeroable};
 use globe_core::camera::Camera;
 use globe_core::lod::{Selection, TileKey, hole_rect};
+use globe_core::shadowmap::{self, LightFrame};
 use globe_core::tiling::{HOLE_MARGIN, MeshId, TileMesh, UNDERLAY_DEPTH};
 use terrain::HeightStore;
 use terrain::mesh::{TerrainMesh, polar_cap, terrain_mesh};
@@ -36,6 +37,7 @@ pub use features::{FeatureMesh, PULL, WALL_ALPHA};
 use features::Features;
 mod pictures;
 mod models;
+mod shadow;
 pub use models::{ModelMesh, ModelPart, ModelPlace};
 use models::Models;
 mod points;
@@ -139,6 +141,8 @@ struct DrawUniform {
     event_before: [f32; 4],
     /// Шторка: x - линия в пикселях кадра, y - признак (1 - слева «до»).
     split: [f32; 4],
+    /// Матрица света тайла, нули - тайл теней не принимает.
+    light: [f32; 16],
 }
 
 /// Окно всего снимка.
@@ -224,6 +228,9 @@ pub struct FrameOptions {
     /// Уровень моря над нынешним, метры, окно «Уровень моря». Вода
     /// заливает всё ниже уровня, sea_level вида модуля.
     pub sea_level: f32,
+    /// Точка взгляда в ECEF и расстояние до неё, м: при свете солнца
+    /// вблизи нее ложатся тени в кадре. None - теней нет.
+    pub focus: Option<([f64; 3], f64)>,
 }
 
 /// Глубина полной воды в метрах, мельче вода прозрачнее, `SHALLOW`
@@ -242,6 +249,8 @@ struct AirUniform {
     flags: [f32; 4],
     /// Направление на солнце в ECEF, w - 1, когда свет солнца включён.
     sun: [f32; 4],
+    /// Значения карты теней, `LightFrame::shader_params`.
+    shadow: [f32; 4],
 }
 
 /// Снятый кадр глобуса, RGBA по 8 бит, строки сверху вниз.
@@ -323,6 +332,9 @@ pub struct Globe {
     queue: wgpu::Queue,
     tile_pipeline: wgpu::RenderPipeline,
     water_pipeline: wgpu::RenderPipeline,
+    /// Глубина тайлов в карте теней.
+    shadow_pipeline: wgpu::RenderPipeline,
+    shadow: shadow::ShadowMap,
     /// Тайлы со смешиванием: поверхность над подземной моделью.
     glass_pipeline: wgpu::RenderPipeline,
     hole_count_pipeline: wgpu::RenderPipeline,
@@ -415,6 +427,16 @@ pub struct Globe {
     polar_want: [Option<Vec<[f64; 3]>>; 2],
     /// Цвета подложки у края шапки по секторам долготы из снимка шапки.
     cap_want: [Option<Vec<[f64; 3]>>; 2],
+}
+
+/// Лежит ли тайл у квадрата карты теней: сторона тайла берётся по экватору,
+/// с запасом. Остальные тайлы карте не нужны.
+fn near_shadow(frame: &LightFrame, mesh: MeshId, center: DVec3, a: f64) -> bool {
+    let MeshId::Tile { z, .. } = mesh else {
+        return false;
+    };
+    let side = std::f64::consts::TAU * a / f64::from(1u32 << z.min(30));
+    frame.project(center).truncate().length() <= 1.0 + 1.5 * side / frame.radius
 }
 
 /// Разница цветов края, с которой мозаика полюса подгоняется заново.
@@ -633,8 +655,9 @@ impl Globe {
                 count: None,
             }],
         });
-        // Группа воздуха несёт и маску подземного режима: она одна
-        // на кадр, а групп у WebGPU не больше четырёх.
+        // Группа воздуха несёт и маску подземного режима, и карту теней:
+        // они одни на кадр, а групп у WebGPU не больше четырёх.
+        let shadow_entries = shadow::entries(3);
         let air_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("air"),
             entries: &[
@@ -664,6 +687,8 @@ impl Globe {
                     ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
                     count: None,
                 },
+                shadow_entries[0],
+                shadow_entries[1],
             ],
         });
         // Небо рисуется с тем же расположением, что и тайлы: воздух
@@ -726,6 +751,33 @@ impl Globe {
             })
         };
         let tile_pipeline = make_tile_pipeline("tile", false, false);
+        let shadow_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            label: Some("shadow"),
+            bind_group_layouts: &[Some(&draw_layout)],
+            immediate_size: 0,
+        });
+        let shadow_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("shadow"),
+            layout: Some(&shadow_layout),
+            vertex: wgpu::VertexState {
+                module: &globe_shader,
+                entry_point: Some("shadow_vs"),
+                compilation_options: Default::default(),
+                buffers: &[Some(vertex_layout.clone())],
+            },
+            primitive: wgpu::PrimitiveState::default(),
+            depth_stencil: Some(shadow::depth_state()),
+            multisample: wgpu::MultisampleState::default(),
+            fragment: Some(wgpu::FragmentState {
+                module: &globe_shader,
+                entry_point: Some("shadow_fs"),
+                compilation_options: Default::default(),
+                targets: &[],
+            }),
+            multiview_mask: None,
+            cache: None,
+        });
+        let shadow = shadow::ShadowMap::new(device);
         let glass_pipeline = make_tile_pipeline("glass", false, true);
         let water_pipeline = make_tile_pipeline("water", true, true);
         let hole_pipeline = |writes: wgpu::ColorWrites, label: &str| {
@@ -809,7 +861,7 @@ impl Globe {
         });
         let blank = Self::texture_bind(device, queue, &texture_layout, &sampler, 1, 1, &[255, 255, 255, 255]);
         let clear = Self::upload_view(device, queue, 1, 1, &[0, 0, 0, 0], OVERLAY_FORMAT);
-        let air_bind = Self::air_bind(device, &air_layout, &air, &clear, &sampler);
+        let air_bind = Self::air_bind(device, &air_layout, &air, &clear, &sampler, &shadow);
         let clear_bind = device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("overlay and lights"),
             layout: &over_layout,
@@ -856,9 +908,11 @@ impl Globe {
             sky_lines: skylines::SkyLines::new(device),
             sky_map: skymap::SkyMap::new(device),
             hips: hips::HipsSky::new(device),
-            models: Models::new(device, queue),
-            live: Models::new(device, queue),
-            flight: Models::new(device, queue),
+            models: Models::new(device, queue, &shadow.model_layout),
+            live: Models::new(device, queue, &shadow.model_layout),
+            flight: Models::new(device, queue, &shadow.model_layout),
+            shadow,
+            shadow_pipeline,
             air,
             air_bind,
             air_layout,
@@ -1057,7 +1111,7 @@ impl Globe {
     }
 
     /// Забыть огни городов: солнце выключено.
-    fn air_bind(device: &wgpu::Device, layout: &wgpu::BindGroupLayout, air: &wgpu::Buffer, cut: &wgpu::TextureView, sampler: &wgpu::Sampler) -> wgpu::BindGroup {
+    fn air_bind(device: &wgpu::Device, layout: &wgpu::BindGroupLayout, air: &wgpu::Buffer, cut: &wgpu::TextureView, sampler: &wgpu::Sampler, shadow: &shadow::ShadowMap) -> wgpu::BindGroup {
         device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("air"),
             layout,
@@ -1065,6 +1119,8 @@ impl Globe {
                 wgpu::BindGroupEntry { binding: 0, resource: air.as_entire_binding() },
                 wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::TextureView(cut) },
                 wgpu::BindGroupEntry { binding: 2, resource: wgpu::BindingResource::Sampler(sampler) },
+                wgpu::BindGroupEntry { binding: 3, resource: wgpu::BindingResource::TextureView(&shadow.view) },
+                wgpu::BindGroupEntry { binding: 4, resource: wgpu::BindingResource::Sampler(&shadow.sampler) },
             ],
         })
     }
@@ -1079,7 +1135,7 @@ impl Globe {
             (b, Self::upload_view(&self.device, &self.queue, w, h, rgba, OVERLAY_FORMAT))
         });
         let view = self.cut.as_ref().map_or(&self.clear, |(_, v)| v);
-        self.air_bind = Self::air_bind(&self.device, &self.air_layout, &self.air, view, &self.sampler);
+        self.air_bind = Self::air_bind(&self.device, &self.air_layout, &self.air, view, &self.sampler, &self.shadow);
     }
 
     /// Разрез Земли: числа `data::cutaway::uniform` - направление средней
@@ -1563,8 +1619,8 @@ impl Globe {
         selection: &Selection,
         heights: Option<&HeightStore>,
         projection: DMat4,
-        water: Option<[f32; 4]>,
-        sea_level: f32,
+        (water, sea_level): (Option<[f32; 4]>, f32),
+        light: Option<&LightFrame>,
     ) -> Vec<Item> {
         self.update_caps(selection);
         let mut out = Vec::new();
@@ -1587,9 +1643,10 @@ impl Globe {
                     _ => (none, none, none, none),
                 };
                 let split = me.split.map_or([0.0; 4], |x| [x, 1.0, 0.0, 0.0]);
+                let shadow = light.filter(|_| kind == Kind::Tile).map_or([0.0; 16], |f| f.matrix(center).as_mat4().to_cols_array());
                 let pair = (overlay, lights, after, before);
                 me.ensure_over(pair);
-                out.push(Item { kind, mesh, texture, over_pair: pair, cap: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow, water: [0.0; 4], sea: [0.0; 4], cut: [0.0; 4], glass: [1.0, 0.0, 0.0, 0.0], wedge: [0.0; 4], wedge_lat: [0.0; 4], event, event_before, split } });
+                out.push(Item { kind, mesh, texture, over_pair: pair, cap: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow, water: [0.0; 4], sea: [0.0; 4], cut: [0.0; 4], glass: [1.0, 0.0, 0.0, 0.0], wedge: [0.0; 4], wedge_lat: [0.0; 4], event, event_before, split, light: shadow } });
             }
         };
         let flat = |rgb: [f32; 3]| [rgb[0], rgb[1], rgb[2], 1.0];
@@ -1696,7 +1753,7 @@ impl Globe {
 
     /// Воздух кадра: глаз в долях полуосей, оси камеры в ECEF. Разности
     /// квадратов считаются в f64.
-    fn air_uniform(camera: &Camera, width: u32, height: u32, on: bool, sun: Option<[f64; 3]>, tint: Option<[f32; 3]>) -> AirUniform {
+    fn air_uniform(camera: &Camera, width: u32, height: u32, on: bool, sun: Option<[f64; 3]>, tint: Option<[f32; 3]>, light: Option<&LightFrame>) -> AirUniform {
         let [tr, tg, tb] = tint.unwrap_or([1.0; 3]);
         let e = &camera.ellipsoid;
         let axes = DVec3::new(1.0 / e.a, 1.0 / e.a, 1.0 / e.b);
@@ -1714,6 +1771,7 @@ impl Globe {
             back: v4(r.z_axis, squared - 1.0),
             flags: [if on { 1.0 } else { 0.0 }, tr, tg, tb],
             sun: sun.map_or([0.0, 0.0, 1.0, 0.0], |s| [s[0] as f32, s[1] as f32, s[2] as f32, 1.0]),
+            shadow: light.map_or([0.0; 4], LightFrame::shader_params),
         }
     }
 
@@ -1918,7 +1976,12 @@ impl Globe {
         self.frame += 1;
         self.resize(camera.width, camera.height);
         let projection = depth_fix() * camera.projection();
-        let items = if options.sky { Vec::new() } else { self.items(camera, selection, heights, projection, options.water, options.sea_level) };
+        // Тени - при свете солнца вблизи точки взгляда, солнце над ней.
+        let light = options.focus.zip(options.sun).filter(|_| !options.sky && !options.show_holes).and_then(|((center, distance), sun)| {
+            let radius = shadowmap::radius_for(distance)?;
+            Some(LightFrame::new(DVec3::from_array(center), DVec3::from_array(sun), radius, shadowmap::MAP_SIZE)).filter(LightFrame::active)
+        });
+        let items = if options.sky { Vec::new() } else { self.items(camera, selection, heights, projection, (options.water, options.sea_level), light.as_ref()) };
         let count = items.len() as u64;
         if count > self.uniform_capacity {
             let capacity = count.next_power_of_two();
@@ -1941,6 +2004,11 @@ impl Globe {
         if options.count_holes && !USE_QUERIES {
             self.ensure_pixels();
         }
+        if !options.sky {
+            for models in [&mut self.models, &mut self.live, &mut self.flight] {
+                models.prepare(&self.device, &self.queue, camera, light.as_ref());
+            }
+        }
         let grab_now = std::mem::take(&mut self.grab_next);
         let Some(target) = &self.target else {
             return FrameStats::default();
@@ -1953,10 +2021,42 @@ impl Globe {
         }
         // Пурпурные дыры видны только без воздуха, как в модуле.
         let air_on = options.air && !options.show_holes;
-        let air = Self::air_uniform(camera, target.width, target.height, air_on, options.sun, options.tint);
+        let air = Self::air_uniform(camera, target.width, target.height, air_on, options.sun, options.tint, light.as_ref());
         self.queue.write_buffer(&self.air, 0, bytemuck::bytes_of(&air));
         let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("globe") });
         let mut draws = 0;
+        // Карта теней - до кадра: тайлы у карты и модели со стороны солнца.
+        if let Some(frame) = &light {
+            let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: Some("shadow"),
+                color_attachments: &[],
+                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                    view: &self.shadow.view,
+                    depth_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Clear(1.0), store: wgpu::StoreOp::Store }),
+                    stencil_ops: None,
+                }),
+                timestamp_writes: None,
+                occlusion_query_set: None,
+                multiview_mask: None,
+            });
+            pass.set_pipeline(&self.shadow_pipeline);
+            for (i, item) in items.iter().enumerate() {
+                let Some(mesh) = self.meshes.get(&item.mesh).filter(|m| item.kind == Kind::Tile && near_shadow(frame, item.mesh, m.center, camera.ellipsoid.a)) else {
+                    continue;
+                };
+                let Ok(offset) = u32::try_from(i as u64 * self.stride) else {
+                    continue;
+                };
+                pass.set_bind_group(0, &self.uniform_bind, &[offset]);
+                pass.set_vertex_buffer(0, mesh.vertices.slice(..));
+                pass.set_index_buffer(mesh.indices.slice(..), wgpu::IndexFormat::Uint16);
+                pass.draw_indexed(0..mesh.index_count, 0, 0..1);
+                draws += 1;
+            }
+            self.models.draw_depth(&mut pass, frame);
+            self.live.draw_depth(&mut pass, frame);
+            self.flight.draw_depth(&mut pass, frame);
+        }
         {
             let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("globe"),
@@ -2054,9 +2154,9 @@ impl Globe {
             }
             // Картинки-наложения - под своими объектами.
             if !options.sky {
-                draws += self.models.draw(&self.device, &self.queue, &mut pass, camera);
-                draws += self.live.draw(&self.device, &self.queue, &mut pass, camera);
-                draws += self.flight.draw(&self.device, &self.queue, &mut pass, camera);
+                draws += self.models.draw(&mut pass, &self.shadow.model_bind);
+                draws += self.live.draw(&mut pass, &self.shadow.model_bind);
+                draws += self.flight.draw(&mut pass, &self.shadow.model_bind);
                 draws += self.points.draw(&self.device, &self.queue, &mut pass, camera, ratio);
                 draws += self.pictures.draw(&self.device, &self.queue, &mut pass, camera);
                 draws += self.features.draw(&self.device, &self.queue, &mut pass, camera, ratio);

@@ -18,7 +18,11 @@
 //! Сияние - вероятность видимого сияния на ближайшие 30-90 минут на сетке
 //! 1°, файл JSON службы NOAA SWPC обновляется каждые 5 минут.
 
+use std::sync::Arc;
+
 use serde_json::Value;
+
+use crate::flow::VectorGrid;
 
 pub const BUCKET: &str = "https://noaa-gfs-bdp-pds.s3.amazonaws.com";
 /// Часов между выпусками.
@@ -38,6 +42,18 @@ pub const AURORA_URL: &str = "https://services.swpc.noaa.gov/json/ovation_aurora
 pub const AURORA_ATTRIBUTION: (&str, &str) = ("NOAA SWPC OVATION", "https://www.swpc.noaa.gov/products/aurora-30-minute-forecast");
 /// Полученный прогноз сияния не просится заново раньше этого срока, с.
 pub const AURORA_REFRESH: f64 = 600.0;
+/// Чисел поперёк вида, окно чисел в ширинах вида вокруг точки взгляда,
+/// `VALUES_ACROSS` и `VALUE_WINDOW` модуля. Сетка чисел стоит на месте,
+/// пока вид не уходит на шаг, числа не прыгают при сдвиге.
+pub const VALUES_ACROSS: f64 = 6.0;
+pub const VALUE_WINDOW: f64 = 1.5;
+/// Шаги узлов чисел, градусы, от крупного к мелкому.
+pub const VALUE_STEPS: [f64; 8] = [30.0, 20.0, 10.0, 5.0, 2.0, 1.0, 0.5, 0.25];
+/// Выше по широте чисел нет, узлы там сходятся.
+pub const VALUE_LAT: f64 = 80.0;
+const M_PER_DEGREE: f64 = 111_320.0;
+/// Цветов в полосе шкалы.
+const LEGEND_COLORS: usize = 64;
 const AURORA_ROWS: usize = 181;
 const AURORA_COLS: usize = 360;
 
@@ -103,7 +119,7 @@ pub const AURORA: Field = Field {
 
 /// Поле на сетке широт и долгот: строки с севера на юг, west, north -
 /// центр левого верхнего узла, step - шаг в градусах, run - выпуск модели
-/// (секунды UTC), hour - час прогноза.
+/// (секунды UTC), hour - час прогноза, vectors - U и V ветра для струек.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Grid {
     pub values: Vec<f32>,
@@ -114,6 +130,7 @@ pub struct Grid {
     pub step: f64,
     pub run: f64,
     pub hour: u32,
+    pub vectors: Option<Arc<VectorGrid>>,
 }
 
 /// Часы прогноза GFS: до [`HOURLY`] по одному, дальше через три.
@@ -227,7 +244,13 @@ pub fn read_grib(bytes: Vec<u8>, field: &Field, run: f64, hour: u32) -> Option<G
         })
         .collect();
     let g = ds.geo_transform();
-    Some(Grid { values: values_of(field, &bands), rows, cols, west: g[0] + g[1] / 2.0, north: g[3] + g[5] / 2.0, step: g[1].abs(), run, hour })
+    let (west, north, step) = (g[0] + g[1] / 2.0, g[3] + g[5] / 2.0, g[1].abs());
+    let values = values_of(field, &bands);
+    let vectors = match bands.as_slice() {
+        [u, v, ..] if field.key == WIND.key => VectorGrid::new(u.clone(), v.clone(), rows, cols, west, north, step).map(Arc::new),
+        _ => None,
+    };
+    Some(Grid { values, rows, cols, west, north, step, run, hour, vectors })
 }
 
 /// Значение поля в точке, билинейно, долгота по кругу.
@@ -246,6 +269,82 @@ pub fn sample(grid: &Grid, lat: f64, lon: f64) -> f64 {
     let top = at(y0, x0) * (1.0 - fx) + at(y0, x1) * fx;
     let bottom = at(y0 + 1, x0) * (1.0 - fx) + at(y0 + 1, x1) * fx;
     top * (1.0 - fy) + bottom * fy
+}
+
+/// Шаг узлов чисел в градусах для видимой полосы width метров. Мельче шага
+/// сетки GFS 0.25° не бывает.
+pub fn value_step(width: f64) -> f64 {
+    let wanted = width / VALUES_ACROSS / M_PER_DEGREE;
+    VALUE_STEPS.iter().rev().copied().find(|s| *s >= wanted).unwrap_or(VALUE_STEPS[0])
+}
+
+/// Узлы чисел вокруг точки взгляда: (широта, долгота).
+pub fn value_points(lat: f64, lon: f64, width: f64) -> Vec<(f64, f64)> {
+    let step = value_step(width);
+    let half = VALUE_WINDOW * width / 2.0 / M_PER_DEGREE;
+    let south = (lat - half).max(-VALUE_LAT);
+    let north = (lat + half).min(VALUE_LAT);
+    let span = half / lat.to_radians().cos().max(0.05);
+    let (first, last) = if span >= 180.0 {
+        ((-180.0 / step).ceil() as i64, ((180.0 - 1e-9) / step).floor() as i64)
+    } else {
+        (((lon - span) / step).ceil() as i64, ((lon + span) / step).floor() as i64)
+    };
+    let mut out = Vec::new();
+    for row in (south / step).ceil() as i64..=(north / step).floor() as i64 {
+        for col in first..=last {
+            out.push((row as f64 * step, (col as f64 * step + 180.0).rem_euclid(360.0) - 180.0));
+        }
+    }
+    out
+}
+
+/// Числа поля у точки взгляда: (широта, долгота, значение). Значения ниже
+/// порога прозрачности не подписываются.
+pub fn value_marks(grid: &Grid, field: &Field, lat: f64, lon: f64, width: f64) -> Vec<(f64, f64, f64)> {
+    value_points(lat, lon, width)
+        .into_iter()
+        .filter_map(|(la, lo)| {
+            let value = sample(grid, la, lo);
+            (value.is_finite() && field.clear.is_none_or(|c| value >= c)).then_some((la, lo, value))
+        })
+        .collect()
+}
+
+/// Число поля на глобусе: «7°», «1.2», «5», «80%». Единицы стоят в шкале.
+pub fn value_text(field: &Field, value: f64) -> String {
+    let whole = format!("{value:.0}");
+    let whole = if whole == "-0" { "0".to_string() } else { whole };
+    if field.key == TEMPERATURE.key {
+        format!("{whole}°")
+    } else if field.key == PRECIPITATION.key {
+        format!("{value:.1}")
+    } else if field.key == CLOUDS.key || field.key == AURORA.key {
+        format!("{whole}%")
+    } else {
+        whole
+    }
+}
+
+/// Шкала поля для панели шкал: полоса цветов с подписями у точек раскраски.
+pub fn legend(field: &Field) -> Option<crate::gibs::Colormap> {
+    let (lo, hi) = (field.ramp.first()?.0, field.ramp.last()?.0);
+    let colors = (0..LEGEND_COLORS)
+        .map(|n| {
+            let c = colorize(field, lo + (hi - lo) * n as f64 / (LEGEND_COLORS - 1) as f64);
+            [c[0], c[1], c[2]]
+        })
+        .collect();
+    let labels = field.ramp.iter().map(|(s, _)| ((s - lo) / (hi - lo), s.to_string())).collect();
+    Some(crate::gibs::Colormap { kind: "continuous".to_string(), units: field.units.to_string(), colors, labels, names: Vec::new() })
+}
+
+/// Срок поля: момент UTC, на который дан прогноз, «ГГГГ-ММ-ДД ЧЧ:ММ».
+pub fn valid_text(grid: &Grid) -> String {
+    let moment = grid.run + f64::from(grid.hour) * 3600.0;
+    let day = (moment / 86400.0).floor();
+    let minutes = ((moment - day * 86400.0) / 60.0).floor() as u32;
+    format!("{} {:02}:{:02}", crate::gibs::Day::from_seconds(day * 86400.0).text(), minutes / 60, minutes % 60)
 }
 
 /// Цвет значения по раскраске поля, без премножения.
@@ -325,5 +424,5 @@ pub fn parse_aurora(data: &[u8]) -> Option<Grid> {
             values[(90 - lat) as usize * AURORA_COLS + lon.rem_euclid(AURORA_COLS as i64) as usize] = v as f32;
         }
     }
-    Some(Grid { values, rows: AURORA_ROWS, cols: AURORA_COLS, west: 0.0, north: 90.0, step: 1.0, run, hour: 0 })
+    Some(Grid { values, rows: AURORA_ROWS, cols: AURORA_COLS, west: 0.0, north: 90.0, step: 1.0, run, hour: 0, vectors: None })
 }
