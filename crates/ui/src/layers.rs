@@ -53,6 +53,8 @@ pub enum Extra {
     Overture,
     /// Течения NOAA CoastWatch.
     Currents,
+    /// Поле погоды, номер строки [`crate::weather::ROWS`].
+    Weather(usize),
 }
 
 impl Extra {
@@ -74,6 +76,7 @@ impl Extra {
         out.push(Extra::Buildings);
         out.push(Extra::Overture);
         out.push(Extra::Currents);
+        out.extend((0..crate::weather::ROWS.len()).map(Extra::Weather));
         out
     }
 
@@ -119,6 +122,7 @@ impl Extra {
             Extra::Buildings => "3D buildings",
             Extra::Overture => "3D buildings, Overture Maps",
             Extra::Currents => "Currents",
+            Extra::Weather(n) => crate::weather::ROWS.get(n).map_or("", |r| r.name),
         }
     }
 
@@ -137,6 +141,7 @@ impl Extra {
                 "Parallels and meridians with degree labels, the equator, the tropics and the polar circles. The step of the grid changes with the camera height."
             }
             Extra::Map(_) => self.map().map_or("", |e| e.tip),
+            Extra::Weather(n) => crate::weather::ROWS.get(n).map_or("", |r| r.tip),
             Extra::Dots(l) => l.tip(),
             Extra::Live(k) => k.tip(),
             Extra::Currents => "Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.",
@@ -181,6 +186,7 @@ impl Extra {
             Extra::Mining => Category::Depths,
             Extra::Buildings | Extra::Overture => Category::Map,
             Extra::Currents => Category::Water,
+            Extra::Weather(_) => Category::Weather,
         }
     }
 
@@ -203,6 +209,7 @@ impl Extra {
             Extra::Buildings => "buildings",
             Extra::Overture => "overture",
             Extra::Currents => "currents",
+            Extra::Weather(n) => crate::weather::ROWS.get(n).map_or("", |r| r.key),
         }
     }
 
@@ -263,6 +270,8 @@ pub enum Action {
     Catalog,
     /// Окно «Батиметрия водоёма» своего растра.
     Bathymetry(String),
+    /// Окно «Выемка и насыпь»: растр - новая съёмка.
+    Volumes(String),
     /// Глубины морей и океанов включить или снять.
     Sea(bool),
     /// Непрозрачность земли над подземной моделью.
@@ -439,6 +448,10 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
             ui.menu_button(name.as_str(), |ui| {
                 if ui.button(tr(lang, "Water body bathymetry…")).clicked() {
                     out.push(Action::Bathymetry(name.clone()));
+                    chosen = true;
+                }
+                if ui.button(tr(lang, "Cut and fill…")).on_hover_text(tr(lang, "The raster is a new terrain survey, for example of a pit with dumps. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.")).clicked() {
+                    out.push(Action::Volumes(name.clone()));
                     chosen = true;
                 }
             });
@@ -628,6 +641,7 @@ enum Category {
     Map,
     Fire,
     Water,
+    Weather,
     Gases,
     Life,
     Sky,
@@ -729,6 +743,7 @@ impl Item {
             Item::Extra(Extra::Buildings) => "OpenFreeMap",
             Item::Extra(Extra::Overture) => "Overture Maps",
             Item::Extra(Extra::Currents) => "NOAA CoastWatch",
+            Item::Extra(Extra::Weather(n)) => crate::weather::ROWS.get(n).map_or("", |r| r.source),
             Item::Extra(Extra::Cutaway) => "PREM, CRUST1.0, Slab2",
             Item::Extra(Extra::Paleo) => "PALEOMAP",
             Item::Extra(Extra::Geoid) => "EGM2008, NGA",
@@ -797,6 +812,7 @@ fn items() -> Vec<Item> {
     // Порядок LAYERS витрины модуля.
     out.push(Item::Extra(Extra::Mining));
     out.push(Item::Extra(Extra::Currents));
+    out.extend((0..crate::weather::ROWS.len()).map(|n| Item::Extra(Extra::Weather(n))));
     out.push(Item::Extra(Extra::Geoid));
     out.extend(crate::live::Kind::ALL.map(|k| Item::Extra(Extra::Live(k))));
     out.push(Item::Extra(Extra::Cutaway));
@@ -836,6 +852,7 @@ impl Catalog {
             (Category::Map, tr(lang, "Map"), tr(lang, "The OpenFreeMap vector base and the coordinate grid.")),
             (Category::Fire, tr(lang, "Planet of Fire"), tr(lang, "Fire spots, smoke, aerosol and carbon monoxide of fires and industry from NASA data.")),
             (Category::Water, tr(lang, "Planet of Water"), tr(lang, "Precipitation, soil moisture, snow, ice, water vapor, chlorophyll, salinity and floods from NASA data, currents from NOAA data.")),
+            (Category::Weather, tr(lang, "Weather"), tr(lang, "NOAA GFS forecast fields by the time slider and the aurora forecast.")),
             (Category::Gases, tr(lang, "Planet of Air"), tr(lang, "Nitrogen dioxide, sulfur dioxide, methane, carbon dioxide and ozone from NASA data.")),
             (Category::Life, tr(lang, "Land and Life"), tr(lang, "Vegetation, dust, night lights and land cover types from NASA data.")),
             (Category::Sky, tr(lang, "Sky and light"), tr(lang, "The sun and the night side, the atmosphere.")),

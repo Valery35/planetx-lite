@@ -1946,3 +1946,85 @@ Click the globe to outline a sample, a click on the first vertex closes the outl
 The area is divided into objects, each object is compared with the samples in colour and texture.	Area dibagi menjadi objek, setiap objek dibandingkan dengan sampel dalam warna dan tekstur.
 The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	Porsi tekstur dalam pembagian objek dan perbandingan dengan sampel, sisanya warna.
 What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	Sumber warna dan tekstur. Vektor AlphaEarth dimuat dari jaringan, setiap kanal raster yang dibuka di program adalah fitur.
+Earthwork	Pekerjaan tanah
+Earthwork…	Pekerjaan tanah…
+Pad elevation	Elevasi pelataran
+Equal volumes	Volume sama
+Elevation of the level pad above sea level. Everything above it is cut, everything below is fill. A new elevation is calculated at once, without loading heights.	Elevasi pelataran rata di atas permukaan laut. Semua di atasnya adalah galian, semua di bawahnya adalah timbunan. Elevasi baru dihitung langsung tanpa memuat ketinggian.
+Heights of the area, cut and fill to the pad elevation - colours on the globe and volumes. The first calculation sets the elevation of equal volumes.	Ketinggian area, galian dan timbunan sampai elevasi pelataran: warna di globe dan volume. Perhitungan pertama menetapkan elevasi volume sama.
+The elevation at which the excavated soil is enough for the fill.	Elevasi saat tanah galian cukup untuk timbunan.
+Cut {cut} m³ on {cut_area} ha, fill {fill} m³ on {fill_area} ha. Fill minus cut {net} m³.	Galian {cut} m³ pada {cut_area} ha, timbunan {fill} m³ pada {fill_area} ha. Timbunan dikurangi galian {net} m³.
+The heights of the area are open models with an error of metres. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate. A calculation needs your own terrain, a GeoTIFF elevation raster opened in the program.	Ketinggian area berasal dari model terbuka dengan galat beberapa meter. Galat ±{metres} m mengubah volume sebesar ±{error} m³, hasilnya hanya perkiraan. Perhitungan memerlukan relief sendiri, raster ketinggian GeoTIFF yang dibuka di program.
+Your own terrain covers {share} % of the area, the rest is open models. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate.	Relief sendiri mencakup {share} % area, sisanya model terbuka. Galat ±{metres} m mengubah volume sebesar ±{error} m³, hasilnya hanya perkiraan.
+Cut and fill to the elevation {level} m	Galian dan timbunan sampai elevasi {level} m
+Cut and fill of the area to a level pad: volumes, colours and a difference raster.	Galian dan timbunan area sampai pelataran rata: volume, warna, dan raster selisih.
+Export to glTF	Ekspor ke glTF
+Export to 3D Tiles	Ekspor ke 3D Tiles
+Exported pieces - {count}.	Bagian diekspor: {count}.
+Exported pieces - {count}. The terrain scale {scale} is in the heights.	Bagian diekspor: {count}. Skala relief {scale} sudah termasuk dalam ketinggian.
+There are no objects to export in the view: 3D buildings, a subsurface model or 3D models.	Tidak ada objek untuk diekspor di tampilan: bangunan 3D, model bawah permukaan, atau model 3D.
+Cut and fill	Galian dan timbunan
+Cut and fill…	Galian dan timbunan…
+The raster is a new terrain survey, for example of a pit with dumps. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	Raster adalah survei relief baru, misalnya tambang dengan timbunan. Selisih dengan survei lama memberi galian dan timbunan, volumenya, dan raster selisih.
+The raster «{name}» is a new terrain survey. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	Raster «{name}» adalah survei relief baru. Selisih dengan survei lama memberi galian dan timbunan, volumenya, dan raster selisih.
+Earlier survey	Survei lama
+A raster of an earlier survey of the same area. It is recalculated to the grid of the new survey.	Raster survei lama dari area yang sama. Dihitung ulang ke grid survei baru.
+Analysis area	Area analisis
+Only the area shared by the analysis windows. Without the check - the whole extent of the new survey.	Hanya area bersama jendela analisis. Tanpa tanda ini seluruh cakupan survei baru.
+Threshold	Ambang
+A difference below the threshold is not included in the volumes, it is survey noise. A threshold above the survey error understates the volumes.	Selisih di bawah ambang tidak masuk volume, itu derau survei. Ambang di atas galat survei mengurangi volume.
+No other raster is open as an earlier survey.	Tidak ada raster lain yang terbuka sebagai survei lama.
+The surveys have no common cells.	Survei tidak memiliki sel bersama.
+Computing: {done} %.	Perhitungan: {done} %.
+Cut {cut} m³ on {cut_area} m², down to {deepest} m. Fill {fill} m³ on {fill_area} m², up to {highest} m. Fill minus cut {net} m³. Compared area {area} m².	Galian {cut} m³ pada {cut_area} m², sampai {deepest} m. Timbunan {fill} m³ pada {fill_area} m², sampai {highest} m. Timbunan dikurangi galian {net} m³. Luas perbandingan {area} m².
+Extrusion…	Ekstrusi…
+Extrusion - {name}	Ekstrusi - {name}
+Objects of the folder rise above the terrain to the height from a field: a polygon as a prism, a point as a column, a line as a wall.	Objek folder naik di atas relief setinggi nilai bidang: poligon sebagai prisma, titik sebagai kolom, garis sebagai dinding.
+Height from a field	Tinggi dari bidang
+A numeric field of the height of an object. An object with an empty, zero or negative value is not extruded.	Bidang numerik tinggi objek. Objek dengan nilai kosong, nol, atau negatif tidak diekstrusi.
+Factor, m	Faktor, m
+The height in metres is the field value times the factor. For a field of storeys the factor is about 3.	Tinggi dalam meter adalah nilai bidang dikali faktor. Untuk bidang lantai faktornya sekitar 3.
+The folder has no numeric fields.	Folder tidak memiliki bidang numerik.
+Objects extruded: {count}.	Objek diekstrusi: {count}.
+Bathymetry from soundings…	Batimetri dari pemeruman…
+Bathymetry from soundings	Batimetri dari pemeruman
+The points of the folder «{name}» are depth soundings, for example echo sounder tracks. A raster of depths is built from them by triangulation, it goes into the globe terrain as the bed of the water body.	Titik folder «{name}» adalah pemeruman kedalaman, misalnya lajur echosounder. Dari situ dibuat raster kedalaman dengan triangulasi, lalu masuk ke relief globe sebagai dasar badan air.
+Point Z	Z titik
+The field with the depth or the Z of a point. The sign of the depth does not matter, its absolute value is taken.	Bidang kedalaman atau Z titik. Tanda tidak penting, nilai mutlak yang dipakai.
+Cell	Sel
+The cell size of the depth raster. By default - by the number of points per area of the soundings. A smaller cell gives a more detailed bed and a larger file.	Ukuran sel raster kedalaman. Bawaan menurut jumlah titik per luas pemeruman. Sel lebih kecil memberi dasar lebih rinci dan berkas lebih besar.
+Limit from a sounding	Batas dari perum
+A cell further than this from the nearest sounding stays empty. So the raster does not flood the shore and bays without soundings. The limit is larger than the distance between tracks, otherwise strips stay between them.	Sel yang lebih jauh dari ini dari perum terdekat tetap kosong. Jadi raster tidak mengisi pantai dan teluk tanpa perum. Batas lebih besar dari jarak antarlajur, jika tidak tersisa jalur.
+The height of the water surface above sea level on the day of the soundings. The bed elevation is the water level minus the depth.	Tinggi permukaan air di atas permukaan laut pada hari pemeruman. Elevasi dasar adalah muka air dikurangi kedalaman.
+Fewer than three soundings with a depth.	Kurang dari tiga perum berkedalaman.
+Soundings {count}, depth from {low} to {high} m.	Perum {count}, kedalaman {low} sampai {high} m.
+The soundings do not form a grid: they lie on one line or the grid is too large.	Perum tidak membentuk grid: berada pada satu garis atau grid terlalu besar.
+The grid has no cells with a depth, increase the limit.	Grid tidak memiliki sel berkedalaman, naikkan batas.
+The raster is not written.	Raster tidak ditulis.
+Wayback imagery archive…	Arsip citra Wayback…
+Wayback imagery archive	Arsip citra Wayback
+The Wayback archive did not answer.	Arsip Wayback tidak menjawab.
+Searching for releases with changes: found {count}…	Mencari rilis dengan perubahan: ditemukan {count}…
+Releases with changes at the view point: {count} of {total}.	Rilis dengan perubahan di titik pandang: {count} dari {total}.
+Shot on {date}	Diambil {date}
+pixel {value} m	piksel {value} m
+Releases with changes at the present view point. The width of the view sets the size of the searched place.	Rilis dengan perubahan di titik pandang saat ini. Lebar tampilan menentukan ukuran tempat yang dicari.
+The release lies as a tile layer over the base map, a row in the catalogue.	Rilis menjadi lapisan tile di atas peta dasar, satu baris katalog.
+Releases of Esri World Imagery since 2014. A release where the place did not change gives the tile of an earlier one, so only releases with changes are listed.	Rilis Esri World Imagery sejak 2014. Rilis tanpa perubahan di tempat itu memberi tile rilis lama, jadi hanya rilis dengan perubahan yang didaftar.
+Air temperature	Suhu udara
+Air temperature at a height of 2 m by the NOAA GFS model, grid step 0.25°, about 28 km. The forecast goes up to 16 days ahead, the past is the analysis of the model. The moment is set by the time slider.	Suhu udara pada ketinggian 2 m menurut model NOAA GFS, langkah grid 0.25°, sekitar 28 km. Prakiraan sampai 16 hari ke depan, masa lalu adalah analisis model. Saatnya ditentukan penggeser waktu.
+Precipitation, GFS forecast	Presipitasi, prakiraan GFS
+Precipitation rate at the moment of the slider by the NOAA GFS model, mm/h. Below 0.1 mm/h the field is transparent.	Intensitas presipitasi pada saat penggeser menurut NOAA GFS, mm/jam. Di bawah 0.1 mm/jam bidang transparan.
+Wind speed at a height of 10 m by the NOAA GFS model, m/s.	Kecepatan angin pada 10 m menurut NOAA GFS, m/s.
+Cloud cover, GFS forecast	Tutupan awan, prakiraan GFS
+Total cloud cover by the NOAA GFS model, the share of the sky in percent. This is a model calculation, not an image of clouds.	Tutupan awan total menurut NOAA GFS, bagian langit dalam persen. Ini perhitungan model, bukan citra awan.
+Aurora	Aurora
+The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	Peluang aurora terlihat menurut model OVATION NOAA SWPC untuk 30-90 menit ke depan, grid 1°. Prakiraan hanya satu, untuk sekarang, penggeser waktu tidak mengubahnya.
+Weather	Cuaca
+NOAA GFS forecast fields by the time slider and the aurora forecast.	Bidang prakiraan NOAA GFS menurut penggeser waktu dan prakiraan aurora.
+The forecast did not load, check the network and switch the row on again.	Prakiraan tidak dimuat, periksa jaringan dan aktifkan baris lagi.
+Forecast: run {run}, hour {hour}.	Prakiraan: rilis {run}, jam {hour}.
+On buildings	Pada bangunan
+3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	Pengukuran 3D: titik berada di atap atau dinding bangunan, jalur berupa ruas lurus, luas poligon benar pada kemiringan apa pun. Memerlukan baris bangunan 3D.
+3D length {value} m.	Panjang 3D {value} m.
+3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	Keliling 3D {perimeter} m, luas {area} m², kemiringan {tilt}°.

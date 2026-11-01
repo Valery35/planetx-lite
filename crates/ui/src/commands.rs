@@ -36,6 +36,10 @@ pub enum Command {
     About,
     SceneSave,
     SceneOpen,
+    /// Выгрузка вида файлом GLB.
+    ExportGltf,
+    /// Выгрузка вида набором 3D Tiles.
+    ExportTiles,
     Fullscreen,
     Share,
     /// Окно «Снимки событий».
@@ -69,6 +73,8 @@ impl Command {
             Self::About => "tool:about".into(),
             Self::SceneSave => "tool:scene_save".into(),
             Self::SceneOpen => "tool:scene_open".into(),
+            Self::ExportGltf => "tool:export_gltf".into(),
+            Self::ExportTiles => "tool:export_tiles".into(),
             Self::Fullscreen => "tool:fullscreen".into(),
             Self::Share => "tool:share".into(),
             Self::Events => "open:events".into(),
@@ -97,6 +103,8 @@ impl Command {
             Command::About,
             Command::SceneSave,
             Command::SceneOpen,
+            Command::ExportGltf,
+            Command::ExportTiles,
             Command::Fullscreen,
             Command::Share,
             Command::Events,
@@ -135,6 +143,7 @@ fn layer_words(extra: Extra) -> &'static [&'static str] {
         Extra::Paleo => &["палеогеография", "палеокарта", "древние материки", "пангея", "paleogeography", "paleomap", "pangaea"],
         Extra::Cutaway => &["разрез земли", "разрез", "ядро", "мантия", "кора", "cutaway", "core", "mantle", "crust"],
         Extra::Currents => &["течения", "океан", "гольфстрим", "currents", "ocean"],
+        Extra::Weather(_) => &["погода", "прогноз", "температура", "ветер", "сияние", "weather", "forecast", "wind", "aurora"],
         Extra::Buildings => &["здания", "дома", "3d", "buildings"],
         Extra::Overture => &["здания", "overture", "buildings", "3d"],
         Extra::Mining => &["карьеры", "отвалы", "горные работы", "mining", "pits"],
@@ -272,6 +281,8 @@ pub fn actions(lang: Lang, now: &Now) -> Vec<Suggestion> {
     }
     add(Command::SceneSave, tr(lang, "Save Scene"), open, &["сцена", "scene"]);
     add(Command::SceneOpen, tr(lang, "Open Scene"), open, &["сцена", "scene"]);
+    add(Command::ExportGltf, tr(lang, "Export to glTF"), open, &["выгрузить", "выгрузка", "gltf", "glb", "export", "3d"]);
+    add(Command::ExportTiles, tr(lang, "Export to 3D Tiles"), open, &["выгрузить", "выгрузка", "3d tiles", "tileset", "cesium", "export"]);
     // У страницы полный экран - средствами браузера.
     if !cfg!(target_arch = "wasm32") {
         add(

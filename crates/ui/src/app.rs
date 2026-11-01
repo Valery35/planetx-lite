@@ -396,6 +396,15 @@ pub struct LiteApp {
     analysis_sessions: HashMap<u64, String>,
     /// Окна «Затопление», «Сток воды», «Уровень моря».
     hydro: crate::hydrocalc::Hydro,
+    /// Окно «Земляные работы».
+    earthwork: crate::earthwork::Earthwork,
+    /// Окно «Выемка и насыпь».
+    volumes: Option<crate::volumecalc::VolumeCalc>,
+    /// Окно «Архив снимков Wayback».
+    wayback: Option<crate::wayback::Wayback>,
+    /// Окна папки: «Выдавливание» и «Батиметрия по промерам».
+    extrude: Option<crate::foldercalc::ExtrudeWindow>,
+    sounding: Option<crate::foldercalc::SoundingWindow>,
     /// Тайлы высот, которых ждут расчёты у точки.
     calc_keys: Vec<TileKey>,
     /// Окно «Старые карты «Это Место»».
@@ -426,6 +435,10 @@ pub struct LiteApp {
     /// Строка «3D-здания», тайлы зданий загрузчика OpenFreeMap и те из них,
     /// что нужны только зданиям.
     buildings: Option<crate::buildings::Buildings>,
+    /// Версия высот и кадр зданий, по которым собраны цели 3D-линейки.
+    solid_stamp: Option<(u64, Vec<TileKey>)>,
+    /// Неподвижные 3D-модели в видеокарте для выгрузки вида.
+    export_models: Vec<render::ModelMesh>,
     /// Загрузчик зданий Overture, когда здания из него.
     overture: Option<crate::overture::Overture>,
     /// Картинки границ полей, когда строка включена.
@@ -438,6 +451,8 @@ pub struct LiteApp {
     parcels: Vec<data::cadastre::Parcel>,
     /// Строка «Течения».
     currents: Option<crate::currents::Currents>,
+    /// Поле погоды: строка [`crate::weather::ROWS`] и загрузчик.
+    weather: Option<(usize, crate::weather::Weather)>,
     /// Окно «Карты Рамсея».
     rumsey: Option<crate::rumsey::Rumsey>,
     /// Окно «Снимки OpenAerialMap».
@@ -1150,6 +1165,11 @@ impl LiteApp {
             relief_calc: None,
             analysis_sessions: HashMap::new(),
             hydro: crate::hydrocalc::Hydro::new(),
+            earthwork: crate::earthwork::Earthwork::default(),
+            volumes: None,
+            wayback: None,
+            extrude: None,
+            sounding: None,
             calc_keys: Vec::new(),
             etomesto: None,
             paleo: None,
@@ -1173,6 +1193,8 @@ impl LiteApp {
             overpass_mirrors: crate::overpass::Mirrors::default(),
             mining: None,
             buildings: None,
+            solid_stamp: None,
+            export_models: Vec::new(),
             overture: None,
             field_tiles: None,
             building_keys: HashSet::new(),
@@ -1180,6 +1202,7 @@ impl LiteApp {
             parcel_ask: None,
             parcels: Vec::new(),
             currents: None,
+            weather: None,
             rumsey: None,
             oam: None,
             sentinel: None,
@@ -2018,7 +2041,7 @@ impl LiteApp {
                 }
                 self.join_site(&choice, lat, lon);
             }
-            Choice::Flood | Choice::Flow | Choice::SeaLevel => self.hydro_choice(choice, point, place),
+            Choice::Flood | Choice::Flow | Choice::SeaLevel | Choice::Earthwork => self.hydro_choice(choice, point, place),
             Choice::SatPath(number) => {
                 if let Some(s) = &mut self.satellites {
                     s.select(number);
@@ -2063,6 +2086,15 @@ impl LiteApp {
                             self.rumsey = Some(crate::rumsey::Rumsey::new(lat, lon, view, &|limit: u64| (loaders.request)(limit)));
                         }
                     }
+                }
+            }
+            Choice::Wayback => {
+                let (lat, lon, width) = (self.nav.pose.lat, self.nav.pose.lon, self.view_width());
+                let loaders = &self.loaders;
+                let request = |limit: u64| (loaders.request)(limit);
+                match &mut self.wayback {
+                    Some(w) => w.show_view(lat, lon, width, &request),
+                    None => self.wayback = Some(crate::wayback::Wayback::new(lat, lon, width, &request)),
                 }
             }
             Choice::Oam => {
@@ -2671,6 +2703,90 @@ impl LiteApp {
         }
     }
 
+    /// Окна папки «Моих меток».
+    fn folder_windows(&mut self, ctx: &egui::Context, lang: Lang) {
+        if let Some(window) = &mut self.extrude
+            && let Some(answer) = window.show(ctx, lang)
+        {
+            let path = window.path.clone();
+            self.extrude = None;
+            if let Some((field, factor)) = answer {
+                let radius = self.nav.camera.ellipsoid.a;
+                let mut count = 0;
+                self.marks.edit_folder(&path, |f| count = crate::foldercalc::extrude_folder(f, &field, factor, radius));
+                self.marks_changed();
+                self.open_message = Some(trf(lang, "Objects extruded: {count}.", &[("count", &count.to_string())]));
+            }
+        }
+        if let Some(window) = &mut self.sounding {
+            let open = window.show(ctx, lang);
+            let done = window.done.take();
+            if !open {
+                self.sounding = None;
+            }
+            if let Some((tiff, name, level)) = done
+                && self.open_relief(&tiff, &name, None).is_ok()
+            {
+                let mut store = self.heights.write();
+                let _ = self.relief.set_lake(&name, Some((data::bathymetry::Kind::Depth, level)), &mut store);
+                drop(store);
+                self.water = None;
+            }
+        }
+    }
+
+    /// Куски сцены вида, `collect` модуля.
+    fn view_items(&self) -> Vec<scene::sceneexport::Item> {
+        let mut items = Vec::new();
+        let store = self.heights.read();
+        if let Some(b) = &self.buildings {
+            let heights = |lats: &[f64], lons: &[f64]| -> Vec<f64> {
+                let points: Vec<(f64, f64)> = lats.iter().copied().zip(lons.iter().copied()).collect();
+                store.heights_at(&points, true)
+            };
+            items.extend(b.meshes(&heights).iter().map(crate::viewexport::building_item));
+        }
+        if let Some(sub) = &self.subsurface
+            && let Some(model) = &sub.model
+        {
+            let ground = |pts: &[(f64, f64)]| store.heights_at(pts, false);
+            let (meshes, _) = crate::subsurface::build(model, store.scale(), &ground, sub.cut_on());
+            items.extend(meshes.iter().filter_map(|(name, mesh)| mesh.as_ref().map(|m| crate::viewexport::sub_item(name, m))).filter(|i| !i.positions.is_empty()));
+        }
+        for (i, mesh) in self.export_models.iter().enumerate() {
+            if !self.movers.iter().any(|m| m.index == i) {
+                items.extend(crate::viewexport::model_items(mesh, &format!("model {}", i + 1)));
+            }
+        }
+        items
+    }
+
+    /// Вид файлом: один GLB или набор 3D Tiles архивом, `export_scene`
+    /// модуля.
+    fn export_view(&mut self, tiles: bool) {
+        let items = self.view_items();
+        if items.is_empty() {
+            self.open_message = Some(crate::viewexport::nothing(self.lang).to_string());
+            return;
+        }
+        let saved = if tiles {
+            let Some(bytes) = scene::sceneexport::tiles_zip(&items) else {
+                self.open_message = Some(trf(self.lang, "Not saved: {e}", &[("e", "ZIP")]));
+                return;
+            };
+            crate::export::save_bytes("PlanetX-3dtiles.zip", ("3D Tiles ZIP", "zip"), &bytes)
+        } else {
+            let p = &self.nav.pose;
+            let bytes = scene::sceneexport::scene_glb(&self.nav.camera.ellipsoid, &items, p.lat, p.lon, 0.0);
+            crate::export::save_bytes("PlanetX.glb", ("glTF", "glb"), &bytes)
+        };
+        self.open_message = match saved {
+            Ok(Some(_)) => Some(crate::viewexport::report(self.lang, items.len(), self.heights.read().scale())),
+            Ok(None) => None,
+            Err(e) => Some(trf(self.lang, "Not saved: {e}", &[("e", &e)])),
+        };
+    }
+
     fn save_snapshot(&mut self, ctx: &egui::Context) {
         let Some(Snapshot::Wait(to, cell)) = &self.snapshot else {
             return;
@@ -3098,6 +3214,7 @@ impl LiteApp {
                 }
             }
                 Action::Catalog => self.catalog.open = !self.catalog.open,
+                Action::Volumes(name) => self.volumes = Some(crate::volumecalc::VolumeCalc::new(name)),
                 Action::Bathymetry(name) => {
                     self.close_side();
                     let level = self.shore_level(&name);
@@ -3130,6 +3247,20 @@ impl LiteApp {
                     self.live_points.clear();
                     self.live_labels.clear();
                     self.dots.dirty = true;
+                }
+            }
+            Extra::Weather(n) => {
+                if on {
+                    // Поле погоды одно: новое занимает место прежнего.
+                    if let Some((old, _)) = self.weather.take().filter(|(old, _)| *old != n) {
+                        self.extras.remove(&Extra::Weather(old));
+                    }
+                    if let Some(row) = crate::weather::ROWS.get(n) {
+                        self.weather = Some((n, crate::weather::Weather::new(row.field)));
+                    }
+                } else if self.weather.as_ref().is_some_and(|(old, _)| *old == n) {
+                    self.weather = None;
+                    self.refresh_painters();
                 }
             }
             Extra::Currents => {
@@ -3822,6 +3953,7 @@ impl LiteApp {
             Choice::SlopeHere => self.relief_calc.as_mut().and_then(crate::reliefcalc::ReliefCalc::site_edit),
             Choice::Flood => self.hydro.flood_site.as_mut(),
             Choice::Flow => self.hydro.flow_site.as_mut(),
+            Choice::Earthwork => self.earthwork.site_edit(),
             _ => None,
         };
         if let Some(edit) = edit {
@@ -3844,6 +3976,8 @@ impl LiteApp {
         let title = if name.is_empty() { coords } else { format!("{name}  {coords}") };
         if choice == Choice::Flood {
             self.hydro.flood_here(lat, lon, title);
+        } else if choice == Choice::Earthwork {
+            self.earthwork.open_here(lat, lon, title);
         } else {
             self.hydro.flow_here(lat, lon, title);
         }
@@ -4312,6 +4446,43 @@ impl LiteApp {
         };
         let name: String = [image.day.as_str(), image.title.as_str()].iter().filter(|p| !p.is_empty()).copied().collect::<Vec<_>>().join(" ").chars().take(100).collect();
         let saved = crate::maps::WmsSaved { name: if name.is_empty() { image.url.clone() } else { name }, template: image.tiles.clone(), bbox: Some(image.bbox), credit: data::oam::rights(&image), max_level: Some(data::oam::max_level(&image)) };
+        if let Some(n) = crate::maps::register_wms(&saved) {
+            if !self.settings.wms.contains(&saved) {
+                self.settings.wms.push(saved);
+                self.settings_dirty = true;
+            }
+            self.extras.insert(crate::layers::Extra::Map(n));
+            self.set_extra(crate::layers::Extra::Map(n), true);
+        }
+    }
+
+    /// Окно архива Wayback: выбранный выпуск ложится строкой карт.
+    fn step_wayback(&mut self, ctx: &egui::Context) {
+        let lang = self.lang;
+        let (lat, lon, width) = (self.nav.pose.lat, self.nav.pose.lon, self.view_width());
+        let Some(w) = &mut self.wayback else {
+            return;
+        };
+        {
+            let loaders = &self.loaders;
+            let request = |limit: u64| (loaders.request)(limit);
+            w.step(lang, &request);
+            w.show(ctx, lang, &request);
+            if std::mem::take(&mut w.search) {
+                w.show_view(lat, lon, width, &request);
+            }
+        }
+        if w.busy() {
+            ctx.request_repaint_after(std::time::Duration::from_millis(100));
+        }
+        let add = w.add.take();
+        if !w.open {
+            self.wayback = None;
+        }
+        let Some(release) = add else {
+            return;
+        };
+        let saved = crate::maps::WmsSaved { name: format!("Wayback {}", release.day), template: data::wayback::tile_url(release.number), bbox: None, credit: data::wayback::ATTRIBUTION.to_string(), max_level: Some(data::wayback::MAX_LEVEL) };
         if let Some(n) = crate::maps::register_wms(&saved) {
             if !self.settings.wms.contains(&saved) {
                 self.settings.wms.push(saved);
@@ -4799,6 +4970,29 @@ impl LiteApp {
     }
 
     /// Шаг течений: сутки по бегунку шкалы времени, загрузка, частицы.
+    /// Поле погоды: час по шкале времени, слой над картами.
+    fn step_weather(&mut self, ctx: &egui::Context) {
+        let moment = match self.timebar.window() {
+            Some((_, hi)) if hi.is_finite() => Some(hi),
+            _ => None,
+        };
+        let lang = self.lang;
+        let utc = crate::pointcalc::clock_now();
+        let Some((_, w)) = &mut self.weather else {
+            return;
+        };
+        let loaders = &self.loaders;
+        if let Some(message) = w.step(lang, utc, moment, &|limit: u64| (loaders.request)(limit)) {
+            self.open_message = Some(message);
+        }
+        if w.busy() {
+            ctx.request_repaint_after(std::time::Duration::from_millis(100));
+        }
+        if std::mem::take(&mut w.changed) {
+            self.refresh_painters();
+        }
+    }
+
     fn step_currents(&mut self, ctx: &egui::Context, now: f64) {
         let moment = match self.timebar.window() {
             Some((_, hi)) if hi.is_finite() => Some(hi),
@@ -5071,6 +5265,8 @@ impl LiteApp {
                 changed |= std::mem::take(&mut calc.changed);
             }
             keys.extend(self.hydro.step(ctx, lang, now, radius, max_level, &has, &heights));
+            let boxes = self.relief.boxes();
+            keys.extend(self.earthwork.step(ctx, lang, now, radius, max_level, &boxes, &has, &heights));
             if let Some(calc) = &mut self.aef_change {
                 calc.show(ctx, lang, &*self.loaders.request);
                 calc.step(lang, &*self.loaders.request);
@@ -5084,6 +5280,14 @@ impl LiteApp {
                 changed |= std::mem::take(&mut calc.changed);
             }
             changed |= std::mem::take(&mut self.hydro.changed);
+            changed |= std::mem::take(&mut self.earthwork.changed);
+            self.folder_windows(ctx, lang);
+            let rasters = self.open_rasters();
+            if let Some(v) = &mut self.volumes
+                && !v.show(ctx, lang, &rasters, self.area_site.as_deref())
+            {
+                self.volumes = None;
+            }
         }
         self.calc_keys = keys;
         if let Some(text) = self.hydro.message.take() {
@@ -5100,6 +5304,8 @@ impl LiteApp {
         let mut saved: Vec<crate::analysis::Saved> = [&mut self.viewshed, &mut self.insolation, &mut self.shadows].into_iter().flatten().filter_map(|c| c.saved.take()).collect();
         saved.extend(self.relief_calc.as_mut().and_then(|c| c.saved.take()));
         saved.append(&mut self.hydro.saved);
+        saved.extend(self.earthwork.saved.take());
+        saved.extend(self.volumes.as_mut().and_then(|v| v.saved.take()));
         saved.extend(self.aef_change.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.aef_class.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.similar.as_mut().and_then(|c| c.saved.take()));
@@ -5240,6 +5446,9 @@ impl LiteApp {
     /// контуры горных разработок.
     fn refresh_painters(&mut self) {
         let mut painters: Vec<(&'static str, crate::vector::Painter)> = Vec::new();
+        if let Some(p) = self.weather.as_ref().and_then(|(_, w)| w.painter()) {
+            painters.push(("weather", p));
+        }
         if let Some(grid) = self.currents.as_ref().and_then(crate::currents::Currents::grid) {
             painters.push(("currents", crate::currents::painter(grid)));
         }
@@ -5255,6 +5464,7 @@ impl LiteApp {
             painters.push(("relief", crate::reliefcalc::painter(r, radius)));
         }
         painters.extend(self.hydro.painters());
+        painters.extend(self.earthwork.painter().map(|p| ("earthwork", p)));
         if let Some(l) = self.aef_change.as_ref().and_then(|c| c.layer.clone()) {
             painters.push(("aef_change", crate::aefcalc::painter(l)));
         }
@@ -6173,6 +6383,17 @@ impl LiteApp {
                     ));
                 }
                 crate::marks::Action::Open => self.pick_file(ui.ctx(), now),
+                crate::marks::Action::Extrude(path) => {
+                    if let Some(folder) = self.marks.folder(&path) {
+                        self.extrude = Some(crate::foldercalc::ExtrudeWindow::new(path, folder));
+                    }
+                }
+                crate::marks::Action::Sounding(path) => {
+                    let level = self.marks.folder_points(&path).first().map_or(0.0, |p| self.heights.read().height_at(p.0, p.1));
+                    if let Some(folder) = self.marks.folder(&path) {
+                        self.sounding = Some(crate::foldercalc::SoundingWindow::new(folder, level, self.lang));
+                    }
+                }
                 crate::marks::Action::Properties(path) => {
                     self.close_side();
                     if let Some(place) = self.marks.place(&path) {
@@ -7445,6 +7666,9 @@ impl LiteApp {
         if self.mining.is_some() {
             parts.push(data::mining::POLYGONS_ATTRIBUTION);
         }
+        if let Some((_, w)) = &self.weather {
+            parts.push((if w.is_aurora() { data::weather::AURORA_ATTRIBUTION.0 } else { data::weather::ATTRIBUTION.0 }, ""));
+        }
         if self.currents.is_some() {
             parts.push(data::flow::CURRENTS_ATTRIBUTION);
         }
@@ -7835,6 +8059,8 @@ impl LiteApp {
             Command::Tracks => self.tracks.open = true,
             Command::Assistant => self.ai.open = true,
             Command::MyLocation => self.gps.start(ctx),
+            Command::ExportGltf => self.export_view(false),
+            Command::ExportTiles => self.export_view(true),
             Command::SceneSave => {
                 let folder = self.tree_state.selected.clone().unwrap_or_default();
                 self.save_marks(&folder, crate::export::Kind::Scene);
@@ -7989,8 +8215,10 @@ impl eframe::App for LiteApp {
             || self.mining.as_ref().is_some_and(crate::mining::Mining::busy)
             || self.parcel_ask.is_some()
             || self.currents.as_ref().is_some_and(crate::currents::Currents::busy)
+            || self.weather.as_ref().is_some_and(|(_, w)| w.busy())
             || self.rumsey.as_ref().is_some_and(crate::rumsey::Rumsey::busy)
             || self.oam.as_ref().is_some_and(crate::oam::Oam::busy)
+            || self.wayback.as_ref().is_some_and(crate::wayback::Wayback::busy)
             || self.sentinel.as_ref().is_some_and(crate::sentinel::Sentinel::busy)
             || self.buildings.as_ref().is_some_and(|b| b.busy(self.heights.read().version()))
             || self.overture.as_ref().is_some_and(crate::overture::Overture::busy)
@@ -8000,6 +8228,8 @@ impl eframe::App for LiteApp {
             || self.lidar.as_ref().is_some_and(crate::lidarnet::Lidar::busy)
             || self.relief_calc.as_ref().is_some_and(crate::reliefcalc::ReliefCalc::busy)
             || self.hydro.busy()
+            || self.earthwork.busy()
+            || self.volumes.as_ref().is_some_and(crate::volumecalc::VolumeCalc::busy)
             || self.osm_mines.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.osm_infra.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.satellites.as_ref().is_some_and(crate::satellites::Satellites::busy)
@@ -8053,6 +8283,7 @@ impl eframe::App for LiteApp {
                         .filter_map(crate::pointcalc::Calc::site_edit)
                         .chain(self.relief_calc.as_mut().and_then(crate::reliefcalc::ReliefCalc::site_edit))
                         .chain(self.hydro.site_edits())
+                        .chain(self.earthwork.site_edit())
                         .chain(self.aef_change.as_mut().and_then(crate::aefcalc::ChangeCalc::site_edit))
                         .any(|s| s.input(&ctx, &globe_response, rect, ppp, nav))
                 }
@@ -8068,6 +8299,7 @@ impl eframe::App for LiteApp {
                 .filter_map(crate::pointcalc::Calc::site_edit)
                 .chain(self.relief_calc.as_mut().and_then(crate::reliefcalc::ReliefCalc::site_edit))
                 .chain(self.hydro.site_edits())
+                .chain(self.earthwork.site_edit())
                 .chain(self.aef_change.as_mut().and_then(crate::aefcalc::ChangeCalc::site_edit))
                 .chain(self.aef_class.as_mut().and_then(crate::aefclass::ClassCalc::site_edit))
                 .chain(self.similar.as_mut().and_then(crate::aefclass::ClassCalc::site_edit))
@@ -8234,10 +8466,12 @@ impl eframe::App for LiteApp {
         self.step_overpass(now);
         self.step_parcels();
         self.step_currents(&ctx, now);
+        self.step_weather(&ctx);
         self.step_lidar(now);
         self.step_events(now);
         self.step_rumsey(&ctx, now);
         self.step_oam(&ctx, now);
+        self.step_wayback(&ctx);
         self.step_sentinel(&ctx, now);
         self.step_tracks(&ctx);
         self.step_ai(&ctx, now);
@@ -8371,6 +8605,14 @@ impl eframe::App for LiteApp {
                 store.heights_at(&points, true)
             };
             b.step(globe, store.version(), &heights);
+            // Здания для луча 3D-линейки: только при смене кадра зданий.
+            if let Some(tool) = self.tool.as_mut().filter(|t| t.solid_on) {
+                let stamp = (store.version(), b.wanted.clone());
+                if self.solid_stamp.as_ref() != Some(&stamp) {
+                    tool.targets = b.meshes(&heights).iter().map(crate::viewexport::solid_tile).collect();
+                    self.solid_stamp = Some(stamp);
+                }
+            }
         } else {
             self.building_keys.clear();
             self.building_only.clear();
@@ -8505,6 +8747,7 @@ impl eframe::App for LiteApp {
             globe.set_pictures(&self.marks.picture_meshes(&store));
             let built = self.models.meshes(&model_list, &store, now);
             globe.set_models(&built.meshes);
+            self.export_models = built.meshes;
             self.movers = built.movers;
             self.animated = built.animated;
         }
@@ -8731,7 +8974,7 @@ impl eframe::App for LiteApp {
         if let Some(calc) = self.relief_calc.as_ref().filter(|c| c.open) {
             calc.site.paint(&painter, rect, ppp, &self.nav);
         }
-        for site in self.hydro.sites() {
+        for site in self.hydro.sites().into_iter().chain(self.earthwork.site()) {
             site.paint(&painter, rect, ppp, &self.nav);
         }
         if let Some(calc) = self.aef_change.as_ref().filter(|c| c.open) {

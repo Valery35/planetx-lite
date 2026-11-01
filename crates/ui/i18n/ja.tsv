@@ -1946,3 +1946,85 @@ Click the globe to outline a sample, a click on the first vertex closes the outl
 The area is divided into objects, each object is compared with the samples in colour and texture.	区域をオブジェクトに分割し、各オブジェクトを色とテクスチャで見本と比較します。
 The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	オブジェクト分割と見本との比較におけるテクスチャの割合で、残りは色です。
 What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	色とテクスチャの取得元です。AlphaEarth のベクトルはネットワークから読み込み、プログラムで開いたラスターは各バンドが特徴になります。
+Earthwork	土工
+Earthwork…	土工…
+Pad elevation	敷地の標高
+Equal volumes	土量の均衡
+Elevation of the level pad above sea level. Everything above it is cut, everything below is fill. A new elevation is calculated at once, without loading heights.	平らな敷地の海面からの標高です。これより高い部分は切土、低い部分は盛土です。新しい標高は高さを読み込まずにすぐ計算します。
+Heights of the area, cut and fill to the pad elevation - colours on the globe and volumes. The first calculation sets the elevation of equal volumes.	区域の高さ、敷地標高までの切土と盛土を、地球儀の色分けと土量で示します。最初の計算で土量が均衡する標高を設定します。
+The elevation at which the excavated soil is enough for the fill.	掘削した土で盛土がまかなえる標高です。
+Cut {cut} m³ on {cut_area} ha, fill {fill} m³ on {fill_area} ha. Fill minus cut {net} m³.	切土 {cut} m³ ({cut_area} ha)、盛土 {fill} m³ ({fill_area} ha)。盛土 - 切土 {net} m³。
+The heights of the area are open models with an error of metres. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate. A calculation needs your own terrain, a GeoTIFF elevation raster opened in the program.	区域の高さは誤差がメートル単位のオープンモデルです。±{metres} m の誤差で土量は ±{error} m³ 変わり、結果は概算にすぎません。計算には独自の地形、プログラムで開いた GeoTIFF 標高ラスターが必要です。
+Your own terrain covers {share} % of the area, the rest is open models. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate.	独自の地形は区域の {share} % を覆い、残りはオープンモデルです。±{metres} m の誤差で土量は ±{error} m³ 変わり、結果は概算にすぎません。
+Cut and fill to the elevation {level} m	標高 {level} m までの切土と盛土
+Cut and fill of the area to a level pad: volumes, colours and a difference raster.	区域を平らな敷地まで切土・盛土します。土量、色分け、差分ラスターを示します。
+Export to glTF	glTF に書き出す
+Export to 3D Tiles	3D Tiles に書き出す
+Exported pieces - {count}.	書き出した部分: {count}。
+Exported pieces - {count}. The terrain scale {scale} is in the heights.	書き出した部分: {count}。地形の倍率 {scale} は高さに含まれます。
+There are no objects to export in the view: 3D buildings, a subsurface model or 3D models.	ビューに書き出せるオブジェクトがありません: 3D 建物、地下モデル、3D モデル。
+Cut and fill	切土と盛土
+Cut and fill…	切土と盛土…
+The raster is a new terrain survey, for example of a pit with dumps. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	このラスターは新しい地形測量です。例えばズリ山のある採掘場です。以前の測量との差から切土と盛土、その土量、差分ラスターが得られます。
+The raster «{name}» is a new terrain survey. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	ラスター「{name}」は新しい地形測量です。以前の測量との差から切土と盛土、その土量、差分ラスターが得られます。
+Earlier survey	以前の測量
+A raster of an earlier survey of the same area. It is recalculated to the grid of the new survey.	同じ区域の以前の測量のラスターです。新しい測量のグリッドに再計算します。
+Analysis area	解析区域
+Only the area shared by the analysis windows. Without the check - the whole extent of the new survey.	解析ウィンドウ共通の区域のみです。チェックなしでは新しい測量の全範囲です。
+Threshold	しきい値
+A difference below the threshold is not included in the volumes, it is survey noise. A threshold above the survey error understates the volumes.	しきい値未満の差は土量に含めません。測量のノイズです。測量誤差より大きいしきい値は土量を過小にします。
+No other raster is open as an earlier survey.	以前の測量として開いている他のラスターがありません。
+The surveys have no common cells.	測量に共通のセルがありません。
+Computing: {done} %.	計算中: {done} %。
+Cut {cut} m³ on {cut_area} m², down to {deepest} m. Fill {fill} m³ on {fill_area} m², up to {highest} m. Fill minus cut {net} m³. Compared area {area} m².	切土 {cut} m³ ({cut_area} m²、最大 {deepest} m)。盛土 {fill} m³ ({fill_area} m²、最大 {highest} m)。盛土 - 切土 {net} m³。比較面積 {area} m²。
+Extrusion…	押し出し…
+Extrusion - {name}	押し出し - {name}
+Objects of the folder rise above the terrain to the height from a field: a polygon as a prism, a point as a column, a line as a wall.	フォルダーのオブジェクトをフィールドの高さまで地形から立ち上げます。ポリゴンは角柱、点は柱、線は壁になります。
+Height from a field	フィールドの高さ
+A numeric field of the height of an object. An object with an empty, zero or negative value is not extruded.	オブジェクトの高さの数値フィールドです。空、ゼロ、負の値のオブジェクトは押し出しません。
+Factor, m	係数、m
+The height in metres is the field value times the factor. For a field of storeys the factor is about 3.	メートル単位の高さはフィールド値と係数の積です。階数のフィールドなら係数は約 3 です。
+The folder has no numeric fields.	フォルダーに数値フィールドがありません。
+Objects extruded: {count}.	押し出したオブジェクト: {count}。
+Bathymetry from soundings…	測深からの海底地形…
+Bathymetry from soundings	測深からの海底地形
+The points of the folder «{name}» are depth soundings, for example echo sounder tracks. A raster of depths is built from them by triangulation, it goes into the globe terrain as the bed of the water body.	フォルダー「{name}」の点は水深の測深データです。例えば音響測深の測線です。三角分割で水深ラスターを作り、水域の底として地球儀の地形に入れます。
+Point Z	点の Z
+The field with the depth or the Z of a point. The sign of the depth does not matter, its absolute value is taken.	水深のフィールドまたは点の Z です。符号は問わず絶対値を使います。
+Cell	セル
+The cell size of the depth raster. By default - by the number of points per area of the soundings. A smaller cell gives a more detailed bed and a larger file.	水深ラスターのセルサイズです。既定では測深範囲の点の数から決めます。セルが小さいほど底が詳しくなり、ファイルは大きくなります。
+Limit from a sounding	測深点からの限界
+A cell further than this from the nearest sounding stays empty. So the raster does not flood the shore and bays without soundings. The limit is larger than the distance between tracks, otherwise strips stay between them.	最も近い測深点からこの距離より遠いセルは空のままです。これで測深のない岸や湾を埋めません。限界は測線間隔より大きくします。そうしないと帯が残ります。
+The height of the water surface above sea level on the day of the soundings. The bed elevation is the water level minus the depth.	測深日の水面の海面からの高さです。底の標高は水位から水深を引いた値です。
+Fewer than three soundings with a depth.	水深のある測深点が 3 つ未満です。
+Soundings {count}, depth from {low} to {high} m.	測深点 {count}、水深 {low} から {high} m。
+The soundings do not form a grid: they lie on one line or the grid is too large.	測深点からグリッドを作れません。一直線上にあるか、グリッドが大きすぎます。
+The grid has no cells with a depth, increase the limit.	深度のあるセルがありません。限界を大きくしてください。
+The raster is not written.	ラスターを書き込めませんでした。
+Wayback imagery archive…	Wayback 画像アーカイブ…
+Wayback imagery archive	Wayback 画像アーカイブ
+The Wayback archive did not answer.	Wayback アーカイブから応答がありません。
+Searching for releases with changes: found {count}…	変更のあるリリースを検索中: {count} 件…
+Releases with changes at the view point: {count} of {total}.	視点で変更のあるリリース: {count} / {total}。
+Shot on {date}	撮影日 {date}
+pixel {value} m	ピクセル {value} m
+Releases with changes at the present view point. The width of the view sets the size of the searched place.	現在の視点で変更のあるリリースです。ビューの幅が検索する場所の大きさを決めます。
+The release lies as a tile layer over the base map, a row in the catalogue.	リリースはタイルレイヤーとして基図の上に載り、カタログの行になります。
+Releases of Esri World Imagery since 2014. A release where the place did not change gives the tile of an earlier one, so only releases with changes are listed.	2014 年以降の Esri World Imagery のリリースです。場所が変わっていないリリースは以前のタイルを返すため、変更のあるリリースだけを一覧にします。
+Air temperature	気温
+Air temperature at a height of 2 m by the NOAA GFS model, grid step 0.25°, about 28 km. The forecast goes up to 16 days ahead, the past is the analysis of the model. The moment is set by the time slider.	NOAA GFS モデルによる高さ 2 m の気温です。格子間隔は 0.25°、約 28 km です。予報は 16 日先まで、過去はモデルの解析です。時刻は時間スライダーで決まります。
+Precipitation, GFS forecast	降水、GFS 予報
+Precipitation rate at the moment of the slider by the NOAA GFS model, mm/h. Below 0.1 mm/h the field is transparent.	NOAA GFS モデルによるスライダー時刻の降水強度 (mm/h) です。0.1 mm/h 未満は透明です。
+Wind speed at a height of 10 m by the NOAA GFS model, m/s.	NOAA GFS モデルによる高さ 10 m の風速 (m/s) です。
+Cloud cover, GFS forecast	雲量、GFS 予報
+Total cloud cover by the NOAA GFS model, the share of the sky in percent. This is a model calculation, not an image of clouds.	NOAA GFS モデルによる全雲量で、空の割合をパーセントで示します。モデルの計算であり、雲の画像ではありません。
+Aurora	オーロラ
+The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	NOAA SWPC の OVATION モデルによる今後 30-90 分のオーロラ視認確率で、格子は 1° です。予報は現在の 1 つだけで、時間スライダーでは変わりません。
+Weather	天気
+NOAA GFS forecast fields by the time slider and the aurora forecast.	時間スライダーによる NOAA GFS 予報場とオーロラ予報です。
+The forecast did not load, check the network and switch the row on again.	予報を読み込めませんでした。ネットワークを確認して行をもう一度オンにしてください。
+Forecast: run {run}, hour {hour}.	予報: 初期値 {run}、{hour} 時間目。
+On buildings	建物上
+3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	3D 計測です。点は建物の屋根や壁に置かれ、経路は直線で結ばれ、ポリゴンの面積はどの傾きでも正しくなります。3D 建物の行が必要です。
+3D length {value} m.	3D 長さ {value} m。
+3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	3D 周長 {perimeter} m、面積 {area} m²、傾斜 {tilt}°。

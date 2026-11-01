@@ -100,6 +100,11 @@ impl Relief {
         self.entries.iter().filter_map(|e| e.lake.map(|(_, level)| (e.bounds, level))).collect()
     }
 
+    /// Рамки всех растров в метрах EPSG:3857.
+    pub fn boxes(&self) -> Vec<Bounds> {
+        self.entries.iter().map(|e| e.bounds).collect()
+    }
+
     /// Рамка растра name в метрах EPSG:3857.
     pub fn bounds(&self, name: &str) -> Option<Bounds> {
         self.entries.iter().find(|e| e.name == name).map(|e| e.bounds)

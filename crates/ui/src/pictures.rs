@@ -98,6 +98,45 @@ fn collect(folder: &Folder, out: &mut Vec<(Overlay, Option<Time>)>) {
     }
 }
 
+/// Папка каждого наложения [`timed_overlays`]: номер по обходу, карты
+/// одной папки сменяют друг друга.
+pub fn overlay_groups(folder: &Folder) -> Vec<usize> {
+    fn walk(folder: &Folder, id: usize, next: &mut usize, out: &mut Vec<usize>) {
+        for item in &folder.children {
+            match item {
+                Item::Folder(f) if f.visible => {
+                    *next += 1;
+                    let own = *next;
+                    walk(f, own, next, out);
+                }
+                Item::Overlay(o) if o.visible && matches!(o.kind(), Kind::Ground | Kind::Photo | Kind::Screen | Kind::Model) => out.push(id),
+                _ => {}
+            }
+        }
+    }
+    let (mut next, mut out) = (0, Vec::new());
+    walk(folder, 0, &mut next, &mut out);
+    out
+}
+
+/// Номера наложений кадра: карта-момент на поверхности подчиняется
+/// правилу карт по годам, прочие видны в окне шкалы, `core/oldmaps.py`.
+pub fn shown_indices(timed: &[(Overlay, Option<Time>)], groups: &[usize], window: Option<(f64, f64)>) -> Vec<usize> {
+    let Some((lo, hi)) = window else {
+        return (0..timed.len()).collect();
+    };
+    let moment = |i: usize| timed.get(i).filter(|(o, _)| o.kind() == Kind::Ground).and_then(|(_, t)| scene::oldmaps::start(t.as_ref()));
+    let maps: Vec<usize> = (0..timed.len()).filter(|i| moment(*i).is_some()).collect();
+    let entries: Vec<(usize, f64)> = maps.iter().map(|i| (groups.get(*i).copied().unwrap_or(0), moment(*i).unwrap_or(0.0))).collect();
+    let current = scene::oldmaps::shown(&entries, Some(hi));
+    (0..timed.len())
+        .filter(|i| match maps.iter().position(|m| m == i) {
+            Some(n) => current.contains(&n),
+            None => timed.get(*i).is_some_and(|(_, t)| when::visible(t.as_ref(), lo, hi)),
+        })
+        .collect()
+}
+
 /// Наложения в окне шкалы времени, без окна - все.
 pub fn in_window(timed: &[(Overlay, Option<Time>)], window: Option<(f64, f64)>) -> Vec<Overlay> {
     timed
@@ -475,5 +514,25 @@ mod tests {
         fake.answers.borrow_mut().push(Ok(png(4, 4)));
         p.step(&fake);
         assert!(p.image("https://x/a.png").is_none());
+    }
+
+    #[test]
+    fn maps_of_one_folder_replace_each_other() {
+        use scene::overlays::{Kind as OverlayKind, Overlay as Ground};
+        let map = |year: &str| {
+            let mut o = scene::kml::Overlay::new(year, Ground::new(OverlayKind::Ground));
+            o.time = Some(scene::when::stamp(year));
+            let time = o.time.clone();
+            (o, time)
+        };
+        let at = |year: &str| scene::when::parse(year).expect("год");
+        let timed = vec![map("1850"), map("1900"), map("1920")];
+        let groups = [0, 0, 1];
+        // Открытая шкала: в папке - последняя карта, вторая папка своя.
+        assert_eq!(super::shown_indices(&timed, &groups, Some((at("1000"), at("1925")))), [1, 2]);
+        assert_eq!(super::shown_indices(&timed, &groups, Some((at("1000"), at("1860")))), [0]);
+        // До первой карты не видно ни одной, шкала закрыта - видны все.
+        assert!(super::shown_indices(&timed, &groups, Some((at("1000"), at("1800")))).is_empty());
+        assert_eq!(super::shown_indices(&timed, &groups, None), [0, 1, 2]);
     }
 }

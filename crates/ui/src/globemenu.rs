@@ -74,6 +74,10 @@ pub enum Choice {
     Flood,
     Flow,
     SeaLevel,
+    /// «Архив снимков Wayback…».
+    Wayback,
+    /// «Земляные работы…» подменю «Анализ участка».
+    Earthwork,
     /// «Орбита и след» спутника: номер NORAD или None - снять.
     SatPath(Option<i64>),
     /// «Камера следом» за спутником: номер NORAD или None - отпустить.
@@ -263,6 +267,7 @@ impl GlobeMenu {
                                         }
                                     }
                                     ui.separator();
+                                    item(ui, "Earthwork…", "Cut and fill of the area to a level pad: volumes, colours and a difference raster.", Choice::Earthwork);
                                     item(ui, "Flooding…", "Water from the point up to the given level, area, volume and depths.", Choice::Flood);
                                     item(ui, "Water flow…", "Flow line, catchment and river network around the point.", Choice::Flow);
                                     item(ui, "Sea level…", "Raising and lowering the sea level over the whole globe.", Choice::SeaLevel);
@@ -276,6 +281,7 @@ impl GlobeMenu {
                                 // у неё этих пунктов нет.
                                 if !cfg!(target_arch = "wasm32") {
                                     pick(ui, tr(lang, "OpenAerialMap imagery…"), Choice::Oam);
+                                    pick(ui, tr(lang, "Wayback imagery archive…"), Choice::Wayback);
                                     ui.separator();
                                     pick(ui, tr(lang, "Rumsey historical maps…"), Choice::Rumsey);
                                     pick(ui, tr(lang, "Eto Mesto old maps…"), Choice::Etomesto);

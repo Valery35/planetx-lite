@@ -155,15 +155,6 @@ fn collect(folder: &Folder, out: &mut Vec<(Shape, Option<Time>)>) {
 /// Объекты в окне шкалы времени: метки вне окна скрыты, путь
 /// с промежутком времени вырос на долю, прошедшую к концу окна. Без
 /// окна - все.
-fn overlay_indices(timed: &[(kml::Overlay, Option<Time>)], window: Option<(f64, f64)>) -> Vec<usize> {
-    timed
-        .iter()
-        .enumerate()
-        .filter(|(_, (_, t))| window.is_none_or(|(lo, hi)| when::visible(t.as_ref(), lo, hi)))
-        .map(|(i, _)| i)
-        .collect()
-}
-
 pub fn in_window(shapes: &[(Shape, Option<Time>)], window: Option<(f64, f64)>) -> Vec<Shape> {
     shapes
         .iter()
@@ -309,6 +300,10 @@ pub enum Action {
     /// Удалить строку.
     Remove(Vec<usize>),
     /// Начать переименование строки.
+    /// Окно «Выдавливание» папки.
+    Extrude(Vec<usize>),
+    /// Окно «Батиметрия по промерам» папки.
+    Sounding(Vec<usize>),
     StartRename(Vec<usize>),
     /// Новое название строки.
     Rename(Vec<usize>, String),
@@ -486,6 +481,9 @@ fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[
             ui.separator();
             item(ui, tr(lang, "Snapshot folder view"), Action::ViewSnapshot(p()), actions);
             item(ui, tr(lang, "Sort A-Z"), Action::Sort(p()), actions);
+            ui.separator();
+            item(ui, tr(lang, "Extrusion…"), Action::Extrude(p()), actions);
+            item(ui, tr(lang, "Bathymetry from soundings…"), Action::Sounding(p()), actions);
             ui.separator();
             item(ui, tr(lang, "Play tour"), Action::Tour(p()), actions);
             let props = if kind == RowKind::LinkFolder { Action::LinkProperties(p()) } else { Action::FolderProperties(p()) };
@@ -866,6 +864,8 @@ pub struct Marks {
     shapes: Vec<Shape>,
     /// Видимые по флажкам наложения-картинки с временем.
     timed_overlays: Vec<(kml::Overlay, Option<Time>)>,
+    /// Папка каждого наложения, карты одной папки сменяют друг друга.
+    overlay_groups: Vec<usize>,
     /// Наложения кадра: видимые и в окне шкалы.
     overlays: Vec<kml::Overlay>,
     /// Версия высот и время последней сборки сеток.
@@ -1428,11 +1428,16 @@ impl Marks {
         self.timed = shown.map(timed_shapes).unwrap_or_default();
         self.shapes = in_window(&self.timed, self.window);
         self.timed_overlays = shown.map(pictures::timed_overlays).unwrap_or_default();
-        self.overlays = pictures::in_window(&self.timed_overlays, self.window);
-        self.shown_overlays = overlay_indices(&self.timed_overlays, self.window);
+        self.overlay_groups = shown.map(pictures::overlay_groups).unwrap_or_default();
+        self.shown_overlays = pictures::shown_indices(&self.timed_overlays, &self.overlay_groups, self.window);
+        self.overlays = self.picked_overlays();
         self.overlays_version += 1;
         self.dirty = true;
         self.built = None;
+    }
+
+    fn picked_overlays(&self) -> Vec<kml::Overlay> {
+        self.shown_overlays.iter().filter_map(|i| self.timed_overlays.get(*i)).map(|(o, _)| o.clone()).collect()
     }
 
     /// Окно шкалы времени. Возвращает, сменились ли метки кадра.
@@ -1444,10 +1449,10 @@ impl Marks {
         self.shapes = in_window(&self.timed, window);
         // Наложения и модели пересобираются, только когда сменился их
         // набор: при показе шкалы окно меняется каждый кадр.
-        let shown = overlay_indices(&self.timed_overlays, window);
+        let shown = pictures::shown_indices(&self.timed_overlays, &self.overlay_groups, window);
         if shown != self.shown_overlays {
             self.shown_overlays = shown;
-            self.overlays = pictures::in_window(&self.timed_overlays, window);
+            self.overlays = self.picked_overlays();
             self.overlays_version += 1;
         }
         self.dirty = true;

@@ -1946,3 +1946,85 @@ Click the globe to outline a sample, a click on the first vertex closes the outl
 The area is divided into objects, each object is compared with the samples in colour and texture.	Участок делится на объекты, каждый объект сравнивается с образцами по цвету и текстуре.
 The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	Доля текстуры в делении на объекты и в сравнении с образцом, остальное - цвет.
 What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	Откуда берутся цвет и текстура. Векторы AlphaEarth загружаются из сети, у растра, открытого в программе, каждый канал - признак.
+Earthwork	Земляные работы
+Earthwork…	Земляные работы…
+Pad elevation	Отметка площадки
+Equal volumes	Равные объёмы
+Elevation of the level pad above sea level. Everything above it is cut, everything below is fill. A new elevation is calculated at once, without loading heights.	Отметка ровной площадки над уровнем моря. Всё выше неё - выемка, ниже - насыпь. Смена отметки считается сразу, без загрузки высот.
+Heights of the area, cut and fill to the pad elevation - colours on the globe and volumes. The first calculation sets the elevation of equal volumes.	Высоты участка, выемка и насыпь до отметки площадки - раскраска на глобусе и объёмы. Первый расчёт ставит отметку равных объёмов.
+The elevation at which the excavated soil is enough for the fill.	Отметка, при которой вынутого грунта хватает на насыпь.
+Cut {cut} m³ on {cut_area} ha, fill {fill} m³ on {fill_area} ha. Fill minus cut {net} m³.	Выемка {cut} м³ на {cut_area} га, насыпь {fill} м³ на {fill_area} га. Разность насыпи и выемки {net} м³.
+The heights of the area are open models with an error of metres. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate. A calculation needs your own terrain, a GeoTIFF elevation raster opened in the program.	Высоты участка - открытые модели с ошибкой в метры. Ошибка ±{metres} м меняет объём на ±{error} м³, итог - только оценка. Для расчёта нужен свой рельеф - растр высот GeoTIFF, открытый в программе.
+Your own terrain covers {share} % of the area, the rest is open models. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate.	Свой рельеф покрывает {share} % участка, остальное - открытые модели. Ошибка ±{metres} м меняет объём на ±{error} м³, итог - только оценка.
+Cut and fill to the elevation {level} m	Выемка и насыпь до отметки {level} м
+Cut and fill of the area to a level pad: volumes, colours and a difference raster.	Выемка и насыпь участка до ровной площадки: объёмы, раскраска, растр разности.
+Export to glTF	Выгрузить в glTF
+Export to 3D Tiles	Выгрузить в 3D Tiles
+Exported pieces - {count}.	Выгружено кусков {count}.
+Exported pieces - {count}. The terrain scale {scale} is in the heights.	Выгружено кусков {count}. Масштаб рельефа {scale} вошёл в высоты.
+There are no objects to export in the view: 3D buildings, a subsurface model or 3D models.	В виде нет объектов для выгрузки: 3D-зданий, подземной модели или 3D-моделей.
+Cut and fill	Выемка и насыпь
+Cut and fill…	Выемка и насыпь…
+The raster is a new terrain survey, for example of a pit with dumps. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	Растр - новая съёмка рельефа, например карьера с отвалами. Разность с прежней съёмкой даёт выемку и насыпь, их объёмы и растр разности.
+The raster «{name}» is a new terrain survey. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	Растр «{name}» - новая съёмка рельефа. Разность с прежней съёмкой даёт выемку и насыпь, их объёмы и растр разности.
+Earlier survey	Прежняя съёмка
+A raster of an earlier survey of the same area. It is recalculated to the grid of the new survey.	Растр прежней съёмки того же участка. Он пересчитывается на сетку новой съёмки.
+Analysis area	Участок анализа
+Only the area shared by the analysis windows. Without the check - the whole extent of the new survey.	Только участок, общий для окон анализа. Без флажка - весь охват новой съёмки.
+Threshold	Порог
+A difference below the threshold is not included in the volumes, it is survey noise. A threshold above the survey error understates the volumes.	Разность меньше порога по модулю не входит в объёмы - это шум съёмки. Порог больше погрешности съёмок занижает объёмы.
+No other raster is open as an earlier survey.	Другой растр для прежней съёмки не открыт.
+The surveys have no common cells.	У съёмок нет общих ячеек.
+Computing: {done} %.	Расчёт: {done} %.
+Cut {cut} m³ on {cut_area} m², down to {deepest} m. Fill {fill} m³ on {fill_area} m², up to {highest} m. Fill minus cut {net} m³. Compared area {area} m².	Выемка {cut} м³ на площади {cut_area} м², до {deepest} м. Насыпь {fill} м³ на площади {fill_area} м², до {highest} м. Разность насыпи и выемки {net} м³. Площадь сравнения {area} м².
+Extrusion…	Выдавливание…
+Extrusion - {name}	Выдавливание - {name}
+Objects of the folder rise above the terrain to the height from a field: a polygon as a prism, a point as a column, a line as a wall.	Объекты папки поднимаются над рельефом на высоту из поля: многоугольник - призмой, точка - столбиком, линия - стенкой.
+Height from a field	Высота из поля
+A numeric field of the height of an object. An object with an empty, zero or negative value is not extruded.	Числовое поле высоты объекта. Объект с пустым, нулевым или отрицательным значением не выдавливается.
+Factor, m	Множитель, м
+The height in metres is the field value times the factor. For a field of storeys the factor is about 3.	Высота в метрах - значение поля, умноженное на множитель. У поля этажей множитель около 3.
+The folder has no numeric fields.	У папки нет числовых полей.
+Objects extruded: {count}.	Выдавлено объектов: {count}.
+Bathymetry from soundings…	Батиметрия по промерам…
+Bathymetry from soundings	Батиметрия по промерам
+The points of the folder «{name}» are depth soundings, for example echo sounder tracks. A raster of depths is built from them by triangulation, it goes into the globe terrain as the bed of the water body.	Точки папки «{name}» - промеры глубин, например галсы эхолота. Из них строится растр глубин триангуляцией, он ложится в рельеф глобуса дном водоёма.
+Point Z	Z точки
+The field with the depth or the Z of a point. The sign of the depth does not matter, its absolute value is taken.	Поле с глубиной или Z точки. Знак глубины не важен, берётся её модуль.
+Cell	Ячейка
+The cell size of the depth raster. By default - by the number of points per area of the soundings. A smaller cell gives a more detailed bed and a larger file.	Размер ячейки растра глубин. По умолчанию - по количеству точек на площадь промеров. Мельче ячейка - подробнее дно и больше файл.
+Limit from a sounding	Предел от промера
+A cell further than this from the nearest sounding stays empty. So the raster does not flood the shore and bays without soundings. The limit is larger than the distance between tracks, otherwise strips stay between them.	Ячейка дальше этого расстояния от ближайшего промера остаётся пустой. Так растр не заливает берег и заливы без промеров. Предел больше расстояния между галсами, иначе между ними остаются полосы.
+The height of the water surface above sea level on the day of the soundings. The bed elevation is the water level minus the depth.	Высота поверхности воды над уровнем моря в день промеров. Отметка дна - уровень воды минус глубина.
+Fewer than three soundings with a depth.	Промеров с глубиной меньше трёх.
+Soundings {count}, depth from {low} to {high} m.	Промеров {count}, глубина от {low} до {high} м.
+The soundings do not form a grid: they lie on one line or the grid is too large.	Промеры не дают грид: они лежат на одной прямой или грид слишком велик.
+The grid has no cells with a depth, increase the limit.	В гриде нет ячеек с глубиной, увеличьте предел.
+The raster is not written.	Растр не записан.
+Wayback imagery archive…	Архив снимков Wayback…
+Wayback imagery archive	Архив снимков Wayback
+The Wayback archive did not answer.	Архив Wayback не ответил.
+Searching for releases with changes: found {count}…	Поиск выпусков с изменениями: найдено {count}…
+Releases with changes at the view point: {count} of {total}.	Выпусков с изменениями у точки взгляда: {count} из {total}.
+Shot on {date}	Снято {date}
+pixel {value} m	пиксель {value} м
+Releases with changes at the present view point. The width of the view sets the size of the searched place.	Выпуски с изменениями у нынешней точки взгляда. Ширина вида задаёт размер места поиска.
+The release lies as a tile layer over the base map, a row in the catalogue.	Выпуск ложится слоем тайлов поверх подложки, строкой каталога.
+Releases of Esri World Imagery since 2014. A release where the place did not change gives the tile of an earlier one, so only releases with changes are listed.	Выпуски Esri World Imagery с 2014 года. Выпуск, где место не менялось, отдаёт тайл прежнего, поэтому в списке только выпуски с изменениями.
+Air temperature	Температура воздуха
+Air temperature at a height of 2 m by the NOAA GFS model, grid step 0.25°, about 28 km. The forecast goes up to 16 days ahead, the past is the analysis of the model. The moment is set by the time slider.	Температура воздуха на высоте 2 м по модели NOAA GFS, шаг сетки 0.25°, около 28 км. Прогноз - до 16 суток вперёд, прошлое - анализ модели. Момент задаёт шкала времени.
+Precipitation, GFS forecast	Осадки, прогноз GFS
+Precipitation rate at the moment of the slider by the NOAA GFS model, mm/h. Below 0.1 mm/h the field is transparent.	Интенсивность осадков в момент шкалы по модели NOAA GFS, мм/ч. Слабее 0.1 мм/ч поле прозрачно.
+Wind speed at a height of 10 m by the NOAA GFS model, m/s.	Скорость ветра на высоте 10 м по модели NOAA GFS, м/с.
+Cloud cover, GFS forecast	Облачность, прогноз GFS
+Total cloud cover by the NOAA GFS model, the share of the sky in percent. This is a model calculation, not an image of clouds.	Общая облачность по модели NOAA GFS, доля неба в процентах. Это расчёт модели, а не снимок облаков.
+Aurora	Полярное сияние
+The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	Вероятность видимого полярного сияния по модели OVATION службы NOAA SWPC на ближайшие 30-90 минут, сетка 1°. Прогноз один - на сейчас, шкала времени его не меняет.
+Weather	Погода
+NOAA GFS forecast fields by the time slider and the aurora forecast.	Поля прогноза NOAA GFS по шкале времени и прогноз полярного сияния.
+The forecast did not load, check the network and switch the row on again.	Прогноз не загрузился, проверьте сеть и включите строку снова.
+Forecast: run {run}, hour {hour}.	Прогноз: выпуск {run}, час {hour}.
+On buildings	По зданиям
+3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	3D-измерение: точка ложится на крышу или стену здания, путь идёт прямыми отрезками, площадь многоугольника верна при любом наклоне. Нужна строка «3D-здания».
+3D length {value} m.	Длина в пространстве {value} м.
+3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	Периметр в пространстве {perimeter} м, площадь {area} м², наклон {tilt}°.

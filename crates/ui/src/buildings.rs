@@ -175,6 +175,11 @@ impl Buildings {
         }
     }
 
+    /// Сетки зданий кадра для выгрузки вида.
+    pub fn meshes(&self, heights: core::HeightsAt<'_>) -> Vec<core::Mesh> {
+        self.wanted.iter().filter_map(|k| self.footprints.get(k)?.as_ref()).map(|fp| core::mesh(fp, Some(heights))).filter(|m| core::mesh_ok(m) && !m.indices.is_empty()).collect()
+    }
+
     /// Убрать сетки из видеокарты: строка выключена.
     pub fn clear(&mut self, globe: &mut render::Globe) {
         for key in self.shown.keys() {

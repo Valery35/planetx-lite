@@ -107,6 +107,30 @@ pub struct Tool {
     pub fixed: bool,
     /// Вид глобуса сейчас для «Снимок текущего вида».
     pub current_view: [f64; 5],
+    /// 3D-линейка: точки ставятся на крыши и стены зданий.
+    pub solid_on: bool,
+    /// Здания кадра: шар отбора и треугольники. Ставит окно глобуса.
+    pub targets: Vec<SolidTile>,
+    /// Точки 3D-линейки в ECEF, вместе с точками линейки.
+    solid: Vec<DVec3>,
+}
+
+/// Тайл зданий для луча 3D-линейки: середина, радиус, треугольники.
+pub type SolidTile = (DVec3, f64, Vec<scene::measure3d::Triangle>);
+
+/// Точка луча на здании, если он встречает его раньше земли.
+fn solid_hit(targets: &[SolidTile], origin: DVec3, direction: DVec3, ground: Option<DVec3>) -> Option<DVec3> {
+    let mut best: Option<f64> = None;
+    for (center, radius, triangles) in targets {
+        if scene::measure3d::ray_sphere(origin, direction, *center, *radius)
+            && let Some(t) = scene::measure3d::ray_triangles(origin, direction, triangles)
+            && best.is_none_or(|b| t < b)
+        {
+            best = Some(t);
+        }
+    }
+    let point = origin + direction * best?;
+    ground.is_none_or(|g| (point - origin).length() <= (g - origin).length() + 0.5).then_some(point)
 }
 
 /// Вид линейки или метки по номеру вкладки.
@@ -190,6 +214,9 @@ impl Tool {
             props: None,
             fixed: false,
             current_view: [0.0, 0.0, 1.0e7, 0.0, 0.0],
+            solid_on: false,
+            targets: Vec::new(),
+            solid: Vec::new(),
         }
     }
 
@@ -235,6 +262,12 @@ impl Tool {
             }
             let points = place.points.clone();
             props.apply(&mut place, &points);
+        }
+        // Точки на зданиях стоят на своих высотах.
+        if self.solid_on && self.solid.len() == place.points.len() {
+            let e = globe_core::ellipsoid::Ellipsoid::wgs84();
+            place.alts = Some(self.solid.iter().map(|p| e.ecef_to_geodetic(*p).2).collect());
+            place.mode = "absolute".to_string();
         }
         if self.purpose == Purpose::Ruler {
             place.color = RULER_COLOR;
@@ -338,6 +371,7 @@ impl Tool {
     ) -> Option<Action> {
         self.tabs(ui, lang, &RULER_MODES, names);
         ui.separator();
+        self.solid.truncate(self.ruler.points.len());
         let values = self.ruler.values(true, heights);
         egui::Grid::new("planetx-ruler-rows").num_columns(3).spacing([8.0, 4.0]).show(ui, |ui| {
             for row in shown(self.ruler.mode) {
@@ -369,6 +403,15 @@ impl Tool {
                 ui.end_row();
             }
         });
+        if matches!(self.ruler.mode, Mode::Path | Mode::Polygon) {
+            if ui.checkbox(&mut self.solid_on, tr(lang, "On buildings")).on_hover_text(tr(lang, "3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.")).changed() {
+                self.ruler.clear();
+                self.solid.clear();
+            }
+            if self.solid_on {
+                ui.label(self.solid_text(lang));
+            }
+        }
         ui.label(egui::RichText::new(self.hint(lang)).weak());
         let mut action = None;
         // Кнопки - как у окна «Линейка» модуля: «Профиль высот»,
@@ -395,9 +438,19 @@ impl Tool {
             }
             if ui.button(tr(lang, "Clear")).on_hover_text(tr(lang, "Remove the points.")).clicked() {
                 self.ruler.clear();
+                self.solid.clear();
             }
         });
         action
+    }
+
+    /// Меры 3D-линейки строкой.
+    fn solid_text(&self, lang: Lang) -> String {
+        if self.ruler.mode == Mode::Path {
+            return trf(lang, "3D length {value} m.", &[("value", &format!("{:.2}", scene::measure3d::path_length(&self.solid)))]);
+        }
+        let (perimeter, area, tilt) = scene::measure3d::polygon(&globe_core::ellipsoid::Ellipsoid::wgs84(), &self.solid);
+        trf(lang, "3D perimeter {perimeter} m, area {area} m², slope {tilt}°.", &[("perimeter", &format!("{perimeter:.2}")), ("area", &format!("{area:.2}")), ("tilt", &format!("{tilt:.1}"))])
     }
 
     fn place_body(&mut self, ui: &mut egui::Ui, lang: Lang, names: &[String]) -> Option<Action> {
@@ -555,6 +608,22 @@ impl Tool {
         }
         if released {
             self.pressed = None;
+        }
+        if self.solid_on {
+            if keys {
+                self.solid.pop();
+            }
+            if response.clicked() && on_globe && let Some(p) = pos {
+                let (px, py) = to_px(p);
+                let (origin, direction) = nav.camera.ray(px, py);
+                let under = ground_under(&nav.camera, px, py, nav.pose.terrain.as_ref());
+                if let Some(point) = solid_hit(&self.targets, origin, direction, under).or(under) {
+                    let (lat, lon, _) = nav.camera.ellipsoid.ecef_to_geodetic(point);
+                    self.ruler.add(lat, lon);
+                    self.solid.push(point);
+                }
+            }
+            return false;
         }
         if response.clicked() && on_globe && let Some((lat, lon)) = pos.and_then(ground) {
             if self.ruler.mode == Mode::Point && !self.ruler.points.is_empty() {
@@ -741,5 +810,23 @@ mod tests {
         assert_eq!(summary(Lang::EN, &v, Mode::Line, 1, 0), "Map length 1.25 km, ground length 1.27 km, heading 45.0°");
         let v = Values { perimeter: Some(400.0), area: Some(10_000.0), ..Values::default() };
         assert_eq!(summary(Lang::EN, &v, Mode::Polygon, 0, 1), "Perimeter 400.00 m, area 1.00 ha");
+    }
+}
+
+#[cfg(test)]
+mod solid_tests {
+    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+    use super::*;
+
+    #[test]
+    fn roof_before_ground_is_taken_and_ground_before_roof_is_not() {
+        let roof = [DVec3::new(-5.0, -5.0, 20.0), DVec3::new(5.0, -5.0, 20.0), DVec3::new(0.0, 5.0, 20.0)];
+        let targets = vec![(DVec3::new(0.0, 0.0, 20.0), 10.0, vec![roof])];
+        let eye = DVec3::new(0.0, 0.0, 100.0);
+        let hit = solid_hit(&targets, eye, DVec3::NEG_Z, Some(DVec3::ZERO)).expect("крыша");
+        assert!((hit.z - 20.0).abs() < 1e-9);
+        // Земля ближе здания: луч упирается в неё.
+        assert!(solid_hit(&targets, eye, DVec3::NEG_Z, Some(DVec3::new(0.0, 0.0, 50.0))).is_none());
+        assert!(solid_hit(&targets, eye, DVec3::Z, Some(DVec3::ZERO)).is_none());
     }
 }

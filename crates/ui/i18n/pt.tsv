@@ -1946,3 +1946,85 @@ Click the globe to outline a sample, a click on the first vertex closes the outl
 The area is divided into objects, each object is compared with the samples in colour and texture.	A área é dividida em objetos, cada objeto é comparado com as amostras em cor e textura.
 The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	A proporção de textura na divisão em objetos e na comparação com a amostra, o resto é cor.
 What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	De onde vêm a cor e a textura. Os vetores AlphaEarth são carregados da rede, cada banda de um raster aberto no programa é uma característica.
+Earthwork	Terraplenagem
+Earthwork…	Terraplenagem…
+Pad elevation	Cota da plataforma
+Equal volumes	Volumes iguais
+Elevation of the level pad above sea level. Everything above it is cut, everything below is fill. A new elevation is calculated at once, without loading heights.	Cota da plataforma plana acima do nível do mar. Tudo acima dela é corte, tudo abaixo é aterro. Uma nova cota é calculada na hora, sem carregar alturas.
+Heights of the area, cut and fill to the pad elevation - colours on the globe and volumes. The first calculation sets the elevation of equal volumes.	Alturas da área, corte e aterro até a cota da plataforma: cores no globo e volumes. O primeiro cálculo define a cota de volumes iguais.
+The elevation at which the excavated soil is enough for the fill.	A cota em que o solo escavado basta para o aterro.
+Cut {cut} m³ on {cut_area} ha, fill {fill} m³ on {fill_area} ha. Fill minus cut {net} m³.	Corte {cut} m³ em {cut_area} ha, aterro {fill} m³ em {fill_area} ha. Aterro menos corte {net} m³.
+The heights of the area are open models with an error of metres. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate. A calculation needs your own terrain, a GeoTIFF elevation raster opened in the program.	As alturas da área são modelos abertos com erro de metros. Um erro de ±{metres} m muda o volume em ±{error} m³, o resultado é apenas uma estimativa. Um cálculo requer relevo próprio, um raster de alturas GeoTIFF aberto no programa.
+Your own terrain covers {share} % of the area, the rest is open models. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate.	O relevo próprio cobre {share} % da área, o resto são modelos abertos. Um erro de ±{metres} m muda o volume em ±{error} m³, o resultado é apenas uma estimativa.
+Cut and fill to the elevation {level} m	Corte e aterro até a cota {level} m
+Cut and fill of the area to a level pad: volumes, colours and a difference raster.	Corte e aterro da área até uma plataforma plana: volumes, cores e raster de diferença.
+Export to glTF	Exportar para glTF
+Export to 3D Tiles	Exportar para 3D Tiles
+Exported pieces - {count}.	Partes exportadas: {count}.
+Exported pieces - {count}. The terrain scale {scale} is in the heights.	Partes exportadas: {count}. A escala do relevo {scale} está nas alturas.
+There are no objects to export in the view: 3D buildings, a subsurface model or 3D models.	Na vista não há objetos para exportar: edifícios 3D, modelo do subsolo ou modelos 3D.
+Cut and fill	Corte e aterro
+Cut and fill…	Corte e aterro…
+The raster is a new terrain survey, for example of a pit with dumps. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	O raster é um novo levantamento do relevo, por exemplo de uma mina com pilhas. A diferença com um levantamento anterior dá corte e aterro, seus volumes e um raster de diferença.
+The raster «{name}» is a new terrain survey. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	O raster «{name}» é um novo levantamento do relevo. A diferença com um anterior dá corte e aterro, seus volumes e um raster de diferença.
+Earlier survey	Levantamento anterior
+A raster of an earlier survey of the same area. It is recalculated to the grid of the new survey.	Raster de um levantamento anterior da mesma área. É recalculado para a grade do novo.
+Analysis area	Área de análise
+Only the area shared by the analysis windows. Without the check - the whole extent of the new survey.	Só a área comum às janelas de análise. Sem a caixa, toda a extensão do novo levantamento.
+Threshold	Limiar
+A difference below the threshold is not included in the volumes, it is survey noise. A threshold above the survey error understates the volumes.	Uma diferença abaixo do limiar não entra nos volumes, é ruído do levantamento. Um limiar acima do erro subestima os volumes.
+No other raster is open as an earlier survey.	Não há outro raster aberto como levantamento anterior.
+The surveys have no common cells.	Os levantamentos não têm células comuns.
+Computing: {done} %.	Cálculo: {done} %.
+Cut {cut} m³ on {cut_area} m², down to {deepest} m. Fill {fill} m³ on {fill_area} m², up to {highest} m. Fill minus cut {net} m³. Compared area {area} m².	Corte {cut} m³ em {cut_area} m², até {deepest} m. Aterro {fill} m³ em {fill_area} m², até {highest} m. Aterro menos corte {net} m³. Área comparada {area} m².
+Extrusion…	Extrusão…
+Extrusion - {name}	Extrusão - {name}
+Objects of the folder rise above the terrain to the height from a field: a polygon as a prism, a point as a column, a line as a wall.	Os objetos da pasta sobem acima do relevo até a altura de um campo: um polígono como prisma, um ponto como coluna, uma linha como parede.
+Height from a field	Altura de um campo
+A numeric field of the height of an object. An object with an empty, zero or negative value is not extruded.	Campo numérico da altura do objeto. Um objeto com valor vazio, zero ou negativo não é extrudado.
+Factor, m	Fator, m
+The height in metres is the field value times the factor. For a field of storeys the factor is about 3.	A altura em metros é o valor do campo vezes o fator. Para um campo de andares o fator é cerca de 3.
+The folder has no numeric fields.	A pasta não tem campos numéricos.
+Objects extruded: {count}.	Objetos extrudados: {count}.
+Bathymetry from soundings…	Batimetria por sondagens…
+Bathymetry from soundings	Batimetria por sondagens
+The points of the folder «{name}» are depth soundings, for example echo sounder tracks. A raster of depths is built from them by triangulation, it goes into the globe terrain as the bed of the water body.	Os pontos da pasta «{name}» são sondagens de profundidade, por exemplo linhas de ecobatímetro. Com eles se constrói por triangulação um raster de profundidades, que entra no relevo do globo como fundo do corpo d'água.
+Point Z	Z do ponto
+The field with the depth or the Z of a point. The sign of the depth does not matter, its absolute value is taken.	Campo com a profundidade ou Z do ponto. O sinal não importa, usa-se o valor absoluto.
+Cell	Célula
+The cell size of the depth raster. By default - by the number of points per area of the soundings. A smaller cell gives a more detailed bed and a larger file.	Tamanho da célula do raster. Por padrão, pelo número de pontos por área das sondagens. Célula menor dá mais detalhe e arquivo maior.
+Limit from a sounding	Limite a partir da sondagem
+A cell further than this from the nearest sounding stays empty. So the raster does not flood the shore and bays without soundings. The limit is larger than the distance between tracks, otherwise strips stay between them.	Uma célula mais longe que isso da sondagem mais próxima fica vazia. Assim o raster não inunda a margem e baías sem sondagens. O limite é maior que a distância entre linhas, senão ficam faixas.
+The height of the water surface above sea level on the day of the soundings. The bed elevation is the water level minus the depth.	Altura da superfície da água acima do mar no dia das sondagens. A cota do fundo é o nível menos a profundidade.
+Fewer than three soundings with a depth.	Menos de três sondagens com profundidade.
+Soundings {count}, depth from {low} to {high} m.	Sondagens {count}, profundidade de {low} a {high} m.
+The soundings do not form a grid: they lie on one line or the grid is too large.	As sondagens não formam grade: estão em uma linha ou a grade é grande demais.
+The grid has no cells with a depth, increase the limit.	A grade não tem células com profundidade, aumente o limite.
+The raster is not written.	O raster não foi gravado.
+Wayback imagery archive…	Arquivo de imagens Wayback…
+Wayback imagery archive	Arquivo de imagens Wayback
+The Wayback archive did not answer.	O arquivo Wayback não respondeu.
+Searching for releases with changes: found {count}…	Buscando versões com mudanças: encontradas {count}…
+Releases with changes at the view point: {count} of {total}.	Versões com mudanças no ponto de vista: {count} de {total}.
+Shot on {date}	Capturada em {date}
+pixel {value} m	pixel {value} m
+Releases with changes at the present view point. The width of the view sets the size of the searched place.	Versões com mudanças no ponto de vista atual. A largura da vista define o tamanho do local buscado.
+The release lies as a tile layer over the base map, a row in the catalogue.	A versão fica como camada de blocos sobre o mapa base, uma linha do catálogo.
+Releases of Esri World Imagery since 2014. A release where the place did not change gives the tile of an earlier one, so only releases with changes are listed.	Versões do Esri World Imagery desde 2014. Uma versão sem mudança no local dá o bloco de uma anterior, por isso só versões com mudanças são listadas.
+Air temperature	Temperatura do ar
+Air temperature at a height of 2 m by the NOAA GFS model, grid step 0.25°, about 28 km. The forecast goes up to 16 days ahead, the past is the analysis of the model. The moment is set by the time slider.	Temperatura do ar a 2 m pelo modelo NOAA GFS, passo de grade 0.25°, cerca de 28 km. A previsão vai até 16 dias, o passado é a análise do modelo. O momento é definido pela barra de tempo.
+Precipitation, GFS forecast	Precipitação, previsão GFS
+Precipitation rate at the moment of the slider by the NOAA GFS model, mm/h. Below 0.1 mm/h the field is transparent.	Intensidade da precipitação no momento da barra pelo NOAA GFS, mm/h. Abaixo de 0.1 mm/h o campo é transparente.
+Wind speed at a height of 10 m by the NOAA GFS model, m/s.	Velocidade do vento a 10 m pelo NOAA GFS, m/s.
+Cloud cover, GFS forecast	Nebulosidade, previsão GFS
+Total cloud cover by the NOAA GFS model, the share of the sky in percent. This is a model calculation, not an image of clouds.	Nebulosidade total pelo NOAA GFS, parte do céu em porcentagem. É um cálculo do modelo, não uma imagem de nuvens.
+Aurora	Aurora polar
+The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	Probabilidade de aurora visível pelo modelo OVATION da NOAA SWPC para os próximos 30-90 minutos, grade 1°. A previsão é uma, para agora, a barra de tempo não a muda.
+Weather	Tempo
+NOAA GFS forecast fields by the time slider and the aurora forecast.	Campos de previsão NOAA GFS pela barra de tempo e previsão de auroras.
+The forecast did not load, check the network and switch the row on again.	A previsão não foi carregada, verifique a rede e ative a linha de novo.
+Forecast: run {run}, hour {hour}.	Previsão: rodada {run}, hora {hour}.
+On buildings	Sobre edifícios
+3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	Medição 3D: um ponto fica no telhado ou parede de um edifício, o caminho vai em trechos retos, a área do polígono é verdadeira em qualquer inclinação. Requer a linha de edifícios 3D.
+3D length {value} m.	Comprimento 3D {value} m.
+3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	Perímetro 3D {perimeter} m, área {area} m², inclinação {tilt}°.

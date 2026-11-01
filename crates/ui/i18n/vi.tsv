@@ -1946,3 +1946,85 @@ Click the globe to outline a sample, a click on the first vertex closes the outl
 The area is divided into objects, each object is compared with the samples in colour and texture.	Khu vực được chia thành đối tượng, mỗi đối tượng được so với các mẫu về màu và kết cấu.
 The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	Tỷ trọng kết cấu khi chia đối tượng và khi so với mẫu, phần còn lại là màu.
 What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	Nguồn lấy màu và kết cấu. Véc-tơ AlphaEarth được tải từ mạng, mỗi kênh của raster mở trong chương trình là một đặc trưng.
+Earthwork	Công tác đất
+Earthwork…	Công tác đất…
+Pad elevation	Cao độ mặt bằng
+Equal volumes	Khối lượng bằng nhau
+Elevation of the level pad above sea level. Everything above it is cut, everything below is fill. A new elevation is calculated at once, without loading heights.	Cao độ của mặt bằng phẳng so với mực nước biển. Phần cao hơn là đào, phần thấp hơn là đắp. Cao độ mới được tính ngay, không cần tải độ cao.
+Heights of the area, cut and fill to the pad elevation - colours on the globe and volumes. The first calculation sets the elevation of equal volumes.	Độ cao khu vực, đào và đắp đến cao độ mặt bằng: màu trên quả địa cầu và khối lượng. Lần tính đầu đặt cao độ có khối lượng bằng nhau.
+The elevation at which the excavated soil is enough for the fill.	Cao độ mà đất đào đủ để đắp.
+Cut {cut} m³ on {cut_area} ha, fill {fill} m³ on {fill_area} ha. Fill minus cut {net} m³.	Đào {cut} m³ trên {cut_area} ha, đắp {fill} m³ trên {fill_area} ha. Đắp trừ đào {net} m³.
+The heights of the area are open models with an error of metres. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate. A calculation needs your own terrain, a GeoTIFF elevation raster opened in the program.	Độ cao khu vực là các mô hình mở có sai số vài mét. Sai số ±{metres} m làm thay đổi khối lượng ±{error} m³, kết quả chỉ là ước tính. Tính toán cần địa hình riêng, một raster độ cao GeoTIFF mở trong chương trình.
+Your own terrain covers {share} % of the area, the rest is open models. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate.	Địa hình riêng phủ {share} % khu vực, phần còn lại là mô hình mở. Sai số ±{metres} m làm thay đổi khối lượng ±{error} m³, kết quả chỉ là ước tính.
+Cut and fill to the elevation {level} m	Đào và đắp đến cao độ {level} m
+Cut and fill of the area to a level pad: volumes, colours and a difference raster.	Đào và đắp khu vực đến mặt bằng phẳng: khối lượng, màu và raster chênh lệch.
+Export to glTF	Xuất sang glTF
+Export to 3D Tiles	Xuất sang 3D Tiles
+Exported pieces - {count}.	Số phần đã xuất: {count}.
+Exported pieces - {count}. The terrain scale {scale} is in the heights.	Số phần đã xuất: {count}. Tỷ lệ địa hình {scale} đã nằm trong độ cao.
+There are no objects to export in the view: 3D buildings, a subsurface model or 3D models.	Trong khung nhìn không có đối tượng để xuất: tòa nhà 3D, mô hình dưới lòng đất hoặc mô hình 3D.
+Cut and fill	Đào và đắp
+Cut and fill…	Đào và đắp…
+The raster is a new terrain survey, for example of a pit with dumps. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	Raster là lần đo địa hình mới, ví dụ mỏ có bãi thải. Chênh lệch với lần đo trước cho đào và đắp, khối lượng của chúng và raster chênh lệch.
+The raster «{name}» is a new terrain survey. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	Raster «{name}» là lần đo địa hình mới. Chênh lệch với lần đo trước cho đào và đắp, khối lượng và raster chênh lệch.
+Earlier survey	Lần đo trước
+A raster of an earlier survey of the same area. It is recalculated to the grid of the new survey.	Raster của lần đo trước cùng khu vực. Nó được tính lại theo lưới của lần đo mới.
+Analysis area	Khu vực phân tích
+Only the area shared by the analysis windows. Without the check - the whole extent of the new survey.	Chỉ khu vực chung của các cửa sổ phân tích. Không chọn thì lấy toàn bộ phạm vi lần đo mới.
+Threshold	Ngưỡng
+A difference below the threshold is not included in the volumes, it is survey noise. A threshold above the survey error understates the volumes.	Chênh lệch dưới ngưỡng không tính vào khối lượng, đó là nhiễu đo. Ngưỡng lớn hơn sai số đo làm giảm khối lượng.
+No other raster is open as an earlier survey.	Không có raster khác đang mở làm lần đo trước.
+The surveys have no common cells.	Các lần đo không có ô chung.
+Computing: {done} %.	Đang tính: {done} %.
+Cut {cut} m³ on {cut_area} m², down to {deepest} m. Fill {fill} m³ on {fill_area} m², up to {highest} m. Fill minus cut {net} m³. Compared area {area} m².	Đào {cut} m³ trên {cut_area} m², tới {deepest} m. Đắp {fill} m³ trên {fill_area} m², tới {highest} m. Đắp trừ đào {net} m³. Diện tích so sánh {area} m².
+Extrusion…	Đùn khối…
+Extrusion - {name}	Đùn khối - {name}
+Objects of the folder rise above the terrain to the height from a field: a polygon as a prism, a point as a column, a line as a wall.	Các đối tượng của thư mục nhô lên khỏi địa hình theo độ cao từ một trường: đa giác thành lăng trụ, điểm thành cột, đường thành tường.
+Height from a field	Độ cao từ trường
+A numeric field of the height of an object. An object with an empty, zero or negative value is not extruded.	Trường số của độ cao đối tượng. Đối tượng có giá trị rỗng, bằng không hoặc âm không được đùn.
+Factor, m	Hệ số, m
+The height in metres is the field value times the factor. For a field of storeys the factor is about 3.	Độ cao tính bằng mét là giá trị trường nhân hệ số. Với trường số tầng, hệ số khoảng 3.
+The folder has no numeric fields.	Thư mục không có trường số.
+Objects extruded: {count}.	Số đối tượng đã đùn: {count}.
+Bathymetry from soundings…	Độ sâu từ số đo…
+Bathymetry from soundings	Độ sâu từ số đo
+The points of the folder «{name}» are depth soundings, for example echo sounder tracks. A raster of depths is built from them by triangulation, it goes into the globe terrain as the bed of the water body.	Các điểm của thư mục «{name}» là số đo độ sâu, ví dụ tuyến máy đo sâu. Từ đó dựng raster độ sâu bằng tam giác hóa, nó đi vào địa hình quả địa cầu làm đáy thủy vực.
+Point Z	Z của điểm
+The field with the depth or the Z of a point. The sign of the depth does not matter, its absolute value is taken.	Trường độ sâu hoặc Z của điểm. Dấu không quan trọng, lấy giá trị tuyệt đối.
+Cell	Ô
+The cell size of the depth raster. By default - by the number of points per area of the soundings. A smaller cell gives a more detailed bed and a larger file.	Kích thước ô của raster độ sâu. Mặc định theo số điểm trên diện tích đo. Ô nhỏ hơn cho đáy chi tiết hơn và tệp lớn hơn.
+Limit from a sounding	Giới hạn từ điểm đo
+A cell further than this from the nearest sounding stays empty. So the raster does not flood the shore and bays without soundings. The limit is larger than the distance between tracks, otherwise strips stay between them.	Ô xa hơn khoảng này so với điểm đo gần nhất sẽ để trống. Nhờ đó raster không tràn lên bờ và vịnh không có số đo. Giới hạn lớn hơn khoảng cách giữa các tuyến, nếu không còn lại dải trống.
+The height of the water surface above sea level on the day of the soundings. The bed elevation is the water level minus the depth.	Độ cao mặt nước so với mực biển vào ngày đo. Cao độ đáy là mực nước trừ độ sâu.
+Fewer than three soundings with a depth.	Ít hơn ba số đo có độ sâu.
+Soundings {count}, depth from {low} to {high} m.	Số đo {count}, độ sâu từ {low} đến {high} m.
+The soundings do not form a grid: they lie on one line or the grid is too large.	Các số đo không tạo được lưới: chúng nằm trên một đường hoặc lưới quá lớn.
+The grid has no cells with a depth, increase the limit.	Lưới không có ô có độ sâu, hãy tăng giới hạn.
+The raster is not written.	Raster chưa được ghi.
+Wayback imagery archive…	Kho ảnh Wayback…
+Wayback imagery archive	Kho ảnh Wayback
+The Wayback archive did not answer.	Kho Wayback không phản hồi.
+Searching for releases with changes: found {count}…	Đang tìm các bản phát hành có thay đổi: đã thấy {count}…
+Releases with changes at the view point: {count} of {total}.	Bản phát hành có thay đổi tại điểm nhìn: {count} trên {total}.
+Shot on {date}	Chụp ngày {date}
+pixel {value} m	điểm ảnh {value} m
+Releases with changes at the present view point. The width of the view sets the size of the searched place.	Các bản phát hành có thay đổi tại điểm nhìn hiện tại. Độ rộng khung nhìn đặt kích thước nơi tìm.
+The release lies as a tile layer over the base map, a row in the catalogue.	Bản phát hành nằm như lớp tile trên bản đồ nền, một dòng trong danh mục.
+Releases of Esri World Imagery since 2014. A release where the place did not change gives the tile of an earlier one, so only releases with changes are listed.	Các bản phát hành Esri World Imagery từ 2014. Bản không đổi tại nơi đó trả về tile của bản trước, nên danh sách chỉ có các bản có thay đổi.
+Air temperature	Nhiệt độ không khí
+Air temperature at a height of 2 m by the NOAA GFS model, grid step 0.25°, about 28 km. The forecast goes up to 16 days ahead, the past is the analysis of the model. The moment is set by the time slider.	Nhiệt độ không khí ở độ cao 2 m theo mô hình NOAA GFS, bước lưới 0.25°, khoảng 28 km. Dự báo tới 16 ngày, quá khứ là phân tích của mô hình. Thời điểm do thanh thời gian đặt.
+Precipitation, GFS forecast	Lượng mưa, dự báo GFS
+Precipitation rate at the moment of the slider by the NOAA GFS model, mm/h. Below 0.1 mm/h the field is transparent.	Cường độ mưa tại thời điểm của thanh theo NOAA GFS, mm/giờ. Dưới 0.1 mm/giờ trường trong suốt.
+Wind speed at a height of 10 m by the NOAA GFS model, m/s.	Tốc độ gió ở độ cao 10 m theo NOAA GFS, m/s.
+Cloud cover, GFS forecast	Độ phủ mây, dự báo GFS
+Total cloud cover by the NOAA GFS model, the share of the sky in percent. This is a model calculation, not an image of clouds.	Tổng độ phủ mây theo NOAA GFS, tỷ lệ bầu trời theo phần trăm. Đây là tính toán của mô hình, không phải ảnh mây.
+Aurora	Cực quang
+The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	Xác suất thấy cực quang theo mô hình OVATION của NOAA SWPC trong 30-90 phút tới, lưới 1°. Chỉ có một dự báo cho hiện tại, thanh thời gian không đổi nó.
+Weather	Thời tiết
+NOAA GFS forecast fields by the time slider and the aurora forecast.	Các trường dự báo NOAA GFS theo thanh thời gian và dự báo cực quang.
+The forecast did not load, check the network and switch the row on again.	Dự báo không tải được, hãy kiểm tra mạng và bật lại dòng.
+Forecast: run {run}, hour {hour}.	Dự báo: lượt chạy {run}, giờ {hour}.
+On buildings	Trên tòa nhà
+3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	Đo 3D: điểm nằm trên mái hoặc tường tòa nhà, đường đi theo các đoạn thẳng, diện tích đa giác đúng ở mọi độ dốc. Cần dòng tòa nhà 3D.
+3D length {value} m.	Chiều dài 3D {value} m.
+3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	Chu vi 3D {perimeter} m, diện tích {area} m², độ dốc {tilt}°.

@@ -1946,3 +1946,85 @@ Click the globe to outline a sample, a click on the first vertex closes the outl
 The area is divided into objects, each object is compared with the samples in colour and texture.	Alan nesnelere bölünür, her nesne renk ve dokuda örneklerle karşılaştırılır.
 The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	Nesnelere bölmede ve örnekle karşılaştırmada dokunun payı, gerisi renktir.
 What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	Renk ve dokunun alındığı yer. AlphaEarth vektörleri ağdan yüklenir, programda açılan rasterin her kanalı bir özelliktir.
+Earthwork	Hafriyat
+Earthwork…	Hafriyat…
+Pad elevation	Platform kotu
+Equal volumes	Eşit hacimler
+Elevation of the level pad above sea level. Everything above it is cut, everything below is fill. A new elevation is calculated at once, without loading heights.	Düz platformun deniz seviyesinden kotu. Üstündeki her şey kazı, altındaki her şey dolgudur. Yeni kot, yükseklik yüklenmeden hemen hesaplanır.
+Heights of the area, cut and fill to the pad elevation - colours on the globe and volumes. The first calculation sets the elevation of equal volumes.	Alanın yükseklikleri, platform kotuna kadar kazı ve dolgu - küre üzerinde renkler ve hacimler. İlk hesap eşit hacim kotunu ayarlar.
+The elevation at which the excavated soil is enough for the fill.	Kazılan toprağın dolguya yettiği kot.
+Cut {cut} m³ on {cut_area} ha, fill {fill} m³ on {fill_area} ha. Fill minus cut {net} m³.	Kazı {cut} m³, {cut_area} ha üzerinde, dolgu {fill} m³, {fill_area} ha üzerinde. Dolgu eksi kazı {net} m³.
+The heights of the area are open models with an error of metres. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate. A calculation needs your own terrain, a GeoTIFF elevation raster opened in the program.	Alanın yükseklikleri metre hatalı açık modellerdir. ±{metres} m hata hacmi ±{error} m³ değiştirir, sonuç yalnızca bir tahmindir. Hesap için kendi araziniz, programda açılmış GeoTIFF yükseklik rasteri gerekir.
+Your own terrain covers {share} % of the area, the rest is open models. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate.	Kendi araziniz alanın %{share} kadarını kaplar, gerisi açık modellerdir. ±{metres} m hata hacmi ±{error} m³ değiştirir, sonuç yalnızca bir tahmindir.
+Cut and fill to the elevation {level} m	{level} m kotuna kadar kazı ve dolgu
+Cut and fill of the area to a level pad: volumes, colours and a difference raster.	Alanın düz platforma kadar kazı ve dolgusu: hacimler, renkler ve fark rasteri.
+Export to glTF	glTF olarak dışa aktar
+Export to 3D Tiles	3D Tiles olarak dışa aktar
+Exported pieces - {count}.	Dışa aktarılan parça: {count}.
+Exported pieces - {count}. The terrain scale {scale} is in the heights.	Dışa aktarılan parça: {count}. {scale} arazi ölçeği yüksekliklere dahildir.
+There are no objects to export in the view: 3D buildings, a subsurface model or 3D models.	Görünümde dışa aktarılacak nesne yok: 3B binalar, yeraltı modeli veya 3B modeller.
+Cut and fill	Kazı ve dolgu
+Cut and fill…	Kazı ve dolgu…
+The raster is a new terrain survey, for example of a pit with dumps. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	Raster yeni bir arazi ölçümüdür, örneğin döküm sahalı bir ocak. Önceki ölçümle fark kazı ve dolguyu, hacimlerini ve fark rasterini verir.
+The raster «{name}» is a new terrain survey. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	«{name}» rasteri yeni bir arazi ölçümüdür. Önceki ölçümle fark kazı ve dolguyu, hacimlerini ve fark rasterini verir.
+Earlier survey	Önceki ölçüm
+A raster of an earlier survey of the same area. It is recalculated to the grid of the new survey.	Aynı alanın önceki ölçümünün rasteri. Yeni ölçümün ızgarasına yeniden hesaplanır.
+Analysis area	Analiz alanı
+Only the area shared by the analysis windows. Without the check - the whole extent of the new survey.	Yalnızca analiz pencerelerinin ortak alanı. İşaret yoksa yeni ölçümün tüm kapsamı.
+Threshold	Eşik
+A difference below the threshold is not included in the volumes, it is survey noise. A threshold above the survey error understates the volumes.	Eşiğin altındaki fark hacimlere girmez, ölçüm gürültüsüdür. Ölçüm hatasından büyük eşik hacimleri düşük gösterir.
+No other raster is open as an earlier survey.	Önceki ölçüm olarak açık başka raster yok.
+The surveys have no common cells.	Ölçümlerin ortak hücresi yok.
+Computing: {done} %.	Hesap: %{done}.
+Cut {cut} m³ on {cut_area} m², down to {deepest} m. Fill {fill} m³ on {fill_area} m², up to {highest} m. Fill minus cut {net} m³. Compared area {area} m².	Kazı {cut} m³, {cut_area} m², {deepest} m'ye kadar. Dolgu {fill} m³, {fill_area} m², {highest} m'ye kadar. Dolgu eksi kazı {net} m³. Karşılaştırılan alan {area} m².
+Extrusion…	Ekstrüzyon…
+Extrusion - {name}	Ekstrüzyon - {name}
+Objects of the folder rise above the terrain to the height from a field: a polygon as a prism, a point as a column, a line as a wall.	Klasördeki nesneler bir alandaki yüksekliğe yükselir: çokgen prizma, nokta sütun, çizgi duvar olur.
+Height from a field	Alandan yükseklik
+A numeric field of the height of an object. An object with an empty, zero or negative value is not extruded.	Nesne yüksekliğinin sayısal alanı. Boş, sıfır veya negatif değerli nesne yükseltilmez.
+Factor, m	Çarpan, m
+The height in metres is the field value times the factor. For a field of storeys the factor is about 3.	Metre cinsinden yükseklik alan değeri çarpı çarpandır. Kat alanı için çarpan yaklaşık 3'tür.
+The folder has no numeric fields.	Klasörde sayısal alan yok.
+Objects extruded: {count}.	Yükseltilen nesne: {count}.
+Bathymetry from soundings…	İskandillerden batimetri…
+Bathymetry from soundings	İskandillerden batimetri
+The points of the folder «{name}» are depth soundings, for example echo sounder tracks. A raster of depths is built from them by triangulation, it goes into the globe terrain as the bed of the water body.	«{name}» klasörünün noktaları derinlik iskandilleridir, örneğin eko hatları. Üçgenlemeyle derinlik rasteri oluşturulur ve su kütlesinin tabanı olarak küre arazisine girer.
+Point Z	Nokta Z
+The field with the depth or the Z of a point. The sign of the depth does not matter, its absolute value is taken.	Derinlik alanı veya nokta Z'si. İşaret önemli değildir, mutlak değer alınır.
+Cell	Hücre
+The cell size of the depth raster. By default - by the number of points per area of the soundings. A smaller cell gives a more detailed bed and a larger file.	Derinlik rasterinin hücre boyutu. Varsayılan, alan başına nokta sayısına göredir. Küçük hücre daha ayrıntılı taban ve büyük dosya verir.
+Limit from a sounding	İskandilden sınır
+A cell further than this from the nearest sounding stays empty. So the raster does not flood the shore and bays without soundings. The limit is larger than the distance between tracks, otherwise strips stay between them.	En yakın iskandilden bundan uzak hücre boş kalır. Böylece raster iskandilsiz kıyıyı ve koyları doldurmaz. Sınır hatlar arası mesafeden büyüktür, yoksa aralarda şeritler kalır.
+The height of the water surface above sea level on the day of the soundings. The bed elevation is the water level minus the depth.	İskandil günü su yüzeyinin deniz seviyesinden yüksekliği. Taban kotu su seviyesi eksi derinliktir.
+Fewer than three soundings with a depth.	Derinlikli iskandil üçten az.
+Soundings {count}, depth from {low} to {high} m.	İskandil {count}, derinlik {low}-{high} m.
+The soundings do not form a grid: they lie on one line or the grid is too large.	İskandiller ızgara oluşturmuyor: tek doğrudalar veya ızgara çok büyük.
+The grid has no cells with a depth, increase the limit.	Izgarada derinlikli hücre yok, sınırı artırın.
+The raster is not written.	Raster yazılmadı.
+Wayback imagery archive…	Wayback görüntü arşivi…
+Wayback imagery archive	Wayback görüntü arşivi
+The Wayback archive did not answer.	Wayback arşivi yanıt vermedi.
+Searching for releases with changes: found {count}…	Değişiklikli sürümler aranıyor: {count} bulundu…
+Releases with changes at the view point: {count} of {total}.	Bakış noktasında değişiklikli sürümler: {count} / {total}.
+Shot on {date}	Çekim {date}
+pixel {value} m	piksel {value} m
+Releases with changes at the present view point. The width of the view sets the size of the searched place.	Geçerli bakış noktasındaki değişiklikli sürümler. Görünüm genişliği aranan yerin boyutunu belirler.
+The release lies as a tile layer over the base map, a row in the catalogue.	Sürüm altlık üzerine karo katmanı olarak, katalog satırı olur.
+Releases of Esri World Imagery since 2014. A release where the place did not change gives the tile of an earlier one, so only releases with changes are listed.	2014'ten beri Esri World Imagery sürümleri. Yerin değişmediği sürüm öncekinin karosunu verir, bu yüzden yalnızca değişiklikli sürümler listelenir.
+Air temperature	Hava sıcaklığı
+Air temperature at a height of 2 m by the NOAA GFS model, grid step 0.25°, about 28 km. The forecast goes up to 16 days ahead, the past is the analysis of the model. The moment is set by the time slider.	NOAA GFS modeline göre 2 m yükseklikte hava sıcaklığı, ızgara adımı 0.25°, yaklaşık 28 km. Tahmin 16 gün ileriye gider, geçmiş model analizidir. Anı zaman çubuğu belirler.
+Precipitation, GFS forecast	Yağış, GFS tahmini
+Precipitation rate at the moment of the slider by the NOAA GFS model, mm/h. Below 0.1 mm/h the field is transparent.	NOAA GFS modeline göre çubuk anındaki yağış şiddeti, mm/sa. 0.1 mm/sa altında alan saydamdır.
+Wind speed at a height of 10 m by the NOAA GFS model, m/s.	NOAA GFS modeline göre 10 m yükseklikte rüzgâr hızı, m/sn.
+Cloud cover, GFS forecast	Bulutluluk, GFS tahmini
+Total cloud cover by the NOAA GFS model, the share of the sky in percent. This is a model calculation, not an image of clouds.	NOAA GFS modeline göre toplam bulutluluk, gökyüzü payı yüzde olarak. Bu model hesabıdır, bulut görüntüsü değildir.
+Aurora	Kutup ışığı
+The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	NOAA SWPC OVATION modeline göre önümüzdeki 30-90 dakika için görünür kutup ışığı olasılığı, ızgara 1°. Tahmin tektir, şimdi içindir, zaman çubuğu değiştirmez.
+Weather	Hava
+NOAA GFS forecast fields by the time slider and the aurora forecast.	Zaman çubuğuna göre NOAA GFS tahmin alanları ve kutup ışığı tahmini.
+The forecast did not load, check the network and switch the row on again.	Tahmin yüklenmedi, ağı denetleyin ve satırı yeniden açın.
+Forecast: run {run}, hour {hour}.	Tahmin: çalışma {run}, saat {hour}.
+On buildings	Binalar üzerinde
+3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	3B ölçüm: nokta binanın çatısına veya duvarına oturur, yol düz parçalarla gider, çokgen alanı her eğimde doğrudur. 3B binalar satırı gerekir.
+3D length {value} m.	3B uzunluk {value} m.
+3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	3B çevre {perimeter} m, alan {area} m², eğim {tilt}°.

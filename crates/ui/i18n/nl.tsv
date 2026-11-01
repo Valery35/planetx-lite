@@ -1946,3 +1946,85 @@ Click the globe to outline a sample, a click on the first vertex closes the outl
 The area is divided into objects, each object is compared with the samples in colour and texture.	Het gebied wordt in objecten verdeeld, elk object wordt in kleur en textuur met de voorbeelden vergeleken.
 The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	Het aandeel van textuur bij het verdelen in objecten en bij de vergelijking met het voorbeeld, de rest is kleur.
 What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	Waar kleur en textuur vandaan komen. AlphaEarth-vectoren worden uit het netwerk geladen, elke band van een in het programma geopend raster is een kenmerk.
+Earthwork	Grondwerk
+Earthwork…	Grondwerk…
+Pad elevation	Hoogte van het plateau
+Equal volumes	Gelijke volumes
+Elevation of the level pad above sea level. Everything above it is cut, everything below is fill. A new elevation is calculated at once, without loading heights.	Hoogte van het vlakke plateau boven zeeniveau. Alles erboven is ontgraving, alles eronder is ophoging. Een nieuwe hoogte wordt meteen berekend, zonder hoogten te laden.
+Heights of the area, cut and fill to the pad elevation - colours on the globe and volumes. The first calculation sets the elevation of equal volumes.	Hoogten van het gebied, ontgraving en ophoging tot de plateauhoogte: kleuren op de globe en volumes. De eerste berekening zet de hoogte van gelijke volumes.
+The elevation at which the excavated soil is enough for the fill.	De hoogte waarbij de ontgraven grond genoeg is voor de ophoging.
+Cut {cut} m³ on {cut_area} ha, fill {fill} m³ on {fill_area} ha. Fill minus cut {net} m³.	Ontgraving {cut} m³ op {cut_area} ha, ophoging {fill} m³ op {fill_area} ha. Ophoging min ontgraving {net} m³.
+The heights of the area are open models with an error of metres. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate. A calculation needs your own terrain, a GeoTIFF elevation raster opened in the program.	De hoogten van het gebied zijn open modellen met een fout van meters. Een fout van ±{metres} m verandert het volume met ±{error} m³, het resultaat is slechts een schatting. Een berekening vraagt om eigen reliëf, een in het programma geopend GeoTIFF-hoogteraster.
+Your own terrain covers {share} % of the area, the rest is open models. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate.	Eigen reliëf dekt {share} % van het gebied, de rest zijn open modellen. Een fout van ±{metres} m verandert het volume met ±{error} m³, het resultaat is slechts een schatting.
+Cut and fill to the elevation {level} m	Ontgraving en ophoging tot hoogte {level} m
+Cut and fill of the area to a level pad: volumes, colours and a difference raster.	Ontgraving en ophoging van het gebied tot een vlak plateau: volumes, kleuren en een verschilraster.
+Export to glTF	Exporteren naar glTF
+Export to 3D Tiles	Exporteren naar 3D Tiles
+Exported pieces - {count}.	Geëxporteerde delen: {count}.
+Exported pieces - {count}. The terrain scale {scale} is in the heights.	Geëxporteerde delen: {count}. De reliëfschaal {scale} zit in de hoogten.
+There are no objects to export in the view: 3D buildings, a subsurface model or 3D models.	In het beeld zijn geen objecten om te exporteren: 3D-gebouwen, ondergrondmodel of 3D-modellen.
+Cut and fill	Ontgraving en ophoging
+Cut and fill…	Ontgraving en ophoging…
+The raster is a new terrain survey, for example of a pit with dumps. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	Het raster is een nieuwe terreinopname, bijvoorbeeld van een groeve met stortbergen. Het verschil met een eerdere opname geeft ontgraving en ophoging, hun volumes en een verschilraster.
+The raster «{name}» is a new terrain survey. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	Het raster «{name}» is een nieuwe terreinopname. Het verschil met een eerdere opname geeft ontgraving en ophoging, hun volumes en een verschilraster.
+Earlier survey	Eerdere opname
+A raster of an earlier survey of the same area. It is recalculated to the grid of the new survey.	Raster van een eerdere opname van hetzelfde gebied. Het wordt herberekend naar het grid van de nieuwe opname.
+Analysis area	Analysegebied
+Only the area shared by the analysis windows. Without the check - the whole extent of the new survey.	Alleen het gebied van de analysevensters. Zonder het vinkje de hele omvang van de nieuwe opname.
+Threshold	Drempel
+A difference below the threshold is not included in the volumes, it is survey noise. A threshold above the survey error understates the volumes.	Een verschil onder de drempel telt niet mee in de volumes, het is meetruis. Een drempel boven de meetfout onderschat de volumes.
+No other raster is open as an earlier survey.	Er is geen ander raster geopend als eerdere opname.
+The surveys have no common cells.	De opnamen hebben geen gemeenschappelijke cellen.
+Computing: {done} %.	Berekening: {done} %.
+Cut {cut} m³ on {cut_area} m², down to {deepest} m. Fill {fill} m³ on {fill_area} m², up to {highest} m. Fill minus cut {net} m³. Compared area {area} m².	Ontgraving {cut} m³ op {cut_area} m², tot {deepest} m. Ophoging {fill} m³ op {fill_area} m², tot {highest} m. Ophoging min ontgraving {net} m³. Vergeleken oppervlak {area} m².
+Extrusion…	Extrusie…
+Extrusion - {name}	Extrusie - {name}
+Objects of the folder rise above the terrain to the height from a field: a polygon as a prism, a point as a column, a line as a wall.	Objecten van de map rijzen boven het terrein tot de hoogte uit een veld: een polygoon als prisma, een punt als zuil, een lijn als muur.
+Height from a field	Hoogte uit veld
+A numeric field of the height of an object. An object with an empty, zero or negative value is not extruded.	Numeriek veld van de objecthoogte. Een object met een lege, nul- of negatieve waarde wordt niet geëxtrudeerd.
+Factor, m	Factor, m
+The height in metres is the field value times the factor. For a field of storeys the factor is about 3.	De hoogte in meters is de veldwaarde maal de factor. Bij een veld met verdiepingen is de factor ongeveer 3.
+The folder has no numeric fields.	De map heeft geen numerieke velden.
+Objects extruded: {count}.	Geëxtrudeerde objecten: {count}.
+Bathymetry from soundings…	Bathymetrie uit lodingen…
+Bathymetry from soundings	Bathymetrie uit lodingen
+The points of the folder «{name}» are depth soundings, for example echo sounder tracks. A raster of depths is built from them by triangulation, it goes into the globe terrain as the bed of the water body.	De punten van de map «{name}» zijn dieptelodingen, bijvoorbeeld echolood-raaien. Daaruit wordt met triangulatie een diepteraster gemaakt, dat als bodem van het water in het reliëf van de globe komt.
+Point Z	Z van punt
+The field with the depth or the Z of a point. The sign of the depth does not matter, its absolute value is taken.	Veld met de diepte of Z van het punt. Het teken doet er niet toe, de absolute waarde wordt genomen.
+Cell	Cel
+The cell size of the depth raster. By default - by the number of points per area of the soundings. A smaller cell gives a more detailed bed and a larger file.	Celgrootte van het diepteraster. Standaard volgens het aantal punten per oppervlak. Een kleinere cel geeft meer detail en een groter bestand.
+Limit from a sounding	Grens vanaf loding
+A cell further than this from the nearest sounding stays empty. So the raster does not flood the shore and bays without soundings. The limit is larger than the distance between tracks, otherwise strips stay between them.	Een cel verder dan dit van de dichtstbijzijnde loding blijft leeg. Zo overspoelt het raster de oever en baaien zonder lodingen niet. De grens is groter dan de raaiafstand, anders blijven er stroken.
+The height of the water surface above sea level on the day of the soundings. The bed elevation is the water level minus the depth.	Hoogte van het wateroppervlak boven zeeniveau op de dag van de lodingen. De bodemhoogte is waterstand min diepte.
+Fewer than three soundings with a depth.	Minder dan drie lodingen met diepte.
+Soundings {count}, depth from {low} to {high} m.	Lodingen {count}, diepte van {low} tot {high} m.
+The soundings do not form a grid: they lie on one line or the grid is too large.	De lodingen vormen geen grid: ze liggen op één lijn of het grid is te groot.
+The grid has no cells with a depth, increase the limit.	Het grid heeft geen cellen met diepte, verhoog de grens.
+The raster is not written.	Het raster is niet geschreven.
+Wayback imagery archive…	Wayback-beeldarchief…
+Wayback imagery archive	Wayback-beeldarchief
+The Wayback archive did not answer.	Het Wayback-archief antwoordde niet.
+Searching for releases with changes: found {count}…	Zoeken naar uitgaven met wijzigingen: {count} gevonden…
+Releases with changes at the view point: {count} of {total}.	Uitgaven met wijzigingen op het kijkpunt: {count} van {total}.
+Shot on {date}	Opgenomen op {date}
+pixel {value} m	pixel {value} m
+Releases with changes at the present view point. The width of the view sets the size of the searched place.	Uitgaven met wijzigingen op het huidige kijkpunt. De beeldbreedte bepaalt de grootte van de gezochte plek.
+The release lies as a tile layer over the base map, a row in the catalogue.	De uitgave ligt als tegellaag over de basiskaart, een regel in de catalogus.
+Releases of Esri World Imagery since 2014. A release where the place did not change gives the tile of an earlier one, so only releases with changes are listed.	Uitgaven van Esri World Imagery sinds 2014. Een uitgave zonder wijziging op de plek geeft de tegel van een eerdere, daarom staan alleen uitgaven met wijzigingen in de lijst.
+Air temperature	Luchttemperatuur
+Air temperature at a height of 2 m by the NOAA GFS model, grid step 0.25°, about 28 km. The forecast goes up to 16 days ahead, the past is the analysis of the model. The moment is set by the time slider.	Luchttemperatuur op 2 m volgens het model NOAA GFS, rasterstap 0.25°, ongeveer 28 km. De verwachting gaat tot 16 dagen vooruit, het verleden is de modelanalyse. Het moment wordt door de tijdschuif bepaald.
+Precipitation, GFS forecast	Neerslag, GFS-verwachting
+Precipitation rate at the moment of the slider by the NOAA GFS model, mm/h. Below 0.1 mm/h the field is transparent.	Neerslagintensiteit op het moment van de schuif volgens NOAA GFS, mm/u. Onder 0.1 mm/u is het veld doorzichtig.
+Wind speed at a height of 10 m by the NOAA GFS model, m/s.	Windsnelheid op 10 m volgens NOAA GFS, m/s.
+Cloud cover, GFS forecast	Bewolking, GFS-verwachting
+Total cloud cover by the NOAA GFS model, the share of the sky in percent. This is a model calculation, not an image of clouds.	Totale bewolking volgens NOAA GFS, deel van de hemel in procenten. Dit is een modelberekening, geen wolkenbeeld.
+Aurora	Poollicht
+The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	Kans op zichtbaar poollicht volgens het model OVATION van NOAA SWPC voor de komende 30-90 minuten, raster 1°. De verwachting is er één, voor nu, de tijdschuif verandert haar niet.
+Weather	Weer
+NOAA GFS forecast fields by the time slider and the aurora forecast.	Verwachtingsvelden NOAA GFS volgens de tijdschuif en de poollichtverwachting.
+The forecast did not load, check the network and switch the row on again.	De verwachting is niet geladen, controleer het netwerk en zet de regel opnieuw aan.
+Forecast: run {run}, hour {hour}.	Verwachting: run {run}, uur {hour}.
+On buildings	Op gebouwen
+3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	3D-meting: een punt ligt op het dak of de muur van een gebouw, het pad gaat in rechte stukken, de oppervlakte van een polygoon klopt bij elke helling. Vereist de regel 3D-gebouwen.
+3D length {value} m.	3D-lengte {value} m.
+3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	3D-omtrek {perimeter} m, oppervlakte {area} m², helling {tilt}°.

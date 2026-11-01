@@ -1946,3 +1946,85 @@ Click the globe to outline a sample, a click on the first vertex closes the outl
 The area is divided into objects, each object is compared with the samples in colour and texture.	구역을 객체로 나누고 각 객체를 색과 질감으로 견본과 비교합니다.
 The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	객체 분할과 견본 비교에서 질감의 비율이며 나머지는 색입니다.
 What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	색과 질감을 가져오는 곳입니다. AlphaEarth 벡터는 네트워크에서 불러오고, 프로그램에서 연 래스터는 각 밴드가 특징입니다.
+Earthwork	토공
+Earthwork…	토공…
+Pad elevation	부지 표고
+Equal volumes	같은 부피
+Elevation of the level pad above sea level. Everything above it is cut, everything below is fill. A new elevation is calculated at once, without loading heights.	평평한 부지의 해수면 위 표고입니다. 그보다 높은 부분은 절토, 낮은 부분은 성토입니다. 새 표고는 높이를 불러오지 않고 바로 계산합니다.
+Heights of the area, cut and fill to the pad elevation - colours on the globe and volumes. The first calculation sets the elevation of equal volumes.	구역의 높이, 부지 표고까지의 절토와 성토를 지구본의 색과 부피로 보여 줍니다. 첫 계산은 같은 부피의 표고를 정합니다.
+The elevation at which the excavated soil is enough for the fill.	파낸 흙이 성토에 충분한 표고입니다.
+Cut {cut} m³ on {cut_area} ha, fill {fill} m³ on {fill_area} ha. Fill minus cut {net} m³.	절토 {cut} m³ ({cut_area} ha), 성토 {fill} m³ ({fill_area} ha). 성토 - 절토 {net} m³.
+The heights of the area are open models with an error of metres. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate. A calculation needs your own terrain, a GeoTIFF elevation raster opened in the program.	구역의 높이는 오차가 미터 단위인 공개 모델입니다. ±{metres} m 오차는 부피를 ±{error} m³ 바꾸므로 결과는 추정일 뿐입니다. 계산에는 자체 지형, 즉 프로그램에서 연 GeoTIFF 표고 래스터가 필요합니다.
+Your own terrain covers {share} % of the area, the rest is open models. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate.	자체 지형은 구역의 {share} %를 덮고 나머지는 공개 모델입니다. ±{metres} m 오차는 부피를 ±{error} m³ 바꾸므로 결과는 추정일 뿐입니다.
+Cut and fill to the elevation {level} m	표고 {level} m까지 절토와 성토
+Cut and fill of the area to a level pad: volumes, colours and a difference raster.	구역을 평평한 부지까지 절토와 성토합니다: 부피, 색, 차이 래스터.
+Export to glTF	glTF로 내보내기
+Export to 3D Tiles	3D Tiles로 내보내기
+Exported pieces - {count}.	내보낸 조각: {count}.
+Exported pieces - {count}. The terrain scale {scale} is in the heights.	내보낸 조각: {count}. 지형 배율 {scale}이 높이에 포함되었습니다.
+There are no objects to export in the view: 3D buildings, a subsurface model or 3D models.	보기에 내보낼 객체가 없습니다: 3D 건물, 지하 모델, 3D 모델.
+Cut and fill	절토와 성토
+Cut and fill…	절토와 성토…
+The raster is a new terrain survey, for example of a pit with dumps. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	이 래스터는 새 지형 측량으로, 예를 들면 폐석장이 있는 광산입니다. 이전 측량과의 차이로 절토와 성토, 그 부피, 차이 래스터를 얻습니다.
+The raster «{name}» is a new terrain survey. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	래스터 «{name}»는 새 지형 측량입니다. 이전 측량과의 차이로 절토와 성토, 그 부피, 차이 래스터를 얻습니다.
+Earlier survey	이전 측량
+A raster of an earlier survey of the same area. It is recalculated to the grid of the new survey.	같은 구역의 이전 측량 래스터입니다. 새 측량의 격자로 다시 계산됩니다.
+Analysis area	분석 구역
+Only the area shared by the analysis windows. Without the check - the whole extent of the new survey.	분석 창이 함께 쓰는 구역만 씁니다. 체크하지 않으면 새 측량의 전체 범위입니다.
+Threshold	임계값
+A difference below the threshold is not included in the volumes, it is survey noise. A threshold above the survey error understates the volumes.	임계값보다 작은 차이는 부피에 넣지 않습니다. 측량 잡음입니다. 측량 오차보다 큰 임계값은 부피를 줄입니다.
+No other raster is open as an earlier survey.	이전 측량으로 열린 다른 래스터가 없습니다.
+The surveys have no common cells.	측량에 공통 셀이 없습니다.
+Computing: {done} %.	계산 중: {done} %.
+Cut {cut} m³ on {cut_area} m², down to {deepest} m. Fill {fill} m³ on {fill_area} m², up to {highest} m. Fill minus cut {net} m³. Compared area {area} m².	절토 {cut} m³ ({cut_area} m², 최대 {deepest} m). 성토 {fill} m³ ({fill_area} m², 최대 {highest} m). 성토 - 절토 {net} m³. 비교 면적 {area} m².
+Extrusion…	돌출…
+Extrusion - {name}	돌출 - {name}
+Objects of the folder rise above the terrain to the height from a field: a polygon as a prism, a point as a column, a line as a wall.	폴더의 객체가 필드의 높이만큼 지형 위로 올라갑니다: 다각형은 각기둥, 점은 기둥, 선은 벽이 됩니다.
+Height from a field	필드의 높이
+A numeric field of the height of an object. An object with an empty, zero or negative value is not extruded.	객체 높이의 숫자 필드입니다. 값이 비었거나 0 또는 음수인 객체는 돌출되지 않습니다.
+Factor, m	배수, m
+The height in metres is the field value times the factor. For a field of storeys the factor is about 3.	미터 단위 높이는 필드 값에 배수를 곱한 값입니다. 층수 필드의 배수는 약 3입니다.
+The folder has no numeric fields.	폴더에 숫자 필드가 없습니다.
+Objects extruded: {count}.	돌출된 객체: {count}.
+Bathymetry from soundings…	측심 자료로 수심도…
+Bathymetry from soundings	측심 자료로 수심도
+The points of the folder «{name}» are depth soundings, for example echo sounder tracks. A raster of depths is built from them by triangulation, it goes into the globe terrain as the bed of the water body.	폴더 «{name}»의 점은 수심 측심 자료로, 예를 들면 음향측심 측선입니다. 삼각분할로 수심 래스터를 만들어 수역 바닥으로 지구본 지형에 넣습니다.
+Point Z	점의 Z
+The field with the depth or the Z of a point. The sign of the depth does not matter, its absolute value is taken.	수심 필드 또는 점의 Z입니다. 부호는 상관없고 절댓값을 씁니다.
+Cell	셀
+The cell size of the depth raster. By default - by the number of points per area of the soundings. A smaller cell gives a more detailed bed and a larger file.	수심 래스터의 셀 크기입니다. 기본값은 측심 면적당 점 수로 정합니다. 셀이 작을수록 바닥이 자세하고 파일이 커집니다.
+Limit from a sounding	측심점에서의 한계
+A cell further than this from the nearest sounding stays empty. So the raster does not flood the shore and bays without soundings. The limit is larger than the distance between tracks, otherwise strips stay between them.	가장 가까운 측심점에서 이보다 먼 셀은 비워 둡니다. 그래서 측심 없는 해안과 만을 채우지 않습니다. 한계는 측선 간격보다 커야 하며 아니면 띠가 남습니다.
+The height of the water surface above sea level on the day of the soundings. The bed elevation is the water level minus the depth.	측심 당일 수면의 해수면 위 높이입니다. 바닥 표고는 수위에서 수심을 뺀 값입니다.
+Fewer than three soundings with a depth.	수심이 있는 측심점이 세 개 미만입니다.
+Soundings {count}, depth from {low} to {high} m.	측심점 {count}개, 수심 {low}~{high} m.
+The soundings do not form a grid: they lie on one line or the grid is too large.	측심점으로 격자를 만들 수 없습니다: 한 직선 위에 있거나 격자가 너무 큽니다.
+The grid has no cells with a depth, increase the limit.	수심이 있는 셀이 없습니다. 한계를 늘리세요.
+The raster is not written.	래스터를 쓰지 못했습니다.
+Wayback imagery archive…	Wayback 영상 보관소…
+Wayback imagery archive	Wayback 영상 보관소
+The Wayback archive did not answer.	Wayback 보관소가 응답하지 않았습니다.
+Searching for releases with changes: found {count}…	변경이 있는 릴리스 찾는 중: {count}개 찾음…
+Releases with changes at the view point: {count} of {total}.	시점에서 변경이 있는 릴리스: {count} / {total}.
+Shot on {date}	촬영일 {date}
+pixel {value} m	픽셀 {value} m
+Releases with changes at the present view point. The width of the view sets the size of the searched place.	현재 시점에서 변경이 있는 릴리스입니다. 보기 너비가 찾는 곳의 크기를 정합니다.
+The release lies as a tile layer over the base map, a row in the catalogue.	릴리스가 타일 레이어로 기본 지도 위에 놓이고 카탈로그 행이 됩니다.
+Releases of Esri World Imagery since 2014. A release where the place did not change gives the tile of an earlier one, so only releases with changes are listed.	2014년 이후 Esri World Imagery 릴리스입니다. 장소가 바뀌지 않은 릴리스는 이전 타일을 주므로 변경이 있는 릴리스만 나열합니다.
+Air temperature	기온
+Air temperature at a height of 2 m by the NOAA GFS model, grid step 0.25°, about 28 km. The forecast goes up to 16 days ahead, the past is the analysis of the model. The moment is set by the time slider.	NOAA GFS 모델의 2 m 높이 기온으로 격자 간격은 0.25°, 약 28 km입니다. 예보는 16일 앞까지이고 과거는 모델 분석입니다. 시점은 시간 막대가 정합니다.
+Precipitation, GFS forecast	강수, GFS 예보
+Precipitation rate at the moment of the slider by the NOAA GFS model, mm/h. Below 0.1 mm/h the field is transparent.	NOAA GFS 모델의 막대 시점 강수 강도(mm/h)입니다. 0.1 mm/h 미만은 투명합니다.
+Wind speed at a height of 10 m by the NOAA GFS model, m/s.	NOAA GFS 모델의 10 m 높이 풍속(m/s)입니다.
+Cloud cover, GFS forecast	운량, GFS 예보
+Total cloud cover by the NOAA GFS model, the share of the sky in percent. This is a model calculation, not an image of clouds.	NOAA GFS 모델의 전체 운량으로 하늘 비율을 퍼센트로 나타냅니다. 모델 계산이며 구름 영상이 아닙니다.
+Aurora	오로라
+The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	NOAA SWPC의 OVATION 모델에 따른 앞으로 30-90분 오로라 관측 확률로 격자는 1°입니다. 예보는 현재 하나뿐이며 시간 막대로 바뀌지 않습니다.
+Weather	날씨
+NOAA GFS forecast fields by the time slider and the aurora forecast.	시간 막대에 따른 NOAA GFS 예보장과 오로라 예보입니다.
+The forecast did not load, check the network and switch the row on again.	예보를 불러오지 못했습니다. 네트워크를 확인하고 행을 다시 켜세요.
+Forecast: run {run}, hour {hour}.	예보: 실행 {run}, {hour}시간.
+On buildings	건물 위
+3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	3D 측정: 점이 건물 지붕이나 벽에 놓이고 경로는 직선 구간으로 가며 다각형 면적은 어떤 기울기에서도 정확합니다. 3D 건물 행이 필요합니다.
+3D length {value} m.	3D 길이 {value} m.
+3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	3D 둘레 {perimeter} m, 면적 {area} m², 기울기 {tilt}°.

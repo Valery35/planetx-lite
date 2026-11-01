@@ -102,6 +102,15 @@ impl Grid {
         Transformer::new(&self.crs, &SpatialRef::from_epsg(code).ok()?).ok()
     }
 
+    /// Пересчёт из системы этого растра в систему растра other. None -
+    /// системы те же или одна из них неизвестна.
+    pub fn transformer_into(&self, other: &Grid) -> Option<Transformer> {
+        if self.crs.is_unknown() || other.crs.is_unknown() || (self.epsg.is_some() && self.epsg == other.epsg) {
+            return None;
+        }
+        Transformer::new(&self.crs, &other.crs).ok()
+    }
+
     /// Значение точки (столбец, строка), None - вне растра или нет данных.
     pub fn value(&self, col: usize, row: usize) -> Option<f32> {
         if col >= self.width || row >= self.height {
@@ -148,6 +157,19 @@ impl Grid {
         }
         Some(out)
     }
+}
+
+/// Широты и долготы в метрах проекции EPSG code: x и y. None - система
+/// неизвестна.
+pub fn to_projected(code: u32, lats: &[f64], lons: &[f64]) -> Option<(Vec<f64>, Vec<f64>)> {
+    let t = Transformer::new(&SpatialRef::from_epsg(4326).ok()?, &SpatialRef::from_epsg(code).ok()?).ok()?;
+    let (mut xs, mut ys) = (Vec::with_capacity(lats.len()), Vec::with_capacity(lats.len()));
+    for (lat, lon) in lats.iter().zip(lons) {
+        let (x, y) = t.transform(*lon, *lat).ok()?;
+        xs.push(x);
+        ys.push(y);
+    }
+    Some((xs, ys))
 }
 
 /// Смесь четырёх соседей растра width × height в точке (столбец, строка)

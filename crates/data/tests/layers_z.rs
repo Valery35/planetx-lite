@@ -19,7 +19,9 @@ fn heights_follow_the_points() {
     let items = &read.first().expect("слой").items;
     assert_eq!(items[0].shape, Shape::Line);
     assert_eq!(items[0].heights, [vec![-120.5, -130.0]]);
-    assert_eq!(items[0].parts[0][1], (58.0, 56.1));
+    // terrio 0.6 считает пересчёт координат с ошибкой в последнем знаке.
+    let (lat, lon) = items[0].parts[0][1];
+    assert!((lat - 58.0).abs() < 1e-12 && (lon - 56.1).abs() < 1e-12, "{lat} {lon}");
     // Часть без отметок - пустая строка отметок, объект остаётся.
     assert!(items[1].heights[0].is_empty());
 }

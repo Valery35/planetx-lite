@@ -1946,3 +1946,85 @@ Click the globe to outline a sample, a click on the first vertex closes the outl
 The area is divided into objects, each object is compared with the samples in colour and texture.	უბანი იყოფა ობიექტებად, თითოეული ობიექტი ედრება ნიმუშებს ფერითა და ტექსტურით.
 The share of texture in the division into objects and in the comparison with the sample, the rest is colour.	ტექსტურის წილი ობიექტებად დაყოფასა და ნიმუშთან შედარებაში, დანარჩენი ფერია.
 What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.	საიდან მოდის ფერი და ტექსტურა. AlphaEarth-ის ვექტორები ქსელიდან იტვირთება, პროგრამაში გახსნილი რასტრის ყოველი არხი ნიშანია.
+Earthwork	მიწის სამუშაოები
+Earthwork…	მიწის სამუშაოები…
+Pad elevation	მოედნის ნიშნული
+Equal volumes	თანაბარი მოცულობები
+Elevation of the level pad above sea level. Everything above it is cut, everything below is fill. A new elevation is calculated at once, without loading heights.	სწორი მოედნის ნიშნული ზღვის დონიდან. მასზე მაღლა ყველაფერი ამოღებაა, დაბლა კი ყრილი. ახალი ნიშნული მაშინვე ითვლება, სიმაღლეების ჩატვირთვის გარეშე.
+Heights of the area, cut and fill to the pad elevation - colours on the globe and volumes. The first calculation sets the elevation of equal volumes.	უბნის სიმაღლეები, ამოღება და ყრილი მოედნის ნიშნულამდე - ფერები გლობუსზე და მოცულობები. პირველი გაანგარიშება აყენებს თანაბარი მოცულობების ნიშნულს.
+The elevation at which the excavated soil is enough for the fill.	ნიშნული, რომელზეც ამოღებული გრუნტი ყრილს ჰყოფნის.
+Cut {cut} m³ on {cut_area} ha, fill {fill} m³ on {fill_area} ha. Fill minus cut {net} m³.	ამოღება {cut} მ³ {cut_area} ჰა-ზე, ყრილი {fill} მ³ {fill_area} ჰა-ზე. ყრილს გამოკლებული ამოღება {net} მ³.
+The heights of the area are open models with an error of metres. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate. A calculation needs your own terrain, a GeoTIFF elevation raster opened in the program.	უბნის სიმაღლეები ღია მოდელებია მეტრობითი ცდომილებით. ცდომილება ±{metres} მ მოცულობას ±{error} მ³-ით ცვლის, შედეგი მხოლოდ შეფასებაა. გაანგარიშებას საკუთარი რელიეფი სჭირდება, პროგრამაში გახსნილი GeoTIFF სიმაღლეების რასტრი.
+Your own terrain covers {share} % of the area, the rest is open models. An error of ±{metres} m changes the volume by ±{error} m³, the result is only an estimate.	საკუთარი რელიეფი უბნის {share} %-ს ფარავს, დანარჩენი ღია მოდელებია. ცდომილება ±{metres} მ მოცულობას ±{error} მ³-ით ცვლის, შედეგი მხოლოდ შეფასებაა.
+Cut and fill to the elevation {level} m	ამოღება და ყრილი ნიშნულამდე {level} მ
+Cut and fill of the area to a level pad: volumes, colours and a difference raster.	უბნის ამოღება და ყრილი სწორ მოედნამდე: მოცულობები, ფერები და სხვაობის რასტრი.
+Export to glTF	glTF-ში გატანა
+Export to 3D Tiles	3D Tiles-ში გატანა
+Exported pieces - {count}.	გატანილი ნაწილები: {count}.
+Exported pieces - {count}. The terrain scale {scale} is in the heights.	გატანილი ნაწილები: {count}. რელიეფის მასშტაბი {scale} სიმაღლეებშია.
+There are no objects to export in the view: 3D buildings, a subsurface model or 3D models.	ხედში გასატანი ობიექტები არ არის: 3D შენობები, მიწისქვეშა მოდელი ან 3D მოდელები.
+Cut and fill	ამოღება და ყრილი
+Cut and fill…	ამოღება და ყრილი…
+The raster is a new terrain survey, for example of a pit with dumps. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	რასტრი რელიეფის ახალი აგეგმვაა, მაგალითად ნაყარებიანი კარიერის. წინა აგეგმვასთან სხვაობა იძლევა ამოღებას და ყრილს, მათ მოცულობებს და სხვაობის რასტრს.
+The raster «{name}» is a new terrain survey. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.	რასტრი «{name}» რელიეფის ახალი აგეგმვაა. წინა აგეგმვასთან სხვაობა იძლევა ამოღებას და ყრილს, მოცულობებს და სხვაობის რასტრს.
+Earlier survey	წინა აგეგმვა
+A raster of an earlier survey of the same area. It is recalculated to the grid of the new survey.	იმავე უბნის წინა აგეგმვის რასტრი. ის ახალი აგეგმვის ბადეზე გადაითვლება.
+Analysis area	ანალიზის უბანი
+Only the area shared by the analysis windows. Without the check - the whole extent of the new survey.	მხოლოდ ანალიზის ფანჯრების საერთო უბანი. ალმის გარეშე ახალი აგეგმვის მთელი არეალი.
+Threshold	ზღვარი
+A difference below the threshold is not included in the volumes, it is survey noise. A threshold above the survey error understates the volumes.	ზღვარზე ნაკლები სხვაობა მოცულობებში არ შედის, ეს აგეგმვის ხმაურია. ცდომილებაზე დიდი ზღვარი მოცულობებს ამცირებს.
+No other raster is open as an earlier survey.	წინა აგეგმვისთვის სხვა რასტრი გახსნილი არ არის.
+The surveys have no common cells.	აგეგმვებს საერთო უჯრედები არ აქვთ.
+Computing: {done} %.	გაანგარიშება: {done} %.
+Cut {cut} m³ on {cut_area} m², down to {deepest} m. Fill {fill} m³ on {fill_area} m², up to {highest} m. Fill minus cut {net} m³. Compared area {area} m².	ამოღება {cut} მ³ {cut_area} მ²-ზე, {deepest} მ-მდე. ყრილი {fill} მ³ {fill_area} მ²-ზე, {highest} მ-მდე. ყრილს გამოკლებული ამოღება {net} მ³. შედარების ფართობი {area} მ².
+Extrusion…	ამოწნეხვა…
+Extrusion - {name}	ამოწნეხვა - {name}
+Objects of the folder rise above the terrain to the height from a field: a polygon as a prism, a point as a column, a line as a wall.	საქაღალდის ობიექტები რელიეფზე ველის სიმაღლემდე მაღლდება: მრავალკუთხედი პრიზმად, წერტილი სვეტად, ხაზი კედლად.
+Height from a field	სიმაღლე ველიდან
+A numeric field of the height of an object. An object with an empty, zero or negative value is not extruded.	ობიექტის სიმაღლის რიცხვითი ველი. ცარიელი, ნულოვანი ან უარყოფითი მნიშვნელობის ობიექტი არ ამოიწნეხება.
+Factor, m	კოეფიციენტი, მ
+The height in metres is the field value times the factor. For a field of storeys the factor is about 3.	სიმაღლე მეტრებში ველის მნიშვნელობისა და კოეფიციენტის ნამრავლია. სართულების ველისთვის კოეფიციენტი დაახლოებით 3-ია.
+The folder has no numeric fields.	საქაღალდეს რიცხვითი ველები არ აქვს.
+Objects extruded: {count}.	ამოწნეხილი ობიექტები: {count}.
+Bathymetry from soundings…	ბათიმეტრია გაზომვებით…
+Bathymetry from soundings	ბათიმეტრია გაზომვებით
+The points of the folder «{name}» are depth soundings, for example echo sounder tracks. A raster of depths is built from them by triangulation, it goes into the globe terrain as the bed of the water body.	საქაღალდის «{name}» წერტილები სიღრმის გაზომვებია, მაგალითად ექოლოტის ხაზები. მათგან ტრიანგულაციით იგება სიღრმეების რასტრი, რომელიც გლობუსის რელიეფში წყალსატევის ფსკერად შედის.
+Point Z	წერტილის Z
+The field with the depth or the Z of a point. The sign of the depth does not matter, its absolute value is taken.	სიღრმის ველი ან წერტილის Z. ნიშანს მნიშვნელობა არ აქვს, აიღება მოდული.
+Cell	უჯრედი
+The cell size of the depth raster. By default - by the number of points per area of the soundings. A smaller cell gives a more detailed bed and a larger file.	სიღრმეების რასტრის უჯრედის ზომა. ნაგულისხმევად გაზომვების ფართობზე წერტილების რაოდენობით. მცირე უჯრედი იძლევა უფრო დეტალურ ფსკერს და დიდ ფაილს.
+Limit from a sounding	გაზომვიდან ზღვარი
+A cell further than this from the nearest sounding stays empty. So the raster does not flood the shore and bays without soundings. The limit is larger than the distance between tracks, otherwise strips stay between them.	უახლოესი გაზომვიდან ამაზე შორს მყოფი უჯრედი ცარიელი რჩება. ასე რასტრი არ ავსებს ნაპირს და ყურეებს გაზომვების გარეშე. ზღვარი ხაზებს შორის მანძილზე მეტია, თორემ ზოლები რჩება.
+The height of the water surface above sea level on the day of the soundings. The bed elevation is the water level minus the depth.	გაზომვის დღეს წყლის ზედაპირის სიმაღლე ზღვის დონიდან. ფსკერის ნიშნული წყლის დონეს გამოკლებული სიღრმეა.
+Fewer than three soundings with a depth.	სიღრმიანი გაზომვა სამზე ნაკლებია.
+Soundings {count}, depth from {low} to {high} m.	გაზომვა {count}, სიღრმე {low}-დან {high} მ-მდე.
+The soundings do not form a grid: they lie on one line or the grid is too large.	გაზომვები ბადეს ვერ ქმნის: ერთ წრფეზეა ან ბადე ზედმეტად დიდია.
+The grid has no cells with a depth, increase the limit.	ბადეში სიღრმიანი უჯრედები არ არის, გაზარდეთ ზღვარი.
+The raster is not written.	რასტრი არ ჩაიწერა.
+Wayback imagery archive…	Wayback სურათების არქივი…
+Wayback imagery archive	Wayback სურათების არქივი
+The Wayback archive did not answer.	Wayback არქივმა არ უპასუხა.
+Searching for releases with changes: found {count}…	ცვლილებიანი გამოშვებების ძიება: ნაპოვნია {count}…
+Releases with changes at the view point: {count} of {total}.	ხედვის წერტილში ცვლილებიანი გამოშვებები: {count} / {total}.
+Shot on {date}	გადაღებულია {date}
+pixel {value} m	პიქსელი {value} მ
+Releases with changes at the present view point. The width of the view sets the size of the searched place.	მიმდინარე ხედვის წერტილში ცვლილებიანი გამოშვებები. ხედის სიგანე საძიებო ადგილის ზომას განსაზღვრავს.
+The release lies as a tile layer over the base map, a row in the catalogue.	გამოშვება ძირითად რუკაზე ტაილების ფენად დევს, კატალოგის სტრიქონად.
+Releases of Esri World Imagery since 2014. A release where the place did not change gives the tile of an earlier one, so only releases with changes are listed.	Esri World Imagery-ის გამოშვებები 2014 წლიდან. გამოშვება, სადაც ადგილი არ შეცვლილა, წინა გამოშვების ტაილს იძლევა, ამიტომ სიაშია მხოლოდ ცვლილებიანი გამოშვებები.
+Air temperature	ჰაერის ტემპერატურა
+Air temperature at a height of 2 m by the NOAA GFS model, grid step 0.25°, about 28 km. The forecast goes up to 16 days ahead, the past is the analysis of the model. The moment is set by the time slider.	ჰაერის ტემპერატურა 2 მ სიმაღლეზე NOAA GFS მოდელით, ბადის ბიჯი 0.25°, დაახლოებით 28 კმ. პროგნოზი 16 დღემდეა, წარსული მოდელის ანალიზია. მომენტს დროის შკალა ადგენს.
+Precipitation, GFS forecast	ნალექი, GFS პროგნოზი
+Precipitation rate at the moment of the slider by the NOAA GFS model, mm/h. Below 0.1 mm/h the field is transparent.	ნალექის ინტენსივობა შკალის მომენტში NOAA GFS მოდელით, მმ/სთ. 0.1 მმ/სთ-ზე სუსტი ველი გამჭვირვალეა.
+Wind speed at a height of 10 m by the NOAA GFS model, m/s.	ქარის სიჩქარე 10 მ სიმაღლეზე NOAA GFS მოდელით, მ/წმ.
+Cloud cover, GFS forecast	ღრუბლიანობა, GFS პროგნოზი
+Total cloud cover by the NOAA GFS model, the share of the sky in percent. This is a model calculation, not an image of clouds.	საერთო ღრუბლიანობა NOAA GFS მოდელით, ცის წილი პროცენტებში. ეს მოდელის გაანგარიშებაა და არა ღრუბლების სურათი.
+Aurora	პოლარული ნათება
+The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	ხილული პოლარული ნათების ალბათობა NOAA SWPC-ის OVATION მოდელით მომდევნო 30-90 წუთისთვის, ბადე 1°. პროგნოზი ერთია, ახლანდელი, დროის შკალა მას არ ცვლის.
+Weather	ამინდი
+NOAA GFS forecast fields by the time slider and the aurora forecast.	NOAA GFS პროგნოზის ველები დროის შკალით და პოლარული ნათების პროგნოზი.
+The forecast did not load, check the network and switch the row on again.	პროგნოზი არ ჩაიტვირთა, შეამოწმეთ ქსელი და ხელახლა ჩართეთ სტრიქონი.
+Forecast: run {run}, hour {hour}.	პროგნოზი: გამოშვება {run}, საათი {hour}.
+On buildings	შენობებზე
+3D measuring: a point lies on the roof or wall of a building, the path goes in straight segments, the area of a polygon is true at any slope. Needs the 3D buildings row.	3D გაზომვა: წერტილი შენობის სახურავზე ან კედელზე დევს, გზა სწორი მონაკვეთებით მიდის, მრავალკუთხედის ფართობი ნებისმიერი დახრისას სწორია. საჭიროა 3D შენობების სტრიქონი.
+3D length {value} m.	3D სიგრძე {value} მ.
+3D perimeter {perimeter} m, area {area} m², slope {tilt}°.	3D პერიმეტრი {perimeter} მ, ფართობი {area} მ², დახრა {tilt}°.
