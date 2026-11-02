@@ -2032,3 +2032,10 @@ m/s	m/s
 mm/h	mm/時
 °C	°C
 %	%
+Record the tour as PNG frames to a folder, 25 frames per second of the tour, in the size of the view. Every frame waits for loading, so the recording takes longer than the tour.	ツアーを PNG フレームとしてフォルダーに記録します。ツアー 1 秒あたり 25 フレーム、ビューのサイズです。各フレームは読み込みを待つため、記録にはツアーより長い時間がかかります。
+Recording: frame {n} of {count}	記録中: フレーム {n} / {count}
+Tour recording stopped at frame {n}.	ツアーの記録はフレーム {n} で中止されました。
+The tour is recorded to {folder}. Frame count {count}, {fps} per second.	ツアーは {folder} に記録されました。フレーム数 {count}、毎秒 {fps}。
+Frames not fully loaded: {count}.	読み込みが完了していないフレーム: {count}。
+The folder already holds tour frames. Choose another folder.	このフォルダーにはすでにツアーのフレームがあります。別のフォルダーを選択してください。
+The window size changed during the recording. The recording stopped at frame {n}.	記録中にウィンドウのサイズが変わりました。記録はフレーム {n} で停止しました。

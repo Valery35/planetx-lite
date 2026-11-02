@@ -2032,3 +2032,10 @@ m/s	m/s
 mm/h	mm/h
 °C	°C
 %	%
+Record the tour as PNG frames to a folder, 25 frames per second of the tour, in the size of the view. Every frame waits for loading, so the recording takes longer than the tour.	Die Tour als PNG-Bilder in einen Ordner aufzeichnen, 25 Bilder pro Sekunde der Tour, in der Größe der Ansicht. Jedes Bild wartet auf das Laden, daher dauert die Aufzeichnung länger als die Tour.
+Recording: frame {n} of {count}	Aufzeichnung: Bild {n} von {count}
+Tour recording stopped at frame {n}.	Touraufzeichnung bei Bild {n} abgebrochen.
+The tour is recorded to {folder}. Frame count {count}, {fps} per second.	Die Tour ist in {folder} aufgezeichnet. Anzahl der Bilder {count}, {fps} pro Sekunde.
+Frames not fully loaded: {count}.	Nicht vollständig geladene Bilder: {count}.
+The folder already holds tour frames. Choose another folder.	Der Ordner enthält bereits Tourbilder. Wählen Sie einen anderen Ordner.
+The window size changed during the recording. The recording stopped at frame {n}.	Die Fenstergröße hat sich während der Aufzeichnung geändert. Die Aufzeichnung wurde bei Bild {n} abgebrochen.

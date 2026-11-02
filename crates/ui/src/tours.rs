@@ -186,6 +186,20 @@ impl Player {
         }
     }
 
+    /// Тур записи: вся шкала с первой остановки, без круга, камера
+    /// стоит в начале.
+    pub fn film(&mut self, tour: Tour) {
+        self.tour = tour;
+        self.offset = 0;
+        self.looped = false;
+        self.paused = Some(0.0);
+    }
+
+    /// Поставить камеру в момент тура t, тур стоит.
+    pub fn stand(&mut self, t: f64) {
+        self.paused = Some(t);
+    }
+
     /// Номер остановки во всём туре и их количество.
     pub fn stop_number(&self, now: f64) -> Option<(usize, usize)> {
         Some((self.offset + self.index(now)?, self.stops.len()))

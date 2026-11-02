@@ -2032,3 +2032,10 @@ m/s	м/с
 mm/h	мм/ч
 °C	°C
 %	%
+Record the tour as PNG frames to a folder, 25 frames per second of the tour, in the size of the view. Every frame waits for loading, so the recording takes longer than the tour.	Записать тур кадрами PNG в папку, 25 кадров в секунду тура, в размере вида. Каждый кадр ждёт загрузки, поэтому запись идёт дольше тура.
+Recording: frame {n} of {count}	Запись: кадр {n} из {count}
+Tour recording stopped at frame {n}.	Запись тура прервана на кадре {n}.
+The tour is recorded to {folder}. Frame count {count}, {fps} per second.	Тур записан в {folder}. Количество кадров {count}, {fps} в секунду.
+Frames not fully loaded: {count}.	Количество недогруженных кадров {count}.
+The folder already holds tour frames. Choose another folder.	В папке уже есть кадры тура. Нужна другая папка.
+The window size changed during the recording. The recording stopped at frame {n}.	Размер окна изменился во время записи. Запись прервана на кадре {n}.

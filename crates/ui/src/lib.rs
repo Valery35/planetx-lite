@@ -39,6 +39,7 @@ pub mod gpkg;
 pub mod geophysics;
 pub mod netlinks;
 pub mod overlayprops;
+pub mod film;
 pub mod overpass;
 pub mod oam;
 pub mod overture;

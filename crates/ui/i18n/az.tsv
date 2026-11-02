@@ -2032,3 +2032,10 @@ m/s	m/s
 mm/h	mm/saat
 °C	°C
 %	%
+Record the tour as PNG frames to a folder, 25 frames per second of the tour, in the size of the view. Every frame waits for loading, so the recording takes longer than the tour.	Turu qovluğa PNG kadrları kimi yazmaq, turun saniyəsinə 25 kadr, görünüş ölçüsündə. Hər kadr yüklənməni gözləyir, ona görə yazı turdan uzun çəkir.
+Recording: frame {n} of {count}	Yazı: kadr {n} / {count}
+Tour recording stopped at frame {n}.	Turun yazısı {n} kadrında dayandırıldı.
+The tour is recorded to {folder}. Frame count {count}, {fps} per second.	Tur {folder} qovluğuna yazıldı. Kadr sayı {count}, saniyədə {fps}.
+Frames not fully loaded: {count}.	Tam yüklənməmiş kadrlar: {count}.
+The folder already holds tour frames. Choose another folder.	Qovluqda artıq tur kadrları var. Başqa qovluq seçin.
+The window size changed during the recording. The recording stopped at frame {n}.	Yazı zamanı pəncərənin ölçüsü dəyişdi. Yazı {n} kadrında dayandı.

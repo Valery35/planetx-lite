@@ -108,6 +108,11 @@ impl TimeBar {
         self.range = if on { (moment, moment) } else { (a, moment) };
     }
 
+    /// Время данных кадра записи тура. Левый край промежутка стоит.
+    pub fn set_moment(&mut self, moment: f64) {
+        self.range = if self.point { (moment, moment) } else { (self.range.0.min(moment), moment) };
+    }
+
     /// Окно, по которому скрываются метки: промежуток открытой шкалы.
     pub fn window(&self) -> Option<(f64, f64)> {
         self.open.then_some(self.range)
@@ -330,6 +335,7 @@ pub enum Icon {
     ToEnd,
     Loop,
     Captions,
+    Record,
 }
 
 /// Кнопка со значком.
@@ -349,6 +355,7 @@ pub fn icon_toggle(ui: &mut egui::Ui, icon: Icon, on: bool) -> egui::Response {
         Icon::ToEnd => Tool::Next,
         Icon::Loop => Tool::Loop,
         Icon::Captions => Tool::Captions,
+        Icon::Record => Tool::Record,
     };
     crate::theme::tool_button(ui, tool, on, false, true, "")
 }

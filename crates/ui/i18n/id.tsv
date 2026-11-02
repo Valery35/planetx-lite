@@ -2032,3 +2032,10 @@ m/s	m/s
 mm/h	mm/jam
 °C	°C
 %	%
+Record the tour as PNG frames to a folder, 25 frames per second of the tour, in the size of the view. Every frame waits for loading, so the recording takes longer than the tour.	Rekam tur sebagai bingkai PNG ke folder, 25 bingkai per detik tur, seukuran tampilan. Setiap bingkai menunggu pemuatan, sehingga perekaman lebih lama daripada tur.
+Recording: frame {n} of {count}	Merekam: bingkai {n} dari {count}
+Tour recording stopped at frame {n}.	Perekaman tur dihentikan pada bingkai {n}.
+The tour is recorded to {folder}. Frame count {count}, {fps} per second.	Tur direkam ke {folder}. Jumlah bingkai {count}, {fps} per detik.
+Frames not fully loaded: {count}.	Bingkai yang belum termuat penuh: {count}.
+The folder already holds tour frames. Choose another folder.	Folder sudah berisi bingkai tur. Pilih folder lain.
+The window size changed during the recording. The recording stopped at frame {n}.	Ukuran jendela berubah selama perekaman. Perekaman berhenti pada bingkai {n}.

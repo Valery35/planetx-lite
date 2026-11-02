@@ -2032,3 +2032,10 @@ m/s	m/s
 mm/h	mm/u
 °C	°C
 %	%
+Record the tour as PNG frames to a folder, 25 frames per second of the tour, in the size of the view. Every frame waits for loading, so the recording takes longer than the tour.	De tour opnemen als PNG-beelden in een map, 25 beelden per seconde van de tour, op het formaat van de weergave. Elk beeld wacht op het laden, dus de opname duurt langer dan de tour.
+Recording: frame {n} of {count}	Opname: beeld {n} van {count}
+Tour recording stopped at frame {n}.	Touropname gestopt bij beeld {n}.
+The tour is recorded to {folder}. Frame count {count}, {fps} per second.	De tour is opgenomen in {folder}. Aantal beelden {count}, {fps} per seconde.
+Frames not fully loaded: {count}.	Niet volledig geladen beelden: {count}.
+The folder already holds tour frames. Choose another folder.	De map bevat al tourbeelden. Kies een andere map.
+The window size changed during the recording. The recording stopped at frame {n}.	Het venster is tijdens de opname van formaat veranderd. De opname is gestopt bij beeld {n}.

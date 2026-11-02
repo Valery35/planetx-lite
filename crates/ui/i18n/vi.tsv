@@ -2032,3 +2032,10 @@ m/s	m/s
 mm/h	mm/giờ
 °C	°C
 %	%
+Record the tour as PNG frames to a folder, 25 frames per second of the tour, in the size of the view. Every frame waits for loading, so the recording takes longer than the tour.	Ghi chuyến tham quan thành các khung hình PNG vào thư mục, 25 khung hình mỗi giây của chuyến tham quan, theo kích thước khung nhìn. Mỗi khung hình chờ tải xong nên việc ghi lâu hơn chuyến tham quan.
+Recording: frame {n} of {count}	Đang ghi: khung {n} trên {count}
+Tour recording stopped at frame {n}.	Việc ghi chuyến tham quan dừng ở khung {n}.
+The tour is recorded to {folder}. Frame count {count}, {fps} per second.	Chuyến tham quan đã được ghi vào {folder}. Số khung hình {count}, {fps} mỗi giây.
+Frames not fully loaded: {count}.	Khung hình chưa tải đủ: {count}.
+The folder already holds tour frames. Choose another folder.	Thư mục đã có khung hình của chuyến tham quan. Hãy chọn thư mục khác.
+The window size changed during the recording. The recording stopped at frame {n}.	Kích thước cửa sổ đã thay đổi trong khi ghi. Việc ghi dừng ở khung {n}.

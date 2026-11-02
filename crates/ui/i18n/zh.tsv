@@ -2032,3 +2032,10 @@ m/s	米/秒
 mm/h	毫米/小时
 °C	°C
 %	%
+Record the tour as PNG frames to a folder, 25 frames per second of the tour, in the size of the view. Every frame waits for loading, so the recording takes longer than the tour.	将导览录制为 PNG 帧并保存到文件夹,导览每秒 25 帧,尺寸与视图相同。每帧都等待加载完成,因此录制时间长于导览。
+Recording: frame {n} of {count}	录制中:第 {n} 帧,共 {count} 帧
+Tour recording stopped at frame {n}.	导览录制在第 {n} 帧中止。
+The tour is recorded to {folder}. Frame count {count}, {fps} per second.	导览已录制到 {folder}。帧数 {count},每秒 {fps} 帧。
+Frames not fully loaded: {count}.	未完全加载的帧:{count}。
+The folder already holds tour frames. Choose another folder.	该文件夹已包含导览帧。请选择其他文件夹。
+The window size changed during the recording. The recording stopped at frame {n}.	录制期间窗口大小发生变化。录制在第 {n} 帧停止。

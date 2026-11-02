@@ -60,6 +60,7 @@ pub mod scene;
 pub mod sceneexport;
 pub mod searchbar;
 pub mod sun;
+pub mod timeline;
 pub mod tour;
 pub mod track;
 pub mod when;

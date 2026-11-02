@@ -2032,3 +2032,10 @@ m/s	m/s
 mm/h	mm/sa
 °C	°C
 %	%
+Record the tour as PNG frames to a folder, 25 frames per second of the tour, in the size of the view. Every frame waits for loading, so the recording takes longer than the tour.	Turu bir klasöre PNG kareleri olarak kaydet, turun saniyesi başına 25 kare, görünüm boyutunda. Her kare yüklemeyi bekler, bu nedenle kayıt turdan uzun sürer.
+Recording: frame {n} of {count}	Kayıt: kare {n} / {count}
+Tour recording stopped at frame {n}.	Tur kaydı {n}. karede durduruldu.
+The tour is recorded to {folder}. Frame count {count}, {fps} per second.	Tur {folder} klasörüne kaydedildi. Kare sayısı {count}, saniyede {fps}.
+Frames not fully loaded: {count}.	Tam yüklenmeyen kareler: {count}.
+The folder already holds tour frames. Choose another folder.	Klasörde zaten tur kareleri var. Başka bir klasör seçin.
+The window size changed during the recording. The recording stopped at frame {n}.	Kayıt sırasında pencere boyutu değişti. Kayıt {n}. karede durdu.

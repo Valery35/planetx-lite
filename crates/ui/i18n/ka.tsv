@@ -2032,3 +2032,10 @@ m/s	მ/წმ
 mm/h	მმ/სთ
 °C	°C
 %	%
+Record the tour as PNG frames to a folder, 25 frames per second of the tour, in the size of the view. Every frame waits for loading, so the recording takes longer than the tour.	ტურის ჩაწერა PNG კადრებად საქაღალდეში, ტურის წამში 25 კადრი, ხედის ზომით. თითოეული კადრი ელოდება ჩატვირთვას, ამიტომ ჩაწერა ტურზე მეტხანს გრძელდება.
+Recording: frame {n} of {count}	ჩაწერა: კადრი {n} / {count}
+Tour recording stopped at frame {n}.	ტურის ჩაწერა შეწყდა კადრზე {n}.
+The tour is recorded to {folder}. Frame count {count}, {fps} per second.	ტური ჩაიწერა საქაღალდეში {folder}. კადრების რაოდენობა {count}, წამში {fps}.
+Frames not fully loaded: {count}.	ბოლომდე ჩაუტვირთავი კადრები: {count}.
+The folder already holds tour frames. Choose another folder.	საქაღალდეში უკვე არის ტურის კადრები. აირჩიეთ სხვა საქაღალდე.
+The window size changed during the recording. The recording stopped at frame {n}.	ჩაწერისას ფანჯრის ზომა შეიცვალა. ჩაწერა შეწყდა კადრზე {n}.

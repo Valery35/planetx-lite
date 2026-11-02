@@ -2032,3 +2032,10 @@ m/s	m/s
 mm/h	mm/h
 °C	°C
 %	%
+Record the tour as PNG frames to a folder, 25 frames per second of the tour, in the size of the view. Every frame waits for loading, so the recording takes longer than the tour.	Gravar o tour como quadros PNG numa pasta, 25 quadros por segundo do tour, no tamanho da vista. Cada quadro espera o carregamento, por isso a gravação demora mais do que o tour.
+Recording: frame {n} of {count}	Gravação: quadro {n} de {count}
+Tour recording stopped at frame {n}.	Gravação do tour interrompida no quadro {n}.
+The tour is recorded to {folder}. Frame count {count}, {fps} per second.	O tour foi gravado em {folder}. Número de quadros {count}, {fps} por segundo.
+Frames not fully loaded: {count}.	Quadros não totalmente carregados: {count}.
+The folder already holds tour frames. Choose another folder.	A pasta já contém quadros de um tour. Escolha outra pasta.
+The window size changed during the recording. The recording stopped at frame {n}.	O tamanho da janela mudou durante a gravação. A gravação parou no quadro {n}.

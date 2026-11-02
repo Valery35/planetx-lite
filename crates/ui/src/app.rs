@@ -715,6 +715,8 @@ pub struct LiteApp {
     /// Запись тура: начало, позы (время, широта, долгота, расстояние,
     /// азимут, наклон).
     recording: Option<(f64, Vec<scene::tour::Sample>)>,
+    /// Запись тура кадрами PNG, идёт вместе с проигрывателем.
+    film: Option<crate::film::Film>,
     /// Снимок вида идёт: окна скрыты, кадр просят у egui.
     snapshot: Option<Snapshot>,
     /// Карточка метки, открытая щелчком по глобусу.
@@ -883,8 +885,14 @@ fn demo_items(ui: &mut egui::Ui, lang: Lang, clicked: &mut Option<&'static crate
 enum Snapshot {
     /// Окна скрыты, в этом кадре просится снимок.
     Hide(SnapshotTo),
-    /// Снимок просили, ждётся картинка.
+    /// Снимок просили, ждётся картинка. Окна ещё скрыты: eframe снимает
+    /// следующий кадр, панели попадали бы в снимок бледным следом.
     Wait(SnapshotTo, ShotCell),
+}
+
+/// Окна скрыты на всех шагах снимка.
+fn hides_windows(snapshot: Option<&Snapshot>) -> bool {
+    snapshot.is_some()
 }
 
 /// Куда идёт снимок: файл PNG («Снимок вида») или буфер обмена
@@ -895,6 +903,8 @@ enum SnapshotTo {
     Clipboard,
     /// Ответ агенту MCP на `snapshot`.
     Mcp,
+    /// Кадр записи тура.
+    Frame,
 }
 
 /// Наибольшая сторона снимка вида для агента MCP, пикселей.
@@ -973,6 +983,7 @@ enum TourAct {
     Loop,
     Captions,
     SetPause(f64),
+    Film,
 }
 
 /// Описание остановки текстом для подписи: без разметки, не длиннее
@@ -1045,7 +1056,7 @@ pub(crate) fn crop(image: &egui::ColorImage, rect: egui::Rect, ppp: f32) -> Resu
 }
 
 /// PNG картинки снимка.
-fn to_png(image: &egui::ColorImage) -> Result<Vec<u8>, String> {
+pub(crate) fn to_png(image: &egui::ColorImage) -> Result<Vec<u8>, String> {
     let rgba: Vec<u8> = image.pixels.iter().flat_map(|p| p.to_srgba_unmultiplied()).collect();
     let [w, h] = image.size;
     let img = image::RgbaImage::from_raw(w as u32, h as u32, rgba).ok_or("пустой снимок")?;
@@ -1301,6 +1312,7 @@ impl LiteApp {
             #[cfg(not(target_arch = "wasm32"))]
             mcp_shot: None,
             idle_frames: 0,
+            film: None,
             explaining: None,
             ai_answer_from: None,
             ai_fallback: None,
@@ -2234,7 +2246,7 @@ impl LiteApp {
         // Снимок вида неба - тем же путём, что у глобуса. Раньше кадр
         // неба до него не доходил: «Снимок вида», «Копия вида» и снимок
         // агента MCP не снимались, 28 октября 2026 года.
-        let hiding = matches!(self.snapshot, Some(Snapshot::Hide(_)));
+        let hiding = hides_windows(self.snapshot.as_ref());
         self.request_snapshot(ctx, rect);
         if self.shows_ui() && !hiding {
             self.toolbar(ctx, rect, now);
@@ -2796,6 +2808,10 @@ impl LiteApp {
             return;
         };
         self.snapshot = None;
+        if to == SnapshotTo::Frame {
+            self.film_frame(result);
+            return;
+        }
         if to == SnapshotTo::Mcp {
             let shot = result.ok().and_then(|image| {
                 let png = to_png(&image).ok()?;
@@ -2828,8 +2844,90 @@ impl LiteApp {
                 Err(e) => Some(trf(self.lang, "Not saved: {e}", &[("e", &e)])),
             },
             (_, Err(e)) => Some(trf(self.lang, "Not saved: {e}", &[("e", &e)])),
-            (SnapshotTo::Mcp, Ok(_)) => None,
+            (SnapshotTo::Mcp | SnapshotTo::Frame, Ok(_)) => None,
         };
+    }
+
+    /// Начать запись тура кадрами PNG в папку из окна выбора, `start`
+    /// записи модуля. Запись идёт с первой остановки. Время данных идёт
+    /// по шкале времени, если у остановок нет своих дат.
+    fn start_film(&mut self) {
+        let Some(folder) = crate::export::pick_folder() else {
+            return;
+        };
+        if crate::film::taken(&folder) {
+            self.open_message = Some(tr(self.lang, "The folder already holds tour frames. Choose another folder.").to_string());
+            return;
+        }
+        let Some(player) = &mut self.player else {
+            return;
+        };
+        let bar = &self.timebar;
+        let span = if bar.point { bar.extent } else { Some(bar.range) };
+        let data = (bar.open && player.stops.iter().all(|s| s.time.is_none())).then_some(span).flatten();
+        let Some(line) = scene::timeline::Timeline::new(player.stops.clone(), player.pause, data, scene::timeline::FPS, self.nav.camera.fov_y) else {
+            return;
+        };
+        player.film(line.tour.clone());
+        self.tour_index = None;
+        self.timebar.stop();
+        self.film = Some(crate::film::Film::new(line, folder, self.timebar.range));
+    }
+
+    /// Шаг записи: камера в позе кадра, вид догружается, снимок.
+    /// Тур закрыли - запись прервана.
+    fn step_film(&mut self, ctx: &egui::Context, now: f64) {
+        use crate::film::Stage;
+        let Some(film) = &mut self.film else {
+            return;
+        };
+        ctx.request_repaint();
+        let Some(player) = &mut self.player else {
+            let text = film.stopped(self.lang);
+            self.end_film(text);
+            return;
+        };
+        match film.stage {
+            Stage::Place => {
+                let frame = film.line.frame(film.n);
+                player.stand(frame.t);
+                if let Some(moment) = frame.moment {
+                    self.timebar.set_moment(moment);
+                }
+                film.placed(now);
+                self.idle_frames = 0;
+            }
+            Stage::Load => {
+                if self.snapshot.is_none() && film.due(self.idle_frames, now) {
+                    film.stage = Stage::Shoot;
+                    self.snapshot = Some(Snapshot::Hide(SnapshotTo::Frame));
+                }
+            }
+            Stage::Shoot => {}
+        }
+    }
+
+    /// Снимок кадра записи пришёл.
+    fn film_frame(&mut self, result: Result<egui::ColorImage, String>) {
+        let lang = self.lang;
+        let Some(film) = &mut self.film else {
+            return;
+        };
+        let text = match result.and_then(|image| film.write(lang, &image)) {
+            Ok(()) if !film.finished() => return,
+            Ok(()) => film.finish(lang).unwrap_or_else(|e| trf(lang, "Not saved: {e}", &[("e", &e)])),
+            Err(e) => trf(lang, "Not saved: {e}", &[("e", &e)]),
+        };
+        self.end_film(text);
+    }
+
+    /// Запись кончилась: шкала времени возвращается, тур закрывается.
+    fn end_film(&mut self, text: String) {
+        if let Some(film) = self.film.take() {
+            self.timebar.range = film.range;
+        }
+        self.player = None;
+        self.open_message = Some(text);
     }
 
     /// Ретранслятор MCP: запуск и остановка по настройке, сообщения
@@ -5881,6 +5979,13 @@ impl LiteApp {
                         {
                             act = Some(TourAct::SetPause(pause));
                         }
+                        // На странице папки нет, запись только в программе.
+                        if cfg!(not(target_arch = "wasm32")) && self.film.is_none() && icon_button(ui, Icon::Record).on_hover_text(crate::film::hint(lang)).clicked() {
+                            act = Some(TourAct::Film);
+                        }
+                        if let Some(film) = &self.film {
+                            ui.label(trf(lang, "Recording: frame {n} of {count}", &[("n", &(film.n + 1).to_string()), ("count", &film.line.count.to_string())]));
+                        }
                         if icon_button(ui, Icon::Stop).on_hover_text(tr(lang, "End tour")).clicked() {
                             act = Some(TourAct::Stop);
                         }
@@ -5916,8 +6021,17 @@ impl LiteApp {
                 }
             });
         }
+        // Во время записи камеру ведёт запись, действует только конец тура.
+        if self.film.is_some() && act != Some(TourAct::Stop) {
+            act = None;
+        }
+        if act == Some(TourAct::Film) {
+            act = None;
+            self.start_film();
+        }
         if let (Some(a), Some(p)) = (act, &mut self.player) {
             match a {
+                TourAct::Film => {}
                 TourAct::Toggle => p.toggle(now),
                 TourAct::Stop => self.player = None,
                 TourAct::Prev | TourAct::Next => {
@@ -8492,6 +8606,7 @@ impl eframe::App for LiteApp {
             let _ = self.open_file(&bytes, &name, None);
         }
         self.dropped(&ctx, now);
+        self.step_film(&ctx, now);
         self.step_tour(now);
         self.step_haul(now);
         if self.recording.is_some() {
@@ -8502,7 +8617,8 @@ impl eframe::App for LiteApp {
         if self.marks.set_window(self.timebar.window()) {
             self.marks_to_labels();
         }
-        let moving = self.nav.step(now) || self.player.is_some() || self.timebar.playing();
+        // Камера записи стоит: иначе вид не считался бы загруженным.
+        let moving = self.nav.step(now) || (self.player.is_some() && self.film.is_none()) || self.timebar.playing();
         // Анимация моделей просит кадры, пока модель видна, как
         // `render/view.py` модуля. Снимок её не ждёт: она идёт по кругу.
         let animating = !self.animated.is_empty();
@@ -8822,7 +8938,7 @@ impl eframe::App for LiteApp {
         let mut blocked = self.screen_overlays(&ctx, &painter, rect);
         blocked.extend(self.credits.rect);
         blocked.extend(self.toolbar_rect);
-        let hiding = matches!(self.snapshot, Some(Snapshot::Hide(_)));
+        let hiding = hides_windows(self.snapshot.as_ref());
         let pad = self.shows_ui() && !hiding && !self.touch;
         if pad {
             blocked.push(crate::navpad::rect(rect));
@@ -9083,6 +9199,9 @@ impl eframe::App for LiteApp {
         self.request_snapshot(&ctx, rect);
         if !hiding {
             self.overlays(&ctx, rect, now);
+        } else if self.film.is_some() {
+            // Подпись остановки входит в кадр записи, как у модуля.
+            self.stop_caption(&ctx, rect, now);
         }
         if !hiding && self.shows_ui() {
             self.toolbar(&ctx, rect, now);
@@ -9139,7 +9258,17 @@ fn extra_slot(extra: crate::layers::Extra) -> Option<u8> {
 
 #[cfg(test)]
 mod tests {
-    use super::{busiest, needs_models};
+    use super::{Snapshot, SnapshotTo, busiest, hides_windows, needs_models};
+
+    /// Снимается кадр после запроса: панели, вернувшиеся на шаге ожидания,
+    /// попадали в снимок и в кадры записи тура бледным следом.
+    #[test]
+    fn windows_stay_hidden_until_the_shot_arrives() {
+        let cell = std::sync::Arc::new(std::sync::Mutex::new(None));
+        assert!(hides_windows(Some(&Snapshot::Hide(SnapshotTo::File))));
+        assert!(hides_windows(Some(&Snapshot::Wait(SnapshotTo::Frame, cell))));
+        assert!(!hides_windows(None));
+    }
 
     /// Кадр, где подошли высоты, собирает модели из настоящего списка:
     /// из пустого самосвалы демо исчезали с глобуса.

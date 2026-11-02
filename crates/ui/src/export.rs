@@ -123,6 +123,18 @@ pub fn save_bytes(name: &str, filter: (&str, &str), bytes: &[u8]) -> Result<Opti
     }
 }
 
+/// Папка из окна выбора. На странице папки нет, ответ всегда None.
+pub fn pick_folder() -> Option<std::path::PathBuf> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        rfd::FileDialog::new().pick_folder()
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        None
+    }
+}
+
 /// Скачать байты файлом name: ссылка на Blob, щелчок по ней.
 #[cfg(target_arch = "wasm32")]
 fn download(name: &str, bytes: &[u8]) -> Result<(), String> {

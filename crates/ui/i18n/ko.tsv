@@ -2032,3 +2032,10 @@ m/s	m/s
 mm/h	mm/시
 °C	°C
 %	%
+Record the tour as PNG frames to a folder, 25 frames per second of the tour, in the size of the view. Every frame waits for loading, so the recording takes longer than the tour.	투어를 PNG 프레임으로 폴더에 기록합니다. 투어 1초당 25프레임, 보기 크기입니다. 프레임마다 로딩을 기다리므로 기록은 투어보다 오래 걸립니다.
+Recording: frame {n} of {count}	기록 중: 프레임 {n} / {count}
+Tour recording stopped at frame {n}.	투어 기록이 프레임 {n}에서 중단되었습니다.
+The tour is recorded to {folder}. Frame count {count}, {fps} per second.	투어가 {folder}에 기록되었습니다. 프레임 수 {count}, 초당 {fps}.
+Frames not fully loaded: {count}.	완전히 로드되지 않은 프레임: {count}.
+The folder already holds tour frames. Choose another folder.	폴더에 이미 투어 프레임이 있습니다. 다른 폴더를 선택하세요.
+The window size changed during the recording. The recording stopped at frame {n}.	기록 중에 창 크기가 바뀌었습니다. 기록이 프레임 {n}에서 멈췄습니다.
