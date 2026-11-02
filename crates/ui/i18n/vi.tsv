@@ -2039,3 +2039,110 @@ The tour is recorded to {folder}. Frame count {count}, {fps} per second.	Chuyế
 Frames not fully loaded: {count}.	Khung hình chưa tải đủ: {count}.
 The folder already holds tour frames. Choose another folder.	Thư mục đã có khung hình của chuyến tham quan. Hãy chọn thư mục khác.
 The window size changed during the recording. The recording stopped at frame {n}.	Kích thước cửa sổ đã thay đổi trong khi ghi. Việc ghi dừng ở khung {n}.
+A multi-band raster in reflectance opened in the program, for example all bands of a scene of the Satellite images window. The bands are recognised by their labels, thermal bands do not take part.	Raster đa kênh ở dạng độ phản xạ đã mở trong chương trình, ví dụ tất cả kênh của một cảnh trong cửa sổ «Ảnh vệ tinh». Các kênh được nhận biết theo nhãn, kênh nhiệt không tham gia.
+All groups	Tất cả nhóm
+Angle to the reference	Góc so với mẫu chuẩn
+Angle to the reference, °	Góc so với mẫu chuẩn, °
+Angle up to	Góc tối đa
+Area {area} km², heights {low}-{high} m, mean {mean} m.	Diện tích {area} km², độ cao {low}-{high} m, trung bình {mean} m.
+Artificial materials	Vật liệu nhân tạo
+Band depth	Độ sâu dải
+Bands	Kênh
+Choose a scene in the list.	Chọn một cảnh trong danh sách.
+Classes of the area by control points on the globe - by the globe basemap or the bands of an opened raster.	Các lớp của khu vực theo điểm kiểm soát trên quả địa cầu - theo bản đồ nền của quả địa cầu hoặc các kênh của raster đang mở.
+Classes: {list}. Without a class {none} %.	Các lớp: {list}. Không có lớp {none} %.
+Clear all	Bỏ chọn tất cả
+Click the globe inside a polygon of «My places».	Nhấp vào quả địa cầu bên trong một đa giác của «Địa điểm của tôi».
+Click the image on the globe	Nhấp vào ảnh trên quả địa cầu
+Click the image on the globe - the chart shows the spectrum of the pixel and the nearest references. Marked references become classes of the area.	Nhấp vào ảnh trên quả địa cầu - biểu đồ hiển thị phổ của pixel và các mẫu chuẩn gần nhất. Các mẫu chuẩn được đánh dấu trở thành các lớp của khu vực.
+Cloud cover up to	Độ che phủ mây tối đa
+Coatings	Lớp phủ
+Compute	Tính
+Computing the angles between spectra: {done} %.	Đang tính góc giữa các phổ: {done} %.
+Computing the angles between spectra…	Đang tính góc giữa các phổ…
+Dates	Ngày
+Dates are written as YYYY-MM-DD.	Ngày được viết dưới dạng YYYY-MM-DD.
+EMIT absorption band depth	Độ sâu dải hấp thụ EMIT
+EMIT minerals	Khoáng vật EMIT
+EMIT minerals {name}	Khoáng vật EMIT {name}
+EMIT minerals…	Khoáng vật EMIT…
+Each cell of the area gets the marked reference with the smallest angle between the spectra.	Mỗi ô của khu vực nhận mẫu chuẩn đã đánh dấu có góc giữa các phổ nhỏ nhất.
+Earthdata key	Khóa Earthdata
+Find scenes	Tìm cảnh
+From places	Từ địa điểm
+Get a key	Lấy khóa
+Globe basemap	Bản đồ nền của quả địa cầu
+Group 1 - iron absorption bands in the visible and near infrared, group 2 - Al-OH, Mg-OH and carbonate bands in the shortwave infrared. A cell may have minerals of both groups.	Nhóm 1 - dải hấp thụ của sắt trong ánh sáng nhìn thấy và hồng ngoại gần, nhóm 2 - dải Al-OH, Mg-OH và cacbonat trong hồng ngoại sóng ngắn. Một ô có thể có khoáng vật của cả hai nhóm.
+Group 1 - iron minerals, 0.4-1.3 µm	Nhóm 1 - khoáng vật sắt, 0.4-1.3 µm
+Group 2 - clays, mica, carbonates, sulphates, 2.0-2.5 µm	Nhóm 2 - sét, mica, cacbonat, sunfat, 2.0-2.5 µm
+Holes not counted: {count}.	Lỗ không tính: {count}.
+Legend	Chú giải
+Loading the basemap tiles: {n} of {total}.	Đang tải ô bản đồ nền: {n} / {total}.
+Loading the basemap tiles…	Đang tải ô bản đồ nền…
+Loading the file of the scene {when}…	Đang tải tệp của cảnh {when}…
+Loads the file of the chosen scene (once) and colours the area by the minerals of the chosen group.	Tải tệp của cảnh đã chọn (một lần) và tô màu khu vực theo khoáng vật của nhóm đã chọn.
+Mark at least one reference.	Đánh dấu ít nhất một mẫu chuẩn.
+Minerals	Khoáng vật
+Minerals by spectrum	Khoáng vật theo phổ
+Minerals by spectrum {name}	Khoáng vật theo phổ {name}
+Minerals by spectrum…	Khoáng vật theo phổ…
+Minerals of the scene {when}…	Khoáng vật của cảnh {when}…
+Minerals: {list}. Cells with a mineral {share} % of the area, {area} km².	Khoáng vật: {list}. Ô có khoáng vật chiếm {share} % khu vực, {area} km².
+NASA mineral maps from images of the EMIT spectrometer on the ISS, pixel 60 m, arid regions since 2022. NASA gives the scene files by an Earthdata key.	Bản đồ khoáng vật của NASA từ ảnh máy quang phổ EMIT trên ISS, pixel 60 m, các vùng khô hạn từ năm 2022. NASA cung cấp tệp cảnh bằng khóa Earthdata.
+NASA mineral maps from images of the EMIT spectrometer, pixel 60 m, arid regions since 2022. Files by an Earthdata key.	Bản đồ khoáng vật của NASA từ ảnh máy quang phổ EMIT, pixel 60 m, các vùng khô hạn từ năm 2022. Tệp bằng khóa Earthdata.
+Nearest	Gần nhất
+No minerals of this group were found in the area.	Không tìm thấy khoáng vật của nhóm này trong khu vực.
+No raster with three bands or more is open.	Không có raster nào từ ba kênh trở lên đang mở.
+No suitable raster is open.	Không có raster phù hợp đang mở.
+Others	Khác
+Pixel {pixel} m, about {cells} thousand cells.	Pixel {pixel} m, khoảng {cells} nghìn ô.
+Polygons not taken: {count}, the largest is taken.	Đa giác không lấy: {count}, lấy đa giác lớn nhất.
+Raster	Raster
+Reading the raster of the area: {done} %.	Đang đọc raster của khu vực: {done} %.
+Reading the raster…	Đang đọc raster…
+References	Mẫu chuẩn
+References marked: {n}	Mẫu chuẩn đã đánh dấu: {n}
+Scenes	Cảnh
+Scenes over the area: {n}.	Cảnh phía trên khu vực: {n}.
+Searching for EMIT scenes…	Đang tìm cảnh EMIT…
+Soils and mixtures	Đất và hỗn hợp
+Source terms	Điều kiện của nguồn
+Spectrum	Phổ
+Spectrum of a pixel of a multi-band raster and the nearest references of the USGS library, classes of the area by the angle between spectra.	Phổ của một pixel raster đa kênh và các mẫu chuẩn gần nhất của thư viện USGS, các lớp của khu vực theo góc giữa các phổ.
+Spectrum of the point {lat}, {lon}. The nearest reference is {name}, {angle}°.	Phổ của điểm {lat}, {lon}. Mẫu chuẩn gần nhất là {name}, {angle}°.
+Stop	Dừng
+The Earthdata key was not accepted - it is outdated or wrong. Enter a new one.	Khóa Earthdata không được chấp nhận - đã hết hạn hoặc sai. Hãy nhập khóa mới.
+The NASA catalogue did not answer: {error}	Danh mục NASA không phản hồi: {error}
+The NASA file was not received: {error}	Không nhận được tệp NASA: {error}
+The area is a polygon of «My places»: the selected rows, or else the polygon under a click on the globe. Of several polygons the largest is taken, holes are not counted.	Khu vực là một đa giác của «Địa điểm của tôi»: các dòng đã chọn, nếu không thì đa giác tại vị trí nhấp trên quả địa cầu. Nếu có nhiều đa giác thì lấy đa giác lớn nhất, lỗ không được tính.
+The area is outside the scene.	Khu vực nằm ngoài cảnh.
+The area is taken from «{name}».	Khu vực được lấy từ «{name}».
+The area will not be divided into objects, a larger pixel or a smaller area is needed.	Khu vực sẽ không được chia thành đối tượng, cần pixel lớn hơn hoặc khu vực nhỏ hơn.
+The bands are not recognised by their labels, choose the sensor.	Không nhận biết được các kênh theo nhãn, hãy chọn cảm biến.
+The basemap tiles were not received.	Không nhận được ô bản đồ nền.
+The computation by the basemap was not started.	Phép tính theo bản đồ nền chưa được bắt đầu.
+The computation will collect the tiles of the basemap «{name}» under the area into a picture in memory, no image file is written. The terms of the basemap may not allow such use, especially for commercial services. The computation goes by your decision, you bear the responsibility for its result and use.	Phép tính sẽ gom các ô của bản đồ nền «{name}» dưới khu vực thành một hình ảnh trong bộ nhớ, không ghi tệp ảnh. Điều kiện của bản đồ nền có thể không cho phép cách dùng này, nhất là với các dịch vụ thương mại. Phép tính chạy theo quyết định của người dùng, người dùng chịu trách nhiệm về kết quả và việc sử dụng.
+The file is not saved: {error}	Tệp chưa được lưu: {error}
+The file of the scene is not read.	Không đọc được tệp của cảnh.
+The largest angle between the spectra of a cell and a reference. A cell farther from all marked references stays without a class. Smaller - stricter.	Góc lớn nhất giữa phổ của một ô và một mẫu chuẩn. Ô xa mọi mẫu chuẩn đã đánh dấu hơn mức này sẽ không có lớp. Nhỏ hơn - chặt hơn.
+The largest cloud cover of a scene by the NASA catalogue. Clouds hide the minerals, the cells under them stay without a class.	Độ che phủ mây lớn nhất của một cảnh theo danh mục NASA. Mây che khoáng vật, các ô bên dưới không có lớp.
+The names of the references are in English, as in the USGS library. All words must be in the name.	Tên của các mẫu chuẩn bằng tiếng Anh, như trong thư viện USGS. Tất cả các từ phải có trong tên.
+The outline is simplified to {count} vertices.	Đường viền được đơn giản hóa còn {count} đỉnh.
+The pixel of the grid of the area. With AlphaEarth a block of the file for a year is 40-50 MB at any pixel, «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells. A raster and the globe basemap have pixels of 1, 2 and 5 m, «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Division into objects takes up to 4 million cells.	Pixel của lưới khu vực. Với AlphaEarth, một khối tệp cho một năm có dung lượng 40-50 MB ở mọi pixel, «Tự động» chọn pixel có lượng tải nhỏ nhất mà khu vực có từ 14 đến 640 nghìn ô. Raster và bản đồ nền của quả địa cầu có pixel 1, 2 và 5 m, «Tự động» chọn pixel của raster hoặc của cấp cao nhất của bản đồ nền nếu khu vực có không quá 640 nghìn ô. Việc chia thành đối tượng nhận tối đa 4 triệu ô.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Pixel của lưới khu vực. «Tự động» chọn pixel của raster nếu khu vực có không quá 640 nghìn ô.
+The point is outside the raster or has no data.	Điểm nằm ngoài raster hoặc không có dữ liệu.
+The polygon could not be read.	Không đọc được đa giác.
+The sensor to whose bands the references are recomputed. «Auto» recognises it by the wavelengths in the band labels of the raster. If there are no labels, the sensor is chosen by hand, the bands are taken by the numbers in the labels or in order.	Cảm biến mà các mẫu chuẩn được tính lại theo kênh của nó. «Tự động» nhận biết cảm biến theo bước sóng trong nhãn kênh của raster. Nếu không có nhãn, cảm biến được chọn thủ công, các kênh được lấy theo số trong nhãn hoặc theo thứ tự.
+There are no EMIT scenes over the area. EMIT images arid regions - deserts, semi-deserts, steppes.	Không có cảnh EMIT phía trên khu vực. EMIT chụp các vùng khô hạn - sa mạc, bán sa mạc, thảo nguyên.
+There is no polygon of «My places» under the click.	Tại vị trí nhấp không có đa giác của «Địa điểm của tôi».
+Unmark all references.	Bỏ đánh dấu tất cả mẫu chuẩn.
+Values of the GeoTIFF file: {list}.	Giá trị của tệp GeoTIFF: {list}.
+Water, snow and liquids	Nước, tuyết và chất lỏng
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory.	Nguồn lấy màu và kết cấu. Vector AlphaEarth được tải từ mạng, mỗi kênh của raster đang mở trong chương trình là một đặc trưng. «Bản đồ nền của quả địa cầu» gom các ô bản đồ nền dưới khu vực thành một hình ảnh trong bộ nhớ.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory. Borders of surveys in the image may be repeated by the classes.	Căn cứ để chia các ô. Vector AlphaEarth được tải từ mạng. Mỗi kênh của raster đang mở trong chương trình là một đặc trưng, không cần mạng. «Bản đồ nền của quả địa cầu» gom các ô bản đồ nền dưới khu vực thành một hình ảnh trong bộ nhớ. Ranh giới các lần chụp trong ảnh có thể bị các lớp lặp lại.
+Without an Earthdata key NASA files are not loaded.	Không có khóa Earthdata thì tệp NASA không được tải.
+Words of the name, for example kaolinite	Các từ của tên, ví dụ kaolinite
+{sensor}: bands {n} of {total}	{sensor}: kênh {n} / {total}
+{when}, cloud cover {cloud} %, area {share} %	{when}, độ che phủ mây {cloud} %, khu vực {share} %
+{when}, group {group}	{when}, nhóm {group}
+µm	µm

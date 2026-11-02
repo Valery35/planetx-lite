@@ -557,6 +557,110 @@ pub fn table(grid: &[f32], depth: usize, labels: &[i32]) -> Vec<f32> {
     out
 }
 
+/// Признаков рисунка объекта у [`pattern`].
+pub const PATTERN: usize = 4;
+
+/// Рисунок объектов, `pattern` модуля: по [`PATTERN`] чисел на объект.
+/// Разброс цвета внутри объекта ([`table`]) не отличает ряды вырубки от
+/// пятен леса или травы с тем же разбросом. Здесь яркость (каналы,
+/// приведённые к разбросу 1) даёт четыре числа по клеткам самого объекта,
+/// соседние объекты в них не входят:
+/// - перепад - средний модуль перепада яркости между соседними клетками;
+/// - зерно - перепад, делённый на разброс яркости по объекту: мелкий
+///   рисунок - около 1, крупные пятна и плавный переход - меньше;
+/// - направленность - согласованность направлений перепадов по объекту
+///   (тензор структуры): ряды и полосы - ближе к 1, кроны и трава - к 0;
+/// - доля перепадов - доля пар соседних клеток с перепадом больше
+///   разброса по участку: редкие резкие края против частой ряби.
+pub fn pattern(grid: &[f32], depth: usize, labels: &[i32], rows: usize, cols: usize) -> Vec<f32> {
+    let objects = count(labels);
+    let mut out = vec![0.0f32; PATTERN * objects];
+    let depth = depth.max(1);
+    let cells = rows * cols;
+    if objects == 0 || labels.len() < cells {
+        return out;
+    }
+    let has: Vec<bool> = labels.iter().take(cells).map(|l| *l >= 0).collect();
+    let (mean, spread) = rasterclass::scales(grid, depth, Some(&has));
+    let used: Vec<usize> = (0..depth).filter(|b| spread[*b] > 0.0).collect();
+    if used.is_empty() {
+        return out;
+    }
+    let bright: Vec<f64> = (0..cells)
+        .map(|i| {
+            if !has[i] {
+                return 0.0;
+            }
+            let sum: f64 = used
+                .iter()
+                .map(|&b| {
+                    let v = f64::from(grid.get(i * depth + b).copied().unwrap_or(0.0));
+                    (if v.is_finite() { v } else { 0.0 } - mean[b]) / spread[b]
+                })
+                .sum();
+            sum / used.len() as f64
+        })
+        .collect();
+    // Соседи одного объекта по строке (с левым) и по столбцу (с верхним).
+    let same_x = |i: usize| !i.is_multiple_of(cols) && has[i] && labels[i] == labels[i - 1];
+    let same_y = |i: usize| i >= cols && has[i] && labels[i] == labels[i - cols];
+    let gx = |i: usize| if same_x(i) { bright[i] - bright[i - 1] } else { 0.0 };
+    let gy = |i: usize| if same_y(i) { bright[i] - bright[i - cols] } else { 0.0 };
+    let sharp = {
+        let n = has.iter().filter(|h| **h).count().max(1) as f64;
+        let m = (0..cells).filter(|i| has[*i]).map(|i| bright[i]).sum::<f64>() / n;
+        ((0..cells).filter(|i| has[*i]).map(|i| (bright[i] - m).powi(2)).sum::<f64>() / n).sqrt()
+    };
+    let mut sums = vec![[0.0f64; 9]; objects];
+    for i in 0..cells {
+        let Ok(object) = usize::try_from(labels[i]) else {
+            continue;
+        };
+        let (x, y) = (gx(i), gy(i));
+        // Центральные разности: у прямых разностей по строке и столбцу
+        // общая клетка, и у шума выходило бы 0.5, а не 0.
+        let (c, r) = (i % cols, i / cols);
+        let cx = if c + 1 < cols && same_x(i) && same_x(i + 1) { bright[i + 1] - bright[i - 1] } else { 0.0 };
+        let cy = if r + 1 < rows && same_y(i) && same_y(i + cols) { bright[i + cols] - bright[i - cols] } else { 0.0 };
+        let s = &mut sums[object];
+        s[0] += 1.0;
+        s[1] += f64::from(u8::from(same_x(i))) + f64::from(u8::from(same_y(i)));
+        s[2] += x.abs() + y.abs();
+        s[3] += bright[i];
+        s[4] += bright[i] * bright[i];
+        s[5] += cx * cx;
+        s[6] += cy * cy;
+        s[7] += cx * cy;
+        s[8] += f64::from(u8::from(x.abs() > sharp)) + f64::from(u8::from(y.abs() > sharp));
+    }
+    for (object, s) in sums.iter().enumerate() {
+        let (size, links) = (s[0].max(1.0), s[1].max(1.0));
+        let step = s[2] / links;
+        let first = s[3] / size;
+        let whole = (s[4] / size - first * first).max(0.0).sqrt();
+        let grain = if whole > 1e-6 { (step / whole.max(1e-6)).min(2.0) } else { 0.0 };
+        let energy = s[5] + s[6];
+        let line = if energy > 0.0 { ((s[5] - s[6]).powi(2) + 4.0 * s[7] * s[7]).sqrt() / energy.max(1e-12) } else { 0.0 };
+        let edges = s[8] / links;
+        for (k, v) in [step, grain, line, edges].into_iter().enumerate() {
+            out[object * PATTERN + k] = v as f32;
+        }
+    }
+    out
+}
+
+/// Таблица объектов с рисунком: за строкой [`table`] шириной width идут
+/// [`PATTERN`] чисел [`pattern`]. Ширина итога - width + PATTERN.
+pub fn with_pattern(table: &[f32], width: usize, drawing: &[f32]) -> Vec<f32> {
+    let objects = table.len().checked_div(width).unwrap_or(0);
+    let mut out = Vec::with_capacity(objects * (width + PATTERN));
+    for object in 0..objects {
+        out.extend_from_slice(&table[object * width..(object + 1) * width]);
+        out.extend((0..PATTERN).map(|k| drawing.get(object * PATTERN + k).copied().unwrap_or(0.0)));
+    }
+    out
+}
+
 /// Соседние объекты одного класса - один объект: (новые номера клеток,
 /// классы новых объектов). kinds - классы объектов, -1 без класса, такие
 /// объекты не сливаются.

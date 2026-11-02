@@ -2039,3 +2039,110 @@ The tour is recorded to {folder}. Frame count {count}, {fps} per second.	Tur dir
 Frames not fully loaded: {count}.	Bingkai yang belum termuat penuh: {count}.
 The folder already holds tour frames. Choose another folder.	Folder sudah berisi bingkai tur. Pilih folder lain.
 The window size changed during the recording. The recording stopped at frame {n}.	Ukuran jendela berubah selama perekaman. Perekaman berhenti pada bingkai {n}.
+A multi-band raster in reflectance opened in the program, for example all bands of a scene of the Satellite images window. The bands are recognised by their labels, thermal bands do not take part.	Raster multiband dalam reflektansi yang dibuka di program, misalnya semua band suatu scene di jendela «Citra satelit». Band dikenali dari labelnya, band termal tidak diikutkan.
+All groups	Semua grup
+Angle to the reference	Sudut ke acuan
+Angle to the reference, °	Sudut ke acuan, °
+Angle up to	Sudut hingga
+Area {area} km², heights {low}-{high} m, mean {mean} m.	Luas {area} km², ketinggian {low}-{high} m, rata-rata {mean} m.
+Artificial materials	Bahan buatan
+Band depth	Kedalaman band
+Bands	Band
+Choose a scene in the list.	Pilih sebuah scene dalam daftar.
+Classes of the area by control points on the globe - by the globe basemap or the bands of an opened raster.	Kelas area menurut titik kontrol di globe - menurut peta dasar globe atau band raster yang dibuka.
+Classes: {list}. Without a class {none} %.	Kelas: {list}. Tanpa kelas {none} %.
+Clear all	Hapus semua
+Click the globe inside a polygon of «My places».	Klik globe di dalam poligon «Tempat Saya».
+Click the image on the globe	Klik citra di globe
+Click the image on the globe - the chart shows the spectrum of the pixel and the nearest references. Marked references become classes of the area.	Klik citra di globe - grafik menampilkan spektrum piksel dan acuan terdekat. Acuan yang ditandai menjadi kelas area.
+Cloud cover up to	Tutupan awan hingga
+Coatings	Pelapis
+Compute	Hitung
+Computing the angles between spectra: {done} %.	Menghitung sudut antarspektrum: {done} %.
+Computing the angles between spectra…	Menghitung sudut antarspektrum…
+Dates	Tanggal
+Dates are written as YYYY-MM-DD.	Tanggal ditulis sebagai TTTT-BB-HH.
+EMIT absorption band depth	Kedalaman band serapan EMIT
+EMIT minerals	Mineral EMIT
+EMIT minerals {name}	Mineral EMIT {name}
+EMIT minerals…	Mineral EMIT…
+Each cell of the area gets the marked reference with the smallest angle between the spectra.	Setiap sel area mendapat acuan bertanda dengan sudut antarspektrum terkecil.
+Earthdata key	Kunci Earthdata
+Find scenes	Cari scene
+From places	Dari tempat
+Get a key	Dapatkan kunci
+Globe basemap	Peta dasar globe
+Group 1 - iron absorption bands in the visible and near infrared, group 2 - Al-OH, Mg-OH and carbonate bands in the shortwave infrared. A cell may have minerals of both groups.	Grup 1 - pita serapan besi pada cahaya tampak dan inframerah dekat, grup 2 - pita Al-OH, Mg-OH, dan karbonat pada inframerah gelombang pendek. Satu sel dapat memiliki mineral dari kedua grup.
+Group 1 - iron minerals, 0.4-1.3 µm	Grup 1 - mineral besi, 0.4-1.3 µm
+Group 2 - clays, mica, carbonates, sulphates, 2.0-2.5 µm	Grup 2 - lempung, mika, karbonat, sulfat, 2.0-2.5 µm
+Holes not counted: {count}.	Lubang tidak dihitung: {count}.
+Legend	Legenda
+Loading the basemap tiles: {n} of {total}.	Memuat ubin peta dasar: {n} dari {total}.
+Loading the basemap tiles…	Memuat ubin peta dasar…
+Loading the file of the scene {when}…	Memuat berkas scene {when}…
+Loads the file of the chosen scene (once) and colours the area by the minerals of the chosen group.	Memuat berkas scene terpilih (sekali) dan mewarnai area menurut mineral grup terpilih.
+Mark at least one reference.	Tandai sedikitnya satu acuan.
+Minerals	Mineral
+Minerals by spectrum	Mineral menurut spektrum
+Minerals by spectrum {name}	Mineral menurut spektrum {name}
+Minerals by spectrum…	Mineral menurut spektrum…
+Minerals of the scene {when}…	Mineral scene {when}…
+Minerals: {list}. Cells with a mineral {share} % of the area, {area} km².	Mineral: {list}. Sel bermineral {share} % dari area, {area} km².
+NASA mineral maps from images of the EMIT spectrometer on the ISS, pixel 60 m, arid regions since 2022. NASA gives the scene files by an Earthdata key.	Peta mineral NASA dari citra spektrometer EMIT di ISS, piksel 60 m, wilayah kering sejak 2022. NASA memberikan berkas scene dengan kunci Earthdata.
+NASA mineral maps from images of the EMIT spectrometer, pixel 60 m, arid regions since 2022. Files by an Earthdata key.	Peta mineral NASA dari citra spektrometer EMIT, piksel 60 m, wilayah kering sejak 2022. Berkas dengan kunci Earthdata.
+Nearest	Terdekat
+No minerals of this group were found in the area.	Mineral grup ini tidak ditemukan di area.
+No raster with three bands or more is open.	Tidak ada raster dengan tiga band atau lebih yang dibuka.
+No suitable raster is open.	Tidak ada raster yang sesuai yang dibuka.
+Others	Lainnya
+Pixel {pixel} m, about {cells} thousand cells.	Piksel {pixel} m, sekitar {cells} ribu sel.
+Polygons not taken: {count}, the largest is taken.	Poligon tidak diambil: {count}, yang terbesar diambil.
+Raster	Raster
+Reading the raster of the area: {done} %.	Membaca raster area: {done} %.
+Reading the raster…	Membaca raster…
+References	Acuan
+References marked: {n}	Acuan ditandai: {n}
+Scenes	Scene
+Scenes over the area: {n}.	Scene di atas area: {n}.
+Searching for EMIT scenes…	Mencari scene EMIT…
+Soils and mixtures	Tanah dan campuran
+Source terms	Ketentuan sumber
+Spectrum	Spektrum
+Spectrum of a pixel of a multi-band raster and the nearest references of the USGS library, classes of the area by the angle between spectra.	Spektrum piksel raster multiband dan acuan terdekat dari pustaka USGS, kelas area menurut sudut antarspektrum.
+Spectrum of the point {lat}, {lon}. The nearest reference is {name}, {angle}°.	Spektrum titik {lat}, {lon}. Acuan terdekat adalah {name}, {angle}°.
+Stop	Hentikan
+The Earthdata key was not accepted - it is outdated or wrong. Enter a new one.	Kunci Earthdata tidak diterima - kedaluwarsa atau salah. Masukkan kunci baru.
+The NASA catalogue did not answer: {error}	Katalog NASA tidak menjawab: {error}
+The NASA file was not received: {error}	Berkas NASA tidak diterima: {error}
+The area is a polygon of «My places»: the selected rows, or else the polygon under a click on the globe. Of several polygons the largest is taken, holes are not counted.	Area adalah poligon «Tempat Saya»: baris yang dipilih, atau poligon di bawah klik pada globe. Dari beberapa poligon yang diambil adalah yang terbesar, lubang tidak dihitung.
+The area is outside the scene.	Area berada di luar scene.
+The area is taken from «{name}».	Area diambil dari «{name}».
+The area will not be divided into objects, a larger pixel or a smaller area is needed.	Area tidak akan dibagi menjadi objek, diperlukan piksel yang lebih besar atau area yang lebih kecil.
+The bands are not recognised by their labels, choose the sensor.	Band tidak dikenali dari labelnya, pilih sensor.
+The basemap tiles were not received.	Ubin peta dasar tidak diterima.
+The computation by the basemap was not started.	Perhitungan menurut peta dasar tidak dimulai.
+The computation will collect the tiles of the basemap «{name}» under the area into a picture in memory, no image file is written. The terms of the basemap may not allow such use, especially for commercial services. The computation goes by your decision, you bear the responsibility for its result and use.	Perhitungan akan mengumpulkan ubin peta dasar «{name}» di bawah area menjadi gambar di memori, tidak ada berkas citra yang ditulis. Ketentuan peta dasar mungkin tidak mengizinkan penggunaan ini, terutama untuk layanan komersial. Perhitungan berjalan atas keputusan pengguna, tanggung jawab atas hasil dan penggunaannya ada pada pengguna.
+The file is not saved: {error}	Berkas tidak disimpan: {error}
+The file of the scene is not read.	Berkas scene tidak terbaca.
+The largest angle between the spectra of a cell and a reference. A cell farther from all marked references stays without a class. Smaller - stricter.	Sudut terbesar antara spektrum sel dan acuan. Sel yang lebih jauh dari semua acuan bertanda tetap tanpa kelas. Lebih kecil - lebih ketat.
+The largest cloud cover of a scene by the NASA catalogue. Clouds hide the minerals, the cells under them stay without a class.	Tutupan awan terbesar suatu scene menurut katalog NASA. Awan menutupi mineral, sel di bawahnya tetap tanpa kelas.
+The names of the references are in English, as in the USGS library. All words must be in the name.	Nama acuan dalam bahasa Inggris, seperti di pustaka USGS. Semua kata harus ada dalam nama.
+The outline is simplified to {count} vertices.	Kontur disederhanakan menjadi {count} titik sudut.
+The pixel of the grid of the area. With AlphaEarth a block of the file for a year is 40-50 MB at any pixel, «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells. A raster and the globe basemap have pixels of 1, 2 and 5 m, «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Division into objects takes up to 4 million cells.	Piksel kisi area. Pada AlphaEarth satu blok berkas untuk satu tahun berukuran 40-50 MB pada piksel apa pun, «Otomatis» memilih piksel dengan unduhan terkecil yang membuat area memiliki 14 hingga 640 ribu sel. Raster dan peta dasar globe memiliki piksel 1, 2, dan 5 m, «Otomatis» memilih piksel raster atau tingkat teratas peta dasar jika area memiliki paling banyak 640 ribu sel. Pembagian menjadi objek menerima hingga 4 juta sel.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Piksel kisi area. «Otomatis» memilih piksel raster jika area memiliki paling banyak 640 ribu sel.
+The point is outside the raster or has no data.	Titik berada di luar raster atau tanpa data.
+The polygon could not be read.	Poligon tidak dapat dibaca.
+The sensor to whose bands the references are recomputed. «Auto» recognises it by the wavelengths in the band labels of the raster. If there are no labels, the sensor is chosen by hand, the bands are taken by the numbers in the labels or in order.	Sensor yang band-nya menjadi dasar penghitungan ulang acuan. «Otomatis» mengenalinya dari panjang gelombang pada label band raster. Jika tidak ada label, sensor dipilih manual, band diambil menurut nomor pada label atau menurut urutan.
+There are no EMIT scenes over the area. EMIT images arid regions - deserts, semi-deserts, steppes.	Tidak ada scene EMIT di atas area. EMIT memotret wilayah kering - gurun, semigurun, stepa.
+There is no polygon of «My places» under the click.	Di bawah klik tidak ada poligon «Tempat Saya».
+Unmark all references.	Hapus tanda semua acuan.
+Values of the GeoTIFF file: {list}.	Nilai berkas GeoTIFF: {list}.
+Water, snow and liquids	Air, salju, dan cairan
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory.	Dari mana warna dan tekstur diambil. Vektor AlphaEarth dimuat dari jaringan, setiap band raster yang dibuka di program adalah fitur. «Peta dasar globe» mengumpulkan ubin peta dasar di bawah area menjadi gambar di memori.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory. Borders of surveys in the image may be repeated by the classes.	Dasar pembagian sel. Vektor AlphaEarth dimuat dari jaringan. Setiap band raster yang dibuka di program adalah fitur, jaringan tidak diperlukan. «Peta dasar globe» mengumpulkan ubin peta dasar di bawah area menjadi gambar di memori. Batas survei pada citra dapat diulang oleh kelas.
+Without an Earthdata key NASA files are not loaded.	Tanpa kunci Earthdata, berkas NASA tidak dimuat.
+Words of the name, for example kaolinite	Kata dari nama, misalnya kaolinite
+{sensor}: bands {n} of {total}	{sensor}: band {n} dari {total}
+{when}, cloud cover {cloud} %, area {share} %	{when}, tutupan awan {cloud} %, area {share} %
+{when}, group {group}	{when}, grup {group}
+µm	µm

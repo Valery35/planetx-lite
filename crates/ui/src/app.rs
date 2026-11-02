@@ -385,6 +385,16 @@ pub struct LiteApp {
     aef_class: Option<crate::aefclass::ClassCalc>,
     /// Окно «Похожие области» и его слой.
     similar: Option<crate::aefclass::ClassCalc>,
+    /// Окно «Минералы по спектру».
+    spectral: Option<crate::spectral::Spectral>,
+    /// Окно «Минералы EMIT».
+    emit: Option<crate::emit::Emit>,
+    /// Предпросмотр общего слоя вида картинкой поверх картинок меток.
+    preview: Option<scene::kml::Overlay>,
+    /// Предпросмотр сменился: сетки картинок собираются заново.
+    preview_dirty: bool,
+    /// Хозяин общего слоя вида окон анализа.
+    site_layer: crate::analysis::SiteLayer,
     /// Многоканальные растры: рельеф они не меняют, ждут классификации.
     band_rasters: Vec<crate::aefclass::Raster>,
     /// Общий участок окон анализа - вершины, `GlobeWindow.site` модуля.
@@ -1171,6 +1181,11 @@ impl LiteApp {
             aef_change: None,
             aef_class: None,
             similar: None,
+            spectral: None,
+            emit: None,
+            preview: None,
+            preview_dirty: false,
+            site_layer: crate::analysis::SiteLayer::default(),
             band_rasters: Vec::new(),
             area_site: None,
             relief_calc: None,
@@ -2037,6 +2052,32 @@ impl LiteApp {
                 match &mut self.similar {
                     Some(c) => c.set_point(lat, lon, title),
                     None => self.similar = Some(crate::aefclass::ClassCalc::similar(lat, lon, title, self.open_rasters(), self.lang)),
+                }
+                self.join_site(&choice, lat, lon);
+            }
+            Choice::Emit => {
+                let Some((lat, lon)) = point else {
+                    return;
+                };
+                let name = place.as_ref().map(|(_, n)| n.clone()).unwrap_or_default();
+                let coords = format!("{lat:.5}, {lon:.5}");
+                let title = if name.is_empty() { coords } else { format!("{name}  {coords}") };
+                match &mut self.emit {
+                    Some(c) => c.set_point(lat, lon, title),
+                    None => self.emit = Some(crate::emit::Emit::new(lat, lon, title)),
+                }
+                self.join_site(&choice, lat, lon);
+            }
+            Choice::Spectral => {
+                let Some((lat, lon)) = point else {
+                    return;
+                };
+                let name = place.as_ref().map(|(_, n)| n.clone()).unwrap_or_default();
+                let coords = format!("{lat:.5}, {lon:.5}");
+                let title = if name.is_empty() { coords } else { format!("{name}  {coords}") };
+                match &mut self.spectral {
+                    Some(c) => c.set_point(lat, lon, title),
+                    None => self.spectral = Some(crate::spectral::Spectral::new(lat, lon, title, self.open_rasters())),
                 }
                 self.join_site(&choice, lat, lon);
             }
@@ -4048,6 +4089,8 @@ impl LiteApp {
             Choice::Changes => self.aef_change.as_mut().and_then(crate::aefcalc::ChangeCalc::site_edit),
             Choice::Classes => self.aef_class.as_mut().and_then(crate::aefclass::ClassCalc::site_edit),
             Choice::Similar => self.similar.as_mut().and_then(crate::aefclass::ClassCalc::site_edit),
+            Choice::Spectral => self.spectral.as_mut().and_then(crate::spectral::Spectral::site_edit),
+            Choice::Emit => self.emit.as_mut().and_then(crate::emit::Emit::site_edit),
             Choice::SlopeHere => self.relief_calc.as_mut().and_then(crate::reliefcalc::ReliefCalc::site_edit),
             Choice::Flood => self.hydro.flood_site.as_mut(),
             Choice::Flow => self.hydro.flow_site.as_mut(),
@@ -5378,11 +5421,39 @@ impl LiteApp {
                 changed |= std::mem::take(&mut calc.changed);
             }
             let rasters = self.open_rasters();
+            // Подложка на глобусе - источник «Подложка глобуса».
+            let base = crate::aefclass::Backdrop { name: self.basemap.name(lang).to_string(), source: self.basemap.source(), credit: self.basemap.attribution(lang).0.to_string() };
             for calc in [&mut self.aef_class, &mut self.similar].into_iter().flatten() {
                 calc.rasters = rasters.clone();
+                calc.basemap = Some(base.clone());
+                calc.accepted.clone_from(&self.settings.analysis_ok);
                 calc.show(ctx, lang);
                 calc.step(lang, &*self.loaders.request);
                 changed |= std::mem::take(&mut calc.changed);
+                if let Some(url) = calc.accept_new.take()
+                    && !self.settings.analysis_ok.contains(&url)
+                {
+                    self.settings.analysis_ok.push(url);
+                    self.settings_dirty = true;
+                }
+            }
+            if let Some(calc) = &mut self.spectral {
+                calc.rasters = rasters.clone();
+                calc.show(ctx, lang);
+                calc.step(lang);
+                changed |= std::mem::take(&mut calc.changed);
+            }
+            let dir = self.data_dir();
+            if let Some(calc) = &mut self.emit {
+                calc.key.clone_from(&self.settings.earthdata);
+                calc.dir = dir;
+                calc.show(ctx, lang, &*self.loaders.request);
+                calc.step(ctx, lang, &*self.loaders.request);
+                changed |= std::mem::take(&mut calc.changed);
+                if let Some(key) = calc.key_new.take() {
+                    self.settings.earthdata = key;
+                    self.settings_dirty = true;
+                }
             }
             changed |= std::mem::take(&mut self.hydro.changed);
             changed |= std::mem::take(&mut self.earthwork.changed);
@@ -5414,6 +5485,8 @@ impl LiteApp {
         saved.extend(self.aef_change.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.aef_class.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.similar.as_mut().and_then(|c| c.saved.take()));
+        saved.extend(self.spectral.as_mut().and_then(|c| c.saved.take()));
+        saved.extend(self.emit.as_mut().and_then(|c| c.saved.take()));
         for s in saved {
             self.save_analysis(&s);
         }
@@ -5433,6 +5506,8 @@ impl LiteApp {
             }
             changed |= std::mem::take(&mut m.changed);
         }
+        // Новый результат занимает общий слой вида, прежний снимается.
+        changed |= self.site_layer_settle();
         if changed {
             self.refresh_painters();
         }
@@ -5453,6 +5528,12 @@ impl LiteApp {
         }
         if self.similar.as_ref().is_some_and(|c| !c.open && c.layer.is_none() && !c.busy()) {
             self.similar = None;
+        }
+        if self.spectral.as_ref().is_some_and(|c| !c.open && c.layer.is_none() && !c.busy()) {
+            self.spectral = None;
+        }
+        if self.emit.as_ref().is_some_and(|c| !c.open && c.layer.is_none() && !c.busy()) {
+            self.emit = None;
         }
         if let Some(crate::pointcalc::Layer::Insolation(r)) = self.insolation.as_ref().and_then(|c| c.layer.as_ref()) {
             // Над глобусом, левая панель её не закрывает.
@@ -5560,7 +5641,7 @@ impl LiteApp {
         if let Some(mines) = self.mining.as_ref().and_then(crate::mining::Mining::mines) {
             painters.push(("mining", crate::mining::painter(mines)));
         }
-        for (id, c) in [("viewshed", &self.viewshed), ("insolation", &self.insolation), ("shadows", &self.shadows)] {
+        for (id, c) in [("insolation", &self.insolation), ("shadows", &self.shadows)] {
             if let Some(l) = c.as_ref().and_then(|c| c.layer.as_ref()) {
                 painters.push((id, crate::pointcalc::painter(l)));
             }
@@ -5569,17 +5650,73 @@ impl LiteApp {
             painters.push(("relief", crate::reliefcalc::painter(r, radius)));
         }
         painters.extend(self.hydro.painters());
-        painters.extend(self.earthwork.painter().map(|p| ("earthwork", p)));
         if let Some(l) = self.aef_change.as_ref().and_then(|c| c.layer.clone()) {
             painters.push(("aef_change", crate::aefcalc::painter(l)));
         }
-        if let Some(l) = self.aef_class.as_ref().and_then(|c| c.layer.clone()) {
-            painters.push(("aef_class", crate::aefclass::painter(l)));
-        }
-        if let Some(l) = self.similar.as_ref().and_then(|c| c.layer.clone()) {
-            painters.push(("similar", crate::aefclass::painter(l)));
+        // Общий слой вида: результат одного окна, `SiteLayer` модуля.
+        // Слой, сетка которого помещается в картинку, идёт картинкой поверх
+        // картинок меток, как предпросмотр анализа над слоями проекта
+        // модуля 1.30.
+        let mut preview = None;
+        for tool in self.site_tools() {
+            match tool.layer().and_then(|l| crate::aefclass::preview_overlay(&l)) {
+                Some(overlay) => preview = Some(overlay),
+                None => painters.extend(tool.painter().map(|p| (tool.id(), p))),
+            }
         }
         self.vector.set_painters(painters);
+        let key = |o: &Option<scene::kml::Overlay>| o.as_ref().map(crate::pictures::key_of);
+        if key(&preview) != key(&self.preview) {
+            self.preview = preview;
+            self.preview_dirty = true;
+            self.pictures_changed();
+        }
+    }
+
+    /// Картинки наложений: «Мои метки» и предпросмотр окна анализа.
+    fn picture_overlays(&self) -> Vec<&scene::kml::Overlay> {
+        let mut list = self.marks.all_overlays();
+        list.extend(self.preview.as_ref());
+        list
+    }
+
+    /// Набор картинок сменился: картинки удалённых забываются.
+    fn pictures_changed(&mut self) {
+        let list: Vec<scene::kml::Overlay> = self.picture_overlays().into_iter().cloned().collect();
+        self.pictures.set(&list.iter().collect::<Vec<_>>());
+        let keys: Vec<String> = self.pictures.states.keys().cloned().collect();
+        self.screen_textures.retain(|k, _| keys.contains(k));
+        if let Some(globe) = &mut self.globe {
+            globe.keep_picture_images(&keys);
+        }
+    }
+
+    /// Окна анализа на общем слое вида: видимость, земляные работы,
+    /// классификация, похожие области, минералы по спектру.
+    fn site_tools(&mut self) -> Vec<&mut dyn crate::analysis::SiteTool> {
+        let mut out: Vec<&mut dyn crate::analysis::SiteTool> = Vec::new();
+        if let Some(c) = &mut self.viewshed {
+            out.push(c);
+        }
+        out.push(&mut self.earthwork);
+        for c in [&mut self.aef_class, &mut self.similar].into_iter().flatten() {
+            out.push(c);
+        }
+        if let Some(c) = &mut self.spectral {
+            out.push(c);
+        }
+        if let Some(c) = &mut self.emit {
+            out.push(c);
+        }
+        out
+    }
+
+    /// Хозяин общего слоя вида после кадра. true - слой сменился.
+    fn site_layer_settle(&mut self) -> bool {
+        let mut layer = std::mem::take(&mut self.site_layer);
+        let changed = layer.settle(&mut self.site_tools());
+        self.site_layer = layer;
+        changed
     }
 
     /// Папка данных программы, у страницы None.
@@ -5863,12 +6000,7 @@ impl LiteApp {
             let marks = &self.marks;
             sub.places_changed(&|uid| marks.points_of(uid));
         }
-        self.pictures.set(&self.marks.all_overlays());
-        let keys: Vec<String> = self.pictures.states.keys().cloned().collect();
-        self.screen_textures.retain(|k, _| keys.contains(k));
-        if let Some(globe) = &mut self.globe {
-            globe.keep_picture_images(&keys);
-        }
+        self.pictures_changed();
         if self.marks.all_overlays().is_empty() {
             self.models.clear();
         }
@@ -8360,6 +8492,8 @@ impl eframe::App for LiteApp {
             || self.aef_change.as_ref().is_some_and(crate::aefcalc::ChangeCalc::busy)
             || self.aef_class.as_ref().is_some_and(crate::aefclass::ClassCalc::busy)
             || self.similar.as_ref().is_some_and(crate::aefclass::ClassCalc::busy)
+            || self.spectral.as_ref().is_some_and(crate::spectral::Spectral::busy)
+            || self.emit.as_ref().is_some_and(crate::emit::Emit::busy)
             || self.section.as_ref().is_some_and(crate::section::SectionWindow::busy)
             || self.cog_base.as_ref().is_some_and(crate::cogtiles::CogTiles::busy)
             || self.relief.busy();
@@ -8412,6 +8546,8 @@ impl eframe::App for LiteApp {
                     // Классификация: участок и контрольные точки щелчком.
                     let nav = &self.nav;
                     self.aef_class.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav)) || self.similar.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav))
+                        || self.spectral.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav, self.lang))
+                        || self.emit.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav))
                 };
             // Изменённый участок - общий для открытых окон анализа.
             let edits = [&mut self.viewshed, &mut self.insolation, &mut self.shadows]
@@ -8424,7 +8560,12 @@ impl eframe::App for LiteApp {
                 .chain(self.aef_change.as_mut().and_then(crate::aefcalc::ChangeCalc::site_edit))
                 .chain(self.aef_class.as_mut().and_then(crate::aefclass::ClassCalc::site_edit))
                 .chain(self.similar.as_mut().and_then(crate::aefclass::ClassCalc::site_edit))
-                .collect();
+                .chain(self.spectral.as_mut().and_then(crate::spectral::Spectral::site_edit))
+                .chain(self.emit.as_mut().and_then(crate::emit::Emit::site_edit))
+                .collect::<Vec<_>>();
+            // Участок из «Моих меток»: кнопка «Из меток» и щелчок выбора.
+            let mut edits = edits;
+            crate::analysis::sites_from_places(self.lang, &mut edits, self.marks.tree.as_ref(), &self.tree_state.picked());
             crate::analysis::share_sites(&mut self.area_site, edits);
             // Камера следом: колесо - расстояние до объекта, Esc отпускает,
             // `ChaseControl` модуля.
@@ -8631,7 +8772,8 @@ impl eframe::App for LiteApp {
         // Треки на момент шкалы, сменились модели треков - модели заново.
         self.tracks.step(self.timebar.window().map(|w| w.1));
         let tracks_models = std::mem::take(&mut self.tracks.models_dirty);
-        if tracks_models {
+        let preview_dirty = std::mem::take(&mut self.preview_dirty);
+        if tracks_models || preview_dirty {
             self.overlays_built = None;
         }
         // Список нужен и в кадре, где подошли высоты: сетки меток ниже
@@ -8865,9 +9007,11 @@ impl eframe::App for LiteApp {
             all.extend(self.track_meshes.iter().cloned());
             globe.set_features(&all);
         }
-        if listed && (fresh.is_some() || tracks_models) && self.overlays_built != Some(self.marks.overlays_version()) {
+        if listed && (fresh.is_some() || tracks_models || preview_dirty) && self.overlays_built != Some(self.marks.overlays_version()) {
             self.overlays_built = Some(self.marks.overlays_version());
-            globe.set_pictures(&self.marks.picture_meshes(&store));
+            let mut meshes = self.marks.picture_meshes(&store);
+            meshes.extend(self.preview.as_ref().and_then(|o| crate::pictures::ground_mesh(o, &crate::pictures::key_of(o), &store)));
+            globe.set_pictures(&meshes);
             let built = self.models.meshes(&model_list, &store, now);
             globe.set_models(&built.meshes);
             self.export_models = built.meshes;
@@ -9112,6 +9256,12 @@ impl eframe::App for LiteApp {
             calc.site.paint(&painter, rect, ppp, &self.nav);
         }
         for calc in [&self.aef_class, &self.similar].into_iter().flatten() {
+            calc.paint(&painter, rect, ppp, &self.nav);
+        }
+        if let Some(calc) = &self.spectral {
+            calc.paint(&painter, rect, ppp, &self.nav);
+        }
+        if let Some(calc) = &self.emit {
             calc.paint(&painter, rect, ppp, &self.nav);
         }
         // Точка пути под курсором графика профиля, как у модуля.

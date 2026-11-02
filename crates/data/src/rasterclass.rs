@@ -62,6 +62,8 @@ pub enum Problem {
     Pieces,
     /// В контурах образцов нет объектов участка.
     Samples,
+    /// Тайлы подложки не получены.
+    Tiles,
 }
 
 /// Пиксель «Авто», метры: пиксель растра native, если на участке со
@@ -324,6 +326,34 @@ impl Source {
     /// Количество каналов-признаков.
     pub fn bands(&self) -> usize {
         self.bands.len()
+    }
+
+    /// Подписи каналов-признаков по порядку: описание канала файла
+    /// (у GeoTIFF - тег GDAL_METADATA), пусто - подписи нет.
+    pub fn labels(&self) -> Vec<String> {
+        self.bands.iter().map(|b| self.data.band_metadata.get(*b).and_then(|m| m.description.clone()).unwrap_or_default()).collect()
+    }
+
+    /// Значения каналов-признаков в точке (широта, долгота): пиксель под
+    /// точкой, NaN - «нет данных». None - точка вне растра или прозрачна,
+    /// как `pixel_values` модуля.
+    pub fn values_at(&self, lat: f64, lon: f64) -> Option<Vec<f64>> {
+        let from_wgs84 = Transformer::new(&SpatialRef::from_epsg(4326).ok()?, &self.crs).ok()?;
+        let (x, y) = from_wgs84.transform(lon, lat).ok()?;
+        let (col, row) = grid::pixel_of(&self.transform, x, y)?;
+        let r = &self.data.raster;
+        if !(col >= 0.0 && row >= 0.0 && col < r.cols as f64 && row < r.rows as f64) {
+            return None;
+        }
+        let (c, w) = (col.floor() as isize, row.floor() as isize);
+        let value = |band: usize| {
+            let v = r.get(band as isize, w, c);
+            if !v.is_finite() || self.nodata.is_some_and(|n| v == n) { f64::NAN } else { v }
+        };
+        if self.alpha.map(value).is_some_and(|v| v.is_nan() || v <= 0.0) {
+            return None;
+        }
+        Some(self.bands.iter().map(|b| value(*b)).collect())
     }
 
     fn transformer(&self, index: &ZoneIndex, to_raster: bool) -> Result<Transformer, Problem> {

@@ -26,11 +26,17 @@ weezl = "0.2"
 # Тайлы картинок COG (src/cog.rs): маленький TIFF с JPEG, LZW или deflate,
 # MIT. Та же версия уже собирается как зависимость terrio.
 tiff = { version = "0.11", default-features = false, features = ["deflate", "jpeg", "lzw"] }
+# Файлы netCDF-4 минералов EMIT (src/emit.rs): чтение HDF5 на Rust, MIT
+# и Apache 2.0. Та же версия, что у набора netcdf-hdf5 terrio.
+netcdf-reader = { version = "=0.10.1", default-features = false, features = ["netcdf4"] }
 
 [dev-dependencies]
 # Тайлы JPEG для проверок картинок COG, MIT и Apache 2.0, та же версия
 # у terrio.
 jpeg-encoder = "0.7"
+# Файл netCDF-4 сцены EMIT для проверки чтения, MIT и Apache 2.0, тот же
+# набор крейтов, что у netcdf-reader.
+netcdf-writer = "=0.10.1"
 
 [lints]
 workspace = true

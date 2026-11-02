@@ -2039,3 +2039,110 @@ The tour is recorded to {folder}. Frame count {count}, {fps} per second.	Il tour
 Frames not fully loaded: {count}.	Fotogrammi non caricati del tutto: {count}.
 The folder already holds tour frames. Choose another folder.	La cartella contiene già fotogrammi di un tour. Scegliere un'altra cartella.
 The window size changed during the recording. The recording stopped at frame {n}.	Le dimensioni della finestra sono cambiate durante la registrazione. La registrazione si è interrotta al fotogramma {n}.
+A multi-band raster in reflectance opened in the program, for example all bands of a scene of the Satellite images window. The bands are recognised by their labels, thermal bands do not take part.	Raster multibanda in riflettanza aperto nel programma, ad esempio tutte le bande di una scena della finestra «Immagini satellitari». Le bande sono riconosciute dalle etichette, le bande termiche non partecipano.
+All groups	Tutti i gruppi
+Angle to the reference	Angolo rispetto al riferimento
+Angle to the reference, °	Angolo rispetto al riferimento, °
+Angle up to	Angolo fino a
+Area {area} km², heights {low}-{high} m, mean {mean} m.	Area {area} km², quote {low}-{high} m, media {mean} m.
+Artificial materials	Materiali artificiali
+Band depth	Profondità di banda
+Bands	Bande
+Choose a scene in the list.	Scegliere una scena nell’elenco.
+Classes of the area by control points on the globe - by the globe basemap or the bands of an opened raster.	Classi dell’area per punti di controllo sul globo - dalla mappa di base del globo o dalle bande di un raster aperto.
+Classes: {list}. Without a class {none} %.	Classi: {list}. Senza classe {none} %.
+Clear all	Deseleziona tutto
+Click the globe inside a polygon of «My places».	Fare clic sul globo dentro un poligono di «I miei luoghi».
+Click the image on the globe	Fare clic sull’immagine sul globo
+Click the image on the globe - the chart shows the spectrum of the pixel and the nearest references. Marked references become classes of the area.	Fare clic sull’immagine sul globo - il grafico mostra lo spettro del pixel e i riferimenti più vicini. I riferimenti contrassegnati diventano classi dell’area.
+Cloud cover up to	Copertura nuvolosa fino a
+Coatings	Rivestimenti
+Compute	Calcola
+Computing the angles between spectra: {done} %.	Calcolo degli angoli tra gli spettri: {done} %.
+Computing the angles between spectra…	Calcolo degli angoli tra gli spettri…
+Dates	Date
+Dates are written as YYYY-MM-DD.	Le date si scrivono come AAAA-MM-GG.
+EMIT absorption band depth	Profondità della banda di assorbimento EMIT
+EMIT minerals	Minerali EMIT
+EMIT minerals {name}	Minerali EMIT {name}
+EMIT minerals…	Minerali EMIT…
+Each cell of the area gets the marked reference with the smallest angle between the spectra.	Ogni cella dell’area riceve il riferimento contrassegnato con il minore angolo tra gli spettri.
+Earthdata key	Chiave Earthdata
+Find scenes	Trova scene
+From places	Dai luoghi
+Get a key	Ottieni una chiave
+Globe basemap	Mappa di base del globo
+Group 1 - iron absorption bands in the visible and near infrared, group 2 - Al-OH, Mg-OH and carbonate bands in the shortwave infrared. A cell may have minerals of both groups.	Gruppo 1 - bande di assorbimento del ferro nel visibile e nel vicino infrarosso, gruppo 2 - bande Al-OH, Mg-OH e dei carbonati nell’infrarosso a onde corte. Una cella può avere minerali di entrambi i gruppi.
+Group 1 - iron minerals, 0.4-1.3 µm	Gruppo 1 - minerali del ferro, 0.4-1.3 µm
+Group 2 - clays, mica, carbonates, sulphates, 2.0-2.5 µm	Gruppo 2 - argille, mica, carbonati, solfati, 2.0-2.5 µm
+Holes not counted: {count}.	Buchi non contati: {count}.
+Legend	Legenda
+Loading the basemap tiles: {n} of {total}.	Caricamento dei tasselli della mappa di base: {n} di {total}.
+Loading the basemap tiles…	Caricamento dei tasselli della mappa di base…
+Loading the file of the scene {when}…	Caricamento del file della scena {when}…
+Loads the file of the chosen scene (once) and colours the area by the minerals of the chosen group.	Carica il file della scena scelta (una volta) e colora l’area secondo i minerali del gruppo scelto.
+Mark at least one reference.	Contrassegnare almeno un riferimento.
+Minerals	Minerali
+Minerals by spectrum	Minerali per spettro
+Minerals by spectrum {name}	Minerali per spettro {name}
+Minerals by spectrum…	Minerali per spettro…
+Minerals of the scene {when}…	Minerali della scena {when}…
+Minerals: {list}. Cells with a mineral {share} % of the area, {area} km².	Minerali: {list}. Celle con minerale {share} % dell’area, {area} km².
+NASA mineral maps from images of the EMIT spectrometer on the ISS, pixel 60 m, arid regions since 2022. NASA gives the scene files by an Earthdata key.	Mappe dei minerali della NASA da immagini dello spettrometro EMIT sulla ISS, pixel di 60 m, regioni aride dal 2022. La NASA fornisce i file delle scene con una chiave Earthdata.
+NASA mineral maps from images of the EMIT spectrometer, pixel 60 m, arid regions since 2022. Files by an Earthdata key.	Mappe dei minerali della NASA da immagini dello spettrometro EMIT, pixel di 60 m, regioni aride dal 2022. File con una chiave Earthdata.
+Nearest	Più vicini
+No minerals of this group were found in the area.	Nell’area non sono stati trovati minerali di questo gruppo.
+No raster with three bands or more is open.	Non è aperto alcun raster con tre bande o più.
+No suitable raster is open.	Non è aperto alcun raster adatto.
+Others	Altri
+Pixel {pixel} m, about {cells} thousand cells.	Pixel {pixel} m, circa {cells} mila celle.
+Polygons not taken: {count}, the largest is taken.	Poligoni non presi: {count}, viene preso il più grande.
+Raster	Raster
+Reading the raster of the area: {done} %.	Lettura del raster dell’area: {done} %.
+Reading the raster…	Lettura del raster…
+References	Riferimenti
+References marked: {n}	Riferimenti contrassegnati: {n}
+Scenes	Scene
+Scenes over the area: {n}.	Scene sopra l’area: {n}.
+Searching for EMIT scenes…	Ricerca di scene EMIT…
+Soils and mixtures	Suoli e miscele
+Source terms	Condizioni della fonte
+Spectrum	Spettro
+Spectrum of a pixel of a multi-band raster and the nearest references of the USGS library, classes of the area by the angle between spectra.	Spettro di un pixel di un raster multibanda e riferimenti più vicini della libreria USGS, classi dell’area secondo l’angolo tra gli spettri.
+Spectrum of the point {lat}, {lon}. The nearest reference is {name}, {angle}°.	Spettro del punto {lat}, {lon}. Il riferimento più vicino è {name}, {angle}°.
+Stop	Ferma
+The Earthdata key was not accepted - it is outdated or wrong. Enter a new one.	La chiave Earthdata non è stata accettata - è scaduta o errata. Inserire una nuova chiave.
+The NASA catalogue did not answer: {error}	Il catalogo NASA non ha risposto: {error}
+The NASA file was not received: {error}	Il file NASA non è stato ricevuto: {error}
+The area is a polygon of «My places»: the selected rows, or else the polygon under a click on the globe. Of several polygons the largest is taken, holes are not counted.	L’area è un poligono di «I miei luoghi»: le righe selezionate, altrimenti il poligono sotto un clic sul globo. Tra più poligoni viene preso il più grande, i buchi non sono contati.
+The area is outside the scene.	L’area è fuori dalla scena.
+The area is taken from «{name}».	L’area è presa da «{name}».
+The area will not be divided into objects, a larger pixel or a smaller area is needed.	L’area non sarà divisa in oggetti, serve un pixel più grande o un’area più piccola.
+The bands are not recognised by their labels, choose the sensor.	Le bande non sono riconosciute dalle etichette, scegliere il sensore.
+The basemap tiles were not received.	I tasselli della mappa di base non sono stati ricevuti.
+The computation by the basemap was not started.	Il calcolo sulla mappa di base non è stato avviato.
+The computation will collect the tiles of the basemap «{name}» under the area into a picture in memory, no image file is written. The terms of the basemap may not allow such use, especially for commercial services. The computation goes by your decision, you bear the responsibility for its result and use.	Il calcolo raccoglierà i tasselli della mappa di base «{name}» sotto l’area in un’immagine in memoria, nessun file immagine viene scritto. Le condizioni della mappa di base possono non consentire questo uso, soprattutto per i servizi commerciali. Il calcolo avviene per decisione dell’utente, che risponde del risultato e dell’uso.
+The file is not saved: {error}	Il file non è salvato: {error}
+The file of the scene is not read.	Il file della scena non è stato letto.
+The largest angle between the spectra of a cell and a reference. A cell farther from all marked references stays without a class. Smaller - stricter.	Il massimo angolo tra gli spettri di una cella e di un riferimento. Una cella più lontana da tutti i riferimenti contrassegnati resta senza classe. Più piccolo - più rigoroso.
+The largest cloud cover of a scene by the NASA catalogue. Clouds hide the minerals, the cells under them stay without a class.	La massima copertura nuvolosa di una scena secondo il catalogo NASA. Le nuvole nascondono i minerali, le celle sotto di esse restano senza classe.
+The names of the references are in English, as in the USGS library. All words must be in the name.	I nomi dei riferimenti sono in inglese, come nella libreria USGS. Tutte le parole devono essere nel nome.
+The outline is simplified to {count} vertices.	Il contorno è semplificato a {count} vertici.
+The pixel of the grid of the area. With AlphaEarth a block of the file for a year is 40-50 MB at any pixel, «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells. A raster and the globe basemap have pixels of 1, 2 and 5 m, «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Division into objects takes up to 4 million cells.	Il pixel della griglia dell’area. Con AlphaEarth un blocco del file per un anno è di 40-50 MB con qualsiasi pixel, «Auto» sceglie il pixel con il minore scaricamento per cui l’area ha da 14 a 640 mila celle. Un raster e la mappa di base del globo hanno pixel di 1, 2 e 5 m, «Auto» sceglie il pixel del raster o del livello superiore della mappa di base se l’area ha al massimo 640 mila celle. La divisione in oggetti accetta fino a 4 milioni di celle.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Il pixel della griglia dell’area. «Auto» sceglie il pixel del raster se l’area ha al massimo 640 mila celle.
+The point is outside the raster or has no data.	Il punto è fuori dal raster o senza dati.
+The polygon could not be read.	Non è stato possibile leggere il poligono.
+The sensor to whose bands the references are recomputed. «Auto» recognises it by the wavelengths in the band labels of the raster. If there are no labels, the sensor is chosen by hand, the bands are taken by the numbers in the labels or in order.	Il sensore alle cui bande sono ricalcolati i riferimenti. «Auto» lo riconosce dalle lunghezze d’onda nelle etichette delle bande del raster. Senza etichette il sensore si sceglie a mano, le bande si prendono dai numeri nelle etichette o in ordine.
+There are no EMIT scenes over the area. EMIT images arid regions - deserts, semi-deserts, steppes.	Sopra l’area non ci sono scene EMIT. EMIT riprende le regioni aride - deserti, semideserti, steppe.
+There is no polygon of «My places» under the click.	Sotto il clic non c’è alcun poligono di «I miei luoghi».
+Unmark all references.	Deseleziona tutti i riferimenti.
+Values of the GeoTIFF file: {list}.	Valori del file GeoTIFF: {list}.
+Water, snow and liquids	Acqua, neve e liquidi
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory.	Da dove si prendono colore e texture. I vettori AlphaEarth sono caricati dalla rete, ogni banda di un raster aperto nel programma è una caratteristica. «Mappa di base del globo» raccoglie i tasselli della mappa di base sotto l’area in un’immagine in memoria.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory. Borders of surveys in the image may be repeated by the classes.	In base a cosa si dividono le celle. I vettori AlphaEarth sono caricati dalla rete. Ogni banda di un raster aperto nel programma è una caratteristica, la rete non serve. «Mappa di base del globo» raccoglie i tasselli della mappa di base sotto l’area in un’immagine in memoria. I confini dei rilievi nell’immagine possono essere ripetuti dalle classi.
+Without an Earthdata key NASA files are not loaded.	Senza una chiave Earthdata i file NASA non vengono caricati.
+Words of the name, for example kaolinite	Parole del nome, ad esempio kaolinite
+{sensor}: bands {n} of {total}	{sensor}: bande {n} di {total}
+{when}, cloud cover {cloud} %, area {share} %	{when}, copertura nuvolosa {cloud} %, area {share} %
+{when}, group {group}	{when}, gruppo {group}
+µm	µm

@@ -90,6 +90,12 @@ pub struct Settings {
     pub sky_imagery: bool,
     /// Помощник ИИ: подключение, адреса, модели, ключи.
     pub ai: crate::ai::AiSettings,
+    /// Адреса подложек, условия которых для расчётов окон анализа приняты,
+    /// `ACCEPTED_KEY` модуля с ключами «analysis:».
+    pub analysis_ok: Vec<String>,
+    /// Ключ Earthdata пользователя для файлов NASA, `EARTHDATA_KEY`
+    /// модуля. Его вводит сам пользователь в окне «Минералы EMIT».
+    pub earthdata: String,
 }
 
 /// Цвет шестью знаками или пусто.
@@ -117,7 +123,7 @@ fn read_section_color(line: &str) -> Option<SectionColor> {
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { section_colors: Vec::new(), language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, stars: true, sea: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new(), route: "car".into(), opacity: Vec::new(), stretch: true, own: Vec::new(), wms: Vec::new(), geoid_scale: data::geoid::SCALE, links: Vec::new(), sat_groups: data::satellites::DEFAULT_GROUPS.iter().map(|g| g.to_string()).collect(), constellations: true, deepsky: true, sky_imagery: true, ai: crate::ai::AiSettings::default() }
+        Self { section_colors: Vec::new(), language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, grid: false, air: true, stars: true, sea: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new(), route: "car".into(), opacity: Vec::new(), stretch: true, own: Vec::new(), wms: Vec::new(), geoid_scale: data::geoid::SCALE, links: Vec::new(), sat_groups: data::satellites::DEFAULT_GROUPS.iter().map(|g| g.to_string()).collect(), constellations: true, deepsky: true, sky_imagery: true, ai: crate::ai::AiSettings::default(), analysis_ok: Vec::new(), earthdata: String::new() }
     }
 }
 
@@ -162,6 +168,8 @@ impl Settings {
             + &if self.links.is_empty() { String::new() } else { format!("links={}\n", data::menulinks::dump(&self.links)) }
             + &self.section_colors.iter().map(section_color_line).collect::<String>()
             + &self.ai.to_text()
+            + &self.analysis_ok.iter().map(|u| format!("analysis_ok={u}\n")).collect::<String>()
+            + &if self.earthdata.is_empty() { String::new() } else { format!("earthdata={}\n", self.earthdata) }
     }
 
     /// Настройки из строки хранилища. Строка считается враждебной:
@@ -221,6 +229,11 @@ impl Settings {
                 "constellations" => s.constellations = value != "false",
                 "deepsky" => s.deepsky = value != "false",
                 "sky_imagery" => s.sky_imagery = value != "false",
+                // Адрес подложки: строка без пробелов, как шаблон своего
+                // источника.
+                // Ключ - строка без пробелов.
+                "earthdata" if !value.chars().any(char::is_whitespace) => s.earthdata = value.to_string(),
+                "analysis_ok" if !value.is_empty() && !value.chars().any(char::is_whitespace) && !s.analysis_ok.iter().any(|u| u == value) => s.analysis_ok.push(value.to_string()),
                 "links" => s.links = data::menulinks::load(value),
                 "sat_groups" => s.sat_groups = value.split(',').filter(|g| data::satellites::GROUPS.iter().any(|(k, _)| k == g)).map(str::to_string).collect(),
                 "coords" if COORD_FORMATS.contains(&value) => s.coords = value.to_string(),
@@ -428,9 +441,10 @@ mod tests {
 
     #[test]
     fn settings_round_trip_and_hostile_text() {
-        let s = Settings { section_colors: vec![("Уголь_top".into(), Some([1, 2, 255]), None), ("@host".into(), None, Some([9, 8, 7]))], language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, stars: false, sea: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()], route: "foot".into(), opacity: vec![("emag".into(), 0.5)], stretch: false, own: Vec::new(), wms: vec![crate::maps::WmsSaved { name: "Orthos".into(), template: "https://x.org/wms?SERVICE=WMS&BBOX={bbox}".into(), bbox: Some([-76.1, 39.5, -74.4, 40.6]), credit: "X".into(), max_level: None }, crate::maps::WmsSaved { name: "Снимок".into(), template: "https://tiles.openaerialmap.org/a/0/b/{z}/{x}/{y}".into(), bbox: Some([120.1, -8.4, 120.2, -8.3]), credit: "Y, CC BY 4.0".into(), max_level: Some(21) }], geoid_scale: 2000.0, links: vec![("OSM".into(), "https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map={zoom}/{lat}/{lon}".into())], sat_groups: vec!["gnss".into(), "geo".into()], constellations: false, deepsky: false, sky_imagery: false, ai: crate::ai::AiSettings { provider: "anthropic".into(), keys: vec![("anthropic".into(), "sk-ant-1".into())], search: false, ..Default::default() } };
+        let s = Settings { section_colors: vec![("Уголь_top".into(), Some([1, 2, 255]), None), ("@host".into(), None, Some([9, 8, 7]))], language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, grid: true, air: false, stars: false, sea: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()], route: "foot".into(), opacity: vec![("emag".into(), 0.5)], stretch: false, own: Vec::new(), wms: vec![crate::maps::WmsSaved { name: "Orthos".into(), template: "https://x.org/wms?SERVICE=WMS&BBOX={bbox}".into(), bbox: Some([-76.1, 39.5, -74.4, 40.6]), credit: "X".into(), max_level: None }, crate::maps::WmsSaved { name: "Снимок".into(), template: "https://tiles.openaerialmap.org/a/0/b/{z}/{x}/{y}".into(), bbox: Some([120.1, -8.4, 120.2, -8.3]), credit: "Y, CC BY 4.0".into(), max_level: Some(21) }], geoid_scale: 2000.0, links: vec![("OSM".into(), "https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map={zoom}/{lat}/{lon}".into())], sat_groups: vec!["gnss".into(), "geo".into()], constellations: false, deepsky: false, sky_imagery: false, ai: crate::ai::AiSettings { provider: "anthropic".into(), keys: vec![("anthropic".into(), "sk-ant-1".into())], search: false, ..Default::default() }, analysis_ok: vec!["https://server.arcgisonline.com/x/{z}/{y}/{x}".into()], earthdata: "eyJ0.test".into() };
         assert_eq!(Settings::from_text(&s.to_text()), s);
-        let bad = Settings::from_text("language=xx\nlabels=../x\ntheme=dark\nscale=1e9\nscale=NaN\nfoo=bar\nno equals\nplaces_height=-5\nplaces_height=NaN\nmaps=emag,../x,gibs:MODIS_Terra_NDSI_Snow_Cover\nwms=a\tftp://x/{bbox}\t\tb");
+        let bad = Settings::from_text("language=xx\nlabels=../x\ntheme=dark\nscale=1e9\nscale=NaN\nfoo=bar\nno equals\nplaces_height=-5\nplaces_height=NaN\nmaps=emag,../x,gibs:MODIS_Terra_NDSI_Snow_Cover\nwms=a\tftp://x/{bbox}\t\tb\nanalysis_ok=a b\nanalysis_ok=");
+        assert!(bad.analysis_ok.is_empty());
         assert_eq!(bad.maps, ["emag", "gibs:MODIS_Terra_NDSI_Snow_Cover"]);
         assert!(bad.wms.is_empty());
         assert_eq!(bad.places_height, 0.0);

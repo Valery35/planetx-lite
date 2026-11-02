@@ -98,6 +98,29 @@ struct Job {
     ring: Option<Vec<(f64, f64)>>,
 }
 
+/// Видимость из точки - на общем слое вида окон анализа, как
+/// `ViewshedOwner` модуля. Инсоляция и тени - на своих слоях.
+impl crate::analysis::SiteTool for Calc {
+    fn id(&self) -> &'static str {
+        match self.kind {
+            Kind::Viewshed => "viewshed",
+            Kind::Insolation => "insolation",
+            Kind::Shadows => "shadows",
+        }
+    }
+    fn shown(&self) -> bool {
+        self.layer.is_some()
+    }
+    fn painter(&self) -> Option<crate::vector::Painter> {
+        self.layer.as_ref().map(painter)
+    }
+    fn drop_result(&mut self) {
+        if self.layer.take().is_some() {
+            self.changed = true;
+        }
+    }
+}
+
 /// Окно расчёта и его слой.
 pub struct Calc {
     pub kind: Kind,

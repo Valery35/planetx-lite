@@ -57,6 +57,8 @@ pub enum Choice {
     Classes,
     /// «Похожие области…».
     Similar,
+    Spectral,
+    Emit,
     /// «Старые карты «Это Место»…».
     Etomesto,
     /// «Исторические карты Рамсея…».
@@ -253,17 +255,22 @@ impl GlobeMenu {
                                     if self.earth {
                                         item(ui, "Insolation…", "Hours of direct sun per day around the point.", Choice::Insolation);
                                         item(ui, "Shadows…", "Where it is shadow and where sun at the moment of the time slider - by the terrain, the shadows follow the slider.", Choice::Shadows);
-                                        // Хранилище файлов AlphaEarth не отдаёт заголовков
-                                        // CORS (проверено 30 октября 2026 года), у страницы
-                                        // этих пунктов нет. Классы по открытому растру сети
-                                        // не просят.
+                                        // Хранилища файлов AlphaEarth и LP DAAC не отдают
+                                        // заголовков CORS (AlphaEarth проверено 30 октября
+                                        // 2026 года), у страницы этих пунктов нет. Классы
+                                        // по подложке глобуса и открытому растру у неё есть.
                                         if !cfg!(target_arch = "wasm32") {
                                             item(ui, "Changes of the terrain…", "Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.", Choice::Changes);
                                             item(ui, "Classification…", "Classes of the area by control points on the globe - by AlphaEarth embeddings, a 10 m cell.", Choice::Classes);
-                                            item(ui, "Similar areas…", "Outline a sample, the program finds objects of the area similar to it in colour and texture.", Choice::Similar);
-                                        } else if self.rasters {
-                                            item(ui, "Classification…", "Classes of the area by control points on the globe - by the bands of an opened raster.", Choice::Classes);
-                                            item(ui, "Similar areas…", "Outline a sample, the program finds objects of the area similar to it in colour and texture.", Choice::Similar);
+                                        } else {
+                                            item(ui, "Classification…", "Classes of the area by control points on the globe - by the globe basemap or the bands of an opened raster.", Choice::Classes);
+                                        }
+                                        item(ui, "Similar areas…", "Outline a sample, the program finds objects of the area similar to it in colour and texture.", Choice::Similar);
+                                        if self.rasters || !cfg!(target_arch = "wasm32") {
+                                            item(ui, "Minerals by spectrum…", "Spectrum of a pixel of a multi-band raster and the nearest references of the USGS library, classes of the area by the angle between spectra.", Choice::Spectral);
+                                        }
+                                        if !cfg!(target_arch = "wasm32") {
+                                            item(ui, "EMIT minerals…", "NASA mineral maps from images of the EMIT spectrometer, pixel 60 m, arid regions since 2022. Files by an Earthdata key.", Choice::Emit);
                                         }
                                     }
                                     ui.separator();

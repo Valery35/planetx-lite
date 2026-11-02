@@ -398,3 +398,64 @@ fn outline_touching_at_corner() {
     assert_eq!(area(&rings[0]), 20.0);
     assert_eq!(area(&rings[1]), 4.0);
 }
+
+/// Сетка из частей n × n рядом по столбцам: значения клеток по 3 канала,
+/// номера частей.
+fn side_by_side(parts: &[Vec<f32>], n: usize) -> (Vec<f32>, Vec<i32>) {
+    let cols = parts.len() * n;
+    let (mut grid, mut labels) = (Vec::new(), Vec::new());
+    for r in 0..n {
+        for c in 0..cols {
+            let b = parts[c / n][r * n + c % n];
+            grid.extend([100.0 + 20.0 * b, 90.0 + 18.0 * b, 70.0 + 14.0 * b]);
+            labels.push((c / n) as i32);
+        }
+    }
+    (grid, labels)
+}
+
+fn unit(part: Vec<f32>) -> Vec<f32> {
+    let n = part.len() as f32;
+    let mean = part.iter().sum::<f32>() / n;
+    let std = (part.iter().map(|v| (v - mean).powi(2)).sum::<f32>() / n).sqrt();
+    part.iter().map(|v| v / std).collect()
+}
+
+#[test]
+fn pattern_tells_rows_from_grass_of_same_spread() {
+    // Трава - мелкий шум, вырубка - ряды, лес - пятна крон 3 × 3. Цвет
+    // и разброс внутри объекта у всех трёх одни, table их не различает.
+    // Сторож замечания Василия Швалёва от 2 ноября 2026 года.
+    let mut random = Noise(3);
+    let n = 60;
+    let grass = unit((0..n * n).map(|_| random.normal()).collect());
+    let wave: Vec<f32> = (0..n).map(|c| (c as f32 * 2.0 * std::f32::consts::PI / 6.0).sin()).collect();
+    let rows = unit((0..n * n).map(|i| wave[i % n]).collect());
+    let cut = unit((0..n * n).map(|i| rows[i] * 0.8 + 0.6 * random.normal()).collect());
+    let blocks: Vec<f32> = (0..(n / 3) * (n / 3)).map(|_| random.normal()).collect();
+    let crowns = unit((0..n * n).map(|i| blocks[(i / n / 3) * (n / 3) + (i % n) / 3]).collect());
+    let (grid, labels) = side_by_side(&[grass, cut, crowns], n);
+    let table = segments::table(&grid, 3, &labels);
+    for band in 0..3 {
+        let spread: Vec<f32> = (0..3).map(|o| table[o * 6 + 3 + band]).collect();
+        let (lo, hi) = spread.iter().fold((f32::INFINITY, f32::NEG_INFINITY), |(a, b), v| (a.min(*v), b.max(*v)));
+        assert!(hi - lo < 0.5, "{spread:?}");
+    }
+    let drawing = segments::pattern(&grid, 3, &labels, n, 3 * n);
+    assert_eq!(drawing.len(), 3 * segments::PATTERN);
+    let at = |o: usize, k: usize| drawing[o * segments::PATTERN + k];
+    // Направленность: ряды - высокая, шум и кроны - около нуля.
+    assert!(at(1, 2) > 0.4, "{drawing:?}");
+    assert!(at(0, 2) < 0.1 && at(2, 2) < 0.1, "{drawing:?}");
+    // Зерно: кроны крупнее травы.
+    assert!(at(2, 1) < at(0, 1) - 0.2, "{drawing:?}");
+}
+
+#[test]
+fn pattern_ignores_neighbour_objects() {
+    // Резкая граница двух ровных объектов не даёт им перепадов.
+    let (rows, cols) = (10, 20);
+    let grid: Vec<f32> = (0..rows * cols).map(|i| if i % cols >= 10 { 100.0 } else { 0.0 }).collect();
+    let labels: Vec<i32> = (0..rows * cols).map(|i| i32::from(i % cols >= 10)).collect();
+    assert!(segments::pattern(&grid, 1, &labels, rows, cols).iter().all(|v| v.abs() < 1e-6));
+}

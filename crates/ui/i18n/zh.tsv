@@ -2039,3 +2039,110 @@ The tour is recorded to {folder}. Frame count {count}, {fps} per second.	导览�
 Frames not fully loaded: {count}.	未完全加载的帧:{count}。
 The folder already holds tour frames. Choose another folder.	该文件夹已包含导览帧。请选择其他文件夹。
 The window size changed during the recording. The recording stopped at frame {n}.	录制期间窗口大小发生变化。录制在第 {n} 帧停止。
+A multi-band raster in reflectance opened in the program, for example all bands of a scene of the Satellite images window. The bands are recognised by their labels, thermal bands do not take part.	在程序中打开的反射率多波段栅格，例如“卫星影像”窗口中某个场景的全部波段。波段按标签识别，热红外波段不参与。
+All groups	所有组
+Angle to the reference	与参考的夹角
+Angle to the reference, °	与参考的夹角，°
+Angle up to	夹角不超过
+Area {area} km², heights {low}-{high} m, mean {mean} m.	面积 {area} km²，高程 {low}-{high} m，平均 {mean} m。
+Artificial materials	人造材料
+Band depth	波段深度
+Bands	波段
+Choose a scene in the list.	请在列表中选择场景。
+Classes of the area by control points on the globe - by the globe basemap or the bands of an opened raster.	按地球上的控制点划分区域的类别 - 依据地球底图或已打开栅格的波段。
+Classes: {list}. Without a class {none} %.	类别：{list}。无类别 {none} %。
+Clear all	全部清除
+Click the globe inside a polygon of «My places».	在地球上单击“我的地点”中的多边形内部。
+Click the image on the globe	单击地球上的影像
+Click the image on the globe - the chart shows the spectrum of the pixel and the nearest references. Marked references become classes of the area.	单击地球上的影像 - 图表显示该像素的光谱和最接近的参考。已标记的参考成为区域的类别。
+Cloud cover up to	云量不超过
+Coatings	涂层
+Compute	计算
+Computing the angles between spectra: {done} %.	正在计算光谱之间的夹角：{done} %。
+Computing the angles between spectra…	正在计算光谱之间的夹角…
+Dates	日期
+Dates are written as YYYY-MM-DD.	日期格式为 YYYY-MM-DD。
+EMIT absorption band depth	EMIT 吸收波段深度
+EMIT minerals	EMIT 矿物
+EMIT minerals {name}	EMIT 矿物 {name}
+EMIT minerals…	EMIT 矿物…
+Each cell of the area gets the marked reference with the smallest angle between the spectra.	区域的每个单元格获得与其光谱夹角最小的已标记参考。
+Earthdata key	Earthdata 密钥
+Find scenes	查找场景
+From places	来自地点
+Get a key	获取密钥
+Globe basemap	地球底图
+Group 1 - iron absorption bands in the visible and near infrared, group 2 - Al-OH, Mg-OH and carbonate bands in the shortwave infrared. A cell may have minerals of both groups.	第 1 组 - 可见光和近红外中的铁吸收波段，第 2 组 - 短波红外中的 Al-OH、Mg-OH 和碳酸盐波段。一个单元格可能同时含有两组矿物。
+Group 1 - iron minerals, 0.4-1.3 µm	第 1 组 - 铁矿物，0.4-1.3 µm
+Group 2 - clays, mica, carbonates, sulphates, 2.0-2.5 µm	第 2 组 - 黏土、云母、碳酸盐、硫酸盐，2.0-2.5 µm
+Holes not counted: {count}.	未计入的孔洞：{count}。
+Legend	图例
+Loading the basemap tiles: {n} of {total}.	正在加载底图瓦片：{n} / {total}。
+Loading the basemap tiles…	正在加载底图瓦片…
+Loading the file of the scene {when}…	正在加载场景 {when} 的文件…
+Loads the file of the chosen scene (once) and colours the area by the minerals of the chosen group.	加载所选场景的文件（仅一次），并按所选组的矿物为区域着色。
+Mark at least one reference.	请至少标记一个参考。
+Minerals	矿物
+Minerals by spectrum	按光谱识别矿物
+Minerals by spectrum {name}	按光谱识别矿物 {name}
+Minerals by spectrum…	按光谱识别矿物…
+Minerals of the scene {when}…	场景 {when} 的矿物…
+Minerals: {list}. Cells with a mineral {share} % of the area, {area} km².	矿物：{list}。含矿物的单元格占区域的 {share} %，{area} km²。
+NASA mineral maps from images of the EMIT spectrometer on the ISS, pixel 60 m, arid regions since 2022. NASA gives the scene files by an Earthdata key.	NASA 基于国际空间站上 EMIT 光谱仪影像的矿物图，像素 60 m，2022 年起覆盖干旱地区。NASA 通过 Earthdata 密钥提供场景文件。
+NASA mineral maps from images of the EMIT spectrometer, pixel 60 m, arid regions since 2022. Files by an Earthdata key.	NASA 基于 EMIT 光谱仪影像的矿物图，像素 60 m，2022 年起覆盖干旱地区。文件需 Earthdata 密钥。
+Nearest	最接近
+No minerals of this group were found in the area.	区域内未发现该组矿物。
+No raster with three bands or more is open.	没有打开三个或更多波段的栅格。
+No suitable raster is open.	没有打开合适的栅格。
+Others	其他
+Pixel {pixel} m, about {cells} thousand cells.	像素 {pixel} m，约 {cells} 千个单元格。
+Polygons not taken: {count}, the largest is taken.	未采用的多边形：{count}，采用最大的一个。
+Raster	栅格
+Reading the raster of the area: {done} %.	正在读取区域的栅格：{done} %。
+Reading the raster…	正在读取栅格…
+References	参考
+References marked: {n}	已标记的参考：{n}
+Scenes	场景
+Scenes over the area: {n}.	区域上方的场景：{n}。
+Searching for EMIT scenes…	正在搜索 EMIT 场景…
+Soils and mixtures	土壤和混合物
+Source terms	数据源条款
+Spectrum	光谱
+Spectrum of a pixel of a multi-band raster and the nearest references of the USGS library, classes of the area by the angle between spectra.	多波段栅格某像素的光谱和 USGS 库中最接近的参考，按光谱夹角划分区域的类别。
+Spectrum of the point {lat}, {lon}. The nearest reference is {name}, {angle}°.	点 {lat}、{lon} 的光谱。最接近的参考是 {name}，{angle}°。
+Stop	停止
+The Earthdata key was not accepted - it is outdated or wrong. Enter a new one.	Earthdata 密钥未被接受 - 已过期或有误。请输入新密钥。
+The NASA catalogue did not answer: {error}	NASA 目录没有响应：{error}
+The NASA file was not received: {error}	未收到 NASA 文件：{error}
+The area is a polygon of «My places»: the selected rows, or else the polygon under a click on the globe. Of several polygons the largest is taken, holes are not counted.	区域是“我的地点”中的多边形：先取选中的行，否则取地球上单击处的多边形。多个多边形时取最大的，孔洞不计入。
+The area is outside the scene.	区域在场景之外。
+The area is taken from «{name}».	区域取自“{name}”。
+The area will not be divided into objects, a larger pixel or a smaller area is needed.	区域不会被划分为对象，需要更大的像素或更小的区域。
+The bands are not recognised by their labels, choose the sensor.	无法按标签识别波段，请选择传感器。
+The basemap tiles were not received.	未收到底图瓦片。
+The computation by the basemap was not started.	按底图的计算未启动。
+The computation will collect the tiles of the basemap «{name}» under the area into a picture in memory, no image file is written. The terms of the basemap may not allow such use, especially for commercial services. The computation goes by your decision, you bear the responsibility for its result and use.	计算会把区域下方底图“{name}”的瓦片拼成内存中的一幅图像，不写入影像文件。底图的条款可能不允许这种用途，商业服务尤其如此。计算由用户决定进行，其结果和使用的责任由用户承担。
+The file is not saved: {error}	文件未保存：{error}
+The file of the scene is not read.	未读取场景文件。
+The largest angle between the spectra of a cell and a reference. A cell farther from all marked references stays without a class. Smaller - stricter.	单元格与参考的光谱之间的最大夹角。距所有已标记参考都更远的单元格保持无类别。越小越严格。
+The largest cloud cover of a scene by the NASA catalogue. Clouds hide the minerals, the cells under them stay without a class.	按 NASA 目录，场景允许的最大云量。云会遮住矿物，其下的单元格保持无类别。
+The names of the references are in English, as in the USGS library. All words must be in the name.	参考的名称为英文，与 USGS 库一致。名称中必须包含所有词。
+The outline is simplified to {count} vertices.	轮廓已简化为 {count} 个顶点。
+The pixel of the grid of the area. With AlphaEarth a block of the file for a year is 40-50 MB at any pixel, «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells. A raster and the globe basemap have pixels of 1, 2 and 5 m, «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Division into objects takes up to 4 million cells.	区域网格的像素。对于 AlphaEarth，一年的文件块在任何像素下都是 40-50 MB，“自动”选择下载量最小且使区域有 14 到 640 千个单元格的像素。栅格和地球底图有 1、2 和 5 m 的像素，若区域不超过 640 千个单元格，“自动”选择栅格或底图最高级别的像素。划分对象最多处理 400 万个单元格。
+The pixel of the grid of the area. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	区域网格的像素。若区域不超过 640 千个单元格，“自动”选择栅格的像素。
+The point is outside the raster or has no data.	该点在栅格之外或没有数据。
+The polygon could not be read.	无法读取多边形。
+The sensor to whose bands the references are recomputed. «Auto» recognises it by the wavelengths in the band labels of the raster. If there are no labels, the sensor is chosen by hand, the bands are taken by the numbers in the labels or in order.	参考重新计算所对应波段的传感器。“自动”根据栅格波段标签中的波长识别。没有标签时手动选择传感器，波段按标签中的编号或顺序获取。
+There are no EMIT scenes over the area. EMIT images arid regions - deserts, semi-deserts, steppes.	区域上方没有 EMIT 场景。EMIT 拍摄干旱地区 - 沙漠、半荒漠、草原。
+There is no polygon of «My places» under the click.	单击处没有“我的地点”中的多边形。
+Unmark all references.	取消所有参考的标记。
+Values of the GeoTIFF file: {list}.	GeoTIFF 文件的值：{list}。
+Water, snow and liquids	水、雪和液体
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory.	颜色和纹理的来源。AlphaEarth 向量从网络加载，程序中打开的栅格的每个波段是一个特征。“地球底图”把区域下方的底图瓦片拼成内存中的图像。
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory. Borders of surveys in the image may be repeated by the classes.	划分单元格的依据。AlphaEarth 向量从网络加载。程序中打开的栅格的每个波段是一个特征，无需网络。“地球底图”把区域下方的底图瓦片拼成内存中的图像。影像中的拍摄边界可能被类别重复。
+Without an Earthdata key NASA files are not loaded.	没有 Earthdata 密钥，不会加载 NASA 文件。
+Words of the name, for example kaolinite	名称中的词，例如 kaolinite
+{sensor}: bands {n} of {total}	{sensor}：波段 {n} / {total}
+{when}, cloud cover {cloud} %, area {share} %	{when}，云量 {cloud} %，区域 {share} %
+{when}, group {group}	{when}，组 {group}
+µm	µm

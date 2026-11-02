@@ -132,6 +132,27 @@ impl Earthwork {
         Some(Arc::new(move |key: TileKey| volumes::tile_rgba(&work, key, radius)))
     }
 
+}
+
+impl crate::analysis::SiteTool for Earthwork {
+    fn id(&self) -> &'static str {
+        "earthwork"
+    }
+    fn shown(&self) -> bool {
+        self.state.is_some()
+    }
+    fn painter(&self) -> Option<crate::vector::Painter> {
+        Earthwork::painter(self)
+    }
+    fn drop_result(&mut self) {
+        self.moved = None;
+        if self.state.take().is_some() {
+            self.changed = true;
+        }
+    }
+}
+
+impl Earthwork {
     /// Шаг: окно, высоты, расчёт. boxes - рамки своего рельефа. Возвращает
     /// тайлы высот, которых ждёт расчёт.
     #[allow(clippy::too_many_arguments)]

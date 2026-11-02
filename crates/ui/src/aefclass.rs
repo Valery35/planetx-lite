@@ -39,6 +39,7 @@ use data::aef::{self, Mosaic, Part, Piece, ZoneIndex};
 use data::rasterclass::{self, Problem, Run, Source, Warp};
 use data::segments::{self, Cut};
 use data::similar;
+use data::tilemosaic::{self, TileWarp};
 use eframe::egui;
 use globe_core::DVec3;
 use globe_core::lod::TileKey;
@@ -49,6 +50,7 @@ use scene::kml::{Item, Place};
 use crate::aefcalc::{Indexes, Request, utm_epsg};
 use crate::aefread::BlockRead;
 use crate::analysis::{self, Button, Saved, SiteEdit};
+use crate::basemapread::BaseRead;
 use crate::i18n::{Lang, tr, trf};
 
 /// Участок по умолчанию и наибольший, километры, `CLASS_SIDE` модуля.
@@ -58,7 +60,7 @@ const MOST: f64 = 10.0;
 /// сетку отсекает `rasterclass::too_big`.
 const RASTER_MOST: f64 = 1000.0;
 /// Цвета новых классов по порядку - выбор помощника модуля.
-const COLORS: [[u8; 3]; 8] = [[60, 160, 70], [40, 110, 220], [240, 190, 40], [200, 60, 50], [150, 90, 200], [120, 120, 120], [240, 130, 40], [60, 200, 200]];
+pub const COLORS: [[u8; 3]; 8] = [[60, 160, 70], [40, 110, 220], [240, 190, 40], [200, 60, 50], [150, 90, 200], [120, 120, 120], [240, 130, 40], [60, 200, 200]];
 const OPACITY: f64 = 0.6;
 /// Время распаковки каналов за кадр, секунды.
 const BUDGET: f64 = 0.012;
@@ -79,6 +81,22 @@ const FOUND_COLOR: [u8; 3] = [255, 120, 30];
 const SAMPLE_COLOR: [u8; 3] = [255, 230, 60];
 /// Новая выборка после паузы ползунка, секунды, `PAUSE` модуля.
 const PAUSE: f64 = 0.15;
+/// Пиксели списка «Пиксель», метры, `PIXELS` модуля. Первые [`FINE`] -
+/// только у растра и подложки: у AlphaEarth мельче 10 м данных нет,
+/// дальше - уровни AlphaEarth `aef::DETAIL_LEVELS` по порядку.
+pub const PIXELS: [f64; 7] = [1.0, 2.0, 5.0, 10.0, 20.0, 40.0, 80.0];
+pub const FINE: usize = 3;
+/// Источник «Подложка глобуса» в списке, `BASEMAP` модуля.
+pub const BASEMAP: &str = "@basemap";
+
+/// Подложка на глобусе для источника «Подложка глобуса»: название,
+/// источник тайлов, подпись прав.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Backdrop {
+    pub name: String,
+    pub source: net::Source,
+    pub credit: String,
+}
 
 /// Класс: название, цвет, контрольные точки.
 #[derive(Debug, Clone, PartialEq)]
@@ -100,10 +118,14 @@ enum OwnStage {
     Read(Arc<Vec<u8>>),
     Warp(Box<(Source, Warp)>),
     Classes { grid: Arc<Mosaic<f32>>, run: Box<Run>, outside: usize, share: f64 },
+    /// Тайлы подложки по сети, потом пересчёт на сетку участка. Флаг -
+    /// тайлы получены.
+    Tiles(Box<(BaseRead, TileWarp, bool)>),
     /// Деление участка на объекты проходами.
     Cut { grid: Arc<Mosaic<f32>>, cut: Box<Cut>, start: usize, share: f64 },
-    /// Классы объектов.
-    Kinds { grid: Arc<Mosaic<f32>>, parts: Arc<Vec<i32>>, table: Vec<f32>, run: Box<Run>, outside: usize, share: f64 },
+    /// Классы объектов: table - признаки расчёта, plain - средние
+    /// и разбросы каналов для полей объектов.
+    Kinds { grid: Arc<Mosaic<f32>>, parts: Arc<Vec<i32>>, table: Vec<f32>, plain: Vec<f32>, run: Box<Run>, outside: usize, share: f64 },
 }
 
 /// Сетка участка готова к делению на объекты.
@@ -253,6 +275,24 @@ impl Layer {
     }
 }
 
+impl Layer {
+    /// Цвета сетки точек lats × lons (строки с севера) с премноженной
+    /// альфой и границами объектов.
+    pub fn sample_grid(&self, lats: &[f64], lons: &[f64]) -> Vec<[u8; 4]> {
+        let points: Vec<(f64, f64)> = lats.iter().flat_map(|&la| lons.iter().map(move |&lo| (la, lo))).collect();
+        let mut pixels = self.sample(&points);
+        if let Some(objects) = &self.objects {
+            let found = self.parts_at(&objects.parts, &points);
+            for (pixel, edge) in pixels.iter_mut().zip(segments::borders(&found, lats.len(), lons.len())) {
+                if edge {
+                    *pixel = BORDER;
+                }
+            }
+        }
+        pixels
+    }
+}
+
 /// Картинки тайлов слоя.
 pub fn painter(layer: Arc<Layer>) -> crate::vector::Painter {
     let (south, north, west, east) = layer.bbox();
@@ -263,18 +303,41 @@ pub fn painter(layer: Arc<Layer>) -> crate::vector::Painter {
         if bottom > north || top < south || left > east || right < west {
             return None;
         }
-        let points: Vec<(f64, f64)> = lats.iter().flat_map(|&la| lons.iter().map(move |&lo| (la, lo))).collect();
-        let mut pixels = layer.sample(&points);
-        if let Some(objects) = &layer.objects {
-            let found = layer.parts_at(&objects.parts, &points);
-            for (pixel, edge) in pixels.iter_mut().zip(segments::borders(&found, lats.len(), lons.len())) {
-                if edge {
-                    *pixel = BORDER;
-                }
-            }
-        }
+        let pixels = layer.sample_grid(&lats, &lons);
         pixels.iter().any(|p| p[3] > 0).then(|| pixels.concat())
     })
+}
+
+/// Сторона картинки предпросмотра поверх слоёв, пиксели.
+pub const PREVIEW_SIDE: usize = 2048;
+
+/// Предпросмотр слоя картинкой на поверхности поверх картинок «Моих
+/// меток», как предпросмотр анализа над слоями проекта модуля 1.30:
+/// сохранённый прежде расчёт и снимок из KML его не закрывают. None -
+/// сетка слоя крупнее [`PREVIEW_SIDE`], картинка огрубила бы клетки, тогда
+/// предпросмотр идёт картинками тайлов.
+pub fn preview_overlay(layer: &Layer) -> Option<scene::kml::Overlay> {
+    if layer.rows.max(layer.cols) > PREVIEW_SIDE || layer.rows == 0 || layer.cols == 0 {
+        return None;
+    }
+    let (south, north, west, east) = layer.bbox();
+    // Пиксель картинки - не крупнее половины клетки по широте и долготе.
+    let rows = (2 * layer.rows).clamp(1, PREVIEW_SIDE);
+    let cols = (2 * layer.cols).clamp(1, PREVIEW_SIDE);
+    let (dlat, dlon) = ((north - south) / rows as f64, (east - west) / cols as f64);
+    let lats: Vec<f64> = (0..rows).map(|r| north - (r as f64 + 0.5) * dlat).collect();
+    let lons: Vec<f64> = (0..cols).map(|c| west + (c as f64 + 0.5) * dlon).collect();
+    let rgba: Vec<u8> = layer.sample_grid(&lats, &lons).into_iter().flat_map(analysis::unpremultiply).collect();
+    let image = image::RgbaImage::from_raw(u32::try_from(cols).ok()?, u32::try_from(rows).ok()?, rgba)?;
+    let mut png = std::io::Cursor::new(Vec::new());
+    image.write_to(&mut png, image::ImageFormat::Png).ok()?;
+    let mut ground = scene::overlays::Overlay::new(scene::overlays::Kind::Ground);
+    ground.set_box([north, south, east, west, 0.0]);
+    ground.order = i64::MAX;
+    let mut overlay = scene::kml::Overlay::new("preview", ground);
+    overlay.href = "planetx:preview".to_string();
+    overlay.image = Some(png.into_inner());
+    Some(overlay)
 }
 
 /// Окно «Классификация».
@@ -308,6 +371,20 @@ pub struct ClassCalc {
     pieces: Option<(String, Arc<Vec<i32>>)>,
     /// Окно «Похожие области», None - «Классификация».
     find: Option<Find>,
+    /// Пиксель растра у участка, метры: имя источника и пиксель. Строка
+    /// под полем «Пиксель» называет по нему шаг «Авто».
+    native: Option<(String, f64)>,
+    /// Подложка на глобусе, её ставит окно глобуса каждый кадр.
+    pub basemap: Option<Backdrop>,
+    /// Адреса подложек, условия которых для расчёта приняты, из настроек.
+    pub accepted: Vec<String>,
+    /// Адрес подложки, условия которой только что приняты: окно глобуса
+    /// пишет его в настройки.
+    pub accept_new: Option<String>,
+    /// Окно условий подложки открыто.
+    terms: bool,
+    /// Подпись источника расчёта по подложке.
+    credit: String,
 }
 
 impl ClassCalc {
@@ -346,6 +423,12 @@ impl ClassCalc {
             split: Split { on: false, scale: segments::SCALE, weight: (100.0 * segments::WEIGHT) as u32, least: segments::LEAST, join: false },
             pieces: None,
             find: None,
+            native: None,
+            basemap: None,
+            accepted: Vec::new(),
+            accept_new: None,
+            terms: false,
+            credit: String::new(),
         };
         calc.add_class(lang);
         calc.add_class(lang);
@@ -412,18 +495,67 @@ impl ClassCalc {
             return;
         }
         let (lat, lon) = self.site.site.centre();
+        if self.source.as_deref() == Some(BASEMAP) {
+            self.build_basemap(lang, lat, lon);
+            return;
+        }
         if let Some(name) = self.source.clone() {
             self.build_raster(lang, name, lat, lon);
             return;
         }
         // Векторы того же участка, года и пикселя уже есть: только классы.
         if let Some((key, _, _)) = &self.vectors
-            && *key == self.key(self.level.unwrap_or(key.2))
+            && *key == self.key(self.ae_level().unwrap_or(key.2))
         {
             self.classify(lang);
             return;
         }
-        self.job = Some(Job { zone: aef::zone_of(lon, lat), bbox: self.site.site.bbox(), year: self.year, level: self.level, index: None, parts: Vec::new(), next: 0, read: None, pieces: Vec::new() });
+        self.job = Some(Job { zone: aef::zone_of(lon, lat), bbox: self.site.site.bbox(), year: self.year, level: self.ae_level(), index: None, parts: Vec::new(), next: 0, read: None, pieces: Vec::new() });
+    }
+
+    /// Уровень AlphaEarth выбранного пикселя, None - «Авто». Пиксель мельче
+    /// 10 м у AlphaEarth - «Авто», как `fill_pixels` модуля.
+    fn ae_level(&self) -> Option<usize> {
+        self.level.and_then(|l| l.checked_sub(FINE))
+    }
+
+    /// Строка под полем «Пиксель» у растра и подложки, `pixel_text` модуля:
+    /// шаг сетки, у «Авто» - каким он выйдет, и количество клеток участка.
+    /// None - у AlphaEarth, при негодном участке и у «Авто», пока пиксель
+    /// растра неизвестен.
+    fn pixel_text(&self, lang: Lang) -> Option<String> {
+        let name = self.source.as_ref()?;
+        if self.site.problem(lang).is_some() {
+            return None;
+        }
+        let side = self.site.site.size();
+        let base = self.basemap.as_ref().filter(|_| name == BASEMAP);
+        let pixel = match self.chosen_pixel() {
+            Some(pixel) => pixel,
+            None => {
+                let native = match base {
+                    Some(b) => tilemosaic::tile_pixel(self.site.site.centre().0, b.source.max_level),
+                    None => self.native.as_ref().filter(|n| &n.0 == name)?.1,
+                };
+                rasterclass::auto_pixel(native, side)
+            }
+        };
+        let across = (side / pixel).ceil() as usize;
+        let cells = (side / pixel).powi(2);
+        let mut text = trf(lang, "Pixel {pixel} m, about {cells} thousand cells.", &[("pixel", &crate::spectral::short(pixel)), ("cells", &format!("{:.0}", cells / 1000.0))]);
+        if let Some(b) = base {
+            text = format!("{}. {text}", b.name);
+        }
+        if segments::too_big(across, across) {
+            text = format!("{text} {}", tr(lang, "The area will not be divided into objects, a larger pixel or a smaller area is needed."));
+        }
+        Some(text)
+    }
+
+    /// Выбранный пиксель, метры, None - «Авто».
+    fn chosen_pixel(&self) -> Option<f64> {
+        let level = if self.source.is_some() { self.level } else { self.ae_level().map(|l| l + FINE) };
+        level.and_then(|l| PIXELS.get(l).copied())
     }
 
     /// Классы по каналам открытого растра. Сетка того же участка и пикселя
@@ -441,8 +573,8 @@ impl ClassCalc {
         self.job = None;
         // Пиксель задан: сетка известна до чтения файла. У «Авто» её
         // ограничивает сам пиксель.
-        if let Some((_, step)) = self.level.and_then(|l| aef::DETAIL_LEVELS.get(l)) {
-            let (_, _, cols, rows) = aef::grid_frame(&index, self.site.site.bbox(), *step);
+        if let Some(step) = self.chosen_pixel() {
+            let (_, _, cols, rows) = aef::grid_frame(&index, self.site.site.bbox(), step);
             if rasterclass::too_big(rows, cols, 1) {
                 self.own_problem(lang, Problem::Big);
                 return;
@@ -455,6 +587,48 @@ impl ClassCalc {
         let (bbox, side) = (self.site.site.bbox(), self.site.site.size());
         self.own_job = Some(OwnJob { key, index: Arc::new(index), bbox, side, stage: OwnStage::Read(bytes) });
         self.status = tr(lang, "Reading the raster of the area…").to_string();
+    }
+
+    /// Классы по подложке глобуса, `read_basemap` модуля: уровень тайлов -
+    /// по шагу сетки, «Авто» - пиксель верхнего уровня подложки, если
+    /// клеток на участке не больше 640 тысяч. Перед первым расчётом по
+    /// подложке - окно её условий.
+    fn build_basemap(&mut self, lang: Lang, lat: f64, lon: f64) {
+        let Some(base) = self.basemap.clone() else {
+            self.status = tr(lang, "The basemap tiles were not received.").to_string();
+            return;
+        };
+        if !self.accepted.iter().any(|u| u == base.source.url) {
+            self.terms = true;
+            return;
+        }
+        let Some(index) = ZoneIndex::bare(&aef::zone_of(lon, lat)) else {
+            return;
+        };
+        let (bbox, side) = (self.site.site.bbox(), self.site.site.size());
+        let pixel = self.chosen_pixel().unwrap_or_else(|| rasterclass::auto_pixel(tilemosaic::tile_pixel(lat, base.source.max_level), side));
+        let (w, s, e, n) = bbox;
+        let key = (format!("{BASEMAP}:{}", base.source.url), format!("{w:.6},{s:.6},{e:.6},{n:.6}"), self.level);
+        self.job = None;
+        self.credit = base.credit.clone();
+        if let Some((_, index, grid)) = self.own_grid.clone().filter(|g| g.0 == key) {
+            self.start_classes(lang, key, index, grid);
+            return;
+        }
+        let (_, _, cols, rows) = aef::grid_frame(&index, bbox, pixel);
+        let frame = tilemosaic::span(bbox, tilemosaic::level_for(lat, pixel, base.source.max_level));
+        if rasterclass::too_big(rows, cols, 3) || frame.count() > tilemosaic::MAX_TILES {
+            self.own_problem(lang, Problem::Big);
+            return;
+        }
+        let warp = TileWarp::new(index.clone(), bbox, pixel);
+        self.own_job = Some(OwnJob { key, index: Arc::new(index), bbox, side, stage: OwnStage::Tiles(Box::new((BaseRead::new(base.source, frame), warp, false))) });
+        self.status = tr(lang, "Loading the basemap tiles…").to_string();
+    }
+
+    /// Название источника по ключу сетки: у подложки - её название.
+    fn source_title<'a>(&'a self, key: &'a str) -> &'a str {
+        if key.starts_with(BASEMAP) { self.basemap.as_ref().map_or(key, |b| b.name.as_str()) } else { key }
     }
 
     /// Точки на сетке растра и начало расчёта классов. Отказы - как
@@ -522,16 +696,19 @@ impl ClassCalc {
             return;
         }
         if self.find.is_some() {
-            self.start_scores(lang, key.0, index, grid, parts);
+            self.start_scores(lang, self.source_title(&key.0).to_string(), index, grid, parts);
             return;
         }
         let depth = grid.depth.max(1);
-        let table = segments::table(&grid.values, depth, &parts);
+        let plain = segments::table(&grid.values, depth, &parts);
+        // У снимка к признакам добавляется рисунок объекта, у эмбеддингов
+        // AlphaEarth его нет, `_objects(drawing=True)` модуля.
+        let (table, width) = self.signs(&grid, &parts, &plain);
         let (mut samples, mut labels, mut outside) = (Vec::new(), Vec::new(), 0);
         for &(label, (lat, lon)) in points {
             let (x, y) = index.project(lat, lon);
             let object = grid.cell_of(x, y).and_then(|(r, c)| usize::try_from(*parts.get(r * grid.cols + c)?).ok());
-            match object.and_then(|o| table.get(o * 2 * depth..(o + 1) * 2 * depth)) {
+            match object.and_then(|o| table.get(o * width..(o + 1) * width)) {
                 Some(row) => {
                     samples.push(row.to_vec());
                     labels.push(label);
@@ -546,17 +723,28 @@ impl ClassCalc {
             self.own_problem(lang, Problem::Points);
             return;
         }
-        let run = Box::new(Run::new(&table, 2 * depth, &samples, &labels, None, rasterclass::KNN));
+        let run = Box::new(Run::new(&table, width, &samples, &labels, None, rasterclass::KNN));
         let (bbox, side) = (self.site.site.bbox(), self.site.site.size());
         self.status = tr(lang, "Computing the classes…").to_string();
-        self.own_job = Some(OwnJob { key, index, bbox, side, stage: OwnStage::Kinds { grid, parts, table, run, outside, share } });
+        self.own_job = Some(OwnJob { key, index, bbox, side, stage: OwnStage::Kinds { grid, parts, table, plain, run, outside, share } });
+    }
+
+    /// Признаки объектов и их ширина: у растра и подложки за средними
+    /// и разбросами каналов plain идёт рисунок объекта
+    /// ([`segments::pattern`]), у AlphaEarth - только plain.
+    fn signs(&self, grid: &Mosaic<f32>, parts: &[i32], plain: &[f32]) -> (Vec<f32>, usize) {
+        let depth = grid.depth.max(1);
+        if self.source.is_none() {
+            return (plain.to_vec(), 2 * depth);
+        }
+        let drawing = segments::pattern(&grid.values, depth, parts, grid.rows, grid.cols);
+        (segments::with_pattern(plain, 2 * depth, &drawing), 2 * depth + segments::PATTERN)
     }
 
     /// Похожесть объектов на образцы, `work` окна модуля.
     fn start_scores(&mut self, lang: Lang, label: String, index: Arc<ZoneIndex>, grid: Arc<Mosaic<f32>>, parts: Arc<Vec<i32>>) {
         let depth = grid.depth.max(1);
-        let width = 2 * depth;
-        let table = segments::table(&grid.values, depth, &parts);
+        let (table, width) = self.signs(&grid, &parts, &segments::table(&grid.values, depth, &parts));
         let rings = self.find.as_ref().map(|f| f.rings.clone()).unwrap_or_default();
         let rows: Vec<Vec<Vec<f32>>> = rings.iter().map(|ring| similar::sample_rows(&table, width, &parts, &ring_mask(&index, &grid, ring))).collect();
         let lost = rows.iter().filter(|r| r.is_empty()).count();
@@ -566,7 +754,7 @@ impl ClassCalc {
         }
         let samples = rows.concat();
         let weight = f64::from(self.split.weight) / 100.0;
-        let Some(score) = similar::scores(&table, width, &segments::areas(&parts), &samples, weight) else {
+        let Some(score) = similar::scores(&table, width, &segments::areas(&parts), &samples, weight, depth) else {
             self.own_problem(lang, Problem::Flat);
             return;
         };
@@ -614,7 +802,7 @@ impl ClassCalc {
 
     /// Классы объектов готовы, `_built` модуля с объектами.
     fn objects_built(&mut self, lang: Lang) {
-        let Some(OwnJob { key, index, stage: OwnStage::Kinds { grid, parts, table, run, outside, share }, .. }) = self.own_job.take() else {
+        let Some(OwnJob { key, index, stage: OwnStage::Kinds { grid, parts, plain: table, run, outside, share, .. }, .. }) = self.own_job.take() else {
             return;
         };
         let (kinds, _) = run.finish();
@@ -634,7 +822,7 @@ impl ClassCalc {
         let rows: Vec<&Class> = self.classes.iter().filter(|c| !c.points.is_empty()).collect();
         let parts_text = class_shares(&rows, &classes);
         let mut text = if self.source.is_some() {
-            trf(lang, "Classes of the raster «{name}»: {parts}. Pixel {pixel} m.", &[("name", &key.0), ("parts", &parts_text), ("pixel", &format!("{}", (grid.step * 100.0).round() / 100.0))])
+            trf(lang, "Classes of the raster «{name}»: {parts}. Pixel {pixel} m.", &[("name", self.source_title(&key.0)), ("parts", &parts_text), ("pixel", &format!("{}", (grid.step * 100.0).round() / 100.0))])
         } else {
             trf(lang, "Classes of the year {year}: {parts}.", &[("year", &key.0), ("parts", &parts_text)])
         };
@@ -652,7 +840,7 @@ impl ClassCalc {
         let bands = if self.source.is_some() { depth } else { 0 };
         let objects = Arc::new(Objects { parts: shown, kinds, table, bands, similar: None });
         self.layer = Some(Arc::new(Layer { index, step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), opacity: self.opacity, objects: Some(objects) }));
-        self.label = key.0;
+        self.label = self.source_title(&key.0).to_string();
         self.changed = true;
     }
 
@@ -666,26 +854,60 @@ impl ClassCalc {
     }
 
     /// Шаг расчёта по растру.
-    fn step_own(&mut self, lang: Lang) {
+    fn step_own(&mut self, lang: Lang, request: Request) {
         let started = web_time::Instant::now();
         let Some(job) = &mut self.own_job else {
             return;
         };
         let index = job.index.clone();
         match &mut job.stage {
+            OwnStage::Tiles(parts) => {
+                let (read, warp, got) = &mut **parts;
+                if !*got {
+                    *got = read.step(request);
+                    if !*got {
+                        self.status = trf(lang, "Loading the basemap tiles: {n} of {total}.", &[("n", &read.found().to_string()), ("total", &read.total.to_string())]);
+                        return;
+                    }
+                    if read.found() == 0 {
+                        self.own_problem(lang, Problem::Tiles);
+                        return;
+                    }
+                }
+                let mut done = false;
+                while !done && started.elapsed().as_secs_f64() < BUDGET {
+                    done = warp.rows(&read.tiles, WARP_ROWS);
+                }
+                if !done {
+                    return;
+                }
+                let Some(OwnJob { key, index, stage: OwnStage::Tiles(parts), .. }) = self.own_job.take() else {
+                    return;
+                };
+                let grid = Arc::new(parts.1.grid);
+                self.own_grid = Some((key.clone(), index.clone(), grid.clone()));
+                self.start_classes(lang, key, index, grid);
+            }
             OwnStage::Read(bytes) => {
                 let (centre, side, bbox, level) = (self.site.site.centre(), job.side, job.bbox, job.key.2);
+                let mut native = None;
                 let opened = Source::read(bytes, &job.key.0).and_then(|source| {
-                    let pixel = match level.and_then(|l| aef::DETAIL_LEVELS.get(l)) {
-                        Some(level) => level.1,
-                        None => rasterclass::auto_pixel(source.pixel(&index, centre.0, centre.1), side),
+                    let own = source.pixel(&index, centre.0, centre.1);
+                    native = Some(own);
+                    let pixel = match level.and_then(|l| PIXELS.get(l)) {
+                        Some(pixel) => *pixel,
+                        None => rasterclass::auto_pixel(own, side),
                     };
                     let warp = source.warp(&index, bbox, pixel)?;
                     Ok((source, warp))
                 });
+                let name = job.key.0.clone();
                 match opened {
                     Ok(pair) => job.stage = OwnStage::Warp(Box::new(pair)),
                     Err(problem) => self.own_problem(lang, problem),
+                }
+                if let Some(native) = native {
+                    self.native = Some((name, native));
                 }
             }
             OwnStage::Warp(pair) => {
@@ -756,7 +978,7 @@ impl ClassCalc {
         let rows: Vec<&Class> = self.classes.iter().filter(|c| !c.points.is_empty()).collect();
         let parts = class_shares(&rows, &classes);
         let pixel = format!("{}", (grid.step * 100.0).round() / 100.0);
-        let mut text = trf(lang, "Classes of the raster «{name}»: {parts}. Pixel {pixel} m.", &[("name", &key.0), ("parts", &parts), ("pixel", &pixel)]);
+        let mut text = trf(lang, "Classes of the raster «{name}»: {parts}. Pixel {pixel} m.", &[("name", self.source_title(&key.0)), ("parts", &parts), ("pixel", &pixel)]);
         if share < rasterclass::COVERED {
             text = format!("{text} {}", trf(lang, "The raster covers {share} % of the area.", &[("share", &format!("{:.0}", 100.0 * share))]));
         }
@@ -765,13 +987,13 @@ impl ClassCalc {
         }
         self.status = format!("{text} {}", analysis::built_text(lang, crate::pointcalc::clock_now()));
         self.layer = Some(Arc::new(Layer { index, step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), opacity: self.opacity, objects: None }));
-        self.label = key.0;
+        self.label = self.source_title(&key.0).to_string();
         self.changed = true;
     }
 
     /// Шаг загрузки векторов.
     pub fn step(&mut self, lang: Lang, request: Request) {
-        self.step_own(lang);
+        self.step_own(lang, request);
         self.indexes.step();
         let Some(job) = &mut self.job else {
             return;
@@ -991,11 +1213,21 @@ impl ClassCalc {
             }
             extra.push(Item::Folder(folder));
         }
-        let layers = if let Some(places) = places {
+        // Подпись источника подложки - в описании результата, как права
+        // слоя (`set_credit` модуля).
+        let credit = if self.source.as_deref() == Some(BASEMAP) { self.credit.clone() } else { String::new() };
+        let layers = if let Some(mut places) = places {
+            for item in &mut places {
+                if let Item::Folder(folder) = item {
+                    folder.description.clone_from(&credit);
+                }
+            }
             extra.extend(places);
             Vec::new()
         } else {
-            vec![analysis::picture(name, "aef_class", layer.bbox(), layer.step, &sample, tiff)]
+            let mut picture = analysis::picture(name, "aef_class", layer.bbox(), layer.step, &sample, tiff);
+            picture.summary.clone_from(&credit);
+            vec![picture]
         };
         for (n, class) in self.classes.iter().filter(|c| !c.points.is_empty()).enumerate() {
             let mut folder = scene::kml::Folder::new(&trf(lang, "{n} - {name}", &[("n", &n.to_string()), ("name", &class.name)]));
@@ -1119,6 +1351,55 @@ impl ClassCalc {
         }
     }
 
+    /// Окно условий подложки перед первым расчётом по ней,
+    /// `accept_basemap_use` модуля: условия разных подложек такое
+    /// использование разрешают по-разному.
+    fn terms_window(&mut self, ctx: &egui::Context, lang: Lang) {
+        if !self.terms {
+            return;
+        }
+        let Some(base) = self.basemap.clone() else {
+            self.terms = false;
+            return;
+        };
+        let mut answer = None;
+        egui::Window::new(tr(lang, "Source terms")).id(egui::Id::unique("planetx-basemap-terms")).collapsible(false).resizable(false).anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO).show(ctx, |ui| {
+            ui.set_max_width(420.0);
+            ui.add(
+                egui::Label::new(trf(
+                    lang,
+                    "The computation will collect the tiles of the basemap «{name}» under the area into a picture in memory, no image file is written. The terms of the basemap may not allow such use, especially for commercial services. The computation goes by your decision, you bear the responsibility for its result and use.",
+                    &[("name", &base.name)],
+                ))
+                .wrap(),
+            );
+            ui.horizontal(|ui| {
+                if ui.button(tr(lang, "Compute")).clicked() {
+                    answer = Some(true);
+                }
+                if ui.button(tr(lang, "Cancel")).clicked() {
+                    answer = Some(false);
+                }
+            });
+        });
+        match answer {
+            Some(true) => {
+                self.terms = false;
+                let url = base.source.url.to_string();
+                if !self.accepted.contains(&url) {
+                    self.accepted.push(url.clone());
+                }
+                self.accept_new = Some(url);
+                self.build(lang);
+            }
+            Some(false) => {
+                self.terms = false;
+                self.status = tr(lang, "The computation by the basemap was not started.").to_string();
+            }
+            None => {}
+        }
+    }
+
     /// Окно.
     pub fn show(&mut self, ctx: &egui::Context, lang: Lang) {
         if !self.open {
@@ -1143,21 +1424,29 @@ impl ClassCalc {
                 ui.label(&self.place);
                 ui.end_row();
                 ui.label(tr(lang, "Source"));
+                let shown = match self.source.as_deref() {
+                    None => "AlphaEarth",
+                    Some(BASEMAP) => tr(lang, "Globe basemap"),
+                    Some(name) => name,
+                };
                 egui::ComboBox::from_id_salt("planetx-aef-class-source")
-                    .selected_text(self.source.as_deref().unwrap_or("AlphaEarth"))
+                    .selected_text(shown)
                     .show_ui(ui, |ui| {
                         if !cfg!(target_arch = "wasm32") {
                             ui.selectable_value(&mut self.source, None, "AlphaEarth");
                         }
+                        // Подложка глобуса - то, что на виде, `_earth_source`
+                        // модуля.
+                        ui.selectable_value(&mut self.source, Some(BASEMAP.to_string()), tr(lang, "Globe basemap"));
                         for (name, _) in &self.rasters {
                             ui.selectable_value(&mut self.source, Some(name.clone()), name);
                         }
                     })
                     .response
                     .on_hover_text(if searching {
-                        tr(lang, "What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature.")
+                        tr(lang, "What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory.")
                     } else {
-                        tr(lang, "What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed.")
+                        tr(lang, "What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory. Borders of surveys in the image may be repeated by the classes.")
                     });
                 ui.end_row();
                 if self.source.is_none() {
@@ -1177,25 +1466,30 @@ impl ClassCalc {
                 self.site.row(ui, lang);
                 ui.end_row();
                 ui.label(tr(lang, "Pixel"));
-                let text = match self.level {
+                let text = match self.chosen_pixel() {
                     None => tr(lang, "Auto").to_string(),
-                    Some(l) => trf(lang, "{pixel} m", &[("pixel", &format!("{}", aef::DETAIL_LEVELS.get(l).map_or(10.0, |v| v.1)))]),
+                    Some(pixel) => trf(lang, "{pixel} m", &[("pixel", &format!("{pixel}"))]),
                 };
+                let first = if self.source.is_some() { 0 } else { FINE };
                 egui::ComboBox::from_id_salt("planetx-aef-class-level")
                     .selected_text(text)
                     .show_ui(ui, |ui| {
                         ui.selectable_value(&mut self.level, None, tr(lang, "Auto"));
-                        for (level, pixel) in aef::DETAIL_LEVELS {
+                        for (level, pixel) in PIXELS.iter().enumerate().skip(first) {
                             ui.selectable_value(&mut self.level, Some(level), trf(lang, "{pixel} m", &[("pixel", &format!("{pixel}"))]));
                         }
                     })
                     .response
-                    .on_hover_text(if self.source.is_some() {
-                        tr(lang, "The pixel of the classification. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.")
-                    } else {
-                        tr(lang, "The pixel of the classification. A block of the file for a year is 40-50 MB at any pixel. «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells.")
-                    });
+                    .on_hover_text(tr(
+                        lang,
+                        "The pixel of the grid of the area. With AlphaEarth a block of the file for a year is 40-50 MB at any pixel, «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells. A raster and the globe basemap have pixels of 1, 2 and 5 m, «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Division into objects takes up to 4 million cells.",
+                    ));
                 ui.end_row();
+                if let Some(text) = self.pixel_text(lang) {
+                    ui.label("");
+                    ui.add(egui::Label::new(text).wrap());
+                    ui.end_row();
+                }
                 if !searching {
                     ui.label("");
                     ui.checkbox(&mut self.split.on, tr(lang, "Divide into objects")).on_hover_text(tr(lang, "The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons."));
@@ -1282,6 +1576,7 @@ impl ClassCalc {
             };
             pressed = analysis::buttons(ui, lang, self.layer.is_some() && !self.busy(), tip);
         });
+        self.terms_window(ctx, lang);
         if let Some(k) = remove
             && k < self.classes.len()
         {
@@ -1337,8 +1632,31 @@ impl ClassCalc {
     }
 }
 
+impl analysis::SiteTool for ClassCalc {
+    fn id(&self) -> &'static str {
+        if self.find.is_some() { "similar" } else { "aef_class" }
+    }
+    fn shown(&self) -> bool {
+        self.layer.is_some()
+    }
+    fn layer(&self) -> Option<Arc<Layer>> {
+        self.layer.clone()
+    }
+    fn painter(&self) -> Option<crate::vector::Painter> {
+        self.layer.clone().map(painter)
+    }
+    fn drop_result(&mut self) {
+        if self.layer.take().is_some() {
+            self.changed = true;
+        }
+        if let Some(find) = &mut self.find {
+            find.base = None;
+        }
+    }
+}
+
 /// Клетки сетки внутри многоугольника участка, `ring_mask` модуля.
-fn ring_mask<T: Copy>(index: &ZoneIndex, grid: &Mosaic<T>, ring: &[(f64, f64)]) -> Vec<bool> {
+pub fn ring_mask<T: Copy>(index: &ZoneIndex, grid: &Mosaic<T>, ring: &[(f64, f64)]) -> Vec<bool> {
     let mut out = Vec::with_capacity(grid.rows * grid.cols);
     for r in 0..grid.rows {
         let y = grid.y0 - (r as f64 + 0.5) * grid.step;
@@ -1369,6 +1687,7 @@ pub fn problem_text(lang: Lang, problem: Problem) -> &'static str {
         Problem::Whole => tr(lang, "The whole area came out as one object, reduce the object scale."),
         Problem::Pieces => tr(lang, "For objects the grid of the area is too large, take a larger pixel or «Auto»."),
         Problem::Samples => tr(lang, "There are no objects of the area in the sample outlines."),
+        Problem::Tiles => tr(lang, "The basemap tiles were not received."),
     }
 }
 

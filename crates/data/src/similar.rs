@@ -58,11 +58,14 @@ pub fn sample_rows(table: &[f32], width: usize, parts: &[i32], mask: &[bool]) ->
     keep.iter().filter_map(|o| table.get(o * width..(o + 1) * width).map(<[f32]>::to_vec)).collect()
 }
 
-/// Похожесть объектов от 0 до 1. table - [`segments::table`], sizes - клеток
-/// в объектах, samples - признаки образцов, weight - доля текстуры. None -
-/// признаки на участке не меняются.
-pub fn scores(table: &[f32], width: usize, sizes: &[u64], samples: &[Vec<f32>], weight: f64) -> Option<Vec<f64>> {
-    let bands = width / 2;
+/// Похожесть объектов от 0 до 1. table - [`segments::table`], за строкой
+/// которой может идти рисунок [`segments::with_pattern`], sizes - клеток
+/// в объектах, samples - признаки образцов, weight - доля текстуры, bands -
+/// первых чисел строки, которые считаются цветом. Текстура - разброс
+/// каналов внутри объекта и рисунок. None - признаки на участке не
+/// меняются.
+pub fn scores(table: &[f32], width: usize, sizes: &[u64], samples: &[Vec<f32>], weight: f64, bands: usize) -> Option<Vec<f64>> {
+    let bands = bands.min(width);
     let total: u64 = sizes.iter().sum();
     if total == 0 || width == 0 {
         return None;

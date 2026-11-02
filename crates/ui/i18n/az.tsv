@@ -2039,3 +2039,110 @@ The tour is recorded to {folder}. Frame count {count}, {fps} per second.	Tur {fo
 Frames not fully loaded: {count}.	Tam yüklənməmiş kadrlar: {count}.
 The folder already holds tour frames. Choose another folder.	Qovluqda artıq tur kadrları var. Başqa qovluq seçin.
 The window size changed during the recording. The recording stopped at frame {n}.	Yazı zamanı pəncərənin ölçüsü dəyişdi. Yazı {n} kadrında dayandı.
+A multi-band raster in reflectance opened in the program, for example all bands of a scene of the Satellite images window. The bands are recognised by their labels, thermal bands do not take part.	Proqramda açılmış əksetmə dəyərli çoxkanallı raster, məsələn «Peyk şəkilləri» pəncərəsindəki səhnənin bütün kanalları. Kanallar etiketlərinə görə tanınır, termal kanallar iştirak etmir.
+All groups	Bütün qruplar
+Angle to the reference	Etalona bucaq
+Angle to the reference, °	Etalona bucaq, °
+Angle up to	Bucaq ən çox
+Area {area} km², heights {low}-{high} m, mean {mean} m.	Sahə {area} km², hündürlüklər {low}-{high} m, orta {mean} m.
+Artificial materials	Süni materiallar
+Band depth	Zolağın dərinliyi
+Bands	Kanallar
+Choose a scene in the list.	Siyahıdan səhnə seçin.
+Classes of the area by control points on the globe - by the globe basemap or the bands of an opened raster.	Sahənin qlobusdakı nəzarət nöqtələrinə görə sinifləri - qlobusun əsas xəritəsinə və ya açıq rasterin kanallarına görə.
+Classes: {list}. Without a class {none} %.	Siniflər: {list}. Sinifsiz {none} %.
+Clear all	Hamısını təmizlə
+Click the globe inside a polygon of «My places».	Qlobusda «Mənim yerlərim» çoxbucaqlısının daxilinə klik edin.
+Click the image on the globe	Qlobusdakı şəkilə klik edin
+Click the image on the globe - the chart shows the spectrum of the pixel and the nearest references. Marked references become classes of the area.	Qlobusdakı şəkilə klik edin - qrafik pikselin spektrini və ən yaxın etalonları göstərir. İşarələnmiş etalonlar sahənin siniflərinə çevrilir.
+Cloud cover up to	Buludluluq ən çox
+Coatings	Örtüklər
+Compute	Hesabla
+Computing the angles between spectra: {done} %.	Spektrlər arasındakı bucaqlar hesablanır: {done} %.
+Computing the angles between spectra…	Spektrlər arasındakı bucaqlar hesablanır…
+Dates	Tarixlər
+Dates are written as YYYY-MM-DD.	Tarixlər İİİİ-AA-GG kimi yazılır.
+EMIT absorption band depth	EMIT udulma zolağının dərinliyi
+EMIT minerals	EMIT mineralları
+EMIT minerals {name}	EMIT mineralları {name}
+EMIT minerals…	EMIT mineralları…
+Each cell of the area gets the marked reference with the smallest angle between the spectra.	Sahənin hər xanası spektrlər arasında ən kiçik bucağa malik işarələnmiş etalonu alır.
+Earthdata key	Earthdata açarı
+Find scenes	Səhnələri tap
+From places	Yerlərdən
+Get a key	Açar əldə et
+Globe basemap	Qlobusun əsas xəritəsi
+Group 1 - iron absorption bands in the visible and near infrared, group 2 - Al-OH, Mg-OH and carbonate bands in the shortwave infrared. A cell may have minerals of both groups.	Qrup 1 - görünən və yaxın infraqırmızı diapazonda dəmirin udulma zolaqları, qrup 2 - qısadalğalı infraqırmızıda Al-OH, Mg-OH və karbonat zolaqları. Bir xanada hər iki qrupun mineralları ola bilər.
+Group 1 - iron minerals, 0.4-1.3 µm	Qrup 1 - dəmir mineralları, 0.4-1.3 µm
+Group 2 - clays, mica, carbonates, sulphates, 2.0-2.5 µm	Qrup 2 - gillər, mika, karbonatlar, sulfatlar, 2.0-2.5 µm
+Holes not counted: {count}.	Nəzərə alınmayan dəliklər: {count}.
+Legend	İzah
+Loading the basemap tiles: {n} of {total}.	Əsas xəritənin plitələri yüklənir: {n} / {total}.
+Loading the basemap tiles…	Əsas xəritənin plitələri yüklənir…
+Loading the file of the scene {when}…	{when} səhnəsinin faylı yüklənir…
+Loads the file of the chosen scene (once) and colours the area by the minerals of the chosen group.	Seçilmiş səhnənin faylını (bir dəfə) yükləyir və sahəni seçilmiş qrupun mineralları ilə rəngləyir.
+Mark at least one reference.	Ən azı bir etalon işarələyin.
+Minerals	Minerallar
+Minerals by spectrum	Spektrə görə minerallar
+Minerals by spectrum {name}	Spektrə görə minerallar {name}
+Minerals by spectrum…	Spektrə görə minerallar…
+Minerals of the scene {when}…	{when} səhnəsinin mineralları…
+Minerals: {list}. Cells with a mineral {share} % of the area, {area} km².	Minerallar: {list}. Mineralı olan xanalar sahənin {share} %, {area} km².
+NASA mineral maps from images of the EMIT spectrometer on the ISS, pixel 60 m, arid regions since 2022. NASA gives the scene files by an Earthdata key.	ISS-dəki EMIT spektrometrinin şəkilləri əsasında NASA mineral xəritələri, piksel 60 m, 2022-ci ildən quraq bölgələr. NASA səhnə fayllarını Earthdata açarı ilə verir.
+NASA mineral maps from images of the EMIT spectrometer, pixel 60 m, arid regions since 2022. Files by an Earthdata key.	EMIT spektrometrinin şəkilləri əsasında NASA mineral xəritələri, piksel 60 m, 2022-ci ildən quraq bölgələr. Fayllar Earthdata açarı ilə.
+Nearest	Ən yaxın
+No minerals of this group were found in the area.	Sahədə bu qrupun mineralları tapılmadı.
+No raster with three bands or more is open.	Üç və ya daha çox kanallı açıq raster yoxdur.
+No suitable raster is open.	Uyğun açıq raster yoxdur.
+Others	Digərləri
+Pixel {pixel} m, about {cells} thousand cells.	Piksel {pixel} m, təxminən {cells} min xana.
+Polygons not taken: {count}, the largest is taken.	Götürülməyən çoxbucaqlılar: {count}, ən böyüyü götürülür.
+Raster	Raster
+Reading the raster of the area: {done} %.	Sahənin rasteri oxunur: {done} %.
+Reading the raster…	Raster oxunur…
+References	Etalonlar
+References marked: {n}	İşarələnmiş etalonlar: {n}
+Scenes	Səhnələr
+Scenes over the area: {n}.	Sahənin üzərindəki səhnələr: {n}.
+Searching for EMIT scenes…	EMIT səhnələri axtarılır…
+Soils and mixtures	Torpaqlar və qarışıqlar
+Source terms	Mənbənin şərtləri
+Spectrum	Spektr
+Spectrum of a pixel of a multi-band raster and the nearest references of the USGS library, classes of the area by the angle between spectra.	Çoxkanallı rasterin pikselinin spektri və USGS kitabxanasının ən yaxın etalonları, spektrlər arasındakı bucağa görə sahənin sinifləri.
+Spectrum of the point {lat}, {lon}. The nearest reference is {name}, {angle}°.	{lat}, {lon} nöqtəsinin spektri. Ən yaxın etalon {name}, {angle}°.
+Stop	Dayandır
+The Earthdata key was not accepted - it is outdated or wrong. Enter a new one.	Earthdata açarı qəbul edilmədi - vaxtı keçib və ya yanlışdır. Yeni açar daxil edin.
+The NASA catalogue did not answer: {error}	NASA kataloqu cavab vermədi: {error}
+The NASA file was not received: {error}	NASA faylı alınmadı: {error}
+The area is a polygon of «My places»: the selected rows, or else the polygon under a click on the globe. Of several polygons the largest is taken, holes are not counted.	Sahə «Mənim yerlərim» çoxbucaqlısıdır: seçilmiş sətirlər, yoxsa qlobusda klik yerindəki çoxbucaqlı. Bir neçə çoxbucaqlıdan ən böyüyü götürülür, dəliklər nəzərə alınmır.
+The area is outside the scene.	Sahə səhnədən kənardadır.
+The area is taken from «{name}».	Sahə «{name}» obyektindən götürülüb.
+The area will not be divided into objects, a larger pixel or a smaller area is needed.	Sahə obyektlərə bölünməyəcək, daha iri piksel və ya daha kiçik sahə lazımdır.
+The bands are not recognised by their labels, choose the sensor.	Kanallar etiketlərə görə tanınmadı, sensoru seçin.
+The basemap tiles were not received.	Əsas xəritənin plitələri alınmadı.
+The computation by the basemap was not started.	Əsas xəritə üzrə hesablama başlamadı.
+The computation will collect the tiles of the basemap «{name}» under the area into a picture in memory, no image file is written. The terms of the basemap may not allow such use, especially for commercial services. The computation goes by your decision, you bear the responsibility for its result and use.	Hesablama sahənin altındakı «{name}» əsas xəritəsinin plitələrini yaddaşda bir təsvirdə toplayacaq, təsvir faylı yazılmır. Əsas xəritənin şərtləri belə istifadəyə icazə verməyə bilər, xüsusilə kommersiya xidmətlərində. Hesablama istifadəçinin qərarı ilə aparılır, nəticəyə və istifadəyə görə məsuliyyəti istifadəçi daşıyır.
+The file is not saved: {error}	Fayl saxlanmadı: {error}
+The file of the scene is not read.	Səhnənin faylı oxunmadı.
+The largest angle between the spectra of a cell and a reference. A cell farther from all marked references stays without a class. Smaller - stricter.	Xananın və etalonun spektrləri arasındakı ən böyük bucaq. Bütün işarələnmiş etalonlardan daha uzaq xana sinifsiz qalır. Kiçik olduqca daha sərt.
+The largest cloud cover of a scene by the NASA catalogue. Clouds hide the minerals, the cells under them stay without a class.	NASA kataloqu üzrə səhnənin ən böyük buludluluğu. Bulud mineralları gizlədir, onların altındakı xanalar sinifsiz qalır.
+The names of the references are in English, as in the USGS library. All words must be in the name.	Etalonların adları USGS kitabxanasındakı kimi ingiliscədir. Bütün sözlər adda olmalıdır.
+The outline is simplified to {count} vertices.	Kontur {count} təpəyə qədər sadələşdirilib.
+The pixel of the grid of the area. With AlphaEarth a block of the file for a year is 40-50 MB at any pixel, «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells. A raster and the globe basemap have pixels of 1, 2 and 5 m, «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Division into objects takes up to 4 million cells.	Sahə şəbəkəsinin pikseli. AlphaEarth-də bir illik fayl bloku istənilən pikseldə 40-50 MB-dır, «Avto» sahənin 14-dən 640 minə qədər xanası olan ən az yükləmə tələb edən pikseli seçir. Raster və qlobusun əsas xəritəsində 1, 2 və 5 m piksellər var, sahənin xanaları 640 mindən çox deyilsə, «Avto» rasterin və ya əsas xəritənin yuxarı səviyyəsinin pikselini seçir. Obyektlərə bölmə 4 milyona qədər xana qəbul edir.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Sahə şəbəkəsinin pikseli. Sahənin xanaları 640 mindən çox deyilsə, «Avto» rasterin pikselini seçir.
+The point is outside the raster or has no data.	Nöqtə rasterdən kənardadır və ya məlumatsızdır.
+The polygon could not be read.	Çoxbucaqlını oxumaq mümkün olmadı.
+The sensor to whose bands the references are recomputed. «Auto» recognises it by the wavelengths in the band labels of the raster. If there are no labels, the sensor is chosen by hand, the bands are taken by the numbers in the labels or in order.	Etalonların kanallarına görə yenidən hesablandığı sensor. «Avto» onu rasterin kanal etiketlərindəki dalğa uzunluqlarına görə tanıyır. Etiket yoxdursa, sensor əllə seçilir, kanallar etiketlərdəki nömrələrə və ya sıraya görə götürülür.
+There are no EMIT scenes over the area. EMIT images arid regions - deserts, semi-deserts, steppes.	Sahənin üzərində EMIT səhnələri yoxdur. EMIT quraq bölgələri çəkir - səhraları, yarımsəhraları, çölləri.
+There is no polygon of «My places» under the click.	Klik yerində «Mənim yerlərim» çoxbucaqlısı yoxdur.
+Unmark all references.	Bütün etalonların işarəsini götür.
+Values of the GeoTIFF file: {list}.	GeoTIFF faylının qiymətləri: {list}.
+Water, snow and liquids	Su, qar və mayelər
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory.	Rəngin və teksturun haradan götürüldüyü. AlphaEarth vektorları şəbəkədən yüklənir, proqramda açılmış rasterin hər kanalı bir əlamətdir. «Qlobusun əsas xəritəsi» sahənin altındakı əsas xəritə plitələrini yaddaşda bir təsvirdə toplayır.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory. Borders of surveys in the image may be repeated by the classes.	Xanaların nəyə görə bölündüyü. AlphaEarth vektorları şəbəkədən yüklənir. Proqramda açılmış rasterin hər kanalı bir əlamətdir, şəbəkə lazım deyil. «Qlobusun əsas xəritəsi» sahənin altındakı əsas xəritə plitələrini yaddaşda bir təsvirdə toplayır. Təsvirdəki çəkiliş sərhədlərini siniflər təkrar edə bilər.
+Without an Earthdata key NASA files are not loaded.	Earthdata açarı olmadan NASA faylları yüklənmir.
+Words of the name, for example kaolinite	Adın sözləri, məsələn kaolinite
+{sensor}: bands {n} of {total}	{sensor}: kanallar {n} / {total}
+{when}, cloud cover {cloud} %, area {share} %	{when}, buludluluq {cloud} %, sahə {share} %
+{when}, group {group}	{when}, qrup {group}
+µm	µm

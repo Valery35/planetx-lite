@@ -2039,3 +2039,110 @@ The tour is recorded to {folder}. Frame count {count}, {fps} per second.	투어�
 Frames not fully loaded: {count}.	완전히 로드되지 않은 프레임: {count}.
 The folder already holds tour frames. Choose another folder.	폴더에 이미 투어 프레임이 있습니다. 다른 폴더를 선택하세요.
 The window size changed during the recording. The recording stopped at frame {n}.	기록 중에 창 크기가 바뀌었습니다. 기록이 프레임 {n}에서 멈췄습니다.
+A multi-band raster in reflectance opened in the program, for example all bands of a scene of the Satellite images window. The bands are recognised by their labels, thermal bands do not take part.	프로그램에서 열린 반사율 다중 밴드 래스터, 예를 들어 '위성 영상' 창의 장면 전체 밴드. 밴드는 레이블로 인식되며 열 밴드는 제외됩니다.
+All groups	모든 그룹
+Angle to the reference	기준과의 각도
+Angle to the reference, °	기준과의 각도, °
+Angle up to	각도 상한
+Area {area} km², heights {low}-{high} m, mean {mean} m.	면적 {area} km², 고도 {low}-{high} m, 평균 {mean} m.
+Artificial materials	인공 재료
+Band depth	밴드 깊이
+Bands	밴드
+Choose a scene in the list.	목록에서 장면을 선택합니다.
+Classes of the area by control points on the globe - by the globe basemap or the bands of an opened raster.	지구본의 기준점에 따른 영역의 분류 - 지구본의 배경 지도 또는 열린 래스터의 밴드를 기준으로 합니다.
+Classes: {list}. Without a class {none} %.	분류: {list}. 분류 없음 {none} %.
+Clear all	모두 해제
+Click the globe inside a polygon of «My places».	지구본에서 '내 장소'의 다각형 안을 클릭합니다.
+Click the image on the globe	지구본의 영상을 클릭
+Click the image on the globe - the chart shows the spectrum of the pixel and the nearest references. Marked references become classes of the area.	지구본의 영상을 클릭하면 그래프에 픽셀의 스펙트럼과 가장 가까운 기준이 표시됩니다. 표시한 기준은 영역의 분류가 됩니다.
+Cloud cover up to	구름양 상한
+Coatings	코팅
+Compute	계산
+Computing the angles between spectra: {done} %.	스펙트럼 간 각도 계산 중: {done} %.
+Computing the angles between spectra…	스펙트럼 간 각도 계산 중…
+Dates	날짜
+Dates are written as YYYY-MM-DD.	날짜는 YYYY-MM-DD 형식으로 씁니다.
+EMIT absorption band depth	EMIT 흡수 밴드 깊이
+EMIT minerals	EMIT 광물
+EMIT minerals {name}	EMIT 광물 {name}
+EMIT minerals…	EMIT 광물…
+Each cell of the area gets the marked reference with the smallest angle between the spectra.	영역의 각 셀은 스펙트럼 간 각도가 가장 작은 표시된 기준을 받습니다.
+Earthdata key	Earthdata 키
+Find scenes	장면 찾기
+From places	장소에서
+Get a key	키 받기
+Globe basemap	지구본 배경 지도
+Group 1 - iron absorption bands in the visible and near infrared, group 2 - Al-OH, Mg-OH and carbonate bands in the shortwave infrared. A cell may have minerals of both groups.	그룹 1 - 가시광선 및 근적외선의 철 흡수 밴드, 그룹 2 - 단파 적외선의 Al-OH, Mg-OH 및 탄산염 밴드. 한 셀에 두 그룹의 광물이 모두 있을 수 있습니다.
+Group 1 - iron minerals, 0.4-1.3 µm	그룹 1 - 철 광물, 0.4-1.3 µm
+Group 2 - clays, mica, carbonates, sulphates, 2.0-2.5 µm	그룹 2 - 점토, 운모, 탄산염, 황산염, 2.0-2.5 µm
+Holes not counted: {count}.	제외한 구멍: {count}.
+Legend	범례
+Loading the basemap tiles: {n} of {total}.	배경 지도 타일 불러오는 중: {n} / {total}.
+Loading the basemap tiles…	배경 지도 타일 불러오는 중…
+Loading the file of the scene {when}…	장면 {when}의 파일 불러오는 중…
+Loads the file of the chosen scene (once) and colours the area by the minerals of the chosen group.	선택한 장면의 파일을 (한 번) 불러와 선택한 그룹의 광물로 영역을 칠합니다.
+Mark at least one reference.	기준을 하나 이상 표시하십시오.
+Minerals	광물
+Minerals by spectrum	스펙트럼별 광물
+Minerals by spectrum {name}	스펙트럼별 광물 {name}
+Minerals by spectrum…	스펙트럼별 광물…
+Minerals of the scene {when}…	장면 {when}의 광물…
+Minerals: {list}. Cells with a mineral {share} % of the area, {area} km².	광물: {list}. 광물이 있는 셀은 영역의 {share} %, {area} km².
+NASA mineral maps from images of the EMIT spectrometer on the ISS, pixel 60 m, arid regions since 2022. NASA gives the scene files by an Earthdata key.	ISS의 EMIT 분광기 영상으로 만든 NASA 광물 지도, 픽셀 60 m, 2022년 이후의 건조 지역. NASA는 Earthdata 키로 장면 파일을 제공합니다.
+NASA mineral maps from images of the EMIT spectrometer, pixel 60 m, arid regions since 2022. Files by an Earthdata key.	EMIT 분광기 영상으로 만든 NASA 광물 지도, 픽셀 60 m, 2022년 이후의 건조 지역. 파일은 Earthdata 키로 받습니다.
+Nearest	가장 가까운 기준
+No minerals of this group were found in the area.	영역에서 이 그룹의 광물이 발견되지 않았습니다.
+No raster with three bands or more is open.	밴드가 3개 이상인 래스터가 열려 있지 않습니다.
+No suitable raster is open.	적합한 래스터가 열려 있지 않습니다.
+Others	기타
+Pixel {pixel} m, about {cells} thousand cells.	픽셀 {pixel} m, 약 {cells}천 셀.
+Polygons not taken: {count}, the largest is taken.	가져오지 않은 다각형: {count}, 가장 큰 것을 사용합니다.
+Raster	래스터
+Reading the raster of the area: {done} %.	영역의 래스터 읽는 중: {done} %.
+Reading the raster…	래스터 읽는 중…
+References	기준
+References marked: {n}	표시한 기준: {n}
+Scenes	장면
+Scenes over the area: {n}.	영역 위의 장면: {n}.
+Searching for EMIT scenes…	EMIT 장면 검색 중…
+Soils and mixtures	토양과 혼합물
+Source terms	출처의 조건
+Spectrum	스펙트럼
+Spectrum of a pixel of a multi-band raster and the nearest references of the USGS library, classes of the area by the angle between spectra.	다중 밴드 래스터 픽셀의 스펙트럼과 USGS 라이브러리의 가장 가까운 기준, 스펙트럼 간 각도에 따른 영역의 분류.
+Spectrum of the point {lat}, {lon}. The nearest reference is {name}, {angle}°.	지점 {lat}, {lon}의 스펙트럼. 가장 가까운 기준은 {name}, {angle}°.
+Stop	중지
+The Earthdata key was not accepted - it is outdated or wrong. Enter a new one.	Earthdata 키가 수락되지 않았습니다 - 만료되었거나 잘못되었습니다. 새 키를 입력하십시오.
+The NASA catalogue did not answer: {error}	NASA 카탈로그가 응답하지 않았습니다: {error}
+The NASA file was not received: {error}	NASA 파일을 받지 못했습니다: {error}
+The area is a polygon of «My places»: the selected rows, or else the polygon under a click on the globe. Of several polygons the largest is taken, holes are not counted.	영역은 '내 장소'의 다각형입니다. 선택한 행이 우선이고, 없으면 지구본의 클릭 위치에 있는 다각형입니다. 다각형이 여러 개이면 가장 큰 것을 사용하며 구멍은 제외합니다.
+The area is outside the scene.	영역이 장면 밖에 있습니다.
+The area is taken from «{name}».	영역을 '{name}'에서 가져왔습니다.
+The area will not be divided into objects, a larger pixel or a smaller area is needed.	영역은 객체로 나뉘지 않습니다. 더 큰 픽셀이나 더 작은 영역이 필요합니다.
+The bands are not recognised by their labels, choose the sensor.	밴드를 레이블로 인식하지 못했습니다. 센서를 선택하십시오.
+The basemap tiles were not received.	배경 지도 타일을 받지 못했습니다.
+The computation by the basemap was not started.	배경 지도를 이용한 계산이 시작되지 않았습니다.
+The computation will collect the tiles of the basemap «{name}» under the area into a picture in memory, no image file is written. The terms of the basemap may not allow such use, especially for commercial services. The computation goes by your decision, you bear the responsibility for its result and use.	계산은 영역 아래의 배경 지도 '{name}' 타일을 메모리의 하나의 이미지로 모읍니다. 영상 파일은 기록되지 않습니다. 배경 지도의 조건에 따라 이러한 이용이 허용되지 않을 수 있으며, 특히 상업용 서비스에서 그렇습니다. 계산은 이용자의 결정으로 진행되며 결과와 이용에 대한 책임은 이용자에게 있습니다.
+The file is not saved: {error}	파일이 저장되지 않았습니다: {error}
+The file of the scene is not read.	장면 파일을 읽지 못했습니다.
+The largest angle between the spectra of a cell and a reference. A cell farther from all marked references stays without a class. Smaller - stricter.	셀과 기준의 스펙트럼 간 최대 각도. 표시된 모든 기준에서 이보다 먼 셀은 분류 없음으로 남습니다. 작을수록 엄격합니다.
+The largest cloud cover of a scene by the NASA catalogue. Clouds hide the minerals, the cells under them stay without a class.	NASA 카탈로그 기준 장면의 최대 구름양. 구름은 광물을 가리며, 그 아래 셀은 분류 없음으로 남습니다.
+The names of the references are in English, as in the USGS library. All words must be in the name.	기준의 이름은 USGS 라이브러리처럼 영어입니다. 모든 단어가 이름에 있어야 합니다.
+The outline is simplified to {count} vertices.	윤곽이 {count}개 꼭짓점으로 단순화되었습니다.
+The pixel of the grid of the area. With AlphaEarth a block of the file for a year is 40-50 MB at any pixel, «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells. A raster and the globe basemap have pixels of 1, 2 and 5 m, «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Division into objects takes up to 4 million cells.	영역 격자의 픽셀. AlphaEarth는 1년치 파일 블록이 어떤 픽셀에서도 40-50 MB이며, '자동'은 영역의 셀 수가 14천에서 640천이 되는 픽셀 중 다운로드가 가장 적은 것을 선택합니다. 래스터와 지구본 배경 지도에는 1, 2, 5 m 픽셀이 있으며, 영역의 셀이 640천 이하이면 '자동'은 래스터 또는 배경 지도 최상위 레벨의 픽셀을 선택합니다. 객체 분할은 400만 셀까지 처리합니다.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	영역 격자의 픽셀. 영역의 셀이 640천 이하이면 '자동'은 래스터의 픽셀을 선택합니다.
+The point is outside the raster or has no data.	지점이 래스터 밖에 있거나 데이터가 없습니다.
+The polygon could not be read.	다각형을 읽을 수 없었습니다.
+The sensor to whose bands the references are recomputed. «Auto» recognises it by the wavelengths in the band labels of the raster. If there are no labels, the sensor is chosen by hand, the bands are taken by the numbers in the labels or in order.	기준을 재계산하는 대상 센서의 밴드. '자동'은 래스터 밴드 레이블의 파장으로 센서를 인식합니다. 레이블이 없으면 센서를 직접 선택하며, 밴드는 레이블의 번호 또는 순서대로 가져옵니다.
+There are no EMIT scenes over the area. EMIT images arid regions - deserts, semi-deserts, steppes.	영역 위에 EMIT 장면이 없습니다. EMIT은 건조 지역 - 사막, 반사막, 스텝을 촬영합니다.
+There is no polygon of «My places» under the click.	클릭 위치에 '내 장소'의 다각형이 없습니다.
+Unmark all references.	모든 기준의 표시를 해제합니다.
+Values of the GeoTIFF file: {list}.	GeoTIFF 파일의 값: {list}.
+Water, snow and liquids	물, 눈, 액체
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory.	색상과 질감을 가져오는 곳. AlphaEarth 벡터는 네트워크에서 불러오며, 프로그램에서 열린 래스터의 각 밴드가 특성이 됩니다. '지구본 배경 지도'는 영역 아래의 배경 지도 타일을 메모리의 이미지로 모읍니다.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory. Borders of surveys in the image may be repeated by the classes.	셀을 나누는 기준. AlphaEarth 벡터는 네트워크에서 불러옵니다. 프로그램에서 열린 래스터의 각 밴드가 특성이 되며 네트워크는 필요하지 않습니다. '지구본 배경 지도'는 영역 아래의 배경 지도 타일을 메모리의 이미지로 모읍니다. 영상 속 촬영 경계가 분류에 반복될 수 있습니다.
+Without an Earthdata key NASA files are not loaded.	Earthdata 키가 없으면 NASA 파일을 불러오지 않습니다.
+Words of the name, for example kaolinite	이름의 단어, 예: kaolinite
+{sensor}: bands {n} of {total}	{sensor}: 밴드 {n} / {total}
+{when}, cloud cover {cloud} %, area {share} %	{when}, 구름양 {cloud} %, 영역 {share} %
+{when}, group {group}	{when}, 그룹 {group}
+µm	µm

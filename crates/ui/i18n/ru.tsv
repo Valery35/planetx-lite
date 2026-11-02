@@ -2039,3 +2039,110 @@ The tour is recorded to {folder}. Frame count {count}, {fps} per second.	Тур 
 Frames not fully loaded: {count}.	Количество недогруженных кадров {count}.
 The folder already holds tour frames. Choose another folder.	В папке уже есть кадры тура. Нужна другая папка.
 The window size changed during the recording. The recording stopped at frame {n}.	Размер окна изменился во время записи. Запись прервана на кадре {n}.
+A multi-band raster in reflectance opened in the program, for example all bands of a scene of the Satellite images window. The bands are recognised by their labels, thermal bands do not take part.	Многоканальный растр в отражении, открытый в программе, например все каналы сцены окна «Космоснимки». Каналы узнаются по их подписям, тепловые каналы не участвуют.
+All groups	Все группы
+Angle to the reference	Угол до эталона
+Angle to the reference, °	Угол до эталона, °
+Angle up to	Угол до
+Area {area} km², heights {low}-{high} m, mean {mean} m.	Площадь {area} км², высоты {low}-{high} м, средняя {mean} м.
+Artificial materials	Искусственные материалы
+Band depth	Глубина полосы
+Bands	Каналы
+Choose a scene in the list.	Выберите сцену в списке.
+Classes of the area by control points on the globe - by the globe basemap or the bands of an opened raster.	Классы участка по контрольным точкам на глобусе - по подложке глобуса или каналам открытого растра.
+Classes: {list}. Without a class {none} %.	Классы: {list}. Без класса {none} %.
+Clear all	Снять все
+Click the globe inside a polygon of «My places».	Щёлкните по глобусу внутри многоугольника «Моих меток».
+Click the image on the globe	Щёлкните по снимку на глобусе
+Click the image on the globe - the chart shows the spectrum of the pixel and the nearest references. Marked references become classes of the area.	Щёлкните по снимку на глобусе - график покажет спектр пикселя и ближайшие эталоны. Отмеченные эталоны становятся классами участка.
+Cloud cover up to	Облачность до
+Coatings	Покрытия
+Compute	Считать
+Computing the angles between spectra: {done} %.	Считаются углы между спектрами: {done} %.
+Computing the angles between spectra…	Считаются углы между спектрами…
+Dates	Даты
+Dates are written as YYYY-MM-DD.	Даты пишутся как ГГГГ-ММ-ДД.
+EMIT absorption band depth	Глубина полосы поглощения EMIT
+EMIT minerals	Минералы EMIT
+EMIT minerals {name}	Минералы EMIT {name}
+EMIT minerals…	Минералы EMIT…
+Each cell of the area gets the marked reference with the smallest angle between the spectra.	Каждая клетка участка получает отмеченный эталон с наименьшим углом между спектрами.
+Earthdata key	Ключ Earthdata
+Find scenes	Найти сцены
+From places	Из меток
+Get a key	Получить ключ
+Globe basemap	Подложка глобуса
+Group 1 - iron absorption bands in the visible and near infrared, group 2 - Al-OH, Mg-OH and carbonate bands in the shortwave infrared. A cell may have minerals of both groups.	Группа 1 - полосы поглощения железа в видимом и ближнем инфракрасном диапазоне, группа 2 - полосы связей Al-OH, Mg-OH и карбонатов в коротковолновом инфракрасном. В одной клетке бывают минералы обеих групп.
+Group 1 - iron minerals, 0.4-1.3 µm	Группа 1 - железистые минералы, 0.4-1.3 мкм
+Group 2 - clays, mica, carbonates, sulphates, 2.0-2.5 µm	Группа 2 - глины, слюда, карбонаты, сульфаты, 2.0-2.5 мкм
+Holes not counted: {count}.	Дыр не учтено: {count}.
+Legend	Легенда
+Loading the basemap tiles: {n} of {total}.	Загрузка тайлов подложки: {n} из {total}.
+Loading the basemap tiles…	Загрузка тайлов подложки…
+Loading the file of the scene {when}…	Загрузка файла сцены {when}…
+Loads the file of the chosen scene (once) and colours the area by the minerals of the chosen group.	Загружает файл выбранной сцены (один раз) и раскрашивает участок минералами выбранной группы.
+Mark at least one reference.	Отметьте хотя бы один эталон.
+Minerals	Минералы
+Minerals by spectrum	Минералы по спектру
+Minerals by spectrum {name}	Минералы по спектру {name}
+Minerals by spectrum…	Минералы по спектру…
+Minerals of the scene {when}…	Минералы сцены {when}…
+Minerals: {list}. Cells with a mineral {share} % of the area, {area} km².	Минералы: {list}. Клеток с минералом {share} % участка, {area} км².
+NASA mineral maps from images of the EMIT spectrometer on the ISS, pixel 60 m, arid regions since 2022. NASA gives the scene files by an Earthdata key.	Карты минералов NASA по снимкам спектрометра EMIT на МКС, пиксель 60 м, засушливые области с 2022 года. Файлы сцен NASA отдаёт по ключу Earthdata.
+NASA mineral maps from images of the EMIT spectrometer, pixel 60 m, arid regions since 2022. Files by an Earthdata key.	Карты минералов NASA по снимкам спектрометра EMIT, пиксель 60 м, засушливые области с 2022 года. Файлы - по ключу Earthdata.
+Nearest	Ближайшие
+No minerals of this group were found in the area.	Минералов этой группы на участке не найдено.
+No raster with three bands or more is open.	Не открыто растров с тремя каналами и больше.
+No suitable raster is open.	Не открыто подходящего растра.
+Others	Прочие
+Pixel {pixel} m, about {cells} thousand cells.	Пиксель {pixel} м, клеток около {cells} тыс.
+Polygons not taken: {count}, the largest is taken.	Не взято многоугольников: {count}, взят крупнейший.
+Raster	Растр
+Reading the raster of the area: {done} %.	Чтение растра участка: {done} %.
+Reading the raster…	Читается растр…
+References	Эталоны
+References marked: {n}	Отмечено эталонов: {n}
+Scenes	Сцены
+Scenes over the area: {n}.	Сцен над участком: {n}.
+Searching for EMIT scenes…	Поиск сцен EMIT…
+Soils and mixtures	Почвы и смеси
+Source terms	Условия источника
+Spectrum	Спектр
+Spectrum of a pixel of a multi-band raster and the nearest references of the USGS library, classes of the area by the angle between spectra.	Спектр пикселя многоканального растра и ближайшие эталоны библиотеки USGS, классы участка по углу между спектрами.
+Spectrum of the point {lat}, {lon}. The nearest reference is {name}, {angle}°.	Спектр точки {lat}, {lon}. Ближайший эталон - {name}, {angle}°.
+Stop	Остановить
+The Earthdata key was not accepted - it is outdated or wrong. Enter a new one.	Ключ Earthdata не принят - устарел или неверен. Введите новый.
+The NASA catalogue did not answer: {error}	Каталог NASA не ответил: {error}
+The NASA file was not received: {error}	Файл NASA не получен: {error}
+The area is a polygon of «My places»: the selected rows, or else the polygon under a click on the globe. Of several polygons the largest is taken, holes are not counted.	Участок - многоугольник «Моих меток»: выделенные строки, иначе многоугольник под щелчком по глобусу. Из нескольких многоугольников берётся крупнейший, дыры не учитываются.
+The area is outside the scene.	Участок вне сцены.
+The area is taken from «{name}».	Участок взят из «{name}».
+The area will not be divided into objects, a larger pixel or a smaller area is needed.	На объекты участок не разделится, нужен пиксель крупнее или участок меньше.
+The bands are not recognised by their labels, choose the sensor.	Каналы не узнаны по подписям, выберите датчик.
+The basemap tiles were not received.	Тайлы подложки не получены.
+The computation by the basemap was not started.	Расчёт по подложке не запущен.
+The computation will collect the tiles of the basemap «{name}» under the area into a picture in memory, no image file is written. The terms of the basemap may not allow such use, especially for commercial services. The computation goes by your decision, you bear the responsibility for its result and use.	Расчёт соберёт тайлы подложки «{name}» под участком в картинку в памяти, файл снимка не записывается. Условия подложки могут не разрешать такое использование, особенно у коммерческих служб. Расчёт идёт по вашему решению, ответственность за его результат и использование несёте вы.
+The file is not saved: {error}	Файл не сохранён: {error}
+The file of the scene is not read.	Файл сцены не прочитан.
+The largest angle between the spectra of a cell and a reference. A cell farther from all marked references stays without a class. Smaller - stricter.	Наибольший угол между спектрами клетки и эталона. Клетка дальше от всех отмеченных эталонов остаётся без класса. Меньше - строже.
+The largest cloud cover of a scene by the NASA catalogue. Clouds hide the minerals, the cells under them stay without a class.	Наибольшая облачность сцены по каталогу NASA. Облака закрывают минералы, клетки под ними остаются без класса.
+The names of the references are in English, as in the USGS library. All words must be in the name.	Названия эталонов - по-английски, как в библиотеке USGS. Все слова должны быть в названии.
+The outline is simplified to {count} vertices.	Контур упрощён до {count} вершин.
+The pixel of the grid of the area. With AlphaEarth a block of the file for a year is 40-50 MB at any pixel, «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells. A raster and the globe basemap have pixels of 1, 2 and 5 m, «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Division into objects takes up to 4 million cells.	Пиксель сетки участка. У AlphaEarth блок файла за год - 40-50 МБ при любом пикселе, «Авто» берёт пиксель с наименьшей загрузкой, при котором на участке от 14 до 640 тысяч клеток. У растра и подложки глобуса есть пиксели 1, 2 и 5 м, «Авто» - пиксель растра или верхнего уровня подложки, если на участке клеток не больше 640 тысяч. Деление на объекты принимает до 4 млн клеток.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster if the area has no more than 640 thousand cells.	Пиксель сетки участка. «Авто» - пиксель растра, если на участке клеток не больше 640 тысяч.
+The point is outside the raster or has no data.	Точка вне растра или без данных.
+The polygon could not be read.	Многоугольник не удалось прочитать.
+The sensor to whose bands the references are recomputed. «Auto» recognises it by the wavelengths in the band labels of the raster. If there are no labels, the sensor is chosen by hand, the bands are taken by the numbers in the labels or in order.	Датчик, на каналы которого пересчитаны эталоны. «Авто» узнаёт его по длинам волн в подписях каналов растра. Если подписей нет, датчик выбирается вручную, каналы берутся по номерам в подписях или по порядку.
+There are no EMIT scenes over the area. EMIT images arid regions - deserts, semi-deserts, steppes.	Над участком сцен EMIT нет. EMIT снимает засушливые области - пустыни, полупустыни, степи.
+There is no polygon of «My places» under the click.	Под щелчком нет многоугольника «Моих меток».
+Unmark all references.	Снять отметки со всех эталонов.
+Values of the GeoTIFF file: {list}.	Значения файла GeoTIFF: {list}.
+Water, snow and liquids	Вода, снег и жидкости
+What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory.	Откуда берутся цвет и текстура. Векторы AlphaEarth загружаются по сети, каждый канал растра, открытого в программе, - признак. «Подложка глобуса» собирает тайлы подложки под участком в картинку в памяти.
+What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory. Borders of surveys in the image may be repeated by the classes.	По чему делятся клетки. Векторы AlphaEarth загружаются по сети. Каждый канал растра, открытого в программе, - признак, сеть не нужна. «Подложка глобуса» собирает тайлы подложки под участком в картинку в памяти. Границы съёмок в снимке классы могут повторять.
+Without an Earthdata key NASA files are not loaded.	Без ключа Earthdata файлы NASA не загружаются.
+Words of the name, for example kaolinite	Слова названия, например kaolinite
+{sensor}: bands {n} of {total}	{sensor}: каналов {n} из {total}
+{when}, cloud cover {cloud} %, area {share} %	{when}, облачность {cloud} %, участка {share} %
+{when}, group {group}	{when}, группа {group}
+µm	мкм

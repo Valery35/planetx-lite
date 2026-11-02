@@ -61,7 +61,7 @@ fn square(rows: std::ops::Range<usize>, cols: std::ops::Range<usize>) -> Vec<boo
 fn found(grid: &[f32], mask: &[bool], weight: f64, limit: f64) -> (Vec<i32>, Vec<f64>, Vec<i32>) {
     let parts = cut(grid, weight);
     let table = segments::table(grid, 3, &parts);
-    let score = similar::scores(&table, WIDTH, &segments::areas(&parts), &similar::sample_rows(&table, WIDTH, &parts, mask), weight).unwrap_or_default();
+    let score = similar::scores(&table, WIDTH, &segments::areas(&parts), &similar::sample_rows(&table, WIDTH, &parts, mask), weight, 3).unwrap_or_default();
     let labels = similar::pick(&parts, SIDE, SIDE, &score, limit, true).0;
     (parts, score, labels)
 }
@@ -100,9 +100,9 @@ fn nearest_of_two_samples() {
     let table = segments::table(&grid, 3, &parts);
     let sizes = segments::areas(&parts);
     let first = similar::sample_rows(&table, WIDTH, &parts, &square(14..26, 14..26));
-    let one = similar::scores(&table, WIDTH, &sizes, &first, 0.3).unwrap_or_default();
+    let one = similar::scores(&table, WIDTH, &sizes, &first, 0.3, 3).unwrap_or_default();
     let both = [first.clone(), similar::sample_rows(&table, WIDTH, &parts, &square(40..50, 40..50))].concat();
-    let two = similar::scores(&table, WIDTH, &sizes, &both, 0.3).unwrap_or_default();
+    let two = similar::scores(&table, WIDTH, &sizes, &both, 0.3, 3).unwrap_or_default();
     assert!(two.iter().zip(&one).all(|(a, b)| *a >= b - 1e-9));
     let middle = at(&parts, 45, 45) as usize;
     assert!(two[middle] > one[middle]);
@@ -114,7 +114,7 @@ fn same_object_scores_full() {
     grid[0] = 1.0;
     let parts: Vec<i32> = (0..100).map(|i| i32::from(i % 10 >= 5)).collect();
     let table = segments::table(&grid, 1, &parts);
-    let score = similar::scores(&table, 2, &segments::areas(&parts), &[table[..2].to_vec()], segments::WEIGHT).unwrap_or_default();
+    let score = similar::scores(&table, 2, &segments::areas(&parts), &[table[..2].to_vec()], segments::WEIGHT, 1).unwrap_or_default();
     assert!((score[0] - 1.0).abs() < 1e-9);
     assert!(score[1] < 0.5);
 }
@@ -124,7 +124,7 @@ fn flat_site_has_no_scores() {
     let grid = vec![5.0f32; 2 * 36];
     let parts: Vec<i32> = (0..36).map(|i| i32::from(i % 6 >= 3)).collect();
     let table = segments::table(&grid, 2, &parts);
-    assert!(similar::scores(&table, 4, &segments::areas(&parts), &[table[..4].to_vec()], segments::WEIGHT).is_none());
+    assert!(similar::scores(&table, 4, &segments::areas(&parts), &[table[..4].to_vec()], segments::WEIGHT, 2).is_none());
 }
 
 #[test]
@@ -135,8 +135,56 @@ fn area_weight_keeps_small_objects_from_scale() {
     let mut sizes = vec![1u64; 1002];
     sizes[0] = 10000;
     sizes[1] = 10000;
-    let score = similar::scores(&table, 2, &sizes, &[table[..2].to_vec()], 0.0).unwrap_or_default();
+    let score = similar::scores(&table, 2, &sizes, &[table[..2].to_vec()], 0.0, 1).unwrap_or_default();
     assert!(score[1] < 0.1);
+}
+
+/// Части n × n с разбросом 1: шум или ряды с периодом 6 клеток и шумом.
+fn normalized(part: Vec<f32>) -> Vec<f32> {
+    let n = part.len() as f32;
+    let mean = part.iter().sum::<f32>() / n;
+    let std = (part.iter().map(|v| (v - mean).powi(2)).sum::<f32>() / n).sqrt();
+    part.iter().map(|v| v / std).collect()
+}
+
+fn rows_part(random: &mut Noise, n: usize) -> Vec<f32> {
+    let wave: Vec<f32> = (0..n).map(|c| (c as f32 * 2.0 * std::f32::consts::PI / 6.0).sin()).collect();
+    let rows = normalized((0..n * n).map(|i| wave[i % n]).collect());
+    (0..n * n).map(|i| rows[i] * 0.8 + 0.6 * random.normal()).collect()
+}
+
+#[test]
+fn drawing_tells_rows_from_grass() {
+    // Вырубка рядами и трава одного цвета и разброса: по одному table
+    // они одинаково похожи на образец вырубки, с рисунком
+    // (segments::pattern) трава отпадает. Сторож замечания Василия
+    // Швалёва от 2 ноября 2026 года, `test_drawing_tells_rows_from_grass`
+    // модуля.
+    let mut random = Noise(4);
+    let n = 40;
+    let mut parts: Vec<Vec<f32>> = (0..4).map(|k| normalized(if k % 2 == 1 { (0..n * n).map(|_| random.normal()).collect() } else { rows_part(&mut random, n) })).collect();
+    // Пятый объект - тёмный лес: участок не из одного цвета.
+    parts.push((0..n * n).map(|_| random.normal() - 4.0).collect());
+    let cols = 5 * n;
+    let mut grid = Vec::with_capacity(2 * n * cols);
+    let mut labels = Vec::with_capacity(n * cols);
+    for r in 0..n {
+        for c in 0..cols {
+            let b = parts[c / n][r * n + c % n];
+            grid.push(100.0 + 20.0 * b);
+            grid.push(90.0 + 18.0 * b);
+            labels.push((c / n) as i32);
+        }
+    }
+    let sizes = segments::areas(&labels);
+    let plain = segments::table(&grid, 2, &labels);
+    let full = segments::with_pattern(&plain, 4, &segments::pattern(&grid, 2, &labels, n, cols));
+    let width = 4 + segments::PATTERN;
+    let before = similar::scores(&plain, 4, &sizes, &[plain[..4].to_vec()], 0.5, 2).unwrap_or_default();
+    let after = similar::scores(&full, width, &sizes, &[full[..width].to_vec()], 0.5, 2).unwrap_or_default();
+    assert!(before[1] > 0.7, "{before:?}");
+    assert!(after[2] > 0.7, "{after:?}");
+    assert!(after[1] < 0.3 && after[3] < 0.3, "{after:?}");
 }
 
 /// Таблица модуля 4 × 1 × 3: значение - признак · 3 + объект.

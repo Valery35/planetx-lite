@@ -63,12 +63,182 @@ pub struct SiteEdit {
     edited: bool,
     /// Участок взят общий: строка итога ещё не сказала об этом.
     shared: bool,
+    /// Нажата «Из меток»: окно глобуса даст многоугольник выделенных строк
+    /// «Моих меток» или включит выбор щелчком.
+    pub from_places: bool,
+    /// Следующий щелчок по глобусу выбирает многоугольник меток.
+    picking: bool,
+    /// Точка щелчка выбора: окно глобуса ищет многоугольник под ней.
+    pub picked_at: Option<(f64, f64)>,
+    /// Строка итога об участке из меток, один раз.
+    note: Option<String>,
+}
+
+/// Вершин участка из меток не больше, `RING_POINTS` модуля.
+pub const RING_POINTS: usize = 500;
+/// Попыток упростить кольцо, первый допуск в градусах и его рост,
+/// `THIN_STEPS`, `THIN_FIRST` и `THIN_GROWTH` модуля.
+const THIN_STEPS: usize = 40;
+const THIN_FIRST: f64 = 1e-5;
+const THIN_GROWTH: f64 = 1.5;
+
+/// Многоугольник меток: название, наружное кольцо (широта, долгота),
+/// количество дыр.
+pub type Polygon = (String, Vec<(f64, f64)>, usize);
+
+/// Многоугольники строки меток: у метки - она, у папки - все внутри.
+/// only_visible - только отмеченные флажком.
+pub fn polygons_in(item: &Item, only_visible: bool, out: &mut Vec<Polygon>) {
+    match item {
+        Item::Place(p) if p.kind == features::Kind::Polygon && p.points.len() >= 3 && (p.visible || !only_visible) => {
+            out.push((p.name.clone(), p.points.clone(), p.holes.as_ref().map_or(0, Vec::len)));
+        }
+        Item::Folder(f) if f.visible || !only_visible => {
+            for child in &f.children {
+                polygons_in(child, only_visible, out);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// Площадь кольца на плоскости в квадратных градусах с поправкой на
+/// широту: только для сравнения многоугольников.
+fn ring_area(ring: &[(f64, f64)]) -> f64 {
+    let lat = ring.iter().map(|p| p.0).sum::<f64>() / ring.len().max(1) as f64;
+    let k = lat.to_radians().cos().abs();
+    let n = ring.len();
+    (0..n).map(|i| ring[i].1 * k * ring[(i + 1) % n].0 - ring[(i + 1) % n].1 * k * ring[i].0).sum::<f64>().abs() / 2.0
+}
+
+/// Многоугольники «Моих меток» tree: выделенных строк picked и все видимые.
+pub fn places_polygons(tree: Option<&Folder>, picked: &[Vec<usize>]) -> (Vec<Polygon>, Vec<Polygon>) {
+    let (mut chosen, mut all) = (Vec::new(), Vec::new());
+    if let Some(tree) = tree {
+        for path in picked {
+            if let Some(item) = crate::marks::item_at(tree, path) {
+                polygons_in(item, false, &mut chosen);
+            }
+        }
+        for child in &tree.children {
+            polygons_in(child, true, &mut all);
+        }
+    }
+    (chosen, all)
+}
+
+/// Просьбы окон об участке из меток: «Из меток» берёт крупнейший из
+/// выделенных многоугольников или включает выбор щелчком, щелчок выбора
+/// берёт многоугольник под ним.
+pub fn sites_from_places(lang: Lang, edits: &mut [&mut SiteEdit], tree: Option<&Folder>, picked: &[Vec<usize>]) {
+    if !edits.iter().any(|e| e.from_places || e.picked_at.is_some()) {
+        return;
+    }
+    let (chosen, all) = places_polygons(tree, picked);
+    for edit in edits.iter_mut() {
+        if std::mem::take(&mut edit.from_places) {
+            match largest(&chosen) {
+                Some(p) => edit.take_polygon(lang, p, chosen.len().saturating_sub(1)),
+                None => edit.start_picking(),
+            }
+        }
+        if let Some((lat, lon)) = edit.picked_at.take() {
+            match under(&all, lat, lon) {
+                Some(p) => edit.take_polygon(lang, p, 0),
+                None => edit.missed(lang),
+            }
+        }
+    }
+}
+
+/// Крупнейший многоугольник, `ring_of` модуля для составного объекта.
+pub fn largest(polygons: &[Polygon]) -> Option<&Polygon> {
+    polygons.iter().max_by(|a, b| ring_area(&a.1).total_cmp(&ring_area(&b.1)))
+}
+
+/// Многоугольник под точкой: из нескольких - наименьший, щелчок внутри
+/// поля на участке леса берёт поле.
+pub fn under(polygons: &[Polygon], lat: f64, lon: f64) -> Option<&Polygon> {
+    polygons.iter().filter(|p| data::site::inside(&[(lat, lon)], &p.1).first() == Some(&true)).min_by(|a, b| ring_area(&a.1).total_cmp(&ring_area(&b.1)))
+}
+
+/// Кольцо не больше [`RING_POINTS`] вершин, `_thin` модуля: допуск
+/// упрощения растёт, пока вершин много.
+pub fn thin(ring: &[(f64, f64)]) -> Vec<(f64, f64)> {
+    let mut out = ring.to_vec();
+    if out.len() > 1 && out.first() == out.last() {
+        out.pop();
+    }
+    let mut tolerance = THIN_FIRST;
+    for _ in 0..THIN_STEPS {
+        if out.len() <= RING_POINTS {
+            break;
+        }
+        let mut closed: Vec<[f64; 2]> = ring.iter().map(|p| [p.1, p.0]).collect();
+        if closed.first() != closed.last()
+            && let Some(first) = closed.first().copied()
+        {
+            closed.push(first);
+        }
+        let thin: Vec<(f64, f64)> = data::hydro::simplify(&closed, tolerance).iter().map(|p| (p[1], p[0])).collect();
+        if thin.len() >= 4 {
+            out = thin;
+            if out.first() == out.last() {
+                out.pop();
+            }
+        }
+        tolerance *= THIN_GROWTH;
+    }
+    out
 }
 
 impl SiteEdit {
     /// Квадрат side_km у точки, наибольший размер most_km.
     pub fn new(lat: f64, lon: f64, side_km: f64, most_km: f64) -> Self {
-        Self { site: Site::new(lat, lon, side_km, most_km), drag: None, pressed: None, press_at: None, changed: false, edited: true, shared: false }
+        Self { site: Site::new(lat, lon, side_km, most_km), drag: None, pressed: None, press_at: None, changed: false, edited: true, shared: false, from_places: false, picking: false, picked_at: None, note: None }
+    }
+
+    /// Нет выделенных многоугольников: следующий щелчок по глобусу
+    /// выбирает многоугольник меток.
+    pub fn start_picking(&mut self) {
+        self.site.drawing = false;
+        self.picking = true;
+    }
+
+    /// Щелчок выбора не попал в многоугольник меток.
+    pub fn missed(&mut self, lang: Lang) {
+        self.note = Some(tr(lang, "There is no polygon of «My places» under the click.").to_string());
+    }
+
+    /// Многоугольник меток становится участком, `_take` модуля. skipped -
+    /// сколько выделенных многоугольников не взято: берётся крупнейший.
+    /// Дыры не учитываются, контур сложнее [`RING_POINTS`] вершин
+    /// упрощается.
+    pub fn take_polygon(&mut self, lang: Lang, polygon: &Polygon, skipped: usize) {
+        let (name, ring, holes) = polygon;
+        let ring = thin(ring);
+        if ring.len() < 3 {
+            self.note = Some(tr(lang, "The polygon could not be read.").to_string());
+            return;
+        }
+        self.picking = false;
+        self.site.drawing = false;
+        self.site.ring = ring;
+        self.touch();
+        let mut notes = vec![trf(lang, "The area is taken from «{name}».", &[("name", name)])];
+        if skipped > 0 {
+            notes.push(trf(lang, "Polygons not taken: {count}, the largest is taken.", &[("count", &skipped.to_string())]));
+        }
+        if *holes > 0 {
+            notes.push(trf(lang, "Holes not counted: {count}.", &[("count", &holes.to_string())]));
+        }
+        if polygon.1.len() > RING_POINTS {
+            notes.push(trf(lang, "The outline is simplified to {count} vertices.", &[("count", &self.site.ring.len().to_string())]));
+        }
+        if let Some(problem) = self.problem(lang) {
+            notes.push(problem);
+        }
+        self.note = Some(notes.join(" "));
     }
 
     /// Новая точка окна: квадрат у неё.
@@ -102,9 +272,14 @@ impl SiteEdit {
         self.edited = false;
     }
 
-    /// Строка итога окна, взявшего общий участок, один раз.
-    pub fn shared_note(&mut self, lang: Lang) -> Option<&'static str> {
-        std::mem::take(&mut self.shared).then(|| tr(lang, "The area is shared with the previous computation. «Square» and «Draw» start a new one."))
+    /// Строка итога окна об участке, один раз: участок взят общий или из
+    /// меток.
+    pub fn shared_note(&mut self, lang: Lang) -> Option<String> {
+        if let Some(note) = self.note.take() {
+            self.shared = false;
+            return Some(note);
+        }
+        std::mem::take(&mut self.shared).then(|| tr(lang, "The area is shared with the previous computation. «Square» and «Draw» start a new one.").to_string())
     }
 
     /// Строка «Участок» окна: сторона квадрата, «Квадрат», «Нарисовать».
@@ -122,6 +297,7 @@ impl SiteEdit {
             }
             if ui.button(tr(lang, "Square")).on_hover_text(tr(lang, "The area is a square with the side from the field on the left.")).clicked() {
                 self.site.reset_square();
+                self.picking = false;
                 self.touch();
             }
             if ui
@@ -130,13 +306,24 @@ impl SiteEdit {
                 .clicked()
             {
                 self.site.start_drawing();
+                self.picking = false;
                 self.touch();
+            }
+            if ui
+                .button(tr(lang, "From places"))
+                .on_hover_text(tr(lang, "The area is a polygon of «My places»: the selected rows, or else the polygon under a click on the globe. Of several polygons the largest is taken, holes are not counted."))
+                .clicked()
+            {
+                self.from_places = true;
             }
         });
     }
 
-    /// Подсказка, пока участок рисуется.
+    /// Подсказка, пока участок рисуется или выбирается щелчком.
     pub fn hint(&self, lang: Lang) -> Option<&'static str> {
+        if self.picking {
+            return Some(tr(lang, "Click the globe inside a polygon of «My places»."));
+        }
         self.site.drawing.then(|| tr(lang, "Click the vertices of the area on the globe. A click on the first vertex closes it."))
     }
 
@@ -209,6 +396,15 @@ impl SiteEdit {
         }
         if released {
             self.pressed = None;
+        }
+        // Щелчок выбора многоугольника меток, многоугольник ищет окно
+        // глобуса.
+        if self.picking && response.clicked() && on_globe {
+            if let Some(point) = pos.and_then(ground) {
+                self.picked_at = Some(point);
+                self.picking = false;
+            }
+            return true;
         }
         if self.site.drawing && response.clicked() && on_globe && let Some(point) = pos.and_then(ground) {
             self.site.ring.push(point);
@@ -290,6 +486,63 @@ pub fn share_sites(shared: &mut Option<Vec<(f64, f64)>>, mut edits: Vec<&mut Sit
         }
     }
     *shared = Some(ring);
+}
+
+/// Инструмент общего слоя вида, `SiteTool` модуля (`ui/sitelayer.py`).
+/// Классификация, похожие области, минералы по спектру и EMIT, земляные
+/// работы и видимость из точки показывают результат на одном месте:
+/// показ нового снимает результат прежнего, окно прежнего остаётся.
+/// Новый инструмент реализует этот признак и входит в список
+/// [`SiteLayer::settle`], прежние инструменты не правятся.
+pub trait SiteTool {
+    /// Ключ слоя картинок тайлов.
+    fn id(&self) -> &'static str;
+    /// Результат на глобусе есть.
+    fn shown(&self) -> bool;
+    /// Картинки тайлов результата, None - результата нет.
+    fn painter(&self) -> Option<crate::vector::Painter>;
+    /// Снять результат с глобуса без закрытия окна, `drop` модуля.
+    fn drop_result(&mut self);
+    /// Слой классов результата: его предпросмотр идёт картинкой поверх
+    /// картинок «Моих меток» ([`crate::aefclass::preview_overlay`]).
+    /// None - результат рисуется только картинками тайлов.
+    fn layer(&self) -> Option<std::sync::Arc<crate::aefclass::Layer>> {
+        None
+    }
+}
+
+/// Хозяин общего слоя вида, `SiteLayer` модуля: инструмент, показавший
+/// результат последним.
+#[derive(Debug, Default)]
+pub struct SiteLayer {
+    owner: Option<&'static str>,
+}
+
+impl SiteLayer {
+    /// Кадр инструментов tools: инструмент с новым результатом занимает
+    /// слой (`claim` модуля), результаты остальных снимаются. true - слой
+    /// сменил хозяина.
+    pub fn settle(&mut self, tools: &mut [&mut dyn SiteTool]) -> bool {
+        let fresh = tools.iter().position(|t| t.shown() && Some(t.id()) != self.owner);
+        let Some(n) = fresh else {
+            if self.owner.is_some_and(|o| !tools.iter().any(|t| t.id() == o && t.shown())) {
+                self.owner = None;
+            }
+            return false;
+        };
+        self.owner = tools.get(n).map(|t| t.id());
+        for (k, tool) in tools.iter_mut().enumerate() {
+            if k != n && tool.shown() {
+                tool.drop_result();
+            }
+        }
+        true
+    }
+
+    /// Инструмент, занимающий слой.
+    pub fn owner(&self) -> Option<&'static str> {
+        self.owner
+    }
 }
 
 /// Кнопка окна анализа.
@@ -493,6 +746,72 @@ mod tests {
     fn layer() -> ResultLayer {
         let grid = LatLonGrid { north: 58.01, west: 56.24, dlat: 0.001, dlon: 0.002, cols: 3, rows: 2 };
         ResultLayer { name: "Тени".into(), grid, rgba: vec![[10, 20, 30, 255]; 6], tiff: Vec::new(), stem: "shadows".into(), summary: "Тени - сводка.".into() }
+    }
+
+    /// Инструмент проверки общего слоя.
+    struct Probe(&'static str, bool);
+
+    impl SiteTool for Probe {
+        fn id(&self) -> &'static str {
+            self.0
+        }
+        fn shown(&self) -> bool {
+            self.1
+        }
+        fn painter(&self) -> Option<crate::vector::Painter> {
+            None
+        }
+        fn drop_result(&mut self) {
+            self.1 = false;
+        }
+    }
+
+    #[test]
+    fn new_result_takes_the_site_layer() {
+        // Сторож `test_sitelayer` модуля: показ нового инструмента снимает
+        // результат прежнего, без нового результата хозяин остаётся.
+        let mut layer = SiteLayer::default();
+        let (mut a, mut b) = (Probe("aef_class", true), Probe("similar", false));
+        assert!(layer.settle(&mut [&mut a, &mut b]));
+        assert_eq!(layer.owner(), Some("aef_class"));
+        assert!(!layer.settle(&mut [&mut a, &mut b]));
+        b.1 = true;
+        assert!(layer.settle(&mut [&mut a, &mut b]));
+        assert_eq!(layer.owner(), Some("similar"));
+        assert!(!a.1 && b.1);
+        // Хозяин снял результат сам - слой свободен, остальные не трогаются.
+        b.1 = false;
+        assert!(!layer.settle(&mut [&mut a, &mut b]));
+        assert_eq!(layer.owner(), None);
+    }
+
+    #[test]
+    fn area_from_places_takes_largest_and_thins() {
+        // Сторож шагов `area_layer` модуля: из нескольких выделенных
+        // многоугольников - крупнейший, дыры не учитываются, контур
+        // сложнее 500 вершин упрощается.
+        let small: Polygon = ("Пруд".into(), data::site::square_ring(58.0, 56.25, 200.0), 0);
+        let circle: Vec<(f64, f64)> = (0..2000).map(|i| {
+            let a = i as f64 / 2000.0 * std::f64::consts::TAU;
+            (58.0 + 0.02 * a.sin(), 56.25 + 0.04 * a.cos())
+        }).collect();
+        let big: Polygon = ("Поле".into(), circle, 1);
+        let polygons = vec![small.clone(), big.clone()];
+        assert_eq!(largest(&polygons).map(|p| p.0.as_str()), Some("Поле"));
+        // Щелчок внутри пруда берёт пруд: он меньше поля вокруг.
+        assert_eq!(under(&polygons, 58.0, 56.25).map(|p| p.0.as_str()), Some("Пруд"));
+        assert!(under(&polygons, 59.0, 56.25).is_none());
+        let mut edit = SiteEdit::new(58.0, 56.25, 1.0, 20.0);
+        edit.take_polygon(Lang::EN, &big, 1);
+        assert!(edit.site.ring.len() >= 3 && edit.site.ring.len() <= RING_POINTS);
+        assert!(edit.changed && !edit.site.drawing);
+        let note = edit.shared_note(Lang::EN).unwrap_or_default();
+        assert!(note.contains("Поле") && note.contains("Holes") && note.contains("simplified"), "{note}");
+        // Без выделения - выбор щелчком.
+        let mut edits = [&mut edit];
+        edits[0].from_places = true;
+        sites_from_places(Lang::EN, &mut edits, None, &[]);
+        assert!(edits[0].hint(Lang::EN).is_some_and(|h| h.contains("My places")));
     }
 
     #[test]
