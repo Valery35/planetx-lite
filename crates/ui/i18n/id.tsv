@@ -2146,3 +2146,29 @@ Words of the name, for example kaolinite	Kata dari nama, misalnya kaolinite
 {when}, cloud cover {cloud} %, area {share} %	{when}, tutupan awan {cloud} %, area {share} %
 {when}, group {group}	{when}, grup {group}
 µm	µm
+A raster in reflectance with six bands or more, for example an ASTER image from the list above. The bands are recognised by their labels, thermal bands do not take part.	Raster reflektansi dengan enam kanal atau lebih, misalnya citra ASTER dari daftar di atas. Kanal dikenali dari labelnya, kanal termal tidak ikut.
+ASTER images	Citra ASTER
+ASTER images of 2000-2006 over the area suitable for minerals: in daytime, with SWIR bands, cloud cover up to 10 % and data on at least half of the area. On top - the least cloudy.	Citra ASTER 2000-2006 di atas area yang cocok untuk mineral: siang hari, dengan kanal SWIR, tutupan awan hingga 10 % dan data pada sedikitnya separuh area. Di atas - yang paling sedikit berawan.
+All bands of the chosen image over the area as a raster of the program. The image takes the Raster field.	Semua kanal citra terpilih di atas area sebagai raster program. Citra masuk ke kolom «Raster».
+EMIT scenes since 2022 over the area suitable for minerals: cloud cover up to 30 % and the scene over half of the area or more. On top - the least cloudy and covering more of the area.	Adegan EMIT sejak 2022 di atas area yang cocok untuk mineral: tutupan awan hingga 30 % dan adegan di atas separuh area atau lebih. Di atas - yang paling sedikit berawan dan paling luas menutup area.
+Few bands, different minerals give the same spectrum - load an ASTER image from the list above.	Kanal sedikit, mineral berbeda memberi spektrum yang sama - muat citra ASTER dari daftar di atas.
+Find suitable ASTER images of the area.	Cari citra ASTER yang cocok untuk area.
+Find suitable EMIT scenes of the area.	Cari adegan EMIT yang cocok untuk area.
+Load	Muat
+Loading the bands of the image {when}: {done} of {total}	Memuat kanal citra {when}: {done} dari {total}
+Loading the bands of the image {when}…	Memuat kanal citra {when}…
+More classes: {n}	Kelas lainnya: {n}
+No image with six bands or more is open - find and load an ASTER image of the area.	Tidak ada citra dengan enam kanal atau lebih yang terbuka - cari dan muat citra ASTER area.
+Planetary Computer did not give a key for the ASTER files. Repeat later.	Planetary Computer tidak memberi kunci untuk berkas ASTER. Ulangi nanti.
+Scenes {count}, the coverage of the area is checked…	Adegan {count}, cakupan area sedang diperiksa…
+Searching for ASTER images of the area…	Mencari citra ASTER area…
+Suitable ASTER images: {count}. Choose an image and press «Load».	Citra ASTER yang cocok: {count}. Pilih citra dan tekan «Muat».
+Suitable EMIT scenes: {n}. Choose a scene and press «Build».	Adegan EMIT yang cocok: {n}. Pilih adegan dan tekan «Hitung».
+The catalogue is busy, repeat of the search {n} of {total}…	Katalog sibuk, pengulangan pencarian {n} dari {total}…
+The image was not loaded: {error}	Citra tidak dimuat: {error}
+The image «{name}» is loaded. Click it on the globe.	Citra «{name}» sudah dimuat. Klik citra itu di globe.
+There are no suitable ASTER images over the area: the scenes cover less than {valid} % of the area.	Tidak ada citra ASTER yang cocok di atas area: adegan menutup kurang dari {valid} % area.
+There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in daytime, with cloud cover up to {cloud} % are needed.	Tidak ada citra ASTER yang cocok: diperlukan adegan 2000-2006 dengan kanal SWIR, siang hari, dengan tutupan awan hingga {cloud} %.
+There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Tidak ada adegan EMIT yang cocok: adegan di atas area memiliki tutupan awan lebih dari {cloud} % atau menutup kurang dari separuh area.
+{when} · cloud cover {cloud} % · area {share} %	{when} · awan {cloud} % · area {share} %
+{when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · awan {cloud} % · area {valid} % · matahari {sun}°

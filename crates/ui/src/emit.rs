@@ -36,8 +36,7 @@ use crate::i18n::{Lang, tr, trf};
 const SIDE: f64 = 10.0;
 const MOST: f64 = 200.0;
 const OPACITY: f64 = 0.7;
-/// Облачность до, проценты, и группа по умолчанию - как у модуля.
-const CLOUD: f64 = 30.0;
+/// Группа по умолчанию - как у модуля.
 const GROUP: u32 = 2;
 /// Сторона картинки сцены в окне, точки экрана, `PREVIEW` модуля.
 const PREVIEW: f32 = 220.0;
@@ -78,10 +77,10 @@ pub struct Emit {
     pub open: bool,
     place: String,
     pub site: SiteEdit,
-    start: String,
-    end: String,
-    cloud: f64,
     group: u32,
+    /// Сцены каталога над рамкой участка и подходящие из них
+    /// ([`emit::suitable`]) - список окна.
+    found: Vec<Scene>,
     scenes: Vec<Scene>,
     selected: Option<usize>,
     preview: Option<(usize, egui::TextureHandle)>,
@@ -109,22 +108,14 @@ fn today() -> String {
     format!("{y:04}-{m:02}-{d:02}")
 }
 
-/// Дата «ГГГГ-ММ-ДД» годна.
-fn date_ok(text: &str) -> bool {
-    let parts: Vec<&str> = text.split('-').collect();
-    matches!(parts.as_slice(), [y, m, d] if y.len() == 4 && m.len() == 2 && d.len() == 2 && [y, m, d].iter().all(|p| p.chars().all(|c| c.is_ascii_digit())))
-}
-
 impl Emit {
     pub fn new(lat: f64, lon: f64, place: String) -> Self {
         Self {
             open: true,
             place,
             site: SiteEdit::new(lat, lon, SIDE, MOST),
-            start: emit::FIRST_DAY.to_string(),
-            end: today(),
-            cloud: CLOUD,
             group: GROUP,
+            found: Vec::new(),
             scenes: Vec::new(),
             selected: None,
             preview: None,
@@ -173,25 +164,24 @@ impl Emit {
         self.status.clear();
     }
 
-    /// Поиск сцен над участком в двух коллекциях, `search` модуля.
+    /// Поиск сцен над участком в двух коллекциях за все годы, `search`
+    /// модуля 1.31: полей дат и облачности у окна нет.
     fn search(&mut self, lang: Lang, request: Request) {
         if let Some(problem) = self.site.problem(lang) {
             self.status = problem;
             return;
         }
-        if !date_ok(&self.start) || !date_ok(&self.end) {
-            self.status = tr(lang, "Dates are written as YYYY-MM-DD.").to_string();
-            return;
-        }
+        let end = today();
         let ring = self.site.site.ring.clone();
         let asks = emit::COLLECTIONS
             .iter()
             .map(|(collection, _)| {
                 let ask = request(ANSWER);
-                ask.start(&emit::cmr_url(&ring, &self.start, &self.end, self.cloud, collection));
+                ask.start(&emit::cmr_url(&ring, emit::FIRST_DAY, &end, emit::CLOUD_MAX, collection));
                 (ask, None)
             })
             .collect();
+        self.found.clear();
         self.scenes.clear();
         self.selected = None;
         self.preview = None;
@@ -199,13 +189,13 @@ impl Emit {
         self.status = tr(lang, "Searching for EMIT scenes…").to_string();
     }
 
-    /// Доли участка под сценами, сцены вне участка уходят.
+    /// Доли участка под сценами каталога, в списке - подходящие.
     fn shares(&mut self) {
         let ring = self.site.site.ring.clone();
-        for s in &mut self.scenes {
+        for s in &mut self.found {
             s.share = emit::coverage(&s.polygon, &ring);
         }
-        self.scenes.retain(|s| s.share > 0.0);
+        self.scenes = emit::suitable(&self.found);
         self.selected = (!self.scenes.is_empty()).then_some(0);
         self.preview = None;
     }
@@ -290,13 +280,9 @@ impl Emit {
                         None => {}
                     }
                 }
-                self.scenes = emit::merge(lists);
+                self.found = emit::merge(lists);
                 self.shares();
-                self.status = match (self.scenes.len(), error) {
-                    (0, Some(e)) => trf(lang, "The NASA catalogue did not answer: {error}", &[("error", &e)]),
-                    (0, None) => tr(lang, "There are no EMIT scenes over the area. EMIT images arid regions - deserts, semi-deserts, steppes.").to_string(),
-                    (n, _) => trf(lang, "Scenes over the area: {n}.", &[("n", &n.to_string())]),
-                };
+                self.status = self.found_text(lang, error);
             }
             Some(Stage::File { scene, ask }) => match ask.take() {
                 None => self.stage = Some(Stage::File { scene, ask }),
@@ -379,7 +365,7 @@ impl Emit {
         let depth = grid.depth.iter().zip(&inside).map(|(d, i)| if *i { *d } else { f32::NAN }).collect();
         let colors = kept.iter().map(|m| emit::color(*m)).collect();
         let index = Arc::new(index);
-        self.layer = Some(Arc::new(Layer { index: index.clone(), step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes: kinds, colors, opacity: OPACITY, objects: None }));
+        self.layer = Some(Arc::new(Layer { index: index.clone(), step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes: kinds, colors, names: names.clone(), opacity: OPACITY, objects: None }));
         let label = trf(lang, "{when}, group {group}", &[("when", scene.when.get(..10).unwrap_or(&scene.when)), ("group", &self.group.to_string())]);
         self.done = Some(Done { index, grid, depth, names, label });
         self.changed = true;
@@ -459,26 +445,17 @@ impl Emit {
                 ui.label(tr(lang, "Area|site"));
                 self.site.row(ui, lang);
                 ui.end_row();
-                ui.label(tr(lang, "Dates"));
-                ui.horizontal(|ui| {
-                    ui.add(egui::TextEdit::singleline(&mut self.start).desired_width(90.0));
-                    ui.label("-");
-                    ui.add(egui::TextEdit::singleline(&mut self.end).desired_width(90.0));
-                    find = ui.button(tr(lang, "Find scenes")).clicked();
-                });
-                ui.end_row();
-                ui.label(tr(lang, "Cloud cover up to"));
-                ui.add(egui::DragValue::new(&mut self.cloud).range(0.0..=100.0).speed(1.0).suffix(" %"))
-                    .on_hover_text(tr(lang, "The largest cloud cover of a scene by the NASA catalogue. Clouds hide the minerals, the cells under them stay without a class."));
-                ui.end_row();
-                ui.label(tr(lang, "Scenes"));
-                egui::ScrollArea::vertical().id_salt("planetx-emit-scenes").max_height(120.0).auto_shrink([false, true]).show(ui, |ui| {
-                    for (n, s) in self.scenes.iter().enumerate() {
-                        let text = trf(lang, "{when}, cloud cover {cloud} %, area {share} %", &[("when", s.when.get(..16).unwrap_or(&s.when)), ("cloud", &format!("{:.0}", s.cloud)), ("share", &format!("{:.0}", 100.0 * s.share))]);
-                        if ui.selectable_label(self.selected == Some(n), text).on_hover_text(&s.id).clicked() {
-                            self.selected = Some(n);
+                ui.label(tr(lang, "Scenes")).on_hover_text(tr(lang, "EMIT scenes since 2022 over the area suitable for minerals: cloud cover up to 30 % and the scene over half of the area or more. On top - the least cloudy and covering more of the area."));
+                ui.horizontal_top(|ui| {
+                    egui::ScrollArea::vertical().id_salt("planetx-emit-scenes").max_height(120.0).max_width(320.0).auto_shrink([false, true]).show(ui, |ui| {
+                        for (n, s) in self.scenes.iter().enumerate() {
+                            let text = trf(lang, "{when} · cloud cover {cloud} % · area {share} %", &[("when", s.when.get(..16).unwrap_or(&s.when)), ("cloud", &format!("{:.0}", s.cloud)), ("share", &format!("{:.0}", 100.0 * s.share))]);
+                            if ui.selectable_label(self.selected == Some(n), text).on_hover_text(&s.id).clicked() {
+                                self.selected = Some(n);
+                            }
                         }
-                    }
+                    });
+                    find = ui.add_enabled(!self.busy(), egui::Button::new(tr(lang, "Find"))).on_hover_text(tr(lang, "Find suitable EMIT scenes of the area.")).clicked();
                 });
                 ui.end_row();
                 if let Some((n, texture)) = &self.preview
@@ -519,7 +496,7 @@ impl Emit {
                 if ui.add(egui::Slider::new(&mut opacity, 0.0..=1.0).show_value(false)).changed()
                     && let Some(old) = &self.layer
                 {
-                    self.layer = Some(Arc::new(Layer { index: old.index.clone(), step: old.step, x0: old.x0, y0: old.y0, rows: old.rows, cols: old.cols, classes: old.classes.clone(), colors: old.colors.clone(), opacity, objects: None }));
+                    self.layer = Some(Arc::new(Layer { index: old.index.clone(), step: old.step, x0: old.x0, y0: old.y0, rows: old.rows, cols: old.cols, classes: old.classes.clone(), colors: old.colors.clone(), names: old.names.clone(), opacity, objects: None }));
                     self.changed = true;
                 }
                 ui.end_row();
@@ -571,13 +548,24 @@ impl Emit {
         }
     }
 
+    /// Строка итога поиска, `_found` модуля 1.31.
+    fn found_text(&self, lang: Lang, error: Option<String>) -> String {
+        match (self.scenes.len(), self.found.is_empty(), error) {
+            (0, false, _) => trf(lang, "There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.", &[("cloud", &format!("{:.0}", emit::CLOUD_MAX))]),
+            (0, true, Some(e)) => trf(lang, "The NASA catalogue did not answer: {error}", &[("error", &e)]),
+            (0, true, None) => tr(lang, "There are no EMIT scenes over the area. EMIT images arid regions - deserts, semi-deserts, steppes.").to_string(),
+            (n, _, _) => trf(lang, "Suitable EMIT scenes: {n}. Choose a scene and press «Build».", &[("n", &n.to_string())]),
+        }
+    }
+
     /// Участок изменился: доли сцен заново, прежний расчёт - по прежнему
     /// участку.
     fn shares_changed(&mut self, lang: Lang) {
-        if self.scenes.is_empty() {
+        if self.found.is_empty() {
             self.search_wanted = true;
         } else {
             self.shares();
+            self.status = self.found_text(lang, None);
         }
         if self.layer.is_some() && !self.busy() {
             self.status = tr(lang, "The area has changed. Press «Build» to compute it again.").to_string();
@@ -588,6 +576,9 @@ impl Emit {
 impl analysis::SiteTool for Emit {
     fn id(&self) -> &'static str {
         "emit"
+    }
+    fn legend_title(&self, lang: Lang) -> Option<&'static str> {
+        Some(tr(lang, "EMIT minerals"))
     }
     fn shown(&self) -> bool {
         self.layer.is_some()
@@ -628,11 +619,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn dates_and_ramp() {
-        assert!(date_ok("2022-08-09"));
-        assert!(!date_ok("2022-8-9"));
-        assert!(!date_ok("2022-08-0x"));
-        assert!(date_ok(&today()));
+    fn today_and_ramp() {
+        let day = today();
+        assert_eq!(day.len(), 10);
+        assert!(day.as_str() > emit::FIRST_DAY);
         assert_eq!(ramp(0.0), [255, 255, 204]);
         assert_eq!(ramp(1.0), [60, 0, 30]);
     }

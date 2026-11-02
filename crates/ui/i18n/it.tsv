@@ -2146,3 +2146,29 @@ Words of the name, for example kaolinite	Parole del nome, ad esempio kaolinite
 {when}, cloud cover {cloud} %, area {share} %	{when}, copertura nuvolosa {cloud} %, area {share} %
 {when}, group {group}	{when}, gruppo {group}
 µm	µm
+A raster in reflectance with six bands or more, for example an ASTER image from the list above. The bands are recognised by their labels, thermal bands do not take part.	Raster in riflettanza con sei bande o più, per esempio un'immagine ASTER dall'elenco sopra. Le bande si riconoscono dalle loro etichette, le bande termiche non partecipano.
+ASTER images	Immagini ASTER
+ASTER images of 2000-2006 over the area suitable for minerals: in daytime, with SWIR bands, cloud cover up to 10 % and data on at least half of the area. On top - the least cloudy.	Immagini ASTER del 2000-2006 sull'area adatte ai minerali: di giorno, con bande SWIR, nuvolosità fino al 10 % e dati su almeno metà dell'area. In alto - le meno nuvolose.
+All bands of the chosen image over the area as a raster of the program. The image takes the Raster field.	Tutte le bande dell'immagine scelta sull'area come raster del programma. L'immagine va nel campo «Raster».
+EMIT scenes since 2022 over the area suitable for minerals: cloud cover up to 30 % and the scene over half of the area or more. On top - the least cloudy and covering more of the area.	Scene EMIT dal 2022 sull'area adatte ai minerali: nuvolosità fino al 30 % e la scena sopra metà dell'area o più. In alto - le meno nuvolose e quelle che coprono di più l'area.
+Few bands, different minerals give the same spectrum - load an ASTER image from the list above.	Poche bande, minerali diversi danno lo stesso spettro - caricare un'immagine ASTER dall'elenco sopra.
+Find suitable ASTER images of the area.	Trovare le immagini ASTER adatte dell'area.
+Find suitable EMIT scenes of the area.	Trovare le scene EMIT adatte dell'area.
+Load	Carica
+Loading the bands of the image {when}: {done} of {total}	Caricamento delle bande dell'immagine {when}: {done} di {total}
+Loading the bands of the image {when}…	Caricamento delle bande dell'immagine {when}…
+More classes: {n}	Altre classi: {n}
+No image with six bands or more is open - find and load an ASTER image of the area.	Nessuna immagine con sei bande o più è aperta - trovare e caricare un'immagine ASTER dell'area.
+Planetary Computer did not give a key for the ASTER files. Repeat later.	Planetary Computer non ha dato una chiave per i file ASTER. Ripetere più tardi.
+Scenes {count}, the coverage of the area is checked…	Scene {count}, si verifica la copertura dell'area…
+Searching for ASTER images of the area…	Ricerca delle immagini ASTER dell'area…
+Suitable ASTER images: {count}. Choose an image and press «Load».	Immagini ASTER adatte: {count}. Scegliere un'immagine e premere «Carica».
+Suitable EMIT scenes: {n}. Choose a scene and press «Build».	Scene EMIT adatte: {n}. Scegliere una scena e premere «Calcola».
+The catalogue is busy, repeat of the search {n} of {total}…	Il catalogo è occupato, ripetizione della ricerca {n} di {total}…
+The image was not loaded: {error}	L'immagine non è stata caricata: {error}
+The image «{name}» is loaded. Click it on the globe.	L'immagine «{name}» è caricata. Fare clic su di essa sul globo.
+There are no suitable ASTER images over the area: the scenes cover less than {valid} % of the area.	Nessuna immagine ASTER adatta sull'area: le scene coprono meno del {valid} % dell'area.
+There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in daytime, with cloud cover up to {cloud} % are needed.	Nessuna immagine ASTER adatta: servono scene del 2000-2006 con bande SWIR, di giorno, con nuvolosità fino al {cloud} %.
+There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Nessuna scena EMIT adatta: le scene sull'area hanno nuvolosità oltre il {cloud} % o coprono meno di metà dell'area.
+{when} · cloud cover {cloud} % · area {share} %	{when} · nuvolosità {cloud} % · area {share} %
+{when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · nuvolosità {cloud} % · area {valid} % · sole {sun}°

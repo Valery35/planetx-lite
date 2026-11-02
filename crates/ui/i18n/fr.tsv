@@ -2146,3 +2146,29 @@ Words of the name, for example kaolinite	Mots du nom, par exemple kaolinite
 {when}, cloud cover {cloud} %, area {share} %	{when}, couverture nuageuse {cloud} %, zone {share} %
 {when}, group {group}	{when}, groupe {group}
 µm	µm
+A raster in reflectance with six bands or more, for example an ASTER image from the list above. The bands are recognised by their labels, thermal bands do not take part.	Raster en réflectance avec six canaux ou plus, par exemple une image ASTER de la liste ci-dessus. Les canaux sont reconnus par leurs étiquettes, les canaux thermiques ne participent pas.
+ASTER images	Images ASTER
+ASTER images of 2000-2006 over the area suitable for minerals: in daytime, with SWIR bands, cloud cover up to 10 % and data on at least half of the area. On top - the least cloudy.	Images ASTER de 2000-2006 au-dessus de la zone, adaptées aux minéraux : de jour, avec canaux SWIR, nébulosité jusqu'à 10 % et données sur au moins la moitié de la zone. En haut - les moins nuageuses.
+All bands of the chosen image over the area as a raster of the program. The image takes the Raster field.	Tous les canaux de l'image choisie sur la zone comme raster du programme. L'image passe dans le champ «Raster».
+EMIT scenes since 2022 over the area suitable for minerals: cloud cover up to 30 % and the scene over half of the area or more. On top - the least cloudy and covering more of the area.	Scènes EMIT depuis 2022 au-dessus de la zone, adaptées aux minéraux : nébulosité jusqu'à 30 % et la scène au-dessus de la moitié de la zone ou plus. En haut - les moins nuageuses et couvrant le plus la zone.
+Few bands, different minerals give the same spectrum - load an ASTER image from the list above.	Peu de canaux, des minéraux différents donnent le même spectre - chargez une image ASTER de la liste ci-dessus.
+Find suitable ASTER images of the area.	Chercher les images ASTER adaptées de la zone.
+Find suitable EMIT scenes of the area.	Chercher les scènes EMIT adaptées de la zone.
+Load	Charger
+Loading the bands of the image {when}: {done} of {total}	Chargement des canaux de l'image {when} : {done} sur {total}
+Loading the bands of the image {when}…	Chargement des canaux de l'image {when}…
+More classes: {n}	Autres classes : {n}
+No image with six bands or more is open - find and load an ASTER image of the area.	Aucune image à six canaux ou plus n'est ouverte - cherchez et chargez une image ASTER de la zone.
+Planetary Computer did not give a key for the ASTER files. Repeat later.	Planetary Computer n'a pas donné de clé pour les fichiers ASTER. Réessayez plus tard.
+Scenes {count}, the coverage of the area is checked…	Scènes {count}, la couverture de la zone est vérifiée…
+Searching for ASTER images of the area…	Recherche des images ASTER de la zone…
+Suitable ASTER images: {count}. Choose an image and press «Load».	Images ASTER adaptées : {count}. Choisissez une image et appuyez sur «Charger».
+Suitable EMIT scenes: {n}. Choose a scene and press «Build».	Scènes EMIT adaptées : {n}. Choisissez une scène et appuyez sur «Calculer».
+The catalogue is busy, repeat of the search {n} of {total}…	Le catalogue est occupé, nouvelle recherche {n} sur {total}…
+The image was not loaded: {error}	L'image n'a pas été chargée : {error}
+The image «{name}» is loaded. Click it on the globe.	L'image «{name}» est chargée. Cliquez dessus sur le globe.
+There are no suitable ASTER images over the area: the scenes cover less than {valid} % of the area.	Aucune image ASTER adaptée au-dessus de la zone : les scènes couvrent moins de {valid} % de la zone.
+There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in daytime, with cloud cover up to {cloud} % are needed.	Aucune image ASTER adaptée : il faut des scènes de 2000-2006 avec canaux SWIR, de jour, avec une nébulosité jusqu'à {cloud} %.
+There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Aucune scène EMIT adaptée : les scènes au-dessus de la zone ont une nébulosité supérieure à {cloud} % ou couvrent moins de la moitié de la zone.
+{when} · cloud cover {cloud} % · area {share} %	{when} · nébulosité {cloud} % · zone {share} %
+{when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · nébulosité {cloud} % · zone {valid} % · soleil {sun}°

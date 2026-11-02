@@ -2146,3 +2146,29 @@ Words of the name, for example kaolinite	Adın sözləri, məsələn kaolinite
 {when}, cloud cover {cloud} %, area {share} %	{when}, buludluluq {cloud} %, sahə {share} %
 {when}, group {group}	{when}, qrup {group}
 µm	µm
+A raster in reflectance with six bands or more, for example an ASTER image from the list above. The bands are recognised by their labels, thermal bands do not take part.	Altı və daha çox kanallı əks etdirmə rastri, məsələn yuxarıdakı siyahıdan ASTER şəkli. Kanallar etiketlərinə görə tanınır, istilik kanalları iştirak etmir.
+ASTER images	ASTER şəkilləri
+ASTER images of 2000-2006 over the area suitable for minerals: in daytime, with SWIR bands, cloud cover up to 10 % and data on at least half of the area. On top - the least cloudy.	Sahə üzərində minerallar üçün yararlı 2000-2006-cı illərin ASTER şəkilləri: gündüz, SWIR kanalları ilə, buludluluq 10 %-ə qədər və sahənin ən azı yarısında məlumat. Yuxarıda - ən az buludlu olanlar.
+All bands of the chosen image over the area as a raster of the program. The image takes the Raster field.	Seçilmiş şəklin sahə üzrə bütün kanalları proqramın rastri kimi. Şəkil «Raster» sahəsinə düşür.
+EMIT scenes since 2022 over the area suitable for minerals: cloud cover up to 30 % and the scene over half of the area or more. On top - the least cloudy and covering more of the area.	Sahə üzərində minerallar üçün yararlı 2022-ci ildən EMIT səhnələri: buludluluq 30 %-ə qədər və səhnə sahənin yarısı və ya daha çoxu üzərində. Yuxarıda - ən az buludlu və sahəni daha geniş örtənlər.
+Few bands, different minerals give the same spectrum - load an ASTER image from the list above.	Kanal azdır, müxtəlif minerallar eyni spektri verir - yuxarıdakı siyahıdan ASTER şəkli yükləyin.
+Find suitable ASTER images of the area.	Sahənin yararlı ASTER şəkillərini tap.
+Find suitable EMIT scenes of the area.	Sahənin yararlı EMIT səhnələrini tap.
+Load	Yüklə
+Loading the bands of the image {when}: {done} of {total}	{when} şəklinin kanalları yüklənir: {done} / {total}
+Loading the bands of the image {when}…	{when} şəklinin kanalları yüklənir…
+More classes: {n}	Digər siniflər: {n}
+No image with six bands or more is open - find and load an ASTER image of the area.	Altı və daha çox kanallı şəkil açıq deyil - sahənin ASTER şəklini tapın və yükləyin.
+Planetary Computer did not give a key for the ASTER files. Repeat later.	Planetary Computer ASTER faylları üçün açar vermədi. Sonra təkrarlayın.
+Scenes {count}, the coverage of the area is checked…	Səhnə {count}, sahənin örtülməsi yoxlanılır…
+Searching for ASTER images of the area…	Sahənin ASTER şəkilləri axtarılır…
+Suitable ASTER images: {count}. Choose an image and press «Load».	Yararlı ASTER şəkilləri: {count}. Şəkil seçin və «Yüklə» düyməsini basın.
+Suitable EMIT scenes: {n}. Choose a scene and press «Build».	Yararlı EMIT səhnələri: {n}. Səhnə seçin və «Qur» düyməsini basın.
+The catalogue is busy, repeat of the search {n} of {total}…	Kataloq məşğuldur, axtarışın təkrarı {n} / {total}…
+The image was not loaded: {error}	Şəkil yüklənmədi: {error}
+The image «{name}» is loaded. Click it on the globe.	«{name}» şəkli yükləndi. Qlobusda onun üzərinə klikləyin.
+There are no suitable ASTER images over the area: the scenes cover less than {valid} % of the area.	Sahə üzərində yararlı ASTER şəkli yoxdur: səhnələr sahənin {valid} %-indən azını örtür.
+There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in daytime, with cloud cover up to {cloud} % are needed.	Yararlı ASTER şəkli yoxdur: 2000-2006-cı illərin SWIR kanallı, gündüz, buludluluğu {cloud} %-ə qədər səhnələri lazımdır.
+There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Yararlı EMIT səhnəsi yoxdur: sahə üzərindəki səhnələrin buludluluğu {cloud} %-dən çoxdur və ya sahənin yarısından azını örtür.
+{when} · cloud cover {cloud} % · area {share} %	{when} · buludluluq {cloud} % · sahə {share} %
+{when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · buludluluq {cloud} % · sahə {valid} % · günəş {sun}°

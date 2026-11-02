@@ -75,6 +75,35 @@ fn mercator_raster_reads_back() {
 }
 
 #[test]
+fn bands_raster_reads_back_with_labels() {
+    // «Все каналы сцены» окна «Минералы по спектру»: каналы плоскостями,
+    // несколько полос на канал, подписи - описания каналов.
+    let (cols, rows) = (3usize, 130usize);
+    let g = data::geotiff::MercatorGrid { x0: 500_015.0, y0: 4_200_000.0, step: 30.0, cols, rows };
+    let band = |k: f32| -> Vec<f32> { (0..cols * rows).map(|i| if i == 7 { f32::NAN } else { k + i as f32 }).collect() };
+    let labels = ["B1 0.56 um", "B4 1.65 um", "B10 8.3 um, K <&>"];
+    let bands: Vec<(String, Vec<f32>)> = labels.iter().zip([0.0, 1000.0, 2000.0]).map(|(l, k)| (l.to_string(), band(k))).collect();
+    let bytes = geotiff::write_bands_projected(&g, 32611, &bands);
+    assert!(bytes.is_some());
+    let Some(bytes) = bytes else { return };
+    assert_eq!(data::rasterclass::feature_bands(&bytes), Some(3));
+    let ds = terrio::memory::open_raster_bytes(bytes.clone(), "aster.tif");
+    assert!(ds.is_ok());
+    let Ok(ds) = ds else { return };
+    assert_eq!(ds.crs().authority().map(|(_, c)| c), Some(32611));
+    close(ds.geo_transform()[0], 500_000.0);
+    close(ds.raster.get(1, 0, 1), 1001.0);
+    close(ds.raster.get(2, 129, 2), 2000.0 + 389.0);
+    close(ds.raster.get(0, 2, 1), NODATA);
+    let source = data::rasterclass::Source::read(&bytes, "aster.tif");
+    assert!(source.is_ok());
+    let Ok(source) = source else { return };
+    assert_eq!(source.labels(), labels);
+    assert!(geotiff::write_bands_projected(&g, 32611, &[]).is_none());
+    assert!(geotiff::write_bands_projected(&g, 32611, &[("x".into(), vec![0.0; 5])]).is_none());
+}
+
+#[test]
 fn bad_grid_gives_nothing() {
     let mut g = grid();
     assert!(geotiff::write_float(&g, &[0.0; 14]).is_none());

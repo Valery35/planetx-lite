@@ -2146,3 +2146,29 @@ Words of the name, for example kaolinite	Các từ của tên, ví dụ kaolinit
 {when}, cloud cover {cloud} %, area {share} %	{when}, độ che phủ mây {cloud} %, khu vực {share} %
 {when}, group {group}	{when}, nhóm {group}
 µm	µm
+A raster in reflectance with six bands or more, for example an ASTER image from the list above. The bands are recognised by their labels, thermal bands do not take part.	Raster phản xạ có sáu kênh trở lên, ví dụ một ảnh ASTER từ danh sách phía trên. Các kênh được nhận ra theo nhãn của chúng, các kênh nhiệt không tham gia.
+ASTER images	Ảnh ASTER
+ASTER images of 2000-2006 over the area suitable for minerals: in daytime, with SWIR bands, cloud cover up to 10 % and data on at least half of the area. On top - the least cloudy.	Ảnh ASTER 2000-2006 trên khu vực phù hợp cho khoáng vật: ban ngày, có kênh SWIR, mây đến 10 % và có dữ liệu trên ít nhất một nửa khu vực. Ở trên - ảnh ít mây nhất.
+All bands of the chosen image over the area as a raster of the program. The image takes the Raster field.	Tất cả các kênh của ảnh đã chọn trên khu vực thành raster của chương trình. Ảnh vào trường «Raster».
+EMIT scenes since 2022 over the area suitable for minerals: cloud cover up to 30 % and the scene over half of the area or more. On top - the least cloudy and covering more of the area.	Cảnh EMIT từ năm 2022 trên khu vực phù hợp cho khoáng vật: mây đến 30 % và cảnh nằm trên một nửa khu vực trở lên. Ở trên - cảnh ít mây nhất và phủ khu vực rộng nhất.
+Few bands, different minerals give the same spectrum - load an ASTER image from the list above.	Ít kênh, các khoáng vật khác nhau cho cùng một phổ - hãy tải một ảnh ASTER từ danh sách phía trên.
+Find suitable ASTER images of the area.	Tìm các ảnh ASTER phù hợp của khu vực.
+Find suitable EMIT scenes of the area.	Tìm các cảnh EMIT phù hợp của khu vực.
+Load	Tải
+Loading the bands of the image {when}: {done} of {total}	Đang tải các kênh của ảnh {when}: {done} trên {total}
+Loading the bands of the image {when}…	Đang tải các kênh của ảnh {when}…
+More classes: {n}	Các lớp khác: {n}
+No image with six bands or more is open - find and load an ASTER image of the area.	Chưa mở ảnh nào có sáu kênh trở lên - hãy tìm và tải một ảnh ASTER của khu vực.
+Planetary Computer did not give a key for the ASTER files. Repeat later.	Planetary Computer không cấp khóa cho các tệp ASTER. Hãy thử lại sau.
+Scenes {count}, the coverage of the area is checked…	Cảnh {count}, đang kiểm tra độ phủ khu vực…
+Searching for ASTER images of the area…	Đang tìm ảnh ASTER của khu vực…
+Suitable ASTER images: {count}. Choose an image and press «Load».	Ảnh ASTER phù hợp: {count}. Chọn một ảnh và nhấn «Tải».
+Suitable EMIT scenes: {n}. Choose a scene and press «Build».	Cảnh EMIT phù hợp: {n}. Chọn một cảnh và nhấn «Tính».
+The catalogue is busy, repeat of the search {n} of {total}…	Danh mục đang bận, lặp lại tìm kiếm {n} trên {total}…
+The image was not loaded: {error}	Ảnh chưa được tải: {error}
+The image «{name}» is loaded. Click it on the globe.	Ảnh «{name}» đã được tải. Hãy nhấp vào ảnh trên quả địa cầu.
+There are no suitable ASTER images over the area: the scenes cover less than {valid} % of the area.	Không có ảnh ASTER phù hợp trên khu vực: các cảnh phủ ít hơn {valid} % khu vực.
+There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in daytime, with cloud cover up to {cloud} % are needed.	Không có ảnh ASTER phù hợp: cần các cảnh 2000-2006 có kênh SWIR, ban ngày, mây đến {cloud} %.
+There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Không có cảnh EMIT phù hợp: các cảnh trên khu vực có mây trên {cloud} % hoặc phủ ít hơn một nửa khu vực.
+{when} · cloud cover {cloud} % · area {share} %	{when} · mây {cloud} % · khu vực {share} %
+{when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · mây {cloud} % · khu vực {valid} % · mặt trời {sun}°

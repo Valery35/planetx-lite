@@ -76,6 +76,18 @@ fn coverage() {
 }
 
 #[test]
+fn suitable_keeps_clear_wide_scenes() {
+    // Сторож `emit.suitable` модуля 1.31: облачная сцена и сцена у края
+    // участка в список не идут, малооблачные и шире покрывающие - первыми.
+    let scene = |when: &str, cloud: f64, share: f64| emit::Scene { id: when.into(), when: when.into(), cloud, polygon: Vec::new(), url: String::new(), preview: String::new(), version: "002".into(), share };
+    let all = [scene("2023-05-01", 40.0, 1.0), scene("2023-06-01", 5.0, 0.3), scene("2023-07-01", 12.0, 1.0), scene("2023-08-01", 3.0, 0.6), scene("2023-09-01", 3.0, 1.0), scene("2022-09-01", 3.0, 1.0), scene("2024-01-01", f64::NAN, 0.8)];
+    let kept: Vec<String> = emit::suitable(&all).into_iter().map(|s| s.when).collect();
+    assert_eq!(kept, ["2024-01-01", "2023-09-01", "2022-09-01", "2023-08-01", "2023-07-01"]);
+    let many: Vec<emit::Scene> = (0..40).map(|n| scene(&format!("2023-01-{n:02}"), 0.0, 1.0)).collect();
+    assert_eq!(emit::suitable(&many).len(), emit::SHOWN);
+}
+
+#[test]
 fn ortho_takes_one_based_rows_and_columns() {
     let swath: Vec<f32> = (0..12).map(|v| v as f32).collect();
     let glt = Glt { rows: 2, cols: 3, x: vec![1, 4, 0, 2, 3, 4], y: vec![1, 3, 0, 2, -2, 1] };

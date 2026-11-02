@@ -2146,3 +2146,29 @@ Words of the name, for example kaolinite	이름의 단어, 예: kaolinite
 {when}, cloud cover {cloud} %, area {share} %	{when}, 구름양 {cloud} %, 영역 {share} %
 {when}, group {group}	{when}, 그룹 {group}
 µm	µm
+A raster in reflectance with six bands or more, for example an ASTER image from the list above. The bands are recognised by their labels, thermal bands do not take part.	6개 밴드 이상의 반사율 래스터, 예를 들어 위 목록의 ASTER 영상. 밴드는 레이블로 인식되며 열적외 밴드는 사용되지 않습니다.
+ASTER images	ASTER 영상
+ASTER images of 2000-2006 over the area suitable for minerals: in daytime, with SWIR bands, cloud cover up to 10 % and data on at least half of the area. On top - the least cloudy.	영역 위의 광물용 2000-2006년 ASTER 영상: 주간, SWIR 밴드 포함, 구름 10 % 이하, 영역의 절반 이상에 데이터. 위쪽이 구름이 가장 적은 영상입니다.
+All bands of the chosen image over the area as a raster of the program. The image takes the Raster field.	선택한 영상의 영역 내 모든 밴드를 프로그램의 래스터로. 영상이 «래스터» 칸에 들어갑니다.
+EMIT scenes since 2022 over the area suitable for minerals: cloud cover up to 30 % and the scene over half of the area or more. On top - the least cloudy and covering more of the area.	영역 위의 광물용 2022년 이후 EMIT 장면: 구름 30 % 이하, 장면이 영역의 절반 이상을 덮음. 위쪽이 구름이 가장 적고 영역을 넓게 덮는 장면입니다.
+Few bands, different minerals give the same spectrum - load an ASTER image from the list above.	밴드가 적어 서로 다른 광물이 같은 스펙트럼을 줍니다 - 위 목록에서 ASTER 영상을 불러오십시오.
+Find suitable ASTER images of the area.	영역에 적합한 ASTER 영상을 찾습니다.
+Find suitable EMIT scenes of the area.	영역에 적합한 EMIT 장면을 찾습니다.
+Load	불러오기
+Loading the bands of the image {when}: {done} of {total}	영상 {when}의 밴드를 불러오는 중: {done} / {total}
+Loading the bands of the image {when}…	영상 {when}의 밴드를 불러오는 중…
+More classes: {n}	기타 클래스: {n}
+No image with six bands or more is open - find and load an ASTER image of the area.	6개 밴드 이상의 영상이 열려 있지 않습니다 - 영역의 ASTER 영상을 찾아 불러오십시오.
+Planetary Computer did not give a key for the ASTER files. Repeat later.	Planetary Computer가 ASTER 파일 키를 주지 않았습니다. 나중에 다시 시도하십시오.
+Scenes {count}, the coverage of the area is checked…	장면 {count}개, 영역 덮임을 확인하는 중…
+Searching for ASTER images of the area…	영역의 ASTER 영상을 찾는 중…
+Suitable ASTER images: {count}. Choose an image and press «Load».	적합한 ASTER 영상: {count}. 영상을 선택하고 «불러오기»를 누르십시오.
+Suitable EMIT scenes: {n}. Choose a scene and press «Build».	적합한 EMIT 장면: {n}. 장면을 선택하고 «만들기»를 누르십시오.
+The catalogue is busy, repeat of the search {n} of {total}…	카탈로그가 바쁩니다. 검색 재시도 {n} / {total}…
+The image was not loaded: {error}	영상을 불러오지 못했습니다: {error}
+The image «{name}» is loaded. Click it on the globe.	영상 «{name}»을(를) 불러왔습니다. 지구본에서 클릭하십시오.
+There are no suitable ASTER images over the area: the scenes cover less than {valid} % of the area.	영역 위에 적합한 ASTER 영상이 없습니다: 장면이 영역의 {valid} % 미만을 덮습니다.
+There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in daytime, with cloud cover up to {cloud} % are needed.	적합한 ASTER 영상이 없습니다: 2000-2006년, SWIR 밴드 포함, 주간, 구름 {cloud} % 이하 장면이 필요합니다.
+There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	적합한 EMIT 장면이 없습니다: 영역 위 장면의 구름이 {cloud} %를 넘거나 영역의 절반 미만을 덮습니다.
+{when} · cloud cover {cloud} % · area {share} %	{when} · 구름 {cloud} % · 영역 {share} %
+{when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · 구름 {cloud} % · 영역 {valid} % · 태양 {sun}°

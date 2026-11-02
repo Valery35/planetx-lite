@@ -5439,9 +5439,15 @@ impl LiteApp {
             }
             if let Some(calc) = &mut self.spectral {
                 calc.rasters = rasters.clone();
-                calc.show(ctx, lang);
-                calc.step(lang);
+                calc.show(ctx, lang, &*self.loaders.request);
+                calc.step(lang, now, &*self.loaders.request);
                 changed |= std::mem::take(&mut calc.changed);
+                // Снимок ASTER окна - растр программы, источник и других
+                // окон анализа, камера остаётся на месте.
+                if let Some((name, bytes)) = calc.loaded.take() {
+                    self.band_rasters.retain(|r| r.0 != name);
+                    self.band_rasters.push((name, bytes));
+                }
             }
             let dir = self.data_dir();
             if let Some(calc) = &mut self.emit {
@@ -5709,6 +5715,27 @@ impl LiteApp {
             out.push(c);
         }
         out
+    }
+
+    /// Шкала классов хозяина общего слоя вида, `_show_legend` модуля.
+    fn site_scale(&mut self) -> Option<crate::legend::SiteScale> {
+        let owner = self.site_layer.owner()?;
+        let lang = self.lang;
+        let tools = self.site_tools();
+        let tool = tools.iter().find(|t| t.id() == owner && t.shown())?;
+        crate::analysis::site_legend(lang, &**tool)
+    }
+
+    /// Крестик шкалы классов снимает результат хозяина, окно остаётся.
+    fn drop_site_owner(&mut self) {
+        let Some(owner) = self.site_layer.owner() else {
+            return;
+        };
+        for tool in self.site_tools() {
+            if tool.id() == owner {
+                tool.drop_result();
+            }
+        }
     }
 
     /// Хозяин общего слоя вида после кадра. true - слой сменился.
@@ -9332,7 +9359,9 @@ impl eframe::App for LiteApp {
             _ => None,
         });
         let weather = self.weather.as_ref().and_then(|(n, w)| w.legend(self.lang, tr(self.lang, crate::weather::ROWS.get(*n)?.name)));
-        match crate::legend::show(&ctx, self.lang, rect, self.credits.rect, crate::legend::Shown { maps: &maps, theme, dots: &dot_layers, contours, weather }) {
+        let site = self.site_scale();
+        match crate::legend::show(&ctx, self.lang, rect, self.credits.rect, crate::legend::Shown { maps: &maps, theme, dots: &dot_layers, contours, weather, site }) {
+            Some(crate::legend::Closed::Site) => self.drop_site_owner(),
             Some(crate::legend::Closed::Map(key)) => {
                 if let Some(n) = crate::maps::index(key) {
                     self.set_extra(crate::layers::Extra::Map(n), false);

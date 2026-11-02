@@ -2146,3 +2146,29 @@ Words of the name, for example kaolinite	Woorden van de naam, bijvoorbeeld kaoli
 {when}, cloud cover {cloud} %, area {share} %	{when}, bewolking {cloud} %, gebied {share} %
 {when}, group {group}	{when}, groep {group}
 µm	µm
+A raster in reflectance with six bands or more, for example an ASTER image from the list above. The bands are recognised by their labels, thermal bands do not take part.	Raster in reflectie met zes banden of meer, bijvoorbeeld een ASTER-beeld uit de lijst hierboven. De banden worden herkend aan hun labels, thermische banden doen niet mee.
+ASTER images	ASTER-beelden
+ASTER images of 2000-2006 over the area suitable for minerals: in daytime, with SWIR bands, cloud cover up to 10 % and data on at least half of the area. On top - the least cloudy.	ASTER-beelden van 2000-2006 boven het gebied, geschikt voor mineralen: overdag, met SWIR-banden, bewolking tot 10 % en gegevens op ten minste de helft van het gebied. Bovenaan - de minst bewolkte.
+All bands of the chosen image over the area as a raster of the program. The image takes the Raster field.	Alle banden van het gekozen beeld over het gebied als raster van het programma. Het beeld komt in het veld «Raster».
+EMIT scenes since 2022 over the area suitable for minerals: cloud cover up to 30 % and the scene over half of the area or more. On top - the least cloudy and covering more of the area.	EMIT-scènes sinds 2022 boven het gebied, geschikt voor mineralen: bewolking tot 30 % en de scène boven de helft van het gebied of meer. Bovenaan - de minst bewolkte en het gebied het meest bedekkende.
+Few bands, different minerals give the same spectrum - load an ASTER image from the list above.	Weinig banden, verschillende mineralen geven hetzelfde spectrum - laad een ASTER-beeld uit de lijst hierboven.
+Find suitable ASTER images of the area.	Geschikte ASTER-beelden van het gebied zoeken.
+Find suitable EMIT scenes of the area.	Geschikte EMIT-scènes van het gebied zoeken.
+Load	Laden
+Loading the bands of the image {when}: {done} of {total}	Banden van het beeld {when} worden geladen: {done} van {total}
+Loading the bands of the image {when}…	Banden van het beeld {when} worden geladen…
+More classes: {n}	Meer klassen: {n}
+No image with six bands or more is open - find and load an ASTER image of the area.	Er is geen beeld met zes banden of meer geopend - zoek en laad een ASTER-beeld van het gebied.
+Planetary Computer did not give a key for the ASTER files. Repeat later.	Planetary Computer gaf geen sleutel voor de ASTER-bestanden. Probeer het later opnieuw.
+Scenes {count}, the coverage of the area is checked…	Scènes {count}, de dekking van het gebied wordt gecontroleerd…
+Searching for ASTER images of the area…	ASTER-beelden van het gebied worden gezocht…
+Suitable ASTER images: {count}. Choose an image and press «Load».	Geschikte ASTER-beelden: {count}. Kies een beeld en druk op «Laden».
+Suitable EMIT scenes: {n}. Choose a scene and press «Build».	Geschikte EMIT-scènes: {n}. Kies een scène en druk op «Berekenen».
+The catalogue is busy, repeat of the search {n} of {total}…	De catalogus is bezet, herhaling van de zoekopdracht {n} van {total}…
+The image was not loaded: {error}	Het beeld is niet geladen: {error}
+The image «{name}» is loaded. Click it on the globe.	Het beeld «{name}» is geladen. Klik erop op de globe.
+There are no suitable ASTER images over the area: the scenes cover less than {valid} % of the area.	Geen geschikte ASTER-beelden boven het gebied: de scènes bedekken minder dan {valid} % van het gebied.
+There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in daytime, with cloud cover up to {cloud} % are needed.	Geen geschikte ASTER-beelden: nodig zijn scènes van 2000-2006 met SWIR-banden, overdag, met bewolking tot {cloud} %.
+There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Geen geschikte EMIT-scènes: de scènes boven het gebied hebben meer dan {cloud} % bewolking of bedekken minder dan de helft van het gebied.
+{when} · cloud cover {cloud} % · area {share} %	{when} · bewolking {cloud} % · gebied {share} %
+{when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · bewolking {cloud} % · gebied {valid} % · zon {sun}°

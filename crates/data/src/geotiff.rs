@@ -15,8 +15,9 @@
 //! GeoTIFF ModelPixelScale, ModelTiepoint и GeoKeyDirectory, значение
 //! «нет данных» - тег GDAL_NODATA, его читают GDAL, QGIS и модуль.
 
-use std::io::Cursor;
+use std::io::{Cursor, Write};
 
+use flate2::write::ZlibEncoder;
 use tiff::encoder::{Compression, DeflateLevel, TiffEncoder, colortype};
 use tiff::tags::Tag;
 
@@ -134,6 +135,104 @@ pub fn write_byte(grid: &LatLonGrid, values: &[u8]) -> Option<Vec<u8>> {
         return None;
     }
     write::<colortype::Gray8>(&frame, values, &BYTE_NODATA.to_string())
+}
+
+/// Многоканальный растр float32 в метрах проекции с кодом EPSG: каналы
+/// с подписями, значения каждого - строка за строкой с севера, нечисло
+/// пишется как [`NODATA`]. Подписи - описания каналов в теге
+/// GDAL_METADATA, их читают GDAL, QGIS и terrio. Каналы лежат
+/// плоскостями (PlanarConfiguration 2), полосы сжаты deflate. Так пишет
+/// «Все каналы сцены» окна «Минералы по спектру». None - сетка не годится,
+/// каналов нет или значений не столько, сколько узлов.
+pub fn write_bands_projected(grid: &MercatorGrid, epsg: u16, bands: &[(String, Vec<f32>)]) -> Option<Vec<u8>> {
+    let frame = Frame::projected(grid, epsg);
+    let count = u16::try_from(bands.len()).ok().filter(|n| *n > 0)?;
+    if !frame.valid() || bands.iter().any(|b| b.1.len() != frame.size()) {
+        return None;
+    }
+    let (cols, rows) = (frame.cols, frame.rows);
+    let per = ROWS_PER_STRIP as usize;
+    let mut out: Vec<u8> = vec![b'I', b'I', 42, 0, 0, 0, 0, 0];
+    let mut offsets: Vec<u32> = Vec::new();
+    let mut counts: Vec<u32> = Vec::new();
+    for (_, values) in bands {
+        for part in values.chunks(per * cols) {
+            let mut encoder = ZlibEncoder::new(Vec::new(), flate2::Compression::default());
+            for v in part {
+                let v = if v.is_finite() { *v } else { NODATA as f32 };
+                encoder.write_all(&v.to_le_bytes()).ok()?;
+            }
+            let packed = encoder.finish().ok()?;
+            offsets.push(u32::try_from(out.len()).ok()?);
+            counts.push(u32::try_from(packed.len()).ok()?);
+            out.extend_from_slice(&packed);
+        }
+    }
+    let n = usize::from(count);
+    let mut xml = String::from("<GDALMetadata>\n");
+    for (i, (label, _)) in bands.iter().enumerate() {
+        let text = label.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;");
+        xml.push_str(&format!("  <Item name=\"DESCRIPTION\" sample=\"{i}\" role=\"description\">{text}</Item>\n"));
+    }
+    xml.push_str("</GDALMetadata>");
+    let long = |v: u32| v.to_le_bytes().to_vec();
+    let shorts = |v: &[u16]| v.iter().flat_map(|s| s.to_le_bytes()).collect::<Vec<u8>>();
+    let longs = |v: &[u32]| v.iter().flat_map(|s| s.to_le_bytes()).collect::<Vec<u8>>();
+    let doubles = |v: &[f64]| v.iter().flat_map(|s| s.to_le_bytes()).collect::<Vec<u8>>();
+    let ascii = |s: &str| {
+        let mut b = s.as_bytes().to_vec();
+        b.push(0);
+        b
+    };
+    // Теги по возрастанию номера: номер, тип (2 ASCII, 3 SHORT, 4 LONG,
+    // 12 DOUBLE), количество, значения.
+    let entries: Vec<(u16, u16, usize, Vec<u8>)> = vec![
+        (256, 4, 1, long(u32::try_from(cols).ok()?)),
+        (257, 4, 1, long(u32::try_from(rows).ok()?)),
+        (258, 3, n, shorts(&vec![32; n])),
+        (259, 3, 1, shorts(&[8])),
+        (262, 3, 1, shorts(&[1])),
+        (273, 4, offsets.len(), longs(&offsets)),
+        (277, 3, 1, shorts(&[count])),
+        (278, 4, 1, long(ROWS_PER_STRIP.min(u32::try_from(rows).ok()?))),
+        (279, 4, counts.len(), longs(&counts)),
+        (284, 3, 1, shorts(&[2])),
+        (339, 3, n, shorts(&vec![3; n])),
+        (33550, 12, 3, doubles(&[frame.dx, frame.dy, 0.0])),
+        (33922, 12, 6, doubles(&[0.0, 0.0, 0.0, frame.left, frame.top, 0.0])),
+        (34735, 3, 16, shorts(&frame.keys)),
+        (42112, 2, xml.len() + 1, ascii(&xml)),
+        (GDAL_NODATA, 2, format!("{NODATA}").len() + 1, ascii(&format!("{NODATA}"))),
+    ];
+    if out.len() % 2 == 1 {
+        out.push(0);
+    }
+    let ifd = out.len();
+    out.get_mut(4..8)?.copy_from_slice(&u32::try_from(ifd).ok()?.to_le_bytes());
+    // Значения длиннее 4 байт - после каталога, с чётных мест.
+    let mut extra = ifd + 2 + entries.len() * 12 + 4;
+    let mut tail: Vec<u8> = Vec::new();
+    out.extend_from_slice(&u16::try_from(entries.len()).ok()?.to_le_bytes());
+    for (tag, kind, number, data) in &entries {
+        out.extend_from_slice(&tag.to_le_bytes());
+        out.extend_from_slice(&kind.to_le_bytes());
+        out.extend_from_slice(&u32::try_from(*number).ok()?.to_le_bytes());
+        if data.len() <= 4 {
+            let mut inline = data.clone();
+            inline.resize(4, 0);
+            out.extend_from_slice(&inline);
+        } else {
+            out.extend_from_slice(&u32::try_from(extra).ok()?.to_le_bytes());
+            tail.extend_from_slice(data);
+            if tail.len() % 2 == 1 {
+                tail.push(0);
+            }
+            extra = ifd + 2 + entries.len() * 12 + 4 + tail.len();
+        }
+    }
+    out.extend_from_slice(&[0, 0, 0, 0]);
+    out.extend_from_slice(&tail);
+    Some(out)
 }
 
 fn floats(frame: &Frame, values: &[f64]) -> Option<Vec<u8>> {

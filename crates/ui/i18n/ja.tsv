@@ -2146,3 +2146,29 @@ Words of the name, for example kaolinite	名前の単語、例: kaolinite
 {when}, cloud cover {cloud} %, area {share} %	{when}、雲量 {cloud} %、範囲 {share} %
 {when}, group {group}	{when}、グループ {group}
 µm	µm
+A raster in reflectance with six bands or more, for example an ASTER image from the list above. The bands are recognised by their labels, thermal bands do not take part.	6 バンド以上の反射率ラスター。例えば上のリストの ASTER 画像。バンドはラベルで識別され、熱赤外バンドは使われません。
+ASTER images	ASTER 画像
+ASTER images of 2000-2006 over the area suitable for minerals: in daytime, with SWIR bands, cloud cover up to 10 % and data on at least half of the area. On top - the least cloudy.	範囲上空の鉱物向け 2000-2006 年の ASTER 画像: 昼間、SWIR バンドあり、雲量 10 % まで、範囲の半分以上にデータあり。上が雲の最も少ない画像です。
+All bands of the chosen image over the area as a raster of the program. The image takes the Raster field.	選んだ画像の範囲内の全バンドをプログラムのラスターとして。画像は「ラスター」欄に入ります。
+EMIT scenes since 2022 over the area suitable for minerals: cloud cover up to 30 % and the scene over half of the area or more. On top - the least cloudy and covering more of the area.	範囲上空の鉱物向け 2022 年以降の EMIT シーン: 雲量 30 % まで、シーンが範囲の半分以上を覆うもの。上が雲の最も少なく範囲を広く覆うシーンです。
+Few bands, different minerals give the same spectrum - load an ASTER image from the list above.	バンドが少なく、異なる鉱物が同じスペクトルになります - 上のリストから ASTER 画像を読み込んでください。
+Find suitable ASTER images of the area.	範囲に適した ASTER 画像を検索します。
+Find suitable EMIT scenes of the area.	範囲に適した EMIT シーンを検索します。
+Load	読み込む
+Loading the bands of the image {when}: {done} of {total}	画像 {when} のバンドを読み込み中: {done} / {total}
+Loading the bands of the image {when}…	画像 {when} のバンドを読み込み中…
+More classes: {n}	その他のクラス: {n}
+No image with six bands or more is open - find and load an ASTER image of the area.	6 バンド以上の画像が開かれていません - 範囲の ASTER 画像を検索して読み込んでください。
+Planetary Computer did not give a key for the ASTER files. Repeat later.	Planetary Computer が ASTER ファイルのキーを出しませんでした。後で再試行してください。
+Scenes {count}, the coverage of the area is checked…	シーン {count} 件、範囲の被覆を確認中…
+Searching for ASTER images of the area…	範囲の ASTER 画像を検索中…
+Suitable ASTER images: {count}. Choose an image and press «Load».	適した ASTER 画像: {count}。画像を選んで「読み込む」を押してください。
+Suitable EMIT scenes: {n}. Choose a scene and press «Build».	適した EMIT シーン: {n}。シーンを選んで「作成」を押してください。
+The catalogue is busy, repeat of the search {n} of {total}…	カタログが混雑しています。検索の再試行 {n} / {total}…
+The image was not loaded: {error}	画像は読み込まれませんでした: {error}
+The image «{name}» is loaded. Click it on the globe.	画像「{name}」を読み込みました。地球上でクリックしてください。
+There are no suitable ASTER images over the area: the scenes cover less than {valid} % of the area.	範囲上空に適した ASTER 画像はありません: シーンが範囲の {valid} % 未満しか覆っていません。
+There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in daytime, with cloud cover up to {cloud} % are needed.	適した ASTER 画像はありません: 2000-2006 年、SWIR バンドあり、昼間、雲量 {cloud} % までのシーンが必要です。
+There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	適した EMIT シーンはありません: 範囲上空のシーンは雲量が {cloud} % を超えるか、範囲の半分未満しか覆っていません。
+{when} · cloud cover {cloud} % · area {share} %	{when} · 雲量 {cloud} % · 範囲 {share} %
+{when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · 雲量 {cloud} % · 範囲 {valid} % · 太陽 {sun}°

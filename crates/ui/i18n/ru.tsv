@@ -2146,3 +2146,29 @@ Words of the name, for example kaolinite	Слова названия, напри
 {when}, cloud cover {cloud} %, area {share} %	{when}, облачность {cloud} %, участка {share} %
 {when}, group {group}	{when}, группа {group}
 µm	мкм
+A raster in reflectance with six bands or more, for example an ASTER image from the list above. The bands are recognised by their labels, thermal bands do not take part.	Растр в отражении с шестью каналами и больше, например снимок ASTER из списка выше. Каналы узнаются по их подписям, тепловые каналы не участвуют.
+ASTER images	Снимки ASTER
+ASTER images of 2000-2006 over the area suitable for minerals: in daytime, with SWIR bands, cloud cover up to 10 % and data on at least half of the area. On top - the least cloudy.	Снимки ASTER 2000-2006 годов над участком, годные для минералов: днём, с каналами SWIR, облачностью до 10 % и данными не меньше половины участка. Сверху - малооблачные.
+All bands of the chosen image over the area as a raster of the program. The image takes the Raster field.	Все каналы выбранного снимка по участку - растром программы. Снимок встаёт в поле «Растр».
+EMIT scenes since 2022 over the area suitable for minerals: cloud cover up to 30 % and the scene over half of the area or more. On top - the least cloudy and covering more of the area.	Сцены EMIT с 2022 года над участком, годные для минералов: облачность до 30 % и сцена над половиной участка или больше. Сверху - малооблачные и шире покрывающие участок.
+Few bands, different minerals give the same spectrum - load an ASTER image from the list above.	Каналов мало, разные минералы дадут одинаковый спектр - загрузите снимок ASTER из списка выше.
+Find suitable ASTER images of the area.	Найти подходящие снимки ASTER участка.
+Find suitable EMIT scenes of the area.	Найти подходящие сцены EMIT участка.
+Load	Загрузить
+Loading the bands of the image {when}: {done} of {total}	Загрузка каналов снимка {when}: {done} из {total}
+Loading the bands of the image {when}…	Загрузка каналов снимка {when}…
+More classes: {n}	Ещё классов: {n}
+No image with six bands or more is open - find and load an ASTER image of the area.	Снимков с шестью каналами и больше нет - найдите и загрузите снимок ASTER участка.
+Planetary Computer did not give a key for the ASTER files. Repeat later.	Planetary Computer не дал ключ к файлам ASTER. Повторите позже.
+Scenes {count}, the coverage of the area is checked…	Сцен {count}, проверяется покрытие участка…
+Searching for ASTER images of the area…	Поиск снимков ASTER участка…
+Suitable ASTER images: {count}. Choose an image and press «Load».	Подходящих снимков ASTER: {count}. Выберите снимок и нажмите «Загрузить».
+Suitable EMIT scenes: {n}. Choose a scene and press «Build».	Подходящих сцен EMIT: {n}. Выберите сцену и нажмите «Построить».
+The catalogue is busy, repeat of the search {n} of {total}…	Каталог занят, повтор поиска {n} из {total}…
+The image was not loaded: {error}	Снимок не загружен: {error}
+The image «{name}» is loaded. Click it on the globe.	Снимок «{name}» загружен. Щёлкните по нему на глобусе.
+There are no suitable ASTER images over the area: the scenes cover less than {valid} % of the area.	Подходящих снимков ASTER над участком нет: у сцен меньше {valid} % участка.
+There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in daytime, with cloud cover up to {cloud} % are needed.	Подходящих снимков ASTER нет: нужны сцены 2000-2006 годов с каналами SWIR, днём, облачностью до {cloud} %.
+There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Подходящих сцен EMIT нет: у сцен над участком облачность больше {cloud} % или под сценой меньше половины участка.
+{when} · cloud cover {cloud} % · area {share} %	{when} · облачность {cloud} % · участка {share} %
+{when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · облачность {cloud} % · участка {valid} % · солнце {sun}°

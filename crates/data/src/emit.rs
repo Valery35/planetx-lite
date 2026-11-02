@@ -36,6 +36,12 @@ pub const COLLECTIONS: [(&str, &str); 2] = [("C4079846859-LPCLOUD", "002"), ("C2
 pub const FIRST_DAY: &str = "2022-08-09";
 /// Сцен в ответе каталога.
 pub const PAGE: usize = 200;
+/// Подходящая сцена - облачность по каталогу не больше CLOUD_MAX, %,
+/// участок под сценой не меньше SHARE_MIN, в списке не больше SHOWN.
+/// Выбор помощника модуля 1.31, утверждает автор.
+pub const CLOUD_MAX: f64 = 30.0;
+pub const SHARE_MIN: f64 = 0.5;
+pub const SHOWN: usize = 30;
 /// Пиксель продукта, метры.
 pub const STEP: f64 = 60.0;
 /// Сервер входа Earthdata: ответ с него - файл без ключа.
@@ -179,6 +185,19 @@ pub fn merge(lists: Vec<Vec<Scene>>) -> Vec<Scene> {
     }
     out.sort_by(|a, b| b.when.cmp(&a.when));
     out
+}
+
+/// Подходящие сцены по порядку списка, `suitable` модуля 1.31:
+/// облачность не больше [`CLOUD_MAX`], участок под сценой не меньше
+/// [`SHARE_MIN`], не больше [`SHOWN`]. Малооблачные и шире покрывающие
+/// участок первыми, при равенстве - новые. Облачность без числа
+/// не отсеивает сцену.
+pub fn suitable(scenes: &[Scene]) -> Vec<Scene> {
+    let mut kept: Vec<Scene> = scenes.iter().filter(|s| s.share >= SHARE_MIN && (s.cloud.is_nan() || s.cloud <= CLOUD_MAX)).cloned().collect();
+    let cloud = |s: &Scene| if s.cloud.is_finite() { s.cloud.round() } else { 0.0 };
+    kept.sort_by(|a, b| cloud(a).total_cmp(&cloud(b)).then((10.0 * b.share).round().total_cmp(&(10.0 * a.share).round())).then(b.when.cmp(&a.when)));
+    kept.truncate(SHOWN);
+    kept
 }
 
 /// Доля участка ring, которую накрывает контур сцены polygon: по сетке

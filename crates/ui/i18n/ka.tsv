@@ -2146,3 +2146,29 @@ Words of the name, for example kaolinite	სახელის სიტყვ�
 {when}, cloud cover {cloud} %, area {share} %	{when}, ღრუბლიანობა {cloud} %, უბანი {share} %
 {when}, group {group}	{when}, ჯგუფი {group}
 µm	მკმ
+A raster in reflectance with six bands or more, for example an ASTER image from the list above. The bands are recognised by their labels, thermal bands do not take part.	არეკვლის რასტრი ექვსი ან მეტი არხით, მაგალითად ზემოთ სიიდან ASTER-ის სურათი. არხები ცნობილია მათი წარწერებით, თერმული არხები არ მონაწილეობს.
+ASTER images	ASTER-ის სურათები
+ASTER images of 2000-2006 over the area suitable for minerals: in daytime, with SWIR bands, cloud cover up to 10 % and data on at least half of the area. On top - the least cloudy.	უბნის ზემოთ მინერალებისთვის ვარგისი 2000-2006 წლების ASTER-ის სურათები: დღისით, SWIR არხებით, ღრუბლიანობა 10 %-მდე და მონაცემები უბნის არანაკლებ ნახევარზე. ზემოთ - ყველაზე ნაკლებად ღრუბლიანი.
+All bands of the chosen image over the area as a raster of the program. The image takes the Raster field.	არჩეული სურათის ყველა არხი უბანზე პროგრამის რასტრად. სურათი ჩადგება ველში «რასტრი».
+EMIT scenes since 2022 over the area suitable for minerals: cloud cover up to 30 % and the scene over half of the area or more. On top - the least cloudy and covering more of the area.	უბნის ზემოთ მინერალებისთვის ვარგისი EMIT-ის სცენები 2022 წლიდან: ღრუბლიანობა 30 %-მდე და სცენა უბნის ნახევარზე ან მეტზე. ზემოთ - ყველაზე ნაკლებად ღრუბლიანი და უბნის ყველაზე მეტად დამფარავი.
+Few bands, different minerals give the same spectrum - load an ASTER image from the list above.	არხები ცოტაა, სხვადასხვა მინერალი ერთსა და იმავე სპექტრს იძლევა - ჩატვირთეთ ASTER-ის სურათი ზემოთ სიიდან.
+Find suitable ASTER images of the area.	უბნის ვარგისი ASTER-ის სურათების პოვნა.
+Find suitable EMIT scenes of the area.	უბნის ვარგისი EMIT-ის სცენების პოვნა.
+Load	ჩატვირთვა
+Loading the bands of the image {when}: {done} of {total}	სურათის {when} არხების ჩატვირთვა: {done} / {total}
+Loading the bands of the image {when}…	სურათის {when} არხების ჩატვირთვა…
+More classes: {n}	სხვა კლასები: {n}
+No image with six bands or more is open - find and load an ASTER image of the area.	ექვსი ან მეტი არხის სურათი არ არის გახსნილი - იპოვეთ და ჩატვირთეთ უბნის ASTER-ის სურათი.
+Planetary Computer did not give a key for the ASTER files. Repeat later.	Planetary Computer-მა ASTER-ის ფაილების გასაღები არ მისცა. გაიმეორეთ მოგვიანებით.
+Scenes {count}, the coverage of the area is checked…	სცენები {count}, მოწმდება უბნის დაფარვა…
+Searching for ASTER images of the area…	უბნის ASTER-ის სურათების ძიება…
+Suitable ASTER images: {count}. Choose an image and press «Load».	ვარგისი ASTER-ის სურათები: {count}. აირჩიეთ სურათი და დააჭირეთ «ჩატვირთვა».
+Suitable EMIT scenes: {n}. Choose a scene and press «Build».	ვარგისი EMIT-ის სცენები: {n}. აირჩიეთ სცენა და დააჭირეთ «აგება».
+The catalogue is busy, repeat of the search {n} of {total}…	კატალოგი დაკავებულია, ძიების გამეორება {n} / {total}…
+The image was not loaded: {error}	სურათი არ ჩაიტვირთა: {error}
+The image «{name}» is loaded. Click it on the globe.	სურათი «{name}» ჩატვირთულია. დააწკაპუნეთ მასზე გლობუსზე.
+There are no suitable ASTER images over the area: the scenes cover less than {valid} % of the area.	უბნის ზემოთ ვარგისი ASTER-ის სურათი არ არის: სცენები უბნის {valid} %-ზე ნაკლებს ფარავს.
+There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in daytime, with cloud cover up to {cloud} % are needed.	ვარგისი ASTER-ის სურათი არ არის: საჭიროა 2000-2006 წლების სცენები SWIR არხებით, დღისით, ღრუბლიანობით {cloud} %-მდე.
+There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	ვარგისი EMIT-ის სცენა არ არის: უბნის ზემოთ სცენების ღრუბლიანობა {cloud} %-ზე მეტია ან ისინი უბნის ნახევარზე ნაკლებს ფარავს.
+{when} · cloud cover {cloud} % · area {share} %	{when} · ღრუბლიანობა {cloud} % · უბანი {share} %
+{when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · ღრუბლიანობა {cloud} % · უბანი {valid} % · მზე {sun}°

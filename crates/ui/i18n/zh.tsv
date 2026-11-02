@@ -2146,3 +2146,29 @@ Words of the name, for example kaolinite	名称中的词，例如 kaolinite
 {when}, cloud cover {cloud} %, area {share} %	{when}，云量 {cloud} %，区域 {share} %
 {when}, group {group}	{when}，组 {group}
 µm	µm
+A raster in reflectance with six bands or more, for example an ASTER image from the list above. The bands are recognised by their labels, thermal bands do not take part.	六个波段及以上的反射率栅格，例如上方列表中的 ASTER 影像。波段按其标签识别，热红外波段不参与。
+ASTER images	ASTER 影像
+ASTER images of 2000-2006 over the area suitable for minerals: in daytime, with SWIR bands, cloud cover up to 10 % and data on at least half of the area. On top - the least cloudy.	区域上空适合矿物分析的 2000-2006 年 ASTER 影像：白天、带 SWIR 波段、云量不超过 10 %、数据覆盖区域至少一半。上方为云最少的影像。
+All bands of the chosen image over the area as a raster of the program. The image takes the Raster field.	所选影像在区域内的全部波段，作为程序的栅格。影像进入“栅格”字段。
+EMIT scenes since 2022 over the area suitable for minerals: cloud cover up to 30 % and the scene over half of the area or more. On top - the least cloudy and covering more of the area.	区域上空适合矿物分析的 2022 年以来 EMIT 场景：云量不超过 30 %，场景覆盖区域一半或以上。上方为云最少且覆盖区域最广的场景。
+Few bands, different minerals give the same spectrum - load an ASTER image from the list above.	波段太少，不同矿物会给出相同的光谱 - 请从上方列表加载 ASTER 影像。
+Find suitable ASTER images of the area.	查找区域的合适 ASTER 影像。
+Find suitable EMIT scenes of the area.	查找区域的合适 EMIT 场景。
+Load	加载
+Loading the bands of the image {when}: {done} of {total}	正在加载影像 {when} 的波段：{done} / {total}
+Loading the bands of the image {when}…	正在加载影像 {when} 的波段…
+More classes: {n}	其他类别：{n}
+No image with six bands or more is open - find and load an ASTER image of the area.	没有打开六个波段及以上的影像 - 请查找并加载区域的 ASTER 影像。
+Planetary Computer did not give a key for the ASTER files. Repeat later.	Planetary Computer 未提供 ASTER 文件的密钥。请稍后重试。
+Scenes {count}, the coverage of the area is checked…	场景 {count} 个，正在检查区域覆盖…
+Searching for ASTER images of the area…	正在查找区域的 ASTER 影像…
+Suitable ASTER images: {count}. Choose an image and press «Load».	合适的 ASTER 影像：{count}。请选择影像并按“加载”。
+Suitable EMIT scenes: {n}. Choose a scene and press «Build».	合适的 EMIT 场景：{n}。请选择场景并按“生成”。
+The catalogue is busy, repeat of the search {n} of {total}…	目录繁忙，第 {n} 次重试搜索，共 {total} 次…
+The image was not loaded: {error}	影像未加载：{error}
+The image «{name}» is loaded. Click it on the globe.	影像“{name}”已加载。请在地球上点击它。
+There are no suitable ASTER images over the area: the scenes cover less than {valid} % of the area.	区域上空没有合适的 ASTER 影像：场景覆盖不到区域的 {valid} %。
+There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in daytime, with cloud cover up to {cloud} % are needed.	没有合适的 ASTER 影像：需要 2000-2006 年、带 SWIR 波段、白天、云量不超过 {cloud} % 的场景。
+There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	没有合适的 EMIT 场景：区域上空场景的云量超过 {cloud} % 或覆盖不到区域的一半。
+{when} · cloud cover {cloud} % · area {share} %	{when} · 云量 {cloud} % · 区域 {share} %
+{when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · 云量 {cloud} % · 区域 {valid} % · 太阳 {sun}°

@@ -2146,3 +2146,29 @@ Words of the name, for example kaolinite	Adın sözcükleri, örneğin kaolinite
 {when}, cloud cover {cloud} %, area {share} %	{when}, bulut örtüsü {cloud} %, alan {share} %
 {when}, group {group}	{when}, grup {group}
 µm	µm
+A raster in reflectance with six bands or more, for example an ASTER image from the list above. The bands are recognised by their labels, thermal bands do not take part.	Altı veya daha fazla kanallı yansıma rasterı, örneğin yukarıdaki listeden bir ASTER görüntüsü. Kanallar etiketlerinden tanınır, termal kanallar katılmaz.
+ASTER images	ASTER görüntüleri
+ASTER images of 2000-2006 over the area suitable for minerals: in daytime, with SWIR bands, cloud cover up to 10 % and data on at least half of the area. On top - the least cloudy.	Alan üzerinde minerallere uygun 2000-2006 ASTER görüntüleri: gündüz, SWIR kanallı, bulutluluk %10'a kadar ve alanın en az yarısında veri. Üstte - en az bulutlu olanlar.
+All bands of the chosen image over the area as a raster of the program. The image takes the Raster field.	Seçilen görüntünün alan üzerindeki tüm kanalları programın rasterı olarak. Görüntü «Raster» alanına girer.
+EMIT scenes since 2022 over the area suitable for minerals: cloud cover up to 30 % and the scene over half of the area or more. On top - the least cloudy and covering more of the area.	Alan üzerinde minerallere uygun 2022'den beri EMIT sahneleri: bulutluluk %30'a kadar ve sahne alanın yarısı veya daha fazlası üzerinde. Üstte - en az bulutlu ve alanı en çok kaplayanlar.
+Few bands, different minerals give the same spectrum - load an ASTER image from the list above.	Kanal az, farklı mineraller aynı spektrumu verir - yukarıdaki listeden bir ASTER görüntüsü yükleyin.
+Find suitable ASTER images of the area.	Alanın uygun ASTER görüntülerini bul.
+Find suitable EMIT scenes of the area.	Alanın uygun EMIT sahnelerini bul.
+Load	Yükle
+Loading the bands of the image {when}: {done} of {total}	{when} görüntüsünün kanalları yükleniyor: {done} / {total}
+Loading the bands of the image {when}…	{when} görüntüsünün kanalları yükleniyor…
+More classes: {n}	Diğer sınıflar: {n}
+No image with six bands or more is open - find and load an ASTER image of the area.	Altı veya daha fazla kanallı görüntü açık değil - alanın bir ASTER görüntüsünü bulun ve yükleyin.
+Planetary Computer did not give a key for the ASTER files. Repeat later.	Planetary Computer ASTER dosyaları için anahtar vermedi. Daha sonra tekrarlayın.
+Scenes {count}, the coverage of the area is checked…	Sahne {count}, alanın kapsamı denetleniyor…
+Searching for ASTER images of the area…	Alanın ASTER görüntüleri aranıyor…
+Suitable ASTER images: {count}. Choose an image and press «Load».	Uygun ASTER görüntüleri: {count}. Bir görüntü seçin ve «Yükle»ye basın.
+Suitable EMIT scenes: {n}. Choose a scene and press «Build».	Uygun EMIT sahneleri: {n}. Bir sahne seçin ve «Oluştur»a basın.
+The catalogue is busy, repeat of the search {n} of {total}…	Katalog meşgul, arama tekrarı {n} / {total}…
+The image was not loaded: {error}	Görüntü yüklenmedi: {error}
+The image «{name}» is loaded. Click it on the globe.	«{name}» görüntüsü yüklendi. Küre üzerinde ona tıklayın.
+There are no suitable ASTER images over the area: the scenes cover less than {valid} % of the area.	Alan üzerinde uygun ASTER görüntüsü yok: sahneler alanın %{valid}'inden azını kaplıyor.
+There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in daytime, with cloud cover up to {cloud} % are needed.	Uygun ASTER görüntüsü yok: 2000-2006 yıllarına ait, SWIR kanallı, gündüz, bulutluluğu %{cloud}'a kadar sahneler gerekir.
+There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Uygun EMIT sahnesi yok: alan üzerindeki sahnelerin bulutluluğu %{cloud}'dan fazla veya alanın yarısından azını kaplıyor.
+{when} · cloud cover {cloud} % · area {share} %	{when} · bulutluluk %{cloud} · alan %{share}
+{when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · bulutluluk %{cloud} · alan %{valid} · güneş {sun}°

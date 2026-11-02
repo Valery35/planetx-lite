@@ -12,6 +12,7 @@ pub mod aefclass;
 pub mod aefread;
 pub mod ai;
 pub mod analysis;
+pub mod asterscenes;
 pub mod app;
 pub mod basemap;
 pub mod buildings;

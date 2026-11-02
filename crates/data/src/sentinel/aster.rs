@@ -23,7 +23,7 @@
 
 use serde_json::Value;
 
-use super::{Assets, Error, Grid, Mission, Product, Raw, head, list, number, object, text};
+use super::{Assets, Error, Grid, Mission, Product, Raw, Scene, head, list, number, object, text};
 
 pub const COLLECTION: &str = "aster-l1t";
 pub const MISSION: Mission = Mission::Aster;
@@ -38,6 +38,14 @@ pub const LOGIN_HOST: &str = "urs.earthdata.nasa.gov";
 pub const FIRST_DAY: &str = "2000-03-04";
 pub const LAST_DAY: &str = "2006-12-31";
 pub const STEPS: [f64; 3] = [15.0, 30.0, 90.0];
+/// Подходящий снимок окна «Минералы по спектру», `ui/asterscenes.py`
+/// модуля 1.31: облачность сцены, %, высота солнца, градусы, доля
+/// участка с данными, %, снимков в списке. Выбор помощника модуля,
+/// утверждает автор.
+pub const PICK_CLOUD: f64 = 10.0;
+pub const PICK_SUN: f64 = 25.0;
+pub const PICK_VALID: f64 = 50.0;
+pub const PICK_SHOWN: usize = 30;
 pub const CREDIT: &str =
     "ASTER data courtesy of NASA/METI/AIST/Japan Spacesystems and U.S./Japan ASTER Science Team";
 
@@ -541,6 +549,60 @@ pub fn label(key: &str) -> String {
     } else {
         text
     }
+}
+
+/// Сцена годна для минералов: каналы VNIR и SWIR, днём при солнце не
+/// ниже [`PICK_SUN`], облачность сцены не больше [`PICK_CLOUD`],
+/// `suitable` (`ui/asterscenes.py`) модуля 1.31.
+pub fn suits_minerals(scene: &Scene) -> bool {
+    scene.assets.contains("VNIR")
+        && scene.assets.contains("SWIR")
+        && scene.sun.is_some_and(|s| s >= PICK_SUN)
+        && scene.cloud <= PICK_CLOUD
+}
+
+/// Порядок списка (сцена, доля участка с данными, %): облачность,
+/// покрытие, новые раньше, `order` модуля.
+pub fn pick_order(found: &mut [(Scene, f64)]) {
+    found.sort_by(|a, b| {
+        a.0.cloud
+            .round()
+            .total_cmp(&b.0.cloud.round())
+            .then(b.1.round().total_cmp(&a.1.round()))
+            .then(b.0.when.cmp(&a.0.when))
+    });
+}
+
+/// Все каналы сцены по окну участка, «Все каналы сцены» модуля: подписи
+/// ([`label`]) и значения ([`value`]) по порядку номеров. files - каналы
+/// файлов VNIR, SWIR и TIR по порядку номеров в файле, inside - клетки
+/// участка, вне участка и без данных - NaN. Каналов файла, которого нет,
+/// нет и в выдаче. None - нет ни одного канала, день съёмки не разобран
+/// или солнце под горизонтом.
+pub fn all_bands(
+    scene: &Scene,
+    files: &[(String, Vec<Raw>)],
+    inside: &Grid<bool>,
+) -> Option<Vec<(String, Grid<f32>)>> {
+    let day = f64::from(day_of_year(&scene.when)?);
+    let sun = scene.sun.unwrap_or(45.0);
+    let mut out = Vec::new();
+    for key in ORDER {
+        let Some(band) = band_of(key) else {
+            continue;
+        };
+        let Some(dn) = files
+            .iter()
+            .find(|(f, _)| f == band.file)
+            .and_then(|(_, bands)| bands.get(band.index - 1))
+        else {
+            continue;
+        };
+        let values = value(dn, key, sun, day).ok()?;
+        let values = values.zip_map(inside, |v, i| if i { v } else { f32::NAN })?;
+        out.push((label(key), values));
+    }
+    (!out.is_empty()).then_some(out)
 }
 
 /// Имя файла продукта: «AST_20060815_aloh».

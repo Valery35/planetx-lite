@@ -1082,3 +1082,57 @@ fn modis_tiles_merge_into_day() {
     assert!(at(&lst, 0, 0).is_nan());
     close(f64::from(at(&lst, 0, 1)), 6.85, 1e-4);
 }
+
+#[test]
+fn aster_scenes_for_minerals() {
+    // Сторож `suitable` и `order` (`ui/asterscenes.py`) модуля 1.31.
+    use data::sentinel::aster;
+    let make = |when: &str, cloud: f64, sun: Option<f64>, files: &[&str]| {
+        let list: Vec<(&str, Href)> = files.iter().map(|f| (*f, one("x.tif"))).collect();
+        let mut s = scene(Mission::Aster, &list);
+        s.when = when.into();
+        s.cloud = cloud;
+        s.sun = sun;
+        s
+    };
+    assert!(aster::suits_minerals(&make("2003-07-01", 5.0, Some(40.0), &["VNIR", "SWIR", "TIR"])));
+    assert!(!aster::suits_minerals(&make("2003-07-01", 5.0, Some(40.0), &["VNIR", "TIR"])));
+    assert!(!aster::suits_minerals(&make("2003-07-01", 5.0, Some(20.0), &["VNIR", "SWIR"])));
+    assert!(!aster::suits_minerals(&make("2003-07-01", 5.0, None, &["VNIR", "SWIR"])));
+    assert!(!aster::suits_minerals(&make("2003-07-01", 11.0, Some(40.0), &["VNIR", "SWIR"])));
+    let f = ["VNIR", "SWIR"];
+    let mut found = vec![
+        (make("2001-01-01", 4.0, Some(40.0), &f), 100.0),
+        (make("2002-01-01", 1.0, Some(40.0), &f), 60.0),
+        (make("2003-01-01", 1.0, Some(40.0), &f), 90.0),
+        (make("2004-01-01", 1.0, Some(40.0), &f), 90.0),
+    ];
+    aster::pick_order(&mut found);
+    let order: Vec<&str> = found.iter().map(|p| p.0.when.as_str()).collect();
+    assert_eq!(order, ["2004-01-01", "2003-01-01", "2002-01-01", "2001-01-01"]);
+}
+
+#[test]
+fn aster_all_bands_on_site() {
+    // «Все каналы сцены» по окну участка: VNIR и SWIR без TIR - 9
+    // каналов, вне участка и без данных - NaN.
+    use data::sentinel::aster;
+    let s = scene(Mission::Aster, &[("VNIR", one("v.tif")), ("SWIR", one("s.tif"))]);
+    let dn = |v: f64| grid(&[&[v, v, 0.0]]);
+    let files = vec![("VNIR".to_string(), vec![dn(80.0), dn(70.0), dn(60.0)]), ("SWIR".to_string(), (0..6).map(|k| dn(50.0 + f64::from(k))).collect())];
+    let inside = grid(&[&[true, false, true]]);
+    let Some(bands) = aster::all_bands(&s, &files, &inside) else {
+        panic!("нет каналов");
+    };
+    let labels: Vec<&str> = bands.iter().map(|b| b.0.as_str()).collect();
+    assert_eq!(labels, ["B1 0.56 um", "B2 0.66 um", "B3N 0.82 um", "B4 1.65 um", "B5 2.165 um", "B6 2.205 um", "B7 2.26 um", "B8 2.33 um", "B9 2.395 um"]);
+    let Ok(expect) = aster::value(&dn(53.0), "b7", 60.0, 95.0) else {
+        panic!("нет значения");
+    };
+    close(f64::from(at(&bands[6].1, 0, 0)), f64::from(at(&expect, 0, 0)), 1e-6);
+    assert!(at(&bands[6].1, 0, 1).is_nan());
+    assert!(at(&bands[6].1, 0, 2).is_nan());
+    let mut night = s.clone();
+    night.when = "2026-13-40".into();
+    assert!(aster::all_bands(&night, &files, &inside).is_none());
+}

@@ -41,6 +41,8 @@ pub struct BandRead {
     bbox: [f64; 4],
     res: f64,
     nearest: bool,
+    /// Канал файла с 0.
+    sample: u16,
     stage: Stage,
 }
 
@@ -75,13 +77,20 @@ impl BandRead {
     /// Начать чтение канала href по рамке bbox системы файла с шагом res.
     pub fn new(href: &str, bbox: [f64; 4], res: f64, nearest: bool, request: &dyn Fn(u64) -> Box<dyn net::Request>) -> Self {
         let ask = ask_range(href, &(0..cog::PREFIX_LEN), request);
-        Self { href: href.to_string(), bbox, res, nearest, stage: Stage::Header(Chunks::new(), vec![ask]) }
+        Self { href: href.to_string(), bbox, res, nearest, sample: 0, stage: Stage::Header(Chunks::new(), vec![ask]) }
     }
 
     /// Чтение окна файла, заголовок которого уже разобран: тайлы окна
     /// просятся сразу.
     pub fn with_header(href: &str, header: Arc<CogHeader>, bbox: [f64; 4], res: f64, nearest: bool, request: &dyn Fn(u64) -> Box<dyn net::Request>) -> Self {
-        let mut read = Self { href: href.to_string(), bbox, res, nearest, stage: Stage::Failed(String::new()) };
+        Self::with_header_sample(href, header, bbox, res, nearest, 0, request)
+    }
+
+    /// Чтение окна канала sample (с 0) многоканального файла, заголовок
+    /// которого уже разобран: так читаются каналы файлов VNIR и SWIR
+    /// ASTER одним заголовком.
+    pub fn with_header_sample(href: &str, header: Arc<CogHeader>, bbox: [f64; 4], res: f64, nearest: bool, sample: u16, request: &dyn Fn(u64) -> Box<dyn net::Request>) -> Self {
+        let mut read = Self { href: href.to_string(), bbox, res, nearest, sample, stage: Stage::Failed(String::new()) };
         read.stage = read.plan(header, request);
         read
     }
@@ -124,7 +133,7 @@ impl BandRead {
                 Ok(true) => {
                     let ranges: HashMap<usize, Range<u64>> = plan.iter().map(|t| (t.index, t.range.clone())).collect();
                     let tiles = |i: usize| ranges.get(&i).and_then(|r| chunks.get(r.clone()));
-                    match cog::read_window(&header, level, window.x0, window.y0, window.width, window.height, &tiles) {
+                    match cog::read_window_sample(&header, level, window.x0, window.y0, window.width, window.height, self.sample, &tiles) {
                         Err(e) => Stage::Failed(e.to_string()),
                         Ok(native) => match cog::window_transform(&header, level, &window).and_then(|gt| self.resample(&native, gt, header.nodata)) {
                             Some(grid) => Stage::Done(grid),
@@ -142,7 +151,7 @@ impl BandRead {
         let Some(window) = cog::bbox_window(&header, level, self.bbox) else {
             return Stage::Failed("outside".into());
         };
-        let plan = match cog::window_plan(&header, level, window.x0, window.y0, window.width, window.height) {
+        let plan = match cog::window_plan_sample(&header, level, window.x0, window.y0, window.width, window.height, self.sample) {
             Ok(p) => p,
             Err(e) => return Stage::Failed(e.to_string()),
         };

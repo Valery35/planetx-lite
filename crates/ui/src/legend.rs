@@ -43,7 +43,13 @@ enum Scale {
     /// Клетки цветов с подписями: уклон (подпись у левого края клетки)
     /// или экспозиция (подпись посередине), `SlopeLegend` модуля.
     Cells { title: &'static str, cells: Vec<([u8; 3], &'static str)>, centered: bool },
+    /// Классы результата окна анализа на общем слое вида: заголовок,
+    /// строки «имя N %» и подвал, `SiteLegend` модуля 1.30.1.
+    Site { title: String, rows: Vec<([u8; 3], String)>, footer: String },
 }
+
+/// Шкала классов окна анализа: заголовок, строки, подвал.
+pub type SiteScale = (String, Vec<([u8; 3], String)>, String);
 
 /// Шкала темы: ключ темы, название с датой, цветовая карта.
 pub type ThemeScale = (&'static str, String, Option<data::gibs::Colormap>);
@@ -143,6 +149,7 @@ impl Scale {
         match self {
             Scale::Bar { .. } => LINE * 2.0 + BAR_HEIGHT + 2.0 + PAD,
             Scale::Rows { rows, footer, .. } => LINE * (rows.len() as f32 + 1.0 + if footer.is_empty() { 0.0 } else { 1.0 }) + PAD,
+            Scale::Site { rows, footer, .. } => LINE * (rows.len() as f32 + 1.0 + if footer.is_empty() { 0.0 } else { 1.0 }) + PAD,
             Scale::Theme { map, .. } => match map {
                 Some(m) if m.kind != "classification" => LINE + PAD + LINE + BAR_HEIGHT + 2.0,
                 Some(m) => LINE + PAD + m.names.len().min(ROWS) as f32 * LINE,
@@ -204,6 +211,8 @@ pub struct Shown<'a> {
     pub contours: Option<(f64, [u8; 3])>,
     /// Шкала поля погоды: заголовок и цвета.
     pub weather: Option<(String, data::gibs::Colormap)>,
+    /// Шкала классов хозяина общего слоя вида окон анализа.
+    pub site: Option<SiteScale>,
 }
 
 /// Что убрать с глобуса крестиком шкалы.
@@ -211,6 +220,8 @@ pub enum Closed {
     Map(&'static str),
     Dots(Layer),
     Weather,
+    /// Результат окна анализа на общем слое вида.
+    Site,
 }
 
 /// Панель шкал над подписью источников: тема, карты maps, слои точек
@@ -222,11 +233,14 @@ pub fn show(
     credits: Option<egui::Rect>,
     shown: Shown<'_>,
 ) -> Option<Closed> {
-    let Shown { maps, theme, dots, contours, weather } = shown;
+    let Shown { maps, theme, dots, contours, weather, site } = shown;
     // Шкала, что убирает крестик, и признак крестика.
     let mut scales: Vec<(Option<Closed>, Scale)> = Vec::new();
     if let Some((key, title, map)) = theme {
         scales.push((Some(Closed::Map(key)), Scale::Theme { title, map }));
+    }
+    if let Some((title, rows, footer)) = site {
+        scales.push((Some(Closed::Site), Scale::Site { title, rows, footer }));
     }
     if let Some((title, map)) = weather {
         scales.push((Some(Closed::Weather), Scale::Theme { title, map: Some(map) }));
@@ -255,6 +269,11 @@ pub fn show(
             Scale::Rows { title, rows, footer, .. } => {
                 let texts = [tr(lang, title), tr(lang, footer)].into_iter().chain(rows.iter().map(|r| tr(lang, r.1)));
                 let longest = texts.filter(|t| !t.is_empty()).map(measure).fold(0.0f32, f32::max);
+                width = width.max(longest + PAD + 26.0 + PAD + 16.0);
+            }
+            Scale::Site { title, rows, footer } => {
+                width = width.max(measure(title) + 2.0 * PAD + CLOSE + 6.0);
+                let longest = std::iter::once(footer).chain(rows.iter().map(|r| &r.1)).filter(|t| !t.is_empty()).map(|t| measure(t)).fold(0.0f32, f32::max);
                 width = width.max(longest + PAD + 26.0 + PAD + 16.0);
             }
             Scale::Contours { step, .. } => {
@@ -368,6 +387,20 @@ pub fn show(
                     let mid = y + LINE / 2.0;
                     painter.line_segment([egui::pos2(x, mid), egui::pos2(x + 24.0, mid)], egui::Stroke::new(2.0, color(*c)));
                     text(egui::pos2(x + 30.0, y), &contours_text(lang, *step), p.plate_text);
+                }
+                Scale::Site { title, rows, footer } => {
+                    text(egui::pos2(x, y), title, p.plate_text);
+                    y += LINE;
+                    for (c, name) in rows {
+                        let mid = y + LINE / 2.0;
+                        let rim = egui::Color32::from_rgb(c[0] / 5 * 2, c[1] / 5 * 2, c[2] / 5 * 2);
+                        painter.circle(egui::pos2(x + 10.0, mid), 4.0, color(*c), egui::Stroke::new(1.0, rim));
+                        text(egui::pos2(x + 26.0, y), name, p.plate_text);
+                        y += LINE;
+                    }
+                    if !footer.is_empty() {
+                        text(egui::pos2(x, y), footer, p.plate_text);
+                    }
                 }
                 Scale::Rows { title, rows, footer, lines } => {
                     text(egui::pos2(x, y), tr(lang, title), p.plate_text);

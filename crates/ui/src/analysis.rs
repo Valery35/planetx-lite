@@ -509,6 +509,45 @@ pub trait SiteTool {
     fn layer(&self) -> Option<std::sync::Arc<crate::aefclass::Layer>> {
         None
     }
+    /// Заголовок шкалы классов результата на глобусе, `legend_title`
+    /// модуля 1.30.1. None - шкалы нет (похожие области, земляные работы,
+    /// видимость).
+    fn legend_title(&self, _lang: Lang) -> Option<&'static str> {
+        None
+    }
+}
+
+/// Строк шкалы классов, остальные - одной строкой, `LEGEND_ROWS` модуля.
+pub const LEGEND_ROWS: usize = 12;
+
+/// Строки шкалы классов: цвет и «имя N %» классов с клетками по убыванию
+/// доли, `class_rows` модуля. Классы без имени и без клеток не идут.
+pub fn class_rows(classes: &[i16], colors: &[[u8; 3]], names: &[String]) -> Vec<([u8; 3], String)> {
+    let mut counts = vec![0usize; names.len()];
+    for c in classes {
+        if let Some(n) = usize::try_from(*c).ok().and_then(|c| counts.get_mut(c)) {
+            *n += 1;
+        }
+    }
+    let total = counts.iter().sum::<usize>().max(1);
+    let mut order: Vec<usize> = (0..names.len()).filter(|n| counts[*n] > 0).collect();
+    order.sort_by_key(|n| std::cmp::Reverse(counts[*n]));
+    order.into_iter().map(|n| (colors.get(n).copied().unwrap_or([128, 128, 128]), format!("{} {:.0} %", names[n], 100.0 * counts[n] as f64 / total as f64))).collect()
+}
+
+/// Шкала классов хозяина общего слоя: заголовок, строки не больше
+/// [`LEGEND_ROWS`] и подвал «Ещё классов». None - у хозяина шкалы нет.
+pub fn site_legend(lang: Lang, tool: &dyn SiteTool) -> Option<crate::legend::SiteScale> {
+    let title = tool.legend_title(lang)?;
+    let layer = tool.layer()?;
+    let mut rows = class_rows(&layer.classes, &layer.colors, &layer.names);
+    if rows.is_empty() {
+        return None;
+    }
+    let more = rows.len().saturating_sub(LEGEND_ROWS);
+    rows.truncate(LEGEND_ROWS);
+    let footer = if more > 0 { trf(lang, "More classes: {n}", &[("n", &more.to_string())]) } else { String::new() };
+    Some((title.to_string(), rows, footer))
 }
 
 /// Хозяин общего слоя вида, `SiteLayer` модуля: инструмент, показавший
@@ -764,6 +803,17 @@ mod tests {
         fn drop_result(&mut self) {
             self.1 = false;
         }
+    }
+
+    #[test]
+    fn class_rows_by_share() {
+        // Сторож `class_rows` модуля 1.30.1: классы без клеток не идут,
+        // доля - от клеток с классом.
+        let names: Vec<String> = ["a", "b", "c", "d"].map(String::from).to_vec();
+        let colors = [[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]];
+        let rows = class_rows(&[0, 1, 1, -1, 2, 2, 2], &colors, &names);
+        assert_eq!(rows, vec![([3, 3, 3], "c 50 %".to_string()), ([2, 2, 2], "b 33 %".to_string()), ([1, 1, 1], "a 17 %".to_string())]);
+        assert!(class_rows(&[-1, -1], &colors, &names).is_empty());
     }
 
     #[test]

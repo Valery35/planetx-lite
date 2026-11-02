@@ -223,6 +223,9 @@ pub struct Layer {
     /// Номер класса клетки, -1 - нет класса.
     pub classes: Vec<i16>,
     pub colors: Vec<[u8; 3]>,
+    /// Названия классов по номеру для шкалы на глобусе, пусто - шкалы
+    /// нет (похожие области).
+    pub names: Vec<String>,
     pub opacity: f64,
     /// Объекты, если участок поделён на них.
     pub objects: Option<Arc<Objects>>,
@@ -789,7 +792,7 @@ impl ClassCalc {
             let classes = shown.iter().map(|p| if *p >= 0 { 0 } else { -1 }).collect();
             let bands = if self.source.is_some() { grid.depth.max(1) } else { 0 };
             let objects = Objects { kinds: vec![0; mean.len()], parts: Arc::new(shown), table: Vec::new(), bands, similar: Some(mean) };
-            Arc::new(Layer { index: base.index.clone(), step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: vec![FOUND_COLOR], opacity: self.opacity, objects: Some(Arc::new(objects)) })
+            Arc::new(Layer { index: base.index.clone(), step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: vec![FOUND_COLOR], names: Vec::new(), opacity: self.opacity, objects: Some(Arc::new(objects)) })
         });
         self.layer = layer;
         self.changed = true;
@@ -839,7 +842,7 @@ impl ClassCalc {
         self.status = format!("{text} {}", analysis::built_text(lang, crate::pointcalc::clock_now()));
         let bands = if self.source.is_some() { depth } else { 0 };
         let objects = Arc::new(Objects { parts: shown, kinds, table, bands, similar: None });
-        self.layer = Some(Arc::new(Layer { index, step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), opacity: self.opacity, objects: Some(objects) }));
+        self.layer = Some(Arc::new(Layer { index, step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), names: rows.iter().map(|c| c.name.clone()).collect(), opacity: self.opacity, objects: Some(objects) }));
         self.label = self.source_title(&key.0).to_string();
         self.changed = true;
     }
@@ -986,7 +989,7 @@ impl ClassCalc {
             text = format!("{text} {}", trf(lang, "Points without raster data: {n}.", &[("n", &outside.to_string())]));
         }
         self.status = format!("{text} {}", analysis::built_text(lang, crate::pointcalc::clock_now()));
-        self.layer = Some(Arc::new(Layer { index, step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), opacity: self.opacity, objects: None }));
+        self.layer = Some(Arc::new(Layer { index, step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), names: rows.iter().map(|c| c.name.clone()).collect(), opacity: self.opacity, objects: None }));
         self.label = self.source_title(&key.0).to_string();
         self.changed = true;
     }
@@ -1133,7 +1136,7 @@ impl ClassCalc {
         }
         self.status = format!("{text} {}", analysis::built_text(lang, crate::pointcalc::clock_now()));
         self.label = self.year.to_string();
-        self.layer = Some(Arc::new(Layer { index: index.clone(), step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), opacity: self.opacity, objects: None }));
+        self.layer = Some(Arc::new(Layer { index: index.clone(), step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors: rows.iter().map(|c| c.color).collect(), names: rows.iter().map(|c| c.name.clone()).collect(), opacity: self.opacity, objects: None }));
         self.changed = true;
     }
 
@@ -1603,7 +1606,7 @@ impl ClassCalc {
         if (self.opacity - opacity).abs() > 1e-6
             && let Some(old) = &self.layer
         {
-            self.layer = Some(Arc::new(Layer { index: old.index.clone(), step: old.step, x0: old.x0, y0: old.y0, rows: old.rows, cols: old.cols, classes: old.classes.clone(), colors: old.colors.clone(), opacity: self.opacity, objects: old.objects.clone() }));
+            self.layer = Some(Arc::new(Layer { index: old.index.clone(), step: old.step, x0: old.x0, y0: old.y0, rows: old.rows, cols: old.cols, classes: old.classes.clone(), colors: old.colors.clone(), names: old.names.clone(), opacity: self.opacity, objects: old.objects.clone() }));
             self.changed = true;
         }
         match pressed {
@@ -1641,6 +1644,9 @@ impl analysis::SiteTool for ClassCalc {
     }
     fn layer(&self) -> Option<Arc<Layer>> {
         self.layer.clone()
+    }
+    fn legend_title(&self, lang: Lang) -> Option<&'static str> {
+        self.find.is_none().then(|| tr(lang, "Classification"))
     }
     fn painter(&self) -> Option<crate::vector::Painter> {
         self.layer.clone().map(painter)

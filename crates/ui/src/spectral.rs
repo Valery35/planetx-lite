@@ -11,7 +11,12 @@
 //! отмеченные эталоны - классы участка по углу между спектрами. Участок,
 //! сетка и показ - как у классификации ([`crate::aefclass`]), «OK» кладёт
 //! в папку расчёта картинки классов и угла и пишет их файлами GeoTIFF
-//! в зоне UTM. Сеть не нужна, окно есть и у страницы.
+//! в зоне UTM. Окно есть и у страницы.
+//!
+//! Модуль 1.31 - своя выборка снимков ASTER участка ([`crate::asterscenes`]):
+//! кнопка «Загрузить» открывает все каналы снимка растром программы и
+//! ставит его в поле «Растр». В поле - только растры с [`FEW_BANDS`]
+//! каналами и больше, группа эталонов по умолчанию - «Минералы».
 
 use std::sync::Arc;
 
@@ -24,6 +29,7 @@ use globe_core::navigation::{Navigator, ground_under};
 use crate::aefcalc::utm_epsg;
 use crate::aefclass::{COLORS, Layer, PIXELS, Raster, problem_text, ring_mask};
 use crate::analysis::{self, Button, Saved, SiteEdit};
+use crate::asterscenes::AsterScenes;
 use crate::i18n::{Lang, tr, trf};
 
 /// Участок по умолчанию и наибольший, километры, как у классификации по
@@ -46,6 +52,11 @@ const RUN_CELLS: usize = 4096;
 const MOST_ROWS: usize = 2000;
 /// Датчики списка «Каналы» по порядку окна модуля.
 const SENSORS: [&str; 3] = ["aster", "sentinel2", "landsat8"];
+/// Каналов меньше - предупреждение, спектр слишком груб, `FEW_BANDS`
+/// модуля 1.30.1. Выбор помощника модуля, утверждает автор.
+pub const FEW_BANDS: usize = 6;
+/// Строк списка снимков ASTER на виду.
+const SCENE_ROWS: f32 = 96.0;
 
 /// Число с тремя значащими цифрами без лишних нулей, как «{:.3g}» модуля.
 pub fn short(value: f64) -> String {
@@ -55,6 +66,14 @@ pub fn short(value: f64) -> String {
     let digits = (2 - value.abs().log10().floor() as i32).max(0) as usize;
     let text = format!("{value:.digits$}");
     if text.contains('.') { text.trim_end_matches('0').trim_end_matches('.').to_string() } else { text }
+}
+
+/// Растр годен для спектра: каналов в файле не меньше [`FEW_BANDS`],
+/// `fits` модуля 1.31. Сочетания трёх каналов и рельеф в список не идут.
+/// Подписи каналов здесь не читаются: растр с шестью каналами и малым
+/// количеством узнанных получает предупреждение в строке каналов.
+fn fits(bytes: &[u8]) -> bool {
+    rasterclass::feature_bands(bytes).is_none_or(|n| n >= FEW_BANDS)
 }
 
 /// Сетка растра на участке: ключ (растр, рамка, пиксель).
@@ -105,6 +124,8 @@ pub struct Spectral {
     /// Разобранный растр: имя и он сам. Разбор идёт кадром позже выбора,
     /// чтобы строка «Читается» успела показаться.
     opened: Option<(String, Arc<Source>)>,
+    /// Строка «Читается» показана, разбор - этим кадром.
+    reading: bool,
     /// Датчик вручную, None - «Авто».
     sensor: Option<usize>,
     /// Датчик и пары (канал растра, канал датчика), None - не узнаны.
@@ -125,11 +146,19 @@ pub struct Spectral {
     done: Option<Done>,
     pub changed: bool,
     pub saved: Option<Saved>,
+    /// Поиск и загрузка снимков ASTER, найденные снимки с долей участка
+    /// и выбранный, поиск при открытии уже был.
+    aster: AsterScenes,
+    scenes: Vec<(data::sentinel::Scene, f64)>,
+    scene: Option<usize>,
+    asked: bool,
+    /// Загруженный снимок: окно глобуса открывает его растром программы.
+    pub loaded: Option<Raster>,
 }
 
 impl Spectral {
     pub fn new(lat: f64, lon: f64, place: String, rasters: Vec<Raster>) -> Self {
-        let source = rasters.iter().rev().find(|r| rasterclass::feature_bands(&r.1).is_none_or(|n| n >= spectra::MIN_BANDS)).map(|r| r.0.clone());
+        let source = rasters.iter().rev().find(|r| fits(&r.1)).map(|r| r.0.clone());
         Self {
             open: true,
             place,
@@ -137,10 +166,11 @@ impl Spectral {
             rasters,
             source,
             opened: None,
+            reading: false,
             sensor: None,
             pairs: None,
             level: None,
-            group: None,
+            group: Some("minerals"),
             search: String::new(),
             chosen: Vec::new(),
             limit: spectra::LIMIT,
@@ -153,6 +183,11 @@ impl Spectral {
             done: None,
             changed: false,
             saved: None,
+            aster: AsterScenes::default(),
+            scenes: Vec::new(),
+            scene: None,
+            asked: false,
+            loaded: None,
         }
     }
 
@@ -164,7 +199,7 @@ impl Spectral {
     }
 
     pub fn busy(&self) -> bool {
-        self.job.is_some()
+        self.job.is_some() || self.aster.busy()
     }
 
     pub fn site_edit(&mut self) -> Option<&mut SiteEdit> {
@@ -181,6 +216,7 @@ impl Spectral {
 
     fn clear(&mut self) {
         self.job = None;
+        self.aster.stop();
         self.drop_result();
         self.status.clear();
     }
@@ -194,10 +230,17 @@ impl Spectral {
     fn bands_text(&self, lang: Lang) -> String {
         let lib = spectra::library();
         let Some(source) = self.source() else {
-            return if self.source.is_none() { tr(lang, "No raster with three bands or more is open.").to_string() } else { String::new() };
+            return if self.source.is_none() { tr(lang, "No image with six bands or more is open - find and load an ASTER image of the area.").to_string() } else { String::new() };
         };
         match &self.pairs {
-            Some((sensor, pairs)) => trf(lang, "{sensor}: bands {n} of {total}", &[("sensor", lib.sensors.get(*sensor).map_or("", |s| s.name.as_str())), ("n", &pairs.len().to_string()), ("total", &source.bands().to_string())]),
+            Some((sensor, pairs)) => {
+                let text = trf(lang, "{sensor}: bands {n} of {total}", &[("sensor", lib.sensors.get(*sensor).map_or("", |s| s.name.as_str())), ("n", &pairs.len().to_string()), ("total", &source.bands().to_string())]);
+                if pairs.len() < FEW_BANDS {
+                    format!("{text}. {}", tr(lang, "Few bands, different minerals give the same spectrum - load an ASTER image from the list above."))
+                } else {
+                    text
+                }
+            }
             None => tr(lang, "The bands are not recognised by their labels, choose the sensor.").to_string(),
         }
     }
@@ -208,15 +251,59 @@ impl Spectral {
         self.chart = None;
     }
 
-    /// Шаг окна: разбор выбранного растра и расчёт.
-    pub fn step(&mut self, lang: Lang) {
+    /// Найти подходящие снимки ASTER участка.
+    fn find_scenes(&mut self, lang: Lang, request: &dyn Fn(u64) -> Box<dyn net::Request>) {
+        if let Some(problem) = self.site.problem(lang) {
+            self.status = problem;
+            return;
+        }
+        self.scenes.clear();
+        self.scene = None;
+        self.aster.search(lang, &self.site.site.ring, request);
+    }
+
+    /// Снимки ASTER: поиск при открытии без подходящего растра, ответы,
+    /// готовый снимок - в поле «Растр».
+    fn step_aster(&mut self, lang: Lang, now: f64, request: &dyn Fn(u64) -> Box<dyn net::Request>) {
+        if !self.asked && self.open && !self.site.site.drawing {
+            self.asked = true;
+            if self.source.is_none() && !self.aster.busy() {
+                self.find_scenes(lang, request);
+            }
+        }
+        self.aster.step(lang, now, request);
+        if let Some(text) = self.aster.status.take() {
+            self.status = text;
+        }
+        if let Some(list) = self.aster.found.take() {
+            self.scene = (!list.is_empty()).then_some(0);
+            self.scenes = list;
+        }
+        if let Some((name, bytes)) = self.aster.loaded.take() {
+            let raster: Raster = (name.clone(), Arc::new(bytes));
+            self.rasters.retain(|r| r.0 != name);
+            self.rasters.push(raster.clone());
+            self.loaded = Some(raster);
+            self.source = Some(name);
+            self.job = None;
+            self.drop_result();
+        }
+    }
+
+    /// Шаг окна: снимки ASTER, разбор выбранного растра и расчёт.
+    pub fn step(&mut self, lang: Lang, now: f64, request: &dyn Fn(u64) -> Box<dyn net::Request>) {
+        self.step_aster(lang, now, request);
         if let Some(name) = self.source.clone()
             && self.opened.as_ref().is_none_or(|o| o.0 != name)
         {
-            if self.status.is_empty() || !self.status.starts_with(tr(lang, "Reading the raster…")) {
-                self.status = tr(lang, "Reading the raster…").to_string();
+            if !self.reading {
+                self.reading = true;
+                if self.status.is_empty() {
+                    self.status = tr(lang, "Reading the raster…").to_string();
+                }
                 return;
             }
+            self.reading = false;
             let Some(bytes) = self.rasters.iter().find(|r| r.0 == name).map(|r| r.1.clone()) else {
                 self.source = None;
                 return;
@@ -224,7 +311,9 @@ impl Spectral {
             match Source::read(&bytes, &name) {
                 Ok(source) => {
                     self.opened = Some((name, Arc::new(source)));
-                    self.status.clear();
+                    if self.status == tr(lang, "Reading the raster…") {
+                        self.status.clear();
+                    }
                 }
                 Err(problem) => {
                     self.opened = None;
@@ -403,7 +492,7 @@ impl Spectral {
         let list = if parts.is_empty() { "-".to_string() } else { parts.join(", ") };
         self.status = format!("{} {}", trf(lang, "Classes: {list}. Without a class {none} %.", &[("list", &list), ("none", &format!("{none:.0}"))]), analysis::built_text(lang, crate::pointcalc::clock_now()));
         let colors = (0..ids.len()).map(|n| COLORS[n % COLORS.len()]).collect();
-        let layer = Layer { index: index.clone(), step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes: run.kinds.clone(), colors, opacity: OPACITY, objects: None };
+        let layer = Layer { index: index.clone(), step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes: run.kinds.clone(), colors, names, opacity: OPACITY, objects: None };
         let any = counts.iter().any(|c| *c > 0);
         self.layer = Some(Arc::new(layer));
         self.done = any.then(|| Done { index, grid, angles: run.angles.clone(), ids, label: key.0 });
@@ -508,7 +597,7 @@ impl Spectral {
     }
 
     /// Окно.
-    pub fn show(&mut self, ctx: &egui::Context, lang: Lang) {
+    pub fn show(&mut self, ctx: &egui::Context, lang: Lang, request: &dyn Fn(u64) -> Box<dyn net::Request>) {
         if !self.open {
             return;
         }
@@ -518,6 +607,8 @@ impl Spectral {
         let lib = spectra::library();
         let mut open = true;
         let mut pressed = None;
+        let mut find = false;
+        let mut take = false;
         let (source, sensor) = (self.source.clone(), self.sensor);
         let bands_text = self.bands_text(lang);
         let pixel_text = self.pixel_text(lang);
@@ -526,18 +617,41 @@ impl Spectral {
                 ui.label(tr(lang, "Point"));
                 ui.label(&self.place);
                 ui.end_row();
+                ui.label(tr(lang, "ASTER images")).on_hover_text(tr(lang, "ASTER images of 2000-2006 over the area suitable for minerals: in daytime, with SWIR bands, cloud cover up to 10 % and data on at least half of the area. On top - the least cloudy."));
+                ui.horizontal_top(|ui| {
+                    egui::Frame::new().stroke(egui::Stroke::new(1.0, crate::theme::pal().border)).inner_margin(egui::Margin::same(2)).show(ui, |ui| {
+                        egui::ScrollArea::vertical().id_salt("planetx-spectral-aster").max_height(SCENE_ROWS).max_width(330.0).auto_shrink([false, true]).show(ui, |ui| {
+                            for (n, (s, valid)) in self.scenes.iter().enumerate() {
+                                let text = trf(lang, "{when} · cloud cover {cloud} % · area {valid} % · sun {sun}°", &[("when", s.when.get(..10).unwrap_or(&s.when)), ("cloud", &format!("{:.0}", s.cloud)), ("valid", &format!("{valid:.0}")), ("sun", &format!("{:.0}", s.sun.unwrap_or(f64::NAN)))]);
+                                let row = ui.selectable_label(self.scene == Some(n), text).on_hover_text(&s.id);
+                                if row.clicked() {
+                                    self.scene = Some(n);
+                                }
+                                if row.double_clicked() {
+                                    self.scene = Some(n);
+                                    take = true;
+                                }
+                            }
+                        });
+                    });
+                    ui.vertical(|ui| {
+                        find = ui.add_enabled(!self.aster.busy(), egui::Button::new(tr(lang, "Find"))).on_hover_text(tr(lang, "Find suitable ASTER images of the area.")).clicked();
+                        take |= ui.add_enabled(self.scene.is_some() && !self.aster.loading(), egui::Button::new(tr(lang, "Load"))).on_hover_text(tr(lang, "All bands of the chosen image over the area as a raster of the program. The image takes the Raster field.")).clicked();
+                    });
+                });
+                ui.end_row();
                 ui.label(tr(lang, "Raster"));
                 egui::ComboBox::from_id_salt("planetx-spectral-raster")
                     .selected_text(self.source.as_deref().unwrap_or("-"))
                     .show_ui(ui, |ui| {
                         for (name, bytes) in &self.rasters {
-                            if rasterclass::feature_bands(bytes).is_none_or(|n| n >= spectra::MIN_BANDS) {
+                            if fits(bytes) {
                                 ui.selectable_value(&mut self.source, Some(name.clone()), name);
                             }
                         }
                     })
                     .response
-                    .on_hover_text(tr(lang, "A multi-band raster in reflectance opened in the program, for example all bands of a scene of the Satellite images window. The bands are recognised by their labels, thermal bands do not take part."));
+                    .on_hover_text(tr(lang, "A raster in reflectance with six bands or more, for example an ASTER image from the list above. The bands are recognised by their labels, thermal bands do not take part."));
                 ui.end_row();
                 ui.label(tr(lang, "Bands"));
                 let auto = tr(lang, "Auto");
@@ -620,7 +734,7 @@ impl Spectral {
                 if ui.add(egui::Slider::new(&mut opacity, 0.0..=1.0).show_value(false)).on_hover_text(tr(lang, "Opacity of the classes on the globe.")).changed()
                     && let Some(old) = &self.layer
                 {
-                    self.layer = Some(Arc::new(Layer { index: old.index.clone(), step: old.step, x0: old.x0, y0: old.y0, rows: old.rows, cols: old.cols, classes: old.classes.clone(), colors: old.colors.clone(), opacity, objects: None }));
+                    self.layer = Some(Arc::new(Layer { index: old.index.clone(), step: old.step, x0: old.x0, y0: old.y0, rows: old.rows, cols: old.cols, classes: old.classes.clone(), colors: old.colors.clone(), names: old.names.clone(), opacity, objects: None }));
                     self.changed = true;
                 }
                 ui.end_row();
@@ -642,6 +756,16 @@ impl Spectral {
             ui.add_space(4.0);
             pressed = analysis::buttons(ui, lang, self.done.is_some() && !self.busy(), tr(lang, "Each cell of the area gets the marked reference with the smallest angle between the spectra."));
         });
+        if find {
+            self.find_scenes(lang, request);
+        }
+        if take && let Some((scene, _)) = self.scene.and_then(|n| self.scenes.get(n)).cloned() {
+            if let Some(problem) = self.site.problem(lang) {
+                self.status = problem;
+            } else {
+                self.aster.load(lang, &scene, &self.site.site.ring);
+            }
+        }
         if self.source != source {
             self.job = None;
             self.drop_result();
@@ -696,6 +820,9 @@ impl Spectral {
 impl analysis::SiteTool for Spectral {
     fn id(&self) -> &'static str {
         "spectral"
+    }
+    fn legend_title(&self, lang: Lang) -> Option<&'static str> {
+        Some(tr(lang, "Minerals by spectrum"))
     }
     fn shown(&self) -> bool {
         self.layer.is_some()
