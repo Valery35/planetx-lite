@@ -2348,3 +2348,11 @@ The images are still loading.	Las imágenes aún se cargan.
 No summer image. A click on the row «Summer» - another date or an opened raster.	No hay imagen de verano. Clic en la fila «Verano» - otra fecha o un ráster abierto.
 There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	No hay imagen de verano del área - las escenas Sentinel-2 de tres años tienen más del 5 % de nubes sobre el área. Clic en la fila «Verano» - un ráster abierto.
 First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	Primero se comprueban el área y las muestras, luego se eligen y cargan la imagen de verano y la imagen con nieve, luego cada celda recibe la clase de las muestras más cercanas por las bandas de ambas imágenes.
+Own samples	Muestras propias
+Classes and samples are set by hand, at least two classes are needed.	Las clases y las muestras se fijan a mano, se necesitan al menos dos clases.
+The task sets up the classes itself and computes them by rules from the summer and snow images, no samples are needed. A sample point or area corrects its class, «Build» computes again with it.	La tarea crea las clases sola y las calcula por reglas con las imágenes de verano y de nieve, no hacen falta muestras. Una muestra con punto o área corrige su clase, «Calcular» vuelve a calcular con ella.
+The task classes are computed by rules from the images, no samples are needed. If a class lies wrong, put its sample - {how} - and press «Build».	Las clases de la tarea se calculan por reglas con las imágenes, no hacen falta muestras. Si una clase queda mal, ponga su muestra - {how} - y pulse «Calcular».
+an outline	un contorno
+a point	un punto
+The task needs at least two classes.	La tarea necesita al menos dos clases.
+The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	No se reconocen el infrarrojo cercano y el rojo o SWIR de la imagen de verano - las reglas de la tarea necesitan una imagen con bandas etiquetadas.

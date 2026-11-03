@@ -82,7 +82,7 @@ pub fn line_name(lang: Lang, group: &str) -> &'static str {
 }
 
 /// Название и подсказка задачи.
-fn scenario_text(lang: Lang, s: Scenario) -> (&'static str, &'static str) {
+pub fn scenario_text(lang: Lang, s: Scenario) -> (&'static str, &'static str) {
     match s {
         Scenario::Forest => (tr(lang, "Forests and clearcuts"), tr(lang, "Coniferous forest, broadleaf forest and grass, clearcuts and burns, open soil, water. A clearcut is open soil with at least a quarter of coniferous forest in a band of three cells around it.")),
         Scenario::Fields => (tr(lang, "Fields"), tr(lang, "Vegetation, open soil and ploughland, clearcuts, water. Fields stay separate polygons, the smallest area is larger.")),

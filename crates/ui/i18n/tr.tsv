@@ -2348,3 +2348,11 @@ The images are still loading.	Görüntüler hâlâ yükleniyor.
 No summer image. A click on the row «Summer» - another date or an opened raster.	Yaz görüntüsü yok. «Yaz» satırına tıklama - başka tarih veya açık raster.
 There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	Alanın yaz görüntüsü yok - üç yıllık Sentinel-2 sahnelerinde alan üzerinde bulut %5'ten fazla. «Yaz» satırına tıklama - açık raster.
 First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	Önce alan ve örnekler denetlenir, sonra yaz görüntüsü ile karlı görüntü seçilip yüklenir, sonra her hücre iki görüntünün bantlarına göre en yakın örneklerin sınıfını alır.
+Own samples	Kendi örnekleriniz
+Classes and samples are set by hand, at least two classes are needed.	Sınıflar ve örnekler elle belirlenir, en az iki sınıf gerekir.
+The task sets up the classes itself and computes them by rules from the summer and snow images, no samples are needed. A sample point or area corrects its class, «Build» computes again with it.	Görev sınıfları kendisi kurar ve yaz ile kar görüntülerinden kurallarla hesaplar, örnek gerekmez. Nokta veya alan örneği sınıfını düzeltir, «Oluştur» onunla yeniden hesaplar.
+The task classes are computed by rules from the images, no samples are needed. If a class lies wrong, put its sample - {how} - and press «Build».	Görev sınıfları görüntülerden kurallarla hesaplanır, örnek gerekmez. Bir sınıf yanlış çıktıysa örneğini koyun - {how} - ve «Oluştur»a basın.
+an outline	bir sınır
+a point	bir nokta
+The task needs at least two classes.	Görev için en az iki sınıf gerekir.
+The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	Yaz görüntüsünün yakın kızılötesi ile kırmızı veya SWIR'i tanınmadı - görev kuralları bant etiketli bir görüntü ister.

@@ -2348,3 +2348,11 @@ The images are still loading.	Təsvirlər hələ yüklənir.
 No summer image. A click on the row «Summer» - another date or an opened raster.	Yay təsviri yoxdur. «Yay» sətirinə klik - başqa tarix və ya açıq rastr.
 There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	Sahənin yay təsviri yoxdur - üç illik Sentinel-2 səhnələrində sahə üzərində bulud 5 %-dən çoxdur. «Yay» sətirinə klik - açıq rastr.
 First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	Əvvəlcə sahə və nümunələr yoxlanılır, sonra yay təsviri və qarlı təsvir seçilib yüklənir, sonra hər xana hər iki təsvirin kanalları üzrə ən yaxın nümunələrin sinfini alır.
+Own samples	Öz nümunələriniz
+Classes and samples are set by hand, at least two classes are needed.	Siniflər və nümunələr əllə verilir, ən azı iki sinif lazımdır.
+The task sets up the classes itself and computes them by rules from the summer and snow images, no samples are needed. A sample point or area corrects its class, «Build» computes again with it.	Tapşırıq sinifləri özü yaradır və yay ilə qar təsvirləri üzrə qaydalarla hesablayır, nümunə lazım deyil. Nöqtə və ya sahə nümunəsi öz sinfini düzəldir, «Qur» onunla yenidən hesablayır.
+The task classes are computed by rules from the images, no samples are needed. If a class lies wrong, put its sample - {how} - and press «Build».	Tapşırığın sinifləri təsvirlər üzrə qaydalarla hesablanır, nümunə lazım deyil. Sinif səhv düşübsə, onun nümunəsini qoyun - {how} - və «Qur» düyməsini basın.
+an outline	kontur
+a point	nöqtə
+The task needs at least two classes.	Tapşırıq üçün ən azı iki sinif lazımdır.
+The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	Yay təsvirinin yaxın İQ və qırmızı və ya SWIR kanalları tanınmadı - tapşırığın qaydalarına kanalları imzalı təsvir lazımdır.

@@ -2348,3 +2348,11 @@ The images are still loading.	Снимки ещё загружаются.
 No summer image. A click on the row «Summer» - another date or an opened raster.	Нет летнего снимка. Щелчок по строке «Лето» - другая дата или открытый растр.
 There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	Летнего снимка участка нет - у сцен Sentinel-2 за три года облачность над участком больше 5 %. Щелчок по строке «Лето» - открытый растр.
 First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	Сначала проверяются участок и образцы, затем подбираются и загружаются летний снимок участка и снимок со снегом, затем каждая клетка получает класс ближайших образцов по каналам обоих снимков.
+Own samples	Свои образцы
+Classes and samples are set by hand, at least two classes are needed.	Классы и образцы задаются вручную, нужно хотя бы два класса.
+The task sets up the classes itself and computes them by rules from the summer and snow images, no samples are needed. A sample point or area corrects its class, «Build» computes again with it.	Задача сама заводит классы и считает их правилами по снимкам лета и снега, образцы не нужны. Образец точкой или областью поправляет свой класс, «Построить» считает заново с ним.
+The task classes are computed by rules from the images, no samples are needed. If a class lies wrong, put its sample - {how} - and press «Build».	Классы задачи считаются правилами по снимкам, образцы не нужны. Если класс лёг неверно, поставьте его образец - {how} - и нажмите «Построить».
+an outline	контур
+a point	точку
+The task needs at least two classes.	У задачи нужно хотя бы два класса.
+The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	У летнего снимка не узнать ближний ИК и красный или SWIR - правилам задачи нужен снимок с подписями каналов.

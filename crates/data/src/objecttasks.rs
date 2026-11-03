@@ -19,6 +19,7 @@
 
 use crate::segments;
 use crate::sentinel::COMPOSITES;
+use crate::tracing;
 
 /// Роли каналов по ключам каталогов Earth Search и Planetary Computer.
 pub const ROLES: [(&str, &str); 13] = [
@@ -510,6 +511,70 @@ pub fn region_kinds(parts: &[i32], rows: usize, cols: usize, region_colors: &[i1
         }
     }
     scenario_kinds(&out, scenario)
+}
+
+/// Классы задачи окна «Распознавание» по порядку слоя, `task_kinds`
+/// модуля 1.39: виды сценария без снега - на летнем снимке его не бывает.
+pub fn task_kinds(scenario: Scenario) -> Vec<Kind> {
+    let spec = scenario.spec();
+    KIND_ORDER.into_iter().filter(|k| spec.kinds.contains(k) && *k != Kind::Snow).collect()
+}
+
+/// Вид каждой клетки участка правилами задачи scenario, `cell_kinds`
+/// модуля 1.39 - окно «Распознавание», третья ступень. grid - клетки
+/// подряд по depth каналов, size - строки и столбцы сетки: каналы летнего снимка (roles) и за ними
+/// снимка со снегом (more, может не быть), good - клетки участка
+/// с данными летнего снимка. Цвета - k-средние летних каналов после
+/// сглаживания, как у трассировки, виды цветов - [`color_kinds`]
+/// и [`two_dates`] по средним всех каналов, рубки - [`region_kinds`] по
+/// связным областям. Итог - номер вида в [`KIND_ORDER`] у клетки, -1 вне
+/// good.
+pub fn cell_kinds(grid: &[f32], depth: usize, size: (usize, usize), roles: &[Option<&str>], more: Option<&[Option<&str>]>, good: &[bool], scenario: Scenario) -> Vec<i32> {
+    let (rows, cols) = size;
+    let cells = rows * cols;
+    let mut out = vec![-1i32; cells];
+    let depth = depth.max(1);
+    let first = roles.len().min(depth);
+    if first == 0 || grid.len() < cells * depth || good.len() < cells {
+        return out;
+    }
+    let spec = scenario.spec();
+    let summer: Vec<f32> = grid.chunks(depth).take(cells).flat_map(|cell| cell[..first].iter().copied()).collect();
+    let smooth = tracing::blur(&summer, first, good, rows, cols, spec.smooth);
+    let (labels, _) = tracing::quantize(&smooth, first, good, spec.colors, 0);
+    let count = labels.iter().copied().max().map_or(0, |m| usize::try_from(m + 1).unwrap_or(0));
+    if count == 0 {
+        return out;
+    }
+    // Средние всех каналов цветов по исходным клеткам, без NaN.
+    let mut sums = vec![vec![0.0f64; depth]; count];
+    let mut sizes = vec![vec![0usize; depth]; count];
+    for (cell, label) in labels.iter().enumerate() {
+        let Ok(n) = usize::try_from(*label) else {
+            continue;
+        };
+        for (band, v) in grid[cell * depth..(cell + 1) * depth].iter().enumerate() {
+            if v.is_finite() {
+                sums[n][band] += f64::from(*v);
+                sizes[n][band] += 1;
+            }
+        }
+    }
+    let centers: Vec<Vec<f64>> = sums.iter().zip(&sizes).map(|(s, k)| s.iter().zip(k).map(|(s, k)| if *k > 0 { s / *k as f64 } else { f64::NAN }).collect()).collect();
+    let summer_centers: Vec<Vec<f64>> = centers.iter().map(|c| c[..first].to_vec()).collect();
+    let mut raw = color_kinds(&summer_centers, roles);
+    if let Some(more) = more.filter(|_| depth > first) {
+        raw = two_dates(&raw, &centers, roles, more);
+    }
+    let (parts, region_colors, _) = tracing::merge_small(&labels, rows, cols, spec.least);
+    let regions = region_kinds(&parts, rows, cols, &region_colors, &raw, scenario);
+    let codes: Vec<i32> = regions.iter().map(|k| KIND_ORDER.iter().position(|o| o == k).map_or(-1, |p| p as i32)).collect();
+    for ((slot, part), keep) in out.iter_mut().zip(&parts).zip(good) {
+        if *keep && let Some(code) = usize::try_from(*part).ok().and_then(|p| codes.get(p)) {
+            *slot = *code;
+        }
+    }
+    out
 }
 
 /// Группы линейных объектов: ключ и виды областей, из которых линии.

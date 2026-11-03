@@ -185,11 +185,13 @@ pub struct Class {
     pub color: [u8; 3],
     pub points: Vec<(f64, f64)>,
     pub rings: Vec<Vec<(f64, f64)>>,
+    /// Вид правил задачи «Распознавания», None - свой класс.
+    pub kind: Option<data::objecttasks::Kind>,
 }
 
 impl Class {
     pub fn new(name: String, color: [u8; 3]) -> Self {
-        Self { name, color, points: Vec::new(), rings: Vec::new() }
+        Self { name, color, points: Vec::new(), rings: Vec::new(), kind: None }
     }
 
     /// Есть ли у класса образцы - точки или контуры.
@@ -561,13 +563,77 @@ impl ClassCalc {
 
     /// Образцов хватает: не меньше двух классов с образцами, у каждого
     /// три точки или контур.
+    /// У задачи - все её классы: образцы не обязательны, `used_rows`
+    /// модуля 1.39.
     fn samples_ready(&self) -> bool {
-        let rows: Vec<&Class> = self.classes.iter().filter(|c| c.has_samples()).collect();
+        if self.task().is_some() {
+            return self.classes.len() >= aef::MIN_CLASSES;
+        }
+        let rows: Vec<&Class> = self.classes.iter().filter(|c| self.uses(c)).collect();
         rows.len() >= aef::MIN_CLASSES && rows.iter().all(|c| c.enough())
     }
 
     fn too_few_text(&self, lang: Lang) -> &'static str {
-        if self.recognize_mode() { tr(lang, "At least two classes are needed, each with an outline or three points.") } else { tr(lang, "At least two classes of three points each are needed.") }
+        if self.task().is_some() {
+            tr(lang, "The task needs at least two classes.")
+        } else if self.recognize_mode() {
+            tr(lang, "At least two classes are needed, each with an outline or three points.")
+        } else {
+            tr(lang, "At least two classes of three points each are needed.")
+        }
+    }
+
+    /// Классы клеток правилами задачи «Распознавания» по сетке участка:
+    /// номер класса окна у клетки, -1 без класса. Свой класс без вида
+    /// клеток правил не получает. None - задачи нет.
+    fn ruled_classes(&self, grid: &Mosaic<f32>, keep: &[bool]) -> Option<Vec<i16>> {
+        let scenario = self.task()?;
+        let (roles, snow) = self.recognize.as_ref()?.roles.clone()?;
+        let depth = grid.depth.max(1);
+        let first = roles.len().min(depth);
+        let good: Vec<bool> = grid.values.chunks(depth).zip(keep).map(|(cell, k)| *k && rasterclass::usable(&cell[..first])).collect();
+        let more = snow.as_deref().filter(|_| depth > first);
+        let cells = data::objecttasks::cell_kinds(&grid.values, depth, (grid.rows, grid.cols), &roles, more, &good, scenario);
+        let codes: Vec<Option<usize>> = self.classes.iter().filter(|c| self.uses(c)).map(|c| c.kind.and_then(|k| data::objecttasks::KIND_ORDER.iter().position(|o| *o == k))).collect();
+        Some(cells.iter().map(|code| usize::try_from(*code).ok().and_then(|code| codes.iter().position(|c| *c == Some(code))).map_or(-1, |n| n as i16)).collect())
+    }
+
+    /// Задача «Распознавания», None - свои образцы или другое окно.
+    fn task(&self) -> Option<data::objecttasks::Scenario> {
+        self.recognize.as_ref().and_then(|r| r.task)
+    }
+
+    /// Класс идёт в расчёт: у задачи - все классы, иначе - с образцами.
+    fn uses(&self, class: &Class) -> bool {
+        self.task().is_some() || class.has_samples()
+    }
+
+    /// Задача «Распознавания», `_task` модуля 1.39: классы задачи вместо
+    /// прежних, у своих образцов - снова два пустых класса.
+    pub fn set_task(&mut self, lang: Lang, task: Option<data::objecttasks::Scenario>) {
+        let Some(rec) = &mut self.recognize else {
+            return;
+        };
+        rec.task = task;
+        rec.drawing.clear();
+        self.classes.clear();
+        match task {
+            Some(scenario) => {
+                for kind in data::objecttasks::task_kinds(scenario) {
+                    let mut class = Class::new(crate::objecttasks::kind_name(lang, kind).to_string(), kind.color());
+                    class.kind = Some(kind);
+                    self.classes.push(class);
+                }
+            }
+            None => {
+                self.add_class(lang);
+                self.add_class(lang);
+            }
+        }
+        self.active = 0;
+        if self.layer.take().is_some() {
+            self.changed = true;
+        }
     }
 
     /// Снимки «Распознавания» перед расчётом, `build` модуля 1.38: подбор
@@ -590,6 +656,22 @@ impl ClassCalc {
             return None;
         };
         let snow = rec.picker.raster(recognize::Key::Snow).filter(|s| *s != summer).map(str::to_string);
+        // Правилам задачи нужны роли каналов, `build` модуля 1.39.
+        let roles_of = |name: &str| self.rasters.iter().find(|r| r.0 == name).and_then(|r| crate::objecttasks::raster_roles(r).0);
+        let summer_roles = roles_of(&summer);
+        let snow_roles = snow.as_deref().and_then(roles_of);
+        if let Some(rec) = &mut self.recognize {
+            rec.roles = None;
+            if rec.task.is_some() {
+                match summer_roles.filter(|r| data::objecttasks::usable(r)) {
+                    Some(r) => rec.roles = Some((r, snow_roles)),
+                    None => {
+                        self.status = tr(lang, "The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.").to_string();
+                        return None;
+                    }
+                }
+            }
+        }
         self.source = Some(summer);
         self.level = None;
         self.split.on = false;
@@ -622,7 +704,7 @@ impl ClassCalc {
 
     /// Контуры образцов с номером класса среди классов с образцами.
     fn rings(&self) -> Vec<(i32, Vec<(f64, f64)>)> {
-        self.classes.iter().filter(|c| c.has_samples()).enumerate().flat_map(|(n, c)| c.rings.iter().map(move |r| (n as i32, r.clone()))).collect()
+        self.classes.iter().filter(|c| self.uses(c)).enumerate().flat_map(|(n, c)| c.rings.iter().map(move |r| (n as i32, r.clone()))).collect()
     }
 
     /// Контур образца с точкой внутри: (класс, номер), последний
@@ -899,7 +981,7 @@ impl ClassCalc {
         if self.trace.is_none() && self.find.is_none() {
             // Настройки классификации для названия результата,
             // `class_settings` модуля 1.33 и 1.38.
-            let classes = self.classes.iter().filter(|c| c.has_samples()).count();
+            let classes = self.classes.iter().filter(|c| self.uses(c)).count();
             let points: usize = self.classes.iter().map(|c| c.points.len()).sum();
             let areas: usize = self.classes.iter().map(|c| c.rings.len()).sum();
             self.settings = vec![trf(lang, "classes {n}", &[("n", &classes.to_string())])];
@@ -908,6 +990,9 @@ impl ClassCalc {
             }
             if areas > 0 {
                 self.settings.push(trf(lang, "areas {n}", &[("n", &areas.to_string())]));
+            }
+            if let Some(task) = self.task() {
+                self.settings.insert(0, trf(lang, "task «{task}»", &[("task", crate::objecttasks::scenario_text(lang, task).0)]));
             }
             if self.split.on {
                 self.settings.push(trf(lang, "objects: scale {scale}, texture {weight} %, from {least} cells", &[("scale", &self.split.scale.to_string()), ("weight", &self.split.weight.to_string()), ("least", &self.split.least.to_string())]));
@@ -1105,7 +1190,7 @@ impl ClassCalc {
             self.own_job = Some(OwnJob { key, index, bbox, side, stage: OwnStage::Trace { grid, tracer, share } });
             return;
         }
-        let rows: Vec<&Class> = self.classes.iter().filter(|c| c.has_samples()).collect();
+        let rows: Vec<&Class> = self.classes.iter().filter(|c| self.uses(c)).collect();
         let points: Vec<(i32, (f64, f64))> = rows.iter().enumerate().flat_map(|(n, c)| c.points.iter().map(move |p| (n as i32, *p))).collect();
         if self.split.on {
             self.start_cut(lang, Ready { key, index, grid, share }, keep, points);
@@ -1123,11 +1208,35 @@ impl ClassCalc {
             labels.extend(std::iter::repeat_n(label, got.len()));
             samples.extend(got);
         }
+        // Классы задачи правилами, `rules_job` модуля 1.39: без образцов -
+        // итог правил, с образцами - до TASK_SAMPLES клеток каждого класса
+        // правил образцами к образцам пользователя.
+        let ruled = self.ruled_classes(&grid, &keep);
+        if let Some(ruled) = &ruled {
+            if samples.is_empty() {
+                self.class_layer(lang, &key, index, &grid, ruled.clone(), outside, share);
+                return;
+            }
+            let depth = grid.depth.max(1);
+            let count = ruled.iter().copied().max().map_or(0, |m| usize::try_from(m + 1).unwrap_or(0));
+            for n in 0..count {
+                let place: Vec<usize> = ruled.iter().enumerate().filter(|(i, c)| usize::try_from(**c).ok() == Some(n) && grid.values.get(i * depth..(i + 1) * depth).is_some_and(rasterclass::usable)).map(|(i, _)| i).collect();
+                for k in rasterclass::spread_pick(place.len(), recognize::TASK_SAMPLES) {
+                    if let Some(v) = place.get(k).and_then(|i| grid.values.get(i * depth..(i + 1) * depth)) {
+                        samples.push(v.to_vec());
+                        labels.push(n as i32);
+                    }
+                }
+            }
+        }
         let mut seen = labels.clone();
         seen.sort_unstable();
         seen.dedup();
         if seen.len() < aef::MIN_CLASSES {
-            self.own_problem(lang, Problem::Points);
+            match ruled {
+                Some(ruled) => self.class_layer(lang, &key, index, &grid, ruled, outside, share),
+                None => self.own_problem(lang, Problem::Points),
+            }
             return;
         }
         let run = Box::new(Run::new(&grid.values, grid.depth, &samples, &labels, Some(&keep), rasterclass::KNN));
@@ -1272,7 +1381,7 @@ impl ClassCalc {
 
     /// Точки классов для расчёта: номер класса и место.
     fn points(&self) -> Vec<(i32, (f64, f64))> {
-        self.classes.iter().filter(|c| c.has_samples()).enumerate().flat_map(|(n, c)| c.points.iter().map(move |p| (n as i32, *p))).collect()
+        self.classes.iter().filter(|c| self.uses(c)).enumerate().flat_map(|(n, c)| c.points.iter().map(move |p| (n as i32, *p))).collect()
     }
 
     /// Классы объектов готовы, `_built` модуля с объектами.
@@ -1294,7 +1403,7 @@ impl ClassCalc {
         } else {
             (parts, kinds, table)
         };
-        let rows: Vec<&Class> = self.classes.iter().filter(|c| c.has_samples()).collect();
+        let rows: Vec<&Class> = self.classes.iter().filter(|c| self.uses(c)).collect();
         let parts_text = class_shares(&rows, &classes);
         let mut text = if self.source.is_some() {
             trf(lang, "Classes of the raster «{name}»: {parts}. Pixel {pixel} m.", &[("name", self.source_title(&key.0)), ("parts", &parts_text), ("pixel", &format!("{}", (grid.step * 100.0).round() / 100.0))])
@@ -1710,11 +1819,17 @@ impl ClassCalc {
             return;
         };
         let (classes, _) = run.finish();
+        self.class_layer(lang, &key, index, &grid, classes, outside, share);
+    }
+
+    /// Слой классов клеток по растру и строка итога.
+    #[allow(clippy::too_many_arguments)]
+    fn class_layer(&mut self, lang: Lang, key: &(String, String, Option<usize>), index: Arc<ZoneIndex>, grid: &Mosaic<f32>, classes: Vec<i16>, outside: usize, share: f64) {
         if !classes.iter().any(|c| *c >= 0) {
             self.status = problem_text(lang, Problem::Flat).to_string();
             return;
         }
-        let rows: Vec<&Class> = self.classes.iter().filter(|c| c.has_samples()).collect();
+        let rows: Vec<&Class> = self.classes.iter().filter(|c| self.uses(c)).collect();
         let parts = class_shares(&rows, &classes);
         let pixel = format!("{}", (grid.step * 100.0).round() / 100.0);
         let mut text = trf(lang, "Classes of the raster «{name}»: {parts}. Pixel {pixel} m.", &[("name", self.source_title(&key.0)), ("parts", &parts), ("pixel", &pixel)]);
@@ -1866,7 +1981,7 @@ impl ClassCalc {
             self.start_classes(lang, key, index, values);
             return;
         }
-        let rows: Vec<&Class> = self.classes.iter().filter(|c| c.has_samples()).collect();
+        let rows: Vec<&Class> = self.classes.iter().filter(|c| self.uses(c)).collect();
         let (mut samples, mut labels, mut outside) = (Vec::new(), Vec::new(), 0);
         for (label, class) in rows.iter().enumerate() {
             for &(lat, lon) in &class.points {
@@ -1974,7 +2089,7 @@ impl ClassCalc {
             settings.push(trf(lang, "pixel {pixel} m", &[("pixel", &crate::spectral::short(layer.step))]));
             name = titled(&name, &settings);
         }
-        let rows: Vec<(String, [u8; 3])> = if self.find.is_some() { vec![(tr(lang, "Similar areas").to_string(), FOUND_COLOR)] } else { self.classes.iter().filter(|c| c.has_samples()).map(|c| (c.name.clone(), c.color)).collect() };
+        let rows: Vec<(String, [u8; 3])> = if self.find.is_some() { vec![(tr(lang, "Similar areas").to_string(), FOUND_COLOR)] } else { self.classes.iter().filter(|c| self.uses(c)).map(|c| (c.name.clone(), c.color)).collect() };
         // С объектами итог - многоугольники, растр классов не пишется.
         // Признаки выборки считаются только здесь: ползунку они не нужны.
         let base = self.find.as_ref().and_then(|f| f.base.as_ref());
@@ -2010,7 +2125,7 @@ impl ClassCalc {
             picture.summary.clone_from(&credit);
             vec![picture]
         };
-        for (n, class) in self.classes.iter().filter(|c| c.has_samples()).enumerate() {
+        for (n, class) in self.classes.iter().filter(|c| self.uses(c)).enumerate() {
             let mut folder = scene::kml::Folder::new(&trf(lang, "{n} - {name}", &[("n", &n.to_string()), ("name", &class.name)]));
             folder.description = trf(lang, "Value {n} in the GeoTIFF file.", &[("n", &n.to_string())]);
             for &(lat, lon) in &class.points {
@@ -2025,7 +2140,7 @@ impl ClassCalc {
         let samples: Vec<Item> = self
             .classes
             .iter()
-            .filter(|c| c.has_samples())
+            .filter(|c| self.uses(c))
             .enumerate()
             .flat_map(|(n, c)| {
                 c.rings.iter().map(move |ring| {
@@ -2357,6 +2472,7 @@ impl ClassCalc {
         let mut ask = false;
         let mut refine = false;
         let mut new_task = None;
+        let mut chosen_task = None;
         let title = if tracing_mode {
             self.tool_title(lang)
         } else {
@@ -2395,6 +2511,25 @@ impl ClassCalc {
                     ui.end_row();
                     ui.label(tr(lang, "Area|site"));
                     self.site.row(ui, lang);
+                    ui.end_row();
+                    // Список «Задача», модуль 1.39.
+                    ui.label(tr(lang, "Task"));
+                    let current = self.task();
+                    let mut chosen = current;
+                    let name = |s: Option<data::objecttasks::Scenario>| s.map_or(tr(lang, "Own samples"), |s| crate::objecttasks::scenario_text(lang, s).0);
+                    egui::ComboBox::from_id_salt("planetx-recognize-task")
+                        .selected_text(name(current))
+                        .show_ui(ui, |ui| {
+                            ui.selectable_value(&mut chosen, None, name(None)).on_hover_text(tr(lang, "Classes and samples are set by hand, at least two classes are needed."));
+                            for s in recognize::TASKS {
+                                ui.selectable_value(&mut chosen, Some(s), name(Some(s))).on_hover_text(crate::objecttasks::scenario_text(lang, s).1);
+                            }
+                        })
+                        .response
+                        .on_hover_text(tr(lang, "The task sets up the classes itself and computes them by rules from the summer and snow images, no samples are needed. A sample point or area corrects its class, «Build» computes again with it."));
+                    if chosen != current {
+                        chosen_task = Some(chosen);
+                    }
                     ui.end_row();
                     ui.label(tr(lang, "Samples"));
                     if let Some(rec) = &mut self.recognize {
@@ -2654,10 +2789,17 @@ impl ClassCalc {
                         self.wants_traced = true;
                     }
                 });
-                let hint = if self.recognize.as_ref().is_some_and(|r| r.areas) {
-                    tr(lang, "Outline a sample of the chosen class on the globe - by clicks on the vertices, a click on the first one closes the outline. At least two classes are needed, each with an outline or three points.")
+                let areas = self.recognize.as_ref().is_some_and(|r| r.areas);
+                let hint = if self.task().is_some() {
+                    trf(
+                        lang,
+                        "The task classes are computed by rules from the images, no samples are needed. If a class lies wrong, put its sample - {how} - and press «Build».",
+                        &[("how", tr(lang, if areas { "an outline" } else { "a point" }))],
+                    )
+                } else if areas {
+                    tr(lang, "Outline a sample of the chosen class on the globe - by clicks on the vertices, a click on the first one closes the outline. At least two classes are needed, each with an outline or three points.").to_string()
                 } else {
-                    tr(lang, "Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.")
+                    tr(lang, "Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.").to_string()
                 };
                 ui.add(egui::Label::new(hint).wrap());
             }
@@ -2683,6 +2825,9 @@ impl ClassCalc {
             pressed = analysis::buttons(ui, lang, self.layer.is_some() && !self.busy(), tip);
         });
         self.terms_window(ctx, lang);
+        if let Some(task) = chosen_task {
+            self.set_task(lang, task);
+        }
         if let Some(k) = remove
             && k < self.classes.len()
         {
@@ -3172,6 +3317,70 @@ mod tests {
         picker.set(recognize::Key::Snow, Some(march.0.clone()), None, None);
         assert!(picker.fit(lang, &ring, &[summer.clone(), march.clone()]));
         assert_eq!(picker.shots[0].cloud, None);
+    }
+
+    #[test]
+    fn recognition_task_by_rules_and_fixed_by_sample() {
+        // Список «Задача» модуля 1.39: «Леса и рубки» заводит свои классы
+        // и считает их правилами без образцов, контур листвы на вырубке
+        // поправляет её класс.
+        let lang = Lang::EN;
+        let raster = summer();
+        let mut calc = ClassCalc::recognition(LAT, LON, "test".into(), vec![raster.clone()], lang);
+        calc.set_task(lang, Some(data::objecttasks::Scenario::Forest));
+        let kinds: Vec<_> = calc.classes.iter().map(|c| c.kind).collect();
+        assert_eq!(kinds.len(), 5);
+        assert!(calc.classes.iter().all(|c| c.points.is_empty() && c.rings.is_empty()));
+        let Some(index) = ZoneIndex::bare(&aef::zone_of(LON, LAT)) else {
+            return;
+        };
+        let (cx, cy) = index.project(LAT, LON);
+        let at = |x: f64, y: f64| aef::from_utm(index.number, index.south, cx + x, cy + y);
+        calc.site.site.ring = vec![at(-950.0, -950.0), at(-950.0, 950.0), at(950.0, 950.0), at(950.0, -950.0)];
+        // Летний снимок открыт, снег - «Без снимка»: поиска нет.
+        if let Some(rec) = &mut calc.recognize {
+            rec.picker.set(recognize::Key::Summer, Some(raster.0.clone()), None, None);
+            rec.picker.skip(recognize::Key::Snow);
+        }
+        let request = |_: u64| Box::new(Silent(net::Stats::default())) as Box<dyn net::Request>;
+        let run = |calc: &mut ClassCalc| {
+            calc.build(lang);
+            for _ in 0..5000 {
+                calc.step(lang, &request);
+                if !calc.busy() && !calc.finding() {
+                    break;
+                }
+            }
+        };
+        let class_of = |calc: &ClassCalc, x: f64, y: f64| -> Option<data::objecttasks::Kind> {
+            let layer = calc.layer.clone()?;
+            let (lat, lon) = at(x, y);
+            let (px, py) = index.project(lat, lon);
+            let c = ((px - layer.x0) / layer.step) as usize;
+            let r = ((layer.y0 - py) / layer.step) as usize;
+            let n = usize::try_from(*layer.classes.get(r * layer.cols + c)?).ok()?;
+            calc.classes.get(n)?.kind
+        };
+        use data::objecttasks::Kind as K;
+        run(&mut calc);
+        assert!(calc.layer.is_some(), "{}", calc.status);
+        assert_eq!(class_of(&calc, -500.0, -500.0), Some(K::Conifer), "{}", calc.status);
+        assert_eq!(class_of(&calc, 500.0, 500.0), Some(K::Broadleaf), "{}", calc.status);
+        assert_eq!(class_of(&calc, -300.0, -405.0), Some(K::Water), "{}", calc.status);
+        assert_eq!(class_of(&calc, -445.0, 245.0), Some(K::Clearing), "{}", calc.status);
+        // Контур листвы на вырубке - вырубка становится листвой.
+        let leaf = calc.classes.iter().position(|c| c.kind == Some(K::Broadleaf));
+        if let Some(class) = leaf.and_then(|n| calc.classes.get_mut(n)) {
+            class.rings.push(vec![at(-545.0, 145.0), at(-545.0, 345.0), at(-345.0, 345.0), at(-345.0, 145.0)]);
+        }
+        run(&mut calc);
+        assert_eq!(class_of(&calc, -445.0, 245.0), Some(K::Broadleaf), "{}", calc.status);
+        assert_eq!(class_of(&calc, -500.0, -500.0), Some(K::Conifer), "{}", calc.status);
+        assert!(calc.settings.first().is_some_and(|s| s.contains("Forests and clearcuts")), "{:?}", calc.settings);
+        // Свои образцы - снова два пустых класса.
+        calc.set_task(lang, None);
+        assert_eq!(calc.classes.len(), 2);
+        assert!(calc.classes.iter().all(|c| c.kind.is_none()));
     }
 
     /// Снимок сезона «SWIR» (B12 B8A B4) 2 × 2 км: слева left, справа right.

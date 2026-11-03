@@ -16,6 +16,49 @@ const SOIL: [f64; 3] = [0.30, 0.22, 0.08];
 const WATER: [f64; 3] = [0.01, 0.02, 0.04];
 const SNOW: [f64; 3] = [0.10, 0.70, 0.80];
 
+#[test]
+fn task_kinds_without_snow() {
+    // Перенос `TestCellKinds.test_task_kinds_without_snow` модуля 1.39.
+    assert_eq!(ot::task_kinds(Scenario::Forest), [Kind::Conifer, Kind::Broadleaf, Kind::Clearing, Kind::Soil, Kind::Water]);
+    assert_eq!(ot::task_kinds(Scenario::Water), [Kind::Water, Kind::Other]);
+}
+
+#[test]
+fn cells_by_rules() {
+    // Перенос `TestCellKinds.test_cells_by_rules`: хвоя кругом, в ней
+    // вырубка, справа листва, внизу вода. Шум свой, слабый, как у модуля.
+    let (side, depth) = (60usize, 3usize);
+    let mut state = 1u64;
+    let mut noise = || {
+        state = state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        ((state >> 11) as f64 / (1u64 << 53) as f64 - 0.5) * 0.004
+    };
+    let mut grid = Vec::with_capacity(side * side * depth);
+    for r in 0..side {
+        for c in 0..side {
+            let means = if (10..30).contains(&r) && (10..30).contains(&c) {
+                SOIL
+            } else if r >= 45 {
+                WATER
+            } else if c >= 40 {
+                BROADLEAF
+            } else {
+                CONIFER
+            };
+            grid.extend(means.iter().map(|m| (m + noise()) as f32));
+        }
+    }
+    let mut good = vec![true; side * side];
+    good[0] = false;
+    let cells = ot::cell_kinds(&grid, depth, (side, side), &AGRI, None, &good, Scenario::Forest);
+    let kind = |r: usize, c: usize| usize::try_from(cells[r * side + c]).ok().map(|k| ot::KIND_ORDER[k]);
+    assert_eq!(cells[0], -1);
+    assert_eq!(kind(5, 5), Some(Kind::Conifer));
+    assert_eq!(kind(20, 20), Some(Kind::Clearing));
+    assert_eq!(kind(20, 50), Some(Kind::Broadleaf));
+    assert_eq!(kind(55, 30), Some(Kind::Water));
+}
+
 fn rows(list: &[&[f64]]) -> Vec<Vec<f64>> {
     list.iter().map(|r| r.to_vec()).collect()
 }

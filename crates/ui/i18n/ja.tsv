@@ -2348,3 +2348,11 @@ The images are still loading.	画像はまだ読み込み中です。
 No summer image. A click on the row «Summer» - another date or an opened raster.	夏の画像がありません。「夏」の行をクリック - 別の日付か開いたラスター。
 There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	区域の夏の画像がありません。3年間の Sentinel-2 シーンは区域上の雲が 5 % を超えます。「夏」の行をクリック - 開いたラスター。
 First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	まず区域と見本を確認し、次に夏の画像と雪の画像を選んで読み込み、両画像のバンドで各セルに最も近い見本のクラスを付けます。
+Own samples	自分の見本
+Classes and samples are set by hand, at least two classes are needed.	クラスと見本は手で設定します。少なくとも2クラス必要です。
+The task sets up the classes itself and computes them by rules from the summer and snow images, no samples are needed. A sample point or area corrects its class, «Build» computes again with it.	タスクはクラスを自分で用意し、夏と雪の画像から規則で計算します。見本は不要です。点か領域の見本でそのクラスを補正し、「作成」で再計算します。
+The task classes are computed by rules from the images, no samples are needed. If a class lies wrong, put its sample - {how} - and press «Build».	タスクのクラスは画像から規則で計算され、見本は不要です。クラスが違ったら、その見本を置いて ({how}) 「作成」を押してください。
+an outline	輪郭
+a point	点
+The task needs at least two classes.	タスクには少なくとも2クラス必要です。
+The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	夏の画像の近赤外と赤またはSWIRが判別できません。タスクの規則にはバンド名付きの画像が必要です。

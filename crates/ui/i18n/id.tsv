@@ -2348,3 +2348,11 @@ The images are still loading.	Citra masih dimuat.
 No summer image. A click on the row «Summer» - another date or an opened raster.	Tidak ada citra musim panas. Klik baris «Musim panas» - tanggal lain atau raster terbuka.
 There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	Tidak ada citra musim panas area - adegan Sentinel-2 tiga tahun berawan lebih dari 5 % di atas area. Klik baris «Musim panas» - raster terbuka.
 First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	Pertama area dan sampel diperiksa, lalu citra musim panas dan citra bersalju dipilih dan dimuat, lalu setiap sel mendapat kelas sampel terdekat menurut kanal kedua citra.
+Own samples	Sampel sendiri
+Classes and samples are set by hand, at least two classes are needed.	Kelas dan sampel ditetapkan manual, diperlukan minimal dua kelas.
+The task sets up the classes itself and computes them by rules from the summer and snow images, no samples are needed. A sample point or area corrects its class, «Build» computes again with it.	Tugas membuat kelas sendiri dan menghitungnya dengan aturan dari citra musim panas dan salju, sampel tidak diperlukan. Sampel titik atau area memperbaiki kelasnya, «Hitung» menghitung ulang dengannya.
+The task classes are computed by rules from the images, no samples are needed. If a class lies wrong, put its sample - {how} - and press «Build».	Kelas tugas dihitung dengan aturan dari citra, sampel tidak diperlukan. Jika suatu kelas keliru, taruh sampelnya - {how} - lalu tekan «Hitung».
+an outline	garis batas
+a point	titik
+The task needs at least two classes.	Tugas memerlukan minimal dua kelas.
+The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	Inframerah dekat dan merah atau SWIR citra musim panas tidak dikenali - aturan tugas memerlukan citra dengan label kanal.

@@ -20,10 +20,20 @@
 //! щелчок внутри готового контура убирает его. Образцы контура - клетки
 //! внутри ([`data::rasterclass::ring_samples`]).
 //!
+//! Третья ступень, модуль 1.39 - список «Задача». Задача («Леса и рубки»,
+//! «Поля», «Вода», [`TASKS`]) сама заводит свои классы и считает их
+//! правилами «Выделения объектов» по тем же снимкам лета и снега
+//! ([`data::objecttasks::cell_kinds`]), образцы не нужны. Образец точкой
+//! или областью поправляет класс: «Построить» берёт до [`TASK_SAMPLES`]
+//! клеток каждого класса правил образцами, добавляет образцы пользователя
+//! и считает классы ближайшими образцами. Заросших полей в списке нет -
+//! им нужен ряд снимков весны и осени за 4 года.
+//!
 //! Модуль проверяет, накрывает ли снимок проекта участок, до расчёта.
 //! Рамки растра Lite до чтения файла не знает: покрытие называет строка
 //! итога после расчёта.
 
+use data::objecttasks::Scenario;
 use eframe::egui;
 
 use crate::aefclass::Raster;
@@ -40,6 +50,14 @@ pub const CHOICES: usize = 12;
 pub const SNOW: [u32; 2] = [3, 4];
 /// Сцен в ответе поиска - все подходящие.
 const SHOWN: usize = 10_000;
+/// Задачи списка «Задача».
+pub const TASKS: [Scenario; 3] = [Scenario::Forest, Scenario::Fields, Scenario::Water];
+/// Клеток класса правил образцами, если есть свои образцы, - выбор
+/// помощника модуля 1.39.
+pub const TASK_SAMPLES: usize = 60;
+
+/// Роли каналов растра, `None` у растра без подписей.
+pub type Roles = Vec<Option<&'static str>>;
 
 /// Строка таблицы «Снимки».
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -98,6 +116,9 @@ pub struct Shot {
     pub cloud: Option<f64>,
     pub state: Option<String>,
     pub ring: Option<Vec<(f64, f64)>>,
+    /// Выбрано «Без снимка»: строка не ищется. У модуля «Построить» ищет
+    /// её снова - отказ от снимка со снегом тогда не держится.
+    pub skip: bool,
 }
 
 type Request<'a> = &'a dyn Fn(u64) -> Box<dyn net::Request>;
@@ -162,11 +183,17 @@ impl Picker {
     }
 
     pub(crate) fn set(&mut self, key: Key, raster: Option<String>, cloud: Option<f64>, ring: Option<Vec<(f64, f64)>>) {
-        self.shots[key.index()] = Shot { raster, cloud, state: None, ring };
+        self.shots[key.index()] = Shot { raster, cloud, state: None, ring, skip: false };
+    }
+
+    /// «Без снимка»: строка пуста и не ищется.
+    pub fn skip(&mut self, key: Key) {
+        self.set(key, None, None, None);
+        self.shots[key.index()].skip = true;
     }
 
     fn missing(&self) -> Vec<Key> {
-        KEYS.into_iter().filter(|k| self.raster(*k).is_none()).collect()
+        KEYS.into_iter().filter(|k| self.raster(*k).is_none() && !self.shots[k.index()].skip).collect()
     }
 
     /// Снимки таблицы для участка ring, `fit` модуля: растр, которого
@@ -180,7 +207,9 @@ impl Picker {
             let gone = shot.raster.as_ref().is_some_and(|n| !rasters.iter().any(|r| r.0 == *n));
             let other = shot.ring.as_ref().is_some_and(|r| r.as_slice() != ring);
             if gone || other {
+                let skip = shot.skip;
                 self.set(key, None, None, None);
+                self.shots[key.index()].skip = skip;
             }
         }
         self.take_open(ring, rasters);
@@ -211,7 +240,7 @@ impl Picker {
     /// строку без загрузки, `_take_project` модуля.
     fn take_open(&mut self, ring: &[(f64, f64)], rasters: &[Raster]) {
         for key in KEYS {
-            if self.raster(key).is_some() {
+            if self.raster(key).is_some() || self.shots[key.index()].skip {
                 continue;
             }
             let used: Vec<String> = self.shots.iter().filter_map(|s| s.raster.clone()).collect();
@@ -319,7 +348,19 @@ impl Picker {
                 if let Some(cloud) = shot.cloud {
                     date = format!("{date}{}", trf(lang, ", clouds {cloud} %", &[("cloud", &format!("{cloud:.0}"))]));
                 }
-                let state = shot.state.clone().unwrap_or_else(|| tr(lang, if shot.raster.is_some() { "ready" } else { "picked on «Build»" }).to_string());
+                let state = shot.state.clone().unwrap_or_else(|| {
+                    tr(
+                        lang,
+                        if shot.raster.is_some() {
+                            "ready"
+                        } else if shot.skip {
+                            "No image"
+                        } else {
+                            "picked on «Build»"
+                        },
+                    )
+                    .to_string()
+                });
                 let name = shot.raster.clone().unwrap_or_default();
                 ui.add_enabled_ui(!busy, |ui| {
                     ui.menu_button(key.name(lang), |ui| {
@@ -343,7 +384,7 @@ impl Picker {
                         });
                         ui.separator();
                         if ui.button(tr(lang, "No image")).clicked() {
-                            pick = Some((key, None, Some(None)));
+                            pick = Some((key, None, None));
                             ui.close();
                         }
                     })
@@ -362,7 +403,8 @@ impl Picker {
                 self.done = false;
             }
             Some((key, None, Some(raster))) => self.set(key, raster, None, None),
-            _ => {}
+            Some((key, None, None)) => self.skip(key),
+            None => {}
         }
     }
 }
@@ -379,6 +421,10 @@ pub struct Recognize {
     pub drawing_class: usize,
     /// «Построить» ждёт подбора снимков.
     pub pending: bool,
+    /// Задача, None - свои образцы.
+    pub task: Option<Scenario>,
+    /// Роли каналов летнего снимка и снимка со снегом расчёта задачи.
+    pub roles: Option<(Roles, Option<Roles>)>,
 }
 
 #[cfg(test)]

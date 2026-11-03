@@ -2348,3 +2348,11 @@ The images are still loading.	Die Bilder werden noch geladen.
 No summer image. A click on the row «Summer» - another date or an opened raster.	Kein Sommerbild. Klick auf die Zeile «Sommer» - ein anderes Datum oder ein geöffnetes Raster.
 There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	Kein Sommerbild des Gebiets - Sentinel-2-Szenen aus drei Jahren haben über dem Gebiet mehr als 5 % Wolken. Klick auf die Zeile «Sommer» - ein geöffnetes Raster.
 First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	Zuerst werden Gebiet und Muster geprüft, dann werden das Sommerbild und das Bild mit Schnee gewählt und geladen, dann erhält jede Zelle die Klasse der nächsten Muster nach den Kanälen beider Bilder.
+Own samples	Eigene Muster
+Classes and samples are set by hand, at least two classes are needed.	Klassen und Muster werden von Hand gesetzt, mindestens zwei Klassen sind nötig.
+The task sets up the classes itself and computes them by rules from the summer and snow images, no samples are needed. A sample point or area corrects its class, «Build» computes again with it.	Die Aufgabe legt die Klassen selbst an und berechnet sie nach Regeln aus den Sommer- und Schneebildern, Muster sind nicht nötig. Ein Muster als Punkt oder Fläche korrigiert seine Klasse, «Berechnen» rechnet damit neu.
+The task classes are computed by rules from the images, no samples are needed. If a class lies wrong, put its sample - {how} - and press «Build».	Die Klassen der Aufgabe werden nach Regeln aus den Bildern berechnet, Muster sind nicht nötig. Liegt eine Klasse falsch, setzen Sie ihr Muster - {how} - und drücken Sie «Berechnen».
+an outline	einen Umriss
+a point	einen Punkt
+The task needs at least two classes.	Die Aufgabe braucht mindestens zwei Klassen.
+The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	Nahes Infrarot und Rot oder SWIR des Sommerbilds sind nicht erkannt - die Regeln der Aufgabe brauchen ein Bild mit beschrifteten Kanälen.

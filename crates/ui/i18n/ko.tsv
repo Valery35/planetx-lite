@@ -2348,3 +2348,11 @@ The images are still loading.	영상을 아직 불러오는 중입니다.
 No summer image. A click on the row «Summer» - another date or an opened raster.	여름 영상이 없습니다. «여름» 행을 누르면 다른 날짜 또는 열린 래스터.
 There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	구역의 여름 영상이 없습니다. 3년간 Sentinel-2 장면은 구역 위 구름이 5 %를 넘습니다. «여름» 행을 누르면 열린 래스터.
 First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	먼저 구역과 표본을 확인하고, 여름 영상과 눈 덮인 영상을 골라 불러온 뒤, 두 영상의 밴드로 각 셀에 가장 가까운 표본의 클래스를 줍니다.
+Own samples	자체 표본
+Classes and samples are set by hand, at least two classes are needed.	클래스와 표본은 직접 정합니다. 클래스가 둘 이상 필요합니다.
+The task sets up the classes itself and computes them by rules from the summer and snow images, no samples are needed. A sample point or area corrects its class, «Build» computes again with it.	작업이 클래스를 직접 만들고 여름·눈 영상에서 규칙으로 계산합니다. 표본은 필요 없습니다. 점이나 영역 표본이 그 클래스를 바로잡고, «만들기»가 그것으로 다시 계산합니다.
+The task classes are computed by rules from the images, no samples are needed. If a class lies wrong, put its sample - {how} - and press «Build».	작업 클래스는 영상에서 규칙으로 계산되며 표본은 필요 없습니다. 클래스가 틀렸다면 그 표본을 놓고({how}) «만들기»를 누르세요.
+an outline	윤곽
+a point	점
+The task needs at least two classes.	작업에는 클래스가 둘 이상 필요합니다.
+The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	여름 영상의 근적외선과 적색 또는 SWIR을 알 수 없습니다. 작업 규칙에는 밴드 이름이 있는 영상이 필요합니다.

@@ -264,6 +264,19 @@ from broadleaf. If there is no clear snow image or it does not lie on
 the area, the classes are computed from the summer one. A click on the
 name of a table row gives other dates, an opened raster or «No image».
 
+The «Task» list chooses where the classes come from. «Own samples» -
+classes and samples are set by hand, as above. «Forests and clearcuts»,
+«Fields» and «Water» set up their classes themselves and compute them by
+the rules of «Object extraction» from the same summer and snow images,
+no samples are needed. If a class lies wrong, put its sample as a point
+or an outline, and «Build» computes again with it. Each rule class then
+gets up to 60 of its own cells as samples, and the samples of the user
+are added to them. An own class without a task kind gets cells only by
+its own samples. Buildings look like soil by reflectance, among conifers
+like clearcuts, an own class with a sample corrects them. «Overgrown
+fields» is not in the list - it needs a series of images of 4 years.
+«No image» of a table row holds until another image is chosen.
+
 Picking and loading two images of a 3 km area takes a few minutes, most
 of it is the cloud cover over the area of catalogue scenes.
 

@@ -2348,3 +2348,11 @@ The images are still loading.	影像仍在加载。
 No summer image. A click on the row «Summer» - another date or an opened raster.	没有夏季影像。点击「夏季」行——其他日期或已打开的栅格。
 There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	该区域没有夏季影像——三年内的 Sentinel-2 景在区域上空云量超过 5 %。点击「夏季」行——已打开的栅格。
 First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	先检查区域和样本，然后挑选并加载夏季影像和积雪影像，再按两景影像的波段为每个单元格分配最近样本的类别。
+Own samples	自己的样本
+Classes and samples are set by hand, at least two classes are needed.	类别和样本手动设定，至少需要两个类别。
+The task sets up the classes itself and computes them by rules from the summer and snow images, no samples are needed. A sample point or area corrects its class, «Build» computes again with it.	任务自行建立类别，并按规则根据夏季和积雪影像计算，无需样本。点或区域样本可修正其类别，按「生成」将带上它重新计算。
+The task classes are computed by rules from the images, no samples are needed. If a class lies wrong, put its sample - {how} - and press «Build».	任务类别按规则根据影像计算，无需样本。如某类别不对，请放置其样本——{how}——然后按「生成」。
+an outline	一个轮廓
+a point	一个点
+The task needs at least two classes.	任务至少需要两个类别。
+The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	无法识别夏季影像的近红外及红光或 SWIR——任务规则需要带波段标签的影像。
