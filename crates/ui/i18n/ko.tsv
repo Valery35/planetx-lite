@@ -2172,3 +2172,22 @@ There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in dayt
 There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	적합한 EMIT 장면이 없습니다: 영역 위 장면의 구름이 {cloud} %를 넘거나 영역의 절반 미만을 덮습니다.
 {when} · cloud cover {cloud} % · area {share} %	{when} · 구름 {cloud} % · 영역 {share} %
 {when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · 구름 {cloud} % · 영역 {valid} % · 태양 {sun}°
+Tracing	트레이싱
+Tracing…	트레이싱…
+Tracing {source}	트레이싱 {source}
+The image of the area is split into colours, the areas are outlined with smooth polygons.	영역의 영상을 색으로 나누고 각 구역을 매끄러운 다각형으로 그립니다.
+The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.	색으로 나눌 영상. 지구본 배경 지도는 영역 아래 현재 배경 지도의 그림이며, 프로그램에서 연 래스터는 그 밴드를 쓰고 처음 세 밴드가 색이 됩니다.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.	영역 격자의 픽셀. 영역의 셀이 640천 이하이면 '자동'은 래스터 또는 배경 지도 최상위 레벨의 픽셀을 선택합니다. 트레이싱은 400만 셀까지 처리합니다.
+Colours	색 수
+How many colours the image is split into. More colours give more detailed areas and more polygons.	영상을 나눌 색의 수. 색이 많을수록 구역이 자세해지고 다각형이 늘어납니다.
+Image smoothing	영상 평활화
+Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear.	색으로 나누기 전에 영상에 적용하는 3 × 3 평활화 횟수. 평활화는 잡음을 없애고 경계를 매끄럽게 하며 작은 세부는 사라집니다.
+Smallest area, cells	최소 구역, 셀
+An area with fewer cells merges with the neighbour along the longest shared border.	셀이 이보다 적은 구역은 공통 경계가 가장 긴 이웃 구역과 합쳐집니다.
+Corner rounding	모서리 둥글리기
+Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs.	Potrace와 같은 윤곽 모서리 둥글리기. 0은 모서리만 있는 꺾은선입니다. 값이 클수록 더 많은 모서리가 부드러운 호가 됩니다.
+The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.	지구본에 영역 셀의 색이 표시됩니다. '확인'은 구역의 매끄러운 다각형을 '내 장소'에 넣으며, 이웃 구역은 경계를 공유합니다.
+The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.	영역의 영상을 색으로 나누고 같은 색 구역을 매끄러운 윤곽으로 그립니다.
+Splitting the image into colours…	영상을 색으로 나누는 중…
+Colours {colors}, areas {regions}.	색 {colors}, 구역 {regions}.
+There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	구역이 {n}개를 넘어 '확인'은 다각형 대신 색 그림을 저장합니다.

@@ -140,6 +140,7 @@ pub mod oam;
 pub mod rumsey;
 pub mod segments;
 pub mod similar;
+pub mod tracing;
 pub mod emit;
 pub mod sounding;
 pub mod spectra;

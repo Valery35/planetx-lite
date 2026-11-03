@@ -2172,3 +2172,22 @@ There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in dayt
 There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	適した EMIT シーンはありません: 範囲上空のシーンは雲量が {cloud} % を超えるか、範囲の半分未満しか覆っていません。
 {when} · cloud cover {cloud} % · area {share} %	{when} · 雲量 {cloud} % · 範囲 {share} %
 {when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · 雲量 {cloud} % · 範囲 {valid} % · 太陽 {sun}°
+Tracing	トレース
+Tracing…	トレース…
+Tracing {source}	トレース {source}
+The image of the area is split into colours, the areas are outlined with smooth polygons.	範囲の画像を色に分け、各領域を滑らかなポリゴンで囲みます。
+The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.	色に分ける画像。地球儀の背景地図は範囲の下にある現在の背景地図の画像で、プログラムで開いたラスターはそのバンドを使い、最初の 3 つが色になります。
+The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.	範囲のグリッドのピクセル。範囲のセル数が 640 千以下なら「自動」はラスターまたは背景地図の最上位レベルのピクセルを選びます。トレースは 400 万セルまで対応します。
+Colours	色数
+How many colours the image is split into. More colours give more detailed areas and more polygons.	画像を分ける色の数。色が多いほど領域が細かくなり、ポリゴンが増えます。
+Image smoothing	画像の平滑化
+Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear.	色に分ける前に画像へかける 3 × 3 平滑化の回数。平滑化でノイズが消え、境界が滑らかになり、細かな部分は消えます。
+Smallest area, cells	最小領域（セル）
+An area with fewer cells merges with the neighbour along the longest shared border.	これより少ないセルの領域は、共通の境界が最も長い隣の領域に統合されます。
+Corner rounding	角の丸め
+Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs.	Potrace と同じ輪郭の角の丸め。0 は角だけの折れ線です。値が大きいほど多くの角が滑らかな弧になります。
+The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.	地球儀には範囲のセルの色が表示されます。「OK」は各領域の滑らかなポリゴンを「マイプレイス」に入れ、隣り合う領域は境界を共有します。
+The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.	範囲の画像を色に分け、同じ色の領域を滑らかな輪郭で囲みます。
+Splitting the image into colours…	画像を色に分けています…
+Colours {colors}, areas {regions}.	色 {colors}、領域 {regions}。
+There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	領域が {n} を超えるため、「OK」はポリゴンの代わりに色の画像を保存します。

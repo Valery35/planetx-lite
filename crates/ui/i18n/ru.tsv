@@ -2172,3 +2172,22 @@ There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in dayt
 There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Подходящих сцен EMIT нет: у сцен над участком облачность больше {cloud} % или под сценой меньше половины участка.
 {when} · cloud cover {cloud} % · area {share} %	{when} · облачность {cloud} % · участка {share} %
 {when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · облачность {cloud} % · участка {valid} % · солнце {sun}°
+Tracing	Трассировка
+Tracing…	Трассировка…
+Tracing {source}	Трассировка {source}
+The image of the area is split into colours, the areas are outlined with smooth polygons.	Снимок участка раскладывается на цвета, области обводятся гладкими многоугольниками.
+The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.	Снимок, который раскладывается на цвета. Подложка глобуса - картинка текущей подложки под участком, у растра, открытого в программе, берутся его каналы, первые три дают цвета.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.	Пиксель сетки участка. «Авто» берёт пиксель растра или верхнего уровня подложки, если на участке клеток не больше 640 тысяч. Трассировка принимает до 4 млн клеток.
+Colours	Цветов
+How many colours the image is split into. More colours give more detailed areas and more polygons.	На сколько цветов раскладывается снимок. Больше цветов - подробнее области и больше многоугольников.
+Image smoothing	Сглаживание снимка
+Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear.	Проходов сглаживания снимка окном 3 × 3 перед раскладкой на цвета. Сглаживание убирает шум, границы выходят ровнее, мелкие детали пропадают.
+Smallest area, cells	Наименьшая область, клеток
+An area with fewer cells merges with the neighbour along the longest shared border.	Область меньше этого количества клеток сливается с соседом по самой длинной общей границе.
+Corner rounding	Скругление углов
+Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs.	Скругление углов контуров, как у Potrace. 0 - одни углы, ломаная. Чем больше значение, тем больше углов становится плавными дугами.
+The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.	На глобусе - цвета клеток участка. «OK» кладёт гладкие многоугольники областей в «Мои метки», у соседних областей граница общая.
+The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.	Снимок участка раскладывается на цвета, области одного цвета обводятся гладкими контурами.
+Splitting the image into colours…	Снимок раскладывается на цвета…
+Colours {colors}, areas {regions}.	Цветов {colors}, областей {regions}.
+There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	Областей больше {n}, «OK» сохранит картинку цветов вместо многоугольников.

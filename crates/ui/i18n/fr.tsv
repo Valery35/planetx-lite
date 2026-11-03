@@ -2172,3 +2172,22 @@ There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in dayt
 There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Aucune scène EMIT adaptée : les scènes au-dessus de la zone ont une nébulosité supérieure à {cloud} % ou couvrent moins de la moitié de la zone.
 {when} · cloud cover {cloud} % · area {share} %	{when} · nébulosité {cloud} % · zone {share} %
 {when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · nébulosité {cloud} % · zone {valid} % · soleil {sun}°
+Tracing	Vectorisation
+Tracing…	Vectorisation…
+Tracing {source}	Vectorisation {source}
+The image of the area is split into colours, the areas are outlined with smooth polygons.	L’image de la zone est décomposée en couleurs, les régions sont entourées de polygones lisses.
+The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.	L’image décomposée en couleurs. Le fond de carte du globe est l’image du fond de carte actuel sous la zone, un raster ouvert dans le programme fournit ses bandes, les trois premières donnent les couleurs.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.	Le pixel de la grille de la zone. «Auto» prend le pixel du raster ou du niveau supérieur du fond de carte si la zone a au plus 640 mille cellules. La vectorisation accepte jusqu’à 4 millions de cellules.
+Colours	Couleurs
+How many colours the image is split into. More colours give more detailed areas and more polygons.	En combien de couleurs l’image est décomposée. Plus de couleurs donnent des régions plus détaillées et plus de polygones.
+Image smoothing	Lissage de l’image
+Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear.	Passes de lissage 3 × 3 de l’image avant sa décomposition en couleurs. Le lissage enlève le bruit, les limites sont plus régulières, les petits détails disparaissent.
+Smallest area, cells	Plus petite région, cellules
+An area with fewer cells merges with the neighbour along the longest shared border.	Une région de moins de cellules fusionne avec le voisin le long de la plus longue limite commune.
+Corner rounding	Arrondi des angles
+Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs.	Arrondi des angles des contours, comme dans Potrace. 0 ne donne que des angles, une ligne brisée. Plus la valeur est grande, plus d’angles deviennent des arcs doux.
+The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.	Le globe montre les couleurs des cellules de la zone. «OK» place les polygones lisses des régions dans «Mes lieux», les régions voisines partagent leur limite.
+The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.	L’image de la zone est décomposée en couleurs, les régions d’une couleur sont entourées de contours lisses.
+Splitting the image into colours…	L’image est décomposée en couleurs…
+Colours {colors}, areas {regions}.	Couleurs {colors}, régions {regions}.
+There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	Il y a plus de {n} régions, «OK» enregistre une image des couleurs au lieu de polygones.

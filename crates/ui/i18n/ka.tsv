@@ -2172,3 +2172,22 @@ There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in dayt
 There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	ვარგისი EMIT-ის სცენა არ არის: უბნის ზემოთ სცენების ღრუბლიანობა {cloud} %-ზე მეტია ან ისინი უბნის ნახევარზე ნაკლებს ფარავს.
 {when} · cloud cover {cloud} % · area {share} %	{when} · ღრუბლიანობა {cloud} % · უბანი {share} %
 {when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · ღრუბლიანობა {cloud} % · უბანი {valid} % · მზე {sun}°
+Tracing	კონტურირება
+Tracing…	კონტურირება…
+Tracing {source}	კონტურირება {source}
+The image of the area is split into colours, the areas are outlined with smooth polygons.	უბნის სურათი ფერებად იყოფა, არეები გლუვი მრავალკუთხედებით იხაზება.
+The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.	სურათი, რომელიც ფერებად იყოფა. გლობუსის საბაზისო რუკა უბნის ქვეშ მიმდინარე საბაზისო რუკის სურათია, პროგრამაში გახსნილი რასტრი თავის არხებს იძლევა, პირველი სამი ფერებს იძლევა.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.	უბნის ბადის პიქსელი. «ავტო» ირჩევს რასტრის ან საბაზისო რუკის ზედა დონის პიქსელს, თუ უბანს არაუმეტეს 640 ათასი უჯრედი აქვს. კონტურირება იღებს 4 მილიონ უჯრედამდე.
+Colours	ფერები
+How many colours the image is split into. More colours give more detailed areas and more polygons.	რამდენ ფერად იყოფა სურათი. მეტი ფერი უფრო დეტალურ არეებს და მეტ მრავალკუთხედს იძლევა.
+Image smoothing	სურათის გასწორება
+Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear.	სურათის 3 × 3 გასწორების გავლები ფერებად დაყოფამდე. გასწორება ხმაურს აშორებს, საზღვრები უფრო გლუვი გამოდის, წვრილი დეტალები ქრება.
+Smallest area, cells	უმცირესი არე, უჯრედი
+An area with fewer cells merges with the neighbour along the longest shared border.	ამაზე ნაკლები უჯრედის მქონე არე ერწყმის მეზობელს ყველაზე გრძელი საერთო საზღვრით.
+Corner rounding	კუთხეების მომრგვალება
+Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs.	კონტურის კუთხეების მომრგვალება, როგორც Potrace-ში. 0 მხოლოდ კუთხეებს, ტეხილს იძლევა. რაც მეტია მნიშვნელობა, მით მეტი კუთხე ხდება გლუვი რკალი.
+The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.	გლობუსზე უბნის უჯრედების ფერებია. «OK» არეების გლუვ მრავალკუთხედებს «ჩემ ნიშნებში» დებს, მეზობელ არეებს საზღვარი საერთო აქვთ.
+The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.	უბნის სურათი ფერებად იყოფა, ერთი ფერის არეები გლუვი კონტურებით იხაზება.
+Splitting the image into colours…	სურათი ფერებად იყოფა…
+Colours {colors}, areas {regions}.	ფერი {colors}, არე {regions}.
+There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	არე {n}-ზე მეტია, «OK» მრავალკუთხედების ნაცვლად ფერების სურათს შეინახავს.

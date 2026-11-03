@@ -81,7 +81,7 @@ pub fn too_big(rows: usize, cols: usize, bands: usize) -> bool {
 }
 
 /// Есть все каналы клетки.
-fn usable(cell: &[f32]) -> bool {
+pub fn usable(cell: &[f32]) -> bool {
     cell.iter().all(|v| v.is_finite())
 }
 

@@ -2172,3 +2172,22 @@ There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in dayt
 There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Geen geschikte EMIT-scènes: de scènes boven het gebied hebben meer dan {cloud} % bewolking of bedekken minder dan de helft van het gebied.
 {when} · cloud cover {cloud} % · area {share} %	{when} · bewolking {cloud} % · gebied {share} %
 {when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · bewolking {cloud} % · gebied {valid} % · zon {sun}°
+Tracing	Overtrekken
+Tracing…	Overtrekken…
+Tracing {source}	Overtrekken {source}
+The image of the area is split into colours, the areas are outlined with smooth polygons.	Het beeld van het gebied wordt in kleuren opgedeeld, de vlakken worden met gladde polygonen omlijnd.
+The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.	Het beeld dat in kleuren wordt opgedeeld. De basiskaart van de globe is het beeld van de huidige basiskaart onder het gebied, een in het programma geopend raster levert zijn banden, de eerste drie geven de kleuren.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.	De pixel van het raster van het gebied. «Auto» neemt de pixel van het raster of van het hoogste niveau van de basiskaart als het gebied hoogstens 640 duizend cellen heeft. Overtrekken neemt tot 4 miljoen cellen.
+Colours	Kleuren
+How many colours the image is split into. More colours give more detailed areas and more polygons.	In hoeveel kleuren het beeld wordt opgedeeld. Meer kleuren geven gedetailleerdere vlakken en meer polygonen.
+Image smoothing	Beeldafvlakking
+Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear.	Doorgangen van 3 × 3-afvlakking van het beeld voordat het in kleuren wordt opgedeeld. Afvlakking verwijdert ruis, de grenzen worden gladder, kleine details verdwijnen.
+Smallest area, cells	Kleinste vlak, cellen
+An area with fewer cells merges with the neighbour along the longest shared border.	Een vlak met minder cellen versmelt met de buur langs de langste gemeenschappelijke grens.
+Corner rounding	Hoekafronding
+Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs.	Afronding van de hoeken van de omtrekken, zoals in Potrace. 0 geeft alleen hoeken, een gebroken lijn. Hoe groter de waarde, hoe meer hoeken vloeiende bogen worden.
+The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.	De globe toont de kleuren van de cellen van het gebied. «OK» zet gladde polygonen van de vlakken in «Mijn plaatsen», naburige vlakken delen hun grens.
+The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.	Het beeld van het gebied wordt in kleuren opgedeeld, de vlakken van één kleur worden met gladde omtrekken omlijnd.
+Splitting the image into colours…	Het beeld wordt in kleuren opgedeeld…
+Colours {colors}, areas {regions}.	Kleuren {colors}, vlakken {regions}.
+There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	Er zijn meer dan {n} vlakken, «OK» bewaart een afbeelding van de kleuren in plaats van polygonen.

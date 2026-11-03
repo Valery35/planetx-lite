@@ -2172,3 +2172,22 @@ There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in dayt
 There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	No hay escenas EMIT aptas: las escenas sobre el área tienen nubosidad mayor del {cloud} % o cubren menos de la mitad del área.
 {when} · cloud cover {cloud} % · area {share} %	{when} · nubosidad {cloud} % · área {share} %
 {when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · nubosidad {cloud} % · área {valid} % · sol {sun}°
+Tracing	Trazado
+Tracing…	Trazado…
+Tracing {source}	Trazado {source}
+The image of the area is split into colours, the areas are outlined with smooth polygons.	La imagen del área se divide en colores, las zonas se contornean con polígonos suaves.
+The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.	La imagen que se divide en colores. El mapa base del globo es la imagen del mapa base actual bajo el área, un ráster abierto en el programa aporta sus bandas, las tres primeras dan los colores.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.	El píxel de la cuadrícula del área. «Auto» elige el píxel del ráster o del nivel superior del mapa base si el área tiene como máximo 640 mil celdas. El trazado admite hasta 4 millones de celdas.
+Colours	Colores
+How many colours the image is split into. More colours give more detailed areas and more polygons.	En cuántos colores se divide la imagen. Más colores dan zonas más detalladas y más polígonos.
+Image smoothing	Suavizado de la imagen
+Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear.	Pasadas de suavizado 3 × 3 de la imagen antes de dividirla en colores. El suavizado quita el ruido, los bordes salen más lisos, los detalles pequeños desaparecen.
+Smallest area, cells	Zona mínima, celdas
+An area with fewer cells merges with the neighbour along the longest shared border.	Una zona con menos celdas se une al vecino por el borde común más largo.
+Corner rounding	Redondeo de esquinas
+Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs.	Redondeo de las esquinas de los contornos, como en Potrace. 0 da solo esquinas, una línea quebrada. Cuanto mayor es el valor, más esquinas se vuelven arcos suaves.
+The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.	El globo muestra los colores de las celdas del área. «OK» pone polígonos suaves de las zonas en «Mis lugares», las zonas vecinas comparten su borde.
+The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.	La imagen del área se divide en colores, las zonas de un color se contornean con contornos suaves.
+Splitting the image into colours…	La imagen se divide en colores…
+Colours {colors}, areas {regions}.	Colores {colors}, zonas {regions}.
+There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	Hay más de {n} zonas, «OK» guarda una imagen de los colores en lugar de polígonos.

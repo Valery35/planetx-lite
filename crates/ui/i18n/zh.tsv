@@ -2172,3 +2172,22 @@ There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in dayt
 There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	没有合适的 EMIT 场景：区域上空场景的云量超过 {cloud} % 或覆盖不到区域的一半。
 {when} · cloud cover {cloud} % · area {share} %	{when} · 云量 {cloud} % · 区域 {share} %
 {when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · 云量 {cloud} % · 区域 {valid} % · 太阳 {sun}°
+Tracing	描摹
+Tracing…	描摹…
+Tracing {source}	描摹 {source}
+The image of the area is split into colours, the areas are outlined with smooth polygons.	区域影像被分解为颜色，各区域以平滑多边形勾勒。
+The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.	被分解为颜色的影像。地球底图是区域下当前底图的图像，程序中打开的栅格提供其波段，前三个波段给出颜色。
+The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.	区域网格的像素。若区域不超过 640 千个单元格，“自动”选择栅格或底图最高级别的像素。描摹最多处理 400 万个单元格。
+Colours	颜色数
+How many colours the image is split into. More colours give more detailed areas and more polygons.	影像分解成的颜色数。颜色越多，区域越细，多边形越多。
+Image smoothing	影像平滑
+Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear.	分解为颜色前对影像做 3 × 3 平滑的次数。平滑去除噪声，边界更平顺，细小细节消失。
+Smallest area, cells	最小区域，单元格
+An area with fewer cells merges with the neighbour along the longest shared border.	单元格少于此数的区域沿最长公共边界并入相邻区域。
+Corner rounding	圆角
+Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs.	轮廓角的圆滑程度，同 Potrace。0 只有尖角，即折线。值越大，越多尖角变为平滑弧线。
+The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.	地球上显示区域单元格的颜色。“确定”把各区域的平滑多边形放入“我的地点”，相邻区域共用边界。
+The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.	区域影像被分解为颜色，同色区域以平滑轮廓勾勒。
+Splitting the image into colours…	正在将影像分解为颜色…
+Colours {colors}, areas {regions}.	颜色 {colors}，区域 {regions}。
+There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	区域超过 {n} 个，“确定”将保存颜色图像而不是多边形。

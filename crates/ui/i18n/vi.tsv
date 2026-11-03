@@ -2172,3 +2172,22 @@ There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in dayt
 There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Không có cảnh EMIT phù hợp: các cảnh trên khu vực có mây trên {cloud} % hoặc phủ ít hơn một nửa khu vực.
 {when} · cloud cover {cloud} % · area {share} %	{when} · mây {cloud} % · khu vực {share} %
 {when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · mây {cloud} % · khu vực {valid} % · mặt trời {sun}°
+Tracing	Đồ theo
+Tracing…	Đồ theo…
+Tracing {source}	Đồ theo {source}
+The image of the area is split into colours, the areas are outlined with smooth polygons.	Ảnh của khu vực được tách thành các màu, các vùng được viền bằng đa giác trơn.
+The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.	Ảnh được tách thành các màu. Bản đồ nền của quả địa cầu là hình của bản đồ nền hiện tại dưới khu vực, raster mở trong chương trình cho các kênh của nó, ba kênh đầu cho màu.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.	Pixel của lưới khu vực. «Tự động» chọn pixel của raster hoặc của cấp cao nhất của bản đồ nền nếu khu vực có không quá 640 nghìn ô. Đồ theo nhận tối đa 4 triệu ô.
+Colours	Số màu
+How many colours the image is split into. More colours give more detailed areas and more polygons.	Số màu mà ảnh được tách ra. Nhiều màu hơn cho các vùng chi tiết hơn và nhiều đa giác hơn.
+Image smoothing	Làm mịn ảnh
+Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear.	Số lượt làm mịn 3 × 3 của ảnh trước khi tách thành màu. Làm mịn loại bỏ nhiễu, ranh giới mượt hơn, chi tiết nhỏ biến mất.
+Smallest area, cells	Vùng nhỏ nhất, ô
+An area with fewer cells merges with the neighbour along the longest shared border.	Vùng có ít ô hơn được gộp với vùng lân cận theo ranh giới chung dài nhất.
+Corner rounding	Bo tròn góc
+Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs.	Bo tròn góc của đường viền, như trong Potrace. 0 chỉ cho góc, đường gấp khúc. Giá trị càng lớn, càng nhiều góc thành cung mềm.
+The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.	Quả địa cầu hiển thị màu các ô của khu vực. «OK» đưa đa giác trơn của các vùng vào «Địa điểm của tôi», các vùng kề nhau dùng chung ranh giới.
+The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.	Ảnh của khu vực được tách thành các màu, các vùng cùng màu được viền bằng đường viền trơn.
+Splitting the image into colours…	Đang tách ảnh thành màu…
+Colours {colors}, areas {regions}.	Màu {colors}, vùng {regions}.
+There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	Có hơn {n} vùng, «OK» lưu hình các màu thay cho đa giác.

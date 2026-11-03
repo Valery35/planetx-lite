@@ -385,6 +385,8 @@ pub struct LiteApp {
     aef_class: Option<crate::aefclass::ClassCalc>,
     /// Окно «Похожие области» и его слой.
     similar: Option<crate::aefclass::ClassCalc>,
+    /// Окно «Трассировка».
+    tracing: Option<crate::aefclass::ClassCalc>,
     /// Окно «Минералы по спектру».
     spectral: Option<crate::spectral::Spectral>,
     /// Окно «Минералы EMIT».
@@ -1181,6 +1183,7 @@ impl LiteApp {
             aef_change: None,
             aef_class: None,
             similar: None,
+            tracing: None,
             spectral: None,
             emit: None,
             preview: None,
@@ -2052,6 +2055,19 @@ impl LiteApp {
                 match &mut self.similar {
                     Some(c) => c.set_point(lat, lon, title),
                     None => self.similar = Some(crate::aefclass::ClassCalc::similar(lat, lon, title, self.open_rasters(), self.lang)),
+                }
+                self.join_site(&choice, lat, lon);
+            }
+            Choice::Trace => {
+                let Some((lat, lon)) = point else {
+                    return;
+                };
+                let name = place.as_ref().map(|(_, n)| n.clone()).unwrap_or_default();
+                let coords = format!("{lat:.5}, {lon:.5}");
+                let title = if name.is_empty() { coords } else { format!("{name}  {coords}") };
+                match &mut self.tracing {
+                    Some(c) => c.set_point(lat, lon, title),
+                    None => self.tracing = Some(crate::aefclass::ClassCalc::tracing(lat, lon, title, self.open_rasters(), self.lang)),
                 }
                 self.join_site(&choice, lat, lon);
             }
@@ -4089,6 +4105,7 @@ impl LiteApp {
             Choice::Changes => self.aef_change.as_mut().and_then(crate::aefcalc::ChangeCalc::site_edit),
             Choice::Classes => self.aef_class.as_mut().and_then(crate::aefclass::ClassCalc::site_edit),
             Choice::Similar => self.similar.as_mut().and_then(crate::aefclass::ClassCalc::site_edit),
+            Choice::Trace => self.tracing.as_mut().and_then(crate::aefclass::ClassCalc::site_edit),
             Choice::Spectral => self.spectral.as_mut().and_then(crate::spectral::Spectral::site_edit),
             Choice::Emit => self.emit.as_mut().and_then(crate::emit::Emit::site_edit),
             Choice::SlopeHere => self.relief_calc.as_mut().and_then(crate::reliefcalc::ReliefCalc::site_edit),
@@ -5423,7 +5440,7 @@ impl LiteApp {
             let rasters = self.open_rasters();
             // Подложка на глобусе - источник «Подложка глобуса».
             let base = crate::aefclass::Backdrop { name: self.basemap.name(lang).to_string(), source: self.basemap.source(), credit: self.basemap.attribution(lang).0.to_string() };
-            for calc in [&mut self.aef_class, &mut self.similar].into_iter().flatten() {
+            for calc in [&mut self.aef_class, &mut self.similar, &mut self.tracing].into_iter().flatten() {
                 calc.rasters = rasters.clone();
                 calc.basemap = Some(base.clone());
                 calc.accepted.clone_from(&self.settings.analysis_ok);
@@ -5491,6 +5508,7 @@ impl LiteApp {
         saved.extend(self.aef_change.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.aef_class.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.similar.as_mut().and_then(|c| c.saved.take()));
+        saved.extend(self.tracing.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.spectral.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.emit.as_mut().and_then(|c| c.saved.take()));
         for s in saved {
@@ -5534,6 +5552,9 @@ impl LiteApp {
         }
         if self.similar.as_ref().is_some_and(|c| !c.open && c.layer.is_none() && !c.busy()) {
             self.similar = None;
+        }
+        if self.tracing.as_ref().is_some_and(|c| !c.open && c.layer.is_none() && !c.busy()) {
+            self.tracing = None;
         }
         if self.spectral.as_ref().is_some_and(|c| !c.open && c.layer.is_none() && !c.busy()) {
             self.spectral = None;
@@ -5698,14 +5719,14 @@ impl LiteApp {
     }
 
     /// Окна анализа на общем слое вида: видимость, земляные работы,
-    /// классификация, похожие области, минералы по спектру.
+    /// классификация, похожие области, трассировка, минералы по спектру.
     fn site_tools(&mut self) -> Vec<&mut dyn crate::analysis::SiteTool> {
         let mut out: Vec<&mut dyn crate::analysis::SiteTool> = Vec::new();
         if let Some(c) = &mut self.viewshed {
             out.push(c);
         }
         out.push(&mut self.earthwork);
-        for c in [&mut self.aef_class, &mut self.similar].into_iter().flatten() {
+        for c in [&mut self.aef_class, &mut self.similar, &mut self.tracing].into_iter().flatten() {
             out.push(c);
         }
         if let Some(c) = &mut self.spectral {
@@ -8519,6 +8540,7 @@ impl eframe::App for LiteApp {
             || self.aef_change.as_ref().is_some_and(crate::aefcalc::ChangeCalc::busy)
             || self.aef_class.as_ref().is_some_and(crate::aefclass::ClassCalc::busy)
             || self.similar.as_ref().is_some_and(crate::aefclass::ClassCalc::busy)
+            || self.tracing.as_ref().is_some_and(crate::aefclass::ClassCalc::busy)
             || self.spectral.as_ref().is_some_and(crate::spectral::Spectral::busy)
             || self.emit.as_ref().is_some_and(crate::emit::Emit::busy)
             || self.section.as_ref().is_some_and(crate::section::SectionWindow::busy)
@@ -8573,6 +8595,7 @@ impl eframe::App for LiteApp {
                     // Классификация: участок и контрольные точки щелчком.
                     let nav = &self.nav;
                     self.aef_class.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav)) || self.similar.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav))
+                        || self.tracing.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav))
                         || self.spectral.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav, self.lang))
                         || self.emit.as_mut().is_some_and(|c| c.input(&ctx, &globe_response, rect, ppp, nav))
                 };
@@ -8587,6 +8610,7 @@ impl eframe::App for LiteApp {
                 .chain(self.aef_change.as_mut().and_then(crate::aefcalc::ChangeCalc::site_edit))
                 .chain(self.aef_class.as_mut().and_then(crate::aefclass::ClassCalc::site_edit))
                 .chain(self.similar.as_mut().and_then(crate::aefclass::ClassCalc::site_edit))
+                .chain(self.tracing.as_mut().and_then(crate::aefclass::ClassCalc::site_edit))
                 .chain(self.spectral.as_mut().and_then(crate::spectral::Spectral::site_edit))
                 .chain(self.emit.as_mut().and_then(crate::emit::Emit::site_edit))
                 .collect::<Vec<_>>();
@@ -9282,7 +9306,7 @@ impl eframe::App for LiteApp {
         if let Some(calc) = self.aef_change.as_ref().filter(|c| c.open) {
             calc.site.paint(&painter, rect, ppp, &self.nav);
         }
-        for calc in [&self.aef_class, &self.similar].into_iter().flatten() {
+        for calc in [&self.aef_class, &self.similar, &self.tracing].into_iter().flatten() {
             calc.paint(&painter, rect, ppp, &self.nav);
         }
         if let Some(calc) = &self.spectral {

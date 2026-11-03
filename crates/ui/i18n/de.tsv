@@ -2172,3 +2172,22 @@ There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in dayt
 There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Keine geeigneten EMIT-Szenen: die Szenen über dem Gebiet haben mehr als {cloud} % Bewölkung oder decken weniger als die Hälfte des Gebiets.
 {when} · cloud cover {cloud} % · area {share} %	{when} · Bewölkung {cloud} % · Gebiet {share} %
 {when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · Bewölkung {cloud} % · Gebiet {valid} % · Sonne {sun}°
+Tracing	Nachzeichnen
+Tracing…	Nachzeichnen…
+Tracing {source}	Nachzeichnen {source}
+The image of the area is split into colours, the areas are outlined with smooth polygons.	Das Bild des Gebiets wird in Farben zerlegt, die Bereiche werden mit glatten Polygonen umrissen.
+The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.	Das Bild, das in Farben zerlegt wird. Die Grundkarte des Globus ist das Bild der aktuellen Grundkarte unter dem Gebiet, ein im Programm geöffnetes Raster liefert seine Kanäle, die ersten drei ergeben die Farben.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.	Das Pixel des Gebietsrasters. «Auto» wählt das Pixel des Rasters oder der obersten Ebene der Grundkarte, wenn das Gebiet höchstens 640 Tausend Zellen hat. Das Nachzeichnen nimmt bis zu 4 Millionen Zellen.
+Colours	Farben
+How many colours the image is split into. More colours give more detailed areas and more polygons.	In wie viele Farben das Bild zerlegt wird. Mehr Farben ergeben genauere Bereiche und mehr Polygone.
+Image smoothing	Bildglättung
+Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear.	Durchgänge der 3 × 3-Glättung des Bildes vor der Zerlegung in Farben. Die Glättung entfernt Rauschen, die Grenzen werden glatter, kleine Details verschwinden.
+Smallest area, cells	Kleinster Bereich, Zellen
+An area with fewer cells merges with the neighbour along the longest shared border.	Ein Bereich mit weniger Zellen verschmilzt mit dem Nachbarn entlang der längsten gemeinsamen Grenze.
+Corner rounding	Eckenrundung
+Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs.	Rundung der Umrissecken wie bei Potrace. 0 ergibt nur Ecken, eine gebrochene Linie. Je größer der Wert, desto mehr Ecken werden zu weichen Bögen.
+The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.	Der Globus zeigt die Farben der Zellen des Gebiets. «OK» legt glatte Polygone der Bereiche in «Meine Orte», benachbarte Bereiche teilen ihre Grenze.
+The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.	Das Bild des Gebiets wird in Farben zerlegt, die Bereiche einer Farbe werden mit glatten Umrissen umrissen.
+Splitting the image into colours…	Das Bild wird in Farben zerlegt…
+Colours {colors}, areas {regions}.	Farben {colors}, Bereiche {regions}.
+There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	Es gibt mehr als {n} Bereiche, «OK» speichert ein Bild der Farben statt Polygonen.

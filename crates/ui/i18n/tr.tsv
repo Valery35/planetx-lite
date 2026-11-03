@@ -2172,3 +2172,22 @@ There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in dayt
 There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Uygun EMIT sahnesi yok: alan üzerindeki sahnelerin bulutluluğu %{cloud}'dan fazla veya alanın yarısından azını kaplıyor.
 {when} · cloud cover {cloud} % · area {share} %	{when} · bulutluluk %{cloud} · alan %{share}
 {when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · bulutluluk %{cloud} · alan %{valid} · güneş {sun}°
+Tracing	İzleme
+Tracing…	İzleme…
+Tracing {source}	İzleme {source}
+The image of the area is split into colours, the areas are outlined with smooth polygons.	Alanın görüntüsü renklere ayrılır, bölgeler düzgün çokgenlerle çevrelenir.
+The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.	Renklere ayrılan görüntü. Kürenin altlık haritası, alanın altındaki geçerli altlık haritanın resmidir, programda açılan raster kendi bantlarını verir, ilk üçü renkleri verir.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.	Alan ızgarasının pikseli. «Otomatik» alan en çok 640 bin hücre içeriyorsa rasterin veya altlık haritanın üst düzeyinin pikselini seçer. İzleme 4 milyon hücreye kadar alır.
+Colours	Renkler
+How many colours the image is split into. More colours give more detailed areas and more polygons.	Görüntünün kaç renge ayrılacağı. Daha çok renk daha ayrıntılı bölgeler ve daha çok çokgen verir.
+Image smoothing	Görüntü yumuşatma
+Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear.	Renklere ayırmadan önce görüntünün 3 × 3 yumuşatma geçişleri. Yumuşatma gürültüyü giderir, sınırlar daha düzgün çıkar, küçük ayrıntılar kaybolur.
+Smallest area, cells	En küçük bölge, hücre
+An area with fewer cells merges with the neighbour along the longest shared border.	Daha az hücreli bölge, en uzun ortak sınır boyunca komşusuyla birleşir.
+Corner rounding	Köşe yuvarlama
+Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs.	Potrace'teki gibi kontur köşelerinin yuvarlanması. 0 yalnızca köşe, kırık çizgi verir. Değer büyüdükçe daha çok köşe yumuşak yaya dönüşür.
+The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.	Kürede alan hücrelerinin renkleri görünür. «Tamam» bölgelerin düzgün çokgenlerini «Yerlerim»e koyar, komşu bölgelerin sınırı ortaktır.
+The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.	Alanın görüntüsü renklere ayrılır, tek renkli bölgeler düzgün konturlarla çevrelenir.
+Splitting the image into colours…	Görüntü renklere ayrılıyor…
+Colours {colors}, areas {regions}.	Renk {colors}, bölge {regions}.
+There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	{n} bölgeden fazla var, «Tamam» çokgenler yerine renklerin resmini kaydeder.

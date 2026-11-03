@@ -2172,3 +2172,22 @@ There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in dayt
 There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Tidak ada adegan EMIT yang cocok: adegan di atas area memiliki tutupan awan lebih dari {cloud} % atau menutup kurang dari separuh area.
 {when} · cloud cover {cloud} % · area {share} %	{when} · awan {cloud} % · area {share} %
 {when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · awan {cloud} % · area {valid} % · matahari {sun}°
+Tracing	Penelusuran
+Tracing…	Penelusuran…
+Tracing {source}	Penelusuran {source}
+The image of the area is split into colours, the areas are outlined with smooth polygons.	Citra area dipecah menjadi warna, wilayahnya digaris dengan poligon halus.
+The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.	Citra yang dipecah menjadi warna. Peta dasar globe adalah gambar peta dasar saat ini di bawah area, raster yang dibuka di program memberikan kanalnya, tiga yang pertama memberi warna.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.	Piksel kisi area. «Otomatis» memilih piksel raster atau tingkat teratas peta dasar jika area memiliki paling banyak 640 ribu sel. Penelusuran menerima hingga 4 juta sel.
+Colours	Warna
+How many colours the image is split into. More colours give more detailed areas and more polygons.	Jumlah warna tempat citra dipecah. Lebih banyak warna memberi wilayah lebih rinci dan lebih banyak poligon.
+Image smoothing	Penghalusan citra
+Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear.	Jumlah lintasan penghalusan 3 × 3 pada citra sebelum dipecah menjadi warna. Penghalusan menghapus derau, batas menjadi lebih halus, detail kecil hilang.
+Smallest area, cells	Wilayah terkecil, sel
+An area with fewer cells merges with the neighbour along the longest shared border.	Wilayah dengan sel lebih sedikit bergabung dengan tetangga di sepanjang batas bersama terpanjang.
+Corner rounding	Pembulatan sudut
+Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs.	Pembulatan sudut garis tepi, seperti pada Potrace. 0 hanya memberi sudut, garis patah. Makin besar nilainya, makin banyak sudut menjadi busur halus.
+The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.	Globe menampilkan warna sel area. «OK» menaruh poligon halus wilayah ke «Tempat Saya», wilayah yang bertetangga berbagi batas.
+The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.	Citra area dipecah menjadi warna, wilayah satu warna digaris dengan garis tepi halus.
+Splitting the image into colours…	Citra dipecah menjadi warna…
+Colours {colors}, areas {regions}.	Warna {colors}, wilayah {regions}.
+There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	Ada lebih dari {n} wilayah, «OK» menyimpan gambar warna sebagai ganti poligon.

@@ -32,6 +32,14 @@
 //! ([`ClassCalc::similar`]), перенос `ui/similar.py` модуля. Источник,
 //! участок и объекты общие с классификацией, вместо классов - контуры
 //! образцов щелчками и ползунок похожести, ядро - `data::similar`.
+//!
+//! Окно «Трассировка» - третий режим ([`ClassCalc::tracing`]), перенос
+//! `ui/tracing.py` модуля 1.32. Источник - подложка глобуса или растр,
+//! у AlphaEarth цвета нет. Снимок участка раскладывается на цвета, на
+//! глобусе - цвета клеток, «OK» кладёт гладкие многоугольники областей
+//! в «Мои метки» вместо слоя GeoPackage модуля. Ядро - `data::tracing`.
+//! Неверный многоугольник модуль чинит MakeValid GDAL, у Lite починки
+//! нет: кольцо с самопересечением остаётся как есть.
 
 use std::sync::Arc;
 
@@ -40,6 +48,7 @@ use data::rasterclass::{self, Problem, Run, Source, Warp};
 use data::segments::{self, Cut};
 use data::similar;
 use data::tilemosaic::{self, TileWarp};
+use data::tracing::{self, Traced, Tracer};
 use eframe::egui;
 use globe_core::DVec3;
 use globe_core::lod::TileKey;
@@ -88,6 +97,16 @@ pub const PIXELS: [f64; 7] = [1.0, 2.0, 5.0, 10.0, 20.0, 40.0, 80.0];
 pub const FINE: usize = 3;
 /// Источник «Подложка глобуса» в списке, `BASEMAP` модуля.
 pub const BASEMAP: &str = "@basemap";
+/// Участок трассировки по умолчанию, километры, и непрозрачность её
+/// цветов на глобусе - `Area(..., 1.0, ...)` и `OPACITY` окна модуля.
+const TRACE_SIDE: f64 = 1.0;
+const TRACE_OPACITY: f64 = 0.8;
+
+/// Трассировка: настройки и готовый итог для «OK».
+struct Trace {
+    params: tracing::Params,
+    result: Option<Traced>,
+}
 
 /// Подложка на глобусе для источника «Подложка глобуса»: название,
 /// источник тайлов, подпись прав.
@@ -126,6 +145,8 @@ enum OwnStage {
     /// Классы объектов: table - признаки расчёта, plain - средние
     /// и разбросы каналов для полей объектов.
     Kinds { grid: Arc<Mosaic<f32>>, parts: Arc<Vec<i32>>, table: Vec<f32>, plain: Vec<f32>, run: Box<Run>, outside: usize, share: f64 },
+    /// Трассировка шагами.
+    Trace { grid: Arc<Mosaic<f32>>, tracer: Box<Tracer>, share: f64 },
 }
 
 /// Сетка участка готова к делению на объекты.
@@ -388,9 +409,22 @@ pub struct ClassCalc {
     terms: bool,
     /// Подпись источника расчёта по подложке.
     credit: String,
+    /// Окно «Трассировка», None - другие режимы.
+    trace: Option<Trace>,
 }
 
 impl ClassCalc {
+    /// Окно «Трассировка», `TraceDialog` модуля. Источник по умолчанию -
+    /// подложка глобуса.
+    pub fn tracing(lat: f64, lon: f64, place: String, rasters: Vec<Raster>, lang: Lang) -> Self {
+        let mut calc = Self::new(lat, lon, place, rasters, lang);
+        calc.site = SiteEdit::new(lat, lon, TRACE_SIDE, RASTER_MOST);
+        calc.source = Some(BASEMAP.to_string());
+        calc.opacity = TRACE_OPACITY;
+        calc.trace = Some(Trace { params: tracing::Params::default(), result: None });
+        calc
+    }
+
     /// Окно «Похожие области», `SimilarDialog` модуля.
     pub fn similar(lat: f64, lon: f64, place: String, rasters: Vec<Raster>, lang: Lang) -> Self {
         let mut calc = Self::new(lat, lon, place, rasters, lang);
@@ -432,6 +466,7 @@ impl ClassCalc {
             accept_new: None,
             terms: false,
             credit: String::new(),
+            trace: None,
         };
         calc.add_class(lang);
         calc.add_class(lang);
@@ -471,6 +506,9 @@ impl ClassCalc {
             find.ring.clear();
             find.moved = None;
         }
+        if let Some(trace) = &mut self.trace {
+            trace.result = None;
+        }
         self.status.clear();
     }
 
@@ -481,7 +519,9 @@ impl ClassCalc {
     }
 
     fn build(&mut self, lang: Lang) {
-        if let Some(find) = &self.find {
+        if self.trace.is_some() {
+            // У трассировки нет ни точек, ни образцов.
+        } else if let Some(find) = &self.find {
             if find.rings.is_empty() {
                 self.status = tr(lang, "Outline a sample on the globe.").to_string();
                 return;
@@ -642,6 +682,20 @@ impl ClassCalc {
         let share = rasterclass::covered(&grid.values, grid.depth, &keep);
         if share <= 0.0 {
             self.own_problem(lang, Problem::Outside);
+            return;
+        }
+        if let Some(trace) = &self.trace {
+            // Трассировка - по клеткам участка со всеми каналами, сетка не
+            // больше, чем у деления на объекты, как у модуля.
+            if segments::too_big(grid.rows, grid.cols) {
+                self.own_problem(lang, Problem::Pieces);
+                return;
+            }
+            let good: Vec<bool> = grid.values.chunks(grid.depth.max(1)).zip(&keep).map(|(cell, k)| *k && rasterclass::usable(cell)).collect();
+            let tracer = Box::new(Tracer::new(&grid.values, grid.depth, grid.rows, grid.cols, &good, trace.params));
+            let (bbox, side) = (self.site.site.bbox(), self.site.site.size());
+            self.status = tr(lang, "Splitting the image into colours…").to_string();
+            self.own_job = Some(OwnJob { key, index, bbox, side, stage: OwnStage::Trace { grid, tracer, share } });
             return;
         }
         let rows: Vec<&Class> = self.classes.iter().filter(|c| !c.points.is_empty()).collect();
@@ -965,7 +1019,45 @@ impl ClassCalc {
                     self.objects_built(lang);
                 }
             }
+            OwnStage::Trace { tracer, .. } => {
+                let mut done = false;
+                while !done && started.elapsed().as_secs_f64() < BUDGET {
+                    done = tracer.step();
+                }
+                if done {
+                    self.traced_built(lang);
+                }
+            }
         }
+    }
+
+    /// Трассировка готова, `_built` окна модуля: на глобусе - цвета клеток
+    /// после слияния мелких областей.
+    fn traced_built(&mut self, lang: Lang) {
+        let Some(OwnJob { key, index, stage: OwnStage::Trace { grid, tracer, share }, .. }) = self.own_job.take() else {
+            return;
+        };
+        let Some(done) = tracer.finish() else {
+            return;
+        };
+        let colors = tracing::display_colors(&done.centers);
+        let names: Vec<String> = colors.iter().map(|[r, g, b]| format!("#{r:02x}{g:02x}{b:02x}")).collect();
+        let regions = done.shapes.len();
+        let mut text = trf(lang, "Colours {colors}, areas {regions}.", &[("colors", &colors.len().to_string()), ("regions", &regions.to_string())]);
+        if share < rasterclass::COVERED {
+            text = format!("{text} {}", trf(lang, "The raster covers {share} % of the area.", &[("share", &format!("{:.0}", 100.0 * share))]));
+        }
+        if regions > MOST_OBJECTS {
+            text = format!("{text} {}", trf(lang, "There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.", &[("n", &MOST_OBJECTS.to_string())]));
+        }
+        self.status = format!("{text} {}", analysis::built_text(lang, crate::pointcalc::clock_now()));
+        let classes = done.classes.iter().map(|c| i16::try_from(*c).unwrap_or(-1)).collect();
+        self.layer = Some(Arc::new(Layer { index, step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors, names, opacity: self.opacity, objects: None }));
+        self.label = self.source_title(&key.0).to_string();
+        if let Some(trace) = &mut self.trace {
+            trace.result = Some(done);
+        }
+        self.changed = true;
     }
 
     /// Классы по растру готовы, `_built` модуля.
@@ -1187,12 +1279,14 @@ impl ClassCalc {
     /// Классы - расчётом для «Моих меток»: GeoTIFF номеров классов в зоне
     /// UTM, картинка, контрольные точки папками классов.
     fn save(&mut self, lang: Lang) {
+        if self.trace.is_some() {
+            self.save_trace(lang);
+            return;
+        }
         let Some(layer) = &self.layer else {
             return;
         };
-        let grid = data::geotiff::MercatorGrid { x0: layer.x0 + layer.step / 2.0, y0: layer.y0 - layer.step / 2.0, step: layer.step, cols: layer.cols, rows: layer.rows };
-        let bytes: Vec<u8> = layer.classes.iter().map(|c| u8::try_from(*c).unwrap_or(data::geotiff::BYTE_NODATA)).collect();
-        let tiff = data::geotiff::write_byte_projected(&grid, utm_epsg(&layer.index), &bytes).unwrap_or_default();
+        let tiff = class_tiff(layer);
         let shown = layer.clone();
         let sample = move |points: &[(f64, f64)]| shown.sample(points);
         let name = trf(lang, if self.find.is_some() { "Similar areas {year}" } else { "Classification {year}" }, &[("year", &self.label)]);
@@ -1244,6 +1338,31 @@ impl ClassCalc {
         }
         let title = tr(lang, if self.find.is_some() { "Similar areas" } else { "Classification" }).to_string();
         self.saved = Some(Saved { title, ring: self.site.site.ring.clone(), layers, extra, session: None });
+    }
+
+    /// Трассировка - расчётом для «Моих меток», `export` окна модуля:
+    /// многоугольники областей с полями cls, color и area_ha. Областей
+    /// больше [`MOST_OBJECTS`] - картинка цветов и GeoTIFF их номеров.
+    fn save_trace(&mut self, lang: Lang) {
+        let (Some(layer), Some(done)) = (&self.layer, self.trace.as_ref().and_then(|t| t.result.as_ref())) else {
+            return;
+        };
+        let name = trf(lang, "Tracing {source}", &[("source", &self.label)]);
+        let credit = if self.source.as_deref() == Some(BASEMAP) { self.credit.clone() } else { String::new() };
+        let (layers, extra) = match trace_places(layer, done, &name, self.opacity) {
+            Some(mut folder) => {
+                folder.description = credit;
+                (Vec::new(), vec![Item::Folder(folder)])
+            }
+            None => {
+                let shown = layer.clone();
+                let sample = move |points: &[(f64, f64)]| shown.sample(points);
+                let mut picture = analysis::picture(name, "tracing", layer.bbox(), layer.step, &sample, class_tiff(layer));
+                picture.summary = credit;
+                (vec![picture], Vec::new())
+            }
+        };
+        self.saved = Some(Saved { title: tr(lang, "Tracing").to_string(), ring: self.site.site.ring.clone(), layers, extra, session: None });
     }
 
     /// Мышь над глобусом: точки выбранного класса щелчком, щелчок по
@@ -1418,9 +1537,10 @@ impl ClassCalc {
         let mut remove = None;
         let mut add = false;
         let searching = self.find.is_some();
+        let tracing_mode = self.trace.is_some();
         let mut pick_now = false;
-        let title = tr(lang, if searching { "Similar areas" } else { "Classification" });
-        let id = if searching { "planetx-similar" } else { "planetx-aef-class" };
+        let title = tr(lang, if tracing_mode { "Tracing" } else if searching { "Similar areas" } else { "Classification" });
+        let id = if tracing_mode { "planetx-tracing" } else if searching { "planetx-similar" } else { "planetx-aef-class" };
         egui::Window::new(title).id(egui::Id::unique(id)).open(&mut open).collapsible(false).resizable(false).min_width(400.0).show(ctx, |ui| {
             egui::Grid::new("planetx-aef-class-form").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
                 ui.label(tr(lang, "Point"));
@@ -1435,7 +1555,9 @@ impl ClassCalc {
                 egui::ComboBox::from_id_salt("planetx-aef-class-source")
                     .selected_text(shown)
                     .show_ui(ui, |ui| {
-                        if !cfg!(target_arch = "wasm32") {
+                        // У эмбеддингов AlphaEarth цвета нет, трассировке
+                        // они не годятся, `TraceSource` модуля.
+                        if !cfg!(target_arch = "wasm32") && !tracing_mode {
                             ui.selectable_value(&mut self.source, None, "AlphaEarth");
                         }
                         // Подложка глобуса - то, что на виде, `_earth_source`
@@ -1446,7 +1568,9 @@ impl ClassCalc {
                         }
                     })
                     .response
-                    .on_hover_text(if searching {
+                    .on_hover_text(if tracing_mode {
+                        tr(lang, "The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.")
+                    } else if searching {
                         tr(lang, "What colour and texture are taken from. AlphaEarth vectors are loaded from the network, each band of a raster opened in the program is a feature. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory.")
                     } else {
                         tr(lang, "What the cells are divided by. AlphaEarth vectors are loaded from the network. Each band of a raster opened in the program is a feature, the network is not needed. «Globe basemap» collects the tiles of the basemap under the area into a picture in memory. Borders of surveys in the image may be repeated by the classes.")
@@ -1483,17 +1607,36 @@ impl ClassCalc {
                         }
                     })
                     .response
-                    .on_hover_text(tr(
+                    .on_hover_text(if tracing_mode {
+                        tr(lang, "The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.")
+                    } else {
+                        tr(
                         lang,
                         "The pixel of the grid of the area. With AlphaEarth a block of the file for a year is 40-50 MB at any pixel, «Auto» takes the pixel with the least download at which the area has from 14 to 640 thousand cells. A raster and the globe basemap have pixels of 1, 2 and 5 m, «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Division into objects takes up to 4 million cells.",
-                    ));
+                        )
+                    });
                 ui.end_row();
                 if let Some(text) = self.pixel_text(lang) {
                     ui.label("");
                     ui.add(egui::Label::new(text).wrap());
                     ui.end_row();
                 }
-                if !searching {
+                if let Some(trace) = &mut self.trace {
+                    let p = &mut trace.params;
+                    ui.label(tr(lang, "Colours"));
+                    ui.add(egui::DragValue::new(&mut p.colors).range(2..=32)).on_hover_text(tr(lang, "How many colours the image is split into. More colours give more detailed areas and more polygons."));
+                    ui.end_row();
+                    ui.label(tr(lang, "Image smoothing"));
+                    ui.add(egui::DragValue::new(&mut p.smooth).range(0..=5)).on_hover_text(tr(lang, "Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear."));
+                    ui.end_row();
+                    ui.label(tr(lang, "Smallest area, cells"));
+                    ui.add(egui::DragValue::new(&mut p.least).range(1..=100_000)).on_hover_text(tr(lang, "An area with fewer cells merges with the neighbour along the longest shared border."));
+                    ui.end_row();
+                    ui.label(tr(lang, "Corner rounding"));
+                    ui.add(egui::DragValue::new(&mut p.corner).range(0.0..=1.33).speed(0.05).fixed_decimals(2)).on_hover_text(tr(lang, "Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs."));
+                    ui.end_row();
+                }
+                if !searching && !tracing_mode {
                     ui.label("");
                     ui.checkbox(&mut self.split.on, tr(lang, "Divide into objects")).on_hover_text(tr(lang, "The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons."));
                     ui.end_row();
@@ -1544,7 +1687,9 @@ impl ClassCalc {
                 }
             });
             ui.add_space(4.0);
-            if searching {
+            if tracing_mode {
+                ui.add(egui::Label::new(tr(lang, "The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.")).wrap());
+            } else if searching {
                 ui.add(egui::Label::new(tr(lang, "Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.")).wrap());
             } else {
                 ui.label(tr(lang, "Classes"));
@@ -1570,7 +1715,9 @@ impl ClassCalc {
                 ui.add(egui::Label::new(egui::RichText::new(format!("{} {}", tr(lang, "Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0."), aef::CREDIT)).small()).wrap());
             }
             ui.add_space(4.0);
-            let tip = if searching {
+            let tip = if tracing_mode {
+                tr(lang, "The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.")
+            } else if searching {
                 tr(lang, "The area is divided into objects, each object is compared with the samples in colour and texture.")
             } else if self.source.is_some() {
                 tr(lang, "Each cell of the area goes to the class of the nearest control points by the raster bands.")
@@ -1637,7 +1784,13 @@ impl ClassCalc {
 
 impl analysis::SiteTool for ClassCalc {
     fn id(&self) -> &'static str {
-        if self.find.is_some() { "similar" } else { "aef_class" }
+        if self.trace.is_some() {
+            "tracing"
+        } else if self.find.is_some() {
+            "similar"
+        } else {
+            "aef_class"
+        }
     }
     fn shown(&self) -> bool {
         self.layer.is_some()
@@ -1646,6 +1799,9 @@ impl analysis::SiteTool for ClassCalc {
         self.layer.clone()
     }
     fn legend_title(&self, lang: Lang) -> Option<&'static str> {
+        if self.trace.is_some() {
+            return Some(tr(lang, "Tracing"));
+        }
         self.find.is_none().then(|| tr(lang, "Classification"))
     }
     fn painter(&self) -> Option<crate::vector::Painter> {
@@ -1657,6 +1813,9 @@ impl analysis::SiteTool for ClassCalc {
         }
         if let Some(find) = &mut self.find {
             find.base = None;
+        }
+        if let Some(trace) = &mut self.trace {
+            trace.result = None;
         }
     }
 }
@@ -1670,6 +1829,42 @@ pub fn ring_mask<T: Copy>(index: &ZoneIndex, grid: &Mosaic<T>, ring: &[(f64, f64
         out.extend(data::site::inside(&points, ring));
     }
     out
+}
+
+/// Номера классов слоя файлом GeoTIFF в зоне UTM.
+fn class_tiff(layer: &Layer) -> Vec<u8> {
+    let grid = data::geotiff::MercatorGrid { x0: layer.x0 + layer.step / 2.0, y0: layer.y0 - layer.step / 2.0, step: layer.step, cols: layer.cols, rows: layer.rows };
+    let bytes: Vec<u8> = layer.classes.iter().map(|c| u8::try_from(*c).unwrap_or(data::geotiff::BYTE_NODATA)).collect();
+    data::geotiff::write_byte_projected(&grid, utm_epsg(&layer.index), &bytes).unwrap_or_default()
+}
+
+/// Многоугольники трассировки папкой «Моих меток», `write_traced` модуля.
+/// Кольца - углы клеток сетки слоя, контур - цветом заливки, как
+/// `_stroke_as_fill` модуля. None - областей больше [`MOST_OBJECTS`].
+fn trace_places(layer: &Layer, done: &Traced, name: &str, opacity: f64) -> Option<scene::kml::Folder> {
+    if done.shapes.len() > MOST_OBJECTS {
+        return None;
+    }
+    let to_degrees = |ring: &Vec<(f64, f64)>| -> Vec<(f64, f64)> { ring.iter().map(|p| aef::from_utm(layer.index.number, layer.index.south, layer.x0 + p.0 * layer.step, layer.y0 - p.1 * layer.step)).collect() };
+    let alpha = (opacity * 255.0).round() as u8;
+    let mut folder = scene::kml::Folder::new(name);
+    for (region, (outer, holes)) in &done.shapes {
+        let Some(kind) = done.kinds.get(*region).and_then(|k| usize::try_from(*k).ok()) else {
+            continue;
+        };
+        let ([r, g, b], color) = (layer.colors.get(kind).copied().unwrap_or([128; 3]), layer.names.get(kind).cloned().unwrap_or_default());
+        let mut place = Place::new(&format!("{color} {}", region + 1), Kind::Polygon, to_degrees(outer));
+        place.color = [r, g, b, 255];
+        place.fill = Some([r, g, b, alpha]);
+        if !holes.is_empty() {
+            place.holes = Some(holes.iter().map(to_degrees).collect());
+        }
+        let cells = tracing::ring_area(outer).abs() - holes.iter().map(|h| tracing::ring_area(h).abs()).sum::<f64>();
+        let area = cells * layer.step * layer.step / 1e4;
+        place.data = Some(vec![("cls".to_string(), (kind + 1).to_string()), ("color".to_string(), color), ("area_ha".to_string(), format!("{area:.4}"))]);
+        folder.children.push(Item::Place(place));
+    }
+    Some(folder)
 }
 
 /// Доли классов строкой итога: «Лес 60%, Вода 40%».

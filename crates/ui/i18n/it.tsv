@@ -2172,3 +2172,22 @@ There are no suitable ASTER images: scenes of 2000-2006 with SWIR bands, in dayt
 There are no suitable EMIT scenes: the scenes over the area have cloud cover above {cloud} % or cover less than half of the area.	Nessuna scena EMIT adatta: le scene sull'area hanno nuvolosità oltre il {cloud} % o coprono meno di metà dell'area.
 {when} · cloud cover {cloud} % · area {share} %	{when} · nuvolosità {cloud} % · area {share} %
 {when} · cloud cover {cloud} % · area {valid} % · sun {sun}°	{when} · nuvolosità {cloud} % · area {valid} % · sole {sun}°
+Tracing	Tracciamento
+Tracing…	Tracciamento…
+Tracing {source}	Tracciamento {source}
+The image of the area is split into colours, the areas are outlined with smooth polygons.	L’immagine dell’area viene scomposta in colori, le zone sono contornate da poligoni lisci.
+The image that is split into colours. The globe basemap is the picture of the current basemap under the area, a raster opened in the program gives its bands, the first three give the colours.	L’immagine che viene scomposta in colori. La mappa di base del globo è l’immagine della mappa di base attuale sotto l’area, un raster aperto nel programma fornisce le sue bande, le prime tre danno i colori.
+The pixel of the grid of the area. «Auto» takes the pixel of the raster or of the top level of the basemap if the area has no more than 640 thousand cells. Tracing takes up to 4 million cells.	Il pixel della griglia dell’area. «Auto» sceglie il pixel del raster o del livello superiore della mappa di base se l’area ha al massimo 640 mila celle. Il tracciamento accetta fino a 4 milioni di celle.
+Colours	Colori
+How many colours the image is split into. More colours give more detailed areas and more polygons.	In quanti colori viene scomposta l’immagine. Più colori danno zone più dettagliate e più poligoni.
+Image smoothing	Smussatura dell’immagine
+Passes of 3 × 3 smoothing of the image before it is split into colours. Smoothing removes noise, the borders come out smoother, small details disappear.	Passaggi di smussatura 3 × 3 dell’immagine prima della scomposizione in colori. La smussatura toglie il rumore, i confini escono più regolari, i piccoli dettagli spariscono.
+Smallest area, cells	Zona minima, celle
+An area with fewer cells merges with the neighbour along the longest shared border.	Una zona con meno celle si fonde con il vicino lungo il confine comune più lungo.
+Corner rounding	Arrotondamento degli angoli
+Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs.	Arrotondamento degli angoli dei contorni, come in Potrace. 0 dà solo angoli, una spezzata. Più grande è il valore, più angoli diventano archi morbidi.
+The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.	Il globo mostra i colori delle celle dell’area. «OK» mette i poligoni lisci delle zone in «I miei luoghi», le zone vicine condividono il confine.
+The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.	L’immagine dell’area viene scomposta in colori, le zone di un colore sono contornate da contorni lisci.
+Splitting the image into colours…	L’immagine viene scomposta in colori…
+Colours {colors}, areas {regions}.	Colori {colors}, zone {regions}.
+There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	Ci sono più di {n} zone, «OK» salva un’immagine dei colori invece dei poligoni.
