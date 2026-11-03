@@ -2315,3 +2315,36 @@ Refine with points	Tinh chỉnh bằng điểm
 Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	Mở cửa sổ «Phân loại» với cùng ảnh, khu vực và các lớp của cửa sổ này. Tại đó các lớp được tinh chỉnh bằng điểm kiểm soát riêng khi nhấp lên quả địa cầu.
 Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	Các lớp từ cửa sổ «Trích xuất đối tượng». Chọn lớp bằng nút tròn và nhấp các mẫu của nó lên quả địa cầu, ít nhất ba điểm mỗi lớp, rồi «Tính».
 Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	Các lớp của khu vực theo điểm kiểm soát riêng trên quả địa cầu - theo raster đang mở, bản đồ nền hoặc embedding AlphaEarth.
+Recognition…	Nhận dạng…
+Recognition	Nhận dạng
+Recognition {year}	Nhận dạng {year}
+Classes of the area by own points on the globe. The window picks and loads Sentinel-2 images of the area itself on «Build».	Các lớp của khu vực theo điểm riêng trên quả địa cầu. Cửa sổ tự chọn và tải ảnh Sentinel-2 của khu vực khi nhấn «Tính».
+Images	Ảnh
+Summer	Mùa hè
+March - April, snow	Tháng 3 - 4, tuyết
+, clouds {cloud} %	, mây {cloud} %
+ready	sẵn sàng
+picked on «Build»	chọn khi «Tính»
+search…	đang tìm…
+no clear image	không có ảnh sạch
+none, classes by summer	không có, lớp theo ảnh hè
+not loaded	không tải được
+Loading the image «{row}» {day}…	Đang tải ảnh «{row}» {day}…
+{day} - clouds over the area {cloud} %	{day} - mây trên khu vực {cloud} %
+Opened raster	Raster đang mở
+Sentinel-2 images of the area are picked and loaded by themselves on «Build»: the clearest over the area in three years. An opened raster of the right month is taken without loading. A click on a row - other dates, an opened raster or «No image».	Ảnh Sentinel-2 của khu vực tự được chọn và tải khi «Tính» - ảnh sạch nhất trên khu vực trong ba năm. Raster đang mở đúng tháng được dùng mà không tải. Nhấp vào một hàng - ngày khác, raster đang mở hoặc «Không có ảnh».
+Points	Điểm
+Areas	Vùng
+A click on the globe puts a point of the chosen class. Three points per class are needed.	Nhấp lên quả địa cầu đặt một điểm của lớp đã chọn. Cần ba điểm mỗi lớp.
+A click on the globe starts an outline of the chosen class, a click on the first vertex closes it. The samples of the class are the cells inside the outline, one outline per class is enough. A click inside an outline removes it.	Nhấp lên quả địa cầu bắt đầu đường viền của lớp đã chọn, nhấp vào đỉnh đầu tiên để khép lại. Mẫu của lớp là các ô bên trong đường viền, mỗi lớp một đường viền là đủ. Nhấp vào trong đường viền để xóa nó.
+At least two classes are needed, each with an outline or three points.	Cần ít nhất hai lớp, mỗi lớp có một đường viền hoặc ba điểm.
+Outline a sample of the chosen class on the globe - by clicks on the vertices, a click on the first one closes the outline. At least two classes are needed, each with an outline or three points.	Khoanh mẫu của lớp đã chọn trên quả địa cầu - bằng cách nhấp các đỉnh, nhấp vào đỉnh đầu tiên để khép đường viền. Cần ít nhất hai lớp, mỗi lớp có một đường viền hoặc ba điểm.
+Control points of the class.	Điểm kiểm soát của lớp.
+Points and areas of the class samples.	Điểm và vùng mẫu của lớp.
+points {points}, areas {rings}	điểm {points}, vùng {rings}
+areas {n}	vùng {n}
+Class samples	Mẫu các lớp
+The images are still loading.	Ảnh vẫn đang tải.
+No summer image. A click on the row «Summer» - another date or an opened raster.	Không có ảnh mùa hè. Nhấp hàng «Mùa hè» - ngày khác hoặc raster đang mở.
+There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	Không có ảnh mùa hè của khu vực - các cảnh Sentinel-2 trong ba năm có mây trên khu vực hơn 5 %. Nhấp hàng «Mùa hè» - raster đang mở.
+First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	Trước tiên kiểm tra khu vực và mẫu, sau đó chọn và tải ảnh mùa hè và ảnh có tuyết, rồi mỗi ô nhận lớp của các mẫu gần nhất theo các kênh của cả hai ảnh.

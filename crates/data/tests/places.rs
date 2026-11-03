@@ -167,10 +167,11 @@ fn broken_tile() {
 fn places() {
     let key = (8, 170, 76);
     let out = pl::decode_places(key, &tile(), &langs(&["ru"])).unwrap();
-    // Пригород не показывается, точка за краем тайла - дубль соседа.
-    assert_eq!(out.iter().map(|p| p.name.as_str()).collect::<Vec<_>>(), ["Пермь", "Kultayevo", "Moscow"]);
-    assert_eq!(out.iter().map(|p| p.kind).collect::<Vec<_>>(), [Kind::City, Kind::Village, Kind::Capital]);
-    assert_eq!(out.iter().map(|p| p.rank).collect::<Vec<_>>(), [4, 12, 99]);
+    // Район города подписывается (как у Google Earth, модуль 1.38), точка
+    // за краем тайла - дубль соседа.
+    assert_eq!(out.iter().map(|p| p.name.as_str()).collect::<Vec<_>>(), ["Пермь", "Kultayevo", "Motovilikha", "Moscow"]);
+    assert_eq!(out.iter().map(|p| p.kind).collect::<Vec<_>>(), [Kind::City, Kind::Village, Kind::Suburb, Kind::Capital]);
+    assert_eq!(out.iter().map(|p| p.rank).collect::<Vec<_>>(), [4, 12, 99, 99]);
     let (lat, _) = pl::tile_point(8, 170, 76, 1000.0, 2000.0, 4096);
     assert!(close(out[0].lat, lat));
     let english = pl::decode_places(key, &tile(), &langs(&["en"])).unwrap();
@@ -282,6 +283,67 @@ fn line_anchor_is_middle_vertex() {
     assert!(close(found["Kama Reservoir"].lat, lat) && close(found["Kama Reservoir"].lon, lon));
     let (lat, _) = pl::tile_point(8, 170, 76, 80.0, 80.0, 4096);
     assert!(close(found["Р-243"].lat, lat));
+}
+
+#[test]
+fn river_along_course() {
+    // Перенос `test_river_along_course`: река слоя waterway - подпись
+    // у средней вершины, направление - хорда между вершинами по обе
+    // стороны. Ручей не подписывается.
+    let line: Vec<(i64, i64)> = (1..=7).map(|i| (i * 100, 100)).collect();
+    let tile = layer(
+        "waterway",
+        &[
+            (31, 2, vec![("class", V::S("river")), ("name", V::S("Kama")), ("name:ru", V::S("Кама"))], line),
+            (32, 2, vec![("class", V::S("stream")), ("name", V::S("Brook"))], vec![(10, 10), (20, 20)]),
+        ],
+    );
+    let out = pl::decode_places((8, 170, 76), &tile, &langs(&["ru"])).unwrap();
+    assert_eq!(out.iter().map(|p| p.name.as_str()).collect::<Vec<_>>(), ["Кама"; 3]);
+    let river = &out[0];
+    assert_eq!(river.kind, Kind::River);
+    let (lat, _) = pl::tile_point(8, 170, 76, 400.0, 100.0, 4096);
+    assert!(close(river.lat, lat));
+    let a = pl::tile_point(8, 170, 76, 100.0, 100.0, 4096);
+    let b = pl::tile_point(8, 170, 76, 700.0, 100.0, 4096);
+    let c = river.course.unwrap();
+    assert!(close(c[0], a.0) && close(c[1], a.1) && close(c[2], b.0) && close(c[3], b.1));
+}
+
+#[test]
+fn only_living_suburbs() {
+    // Перенос `test_only_living_suburbs`: район промзоны или кампуса
+    // не подписывается, жилой - да, даже с «завод» в названии.
+    assert!(pl::living(&["Судозавод", "Sudozavod"]));
+    assert!(pl::living(&["Бахаревка"]));
+    assert!(!pl::living(&["Комплекс ПГТУ"]));
+    assert!(!pl::living(&["Промучасток"]));
+    assert!(!pl::living(&["Мотовилиха", "Industrial Park"]));
+    assert!(!pl::living(&["Северная промзона"]));
+}
+
+#[test]
+fn long_river_outranks_tributaries() {
+    // Перенос `test_long_river_outranks_tributaries`: места подписи -
+    // середина и четверти линии. Важнее река, длиннее в кадре вся: Кама
+    // в двух тайлах обходит приток длиннее её в одном тайле.
+    let kama: Vec<(i64, i64)> = (0..10).map(|i| (i * 400, 2000)).collect();
+    let mulyanka: Vec<(i64, i64)> = (0..10).map(|i| (100, i * 450)).collect();
+    let mut store = PlaceStore::default();
+    for x in [170, 171] {
+        let mut lines = vec![(7, 2, vec![("class", V::S("river")), ("name", V::S("Kama"))], kama.clone())];
+        if x == 170 {
+            lines.push((9, 2, vec![("class", V::S("river")), ("name", V::S("Mulyanka"))], mulyanka.clone()));
+        }
+        let got = pl::decode_places((8, x, 76), &layer("waterway", &lines), &[]).unwrap();
+        assert_eq!(got.iter().filter(|p| p.name == "Kama").count(), 3);
+        store.add((8, x, 76), got);
+    }
+    let all = store.collect(&[(10, 680, 304), (10, 684, 304)], None);
+    let out: Vec<&Place> = all.iter().filter(|p| p.kind == Kind::River).collect();
+    assert_eq!(out[0].name, "Kama");
+    let ids: HashSet<u64> = out.iter().map(|p| p.id).collect();
+    assert_eq!(ids.len(), out.len());
 }
 
 #[test]

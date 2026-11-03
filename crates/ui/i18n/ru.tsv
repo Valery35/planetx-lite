@@ -2315,3 +2315,36 @@ Refine with points	Уточнить точками
 Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	Открывает окно «Классификация» с тем же снимком, участком и классами этого окна. Там классы уточняются своими контрольными точками щелчками по глобусу.
 Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	Классы из окна «Выделение объектов». Выберите класс кружком и щёлкайте по глобусу его образцы, не меньше трёх точек на класс, затем «Построить».
 Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	Классы участка по своим контрольным точкам на глобусе - по открытому растру, подложке глобуса или эмбеддингам AlphaEarth.
+Recognition…	Распознавание…
+Recognition	Распознавание
+Recognition {year}	Распознавание {year}
+Classes of the area by own points on the globe. The window picks and loads Sentinel-2 images of the area itself on «Build».	Классы участка по своим точкам на глобусе. Снимки Sentinel-2 участка окно подбирает и загружает само по «Построить».
+Images	Снимки
+Summer	Лето
+March - April, snow	Март - апрель, снег
+, clouds {cloud} %	, облака {cloud} %
+ready	готов
+picked on «Build»	подберётся по «Построить»
+search…	поиск…
+no clear image	чистого снимка нет
+none, classes by summer	нет, классы по летнему
+not loaded	не загрузился
+Loading the image «{row}» {day}…	Загрузка снимка «{row}» {day}…
+{day} - clouds over the area {cloud} %	{day} - облачность над участком {cloud} %
+Opened raster	Открытый растр
+Sentinel-2 images of the area are picked and loaded by themselves on «Build»: the clearest over the area in three years. An opened raster of the right month is taken without loading. A click on a row - other dates, an opened raster or «No image».	Снимки Sentinel-2 участка подбираются и загружаются сами по «Построить» - самый чистый над участком за три года. Открытый растр нужного месяца берётся без загрузки. Щелчок по строке - другие даты, открытый растр или «Без снимка».
+Points	Точки
+Areas	Области
+A click on the globe puts a point of the chosen class. Three points per class are needed.	Щелчок по глобусу ставит точку выбранного класса. Нужно три точки на класс.
+A click on the globe starts an outline of the chosen class, a click on the first vertex closes it. The samples of the class are the cells inside the outline, one outline per class is enough. A click inside an outline removes it.	Щелчок по глобусу начинает контур выбранного класса, щелчок по первой вершине его замыкает. Образцы класса - клетки внутри контура, одного контура на класс хватает. Щелчок внутри контура убирает его.
+At least two classes are needed, each with an outline or three points.	Нужно хотя бы два класса, у каждого контур или три точки.
+Outline a sample of the chosen class on the globe - by clicks on the vertices, a click on the first one closes the outline. At least two classes are needed, each with an outline or three points.	Обведите на глобусе образец выбранного класса - щелчками по вершинам, щелчок по первой замыкает контур. Нужно хотя бы два класса, у каждого контур или три точки.
+Control points of the class.	Контрольных точек класса.
+Points and areas of the class samples.	Точек и областей образцов класса.
+points {points}, areas {rings}	точек {points}, областей {rings}
+areas {n}	областей {n}
+Class samples	Образцы классов
+The images are still loading.	Снимки ещё загружаются.
+No summer image. A click on the row «Summer» - another date or an opened raster.	Нет летнего снимка. Щелчок по строке «Лето» - другая дата или открытый растр.
+There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	Летнего снимка участка нет - у сцен Sentinel-2 за три года облачность над участком больше 5 %. Щелчок по строке «Лето» - открытый растр.
+First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	Сначала проверяются участок и образцы, затем подбираются и загружаются летний снимок участка и снимок со снегом, затем каждая клетка получает класс ближайших образцов по каналам обоих снимков.

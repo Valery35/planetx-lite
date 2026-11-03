@@ -2315,3 +2315,36 @@ Refine with points	点で調整
 Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	同じ画像・区域・このウィンドウのクラスで「分類」ウィンドウを開きます。そこで地球儀をクリックして自分の基準点でクラスを調整します。
 Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	「地物抽出」ウィンドウのクラスです。丸でクラスを選び、地球儀でその見本をクリックします。1クラス3点以上、その後「作成」。
 Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	地球儀上の自分の基準点による区域のクラス - 開いたラスター、地球儀の背景地図または AlphaEarth 埋め込みによる。
+Recognition…	認識…
+Recognition	認識
+Recognition {year}	認識 {year}
+Classes of the area by own points on the globe. The window picks and loads Sentinel-2 images of the area itself on «Build».	地球儀上の自分の点による区域のクラス。「作成」でウィンドウが区域の Sentinel-2 画像を自分で選んで読み込みます。
+Images	画像
+Summer	夏
+March - April, snow	3-4月、雪
+, clouds {cloud} %	、雲 {cloud} %
+ready	準備完了
+picked on «Build»	「作成」で選択
+search…	検索中…
+no clear image	きれいな画像なし
+none, classes by summer	なし、夏の画像でクラス
+not loaded	読み込めず
+Loading the image «{row}» {day}…	画像「{row}」{day} を読み込み中…
+{day} - clouds over the area {cloud} %	{day} - 区域上の雲 {cloud} %
+Opened raster	開いたラスター
+Sentinel-2 images of the area are picked and loaded by themselves on «Build»: the clearest over the area in three years. An opened raster of the right month is taken without loading. A click on a row - other dates, an opened raster or «No image».	区域の Sentinel-2 画像は「作成」で自動的に選ばれ読み込まれます。3年間で区域上が最もきれいなものです。該当月の開いたラスターは読み込まずに使われます。行をクリック - 別の日付、開いたラスターまたは「画像なし」。
+Points	点
+Areas	領域
+A click on the globe puts a point of the chosen class. Three points per class are needed.	地球儀をクリックすると選んだクラスの点を置きます。1クラスに3点必要です。
+A click on the globe starts an outline of the chosen class, a click on the first vertex closes it. The samples of the class are the cells inside the outline, one outline per class is enough. A click inside an outline removes it.	地球儀をクリックすると選んだクラスの輪郭を描き始め、最初の頂点をクリックで閉じます。クラスの見本は輪郭内のセルで、1クラスに輪郭1つで足ります。輪郭の内側をクリックすると消えます。
+At least two classes are needed, each with an outline or three points.	少なくとも2クラス必要で、各クラスに輪郭1つか3点が要ります。
+Outline a sample of the chosen class on the globe - by clicks on the vertices, a click on the first one closes the outline. At least two classes are needed, each with an outline or three points.	地球儀上で選んだクラスの見本を囲みます。頂点をクリックし、最初の頂点のクリックで輪郭を閉じます。少なくとも2クラス必要で、各クラスに輪郭1つか3点が要ります。
+Control points of the class.	クラスの基準点。
+Points and areas of the class samples.	クラス見本の点と領域。
+points {points}, areas {rings}	点 {points}、領域 {rings}
+areas {n}	領域 {n}
+Class samples	クラスの見本
+The images are still loading.	画像はまだ読み込み中です。
+No summer image. A click on the row «Summer» - another date or an opened raster.	夏の画像がありません。「夏」の行をクリック - 別の日付か開いたラスター。
+There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	区域の夏の画像がありません。3年間の Sentinel-2 シーンは区域上の雲が 5 % を超えます。「夏」の行をクリック - 開いたラスター。
+First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	まず区域と見本を確認し、次に夏の画像と雪の画像を選んで読み込み、両画像のバンドで各セルに最も近い見本のクラスを付けます。

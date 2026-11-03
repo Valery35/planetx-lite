@@ -41,6 +41,11 @@ pub enum Kind {
     State,
     Water,
     Town,
+    /// Река или канал слоя waterway, подпись вдоль русла, как у Google
+    /// Earth, решение автора модуля от 4 ноября 2026 года.
+    River,
+    /// Район города, класс «suburb» слоя place.
+    Suburb,
     Park,
     Peak,
     Airport,
@@ -50,7 +55,7 @@ pub enum Kind {
 }
 
 impl Kind {
-    pub const ALL: [Kind; 20] = [
+    pub const ALL: [Kind; 22] = [
         Kind::Search,
         Kind::Mark,
         Kind::Ruler,
@@ -65,6 +70,8 @@ impl Kind {
         Kind::State,
         Kind::Water,
         Kind::Town,
+        Kind::River,
+        Kind::Suburb,
         Kind::Park,
         Kind::Peak,
         Kind::Airport,
@@ -90,10 +97,12 @@ impl Kind {
 
     /// Наибольшая высота глаза над эллипсоидом в метрах, до которой
     /// класс подписывается. Величины назначил автор модуля 27 сентября
-    /// 2026 года.
+    /// 2026 года, районов, рек и посёлков - модуль 1.38.
     pub fn max_height(self) -> Option<f64> {
         match self {
-            Kind::Peak => Some(4.0e5),
+            Kind::Suburb => Some(8.0e4),
+            Kind::Village => Some(3.0e5),
+            Kind::Peak | Kind::River => Some(4.0e5),
             Kind::Airport | Kind::RoadRef => Some(1.0e6),
             Kind::Park => Some(3.0e6),
             _ => None,
@@ -108,7 +117,9 @@ pub fn kinds_at(kinds: &HashSet<Kind>, height: f64) -> HashSet<Kind> {
 
 /// Подписываемый пункт. id - номер объекта в тайле или 0. rank - ранг
 /// OpenMapTiles, меньше - важнее, без ранга 99. lat, lon в градусах.
-/// info - высота вершины в метрах, у остальных None.
+/// info - высота вершины в метрах, у остальных None. course - у реки
+/// направление русла (широта, долгота до, широта, долгота после) и длина
+/// реки этого названия в тайле, км, у остальных None.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Place {
     pub id: u64,
@@ -118,20 +129,73 @@ pub struct Place {
     pub lat: f64,
     pub lon: f64,
     pub info: Option<i64>,
+    pub course: Option<[f64; 5]>,
 }
 
 impl Place {
     pub fn new(id: u64, name: &str, kind: Kind, rank: i64, lat: f64, lon: f64) -> Self {
-        Self { id, name: name.to_string(), kind, rank, lat, lon, info: None }
+        Self { id, name: name.to_string(), kind, rank, lat, lon, info: None, course: None }
     }
 }
 
 /// Слои векторного тайла с пунктами.
-pub const LAYERS: [&str; 6] = ["place", "mountain_peak", "water_name", "park", "aerodrome_label", "transportation_name"];
+pub const LAYERS: [&str; 7] = ["place", "mountain_peak", "water_name", "park", "aerodrome_label", "transportation_name", "waterway"];
 /// Нужные атрибуты, кроме названий на языках.
 const WANTED: [&str; 6] = ["class", "capital", "rank", "name", "ele", "ref"];
 /// Слои, где пункт берётся и с линии. В остальных только точки.
-const LINE_LAYERS: [&str; 2] = ["water_name", "transportation_name"];
+const LINE_LAYERS: [&str; 3] = ["water_name", "transportation_name", "waterway"];
+
+/// Ранг реки и канала слоя waterway по классу. Ручьи не подписываются.
+fn river_rank_of(class: &str) -> Option<i64> {
+    match class {
+        "river" => Some(1),
+        "canal" => Some(2),
+        _ => None,
+    }
+}
+
+/// Направление подписи реки - хорда между вершинами линии на столько
+/// вершин по обе стороны от места подписи, но не дальше края.
+pub const RIVER_SPAN: usize = 3;
+/// Места подписи реки - доли длины каждой линии тайла. Подпись встаёт
+/// на первое свободное, река одного названия подписывается в кадре один
+/// раз. Важнее река, длиннее в кадре вся, по всем тайлам
+/// ([`PlaceStore::collect`]), - так Кама обходит свои притоки.
+pub const RIVER_SHARES: [f64; 3] = [0.5, 0.25, 0.75];
+/// Длина экватора, км.
+const EARTH_KM: f64 = 40075.0;
+
+/// Начала слов в названии нежилого района - промзоны, кампуса,
+/// комплекса. Признака жилья в тайлах подписей нет, слоя landuse на их
+/// уровнях тоже, поэтому район без жилья узнаётся по названию. Решение
+/// автора модуля от 4 ноября 2026 года - в районах только жилые.
+pub const NOT_LIVING: [&str; 14] = [
+    "промзон",
+    "промучаст",
+    "промплощад",
+    "промузел",
+    "промышленная зона",
+    "комплекс",
+    "кампус",
+    "технопарк",
+    "индустриальн",
+    "industrial",
+    "campus",
+    "complex",
+    "business park",
+    "technopark",
+];
+
+/// Жилой ли район с такими названиями - ни одно слово названий
+/// не начинается с [`NOT_LIVING`].
+pub fn living(names: &[&str]) -> bool {
+    names.iter().all(|name| {
+        let lower = name.to_lowercase();
+        let words: Vec<&str> = lower.split(|c: char| !(c.is_alphanumeric() || c == '_')).filter(|w| !w.is_empty()).collect();
+        let text = words.join(" ");
+        !NOT_LIVING.iter().any(|start| if start.contains(' ') { text.contains(start) } else { words.iter().any(|w| w.starts_with(start)) })
+    })
+}
 
 fn water_rank(class: &str) -> Option<i64> {
     match class {
@@ -187,6 +251,7 @@ pub fn place_kind(attrs: &Attrs) -> Option<Kind> {
         "city" => Some(Kind::City),
         "town" => Some(Kind::Town),
         "village" => Some(Kind::Village),
+        "suburb" => Some(Kind::Suburb),
         _ => None,
     }
 }
@@ -249,7 +314,15 @@ fn rank(attrs: &Attrs) -> i64 {
 fn read_place(layer: &str, attrs: &Attrs, languages: &[String]) -> Option<(Kind, Option<String>, i64, Option<i64>)> {
     let class = text(attrs, "class").unwrap_or("");
     match layer {
-        "place" => place_kind(attrs).map(|k| (k, place_name(attrs, languages), rank(attrs), None)),
+        "place" => {
+            let kind = place_kind(attrs)?;
+            let name = place_name(attrs, languages);
+            if kind == Kind::Suburb && !living(&[name.as_deref().unwrap_or(""), text(attrs, "name").unwrap_or("")]) {
+                return None;
+            }
+            Some((kind, name, rank(attrs), None))
+        }
+        "waterway" => river_rank_of(class).map(|r| (Kind::River, place_name(attrs, languages), r, None)),
         "mountain_peak" => {
             let ele = attrs.get("ele").and_then(Value::as_f64).map(|e| e as i64);
             Some((Kind::Peak, place_name(attrs, languages), rank(attrs), ele))
@@ -283,6 +356,7 @@ pub fn decode_places(key: (u32, u32, u32), data: &[u8], languages: &[String]) ->
     let mut ordered: Vec<(&String, &mvt::Layer)> = layers.iter().collect();
     ordered.sort_by_key(|(name, _)| LAYERS.iter().position(|l| l == name));
     let mut out = Vec::new();
+    let mut rivers: Vec<(String, Vec<RiverLine>)> = Vec::new();
     for (layer, content) in ordered {
         for f in &content.features {
             let line = f.geometry == Geometry::Line;
@@ -292,6 +366,17 @@ pub fn decode_places(key: (u32, u32, u32), data: &[u8], languages: &[String]) ->
             let Some((kind, Some(name), rank, info)) = read_place(layer, &f.attrs, languages) else {
                 continue;
             };
+            if f.points.is_empty() {
+                continue;
+            }
+            if kind == Kind::River {
+                let line = (f.id, rank, f.points.clone(), content.extent);
+                match rivers.iter_mut().find(|(n, _)| *n == name) {
+                    Some((_, lines)) => lines.push(line),
+                    None => rivers.push((name, vec![line])),
+                }
+                continue;
+            }
             let point = if line { f.points.get(f.points.len() / 2) } else { f.points.first() };
             let Some(&(px, py)) = point else {
                 continue;
@@ -302,10 +387,105 @@ pub fn decode_places(key: (u32, u32, u32), data: &[u8], languages: &[String]) ->
                 continue;
             }
             let (lat, lon) = tile_point(z, x, y, px as f64, py as f64, content.extent);
-            out.push(Place { id: f.id, name, kind, rank, lat, lon, info });
+            out.push(Place { id: f.id, name, kind, rank, lat, lon, info, course: None });
         }
     }
+    for (name, lines) in &rivers {
+        out.extend(river_places(key, name, lines));
+    }
     Ok(out)
+}
+
+/// Линия реки в тайле: номер, ранг класса, вершины, размер тайла.
+pub type RiverLine = (u64, i64, Vec<(i64, i64)>, u32);
+
+/// Места подписи реки name в тайле key по её линиям lines, `river_places`
+/// модуля.
+pub fn river_places(key: (u32, u32, u32), name: &str, lines: &[RiverLine]) -> Vec<Place> {
+    let (z, x, y) = key;
+    let km = EARTH_KM / f64::from(1u32 << z.min(31));
+    let total: f64 = lines.iter().map(|(_, _, points, extent)| line_length(points) / f64::from(*extent)).sum();
+    let mut out = Vec::new();
+    for (fid, rank, points, extent) in lines {
+        let size = i64::from(*extent);
+        for (k, share) in RIVER_SHARES.iter().enumerate() {
+            let n = vertex_at(points, *share);
+            let Some(&(px, py)) = points.get(n) else {
+                continue;
+            };
+            if !(0..size).contains(&px) || !(0..size).contains(&py) {
+                continue;
+            }
+            let Some([a_lat, a_lon, b_lat, b_lon]) = river_course(key, points, *extent, Some(n)) else {
+                continue;
+            };
+            let (lat, lon) = tile_point(z, x, y, px as f64, py as f64, *extent);
+            // Номер места свой у тайла, линии и доли: одна линия OSM идёт
+            // через соседние тайлы, места каждого нужны.
+            let ident = mix(&[u64::from(z), u64::from(x), u64::from(y), *fid, k as u64]);
+            out.push(Place { id: ident, name: name.to_string(), kind: Kind::River, rank: *rank, lat, lon, info: None, course: Some([a_lat, a_lon, b_lat, b_lon, total * km]) });
+        }
+    }
+    out
+}
+
+/// Номер из чисел values, не 0 и не больше 31 бита, как `hash` модуля.
+fn mix(values: &[u64]) -> u64 {
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+    for v in values {
+        for b in v.to_le_bytes() {
+            h ^= u64::from(b);
+            h = h.wrapping_mul(0x0100_0000_01b3);
+        }
+    }
+    match h & 0x7fff_ffff {
+        0 => 1,
+        v => v,
+    }
+}
+
+fn segment((ax, ay): (i64, i64), (bx, by): (i64, i64)) -> f64 {
+    ((bx - ax) as f64).hypot((by - ay) as f64)
+}
+
+fn line_length(points: &[(i64, i64)]) -> f64 {
+    points.windows(2).map(|w| segment(w[0], w[1])).sum()
+}
+
+/// Номер вершины линии на доле share её длины.
+pub fn vertex_at(points: &[(i64, i64)], share: f64) -> usize {
+    let goal = share * line_length(points);
+    let mut run = 0.0;
+    for (n, w) in points.windows(2).enumerate() {
+        let step = segment(w[0], w[1]);
+        run += step;
+        if run >= goal {
+            return if run - goal < goal - run + step { n + 1 } else { n };
+        }
+    }
+    points.len() / 2
+}
+
+/// Направление русла у вершины middle линии (по умолчанию средней):
+/// (широта, долгота до, широта, долгота после) или None, если линия -
+/// точка.
+pub fn river_course(key: (u32, u32, u32), points: &[(i64, i64)], extent: u32, middle: Option<usize>) -> Option<[f64; 4]> {
+    let (z, x, y) = key;
+    let middle = middle.unwrap_or(points.len() / 2);
+    let a = *points.get(middle.saturating_sub(RIVER_SPAN))?;
+    let b = *points.get((middle + RIVER_SPAN).min(points.len().saturating_sub(1)))?;
+    if a == b {
+        return None;
+    }
+    let (a_lat, a_lon) = tile_point(z, x, y, a.0 as f64, a.1 as f64, extent);
+    let (b_lat, b_lon) = tile_point(z, x, y, b.0 as f64, b.1 as f64, extent);
+    Some([a_lat, a_lon, b_lat, b_lon])
+}
+
+/// Ранг реки по длине total, км, всей реки в кадре: ранг класса впереди,
+/// длиннее - важнее.
+pub fn river_rank(rank: i64, total: f64) -> i64 {
+    rank * 100_000 + 99_999 - (total.max(0.0) as i64).min(99_999)
 }
 
 /// Уровень тайла надписей для тайла подложки уровня z.
@@ -411,15 +591,32 @@ impl PlaceStore {
             return out.clone();
         }
         let mut seen: HashMap<(u64, String), Place> = HashMap::new();
+        let mut totals: HashMap<String, f64> = HashMap::new();
         for key in memo.0.iter().rev() {
+            let mut counted: HashSet<&str> = HashSet::new();
             for place in self.tiles.get(key).into_iter().flatten() {
                 if key.0 < place.kind.min_level() || kinds.is_some_and(|k| !k.contains(&place.kind)) {
                     continue;
                 }
+                // Длина реки в тайле одна у всех её мест, считается раз.
+                if place.kind == Kind::River
+                    && counted.insert(place.name.as_str())
+                    && let Some(c) = place.course
+                {
+                    *totals.entry(place.name.clone()).or_default() += c[4];
+                }
                 seen.entry(identity(place)).or_insert_with(|| place.clone());
             }
         }
-        let mut out: Vec<Place> = seen.into_values().collect();
+        let mut out: Vec<Place> = seen
+            .into_values()
+            .map(|mut p| {
+                if p.kind == Kind::River {
+                    p.rank = river_rank(p.rank, totals.get(&p.name).copied().unwrap_or(0.0));
+                }
+                p
+            })
+            .collect();
         out.sort_by(|a, b| importance(a).cmp(&importance(b)));
         let out = std::sync::Arc::new(out);
         self.collected = Some((memo, out.clone()));

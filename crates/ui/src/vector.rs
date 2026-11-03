@@ -95,8 +95,8 @@ impl Row {
     /// Классы подписей строки, `LABEL_KINDS` модуля.
     pub fn kinds(self) -> &'static [Kind] {
         match self {
-            Row::Places => &[Kind::Country, Kind::Capital, Kind::City, Kind::State, Kind::Town, Kind::Village],
-            Row::WaterNames => &[Kind::Water],
+            Row::Places => &[Kind::Country, Kind::Capital, Kind::City, Kind::State, Kind::Town, Kind::Village, Kind::Suburb],
+            Row::WaterNames => &[Kind::Water, Kind::River],
             Row::Peaks => &[Kind::Peak],
             Row::RoadRefs => &[Kind::RoadRef],
             Row::Parks => &[Kind::Park],

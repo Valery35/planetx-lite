@@ -50,13 +50,42 @@ pub const CELL: f64 = 64.0;
 /// FADE_HIGH она целиком.
 pub const FADE_LOW: f64 = 0.12;
 pub const FADE_HIGH: f64 = 0.35;
-/// Обводка текста: цвет и толщина, как в модуле.
+/// Обводка значков: цвет и толщина, как в модуле.
 pub const HALO: egui::Color32 = egui::Color32::from_rgba_premultiplied(0, 0, 0, 140);
 pub const HALO_WIDTH: f32 = 1.4;
+/// Мягкая тень светлых надписей вместо обводки, как у Google Earth,
+/// модуль 1.38: тёмный след текста толщиной SHADOW_SPREAD размыт
+/// на SHADOW_BLUR логических пикселей, непрозрачность SHADOW_ALPHA.
+/// Размытия на картинке у egui нет, тень - копии текста по кольцам
+/// с убывающей непрозрачностью [`SHADOW_RINGS`].
+pub const SHADOW_SPREAD: f32 = 1.0;
+pub const SHADOW_BLUR: f32 = 2.0;
+pub const SHADOW_ALPHA: f32 = 0.85;
+/// Кольца тени: радиус в логических пикселях и доля SHADOW_ALPHA одной
+/// копии. Восемь копий кольца 1 дают у текста почти полную тень.
+pub const SHADOW_RINGS: [(f32, f32); 3] = [(1.0, 0.26), (2.0, 0.12), (3.0, 0.05)];
+/// Разрядка прописных подписей стран, областей и районов, логических
+/// пикселей.
+pub const SPACING: f32 = 1.0;
+/// Подпись реки поворачивается шагами TURN_STEP градусов.
+pub const TURN_STEP: f64 = 5.0;
+/// Подписей класса в кадре, не больше, на кадр 1920 × 1080 логических
+/// пикселей, у другого кадра - в долю его площади, `KIND_CAPS` модуля.
+/// Река одного названия подписывается в кадре один раз.
+pub fn kind_cap(kind: Kind) -> Option<usize> {
+    match kind {
+        Kind::Suburb => Some(6),
+        Kind::River => Some(3),
+        Kind::Village => Some(8),
+        Kind::Town => Some(12),
+        _ => None,
+    }
+}
+pub const CAP_AREA: f32 = 1920.0 * 1080.0;
 /// Крупный город - город или столица с рангом не больше BIG_RANK, его
-/// надпись крупнее на BIG_STEP.
+/// надпись крупнее на BIG_STEP, модуль 1.38.
 pub const BIG_RANK: i64 = 4;
-pub const BIG_STEP: f32 = 2.0;
+pub const BIG_STEP: f32 = 7.0;
 /// Табличка номера дороги: европейский маршрут зелёный, остальные тёмные.
 pub const SHIELD_E: egui::Color32 = egui::Color32::from_rgba_premultiplied(28, 115, 64, 235);
 pub const SHIELD: egui::Color32 = egui::Color32::from_rgba_premultiplied(51, 53, 61, 235);
@@ -100,8 +129,14 @@ fn rgba(r: u8, g: u8, b: u8, a: u8) -> egui::Color32 {
     egui::Color32::from_rgba_unmultiplied(r, g, b, a)
 }
 
+/// Подпись класса прописными с разрядкой, `CAPS` модуля.
+pub fn caps(kind: Kind) -> bool {
+    matches!(kind, Kind::Country | Kind::State | Kind::Suburb)
+}
+
 /// Вид надписи пункта. Классы без своих объектов в Lite получают вид
-/// населённого пункта.
+/// населённого пункта. Населённые пункты - без точек, ранг виден по
+/// кеглю, как у Google Earth, модуль 1.38.
 pub fn style(kind: Kind, big: bool) -> Style {
     let s = |size: f32, italic: bool, color: egui::Color32, dot: f32, marker: Marker| Style {
         size,
@@ -111,17 +146,19 @@ pub fn style(kind: Kind, big: bool) -> Style {
         marker,
     };
     let base = match kind {
-        Kind::Country => s(14.0, false, rgba(255, 244, 214, 235), 0.0, Marker::None),
-        Kind::Capital => s(13.0, false, rgba(255, 255, 255, 240), 3.0, Marker::Dot),
-        Kind::City => s(13.0, false, rgba(255, 255, 255, 235), 2.5, Marker::Dot),
-        Kind::State => s(11.0, true, rgba(230, 230, 230, 200), 0.0, Marker::None),
-        Kind::Water => s(12.0, true, rgba(165, 210, 255, 230), 0.0, Marker::None),
-        Kind::Town => s(12.0, false, rgba(255, 255, 255, 225), 2.2, Marker::Dot),
+        Kind::Country => s(15.0, false, rgba(255, 248, 230, 240), 0.0, Marker::None),
+        Kind::Capital => s(17.0, false, rgba(255, 255, 255, 250), 0.0, Marker::None),
+        Kind::City => s(15.0, false, rgba(255, 255, 255, 245), 0.0, Marker::None),
+        Kind::State => s(12.0, false, rgba(235, 235, 235, 215), 0.0, Marker::None),
+        Kind::Water => s(13.0, true, rgba(190, 222, 255, 235), 0.0, Marker::None),
+        Kind::Town => s(13.0, false, rgba(255, 255, 255, 240), 0.0, Marker::None),
+        Kind::Suburb => s(11.0, false, rgba(245, 245, 245, 230), 0.0, Marker::None),
+        Kind::River => s(12.0, false, rgba(205, 228, 255, 240), 0.0, Marker::None),
         Kind::Park => s(11.0, true, rgba(160, 225, 150, 220), 0.0, Marker::None),
         Kind::Peak => s(11.0, false, rgba(255, 236, 205, 225), 3.2, Marker::Peak),
         Kind::Airport => s(11.0, false, rgba(255, 255, 255, 225), 2.6, Marker::Square),
         Kind::RoadRef => s(10.0, false, rgba(255, 255, 255, 245), 0.0, Marker::Shield),
-        Kind::Village => s(11.0, false, rgba(240, 240, 240, 210), 1.8, Marker::Dot),
+        Kind::Village => s(12.0, false, rgba(240, 240, 240, 225), 0.0, Marker::None),
         Kind::Search => s(13.0, false, rgba(255, 255, 255, 250), 5.0, Marker::Pin),
         Kind::Mark => s(12.0, false, rgba(255, 255, 255, 245), 4.5, Marker::Yellow),
         // Название литосферной плиты. У модуля надпись жирная, у Lite
@@ -135,17 +172,19 @@ pub fn style(kind: Kind, big: bool) -> Style {
         | Kind::Value
         | Kind::Wiki => s(12.0, false, rgba(255, 255, 255, 245), 0.0, Marker::None),
     };
-    if big { Style { size: base.size + BIG_STEP, dot: base.dot + 0.5, ..base } } else { base }
+    if big { Style { size: base.size + BIG_STEP, ..base } } else { base }
 }
 
 /// Классы пунктов основы.
-pub const PLACE_KINDS: [Kind; 11] = [
+pub const PLACE_KINDS: [Kind; 13] = [
     Kind::Country,
     Kind::Capital,
     Kind::City,
     Kind::State,
     Kind::Water,
     Kind::Town,
+    Kind::River,
+    Kind::Suburb,
     Kind::Park,
     Kind::Peak,
     Kind::Airport,
@@ -401,9 +440,10 @@ impl Labels {
             let big = matches!(place.kind, Kind::City | Kind::Capital) && place.rank <= BIG_RANK;
             let st = style(place.kind, big);
             let text = label_text(place, self.lang);
-            let galley = painter.layout_job(job(&text, st, egui::Color32::WHITE));
+            let galley = painter.layout_job(job(&text, st, egui::Color32::WHITE, caps(place.kind)));
             let size = galley.size();
-            let (bw, bh, ax, ay) = layout_box(st, size);
+            let turn = river_turn(camera, place);
+            let (bw, bh, ax, ay) = if turn != 0.0 { turned_box(st, size, turn) } else { layout_box(st, size) };
             let at = rect.min + egui::vec2(c.6.x as f32 / ppp, c.6.y as f32 / ppp);
             let x0 = (at.x - ax).round();
             let y0 = (at.y - ay).round();
@@ -420,18 +460,23 @@ impl Labels {
             ]);
             tiers.push(place.kind.tier());
             let mark = self.mark_colors.get(&place.id).copied().filter(|_| place.kind == Kind::Mark);
-            layouts.push((text, st, galley, egui::pos2(x0, y0), at, mark));
+            layouts.push((text, st, galley, egui::pos2(x0, y0), at, mark, turn));
         }
         let previous: HashSet<usize> = placed.iter().enumerate().filter(|(_, c)| self.shown.contains(&c.1)).map(|(n, _)| n).collect();
-        let chosen = select_labels(&boxes, &tiers, &previous, CELL);
+        let share = rect.area() / CAP_AREA;
+        let chosen = thin(select_labels(&boxes, &tiers, &previous, CELL), &placed.iter().map(|c| c.0).collect::<Vec<_>>(), share);
         let mut shown = HashSet::new();
         for n in chosen {
             let Some(c) = placed.get(n) else {
                 continue;
             };
             let alpha = ((c.5 - FADE_LOW) / (FADE_HIGH - FADE_LOW)).clamp(0.0, 1.0) as f32;
-            let (text, st, galley, corner, at, mark) = &layouts[n];
-            paint(painter, *st, galley.clone(), *corner, text, alpha, *mark);
+            let (text, st, galley, corner, at, mark, turn) = &layouts[n];
+            if *turn != 0.0 {
+                paint_turned(painter, *st, galley.clone(), *at, *turn, alpha);
+            } else {
+                paint(painter, *st, galley.clone(), *corner, text, alpha, *mark);
+            }
             shown.insert(c.1.clone());
             self.drawn.push(Shown { text: text.clone(), at: *at });
         }
@@ -502,21 +547,110 @@ impl Labels {
     }
 }
 
-/// Текст надписи в разметке egui.
-fn job(text: &str, st: Style, color: egui::Color32) -> egui::text::LayoutJob {
+/// Текст надписи в разметке egui. capital - прописными с разрядкой.
+fn job(text: &str, st: Style, color: egui::Color32, capital: bool) -> egui::text::LayoutJob {
     let mut job = egui::text::LayoutJob::default();
+    let shown = if capital { text.to_uppercase() } else { text.to_string() };
     job.append(
-        text,
+        &shown,
         0.0,
-        egui::TextFormat { font_id: crate::fonts::globe(st.size), color, italics: st.italic, ..Default::default() },
+        egui::TextFormat {
+            font_id: crate::fonts::globe(st.size),
+            color,
+            italics: st.italic,
+            extra_letter_spacing: if capital { SPACING } else { 0.0 },
+            ..Default::default()
+        },
     );
     job
+}
+
+/// Поле вокруг текста: тень с размытием, у таблички номера дороги своё.
+fn field(st: Style) -> f32 {
+    if st.marker == Marker::Shield { HALO_WIDTH } else { SHADOW_SPREAD + 2.0 * SHADOW_BLUR }
+}
+
+/// Поворот подписи реки по руслу на экране, радианы по часовой стрелке:
+/// текст не вверх ногами, шагами [`TURN_STEP`]. 0 - не река или русло
+/// не перед камерой.
+pub fn river_turn(camera: &Camera, place: &Place) -> f32 {
+    let Some([a_lat, a_lon, b_lat, b_lon, _]) = place.course.filter(|_| place.kind == Kind::River) else {
+        return 0.0;
+    };
+    let e = &camera.ellipsoid;
+    let (a, a_front) = camera.project(e.geodetic_to_ecef(a_lat, a_lon, 0.0));
+    let (b, b_front) = camera.project(e.geodetic_to_ecef(b_lat, b_lon, 0.0));
+    if !(a_front && b_front) {
+        return 0.0;
+    }
+    let angle = (b.y - a.y).atan2(b.x - a.x).to_degrees();
+    let angle = (angle + 90.0).rem_euclid(180.0) - 90.0;
+    ((angle / TURN_STEP).round() * TURN_STEP).to_radians() as f32
+}
+
+/// Рамка повёрнутой на turn подписи и привязка - её середина.
+fn turned_box(st: Style, text: egui::Vec2, turn: f32) -> (f32, f32, f32, f32) {
+    let (w, h, _, _) = layout_box(st, text);
+    let (c, s) = (turn.cos().abs(), turn.sin().abs());
+    let (rw, rh) = ((w * c + h * s).ceil() + 1.0, (w * s + h * c).ceil() + 1.0);
+    (rw, rh, rw / 2.0, rh / 2.0)
+}
+
+/// Поставленные надписи chosen без лишних мелких, `_thin` модуля: не
+/// больше [`kind_cap`] на класс в долю share площади кадра, река одного
+/// названия один раз.
+pub fn thin(chosen: Vec<usize>, places: &[&Place], share: f32) -> Vec<usize> {
+    let mut counts: HashMap<Kind, usize> = HashMap::new();
+    let mut rivers: HashSet<&str> = HashSet::new();
+    chosen
+        .into_iter()
+        .filter(|&n| {
+            let Some(place) = places.get(n) else {
+                return false;
+            };
+            let Some(cap) = kind_cap(place.kind) else {
+                return true;
+            };
+            let count = counts.entry(place.kind).or_default();
+            if *count >= ((cap as f32 * share).round() as usize).max(1) {
+                return false;
+            }
+            if place.kind == Kind::River && !rivers.insert(place.name.as_str()) {
+                return false;
+            }
+            *count += 1;
+            true
+        })
+        .collect()
+}
+
+/// Мягкая тень текста galley с левым верхним углом pos, повёрнутого
+/// на turn вокруг pos.
+fn shadow(painter: &egui::Painter, galley: &std::sync::Arc<egui::Galley>, pos: egui::Pos2, turn: f32, alpha: f32) {
+    for (radius, share) in SHADOW_RINGS {
+        let color = egui::Color32::from_black_alpha((255.0 * SHADOW_ALPHA * share * alpha).round() as u8);
+        for k in 0..8 {
+            let a = k as f32 * std::f32::consts::FRAC_PI_4;
+            let at = pos + egui::vec2(a.cos(), a.sin()) * radius;
+            painter.add(egui::epaint::TextShape::new(at, galley.clone(), color).with_override_text_color(color).with_angle(turn));
+        }
+    }
+}
+
+/// Нарисовать подпись реки серединой в anchor, повёрнутую на turn.
+fn paint_turned(painter: &egui::Painter, st: Style, galley: std::sync::Arc<egui::Galley>, anchor: egui::Pos2, turn: f32, alpha: f32) {
+    let half = galley.size() / 2.0;
+    let (c, s) = (turn.cos(), turn.sin());
+    let pos = anchor - egui::vec2(half.x * c - half.y * s, half.x * s + half.y * c);
+    shadow(painter, &galley, pos, turn, alpha);
+    let color = fade(st.color, alpha);
+    painter.add(egui::epaint::TextShape::new(pos, galley, color).with_override_text_color(color).with_angle(turn));
 }
 
 /// Размер надписи со значком и точка привязки в ней, как `_Style.layout`
 /// модуля.
 fn layout_box(st: Style, text: egui::Vec2) -> (f32, f32, f32, f32) {
-    let halo = HALO_WIDTH;
+    let halo = field(st);
     let gap = 3.0;
     let pad = 3.0;
     match st.marker {
@@ -570,12 +704,9 @@ fn paint(
         painter.galley_with_override_text_color(pos, galley, color);
         return;
     }
-    let text_x = corner.x + HALO_WIDTH + if st.marker == Marker::None { 0.0 } else { 2.0 * st.dot + 3.0 };
+    let text_x = corner.x + field(st) + if st.marker == Marker::None { 0.0 } else { 2.0 * st.dot + 3.0 };
     let pos = egui::pos2(text_x, corner.y + (h - size.y) / 2.0);
-    // Обводка: текст тёмным цветом со сдвигом во все стороны.
-    for (dx, dy) in [(-1.0, 0.0), (1.0, 0.0), (0.0, -1.0), (0.0, 1.0), (-1.0, -1.0), (1.0, 1.0), (-1.0, 1.0), (1.0, -1.0)] {
-        painter.galley_with_override_text_color(pos + egui::vec2(dx, dy), galley.clone(), halo);
-    }
+    shadow(painter, &galley, pos, 0.0, alpha);
     painter.galley_with_override_text_color(pos, galley, color);
     let r = st.dot;
     let stroke = egui::Stroke::new(HALO_WIDTH * 0.8, halo);
@@ -620,6 +751,30 @@ mod tests {
             assert_eq!(st.dot == 0.0, matches!(st.marker, Marker::None | Marker::Shield), "{kind:?}");
         }
         assert!(style(Kind::City, true).size > style(Kind::City, false).size);
+        // Населённые пункты без точек, ранг - кеглем, модуль 1.38.
+        for kind in [Kind::Capital, Kind::City, Kind::Town, Kind::Village, Kind::Suburb] {
+            assert_eq!(style(kind, false).marker, Marker::None, "{kind:?}");
+        }
+        assert!(super::caps(Kind::Suburb) && super::caps(Kind::State) && !super::caps(Kind::City));
+    }
+
+    #[test]
+    fn thin_caps_small_kinds_and_rivers_once() {
+        // Сторож `_thin` модуля: районов не больше 6 на кадр 1920 × 1080,
+        // река одного названия один раз, города без предела.
+        use data::places::Place;
+        let mut all: Vec<Place> = (0..10).map(|n| Place::new(n, &format!("Район {n}"), Kind::Suburb, 1, 0.0, 0.0)).collect();
+        all.extend((0..3).map(|n| Place::new(100 + n, "Кама", Kind::River, 1, 0.0, 0.0)));
+        all.extend((0..20).map(|n| Place::new(200 + n, &format!("Город {n}"), Kind::City, 1, 0.0, 0.0)));
+        let refs: Vec<&Place> = all.iter().collect();
+        let out = super::thin((0..refs.len()).collect(), &refs, 1.0);
+        let count = |k: Kind| out.iter().filter(|&&n| refs[n].kind == k).count();
+        assert_eq!((count(Kind::Suburb), count(Kind::River), count(Kind::City)), (6, 1, 20));
+        // Кадр вчетверо меньше - районов вчетверо меньше, но не меньше одного.
+        let small = super::thin((0..refs.len()).collect(), &refs, 0.25);
+        assert_eq!(small.iter().filter(|&&n| refs[n].kind == Kind::Suburb).count(), 2);
+        let tiny = super::thin((0..refs.len()).collect(), &refs, 0.01);
+        assert_eq!(tiny.iter().filter(|&&n| refs[n].kind == Kind::Suburb).count(), 1);
     }
 
     #[test]

@@ -275,6 +275,29 @@ pub fn samples(grid: &Mosaic<f32>, index: &ZoneIndex, points: &[(i32, (f64, f64)
     (values, labels, outside)
 }
 
+/// Клеток образца с контура, `RING_CELLS` модуля 1.38: поровну по клеткам
+/// внутри, голос класса делится на количество его образцов ([`Run`]).
+pub const RING_CELLS: usize = 40;
+
+/// Номера take из n по порядку поровну, первый и последний - края, как
+/// `np.linspace(0, n - 1, take).astype(np.int64)` модуля.
+pub fn spread_pick(n: usize, take: usize) -> Vec<usize> {
+    let take = take.min(n);
+    match take {
+        0 => Vec::new(),
+        1 => vec![0],
+        _ => (0..take).map(|i| (i as f64 * (n - 1) as f64 / (take - 1) as f64) as usize).collect(),
+    }
+}
+
+/// Значения образцов контура: клетки inside со всеми каналами, не больше
+/// [`RING_CELLS`] поровну по ним. Пусто - в контуре нет клеток с данными.
+pub fn ring_samples(grid: &Mosaic<f32>, inside: &[bool]) -> Vec<Vec<f32>> {
+    let depth = grid.depth.max(1);
+    let cells: Vec<&[f32]> = grid.values.chunks(depth).zip(inside).filter(|(cell, keep)| **keep && usable(cell)).map(|(cell, _)| cell).collect();
+    spread_pick(cells.len(), RING_CELLS).into_iter().filter_map(|i| cells.get(i).map(|c| c.to_vec())).collect()
+}
+
 /// Свой растр: все каналы, система координат, канал прозрачности.
 pub struct Source {
     data: RasterDataset,

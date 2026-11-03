@@ -2315,3 +2315,36 @@ Refine with points	Refinar com pontos
 Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	Abre a janela «Classificação» com a mesma imagem, área e classes desta janela. Lá as classes são refinadas com pontos de controle próprios por cliques no globo.
 Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	Classes da janela «Extração de objetos». Escolha uma classe pelo círculo e clique nas amostras no globo, ao menos três pontos por classe, depois «Calcular».
 Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	Classes da área por pontos de controle próprios no globo - por um raster aberto, o mapa base do globo ou embeddings AlphaEarth.
+Recognition…	Reconhecimento…
+Recognition	Reconhecimento
+Recognition {year}	Reconhecimento {year}
+Classes of the area by own points on the globe. The window picks and loads Sentinel-2 images of the area itself on «Build».	Classes da área por pontos próprios no globo. A janela escolhe e carrega sozinha as imagens Sentinel-2 da área em «Calcular».
+Images	Imagens
+Summer	Verão
+March - April, snow	Março - abril, neve
+, clouds {cloud} %	, nuvens {cloud} %
+ready	pronto
+picked on «Build»	escolhida em «Calcular»
+search…	busca…
+no clear image	sem imagem limpa
+none, classes by summer	não, classes pela de verão
+not loaded	não carregou
+Loading the image «{row}» {day}…	Carregando a imagem «{row}» {day}…
+{day} - clouds over the area {cloud} %	{day} - nuvens sobre a área {cloud} %
+Opened raster	Raster aberto
+Sentinel-2 images of the area are picked and loaded by themselves on «Build»: the clearest over the area in three years. An opened raster of the right month is taken without loading. A click on a row - other dates, an opened raster or «No image».	As imagens Sentinel-2 da área são escolhidas e carregadas sozinhas em «Calcular» - a mais limpa sobre a área em três anos. Um raster aberto do mês certo é usado sem carregar. Clique numa linha - outras datas, um raster aberto ou «Sem imagem».
+Points	Pontos
+Areas	Áreas
+A click on the globe puts a point of the chosen class. Three points per class are needed.	Um clique no globo põe um ponto da classe escolhida. São necessários três pontos por classe.
+A click on the globe starts an outline of the chosen class, a click on the first vertex closes it. The samples of the class are the cells inside the outline, one outline per class is enough. A click inside an outline removes it.	Um clique no globo inicia um contorno da classe escolhida, um clique no primeiro vértice o fecha. As amostras da classe são as células dentro do contorno, basta um contorno por classe. Um clique dentro de um contorno o remove.
+At least two classes are needed, each with an outline or three points.	São necessárias ao menos duas classes, cada uma com um contorno ou três pontos.
+Outline a sample of the chosen class on the globe - by clicks on the vertices, a click on the first one closes the outline. At least two classes are needed, each with an outline or three points.	Contorne no globo uma amostra da classe escolhida - com cliques nos vértices, um clique no primeiro fecha o contorno. São necessárias ao menos duas classes, cada uma com um contorno ou três pontos.
+Control points of the class.	Pontos de controle da classe.
+Points and areas of the class samples.	Pontos e áreas das amostras da classe.
+points {points}, areas {rings}	pontos {points}, áreas {rings}
+areas {n}	áreas {n}
+Class samples	Amostras das classes
+The images are still loading.	As imagens ainda estão carregando.
+No summer image. A click on the row «Summer» - another date or an opened raster.	Sem imagem de verão. Clique na linha «Verão» - outra data ou um raster aberto.
+There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	Não há imagem de verão da área - as cenas Sentinel-2 de três anos têm mais de 5 % de nuvens sobre a área. Clique na linha «Verão» - um raster aberto.
+First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	Primeiro verificam-se a área e as amostras, depois escolhem-se e carregam-se a imagem de verão e a imagem com neve, depois cada célula recebe a classe das amostras mais próximas pelas bandas de ambas as imagens.

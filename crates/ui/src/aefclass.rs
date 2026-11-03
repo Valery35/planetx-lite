@@ -40,6 +40,10 @@
 //! в «Мои метки» вместо слоя GeoPackage модуля. Ядро - `data::tracing`.
 //! Неверный многоугольник модуль чинит MakeValid GDAL, у Lite починки
 //! нет: кольцо с самопересечением остаётся как есть.
+//!
+//! Окно «Распознавание» - четвёртый режим ([`ClassCalc::recognition`]),
+//! перенос `ui/recognize.py` модуля 1.38: снимки лета и снега подбирает
+//! само окно ([`crate::recognize`]), образцы - точки или контуры.
 
 use std::sync::Arc;
 
@@ -62,6 +66,7 @@ use crate::analysis::{self, Button, Saved, SiteEdit};
 use crate::basemapread::BaseRead;
 use crate::i18n::{Lang, tr, trf};
 use crate::objecttasks::Task;
+use crate::recognize::{self, Recognize};
 
 /// Участок по умолчанию и наибольший, километры, `CLASS_SIDE` модуля.
 const SIDE: f64 = 3.0;
@@ -172,12 +177,30 @@ pub struct Backdrop {
     pub credit: String,
 }
 
-/// Класс: название, цвет, контрольные точки.
+/// Класс: название, цвет, контрольные точки и контуры образцов - у окна
+/// «Распознавание».
 #[derive(Debug, Clone, PartialEq)]
 pub struct Class {
     pub name: String,
     pub color: [u8; 3],
     pub points: Vec<(f64, f64)>,
+    pub rings: Vec<Vec<(f64, f64)>>,
+}
+
+impl Class {
+    pub fn new(name: String, color: [u8; 3]) -> Self {
+        Self { name, color, points: Vec::new(), rings: Vec::new() }
+    }
+
+    /// Есть ли у класса образцы - точки или контуры.
+    pub fn has_samples(&self) -> bool {
+        !self.points.is_empty() || !self.rings.is_empty()
+    }
+
+    /// Образцов хватает: три точки или контур, `enough` модуля 1.38.
+    pub fn enough(&self) -> bool {
+        self.points.len() >= aef::MIN_POINTS || !self.rings.is_empty()
+    }
 }
 
 /// Открытый растр: имя и байты файла.
@@ -489,6 +512,8 @@ pub struct ClassCalc {
     wants_refine: bool,
     /// Настройки последнего «Построить» строками для названия результата.
     settings: Vec<String>,
+    /// Окно «Распознавание», None - другие режимы.
+    recognize: Option<Box<Recognize>>,
 }
 
 impl ClassCalc {
@@ -516,6 +541,94 @@ impl ClassCalc {
             trace.task = Some(Box::new(task));
         }
         calc
+    }
+
+    /// Окно «Распознавание», `RecognizeDialog` модуля 1.38: участок до
+    /// [`recognize::SIDE_MOST`], источник - летний снимок таблицы, пиксель
+    /// «Авто», деления на объекты нет.
+    pub fn recognition(lat: f64, lon: f64, place: String, rasters: Vec<Raster>, lang: Lang) -> Self {
+        let mut calc = Self::new(lat, lon, place, rasters, lang);
+        calc.site = SiteEdit::new(lat, lon, SIDE, recognize::SIDE_MOST);
+        calc.source = None;
+        calc.recognize = Some(Box::default());
+        calc
+    }
+
+    /// Окно «Распознавание».
+    fn recognize_mode(&self) -> bool {
+        self.recognize.is_some()
+    }
+
+    /// Образцов хватает: не меньше двух классов с образцами, у каждого
+    /// три точки или контур.
+    fn samples_ready(&self) -> bool {
+        let rows: Vec<&Class> = self.classes.iter().filter(|c| c.has_samples()).collect();
+        rows.len() >= aef::MIN_CLASSES && rows.iter().all(|c| c.enough())
+    }
+
+    fn too_few_text(&self, lang: Lang) -> &'static str {
+        if self.recognize_mode() { tr(lang, "At least two classes are needed, each with an outline or three points.") } else { tr(lang, "At least two classes of three points each are needed.") }
+    }
+
+    /// Снимки «Распознавания» перед расчётом, `build` модуля 1.38: подбор
+    /// и загрузка, затем источник - летний снимок, за ним каналы снимка со
+    /// снегом. None - снимки ещё подбираются или их нет, причина - в строке
+    /// окна.
+    fn recognize_shots(&mut self, lang: Lang) -> Option<Vec<String>> {
+        let ring = self.site.site.ring.clone();
+        let rec = self.recognize.as_mut()?;
+        if rec.picker.busy() {
+            self.status = tr(lang, "The images are still loading.").to_string();
+            return None;
+        }
+        if !rec.picker.fit(lang, &ring, &self.rasters) {
+            rec.pending = true;
+            return None;
+        }
+        let Some(summer) = rec.picker.raster(recognize::Key::Summer).map(str::to_string) else {
+            self.status = tr(lang, "No summer image. A click on the row «Summer» - another date or an opened raster.").to_string();
+            return None;
+        };
+        let snow = rec.picker.raster(recognize::Key::Snow).filter(|s| *s != summer).map(str::to_string);
+        self.source = Some(summer);
+        self.level = None;
+        self.split.on = false;
+        Some(snow.into_iter().collect())
+    }
+
+    /// Шаг подбора снимков «Распознавания»: загруженные снимки - растры
+    /// программы, конец подбора продолжает «Построить».
+    fn step_recognize(&mut self, lang: Lang, request: Request) {
+        let Some(rec) = self.recognize.as_mut() else {
+            return;
+        };
+        rec.picker.step(lang, request);
+        let text = rec.picker.status.take();
+        let loaded: Vec<Raster> = std::mem::take(&mut rec.picker.loaded);
+        let done = std::mem::take(&mut rec.picker.done);
+        let go = done && std::mem::take(&mut rec.pending) && rec.picker.raster(recognize::Key::Summer).is_some();
+        if let Some(text) = text {
+            self.status = text;
+        }
+        for raster in loaded {
+            self.rasters.retain(|r| r.0 != raster.0);
+            self.rasters.push(raster.clone());
+            self.loaded.push(raster);
+        }
+        if go && self.open {
+            self.build(lang);
+        }
+    }
+
+    /// Контуры образцов с номером класса среди классов с образцами.
+    fn rings(&self) -> Vec<(i32, Vec<(f64, f64)>)> {
+        self.classes.iter().filter(|c| c.has_samples()).enumerate().flat_map(|(n, c)| c.rings.iter().map(move |r| (n as i32, r.clone()))).collect()
+    }
+
+    /// Контур образца с точкой внутри: (класс, номер), последний
+    /// нарисованный - первым, `ring_under` модуля 1.38.
+    pub fn ring_under(&self, lat: f64, lon: f64) -> Option<(usize, usize)> {
+        self.classes.iter().enumerate().rev().find_map(|(k, c)| c.rings.iter().rposition(|r| data::site::inside(&[(lat, lon)], r).first() == Some(&true)).map(|n| (k, n)))
     }
 
     /// Окно «Выделение объектов».
@@ -569,10 +682,10 @@ impl ClassCalc {
             self.status = tr(lang, "The «Tracing» window has no built classes.").to_string();
             return;
         }
-        self.classes.retain(|c| !c.points.is_empty());
+        self.classes.retain(Class::has_samples);
         for (color, name) in pairs {
             if !self.classes.iter().any(|c| c.name == *name) {
-                self.classes.push(Class { name: name.clone(), color: *color, points: Vec::new() });
+                self.classes.push(Class::new(name.clone(), *color));
             }
         }
         self.active = self.active.min(self.classes.len().saturating_sub(1));
@@ -680,6 +793,7 @@ impl ClassCalc {
             wants_traced: false,
             wants_refine: false,
             settings: Vec::new(),
+            recognize: None,
         };
         calc.add_class(lang);
         calc.add_class(lang);
@@ -689,7 +803,7 @@ impl ClassCalc {
 
     fn add_class(&mut self, lang: Lang) {
         let n = self.classes.len();
-        self.classes.push(Class { name: trf(lang, "Class {n}", &[("n", &(n + 1).to_string())]), color: COLORS[n % COLORS.len()], points: Vec::new() });
+        self.classes.push(Class::new(trf(lang, "Class {n}", &[("n", &(n + 1).to_string())]), COLORS[n % COLORS.len()]));
         self.active = n;
     }
 
@@ -706,7 +820,7 @@ impl ClassCalc {
 
     /// Идёт поиск или загрузка снимков задачи.
     pub fn finding(&self) -> bool {
-        self.trace.as_ref().and_then(|t| t.task.as_ref()).is_some_and(|t| t.busy())
+        self.trace.as_ref().and_then(|t| t.task.as_ref()).is_some_and(|t| t.busy()) || self.recognize.as_ref().is_some_and(|r| r.picker.busy())
     }
 
     pub fn site_edit(&mut self) -> Option<&mut SiteEdit> {
@@ -731,6 +845,11 @@ impl ClassCalc {
             if let Some(task) = &mut trace.task {
                 task.stop();
             }
+        }
+        if let Some(rec) = &mut self.recognize {
+            rec.picker.stop();
+            rec.drawing.clear();
+            rec.pending = false;
         }
         self.status.clear();
     }
@@ -762,9 +881,8 @@ impl ClassCalc {
                 return;
             }
         } else {
-            let ready = self.classes.iter().filter(|c| !c.points.is_empty()).count() >= aef::MIN_CLASSES && self.classes.iter().filter(|c| !c.points.is_empty()).all(|c| c.points.len() >= aef::MIN_POINTS);
-            if !ready {
-                self.status = tr(lang, "At least two classes of three points each are needed.").to_string();
+            if !self.samples_ready() {
+                self.status = self.too_few_text(lang).to_string();
                 return;
             }
         }
@@ -772,12 +890,25 @@ impl ClassCalc {
             self.status = problem;
             return;
         }
+        if self.recognize.is_some() {
+            match self.recognize_shots(lang) {
+                Some(extras) => self.extras = extras,
+                None => return,
+            }
+        }
         if self.trace.is_none() && self.find.is_none() {
             // Настройки классификации для названия результата,
-            // `class_settings` модуля 1.33.
-            let classes = self.classes.iter().filter(|c| !c.points.is_empty()).count();
+            // `class_settings` модуля 1.33 и 1.38.
+            let classes = self.classes.iter().filter(|c| c.has_samples()).count();
             let points: usize = self.classes.iter().map(|c| c.points.len()).sum();
-            self.settings = vec![trf(lang, "classes {n}", &[("n", &classes.to_string())]), trf(lang, "points {n}", &[("n", &points.to_string())])];
+            let areas: usize = self.classes.iter().map(|c| c.rings.len()).sum();
+            self.settings = vec![trf(lang, "classes {n}", &[("n", &classes.to_string())])];
+            if points > 0 || areas == 0 {
+                self.settings.push(trf(lang, "points {n}", &[("n", &points.to_string())]));
+            }
+            if areas > 0 {
+                self.settings.push(trf(lang, "areas {n}", &[("n", &areas.to_string())]));
+            }
             if self.split.on {
                 self.settings.push(trf(lang, "objects: scale {scale}, texture {weight} %, from {least} cells", &[("scale", &self.split.scale.to_string()), ("weight", &self.split.weight.to_string()), ("least", &self.split.least.to_string())]));
                 if self.split.join {
@@ -974,13 +1105,24 @@ impl ClassCalc {
             self.own_job = Some(OwnJob { key, index, bbox, side, stage: OwnStage::Trace { grid, tracer, share } });
             return;
         }
-        let rows: Vec<&Class> = self.classes.iter().filter(|c| !c.points.is_empty()).collect();
+        let rows: Vec<&Class> = self.classes.iter().filter(|c| c.has_samples()).collect();
         let points: Vec<(i32, (f64, f64))> = rows.iter().enumerate().flat_map(|(n, c)| c.points.iter().map(move |p| (n as i32, *p))).collect();
         if self.split.on {
             self.start_cut(lang, Ready { key, index, grid, share }, keep, points);
             return;
         }
-        let (samples, labels, outside) = rasterclass::samples(&grid, &index, &points);
+        let (mut samples, mut labels, mut outside) = rasterclass::samples(&grid, &index, &points);
+        // Образцы контуров - клетки внутри, не больше RING_CELLS поровну,
+        // `_build_raster(rings=)` модуля 1.38.
+        for (label, ring) in self.rings() {
+            let got = rasterclass::ring_samples(&grid, &ring_mask(&index, &grid, &ring));
+            if got.is_empty() {
+                outside += 1;
+                continue;
+            }
+            labels.extend(std::iter::repeat_n(label, got.len()));
+            samples.extend(got);
+        }
         let mut seen = labels.clone();
         seen.sort_unstable();
         seen.dedup();
@@ -1130,7 +1272,7 @@ impl ClassCalc {
 
     /// Точки классов для расчёта: номер класса и место.
     fn points(&self) -> Vec<(i32, (f64, f64))> {
-        self.classes.iter().filter(|c| !c.points.is_empty()).enumerate().flat_map(|(n, c)| c.points.iter().map(move |p| (n as i32, *p))).collect()
+        self.classes.iter().filter(|c| c.has_samples()).enumerate().flat_map(|(n, c)| c.points.iter().map(move |p| (n as i32, *p))).collect()
     }
 
     /// Классы объектов готовы, `_built` модуля с объектами.
@@ -1152,7 +1294,7 @@ impl ClassCalc {
         } else {
             (parts, kinds, table)
         };
-        let rows: Vec<&Class> = self.classes.iter().filter(|c| !c.points.is_empty()).collect();
+        let rows: Vec<&Class> = self.classes.iter().filter(|c| c.has_samples()).collect();
         let parts_text = class_shares(&rows, &classes);
         let mut text = if self.source.is_some() {
             trf(lang, "Classes of the raster «{name}»: {parts}. Pixel {pixel} m.", &[("name", self.source_title(&key.0)), ("parts", &parts_text), ("pixel", &format!("{}", (grid.step * 100.0).round() / 100.0))])
@@ -1313,8 +1455,12 @@ impl ClassCalc {
                     }
                     let (name, bytes) = queue.remove(0);
                     let fallow = self.trace.as_ref().and_then(|t| t.task.as_ref()).is_some_and(|t| t.split().is_some());
+                    let snow = self.recognize.is_some();
                     match Source::read(&bytes, &name).and_then(|s| s.warp(&index, bbox, grid.step).map(|w| (s, w))) {
                         Ok(pair) if (pair.1.grid.rows, pair.1.grid.cols) == (grid.rows, grid.cols) => *current = Some(Box::new(pair)),
+                        // Снимок со снегом «Распознавания» не лёг - классы
+                        // по летнему, `more_bands` модуля 1.38.
+                        _ if snow => {}
                         // Снимок сезона, который не лёг на сетку, - пустые
                         // каналы, расчёт обходится без него.
                         _ if fallow => {
@@ -1342,7 +1488,12 @@ impl ClassCalc {
                 let keep = ring_mask(&index, warped, &self.site.site.ring);
                 let share = rasterclass::covered(&warped.values, warped.depth, &keep);
                 let fallow = self.trace.as_ref().and_then(|t| t.task.as_ref()).is_some_and(|t| t.split().is_some());
-                if !fallow && !warped.values.iter().any(|v| v.is_finite()) {
+                let empty = !warped.values.iter().any(|v| v.is_finite());
+                if empty && self.recognize.is_some() {
+                    *current = None;
+                    return;
+                }
+                if !fallow && empty {
                     self.own_problem_text(tr(lang, "The second image is not read or does not cover the area."));
                     return;
                 }
@@ -1563,7 +1714,7 @@ impl ClassCalc {
             self.status = problem_text(lang, Problem::Flat).to_string();
             return;
         }
-        let rows: Vec<&Class> = self.classes.iter().filter(|c| !c.points.is_empty()).collect();
+        let rows: Vec<&Class> = self.classes.iter().filter(|c| c.has_samples()).collect();
         let parts = class_shares(&rows, &classes);
         let pixel = format!("{}", (grid.step * 100.0).round() / 100.0);
         let mut text = trf(lang, "Classes of the raster «{name}»: {parts}. Pixel {pixel} m.", &[("name", self.source_title(&key.0)), ("parts", &parts), ("pixel", &pixel)]);
@@ -1607,6 +1758,7 @@ impl ClassCalc {
 
     pub fn step(&mut self, lang: Lang, request: Request) {
         self.step_task(lang, request);
+        self.step_recognize(lang, request);
         self.step_own(lang, request);
         self.indexes.step();
         let Some(job) = &mut self.job else {
@@ -1714,7 +1866,7 @@ impl ClassCalc {
             self.start_classes(lang, key, index, values);
             return;
         }
-        let rows: Vec<&Class> = self.classes.iter().filter(|c| !c.points.is_empty()).collect();
+        let rows: Vec<&Class> = self.classes.iter().filter(|c| c.has_samples()).collect();
         let (mut samples, mut labels, mut outside) = (Vec::new(), Vec::new(), 0);
         for (label, class) in rows.iter().enumerate() {
             for &(lat, lon) in &class.points {
@@ -1808,14 +1960,21 @@ impl ClassCalc {
         let tiff = class_tiff(layer);
         let shown = layer.clone();
         let sample = move |points: &[(f64, f64)]| shown.sample(points);
-        let mut name = trf(lang, if self.find.is_some() { "Similar areas {year}" } else { "Classification {year}" }, &[("year", &self.label)]);
+        let named = if self.find.is_some() {
+            "Similar areas {year}"
+        } else if self.recognize_mode() {
+            "Recognition {year}"
+        } else {
+            "Classification {year}"
+        };
+        let mut name = trf(lang, named, &[("year", &self.label)]);
         if self.find.is_none() {
             // Название несёт настройки расчёта, `titled` модуля 1.33.
             let mut settings = self.settings.clone();
             settings.push(trf(lang, "pixel {pixel} m", &[("pixel", &crate::spectral::short(layer.step))]));
             name = titled(&name, &settings);
         }
-        let rows: Vec<(String, [u8; 3])> = if self.find.is_some() { vec![(tr(lang, "Similar areas").to_string(), FOUND_COLOR)] } else { self.classes.iter().filter(|c| !c.points.is_empty()).map(|c| (c.name.clone(), c.color)).collect() };
+        let rows: Vec<(String, [u8; 3])> = if self.find.is_some() { vec![(tr(lang, "Similar areas").to_string(), FOUND_COLOR)] } else { self.classes.iter().filter(|c| c.has_samples()).map(|c| (c.name.clone(), c.color)).collect() };
         // С объектами итог - многоугольники, растр классов не пишется.
         // Признаки выборки считаются только здесь: ползунку они не нужны.
         let base = self.find.as_ref().and_then(|f| f.base.as_ref());
@@ -1851,7 +2010,7 @@ impl ClassCalc {
             picture.summary.clone_from(&credit);
             vec![picture]
         };
-        for (n, class) in self.classes.iter().filter(|c| !c.points.is_empty()).enumerate() {
+        for (n, class) in self.classes.iter().filter(|c| c.has_samples()).enumerate() {
             let mut folder = scene::kml::Folder::new(&trf(lang, "{n} - {name}", &[("n", &n.to_string()), ("name", &class.name)]));
             folder.description = trf(lang, "Value {n} in the GeoTIFF file.", &[("n", &n.to_string())]);
             for &(lat, lon) in &class.points {
@@ -1861,7 +2020,40 @@ impl ClassCalc {
             }
             extra.push(Item::Folder(folder));
         }
-        let title = tr(lang, if self.find.is_some() { "Similar areas" } else { "Classification" }).to_string();
+        // Контуры образцов многоугольниками с классом и названием,
+        // `_export_rings` модуля 1.38.
+        let samples: Vec<Item> = self
+            .classes
+            .iter()
+            .filter(|c| c.has_samples())
+            .enumerate()
+            .flat_map(|(n, c)| {
+                c.rings.iter().map(move |ring| {
+                    let mut place = Place::new(&c.name, Kind::Polygon, ring.clone());
+                    let [r, g, b] = c.color;
+                    place.color = [r, g, b, 255];
+                    place.fill = Some([r, g, b, 0]);
+                    place.data = Some(vec![("class".to_string(), (n + 1).to_string()), ("name".to_string(), c.name.clone())]);
+                    Item::Place(place)
+                })
+            })
+            .collect();
+        if !samples.is_empty() {
+            let mut folder = scene::kml::Folder::new(tr(lang, "Class samples"));
+            folder.children = samples;
+            extra.push(Item::Folder(folder));
+        }
+        let title = tr(
+            lang,
+            if self.find.is_some() {
+                "Similar areas"
+            } else if self.recognize_mode() {
+                "Recognition"
+            } else {
+                "Classification"
+            },
+        )
+        .to_string();
         self.saved = Some(Saved { title, ring: self.site.site.ring.clone(), layers, extra, session: None });
     }
 
@@ -1950,6 +2142,26 @@ impl ClassCalc {
             }
             return true;
         }
+        // Контур образца «Распознавания» обводится: щелчок ставит вершину,
+        // по первой - замыкает контур, `ClassSample` модуля 1.38.
+        if let Some(rec) = self.recognize.as_mut().filter(|r| r.areas && !r.drawing.is_empty()) {
+            if rec.drawing.len() >= 3
+                && let Some(first) = rec.drawing.first()
+                && let (pix, true) = pixel(nav, *first)
+                && (pix[0] - px).hypot(pix[1] - py) <= radius
+            {
+                let ring = std::mem::take(&mut rec.drawing);
+                if let Some(class) = self.classes.get_mut(rec.drawing_class) {
+                    class.rings.push(ring);
+                }
+                return true;
+            }
+            if let Some(ground) = ground_under(&nav.camera, px, py, nav.pose.terrain.as_ref()) {
+                let (lat, lon, _) = nav.camera.ellipsoid.ecef_to_geodetic(ground);
+                rec.drawing.push((lat, lon));
+            }
+            return true;
+        }
         // Щелчок по точке убирает её, `point_under` модуля.
         let mut hit = None;
         for (k, class) in self.classes.iter().enumerate() {
@@ -1970,6 +2182,22 @@ impl ClassCalc {
             return false;
         };
         let (lat, lon, _) = nav.camera.ellipsoid.ecef_to_geodetic(ground);
+        // Области: щелчок внутри контура убирает его, иначе начинает
+        // контур выбранного класса.
+        if self.recognize.as_ref().is_some_and(|r| r.areas) {
+            if let Some((k, n)) = self.ring_under(lat, lon) {
+                if let Some(class) = self.classes.get_mut(k) {
+                    class.rings.remove(n);
+                }
+                return true;
+            }
+            let active = self.active;
+            if let Some(rec) = &mut self.recognize {
+                rec.drawing = vec![(lat, lon)];
+                rec.drawing_class = active;
+            }
+            return true;
+        }
         if let Some(class) = self.classes.get_mut(self.active) {
             class.points.push((lat, lon));
         }
@@ -2003,6 +2231,34 @@ impl ClassCalc {
                 let (p, visible) = pixel(nav, *point);
                 if visible {
                     // Первая вершина крупнее: щелчок по ней замыкает контур.
+                    painter.circle(to_screen(p), if n == 0 { 6.0 } else { 4.0 }, color, egui::Stroke::new(1.5, egui::Color32::from_gray(30)));
+                }
+            }
+        }
+        // Контуры образцов - цветом класса по тёмной подложке линии.
+        let outline = |ring: &[(f64, f64)], closed: bool, color: egui::Color32| {
+            let pixels: Vec<([f64; 2], bool)> = ring.iter().chain(ring.first().filter(|_| closed)).map(|p| pixel(nav, *p)).collect();
+            for w in pixels.windows(2) {
+                if w[0].1 && w[1].1 {
+                    let segment = [to_screen(w[0].0), to_screen(w[1].0)];
+                    painter.line_segment(segment, egui::Stroke::new(4.0, egui::Color32::from_black_alpha(140)));
+                    painter.line_segment(segment, egui::Stroke::new(2.0, color));
+                }
+            }
+        };
+        for class in &self.classes {
+            let color = egui::Color32::from_rgb(class.color[0], class.color[1], class.color[2]);
+            for ring in &class.rings {
+                outline(ring, true, color);
+            }
+        }
+        if let Some(rec) = self.recognize.as_ref().filter(|r| !r.drawing.is_empty()) {
+            let [r, g, b] = self.classes.get(rec.drawing_class).map_or(SAMPLE_COLOR, |c| c.color);
+            let color = egui::Color32::from_rgb(r, g, b);
+            outline(&rec.drawing, false, color);
+            for (n, point) in rec.drawing.iter().enumerate() {
+                let (p, visible) = pixel(nav, *point);
+                if visible {
                     painter.circle(to_screen(p), if n == 0 { 6.0 } else { 4.0 }, color, egui::Stroke::new(1.5, egui::Color32::from_gray(30)));
                 }
             }
@@ -2075,7 +2331,13 @@ impl ClassCalc {
         if let Some(text) = self.site.shared_note(lang) {
             self.status = text.to_string();
         }
-        self.site.site.most_km = if self.source.is_some() { RASTER_MOST } else { MOST };
+        self.site.site.most_km = if self.recognize.is_some() {
+            recognize::SIDE_MOST
+        } else if self.source.is_some() {
+            RASTER_MOST
+        } else {
+            MOST
+        };
         let mut open = true;
         let mut pressed = None;
         let opacity = self.opacity;
@@ -2084,17 +2346,34 @@ impl ClassCalc {
         let searching = self.find.is_some();
         let tracing_mode = self.trace.is_some();
         let task_mode = self.task_mode();
+        let recognize_mode = self.recognize_mode();
         // У задачи тонкие настройки свёрнуты под «Дополнительно», просьба
-        // автора модуля «система громоздкая, упрости».
-        let fine = !task_mode || self.trace.as_ref().and_then(|t| t.task.as_ref()).is_some_and(|t| t.more);
+        // автора модуля «система громоздкая, упрости». У «Распознавания»
+        // их нет: «пользователя ни разу не грузим лишним».
+        let fine = !recognize_mode && (!task_mode || self.trace.as_ref().and_then(|t| t.task.as_ref()).is_some_and(|t| t.more));
         let fallow = self.trace.as_ref().and_then(|t| t.task.as_ref()).is_some_and(|t| t.scenario == data::objecttasks::Scenario::Fallow);
         let mut pick_now = false;
         let mut table_changed = false;
         let mut ask = false;
         let mut refine = false;
         let mut new_task = None;
-        let title = if tracing_mode { self.tool_title(lang) } else { tr(lang, if searching { "Similar areas" } else { "Classification" }) };
-        let id = if task_mode {
+        let title = if tracing_mode {
+            self.tool_title(lang)
+        } else {
+            tr(
+                lang,
+                if searching {
+                    "Similar areas"
+                } else if recognize_mode {
+                    "Recognition"
+                } else {
+                    "Classification"
+                },
+            )
+        };
+        let id = if recognize_mode {
+            "planetx-recognize"
+        } else if task_mode {
             "planetx-objects"
         } else if tracing_mode {
             "planetx-tracing"
@@ -2105,16 +2384,43 @@ impl ClassCalc {
         };
         egui::Window::new(title).id(egui::Id::unique(id)).open(&mut open).collapsible(false).resizable(false).min_width(400.0).show(ctx, |ui| {
             egui::Grid::new("planetx-aef-class-form").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
-                ui.label(tr(lang, "Point"));
-                ui.label(&self.place);
-                ui.end_row();
+                if recognize_mode {
+                    // Снимки, участок и образцы, `RecognizeDialog` модуля
+                    // 1.38: источник, год, пиксель, объекты и непрозрачность
+                    // спрятаны.
+                    ui.label(tr(lang, "Images"));
+                    if let Some(rec) = &mut self.recognize {
+                        rec.picker.rows(ui, lang, &self.rasters);
+                    }
+                    ui.end_row();
+                    ui.label(tr(lang, "Area|site"));
+                    self.site.row(ui, lang);
+                    ui.end_row();
+                    ui.label(tr(lang, "Samples"));
+                    if let Some(rec) = &mut self.recognize {
+                        ui.horizontal(|ui| {
+                            if ui.radio_value(&mut rec.areas, false, tr(lang, "Points")).on_hover_text(tr(lang, "A click on the globe puts a point of the chosen class. Three points per class are needed.")).changed() {
+                                rec.drawing.clear();
+                            }
+                            ui.radio_value(&mut rec.areas, true, tr(lang, "Areas")).on_hover_text(tr(
+                                lang,
+                                "A click on the globe starts an outline of the chosen class, a click on the first vertex closes it. The samples of the class are the cells inside the outline, one outline per class is enough. A click inside an outline removes it.",
+                            ));
+                        });
+                    }
+                    ui.end_row();
+                } else {
+                    ui.label(tr(lang, "Point"));
+                    ui.label(&self.place);
+                    ui.end_row();
+                }
                 if let Some(task) = self.trace.as_mut().and_then(|t| t.task.as_mut()) {
                     new_task = task.rows(ui, lang, &self.rasters, &mut self.source);
                     ui.label(tr(lang, "Area|site"));
                     self.site.row(ui, lang);
                     ui.end_row();
                 }
-                if !task_mode {
+                if !task_mode && !recognize_mode {
                 ui.label(tr(lang, "Source"));
                 let shown = match self.source.as_deref() {
                     None => "AlphaEarth",
@@ -2211,7 +2517,7 @@ impl ClassCalc {
                 if let Some(task) = self.trace.as_mut().and_then(|t| t.task.as_mut()) {
                     task.bottom_rows(ui, lang);
                 }
-                if !searching && !tracing_mode {
+                if !searching && !tracing_mode && !recognize_mode {
                     ui.label("");
                     ui.checkbox(&mut self.split.on, tr(lang, "Divide into objects")).on_hover_text(tr(lang, "The area is first divided into objects similar in colour and texture, a class goes to the whole object. The result is polygons."));
                     ui.end_row();
@@ -2255,7 +2561,7 @@ impl ClassCalc {
                     ui.label("");
                     pick_now = ui.checkbox(&mut find.join, tr(lang, "Merge neighbouring found objects")).on_hover_text(tr(lang, "Neighbouring found objects become one area. Without the flag each object stays a separate polygon.")).changed();
                     ui.end_row();
-                } else {
+                } else if !recognize_mode {
                     ui.label(tr(lang, "Opacity"));
                     ui.add(egui::Slider::new(&mut self.opacity, 0.0..=1.0).show_value(false)).on_hover_text(tr(lang, "Opacity of the classes on the globe."));
                     ui.end_row();
@@ -2330,7 +2636,11 @@ impl ClassCalc {
                         ui.radio_value(&mut self.active, k, "").on_hover_text(tr(lang, "A click on the globe puts a point of this class."));
                         ui.color_edit_button_srgb(&mut class.color);
                         ui.add(egui::TextEdit::singleline(&mut class.name).desired_width(140.0));
-                        ui.label(trf(lang, "points {n}", &[("n", &class.points.len().to_string())]));
+                        if class.rings.is_empty() {
+                            ui.label(trf(lang, "points {n}", &[("n", &class.points.len().to_string())])).on_hover_text(tr(lang, "Control points of the class."));
+                        } else {
+                            ui.label(trf(lang, "points {points}, areas {rings}", &[("points", &class.points.len().to_string()), ("rings", &class.rings.len().to_string())])).on_hover_text(tr(lang, "Points and areas of the class samples."));
+                        }
                         if ui.small_button(tr(lang, "Remove")).on_hover_text(tr(lang, "Remove the class and its points.")).clicked() {
                             remove = Some(k);
                         }
@@ -2340,19 +2650,26 @@ impl ClassCalc {
                     if ui.button(tr(lang, "Add a class")).clicked() {
                         add = true;
                     }
-                    if ui.button(tr(lang, "Classes from tracing")).on_hover_text(tr(lang, "Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.")).clicked() {
+                    if !recognize_mode && ui.button(tr(lang, "Classes from tracing")).on_hover_text(tr(lang, "Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.")).clicked() {
                         self.wants_traced = true;
                     }
                 });
-                ui.add(egui::Label::new(tr(lang, "Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.")).wrap());
+                let hint = if self.recognize.as_ref().is_some_and(|r| r.areas) {
+                    tr(lang, "Outline a sample of the chosen class on the globe - by clicks on the vertices, a click on the first one closes the outline. At least two classes are needed, each with an outline or three points.")
+                } else {
+                    tr(lang, "Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.")
+                };
+                ui.add(egui::Label::new(hint).wrap());
             }
             ui.add_space(4.0);
             ui.add(egui::Label::new(self.site.hint(lang).unwrap_or(&self.status)).wrap());
-            if self.source.is_none() {
+            if self.source.is_none() && !recognize_mode {
                 ui.add(egui::Label::new(egui::RichText::new(format!("{} {}", tr(lang, "Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0."), aef::CREDIT)).small()).wrap());
             }
             ui.add_space(4.0);
-            let tip = if task_mode {
+            let tip = if recognize_mode {
+                tr(lang, "First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.")
+            } else if task_mode {
                 tr(lang, "The image of the area is split into colours, the colours are named by the reflectance rules of the task, the areas are outlined with smooth outlines.")
             } else if tracing_mode {
                 tr(lang, "The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.")
@@ -2440,7 +2757,9 @@ impl ClassCalc {
 
 impl analysis::SiteTool for ClassCalc {
     fn id(&self) -> &'static str {
-        if self.task_mode() {
+        if self.recognize_mode() {
+            "recognize"
+        } else if self.task_mode() {
             "objects"
         } else if self.trace.is_some() {
             "tracing"
@@ -2460,7 +2779,7 @@ impl analysis::SiteTool for ClassCalc {
         if self.trace.is_some() {
             return Some(self.tool_title(lang));
         }
-        self.find.is_none().then(|| tr(lang, "Classification"))
+        self.find.is_none().then(|| tr(lang, if self.recognize_mode() { "Recognition" } else { "Classification" }))
     }
     fn painter(&self) -> Option<crate::vector::Painter> {
         self.layer.clone().map(painter)
@@ -2786,6 +3105,73 @@ mod tests {
         assert!(calc.status.contains("by the snow of the second image"), "{}", calc.status);
         let names = calc.trace.as_ref().and_then(|t| t.joined.as_ref()).map(|j| j.names.clone()).unwrap_or_default();
         assert!(names.contains(&"Coniferous forest".to_string()) && names.contains(&"Broadleaf forest and grass".to_string()), "{names:?}");
+    }
+
+    #[test]
+    fn recognition_by_areas_takes_snow_image() {
+        // Окно «Распознавание» модуля 1.38: без образцов отказ, снимки лета
+        // и снега - из открытых растров без поиска, контур одного класса
+        // и три точки другого, хвоя и листва летом одной яркости - их
+        // делит снимок со снегом. «OK» пишет и контуры образцов.
+        let lang = Lang::EN;
+        let summer = image("S2_20250721_40VDK_agriculture.tif", [0.17, 0.32, 0.03], [0.17, 0.33, 0.03], [0.30, 0.22, 0.08]);
+        let march = image("S2_20260317_40VDK_agriculture.tif", [0.10, 0.22, 0.12], [0.18, 0.55, 0.45], [0.08, 0.80, 0.85]);
+        let mut calc = ClassCalc::recognition(LAT, LON, "test".into(), vec![summer.clone(), march.clone()], lang);
+        let ctx = egui::Context::default();
+        frame(&ctx, &mut calc, lang);
+        calc.build(lang);
+        assert!(calc.status.contains("each with an outline or three points"), "{}", calc.status);
+        // Участок 1.8 км внутри снимка, хвоя - контур в левой части,
+        // листва - три точки в средней полосе.
+        let Some(index) = ZoneIndex::bare(&aef::zone_of(LON, LAT)) else {
+            return;
+        };
+        let (cx, cy) = index.project(LAT, LON);
+        let at = |x: f64, y: f64| aef::from_utm(index.number, index.south, cx + x, cy + y);
+        calc.site.site.ring = vec![at(-900.0, -900.0), at(-900.0, 900.0), at(900.0, 900.0), at(900.0, -900.0)];
+        calc.classes[0].rings.push(vec![at(-800.0, -300.0), at(-800.0, 300.0), at(-300.0, 300.0), at(-300.0, -300.0)]);
+        calc.classes[1].points = vec![at(50.0, 0.0), at(150.0, 200.0), at(250.0, -200.0)];
+        assert_eq!(calc.ring_under(at(-500.0, 0.0).0, at(-500.0, 0.0).1), Some((0, 0)));
+        calc.build(lang);
+        let request = |_: u64| Box::new(Silent(net::Stats::default())) as Box<dyn net::Request>;
+        for _ in 0..5000 {
+            calc.step(lang, &request);
+            if !calc.busy() {
+                break;
+            }
+        }
+        assert_eq!(calc.source.as_deref(), Some(summer.0.as_str()));
+        assert!(calc.layer.is_some(), "нет слоя: {}", calc.status);
+        let Some(layer) = calc.layer.clone() else {
+            return;
+        };
+        let class_at = |x: f64, y: f64| {
+            let (lat, lon) = at(x, y);
+            let (px, py) = index.project(lat, lon);
+            let c = ((px - layer.x0) / layer.step) as usize;
+            let r = ((layer.y0 - py) / layer.step) as usize;
+            layer.classes.get(r * layer.cols + c).copied().unwrap_or(-1)
+        };
+        // Хвоя за контуром и листва без точек - по снегу.
+        assert_eq!(class_at(-100.0, 700.0), 0, "{}", calc.status);
+        assert_eq!(class_at(200.0, 700.0), 1, "{}", calc.status);
+        calc.save(lang);
+        let saved = calc.saved.take();
+        let folders: Vec<String> = saved.iter().flat_map(|s| s.extra.iter()).filter_map(|i| if let Item::Folder(f) = i { Some(f.name.clone()) } else { None }).collect();
+        assert!(folders.iter().any(|n| n == "Class samples"), "{folders:?}");
+        assert!(saved.as_ref().is_some_and(|s| s.title == "Recognition" && s.layers.iter().any(|l| l.name.contains("areas 1") && l.name.contains("points 3"))));
+        // Снимка со снегом нет - строка «Снег» ищется, лето остаётся.
+        let mut picker = recognize::Picker::default();
+        let ring = calc.site.site.ring.clone();
+        assert!(!picker.fit(lang, &ring, std::slice::from_ref(&summer)));
+        assert!(picker.busy());
+        assert_eq!(picker.raster(recognize::Key::Summer), Some(summer.0.as_str()));
+        // Снимок окна для другого участка уходит.
+        let mut picker = recognize::Picker::default();
+        picker.set(recognize::Key::Summer, Some(summer.0.clone()), Some(1.0), Some(data::site::square_ring(59.0, LON, 1000.0)));
+        picker.set(recognize::Key::Snow, Some(march.0.clone()), None, None);
+        assert!(picker.fit(lang, &ring, &[summer.clone(), march.clone()]));
+        assert_eq!(picker.shots[0].cloud, None);
     }
 
     /// Снимок сезона «SWIR» (B12 B8A B4) 2 × 2 км: слева left, справа right.

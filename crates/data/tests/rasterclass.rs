@@ -70,6 +70,29 @@ fn right(classes: &[i16], truth: &[i16]) -> usize {
     classes.iter().zip(truth).filter(|(a, b)| a == b).count()
 }
 
+#[test]
+fn ring_samples_spread_inside_and_classify() {
+    // Сторож образцов контура модуля 1.38: не больше 40 клеток поровну
+    // по клеткам внутри, по одному контуру на класс классы участка верны.
+    assert_eq!(rasterclass::spread_pick(5, 40), [0, 1, 2, 3, 4]);
+    assert_eq!(rasterclass::spread_pick(100, 3), [0, 49, 99]);
+    assert_eq!(rasterclass::spread_pick(7, 1), [0]);
+    assert!(rasterclass::spread_pick(0, 40).is_empty());
+    let (values, truth) = scene();
+    let grid = Mosaic { x0: 0.0, y0: 0.0, step: 10.0, rows: SIDE, cols: SIDE, depth: 2, values: values.clone() };
+    let block = |c0: usize, c1: usize| -> Vec<bool> { (0..SIDE * SIDE).map(|i| (20..40).contains(&(i / SIDE)) && (c0..c1).contains(&(i % SIDE))).collect() };
+    let (left, right_side) = (rasterclass::ring_samples(&grid, &block(5, 20)), rasterclass::ring_samples(&grid, &block(40, 55)));
+    assert_eq!((left.len(), right_side.len()), (rasterclass::RING_CELLS, rasterclass::RING_CELLS));
+    // Клетки без данных образцами не идут.
+    let mut holed = grid.clone();
+    holed.values.iter_mut().take(2 * SIDE * 40).for_each(|v| *v = f32::NAN);
+    assert!(rasterclass::ring_samples(&holed, &block(0, 10)).is_empty());
+    let labels: Vec<i32> = std::iter::repeat_n(0, left.len()).chain(std::iter::repeat_n(1, right_side.len())).collect();
+    let samples: Vec<Vec<f32>> = left.into_iter().chain(right_side).collect();
+    let (classes, _) = rasterclass::classify(&values, 2, &samples, &labels, None, rasterclass::KNN);
+    assert!(right(&classes, &truth) as f64 > 0.95 * (SIDE * SIDE) as f64);
+}
+
 /// Каналы приведены к разбросу 1: отражение решает, хотя метры больше
 /// его на четыре порядка. Без приведения красный.
 #[test]

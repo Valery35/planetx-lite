@@ -2315,3 +2315,36 @@ Refine with points	Noktalarla iyileştir
 Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	«Sınıflandırma» penceresini aynı görüntü, alan ve bu pencerenin sınıflarıyla açar. Orada sınıflar küreye tıklanarak konan kendi kontrol noktalarıyla iyileştirilir.
 Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	«Nesne çıkarma» penceresinden sınıflar. Daireyle bir sınıf seçin ve örneklerini küreye tıklayın, sınıf başına en az üç nokta, sonra «Oluştur».
 Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	Küre üzerindeki kendi kontrol noktalarıyla alan sınıfları - açık bir raster, küre altlığı veya AlphaEarth gömmelerine göre.
+Recognition…	Tanıma…
+Recognition	Tanıma
+Recognition {year}	Tanıma {year}
+Classes of the area by own points on the globe. The window picks and loads Sentinel-2 images of the area itself on «Build».	Küre üzerindeki kendi noktalarınızla alan sınıfları. Pencere, alanın Sentinel-2 görüntülerini «Oluştur» ile kendisi seçer ve yükler.
+Images	Görüntüler
+Summer	Yaz
+March - April, snow	Mart - nisan, kar
+, clouds {cloud} %	, bulut {cloud} %
+ready	hazır
+picked on «Build»	«Oluştur» ile seçilir
+search…	arama…
+no clear image	temiz görüntü yok
+none, classes by summer	yok, sınıflar yaz görüntüsüne göre
+not loaded	yüklenmedi
+Loading the image «{row}» {day}…	«{row}» görüntüsü {day} yükleniyor…
+{day} - clouds over the area {cloud} %	{day} - alan üzerinde bulut {cloud} %
+Opened raster	Açık raster
+Sentinel-2 images of the area are picked and loaded by themselves on «Build»: the clearest over the area in three years. An opened raster of the right month is taken without loading. A click on a row - other dates, an opened raster or «No image».	Alanın Sentinel-2 görüntüleri «Oluştur» ile kendiliğinden seçilir ve yüklenir - üç yılda alan üzerindeki en temizi. Doğru aya ait açık raster yüklenmeden alınır. Satıra tıklama - başka tarihler, açık raster veya «Görüntüsüz».
+Points	Noktalar
+Areas	Alanlar
+A click on the globe puts a point of the chosen class. Three points per class are needed.	Küreye tıklama seçili sınıfın noktasını koyar. Sınıf başına üç nokta gerekir.
+A click on the globe starts an outline of the chosen class, a click on the first vertex closes it. The samples of the class are the cells inside the outline, one outline per class is enough. A click inside an outline removes it.	Küreye tıklama seçili sınıfın sınırını başlatır, ilk köşeye tıklama onu kapatır. Sınıfın örnekleri sınır içindeki hücrelerdir, sınıf başına bir sınır yeterlidir. Sınırın içine tıklama onu kaldırır.
+At least two classes are needed, each with an outline or three points.	Her biri bir sınır veya üç noktalı en az iki sınıf gerekir.
+Outline a sample of the chosen class on the globe - by clicks on the vertices, a click on the first one closes the outline. At least two classes are needed, each with an outline or three points.	Seçili sınıfın bir örneğini küre üzerinde çizin - köşelere tıklayarak, ilkine tıklama sınırı kapatır. Her biri bir sınır veya üç noktalı en az iki sınıf gerekir.
+Control points of the class.	Sınıfın kontrol noktaları.
+Points and areas of the class samples.	Sınıf örneklerinin noktaları ve alanları.
+points {points}, areas {rings}	nokta {points}, alan {rings}
+areas {n}	alan {n}
+Class samples	Sınıf örnekleri
+The images are still loading.	Görüntüler hâlâ yükleniyor.
+No summer image. A click on the row «Summer» - another date or an opened raster.	Yaz görüntüsü yok. «Yaz» satırına tıklama - başka tarih veya açık raster.
+There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	Alanın yaz görüntüsü yok - üç yıllık Sentinel-2 sahnelerinde alan üzerinde bulut %5'ten fazla. «Yaz» satırına tıklama - açık raster.
+First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	Önce alan ve örnekler denetlenir, sonra yaz görüntüsü ile karlı görüntü seçilip yüklenir, sonra her hücre iki görüntünün bantlarına göre en yakın örneklerin sınıfını alır.

@@ -2315,3 +2315,36 @@ Refine with points	Nöqtələrlə dəqiqləşdir
 Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	«Təsnifat» pəncərəsini eyni təsvir, sahə və bu pəncərənin sinifləri ilə açır. Orada siniflər qlobusa kliklə qoyulan öz nəzarət nöqtələri ilə dəqiqləşdirilir.
 Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	«Obyektlərin ayrılması» pəncərəsindən siniflər. Dairə ilə sinif seçin və nümunələrini qlobusa klikləyin, sinif başına ən azı üç nöqtə, sonra «Qur».
 Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	Qlobusdakı öz nəzarət nöqtələri ilə sahə sinifləri - açıq rastr, qlobus altlığı və ya AlphaEarth embeddinqləri üzrə.
+Recognition…	Tanınma…
+Recognition	Tanınma
+Recognition {year}	Tanınma {year}
+Classes of the area by own points on the globe. The window picks and loads Sentinel-2 images of the area itself on «Build».	Qlobusdakı öz nöqtələrinizlə sahə sinifləri. Pəncərə sahənin Sentinel-2 təsvirlərini «Qur» ilə özü seçir və yükləyir.
+Images	Təsvirlər
+Summer	Yay
+March - April, snow	Mart - aprel, qar
+, clouds {cloud} %	, bulud {cloud} %
+ready	hazır
+picked on «Build»	«Qur» ilə seçiləcək
+search…	axtarış…
+no clear image	təmiz təsvir yoxdur
+none, classes by summer	yoxdur, siniflər yay təsviri üzrə
+not loaded	yüklənmədi
+Loading the image «{row}» {day}…	«{row}» təsviri {day} yüklənir…
+{day} - clouds over the area {cloud} %	{day} - sahə üzərində bulud {cloud} %
+Opened raster	Açıq rastr
+Sentinel-2 images of the area are picked and loaded by themselves on «Build»: the clearest over the area in three years. An opened raster of the right month is taken without loading. A click on a row - other dates, an opened raster or «No image».	Sahənin Sentinel-2 təsvirləri «Qur» ilə özü seçilir və yüklənir - üç ildə sahə üzərində ən təmizi. Lazımi ayın açıq rastrı yükləmədən götürülür. Sətirə klik - başqa tarixlər, açıq rastr və ya «Təsvirsiz».
+Points	Nöqtələr
+Areas	Sahələr
+A click on the globe puts a point of the chosen class. Three points per class are needed.	Qlobusa klik seçilmiş sinfin nöqtəsini qoyur. Sinif başına üç nöqtə lazımdır.
+A click on the globe starts an outline of the chosen class, a click on the first vertex closes it. The samples of the class are the cells inside the outline, one outline per class is enough. A click inside an outline removes it.	Qlobusa klik seçilmiş sinfin konturunu başladır, birinci təpəyə klik onu bağlayır. Sinfin nümunələri kontur daxilindəki xanalardır, sinif başına bir kontur kifayətdir. Kontur daxilinə klik onu silir.
+At least two classes are needed, each with an outline or three points.	Hər birinin konturu və ya üç nöqtəsi olan ən azı iki sinif lazımdır.
+Outline a sample of the chosen class on the globe - by clicks on the vertices, a click on the first one closes the outline. At least two classes are needed, each with an outline or three points.	Seçilmiş sinfin nümunəsini qlobusda dövrələyin - təpələrə kliklə, birincisinə klik konturu bağlayır. Hər birinin konturu və ya üç nöqtəsi olan ən azı iki sinif lazımdır.
+Control points of the class.	Sinfin nəzarət nöqtələri.
+Points and areas of the class samples.	Sinif nümunələrinin nöqtələri və sahələri.
+points {points}, areas {rings}	nöqtə {points}, sahə {rings}
+areas {n}	sahə {n}
+Class samples	Sinif nümunələri
+The images are still loading.	Təsvirlər hələ yüklənir.
+No summer image. A click on the row «Summer» - another date or an opened raster.	Yay təsviri yoxdur. «Yay» sətirinə klik - başqa tarix və ya açıq rastr.
+There is no summer image of the area: Sentinel-2 scenes of three years have more than 5 % of clouds over the area. A click on the row «Summer» - an opened raster.	Sahənin yay təsviri yoxdur - üç illik Sentinel-2 səhnələrində sahə üzərində bulud 5 %-dən çoxdur. «Yay» sətirinə klik - açıq rastr.
+First the area and the samples are checked, then the summer image and the image with snow of the area are picked and loaded, then each cell goes to the class of the nearest samples by the bands of both images.	Əvvəlcə sahə və nümunələr yoxlanılır, sonra yay təsviri və qarlı təsvir seçilib yüklənir, sonra hər xana hər iki təsvirin kanalları üzrə ən yaxın nümunələrin sinfini alır.

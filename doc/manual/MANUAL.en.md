@@ -18,6 +18,7 @@ program as a web page, on phones too.
 - [My Places](#my-places)
 - [Layers](#layers)
 - [Globe menu](#globe-menu)
+- [Recognition](#recognition)
 - [Tracing and object extraction](#tracing-and-object-extraction)
 - [Drawing and editing](#drawing-and-editing)
 - [Ruler](#ruler)
@@ -228,6 +229,49 @@ the layers, the right button on the chart sets a color, the section is
 saved as a picture and a CSV table. Model section wall puts a wall along
 the path on the globe, Model cut cuts the model by a polygon. Choosing
 the item again removes them.
+
+## Recognition
+
+The «Recognition…» item of the «Area analysis» submenu of the globe menu
+opens the «Recognition» window for the clicked point. It is the simplest
+way to area classes. You set the area, add classes and place their
+samples, and the window finds the images itself.
+
+Step by step:
+1. Area - a square at the point, «Draw» or «From places», up to 20 km.
+2. Classes - a name and a colour, the circle picks a class.
+3. Samples - points or areas. With «Points» a click on the globe places
+   a point of the class, a click on a point removes it, three points
+   per class are needed. With «Areas» a click starts an outline of the
+   class, a click on the first vertex closes it, a click inside the
+   outline removes it. One outline per class is enough, the class
+   samples are the cells inside the outline. Points and outlines of one
+   class work together.
+4. «Build» first checks the area and the samples, then picks the images
+   and only after that computes the classes. At least two classes are
+   needed.
+
+The «Images» table shows what the window takes - a summer image and
+a March - April image with snow. Each is the clearest Sentinel-2 image
+over the area in three years, the «Agriculture» combination (B11 B8 B2)
+cut to the area. A loaded image becomes a raster of the program. A
+raster of the program with band labels and a day of the right month in
+its name is taken without loading, so the second «Build» starts at
+once. If such a raster does not cover the whole area, the result line
+names the share of the area. On snow conifers are dark, bare broadleaf
+forest and fields are light, so the snow image helps to tell conifers
+from broadleaf. If there is no clear snow image or it does not lie on
+the area, the classes are computed from the summer one. A click on the
+name of a table row gives other dates, an opened raster or «No image».
+
+Picking and loading two images of a 3 km area takes a few minutes, most
+of it is the cloud cover over the area of catalogue scenes.
+
+«OK» puts a computation folder into «My places» - a picture of the
+classes with a GeoTIFF file, the control points and the «Class samples»
+folder with the sample outlines. «Cancel» removes the classes from the
+globe. Fine settings - the pixel, splitting into objects, another
+source - are in the «Classification» window.
 
 ## Tracing and object extraction
 

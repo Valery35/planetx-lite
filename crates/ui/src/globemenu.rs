@@ -61,6 +61,8 @@ pub enum Choice {
     Trace,
     /// «Выделение объектов…».
     Objects,
+    /// «Распознавание…», модуль 1.38.
+    Recognize,
     Spectral,
     Emit,
     /// «Старые карты «Это Место»…».
@@ -263,6 +265,9 @@ impl GlobeMenu {
                                         // заголовков CORS (AlphaEarth проверено 30 октября
                                         // 2026 года), у страницы этих пунктов нет. Классы
                                         // по подложке глобуса и открытому растру у неё есть.
+                                        // «Распознавание» первым в группе классов,
+                                        // как в модуле 1.38.
+                                        item(ui, "Recognition…", "Classes of the area by own points on the globe. The window picks and loads Sentinel-2 images of the area itself on «Build».", Choice::Recognize);
                                         if !cfg!(target_arch = "wasm32") {
                                             item(ui, "Changes of the terrain…", "Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.", Choice::Changes);
                                             item(ui, "Classification…", "Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.", Choice::Classes);
