@@ -2191,3 +2191,127 @@ The image of the area is split into colours, the areas of one colour are outline
 Splitting the image into colours…	正在将影像分解为颜色…
 Colours {colors}, areas {regions}.	颜色 {colors}，区域 {regions}。
 There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	区域超过 {n} 个，“确定”将保存颜色图像而不是多边形。
+Object extraction	地物提取
+Object extraction…	地物提取…
+Typical tasks over tracing - forests and clearcuts, fields, water, overgrown fields. The colours are named by the reflectance of a Sentinel-2 image.	基于描摹的典型任务——森林与采伐迹地、农田、水体、撂荒地。颜色按 Sentinel-2 影像的反射率命名。
+Task	任务
+A typical task sets the number of colours and the smallest area and after «Build» names the classes by the reflectance of the image.	典型任务设置颜色数量和最小区域，并在「生成」后按影像反射率命名类别。
+Forests and clearcuts	森林与采伐迹地
+Coniferous forest, broadleaf forest and grass, clearcuts and burns, open soil, water. A clearcut is open soil with at least a quarter of coniferous forest in a band of three cells around it.	针叶林、阔叶林与草地、采伐与火烧迹地、裸土、水体。采伐迹地是周围三格宽带内至少四分之一为针叶林的裸土。
+Fields	农田
+Vegetation, open soil and ploughland, clearcuts, water. Fields stay separate polygons, the smallest area is larger.	植被、裸土与耕地、采伐迹地、水体。农田保持为单独的多边形，最小区域更大。
+Water and everything else - land.	水体与其余一切——陆地。
+Overgrown fields	撂荒地
+Tilled fields, abandoned for 1-2 years, fallow and meadows, overgrowing with trees, forest. Spring and autumn images of 4 years show the year when the field was bare soil for the last time. The field borders are by the summer image.	耕作中的农田、撂荒1-2年、休耕地与草地、长树的、森林。4年的春季和秋季影像显示农田最后一次为裸土的年份。田块边界取自夏季影像。
+No suitable image is open	没有打开合适的影像
+A Sentinel-2 or Landsat image with labelled bands. The list has only images in which the window recognised the near infrared and the red or SWIR by the labels.	带波段标注的 Sentinel-2 或 Landsat 影像。列表中只有窗口按标注识别出近红外和红光或 SWIR 的影像。
+Find an image	查找影像
+Summer Sentinel-2 images of the area for three years, cloud cover over the area up to 5 %. A double click on an image loads the composite «Agriculture» (B11 B8 B2) and sets it as the source.	该区域三年内的夏季 Sentinel-2 影像，区域上空云量不超过 5 %。双击影像会加载「农业」组合（B11 B8 B2）并设为来源。
+A double click loads the image.	双击加载影像。
+{day} - cloud cover over the area {cloud} %, data {valid} %	{day} - 区域上空云量 {cloud} %，数据 {valid} %
+{day} - cloud cover over the area {cloud} %	{day} - 区域上空云量 {cloud} %
+Second image	第二影像
+An image of the same place in another season, better with snow. Its bands go to the same grid of the area and are split into colours together with the first. On snow coniferous forest is what stayed dark, without snow - what hardly changed in the near infrared.	同一地点另一季节的影像，最好有雪。其波段落在同一区域格网上，与第一幅一起分色。雪上的针叶林是仍然发暗的部分，无雪时是近红外几乎不变的部分。
+Sentinel-2 images of the area in March, April and October for three years. On snow coniferous forest is dark, bare broadleaf forest and fields are light. In October without snow broadleaf forest loses the near infrared, coniferous does not. A double click loads the image and sets it as the second.	该区域三年内 3 月、4 月和 10 月的 Sentinel-2 影像。雪上针叶林发暗，落叶阔叶林和农田发亮。10 月无雪时阔叶林失去近红外，针叶林不会。双击加载影像并设为第二影像。
+Spring and autumn	春季与秋季
+Images {count} of {total}	影像 {count} / {total}
+Pick images	挑选影像
+Searches for Sentinel-2 images of the area in spring and autumn for 4 years, takes the clearest into each empty cell and loads it. Images that are already open are not loaded again.	查找该区域 4 年内春季和秋季的 Sentinel-2 影像，为每个空格选最干净的一幅并加载。已打开的影像不会重新加载。
+Spring	春季
+Autumn	秋季
+No image	无影像
+First «Pick images»	请先「挑选影像」
+Images of spring (April - May) and autumn (September - October) by years. Ploughland at this time is bare soil, fallow is old grass and shrubs. A click on a cell - other dates of the season.	按年份排列的春季（4-5 月）和秋季（9-10 月）影像。此时耕地为裸土，撂荒地为枯草和灌木。点击单元格显示该季节的其他日期。
+Linear objects	线状地物
+Roads and cutlines, rivers and canals, shelterbelts - as centre lines, a separate folder. A line is a narrow part of soil, water or vegetation, a connected piece of a line is not shorter than 200 m.	道路与林道、河流与渠道、防护林带——以中心线形式放在单独的文件夹中。线是土壤、水体或植被的狭窄部分，连通的线段不短于 200 米。
+Line width up to	线宽上限
+An object narrower than this is a line. The width is at least two pixels of the grid, otherwise the line breaks.	比此更窄的地物为线。宽度至少为两个格网像素，否则线会断开。
+Fine settings: pixel, colours, smoothing, smallest area, corner rounding, line width. The task sets them itself.	精细设置：像素、颜色、平滑、最小区域、圆角、线宽。任务会自动设置。
+Coniferous forest	针叶林
+Broadleaf forest and grass	阔叶林与草地
+Open soil	裸土
+Clearcuts and burns	采伐与火烧迹地
+Ploughland, tilled	耕地，耕作中
+Abandoned 1-2 years	撂荒 1-2 年
+Fallow or meadow	休耕地或草地
+Overgrowing with trees	长树中
+Roads and cutlines	道路与林道
+Rivers and canals	河流与渠道
+Shelterbelts and cutlines	防护林带与林道
+Lines	线
+Lines {km} km.	线长 {km} 千米。
+No linear objects were found.	未发现线状地物。
+Clearcuts and burns - {area} ha.	采伐与火烧迹地 {area} 公顷。
+Searching for Sentinel-2 images of the area…	正在查找该区域的 Sentinel-2 影像…
+There are no Sentinel-2 scenes of the needed season over the area.	该区域上空没有所需季节的 Sentinel-2 景。
+Scenes {count}, the cloud cover over the area is counted…	共 {count} 景，正在计算区域上空云量…
+There are no suitable images: over the area the scenes have cloud cover above {cloud} % or less than {valid} % of data.	没有合适的影像：该区域上空各景云量超过 {cloud} % 或数据少于 {valid} %。
+Suitable images: {count}. A double click on an image loads it.	合适的影像：{count}。双击影像即可加载。
+Loading the image {when}…	正在加载影像 {when}…
+Loading the image {when}: bands {done} of {total}	正在加载影像 {when}：波段 {done} / {total}
+The server did not give the image, repeat {n} of {total}…	服务器未返回影像，重试 {n} / {total}…
+The image was not loaded - the server did not give the bands {error}. Repeat the double click later or take another image.	影像未加载——服务器未返回波段 {error}。请稍后再双击，或选择其他影像。
+The image «{name}» is loaded.	影像「{name}」已加载。
+The image is loaded and set as the source: {name}.	影像已加载并设为来源：{name}。
+The second image is loaded: {name}.	第二影像已加载：{name}。
+Loading the image of {season} {year}: {day}…	正在加载 {year} 年{season}影像：{day}…
+Season images {count} of {total}. Empty cells are seasons without a clear image over the area, the computation goes without them.	季节影像 {count} / {total}。空格为该区域上空没有干净影像的季节，计算将不使用它们。
+No clear spring and autumn images were found over the area.	该区域上空未找到干净的春季和秋季影像。
+Suitable. Bands - {names}.	适用。波段：{names}。
+Image of {day}.	{day} 的影像。
+The image is not a summer one, coniferous and broadleaf forest differ worse.	影像不是夏季的，针叶林与阔叶林较难区分。
+No open image has the near infrared and the red or SWIR. «Find an image» finds a summer Sentinel-2 image of the area.	没有打开的影像同时具有近红外和红光或 SWIR。「查找影像」会找到该区域的夏季 Sentinel-2 影像。
+No image. The «Find an image» button finds and loads a summer Sentinel-2 image of the area.	没有影像。「查找影像」按钮会查找并加载该区域的夏季 Sentinel-2 影像。
+The near infrared and the red or SWIR of the raster are not recognised - an image with labelled bands is needed.	无法识别栅格的近红外和红光或 SWIR——需要带波段标注的影像。
+No spring and autumn images. «Pick images» finds and loads them for the area.	没有春季和秋季影像。「挑选影像」会为该区域查找并加载。
+The second image is the same as the first.	第二影像与第一影像相同。
+The second image is no longer open.	第二影像已不再打开。
+The near infrared of the second image is not recognised - an image with labelled bands is needed.	无法识别第二影像的近红外——需要带波段标注的影像。
+The second image is not read or does not cover the area.	第二影像未读取或未覆盖该区域。
+The image	影像
+The second image	第二影像
+{which} covers only {share} % of the area. «Find an image» loads an image of the whole area, or outline the area inside the image.	{which}只覆盖区域的 {share} %。「查找影像」会加载覆盖整个区域的影像，或在影像范围内勾画区域。
+Reading the bands of the other images…	正在读取其他影像的波段…
+Reading the bands of the other images: {done} %.	正在读取其他影像的波段：{done} %。
+The raster values do not look like reflectance, the classes are not named.	栅格值不像反射率，类别未命名。
+Coniferous forest is told from broadleaf by the snow of the second image.	已根据第二影像的雪将针叶林与阔叶林区分开。
+Coniferous forest is told from broadleaf by two images.	已根据两幅影像将针叶林与阔叶林区分开。
+Spring and autumn images {count}, years {first}-{last}.	春季和秋季影像 {count} 幅，年份 {first}-{last}。
+The spring and autumn images did not fall on the area, the classes are by the summer image.	春季和秋季影像未落在该区域，类别取自夏季影像。
+The image of the area is split into colours, the colours are named by the reflectance rules of the task, the areas are outlined with smooth outlines.	区域影像被分为若干颜色，颜色按任务的反射规则命名，区域用平滑轮廓勾画。
+Names from the assistant	由助手命名
+The AI assistant proposes class names by the table - mean band values, share of the area, size of areas, place and month of the image. The image and layer names are not sent to the model, pressing the button is consent to send the table. The names can be corrected.	AI 助手根据表格提出类别名称——波段均值、占区域比例、区域大小、拍摄地点和月份。影像和图层名称不会发送给模型，按下按钮即同意发送表格。名称可修改。
+The assistant is thinking…	助手正在思考…
+The assistant is busy with the previous question or not connected.	助手正忙于上一个问题或未连接。
+The assistant gave no names: {error}	助手未给出名称：{error}
+empty answer	空回答
+The names were proposed by the assistant, they can be corrected. Classes with the same name are merged.	名称由助手提出，可修改。同名类别已合并。
+First press «Build».	请先按「生成」。
+The class name - in the name field of the polygons and in the scale on the globe.	类别名称——写入多边形的 name 字段和地球仪上的图例。
+Share of the area.	占区域比例。
+Own class	独立类别
+Merge with «{name}»	并入「{name}」
+Merge this colour with another: the areas of both colours become one class with the name and colour of the one it is merged with.	将此颜色并入另一种颜色：两种颜色的区域成为一个类别，名称和颜色取被并入的那个。
+Colour {n}	颜色 {n}
+Classes from tracing	来自描摹的类别
+Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.	取自「描摹」或「地物提取」窗口「生成」后的类别名称和颜色。没有点的类别会被替换，点通过点击地球仪放置。
+Classes from tracing: {n}.	来自描摹的类别：{n}。
+The «Tracing» window has no built classes.	「描摹」窗口中没有已生成的类别。
+Source - {source}.	来源：{source}。
+Settings - {settings}.	设置：{settings}。
+Classes - {rows}.	类别：{rows}。
+colours {n}	颜色 {n}
+smoothing {n}	平滑 {n}
+areas from {n} cells	区域不少于 {n} 格
+rounding {v}	圆角 {v}
+pixel {pixel} m	像素 {pixel} 米
+task «{task}»	任务「{task}」
+second image «{name}»	第二影像「{name}」
+spring and autumn images {count}	春秋影像 {count} 幅
+classes {n}	类别 {n}
+objects: scale {scale}, texture {weight} %, from {least} cells	对象：尺度 {scale}，纹理 {weight} %，不少于 {least} 格
+neighbours merged	相邻合并
+Refine with points	用点细化
+Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	打开「分类」窗口，使用本窗口相同的影像、区域和类别。在那里通过点击地球仪放置自己的控制点来细化类别。
+Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	来自「地物提取」窗口的类别。用圆点选择类别并在地球仪上点击其样本，每类至少三个点，然后按「生成」。
+Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	按地球仪上自己的控制点划分区域类别——依据打开的栅格、地球仪底图或 AlphaEarth 嵌入。

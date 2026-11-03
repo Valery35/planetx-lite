@@ -18,6 +18,7 @@ program as a web page, on phones too.
 - [My Places](#my-places)
 - [Layers](#layers)
 - [Globe menu](#globe-menu)
+- [Tracing and object extraction](#tracing-and-object-extraction)
 - [Drawing and editing](#drawing-and-editing)
 - [Ruler](#ruler)
 - [Tours and the time slider](#tours-and-the-time-slider)
@@ -227,6 +228,178 @@ the layers, the right button on the chart sets a color, the section is
 saved as a picture and a CSV table. Model section wall puts a wall along
 the path on the globe, Model cut cuts the model by a polygon. Choosing
 the item again removes them.
+
+## Tracing and object extraction
+
+The «Tracing…» and «Object extraction…» windows are in the «Area
+analysis» submenu of the globe menu. Their area is shared with the other
+analysis windows. It is a square at the clicked point, an own outline or
+a polygon of My Places.
+
+### Tracing
+
+The window splits the image of the area into colours and outlines the
+areas of one colour with smooth polygons by the Potrace method. The source
+is the globe basemap or a raster opened in the program.
+
+Fields of the window:
+- «Colours» - how many colours the image is split into, from 2 to 32.
+- «Image smoothing» - passes of 3 × 3 smoothing before the split.
+- «Smallest area, cells» - a smaller area merges with the neighbour along
+  the longest shared border.
+- «Corner rounding» - 0 gives a broken line with corners. The larger the
+  value, the more corners become arcs.
+
+«Build» shows the colours of the area cells on the globe. The «Classes»
+table under the fields lists the colours by share of the area, «Colour 1»
+takes the most. The name of a colour can be rewritten, for example
+«Conifers». It goes to the scale on the globe and to the name field of the
+polygons. The list to the right of the name merges the colour with another.
+The areas of both colours become one class with the name and colour of the
+one it is merged with.
+
+The «Names from the assistant» button sends the class table to the AI
+assistant. It has mean band values with their roles, share of the area,
+count and mean size of the areas, the point of the area and the month of
+the image. The image and file names are not sent to the model, pressing
+the button is consent to send the table. The assistant answers with a name
+for each colour, colours with the same name are merged. The assistant is
+connected in the «Assistant settings» window.
+
+«OK» puts the polygons into My Places as the folder of the computation.
+Each has the fields cls, name, color and area_ha. The folder name carries
+the source and the settings of the computation, for example «Tracing image
+(colours 8, smoothing 1, areas from 25 cells, rounding 1.00, pixel 10 m)».
+The folder description has the source, the settings and the classes with
+their share of the area. Neighbouring areas share their border, there are
+no gaps and overlaps. With more than 5000 areas «OK» puts a picture of the
+colours and a GeoTIFF file of their numbers.
+
+The «Classes from tracing» button of the «Classification» window takes the
+classes of the «Tracing» or «Object extraction» window with their names
+and colours. Classes without points are replaced, the points are put by
+clicks on the globe.
+
+### Object extraction
+
+The window solves typical tasks over tracing. The colours get names by the
+reflectance of the image - coniferous forest, broadleaf forest and grass,
+open soil, water, snow. Colours of one kind merge into one class, open soil
+among conifers becomes clearcuts.
+
+Step by step:
+1. Right-click a place on the globe, «Area analysis» submenu - «Object
+   extraction…».
+2. Choose the task - «Forests and clearcuts», «Fields», «Water» or
+   «Overgrown fields».
+3. Set the area.
+4. If the «Image» list is empty, press «Find an image». The window finds
+   summer Sentinel-2 images of the area for three years without clouds over
+   the area. A double click on an image loads it, the image goes to the list
+   itself.
+5. Press «Build». The classes appear on the globe, the result line names
+   the area of clearcuts and the length of lines.
+6. Correct the names in the «Classes» table and press «OK».
+
+The «Image» list has only images in which the window recognised the near
+infrared and the red or SWIR 1.6 µm by the band labels. The image of the
+«Find an image» button is the composite «Agriculture» (B11 B8 B2) for the
+area, reflectance, a GeoTIFF file with band labels. It becomes a raster of
+the program and serves other analysis windows. The line under the list
+tells which bands the window recognised and the day of the image. If the
+image covers less than 90 % of the area, «Build» refuses - the classes
+would cover only part of the area.
+
+Tasks:
+- «Forests and clearcuts» - coniferous forest, broadleaf forest and grass,
+  clearcuts and burns, open soil, water.
+- «Fields» - vegetation, open soil and ploughland, clearcuts, water.
+- «Water» - water and land.
+- «Overgrown fields» - ploughland, fields abandoned 1-2 years ago, fallow
+  and meadows, overgrowing with trees, forest.
+
+Second image. In summer conifers and broadleaves may have the same near
+infrared brightness. A winter - summer pair separates them most easily. On
+snow conifers stay dark, bare broadleaf forest and fields are light. The
+«Find» button of the «Second image» list searches for images of March and
+April while snow lies and of October without snow. The bands of the second
+image go to the same grid and are split into colours together with the
+first. With snow on the second image, conifers are vegetation that is dark
+on snow and not light in the summer near infrared. Without snow, conifers
+are vegetation whose near infrared hardly changes between the two dates.
+
+The «Linear objects» flag adds centre lines - roads and cutlines, rivers
+and canals, shelterbelts. On the globe the lines are shown over the
+classes. «OK» puts the «Lines» folder with the fields kind, name and
+length_m next to the polygons. A line is a narrow part of soil, water or
+vegetation not wider than 40 m, a connected piece shorter than 200 m is
+dropped.
+
+The «More» flag shows the fine settings - pixel, colours, smoothing,
+smallest area, corner rounding and line width. The task sets them itself.
+
+Rules:
+- water - dark in the near infrared and SWIR.
+- vegetation - (NIR - red) / (NIR + red) above 0.35, without the red band -
+  (NIR - SWIR) / (NIR + SWIR) above 0.05.
+- conifers - the part of the vegetation of the image that is dark in the
+  near infrared.
+- snow and ice - bright in the visible and dark in SWIR.
+- the rest - open soil.
+- clearcuts and burns - a piece of open soil with at least a quarter of
+  thick coniferous forest in a band of three cells around it.
+
+If the result is wrong:
+- Conifers and broadleaves are mixed. Take a second image of March or April
+  with snow.
+- Classes break up or stick together. Change the number of colours and the
+  smallest area under «More».
+- Clouds and shadows come out as own classes. Take another image.
+- Buildings came out as soil or clearcuts. Outline the area without
+  villages or correct the class in the table.
+
+The «Refine with points» button over the table opens the «Classification»
+window with the same image, area and classes. Here the classes come from
+rules, there they are refined with own control points - for example, if
+the rules mixed conifers and broadleaves or a class is needed that the
+task does not have. The «Classification…» and «Object extraction…» items
+stand next to each other in the submenu.
+
+#### Overgrown fields
+
+The task finds fields that are no longer tilled. Ploughland in spring
+before sprouting and in autumn after harvest is bare soil. Fallow has old
+grass in spring and autumn, after several years shrubs and young forest.
+The window looks at a series of spring and autumn images for 4 years. For
+each field of the summer image it finds the year when the field was bare
+soil for the last time.
+
+Step by step:
+1. Choose the «Overgrown fields» task and a summer image.
+2. Press «Pick images» in the «Spring and autumn» row. The window searches
+   for Sentinel-2 images of the area for 4 years and takes the image with
+   the least cloud cover over the area into each empty cell of the table.
+   With equal cloud cover the image closer to the end of May in spring and
+   to the beginning of October in autumn is taken. The images are loaded in
+   turn as the composite «SWIR» (B12 B8A B4).
+3. The table has years as rows and «Spring» and «Autumn» as columns, the
+   cell shows the day of the image. A click on a cell gives other days of
+   the season and «No image».
+4. Press «Build», then «OK».
+
+Classes:
+- «Ploughland, tilled» - bare soil in the last year of the series.
+- «Abandoned 1-2 years» - the last bare soil one or two years ago.
+- «Fallow or meadow» - no bare soil for three years or more, trees on less
+  than a quarter of the field.
+- «Overgrowing with trees» - trees on a quarter of the field or more.
+- «Forest» - trees on 70 % of the area or more.
+
+Bare soil is (NIR - red) / (NIR + red) below 0.3 on a spring or autumn
+image. Trees are the median SWIR 2.2 µm of the season images below 0.09.
+The polygons get the fields last_bare (the year of the last bare soil,
+0 - never) and woody_pct (the share of trees in percent). Perennial grass
+on hayfields is never bare over the series and comes out as fallow.
 
 ## Drawing and editing
 

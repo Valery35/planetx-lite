@@ -838,6 +838,42 @@ pub fn trace(grid: &[f32], depth: usize, rows: usize, cols: usize, good: &[bool]
     tracer.finish()
 }
 
+/// Цвета трассировки в классы, `join_colors` модуля 1.33: target[n] -
+/// цвет, с которым слит цвет n, сам n или -1 - не слит. Цепочка слияний
+/// доходит до цвета, который не слит, у круга слияний класс - наименьший
+/// цвет круга. Итог - (lookup, keep): lookup[n] - номер класса цвета n,
+/// keep - цвета-классы по порядку.
+pub fn join_colors(target: &[i32]) -> (Vec<usize>, Vec<usize>) {
+    let count = target.len();
+    let next = |m: usize| usize::try_from(target[m]).ok().filter(|t| *t < count && *t != m);
+    let mut roots = Vec::with_capacity(count);
+    for n in 0..count {
+        let mut path = vec![n];
+        let mut m = n;
+        while let Some(t) = next(m) {
+            m = t;
+            if let Some(at) = path.iter().position(|p| *p == m) {
+                m = path[at..].iter().copied().min().unwrap_or(m);
+                break;
+            }
+            path.push(m);
+        }
+        roots.push(m);
+    }
+    let mut keep = roots.clone();
+    keep.sort_unstable();
+    keep.dedup();
+    let lookup = roots.iter().map(|r| keep.binary_search(r).unwrap_or(0)).collect();
+    (lookup, keep)
+}
+
+/// Цвета клеток и областей после слияния в классы, -1 остаётся,
+/// `joined` модуля.
+pub fn joined(classes: &[i32], kinds: &[i16], lookup: &[usize]) -> (Vec<i32>, Vec<i16>) {
+    let map = |c: i64| usize::try_from(c).ok().and_then(|c| lookup.get(c)).map_or(-1, |k| *k as i64);
+    (classes.iter().map(|c| map(i64::from(*c)) as i32).collect(), kinds.iter().map(|k| map(i64::from(*k)) as i16).collect())
+}
+
 /// Цвета RGB 0-255 цветов трассировки: первые три канала (один канал -
 /// серый). Значения 0-255 берутся как есть, отражение 0-1 и прочие -
 /// растяжением по цветам.

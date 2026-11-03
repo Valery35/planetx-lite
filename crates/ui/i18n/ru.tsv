@@ -2191,3 +2191,127 @@ The image of the area is split into colours, the areas of one colour are outline
 Splitting the image into colours…	Снимок раскладывается на цвета…
 Colours {colors}, areas {regions}.	Цветов {colors}, областей {regions}.
 There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	Областей больше {n}, «OK» сохранит картинку цветов вместо многоугольников.
+Object extraction	Выделение объектов
+Object extraction…	Выделение объектов…
+Typical tasks over tracing - forests and clearcuts, fields, water, overgrown fields. The colours are named by the reflectance of a Sentinel-2 image.	Типовые задачи поверх трассировки - леса и рубки, поля, вода, заросшие поля. Цвета называются по отражению снимка Sentinel-2.
+Task	Задача
+A typical task sets the number of colours and the smallest area and after «Build» names the classes by the reflectance of the image.	Типовая задача ставит количество цветов и наименьшую область и после «Построить» называет классы по отражению снимка.
+Forests and clearcuts	Леса и рубки
+Coniferous forest, broadleaf forest and grass, clearcuts and burns, open soil, water. A clearcut is open soil with at least a quarter of coniferous forest in a band of three cells around it.	Хвойный лес, лиственный лес и травы, рубки и гари, открытая почва, вода. Рубка - открытая почва, вокруг которой в полосе трёх клеток не меньше четверти - хвойный лес.
+Fields	Поля
+Vegetation, open soil and ploughland, clearcuts, water. Fields stay separate polygons, the smallest area is larger.	Растительность, открытая почва и пашня, рубки, вода. Поля остаются отдельными многоугольниками, наименьшая область крупнее.
+Water and everything else - land.	Вода и всё остальное - суша.
+Overgrown fields	Заросшие поля
+Tilled fields, abandoned for 1-2 years, fallow and meadows, overgrowing with trees, forest. Spring and autumn images of 4 years show the year when the field was bare soil for the last time. The field borders are by the summer image.	Обрабатываемые поля, заброшенные 1-2 года, залежь и луга, зарастающие деревьями, лес. По снимкам весны и осени за 4 года видно, в каком году на поле последний раз была голая почва. Границы полей - по летнему снимку.
+No suitable image is open	Подходящего снимка нет
+A Sentinel-2 or Landsat image with labelled bands. The list has only images in which the window recognised the near infrared and the red or SWIR by the labels.	Снимок Sentinel-2 или Landsat с подписями каналов. В списке только снимки, у которых окно узнало по подписям ближний ИК и красный или SWIR.
+Find an image	Найти снимок
+Summer Sentinel-2 images of the area for three years, cloud cover over the area up to 5 %. A double click on an image loads the composite «Agriculture» (B11 B8 B2) and sets it as the source.	Летние снимки Sentinel-2 участка за три года, облачность над участком до 5 %. Двойной щелчок по снимку загружает сочетание «Сельское хозяйство» (B11 B8 B2) и ставит его источником.
+A double click loads the image.	Двойной щелчок загружает снимок.
+{day} - cloud cover over the area {cloud} %, data {valid} %	{day} - облачность над участком {cloud} %, данных {valid} %
+{day} - cloud cover over the area {cloud} %	{day} - облачность над участком {cloud} %
+Second image	Второй снимок
+An image of the same place in another season, better with snow. Its bands go to the same grid of the area and are split into colours together with the first. On snow coniferous forest is what stayed dark, without snow - what hardly changed in the near infrared.	Снимок того же места другого сезона, лучше со снегом. Его каналы ложатся на ту же сетку участка и идут в раскладку на цвета вместе с первыми. На снегу хвоя - то, что осталось тёмным, без снега - то, у чего ближний ИК почти не изменился.
+Sentinel-2 images of the area in March, April and October for three years. On snow coniferous forest is dark, bare broadleaf forest and fields are light. In October without snow broadleaf forest loses the near infrared, coniferous does not. A double click loads the image and sets it as the second.	Снимки Sentinel-2 участка в марте, апреле и октябре за три года. На снегу хвоя тёмная, голый лиственный лес и поля светлые. В октябре без снега лиственный лес теряет ближний ИК, хвоя нет. Двойной щелчок загружает снимок и ставит его вторым.
+Spring and autumn	Весна и осень
+Images {count} of {total}	Снимков {count} из {total}
+Pick images	Подобрать снимки
+Searches for Sentinel-2 images of the area in spring and autumn for 4 years, takes the clearest into each empty cell and loads it. Images that are already open are not loaded again.	Ищет снимки Sentinel-2 участка весны и осени за 4 года, в каждую пустую клетку берёт самый чистый и загружает его. Снимки, которые уже открыты, заново не загружаются.
+Spring	Весна
+Autumn	Осень
+No image	Без снимка
+First «Pick images»	Сначала «Подобрать снимки»
+Images of spring (April - May) and autumn (September - October) by years. Ploughland at this time is bare soil, fallow is old grass and shrubs. A click on a cell - other dates of the season.	Снимки весны (апрель - май) и осени (сентябрь - октябрь) по годам. Пашня в это время - голая почва, залежь - старая трава и кустарник. Щелчок по клетке - другие даты сезона.
+Linear objects	Линейные объекты
+Roads and cutlines, rivers and canals, shelterbelts - as centre lines, a separate folder. A line is a narrow part of soil, water or vegetation, a connected piece of a line is not shorter than 200 m.	Дороги и просеки, реки и каналы, лесополосы - осевыми линиями, отдельной папкой. Линия - узкая часть почвы, воды или растительности, связный кусок линии не короче 200 м.
+Line width up to	Ширина линий до
+An object narrower than this is a line. The width is at least two pixels of the grid, otherwise the line breaks.	Объект уже этого - линия. Ширина не меньше двух пикселей сетки, иначе линия рвётся.
+Fine settings: pixel, colours, smoothing, smallest area, corner rounding, line width. The task sets them itself.	Тонкие настройки: пиксель, цвета, сглаживание, наименьшая область, скругление углов, ширина линий. Задача ставит их сама.
+Coniferous forest	Хвойный лес
+Broadleaf forest and grass	Лиственный лес и травы
+Open soil	Открытая почва
+Clearcuts and burns	Рубки и гари
+Ploughland, tilled	Пашня, обрабатывается
+Abandoned 1-2 years	Заброшено 1-2 года
+Fallow or meadow	Залежь или луг
+Overgrowing with trees	Зарастает деревьями
+Roads and cutlines	Дороги и просеки
+Rivers and canals	Реки и каналы
+Shelterbelts and cutlines	Лесополосы и просеки
+Lines	Линии
+Lines {km} km.	Линий {km} км.
+No linear objects were found.	Линейных объектов не найдено.
+Clearcuts and burns - {area} ha.	Рубки и гари - {area} га.
+Searching for Sentinel-2 images of the area…	Поиск снимков Sentinel-2 участка…
+There are no Sentinel-2 scenes of the needed season over the area.	Сцен Sentinel-2 нужного сезона над участком нет.
+Scenes {count}, the cloud cover over the area is counted…	Сцен {count}, считается облачность над участком…
+There are no suitable images: over the area the scenes have cloud cover above {cloud} % or less than {valid} % of data.	Подходящих снимков нет: у сцен над участком облачность больше {cloud} % или данных меньше {valid} %.
+Suitable images: {count}. A double click on an image loads it.	Подходящих снимков: {count}. Двойной щелчок по снимку загружает его.
+Loading the image {when}…	Загрузка снимка {when}…
+Loading the image {when}: bands {done} of {total}	Загрузка снимка {when}: каналов {done} из {total}
+The server did not give the image, repeat {n} of {total}…	Сервер не отдал снимок, повтор {n} из {total}…
+The image was not loaded - the server did not give the bands {error}. Repeat the double click later or take another image.	Снимок не загружен - сервер не отдал каналы {error}. Повторите двойной щелчок позже или возьмите другой снимок.
+The image «{name}» is loaded.	Снимок «{name}» загружен.
+The image is loaded and set as the source: {name}.	Снимок загружен и стоит источником: {name}.
+The second image is loaded: {name}.	Второй снимок загружен: {name}.
+Loading the image of {season} {year}: {day}…	Загрузка снимка {season} {year}: {day}…
+Season images {count} of {total}. Empty cells are seasons without a clear image over the area, the computation goes without them.	Снимков сезонов {count} из {total}. Пустые клетки - сезоны без чистого снимка над участком, расчёт обходится без них.
+No clear spring and autumn images were found over the area.	Чистых весенних и осенних снимков над участком не нашлось.
+Suitable. Bands - {names}.	Подходит. Каналы - {names}.
+Image of {day}.	Снимок {day}.
+The image is not a summer one, coniferous and broadleaf forest differ worse.	Снимок не летний, хвоя и листва различаются хуже.
+No open image has the near infrared and the red or SWIR. «Find an image» finds a summer Sentinel-2 image of the area.	Открытого снимка с ближним ИК и красным или SWIR нет. «Найти снимок» найдёт летний снимок Sentinel-2 участка.
+No image. The «Find an image» button finds and loads a summer Sentinel-2 image of the area.	Нет снимка. Кнопка «Найти снимок» найдёт и загрузит летний снимок Sentinel-2 участка.
+The near infrared and the red or SWIR of the raster are not recognised - an image with labelled bands is needed.	У растра не узнать ближний ИК и красный или SWIR - нужен снимок с подписями каналов.
+No spring and autumn images. «Pick images» finds and loads them for the area.	Нет снимков весны и осени. «Подобрать снимки» найдёт и загрузит их для участка.
+The second image is the same as the first.	Второй снимок совпадает с первым.
+The second image is no longer open.	Второй снимок уже закрыт.
+The near infrared of the second image is not recognised - an image with labelled bands is needed.	У второго снимка не узнать ближний ИК - нужен снимок с подписями каналов.
+The second image is not read or does not cover the area.	Второй снимок не прочитан или не накрывает участок.
+The image	Снимок
+The second image	Второй снимок
+{which} covers only {share} % of the area. «Find an image» loads an image of the whole area, or outline the area inside the image.	{which} накрывает только {share} % участка. «Найти снимок» загрузит снимок всего участка, или обведите участок внутри снимка.
+Reading the bands of the other images…	Чтение каналов других снимков…
+Reading the bands of the other images: {done} %.	Чтение каналов других снимков: {done} %.
+The raster values do not look like reflectance, the classes are not named.	Значения растра не похожи на отражение, классы не названы.
+Coniferous forest is told from broadleaf by the snow of the second image.	Хвоя отделена от листвы по снегу второго снимка.
+Coniferous forest is told from broadleaf by two images.	Хвоя отделена от листвы по двум снимкам.
+Spring and autumn images {count}, years {first}-{last}.	Снимков весны и осени {count}, годы {first}-{last}.
+The spring and autumn images did not fall on the area, the classes are by the summer image.	Снимки весны и осени не легли на участок, классы - по летнему снимку.
+The image of the area is split into colours, the colours are named by the reflectance rules of the task, the areas are outlined with smooth outlines.	Снимок участка раскладывается на цвета, цвета называются по правилам отражения задачи, области обводятся гладкими контурами.
+Names from the assistant	Названия от помощника
+The AI assistant proposes class names by the table - mean band values, share of the area, size of areas, place and month of the image. The image and layer names are not sent to the model, pressing the button is consent to send the table. The names can be corrected.	ИИ-помощник предлагает названия классов по таблице - средним значениям каналов, доле участка, размеру областей, месту и месяцу съёмки. Снимок и имена слоёв в модель не уходят, нажатие кнопки - согласие отправить таблицу. Названия можно поправить.
+The assistant is thinking…	Помощник думает…
+The assistant is busy with the previous question or not connected.	Помощник занят прежним вопросом или не подключён.
+The assistant gave no names: {error}	Помощник не дал названий: {error}
+empty answer	пустой ответ
+The names were proposed by the assistant, they can be corrected. Classes with the same name are merged.	Названия предложил помощник, их можно поправить. Классы с одинаковым названием слиты.
+First press «Build».	Сначала нажмите «Построить».
+The class name - in the name field of the polygons and in the scale on the globe.	Название класса - в поле name многоугольников и в шкале на глобусе.
+Share of the area.	Доля участка.
+Own class	Свой класс
+Merge with «{name}»	Слить с «{name}»
+Merge this colour with another: the areas of both colours become one class with the name and colour of the one it is merged with.	Слить этот цвет с другим: области обоих цветов станут одним классом с названием и цветом того, с которым слит.
+Colour {n}	Цвет {n}
+Classes from tracing	Классы из трассировки
+Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.	Классы с названиями и цветами из окна «Трассировка» или «Выделение объектов» после «Построить». Классы без точек заменяются, точки ставятся щелчками по глобусу.
+Classes from tracing: {n}.	Классов из трассировки: {n}.
+The «Tracing» window has no built classes.	В окне «Трассировка» нет построенных классов.
+Source - {source}.	Источник - {source}.
+Settings - {settings}.	Настройки - {settings}.
+Classes - {rows}.	Классы - {rows}.
+colours {n}	цветов {n}
+smoothing {n}	сглаживание {n}
+areas from {n} cells	области от {n} клеток
+rounding {v}	скругление {v}
+pixel {pixel} m	пиксель {pixel} м
+task «{task}»	задача «{task}»
+second image «{name}»	второй снимок «{name}»
+spring and autumn images {count}	снимков весны и осени {count}
+classes {n}	классов {n}
+objects: scale {scale}, texture {weight} %, from {least} cells	объекты: масштаб {scale}, текстура {weight} %, от {least} клеток
+neighbours merged	соседи слиты
+Refine with points	Уточнить точками
+Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	Открывает окно «Классификация» с тем же снимком, участком и классами этого окна. Там классы уточняются своими контрольными точками щелчками по глобусу.
+Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	Классы из окна «Выделение объектов». Выберите класс кружком и щёлкайте по глобусу его образцы, не меньше трёх точек на класс, затем «Построить».
+Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	Классы участка по своим контрольным точкам на глобусе - по открытому растру, подложке глобуса или эмбеддингам AlphaEarth.

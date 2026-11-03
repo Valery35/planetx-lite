@@ -2191,3 +2191,127 @@ The image of the area is split into colours, the areas of one colour are outline
 Splitting the image into colours…	영상을 색으로 나누는 중…
 Colours {colors}, areas {regions}.	색 {colors}, 구역 {regions}.
 There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	구역이 {n}개를 넘어 '확인'은 다각형 대신 색 그림을 저장합니다.
+Object extraction	객체 추출
+Object extraction…	객체 추출…
+Typical tasks over tracing - forests and clearcuts, fields, water, overgrown fields. The colours are named by the reflectance of a Sentinel-2 image.	추적 기반의 대표 작업 - 숲과 벌채지, 농경지, 물, 방치된 농경지. 색은 Sentinel-2 영상의 반사율로 이름을 붙입니다.
+Task	작업
+A typical task sets the number of colours and the smallest area and after «Build» names the classes by the reflectance of the image.	대표 작업은 색 수와 최소 영역을 정하고 «만들기» 후 영상의 반사율로 클래스 이름을 붙입니다.
+Forests and clearcuts	숲과 벌채지
+Coniferous forest, broadleaf forest and grass, clearcuts and burns, open soil, water. A clearcut is open soil with at least a quarter of coniferous forest in a band of three cells around it.	침엽수림, 활엽수림과 초지, 벌채지와 산불 흔적, 나지, 물. 벌채지는 주변 세 셀 띠의 4분의 1 이상이 침엽수림인 나지입니다.
+Fields	농경지
+Vegetation, open soil and ploughland, clearcuts, water. Fields stay separate polygons, the smallest area is larger.	식생, 나지와 경작지, 벌채지, 물. 농경지는 개별 폴리곤으로 남고 최소 영역이 더 큽니다.
+Water and everything else - land.	물과 나머지 전부 - 육지.
+Overgrown fields	방치된 농경지
+Tilled fields, abandoned for 1-2 years, fallow and meadows, overgrowing with trees, forest. Spring and autumn images of 4 years show the year when the field was bare soil for the last time. The field borders are by the summer image.	경작 중인 농경지, 1-2년 방치, 휴경지와 초지, 나무가 자라는 곳, 숲. 4년간의 봄·가을 영상으로 농경지가 마지막으로 나지였던 해를 알 수 있습니다. 농경지 경계는 여름 영상 기준입니다.
+No suitable image is open	적합한 영상이 열려 있지 않습니다
+A Sentinel-2 or Landsat image with labelled bands. The list has only images in which the window recognised the near infrared and the red or SWIR by the labels.	밴드에 이름표가 있는 Sentinel-2 또는 Landsat 영상. 목록에는 이름표로 근적외선과 적색 또는 SWIR를 알아본 영상만 있습니다.
+Find an image	영상 찾기
+Summer Sentinel-2 images of the area for three years, cloud cover over the area up to 5 %. A double click on an image loads the composite «Agriculture» (B11 B8 B2) and sets it as the source.	구역의 3년간 여름 Sentinel-2 영상, 구역 위 구름 5 % 이하. 영상을 두 번 누르면 «농업» 조합(B11 B8 B2)을 불러와 원본으로 정합니다.
+A double click loads the image.	두 번 누르면 영상을 불러옵니다.
+{day} - cloud cover over the area {cloud} %, data {valid} %	{day} - 구역 위 구름 {cloud} %, 데이터 {valid} %
+{day} - cloud cover over the area {cloud} %	{day} - 구역 위 구름 {cloud} %
+Second image	두 번째 영상
+An image of the same place in another season, better with snow. Its bands go to the same grid of the area and are split into colours together with the first. On snow coniferous forest is what stayed dark, without snow - what hardly changed in the near infrared.	같은 장소의 다른 계절 영상, 눈이 있으면 더 좋습니다. 그 밴드는 같은 구역 격자에 놓여 첫 영상과 함께 색으로 나뉩니다. 눈 위에서는 어둡게 남은 곳, 눈이 없으면 근적외선이 거의 변하지 않은 곳이 침엽수림입니다.
+Sentinel-2 images of the area in March, April and October for three years. On snow coniferous forest is dark, bare broadleaf forest and fields are light. In October without snow broadleaf forest loses the near infrared, coniferous does not. A double click loads the image and sets it as the second.	구역의 3년간 3월·4월·10월 Sentinel-2 영상. 눈 위에서 침엽수림은 어둡고 잎이 진 활엽수림과 농경지는 밝습니다. 눈 없는 10월에 활엽수림은 근적외선을 잃고 침엽수림은 그렇지 않습니다. 두 번 누르면 영상을 불러와 두 번째로 정합니다.
+Spring and autumn	봄과 가을
+Images {count} of {total}	영상 {count} / {total}
+Pick images	영상 고르기
+Searches for Sentinel-2 images of the area in spring and autumn for 4 years, takes the clearest into each empty cell and loads it. Images that are already open are not loaded again.	구역의 4년간 봄·가을 Sentinel-2 영상을 찾아 빈 칸마다 가장 깨끗한 것을 골라 불러옵니다. 이미 열린 영상은 다시 불러오지 않습니다.
+Spring	봄
+Autumn	가을
+No image	영상 없음
+First «Pick images»	먼저 «영상 고르기»
+Images of spring (April - May) and autumn (September - October) by years. Ploughland at this time is bare soil, fallow is old grass and shrubs. A click on a cell - other dates of the season.	연도별 봄(4-5월)과 가을(9-10월) 영상. 이 시기 경작지는 나지, 휴경지는 묵은 풀과 관목입니다. 칸을 누르면 그 계절의 다른 날짜가 나옵니다.
+Linear objects	선형 객체
+Roads and cutlines, rivers and canals, shelterbelts - as centre lines, a separate folder. A line is a narrow part of soil, water or vegetation, a connected piece of a line is not shorter than 200 m.	도로와 방화선, 하천과 수로, 방풍림 - 중심선으로 별도 폴더에. 선은 흙·물·식생의 좁은 부분이며 이어진 선은 200 m 이상입니다.
+Line width up to	선 너비 최대
+An object narrower than this is a line. The width is at least two pixels of the grid, otherwise the line breaks.	이보다 좁은 객체는 선입니다. 너비는 격자 두 픽셀 이상이어야 하며 아니면 선이 끊깁니다.
+Fine settings: pixel, colours, smoothing, smallest area, corner rounding, line width. The task sets them itself.	세부 설정: 픽셀, 색, 평활화, 최소 영역, 모서리 둥글림, 선 너비. 작업이 직접 정합니다.
+Coniferous forest	침엽수림
+Broadleaf forest and grass	활엽수림과 초지
+Open soil	나지
+Clearcuts and burns	벌채지와 산불 흔적
+Ploughland, tilled	경작지, 경작 중
+Abandoned 1-2 years	1-2년 방치
+Fallow or meadow	휴경지 또는 초지
+Overgrowing with trees	나무가 자라는 중
+Roads and cutlines	도로와 방화선
+Rivers and canals	하천과 수로
+Shelterbelts and cutlines	방풍림과 방화선
+Lines	선
+Lines {km} km.	선 {km} km.
+No linear objects were found.	선형 객체를 찾지 못했습니다.
+Clearcuts and burns - {area} ha.	벌채지와 산불 흔적 {area} ha.
+Searching for Sentinel-2 images of the area…	구역의 Sentinel-2 영상을 찾는 중…
+There are no Sentinel-2 scenes of the needed season over the area.	구역 위에 필요한 계절의 Sentinel-2 장면이 없습니다.
+Scenes {count}, the cloud cover over the area is counted…	장면 {count}, 구역 위 구름을 계산하는 중…
+There are no suitable images: over the area the scenes have cloud cover above {cloud} % or less than {valid} % of data.	적합한 영상이 없습니다: 구역 위 장면의 구름이 {cloud} %를 넘거나 데이터가 {valid} % 미만입니다.
+Suitable images: {count}. A double click on an image loads it.	적합한 영상: {count}. 영상을 두 번 누르면 불러옵니다.
+Loading the image {when}…	영상 {when} 불러오는 중…
+Loading the image {when}: bands {done} of {total}	영상 {when} 불러오는 중: 밴드 {done} / {total}
+The server did not give the image, repeat {n} of {total}…	서버가 영상을 주지 않아 다시 시도 {n} / {total}…
+The image was not loaded - the server did not give the bands {error}. Repeat the double click later or take another image.	영상을 불러오지 못했습니다 - 서버가 밴드 {error}를 주지 않았습니다. 나중에 다시 두 번 누르거나 다른 영상을 고르세요.
+The image «{name}» is loaded.	영상 «{name}»을 불러왔습니다.
+The image is loaded and set as the source: {name}.	영상을 불러와 원본으로 정했습니다: {name}.
+The second image is loaded: {name}.	두 번째 영상을 불러왔습니다: {name}.
+Loading the image of {season} {year}: {day}…	{year}년 {season} 영상 불러오는 중: {day}…
+Season images {count} of {total}. Empty cells are seasons without a clear image over the area, the computation goes without them.	계절 영상 {count} / {total}. 빈 칸은 구역 위에 깨끗한 영상이 없는 계절이며 계산은 그 없이 진행합니다.
+No clear spring and autumn images were found over the area.	구역 위에서 깨끗한 봄·가을 영상을 찾지 못했습니다.
+Suitable. Bands - {names}.	적합합니다. 밴드 - {names}.
+Image of {day}.	{day} 영상.
+The image is not a summer one, coniferous and broadleaf forest differ worse.	여름 영상이 아니라 침엽수림과 활엽수림이 덜 구별됩니다.
+No open image has the near infrared and the red or SWIR. «Find an image» finds a summer Sentinel-2 image of the area.	근적외선과 적색 또는 SWIR가 있는 열린 영상이 없습니다. «영상 찾기»가 구역의 여름 Sentinel-2 영상을 찾습니다.
+No image. The «Find an image» button finds and loads a summer Sentinel-2 image of the area.	영상이 없습니다. «영상 찾기» 버튼이 구역의 여름 Sentinel-2 영상을 찾아 불러옵니다.
+The near infrared and the red or SWIR of the raster are not recognised - an image with labelled bands is needed.	래스터의 근적외선과 적색 또는 SWIR를 알아볼 수 없습니다 - 밴드에 이름표가 있는 영상이 필요합니다.
+No spring and autumn images. «Pick images» finds and loads them for the area.	봄·가을 영상이 없습니다. «영상 고르기»가 구역에 맞게 찾아 불러옵니다.
+The second image is the same as the first.	두 번째 영상이 첫 번째와 같습니다.
+The second image is no longer open.	두 번째 영상이 더 이상 열려 있지 않습니다.
+The near infrared of the second image is not recognised - an image with labelled bands is needed.	두 번째 영상의 근적외선을 알아볼 수 없습니다 - 밴드에 이름표가 있는 영상이 필요합니다.
+The second image is not read or does not cover the area.	두 번째 영상을 읽지 못했거나 구역을 덮지 않습니다.
+The image	영상
+The second image	두 번째 영상
+{which} covers only {share} % of the area. «Find an image» loads an image of the whole area, or outline the area inside the image.	{which}이(가) 구역의 {share} %만 덮습니다. «영상 찾기»로 구역 전체 영상을 불러오거나 영상 안쪽으로 구역을 그리세요.
+Reading the bands of the other images…	다른 영상의 밴드를 읽는 중…
+Reading the bands of the other images: {done} %.	다른 영상의 밴드를 읽는 중: {done} %.
+The raster values do not look like reflectance, the classes are not named.	래스터 값이 반사율처럼 보이지 않아 클래스 이름을 붙이지 않았습니다.
+Coniferous forest is told from broadleaf by the snow of the second image.	두 번째 영상의 눈으로 침엽수림을 활엽수림과 구분했습니다.
+Coniferous forest is told from broadleaf by two images.	두 영상으로 침엽수림을 활엽수림과 구분했습니다.
+Spring and autumn images {count}, years {first}-{last}.	봄·가을 영상 {count}개, {first}-{last}년.
+The spring and autumn images did not fall on the area, the classes are by the summer image.	봄·가을 영상이 구역에 놓이지 않아 클래스는 여름 영상 기준입니다.
+The image of the area is split into colours, the colours are named by the reflectance rules of the task, the areas are outlined with smooth outlines.	구역 영상을 색으로 나누고 작업의 반사 규칙으로 색 이름을 붙이며 영역을 매끄러운 윤곽으로 둘러쌉니다.
+Names from the assistant	도우미의 이름
+The AI assistant proposes class names by the table - mean band values, share of the area, size of areas, place and month of the image. The image and layer names are not sent to the model, pressing the button is consent to send the table. The names can be corrected.	AI 도우미가 표로 클래스 이름을 제안합니다 - 밴드 평균값, 구역 비율, 영역 크기, 촬영 장소와 달. 영상과 레이어 이름은 모델에 보내지 않으며 버튼을 누르면 표 전송에 동의하는 것입니다. 이름은 고칠 수 있습니다.
+The assistant is thinking…	도우미가 생각하는 중…
+The assistant is busy with the previous question or not connected.	도우미가 이전 질문을 처리 중이거나 연결되어 있지 않습니다.
+The assistant gave no names: {error}	도우미가 이름을 주지 않았습니다: {error}
+empty answer	빈 답변
+The names were proposed by the assistant, they can be corrected. Classes with the same name are merged.	이름은 도우미가 제안했으며 고칠 수 있습니다. 같은 이름의 클래스는 합쳤습니다.
+First press «Build».	먼저 «만들기»를 누르세요.
+The class name - in the name field of the polygons and in the scale on the globe.	클래스 이름 - 폴리곤의 name 필드와 지구본 범례에 들어갑니다.
+Share of the area.	구역 비율.
+Own class	자체 클래스
+Merge with «{name}»	«{name}»과(와) 합치기
+Merge this colour with another: the areas of both colours become one class with the name and colour of the one it is merged with.	이 색을 다른 색과 합칩니다: 두 색의 영역이 합쳐지는 색의 이름과 색을 가진 한 클래스가 됩니다.
+Colour {n}	색 {n}
+Classes from tracing	추적의 클래스
+Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.	«만들기» 후 «추적» 또는 «객체 추출» 창의 이름과 색이 있는 클래스. 점이 없는 클래스는 바뀌며 점은 지구본을 눌러 놓습니다.
+Classes from tracing: {n}.	추적의 클래스: {n}.
+The «Tracing» window has no built classes.	«추적» 창에 만든 클래스가 없습니다.
+Source - {source}.	원본 - {source}.
+Settings - {settings}.	설정 - {settings}.
+Classes - {rows}.	클래스 - {rows}.
+colours {n}	색 {n}
+smoothing {n}	평활화 {n}
+areas from {n} cells	영역 {n}셀 이상
+rounding {v}	둥글림 {v}
+pixel {pixel} m	픽셀 {pixel} m
+task «{task}»	작업 «{task}»
+second image «{name}»	두 번째 영상 «{name}»
+spring and autumn images {count}	봄·가을 영상 {count}개
+classes {n}	클래스 {n}
+objects: scale {scale}, texture {weight} %, from {least} cells	객체: 축척 {scale}, 질감 {weight} %, {least}셀 이상
+neighbours merged	이웃 합침
+Refine with points	점으로 다듬기
+Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	같은 영상, 구역, 이 창의 클래스로 «분류» 창을 엽니다. 그곳에서 지구본을 눌러 놓는 자체 기준점으로 클래스를 다듬습니다.
+Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	«객체 추출» 창의 클래스입니다. 동그라미로 클래스를 고르고 지구본에서 표본을 누르세요. 클래스마다 세 점 이상, 그다음 «만들기».
+Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	지구본 위 자체 기준점에 따른 구역 클래스 - 열린 래스터, 지구본 바탕지도 또는 AlphaEarth 임베딩 기준.

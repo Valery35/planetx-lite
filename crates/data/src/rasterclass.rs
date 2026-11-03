@@ -484,6 +484,65 @@ fn tag_shorts(bytes: &[u8], tag: u64, most: usize) -> Option<Vec<u64>> {
     Some(Vec::new())
 }
 
+/// Текст тега ASCII первого IFD TIFF. None - не TIFF или тега нет.
+fn tag_text(bytes: &[u8], tag: u64) -> Option<String> {
+    let little = match bytes.get(..2)? {
+        b"II" => true,
+        b"MM" => false,
+        _ => return None,
+    };
+    let number = |at: usize, size: usize| -> Option<u64> {
+        let raw = bytes.get(at..at.checked_add(size)?)?;
+        let fold = |n: u64, b: &u8| (n << 8) | u64::from(*b);
+        Some(if little { raw.iter().rev().fold(0, fold) } else { raw.iter().fold(0, fold) })
+    };
+    let big = match number(2, 2)? {
+        42 => false,
+        43 => true,
+        _ => return None,
+    };
+    let (word, entry, value_at) = if big { (8, 20, 12) } else { (4, 12, 8) };
+    let ifd = usize::try_from(number(if big { 8 } else { 4 }, word)?).ok()?;
+    let count = number(ifd, if big { 8 } else { 2 })?;
+    let first = ifd.checked_add(if big { 8 } else { 2 })?;
+    for n in 0..usize::try_from(count).ok()?.min(4096) {
+        let at = first.checked_add(n.checked_mul(entry)?)?;
+        if number(at, 2)? != tag {
+            continue;
+        }
+        let size = usize::try_from(number(at + 4, word)?).ok()?.min(1 << 20);
+        let start = if size <= word { at + value_at } else { usize::try_from(number(at + value_at, word)?).ok()? };
+        let raw = bytes.get(start..start.checked_add(size)?)?;
+        return Some(String::from_utf8_lossy(raw).trim_end_matches('\0').to_string());
+    }
+    None
+}
+
+/// Подписи каналов TIFF по тегу GDAL_METADATA без чтения точек: описания
+/// `<Item name="DESCRIPTION" sample="n">` по номеру канала, пусто - подписи
+/// нет. Для списков окон, которые выбирают снимки по каналам.
+pub fn quick_labels(bytes: &[u8]) -> Vec<String> {
+    let bands = feature_bands(bytes).unwrap_or(0).min(256);
+    let mut out = vec![String::new(); bands];
+    let Some(xml) = tag_text(bytes, 42112) else {
+        return out;
+    };
+    for item in xml.split("<Item").skip(1) {
+        let Some((head, rest)) = item.split_once('>') else {
+            continue;
+        };
+        if !head.contains("name=\"DESCRIPTION\"") {
+            continue;
+        }
+        let sample = head.split("sample=\"").nth(1).and_then(|s| s.split('"').next()).and_then(|s| s.parse::<usize>().ok());
+        let text = rest.split("</Item>").next().unwrap_or("").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
+        if let Some(slot) = sample.and_then(|s| out.get_mut(s)) {
+            *slot = text;
+        }
+    }
+    out
+}
+
 /// Канал прозрачности TIFF по тегу ExtraSamples (338), как `GCI_AlphaBand`
 /// у GDAL: значения 1 и 2 - прозрачность. Каналы ExtraSamples идут
 /// последними. None - не TIFF или прозрачности нет.

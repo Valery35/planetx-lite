@@ -157,6 +157,8 @@ enum Asked {
     Talk,
     /// Создание меток: описание и предел длины ответа.
     Make(String, u64),
+    /// Один запрос без разговора, ответ - в [`Ai::completed`].
+    Complete,
 }
 
 /// Окно помощника и разговор.
@@ -184,6 +186,8 @@ pub struct Ai {
     pub write: Option<(String, bool)>,
     /// Последний ответ модели для строки «Поиск».
     pub answer: Option<String>,
+    /// Ответ одиночного запроса [`Ai::complete`]: текст и причина отказа.
+    pub completed: Option<(String, String)>,
     /// Часы окна прошлого шага, секунды.
     now: f64,
 }
@@ -211,6 +215,7 @@ impl Ai {
             proposal: None,
             write: None,
             answer: None,
+            completed: None,
             now: 0.0,
         }
     }
@@ -282,6 +287,27 @@ impl Ai {
         }
         self.say(Who::User, text);
         self.make(text, aic::KML_MAX_TOKENS, settings, context, request);
+        true
+    }
+
+    /// Один запрос без инструментов и разговора, `complete` модуля 1.33:
+    /// ответ модели - в [`Ai::completed`]. Ложь - ждётся прежний ответ или
+    /// нет ключа, тогда открываются настройки. Так названия классов
+    /// трассировки не трогают разговор с помощником.
+    pub fn complete(&mut self, lang: Lang, system: &str, text: &str, settings: &AiSettings, request: &dyn Fn(u64) -> Box<dyn net::Request>) -> bool {
+        if self.busy() || self.waiting() {
+            return false;
+        }
+        if !settings.ready() {
+            self.no_key(lang);
+            return false;
+        }
+        let provider = settings.current().to_string();
+        let dialog = [aic::Message::user(text)];
+        let options = Options { tools: &[], max_tokens: None, stream: false };
+        let ask = aic::request(&provider, &settings.base(&provider), &settings.model(&provider), &settings.key(&provider), system, &dialog, &options);
+        self.completed = None;
+        self.post(ask, provider, Asked::Complete, request);
         true
     }
 
@@ -393,6 +419,11 @@ impl Ai {
         };
         let reply = data.as_ref().map_or_else(|| aic::Reply::failed("no data"), |d| aic::parse(&provider, d));
         match asked {
+            Asked::Complete => {
+                let reason = if !reply.error.is_empty() { reply.error.clone() } else if data.is_none() { error } else { String::new() };
+                let text = if reply.error.is_empty() { reply.text } else { String::new() };
+                self.completed = Some((text, reason));
+            }
             Asked::Talk => {
                 if reply.error.is_empty() && !reply.text.is_empty() {
                     self.say(Who::Model, &reply.text);

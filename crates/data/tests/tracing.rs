@@ -225,3 +225,33 @@ fn byte_colors_as_is() {
 fn reflectance_stretched() {
     assert_eq!(tracing::display_colors(&[vec![0.1], vec![0.3]]), vec![[0, 0, 0], [255, 255, 255]]);
 }
+
+#[test]
+fn untouched_colors_stay() {
+    let (lookup, keep) = tracing::join_colors(&[-1, -1, -1]);
+    assert_eq!(lookup, vec![0, 1, 2]);
+    assert_eq!(keep, vec![0, 1, 2]);
+}
+
+#[test]
+fn chain_goes_to_free_color() {
+    // 0 слит с 2, 2 - с 3: оба уходят в 3.
+    let (lookup, keep) = tracing::join_colors(&[2, -1, 3, -1]);
+    assert_eq!(keep, vec![1, 3]);
+    assert_eq!(lookup, vec![1, 0, 1, 1]);
+}
+
+#[test]
+fn circle_is_one_class() {
+    let (lookup, keep) = tracing::join_colors(&[1, 2, 0, -1]);
+    assert_eq!(keep, vec![0, 3]);
+    assert_eq!(lookup, vec![0, 0, 0, 1]);
+}
+
+#[test]
+fn cells_and_regions_follow() {
+    let (lookup, _) = tracing::join_colors(&[-1, 0, -1]);
+    let (classes, kinds) = tracing::joined(&[0, 1, 2, -1], &[1, 2, 0], &lookup);
+    assert_eq!(classes, vec![0, 0, 1, -1]);
+    assert_eq!(kinds, vec![0, 1, 0]);
+}

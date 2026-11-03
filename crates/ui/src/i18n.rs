@@ -72,6 +72,28 @@ impl Lang {
         LANGUAGES.iter().find(|(c, _)| *c == self.0).map_or(self.0, |(_, n)| n)
     }
 
+    /// Название языка по-английски - для подсказки модели помощника.
+    pub fn english_name(self) -> &'static str {
+        match self.0 {
+            "ru" => "Russian",
+            "de" => "German",
+            "es" => "Spanish",
+            "fr" => "French",
+            "it" => "Italian",
+            "nl" => "Dutch",
+            "pt" => "Portuguese",
+            "tr" => "Turkish",
+            "az" => "Azerbaijani",
+            "id" => "Indonesian",
+            "vi" => "Vietnamese",
+            "zh" => "Simplified Chinese",
+            "ja" => "Japanese",
+            "ko" => "Korean",
+            "ka" => "Georgian",
+            _ => "English",
+        }
+    }
+
     /// Нужен ли шрифт с иероглифами.
     pub fn needs_cjk(self) -> bool {
         matches!(self.0, "zh" | "ja" | "ko")

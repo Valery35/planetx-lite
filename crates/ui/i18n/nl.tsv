@@ -2191,3 +2191,127 @@ The image of the area is split into colours, the areas of one colour are outline
 Splitting the image into colours…	Het beeld wordt in kleuren opgedeeld…
 Colours {colors}, areas {regions}.	Kleuren {colors}, vlakken {regions}.
 There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	Er zijn meer dan {n} vlakken, «OK» bewaart een afbeelding van de kleuren in plaats van polygonen.
+Object extraction	Objectextractie
+Object extraction…	Objectextractie…
+Typical tasks over tracing - forests and clearcuts, fields, water, overgrown fields. The colours are named by the reflectance of a Sentinel-2 image.	Standaardtaken op basis van overtrekken - bossen en kapvlakten, akkers, water, verruigde akkers. De kleuren krijgen een naam volgens de reflectie van een Sentinel-2-beeld.
+Task	Taak
+A typical task sets the number of colours and the smallest area and after «Build» names the classes by the reflectance of the image.	Een standaardtaak stelt het aantal kleuren en het kleinste gebied in en geeft na «Berekenen» de klassen een naam volgens de reflectie van het beeld.
+Forests and clearcuts	Bossen en kapvlakten
+Coniferous forest, broadleaf forest and grass, clearcuts and burns, open soil, water. A clearcut is open soil with at least a quarter of coniferous forest in a band of three cells around it.	Naaldbos, loofbos en gras, kapvlakten en brandplekken, kale grond, water. Een kapvlakte is kale grond met minstens een kwart naaldbos in een strook van drie cellen eromheen.
+Fields	Akkers
+Vegetation, open soil and ploughland, clearcuts, water. Fields stay separate polygons, the smallest area is larger.	Vegetatie, kale grond en akkerland, kapvlakten, water. Akkers blijven aparte polygonen, het kleinste gebied is groter.
+Water and everything else - land.	Water en al het andere - land.
+Overgrown fields	Verruigde akkers
+Tilled fields, abandoned for 1-2 years, fallow and meadows, overgrowing with trees, forest. Spring and autumn images of 4 years show the year when the field was bare soil for the last time. The field borders are by the summer image.	Bewerkte akkers, 1-2 jaar verlaten, braak en weiden, verbossend, bos. Voorjaars- en herfstbeelden van 4 jaar tonen het jaar waarin de akker voor het laatst kale grond was. De akkergrenzen komen uit het zomerbeeld.
+No suitable image is open	Geen geschikt beeld geopend
+A Sentinel-2 or Landsat image with labelled bands. The list has only images in which the window recognised the near infrared and the red or SWIR by the labels.	Een Sentinel-2- of Landsat-beeld met gelabelde banden. De lijst bevat alleen beelden waarin het venster aan de labels het nabij-infrarood en rood of SWIR herkende.
+Find an image	Beeld zoeken
+Summer Sentinel-2 images of the area for three years, cloud cover over the area up to 5 %. A double click on an image loads the composite «Agriculture» (B11 B8 B2) and sets it as the source.	Zomerse Sentinel-2-beelden van het gebied van drie jaar, bewolking boven het gebied tot 5 %. Dubbelklikken op een beeld laadt de combinatie «Landbouw» (B11 B8 B2) en stelt die in als bron.
+A double click loads the image.	Dubbelklikken laadt het beeld.
+{day} - cloud cover over the area {cloud} %, data {valid} %	{day} - bewolking boven het gebied {cloud} %, gegevens {valid} %
+{day} - cloud cover over the area {cloud} %	{day} - bewolking boven het gebied {cloud} %
+Second image	Tweede beeld
+An image of the same place in another season, better with snow. Its bands go to the same grid of the area and are split into colours together with the first. On snow coniferous forest is what stayed dark, without snow - what hardly changed in the near infrared.	Een beeld van dezelfde plek in een ander seizoen, liefst met sneeuw. De banden komen op hetzelfde raster van het gebied en worden samen met de eerste in kleuren verdeeld. Op sneeuw is naaldbos wat donker bleef, zonder sneeuw wat in het nabij-infrarood nauwelijks veranderde.
+Sentinel-2 images of the area in March, April and October for three years. On snow coniferous forest is dark, bare broadleaf forest and fields are light. In October without snow broadleaf forest loses the near infrared, coniferous does not. A double click loads the image and sets it as the second.	Sentinel-2-beelden van het gebied in maart, april en oktober van drie jaar. Op sneeuw is naaldbos donker, kaal loofbos en akkers zijn licht. In oktober zonder sneeuw verliest loofbos het nabij-infrarood, naaldbos niet. Dubbelklikken laadt het beeld en stelt het in als tweede.
+Spring and autumn	Voorjaar en herfst
+Images {count} of {total}	Beelden {count} van {total}
+Pick images	Beelden kiezen
+Searches for Sentinel-2 images of the area in spring and autumn for 4 years, takes the clearest into each empty cell and loads it. Images that are already open are not loaded again.	Zoekt Sentinel-2-beelden van het gebied in voorjaar en herfst van 4 jaar, neemt voor elke lege cel het helderste en laadt het. Al geopende beelden worden niet opnieuw geladen.
+Spring	Voorjaar
+Autumn	Herfst
+No image	Geen beeld
+First «Pick images»	Eerst «Beelden kiezen»
+Images of spring (April - May) and autumn (September - October) by years. Ploughland at this time is bare soil, fallow is old grass and shrubs. A click on a cell - other dates of the season.	Beelden van voorjaar (april - mei) en herfst (september - oktober) per jaar. Akkerland is dan kale grond, braak is oud gras en struikgewas. Een klik op een cel toont andere data van het seizoen.
+Linear objects	Lijnobjecten
+Roads and cutlines, rivers and canals, shelterbelts - as centre lines, a separate folder. A line is a narrow part of soil, water or vegetation, a connected piece of a line is not shorter than 200 m.	Wegen en brandgangen, rivieren en kanalen, windsingels - als middellijnen in een aparte map. Een lijn is een smal deel van grond, water of vegetatie, een samenhangend stuk is minstens 200 m lang.
+Line width up to	Lijnbreedte tot
+An object narrower than this is a line. The width is at least two pixels of the grid, otherwise the line breaks.	Een smaller object is een lijn. De breedte is minstens twee pixels van het raster, anders breekt de lijn.
+Fine settings: pixel, colours, smoothing, smallest area, corner rounding, line width. The task sets them itself.	Fijne instellingen: pixel, kleuren, gladmaken, kleinste gebied, hoekafronding, lijnbreedte. De taak stelt ze zelf in.
+Coniferous forest	Naaldbos
+Broadleaf forest and grass	Loofbos en gras
+Open soil	Kale grond
+Clearcuts and burns	Kapvlakten en brandplekken
+Ploughland, tilled	Akkerland, bewerkt
+Abandoned 1-2 years	1-2 jaar verlaten
+Fallow or meadow	Braak of weide
+Overgrowing with trees	Verbossend
+Roads and cutlines	Wegen en brandgangen
+Rivers and canals	Rivieren en kanalen
+Shelterbelts and cutlines	Windsingels en brandgangen
+Lines	Lijnen
+Lines {km} km.	Lijnen {km} km.
+No linear objects were found.	Geen lijnobjecten gevonden.
+Clearcuts and burns - {area} ha.	Kapvlakten en brandplekken - {area} ha.
+Searching for Sentinel-2 images of the area…	Sentinel-2-beelden van het gebied zoeken…
+There are no Sentinel-2 scenes of the needed season over the area.	Er zijn geen Sentinel-2-scènes van het gewenste seizoen boven het gebied.
+Scenes {count}, the cloud cover over the area is counted…	Scènes {count}, de bewolking boven het gebied wordt berekend…
+There are no suitable images: over the area the scenes have cloud cover above {cloud} % or less than {valid} % of data.	Geen geschikte beelden: boven het gebied hebben de scènes meer dan {cloud} % bewolking of minder dan {valid} % gegevens.
+Suitable images: {count}. A double click on an image loads it.	Geschikte beelden: {count}. Dubbelklikken op een beeld laadt het.
+Loading the image {when}…	Beeld {when} laden…
+Loading the image {when}: bands {done} of {total}	Beeld {when} laden: banden {done} van {total}
+The server did not give the image, repeat {n} of {total}…	De server gaf het beeld niet, herhaling {n} van {total}…
+The image was not loaded - the server did not give the bands {error}. Repeat the double click later or take another image.	Het beeld is niet geladen - de server gaf de banden {error} niet. Herhaal het dubbelklikken later of neem een ander beeld.
+The image «{name}» is loaded.	Het beeld «{name}» is geladen.
+The image is loaded and set as the source: {name}.	Het beeld is geladen en ingesteld als bron: {name}.
+The second image is loaded: {name}.	Het tweede beeld is geladen: {name}.
+Loading the image of {season} {year}: {day}…	Beeld {season} {year} laden: {day}…
+Season images {count} of {total}. Empty cells are seasons without a clear image over the area, the computation goes without them.	Seizoensbeelden {count} van {total}. Lege cellen zijn seizoenen zonder helder beeld boven het gebied, de berekening gaat zonder.
+No clear spring and autumn images were found over the area.	Geen heldere voorjaars- en herfstbeelden boven het gebied gevonden.
+Suitable. Bands - {names}.	Geschikt. Banden - {names}.
+Image of {day}.	Beeld van {day}.
+The image is not a summer one, coniferous and broadleaf forest differ worse.	Het beeld is geen zomerbeeld, naald- en loofbos zijn slechter te onderscheiden.
+No open image has the near infrared and the red or SWIR. «Find an image» finds a summer Sentinel-2 image of the area.	Geen geopend beeld heeft nabij-infrarood en rood of SWIR. «Beeld zoeken» vindt een zomers Sentinel-2-beeld van het gebied.
+No image. The «Find an image» button finds and loads a summer Sentinel-2 image of the area.	Geen beeld. De knop «Beeld zoeken» vindt en laadt een zomers Sentinel-2-beeld van het gebied.
+The near infrared and the red or SWIR of the raster are not recognised - an image with labelled bands is needed.	Nabij-infrarood en rood of SWIR van het raster worden niet herkend - een beeld met gelabelde banden is nodig.
+No spring and autumn images. «Pick images» finds and loads them for the area.	Geen voorjaars- en herfstbeelden. «Beelden kiezen» vindt en laadt ze voor het gebied.
+The second image is the same as the first.	Het tweede beeld is hetzelfde als het eerste.
+The second image is no longer open.	Het tweede beeld is niet meer geopend.
+The near infrared of the second image is not recognised - an image with labelled bands is needed.	Het nabij-infrarood van het tweede beeld wordt niet herkend - een beeld met gelabelde banden is nodig.
+The second image is not read or does not cover the area.	Het tweede beeld is niet gelezen of dekt het gebied niet.
+The image	Het beeld
+The second image	Het tweede beeld
+{which} covers only {share} % of the area. «Find an image» loads an image of the whole area, or outline the area inside the image.	{which} dekt maar {share} % van het gebied. «Beeld zoeken» laadt een beeld van het hele gebied, of omlijn het gebied binnen het beeld.
+Reading the bands of the other images…	Banden van de andere beelden lezen…
+Reading the bands of the other images: {done} %.	Banden van de andere beelden lezen: {done} %.
+The raster values do not look like reflectance, the classes are not named.	De rasterwaarden lijken niet op reflectie, de klassen krijgen geen naam.
+Coniferous forest is told from broadleaf by the snow of the second image.	Naaldbos is van loofbos onderscheiden door de sneeuw op het tweede beeld.
+Coniferous forest is told from broadleaf by two images.	Naaldbos is van loofbos onderscheiden met twee beelden.
+Spring and autumn images {count}, years {first}-{last}.	Voorjaars- en herfstbeelden {count}, jaren {first}-{last}.
+The spring and autumn images did not fall on the area, the classes are by the summer image.	De voorjaars- en herfstbeelden vielen niet op het gebied, de klassen komen uit het zomerbeeld.
+The image of the area is split into colours, the colours are named by the reflectance rules of the task, the areas are outlined with smooth outlines.	Het beeld van het gebied wordt in kleuren verdeeld, de kleuren krijgen een naam volgens de reflectieregels van de taak, de gebieden krijgen gladde omtrekken.
+Names from the assistant	Namen van de assistent
+The AI assistant proposes class names by the table - mean band values, share of the area, size of areas, place and month of the image. The image and layer names are not sent to the model, pressing the button is consent to send the table. The names can be corrected.	De AI-assistent stelt klassenamen voor op basis van de tabel - gemiddelde bandwaarden, aandeel van het gebied, grootte van de gebieden, plaats en maand van het beeld. Beeld en laagnamen gaan niet naar het model, op de knop drukken is toestemming om de tabel te sturen. De namen zijn aan te passen.
+The assistant is thinking…	De assistent denkt na…
+The assistant is busy with the previous question or not connected.	De assistent is bezig met de vorige vraag of niet verbonden.
+The assistant gave no names: {error}	De assistent gaf geen namen: {error}
+empty answer	leeg antwoord
+The names were proposed by the assistant, they can be corrected. Classes with the same name are merged.	De namen zijn voorgesteld door de assistent en zijn aan te passen. Klassen met dezelfde naam zijn samengevoegd.
+First press «Build».	Druk eerst op «Berekenen».
+The class name - in the name field of the polygons and in the scale on the globe.	De klassenaam - in het veld name van de polygonen en in de schaal op de globe.
+Share of the area.	Aandeel van het gebied.
+Own class	Eigen klasse
+Merge with «{name}»	Samenvoegen met «{name}»
+Merge this colour with another: the areas of both colours become one class with the name and colour of the one it is merged with.	Deze kleur samenvoegen met een andere: de gebieden van beide kleuren worden één klasse met de naam en kleur van de doelkleur.
+Colour {n}	Kleur {n}
+Classes from tracing	Klassen uit overtrekken
+Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.	Klassen met namen en kleuren uit het venster «Overtrekken» of «Objectextractie» na «Berekenen». Klassen zonder punten worden vervangen, punten zet u met klikken op de globe.
+Classes from tracing: {n}.	Klassen uit overtrekken: {n}.
+The «Tracing» window has no built classes.	Het venster «Overtrekken» heeft geen berekende klassen.
+Source - {source}.	Bron - {source}.
+Settings - {settings}.	Instellingen - {settings}.
+Classes - {rows}.	Klassen - {rows}.
+colours {n}	kleuren {n}
+smoothing {n}	gladmaken {n}
+areas from {n} cells	gebieden vanaf {n} cellen
+rounding {v}	afronding {v}
+pixel {pixel} m	pixel {pixel} m
+task «{task}»	taak «{task}»
+second image «{name}»	tweede beeld «{name}»
+spring and autumn images {count}	voorjaars- en herfstbeelden {count}
+classes {n}	klassen {n}
+objects: scale {scale}, texture {weight} %, from {least} cells	objecten: schaal {scale}, textuur {weight} %, vanaf {least} cellen
+neighbours merged	buren samengevoegd
+Refine with points	Verfijnen met punten
+Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	Opent het venster «Classificatie» met hetzelfde beeld, gebied en dezelfde klassen. Daar worden de klassen verfijnd met eigen controlepunten door klikken op de globe.
+Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	Klassen uit het venster «Objectextractie». Kies een klasse met haar rondje en klik haar voorbeelden op de globe aan, minstens drie punten per klasse, dan «Berekenen».
+Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	Klassen van het gebied via eigen controlepunten op de globe - op basis van een geopend raster, de basiskaart of AlphaEarth-embeddings.

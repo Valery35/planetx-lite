@@ -2191,3 +2191,127 @@ The image of the area is split into colours, the areas of one colour are outline
 Splitting the image into colours…	Görüntü renklere ayrılıyor…
 Colours {colors}, areas {regions}.	Renk {colors}, bölge {regions}.
 There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	{n} bölgeden fazla var, «Tamam» çokgenler yerine renklerin resmini kaydeder.
+Object extraction	Nesne çıkarma
+Object extraction…	Nesne çıkarma…
+Typical tasks over tracing - forests and clearcuts, fields, water, overgrown fields. The colours are named by the reflectance of a Sentinel-2 image.	İzleme üzerinde tipik görevler - ormanlar ve kesimler, tarlalar, su, terk edilmiş tarlalar. Renkler bir Sentinel-2 görüntüsünün yansımasına göre adlandırılır.
+Task	Görev
+A typical task sets the number of colours and the smallest area and after «Build» names the classes by the reflectance of the image.	Tipik bir görev renk sayısını ve en küçük alanı ayarlar, «Oluştur»dan sonra sınıfları görüntünün yansımasına göre adlandırır.
+Forests and clearcuts	Ormanlar ve kesimler
+Coniferous forest, broadleaf forest and grass, clearcuts and burns, open soil, water. A clearcut is open soil with at least a quarter of coniferous forest in a band of three cells around it.	İğne yapraklı orman, geniş yapraklı orman ve çayır, kesimler ve yanıklar, açık toprak, su. Kesim, çevresindeki üç hücrelik şeritte en az dörtte biri iğne yapraklı orman olan açık topraktır.
+Fields	Tarlalar
+Vegetation, open soil and ploughland, clearcuts, water. Fields stay separate polygons, the smallest area is larger.	Bitki örtüsü, açık toprak ve sürülmüş tarla, kesimler, su. Tarlalar ayrı çokgenler olarak kalır, en küçük alan daha büyüktür.
+Water and everything else - land.	Su ve geri kalan her şey - kara.
+Overgrown fields	Terk edilmiş tarlalar
+Tilled fields, abandoned for 1-2 years, fallow and meadows, overgrowing with trees, forest. Spring and autumn images of 4 years show the year when the field was bare soil for the last time. The field borders are by the summer image.	İşlenen tarlalar, 1-2 yıldır terk edilmiş, nadas ve çayır, ağaçlanan, orman. 4 yılın ilkbahar ve sonbahar görüntüleri tarlanın en son hangi yıl açık toprak olduğunu gösterir. Tarla sınırları yaz görüntüsüne göredir.
+No suitable image is open	Uygun görüntü açık değil
+A Sentinel-2 or Landsat image with labelled bands. The list has only images in which the window recognised the near infrared and the red or SWIR by the labels.	Bantları etiketli bir Sentinel-2 veya Landsat görüntüsü. Listede yalnızca pencerenin etiketlerden yakın kızılötesini ve kırmızıyı veya SWIR'ı tanıdığı görüntüler var.
+Find an image	Görüntü bul
+Summer Sentinel-2 images of the area for three years, cloud cover over the area up to 5 %. A double click on an image loads the composite «Agriculture» (B11 B8 B2) and sets it as the source.	Alanın üç yıllık yaz Sentinel-2 görüntüleri, alan üzerinde bulutluluk %5'e kadar. Bir görüntüye çift tıklama «Tarım» (B11 B8 B2) birleşimini yükler ve kaynak yapar.
+A double click loads the image.	Çift tıklama görüntüyü yükler.
+{day} - cloud cover over the area {cloud} %, data {valid} %	{day} - alan üzerinde bulutluluk %{cloud}, veri %{valid}
+{day} - cloud cover over the area {cloud} %	{day} - alan üzerinde bulutluluk %{cloud}
+Second image	İkinci görüntü
+An image of the same place in another season, better with snow. Its bands go to the same grid of the area and are split into colours together with the first. On snow coniferous forest is what stayed dark, without snow - what hardly changed in the near infrared.	Aynı yerin başka bir mevsimdeki görüntüsü, tercihen karlı. Bantları alanın aynı ızgarasına yerleşir ve ilklerle birlikte renklere ayrılır. Kar üzerinde iğne yapraklı orman koyu kalan, karsız ise yakın kızılötesinde neredeyse değişmeyen kısımdır.
+Sentinel-2 images of the area in March, April and October for three years. On snow coniferous forest is dark, bare broadleaf forest and fields are light. In October without snow broadleaf forest loses the near infrared, coniferous does not. A double click loads the image and sets it as the second.	Alanın üç yıllık mart, nisan ve ekim Sentinel-2 görüntüleri. Kar üzerinde iğne yapraklı orman koyu, çıplak geniş yapraklı orman ve tarlalar açıktır. Ekimde karsız geniş yapraklı orman yakın kızılötesini kaybeder, iğne yapraklı kaybetmez. Çift tıklama görüntüyü yükler ve ikinci yapar.
+Spring and autumn	İlkbahar ve sonbahar
+Images {count} of {total}	Görüntü {count} / {total}
+Pick images	Görüntü seç
+Searches for Sentinel-2 images of the area in spring and autumn for 4 years, takes the clearest into each empty cell and loads it. Images that are already open are not loaded again.	Alanın 4 yıllık ilkbahar ve sonbahar Sentinel-2 görüntülerini arar, her boş hücreye en temizini alır ve yükler. Zaten açık görüntüler yeniden yüklenmez.
+Spring	İlkbahar
+Autumn	Sonbahar
+No image	Görüntü yok
+First «Pick images»	Önce «Görüntü seç»
+Images of spring (April - May) and autumn (September - October) by years. Ploughland at this time is bare soil, fallow is old grass and shrubs. A click on a cell - other dates of the season.	Yıllara göre ilkbahar (nisan - mayıs) ve sonbahar (eylül - ekim) görüntüleri. Bu dönemde sürülmüş tarla açık toprak, nadas eski ot ve çalılıktır. Hücreye tıklama mevsimin diğer tarihlerini gösterir.
+Linear objects	Çizgisel nesneler
+Roads and cutlines, rivers and canals, shelterbelts - as centre lines, a separate folder. A line is a narrow part of soil, water or vegetation, a connected piece of a line is not shorter than 200 m.	Yollar ve yangın şeritleri, nehirler ve kanallar, rüzgar perdeleri - eksen çizgileri olarak ayrı bir klasörde. Çizgi toprağın, suyun veya bitki örtüsünün dar bir kısmıdır, bağlı bir parça en az 200 m uzunluğundadır.
+Line width up to	Çizgi genişliği en fazla
+An object narrower than this is a line. The width is at least two pixels of the grid, otherwise the line breaks.	Bundan dar nesne çizgidir. Genişlik ızgaranın en az iki pikseli olmalı, yoksa çizgi kopar.
+Fine settings: pixel, colours, smoothing, smallest area, corner rounding, line width. The task sets them itself.	İnce ayarlar: piksel, renkler, yumuşatma, en küçük alan, köşe yuvarlama, çizgi genişliği. Görev bunları kendisi ayarlar.
+Coniferous forest	İğne yapraklı orman
+Broadleaf forest and grass	Geniş yapraklı orman ve çayır
+Open soil	Açık toprak
+Clearcuts and burns	Kesimler ve yanıklar
+Ploughland, tilled	Sürülmüş tarla, işleniyor
+Abandoned 1-2 years	1-2 yıldır terk edilmiş
+Fallow or meadow	Nadas veya çayır
+Overgrowing with trees	Ağaçlanıyor
+Roads and cutlines	Yollar ve yangın şeritleri
+Rivers and canals	Nehirler ve kanallar
+Shelterbelts and cutlines	Rüzgar perdeleri ve yangın şeritleri
+Lines	Çizgiler
+Lines {km} km.	Çizgiler {km} km.
+No linear objects were found.	Çizgisel nesne bulunamadı.
+Clearcuts and burns - {area} ha.	Kesimler ve yanıklar - {area} ha.
+Searching for Sentinel-2 images of the area…	Alanın Sentinel-2 görüntüleri aranıyor…
+There are no Sentinel-2 scenes of the needed season over the area.	Alan üzerinde gereken mevsimin Sentinel-2 sahnesi yok.
+Scenes {count}, the cloud cover over the area is counted…	Sahne {count}, alan üzerindeki bulutluluk hesaplanıyor…
+There are no suitable images: over the area the scenes have cloud cover above {cloud} % or less than {valid} % of data.	Uygun görüntü yok: alan üzerinde sahnelerin bulutluluğu %{cloud} üzerinde veya verisi %{valid} altında.
+Suitable images: {count}. A double click on an image loads it.	Uygun görüntü: {count}. Bir görüntüye çift tıklama onu yükler.
+Loading the image {when}…	{when} görüntüsü yükleniyor…
+Loading the image {when}: bands {done} of {total}	{when} görüntüsü yükleniyor: bant {done} / {total}
+The server did not give the image, repeat {n} of {total}…	Sunucu görüntüyü vermedi, tekrar {n} / {total}…
+The image was not loaded - the server did not give the bands {error}. Repeat the double click later or take another image.	Görüntü yüklenmedi - sunucu {error} bantlarını vermedi. Çift tıklamayı sonra tekrarlayın veya başka bir görüntü alın.
+The image «{name}» is loaded.	«{name}» görüntüsü yüklendi.
+The image is loaded and set as the source: {name}.	Görüntü yüklendi ve kaynak yapıldı: {name}.
+The second image is loaded: {name}.	İkinci görüntü yüklendi: {name}.
+Loading the image of {season} {year}: {day}…	{season} {year} görüntüsü yükleniyor: {day}…
+Season images {count} of {total}. Empty cells are seasons without a clear image over the area, the computation goes without them.	Mevsim görüntüsü {count} / {total}. Boş hücreler alan üzerinde temiz görüntüsü olmayan mevsimlerdir, hesap onlarsız yapılır.
+No clear spring and autumn images were found over the area.	Alan üzerinde temiz ilkbahar ve sonbahar görüntüsü bulunamadı.
+Suitable. Bands - {names}.	Uygun. Bantlar - {names}.
+Image of {day}.	{day} tarihli görüntü.
+The image is not a summer one, coniferous and broadleaf forest differ worse.	Görüntü yaz görüntüsü değil, iğne ve geniş yapraklı orman daha zor ayrılır.
+No open image has the near infrared and the red or SWIR. «Find an image» finds a summer Sentinel-2 image of the area.	Açık görüntülerin hiçbirinde yakın kızılötesi ve kırmızı veya SWIR yok. «Görüntü bul» alanın yaz Sentinel-2 görüntüsünü bulur.
+No image. The «Find an image» button finds and loads a summer Sentinel-2 image of the area.	Görüntü yok. «Görüntü bul» düğmesi alanın yaz Sentinel-2 görüntüsünü bulur ve yükler.
+The near infrared and the red or SWIR of the raster are not recognised - an image with labelled bands is needed.	Rasterin yakın kızılötesi ve kırmızı veya SWIR bantları tanınmıyor - bantları etiketli bir görüntü gerekir.
+No spring and autumn images. «Pick images» finds and loads them for the area.	İlkbahar ve sonbahar görüntüsü yok. «Görüntü seç» bunları alan için bulur ve yükler.
+The second image is the same as the first.	İkinci görüntü birinciyle aynı.
+The second image is no longer open.	İkinci görüntü artık açık değil.
+The near infrared of the second image is not recognised - an image with labelled bands is needed.	İkinci görüntünün yakın kızılötesi tanınmıyor - bantları etiketli bir görüntü gerekir.
+The second image is not read or does not cover the area.	İkinci görüntü okunmadı veya alanı kapsamıyor.
+The image	Görüntü
+The second image	İkinci görüntü
+{which} covers only {share} % of the area. «Find an image» loads an image of the whole area, or outline the area inside the image.	{which} alanın yalnızca %{share} kadarını kapsıyor. «Görüntü bul» tüm alanın görüntüsünü yükler ya da alanı görüntünün içinde çizin.
+Reading the bands of the other images…	Diğer görüntülerin bantları okunuyor…
+Reading the bands of the other images: {done} %.	Diğer görüntülerin bantları okunuyor: %{done}.
+The raster values do not look like reflectance, the classes are not named.	Raster değerleri yansımaya benzemiyor, sınıflar adlandırılmadı.
+Coniferous forest is told from broadleaf by the snow of the second image.	İğne yapraklı orman ikinci görüntünün karıyla geniş yapraklıdan ayrıldı.
+Coniferous forest is told from broadleaf by two images.	İğne yapraklı orman iki görüntüyle geniş yapraklıdan ayrıldı.
+Spring and autumn images {count}, years {first}-{last}.	İlkbahar ve sonbahar görüntüsü {count}, yıllar {first}-{last}.
+The spring and autumn images did not fall on the area, the classes are by the summer image.	İlkbahar ve sonbahar görüntüleri alana denk gelmedi, sınıflar yaz görüntüsüne göre.
+The image of the area is split into colours, the colours are named by the reflectance rules of the task, the areas are outlined with smooth outlines.	Alanın görüntüsü renklere ayrılır, renkler görevin yansıma kurallarına göre adlandırılır, alanlar düzgün sınırlarla çizilir.
+Names from the assistant	Asistandan adlar
+The AI assistant proposes class names by the table - mean band values, share of the area, size of areas, place and month of the image. The image and layer names are not sent to the model, pressing the button is consent to send the table. The names can be corrected.	Yapay zeka asistanı sınıf adlarını tabloya göre önerir - ortalama bant değerleri, alan payı, alanların boyutu, çekim yeri ve ayı. Görüntü ve katman adları modele gitmez, düğmeye basmak tabloyu gönderme onayıdır. Adlar düzeltilebilir.
+The assistant is thinking…	Asistan düşünüyor…
+The assistant is busy with the previous question or not connected.	Asistan önceki soruyla meşgul veya bağlı değil.
+The assistant gave no names: {error}	Asistan ad vermedi: {error}
+empty answer	boş yanıt
+The names were proposed by the assistant, they can be corrected. Classes with the same name are merged.	Adları asistan önerdi, düzeltilebilir. Aynı adlı sınıflar birleştirildi.
+First press «Build».	Önce «Oluştur»a basın.
+The class name - in the name field of the polygons and in the scale on the globe.	Sınıf adı - çokgenlerin name alanında ve küre üzerindeki ölçekte.
+Share of the area.	Alan payı.
+Own class	Kendi sınıfı
+Merge with «{name}»	«{name}» ile birleştir
+Merge this colour with another: the areas of both colours become one class with the name and colour of the one it is merged with.	Bu rengi başka bir renkle birleştir: iki rengin alanları, birleştirildiği rengin adı ve rengiyle tek sınıf olur.
+Colour {n}	Renk {n}
+Classes from tracing	İzlemeden sınıflar
+Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.	«Oluştur»dan sonra «İzleme» veya «Nesne çıkarma» penceresinden ad ve renkleriyle sınıflar. Noktasız sınıflar değiştirilir, noktalar küreye tıklanarak konur.
+Classes from tracing: {n}.	İzlemeden sınıf: {n}.
+The «Tracing» window has no built classes.	«İzleme» penceresinde oluşturulmuş sınıf yok.
+Source - {source}.	Kaynak - {source}.
+Settings - {settings}.	Ayarlar - {settings}.
+Classes - {rows}.	Sınıflar - {rows}.
+colours {n}	renk {n}
+smoothing {n}	yumuşatma {n}
+areas from {n} cells	{n} hücreden alanlar
+rounding {v}	yuvarlama {v}
+pixel {pixel} m	piksel {pixel} m
+task «{task}»	görev «{task}»
+second image «{name}»	ikinci görüntü «{name}»
+spring and autumn images {count}	ilkbahar ve sonbahar görüntüsü {count}
+classes {n}	sınıf {n}
+objects: scale {scale}, texture {weight} %, from {least} cells	nesneler: ölçek {scale}, doku %{weight}, {least} hücreden
+neighbours merged	komşular birleştirildi
+Refine with points	Noktalarla iyileştir
+Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	«Sınıflandırma» penceresini aynı görüntü, alan ve bu pencerenin sınıflarıyla açar. Orada sınıflar küreye tıklanarak konan kendi kontrol noktalarıyla iyileştirilir.
+Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	«Nesne çıkarma» penceresinden sınıflar. Daireyle bir sınıf seçin ve örneklerini küreye tıklayın, sınıf başına en az üç nokta, sonra «Oluştur».
+Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	Küre üzerindeki kendi kontrol noktalarıyla alan sınıfları - açık bir raster, küre altlığı veya AlphaEarth gömmelerine göre.

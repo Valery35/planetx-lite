@@ -2191,3 +2191,127 @@ The image of the area is split into colours, the areas of one colour are outline
 Splitting the image into colours…	Đang tách ảnh thành màu…
 Colours {colors}, areas {regions}.	Màu {colors}, vùng {regions}.
 There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	Có hơn {n} vùng, «OK» lưu hình các màu thay cho đa giác.
+Object extraction	Trích xuất đối tượng
+Object extraction…	Trích xuất đối tượng…
+Typical tasks over tracing - forests and clearcuts, fields, water, overgrown fields. The colours are named by the reflectance of a Sentinel-2 image.	Các tác vụ điển hình trên nền vẽ đường - rừng và khu khai thác, ruộng, nước, ruộng bỏ hoang. Màu được đặt tên theo độ phản xạ của ảnh Sentinel-2.
+Task	Tác vụ
+A typical task sets the number of colours and the smallest area and after «Build» names the classes by the reflectance of the image.	Tác vụ điển hình đặt số màu và vùng nhỏ nhất, sau «Tính» sẽ đặt tên lớp theo độ phản xạ của ảnh.
+Forests and clearcuts	Rừng và khu khai thác
+Coniferous forest, broadleaf forest and grass, clearcuts and burns, open soil, water. A clearcut is open soil with at least a quarter of coniferous forest in a band of three cells around it.	Rừng lá kim, rừng lá rộng và cỏ, khu khai thác và vết cháy, đất trống, nước. Khu khai thác là đất trống có ít nhất một phần tư rừng lá kim trong dải ba ô xung quanh.
+Fields	Ruộng
+Vegetation, open soil and ploughland, clearcuts, water. Fields stay separate polygons, the smallest area is larger.	Thực vật, đất trống và đất cày, khu khai thác, nước. Ruộng giữ là các đa giác riêng, vùng nhỏ nhất lớn hơn.
+Water and everything else - land.	Nước và mọi thứ còn lại - đất liền.
+Overgrown fields	Ruộng bỏ hoang
+Tilled fields, abandoned for 1-2 years, fallow and meadows, overgrowing with trees, forest. Spring and autumn images of 4 years show the year when the field was bare soil for the last time. The field borders are by the summer image.	Ruộng đang canh tác, bỏ 1-2 năm, đất hoang và đồng cỏ, đang mọc cây, rừng. Ảnh mùa xuân và mùa thu của 4 năm cho thấy năm cuối cùng ruộng là đất trống. Ranh giới ruộng theo ảnh mùa hè.
+No suitable image is open	Không có ảnh phù hợp đang mở
+A Sentinel-2 or Landsat image with labelled bands. The list has only images in which the window recognised the near infrared and the red or SWIR by the labels.	Ảnh Sentinel-2 hoặc Landsat có nhãn kênh. Danh sách chỉ có các ảnh mà cửa sổ nhận ra hồng ngoại gần và đỏ hoặc SWIR theo nhãn.
+Find an image	Tìm ảnh
+Summer Sentinel-2 images of the area for three years, cloud cover over the area up to 5 %. A double click on an image loads the composite «Agriculture» (B11 B8 B2) and sets it as the source.	Ảnh Sentinel-2 mùa hè của khu vực trong ba năm, mây trên khu vực đến 5 %. Nhấp đúp vào ảnh sẽ tải tổ hợp «Nông nghiệp» (B11 B8 B2) và đặt làm nguồn.
+A double click loads the image.	Nhấp đúp để tải ảnh.
+{day} - cloud cover over the area {cloud} %, data {valid} %	{day} - mây trên khu vực {cloud} %, dữ liệu {valid} %
+{day} - cloud cover over the area {cloud} %	{day} - mây trên khu vực {cloud} %
+Second image	Ảnh thứ hai
+An image of the same place in another season, better with snow. Its bands go to the same grid of the area and are split into colours together with the first. On snow coniferous forest is what stayed dark, without snow - what hardly changed in the near infrared.	Ảnh cùng nơi ở mùa khác, tốt hơn là có tuyết. Các kênh của nó nằm trên cùng lưới khu vực và được chia màu cùng với ảnh thứ nhất. Trên tuyết rừng lá kim là phần vẫn tối, không có tuyết là phần hồng ngoại gần hầu như không đổi.
+Sentinel-2 images of the area in March, April and October for three years. On snow coniferous forest is dark, bare broadleaf forest and fields are light. In October without snow broadleaf forest loses the near infrared, coniferous does not. A double click loads the image and sets it as the second.	Ảnh Sentinel-2 của khu vực vào tháng 3, 4 và 10 trong ba năm. Trên tuyết rừng lá kim tối, rừng lá rộng trụi lá và ruộng sáng. Tháng 10 không tuyết rừng lá rộng mất hồng ngoại gần, rừng lá kim thì không. Nhấp đúp sẽ tải ảnh và đặt làm ảnh thứ hai.
+Spring and autumn	Mùa xuân và mùa thu
+Images {count} of {total}	Ảnh {count} / {total}
+Pick images	Chọn ảnh
+Searches for Sentinel-2 images of the area in spring and autumn for 4 years, takes the clearest into each empty cell and loads it. Images that are already open are not loaded again.	Tìm ảnh Sentinel-2 của khu vực vào mùa xuân và mùa thu trong 4 năm, lấy ảnh sạch nhất cho mỗi ô trống và tải về. Ảnh đã mở sẽ không tải lại.
+Spring	Mùa xuân
+Autumn	Mùa thu
+No image	Không có ảnh
+First «Pick images»	Trước hết «Chọn ảnh»
+Images of spring (April - May) and autumn (September - October) by years. Ploughland at this time is bare soil, fallow is old grass and shrubs. A click on a cell - other dates of the season.	Ảnh mùa xuân (tháng 4 - 5) và mùa thu (tháng 9 - 10) theo năm. Lúc này đất cày là đất trống, đất hoang là cỏ già và cây bụi. Nhấp vào ô để xem các ngày khác của mùa.
+Linear objects	Đối tượng tuyến
+Roads and cutlines, rivers and canals, shelterbelts - as centre lines, a separate folder. A line is a narrow part of soil, water or vegetation, a connected piece of a line is not shorter than 200 m.	Đường và đường băng rừng, sông và kênh, đai rừng chắn gió - dạng đường trục, trong thư mục riêng. Đường là phần hẹp của đất, nước hoặc thực vật, đoạn liền mạch không ngắn hơn 200 m.
+Line width up to	Độ rộng đường đến
+An object narrower than this is a line. The width is at least two pixels of the grid, otherwise the line breaks.	Đối tượng hẹp hơn mức này là đường. Độ rộng ít nhất hai điểm ảnh của lưới, nếu không đường sẽ đứt.
+Fine settings: pixel, colours, smoothing, smallest area, corner rounding, line width. The task sets them itself.	Cài đặt chi tiết: điểm ảnh, màu, làm mịn, vùng nhỏ nhất, bo góc, độ rộng đường. Tác vụ tự đặt chúng.
+Coniferous forest	Rừng lá kim
+Broadleaf forest and grass	Rừng lá rộng và cỏ
+Open soil	Đất trống
+Clearcuts and burns	Khu khai thác và vết cháy
+Ploughland, tilled	Đất cày, đang canh tác
+Abandoned 1-2 years	Bỏ 1-2 năm
+Fallow or meadow	Đất hoang hoặc đồng cỏ
+Overgrowing with trees	Đang mọc cây
+Roads and cutlines	Đường và đường băng rừng
+Rivers and canals	Sông và kênh
+Shelterbelts and cutlines	Đai rừng chắn gió và đường băng
+Lines	Đường
+Lines {km} km.	Đường {km} km.
+No linear objects were found.	Không tìm thấy đối tượng tuyến.
+Clearcuts and burns - {area} ha.	Khu khai thác và vết cháy - {area} ha.
+Searching for Sentinel-2 images of the area…	Đang tìm ảnh Sentinel-2 của khu vực…
+There are no Sentinel-2 scenes of the needed season over the area.	Không có cảnh Sentinel-2 của mùa cần thiết trên khu vực.
+Scenes {count}, the cloud cover over the area is counted…	Cảnh {count}, đang tính mây trên khu vực…
+There are no suitable images: over the area the scenes have cloud cover above {cloud} % or less than {valid} % of data.	Không có ảnh phù hợp: trên khu vực các cảnh có mây trên {cloud} % hoặc dữ liệu dưới {valid} %.
+Suitable images: {count}. A double click on an image loads it.	Ảnh phù hợp: {count}. Nhấp đúp vào ảnh để tải.
+Loading the image {when}…	Đang tải ảnh {when}…
+Loading the image {when}: bands {done} of {total}	Đang tải ảnh {when}: kênh {done} / {total}
+The server did not give the image, repeat {n} of {total}…	Máy chủ không trả ảnh, thử lại {n} / {total}…
+The image was not loaded - the server did not give the bands {error}. Repeat the double click later or take another image.	Không tải được ảnh - máy chủ không trả các kênh {error}. Hãy nhấp đúp lại sau hoặc chọn ảnh khác.
+The image «{name}» is loaded.	Đã tải ảnh «{name}».
+The image is loaded and set as the source: {name}.	Đã tải ảnh và đặt làm nguồn: {name}.
+The second image is loaded: {name}.	Đã tải ảnh thứ hai: {name}.
+Loading the image of {season} {year}: {day}…	Đang tải ảnh {season} {year}: {day}…
+Season images {count} of {total}. Empty cells are seasons without a clear image over the area, the computation goes without them.	Ảnh theo mùa {count} / {total}. Ô trống là mùa không có ảnh sạch trên khu vực, việc tính toán bỏ qua chúng.
+No clear spring and autumn images were found over the area.	Không tìm thấy ảnh mùa xuân và mùa thu sạch trên khu vực.
+Suitable. Bands - {names}.	Phù hợp. Kênh - {names}.
+Image of {day}.	Ảnh ngày {day}.
+The image is not a summer one, coniferous and broadleaf forest differ worse.	Ảnh không phải mùa hè, rừng lá kim và lá rộng khó phân biệt hơn.
+No open image has the near infrared and the red or SWIR. «Find an image» finds a summer Sentinel-2 image of the area.	Không ảnh nào đang mở có hồng ngoại gần và đỏ hoặc SWIR. «Tìm ảnh» sẽ tìm ảnh Sentinel-2 mùa hè của khu vực.
+No image. The «Find an image» button finds and loads a summer Sentinel-2 image of the area.	Không có ảnh. Nút «Tìm ảnh» sẽ tìm và tải ảnh Sentinel-2 mùa hè của khu vực.
+The near infrared and the red or SWIR of the raster are not recognised - an image with labelled bands is needed.	Không nhận ra hồng ngoại gần và đỏ hoặc SWIR của raster - cần ảnh có nhãn kênh.
+No spring and autumn images. «Pick images» finds and loads them for the area.	Không có ảnh mùa xuân và mùa thu. «Chọn ảnh» sẽ tìm và tải chúng cho khu vực.
+The second image is the same as the first.	Ảnh thứ hai trùng với ảnh thứ nhất.
+The second image is no longer open.	Ảnh thứ hai không còn mở.
+The near infrared of the second image is not recognised - an image with labelled bands is needed.	Không nhận ra hồng ngoại gần của ảnh thứ hai - cần ảnh có nhãn kênh.
+The second image is not read or does not cover the area.	Không đọc được ảnh thứ hai hoặc ảnh không phủ khu vực.
+The image	Ảnh
+The second image	Ảnh thứ hai
+{which} covers only {share} % of the area. «Find an image» loads an image of the whole area, or outline the area inside the image.	{which} chỉ phủ {share} % khu vực. «Tìm ảnh» sẽ tải ảnh của toàn khu vực, hoặc hãy khoanh khu vực bên trong ảnh.
+Reading the bands of the other images…	Đang đọc các kênh của ảnh khác…
+Reading the bands of the other images: {done} %.	Đang đọc các kênh của ảnh khác: {done} %.
+The raster values do not look like reflectance, the classes are not named.	Giá trị raster không giống độ phản xạ, các lớp không được đặt tên.
+Coniferous forest is told from broadleaf by the snow of the second image.	Rừng lá kim được tách khỏi lá rộng theo tuyết của ảnh thứ hai.
+Coniferous forest is told from broadleaf by two images.	Rừng lá kim được tách khỏi lá rộng theo hai ảnh.
+Spring and autumn images {count}, years {first}-{last}.	Ảnh mùa xuân và mùa thu {count}, các năm {first}-{last}.
+The spring and autumn images did not fall on the area, the classes are by the summer image.	Ảnh mùa xuân và mùa thu không nằm trên khu vực, các lớp theo ảnh mùa hè.
+The image of the area is split into colours, the colours are named by the reflectance rules of the task, the areas are outlined with smooth outlines.	Ảnh khu vực được chia thành màu, màu được đặt tên theo quy tắc phản xạ của tác vụ, các vùng được vẽ đường bao mịn.
+Names from the assistant	Tên từ trợ lý
+The AI assistant proposes class names by the table - mean band values, share of the area, size of areas, place and month of the image. The image and layer names are not sent to the model, pressing the button is consent to send the table. The names can be corrected.	Trợ lý AI đề xuất tên lớp theo bảng - giá trị kênh trung bình, tỉ lệ khu vực, kích thước vùng, nơi và tháng chụp. Ảnh và tên lớp bản đồ không gửi tới mô hình, nhấn nút là đồng ý gửi bảng. Có thể sửa tên.
+The assistant is thinking…	Trợ lý đang suy nghĩ…
+The assistant is busy with the previous question or not connected.	Trợ lý đang bận câu hỏi trước hoặc chưa được kết nối.
+The assistant gave no names: {error}	Trợ lý không đưa ra tên: {error}
+empty answer	câu trả lời trống
+The names were proposed by the assistant, they can be corrected. Classes with the same name are merged.	Trợ lý đã đề xuất tên, có thể sửa. Các lớp cùng tên đã được gộp.
+First press «Build».	Hãy nhấn «Tính» trước.
+The class name - in the name field of the polygons and in the scale on the globe.	Tên lớp - trong trường name của đa giác và trên thang ở quả địa cầu.
+Share of the area.	Tỉ lệ khu vực.
+Own class	Lớp riêng
+Merge with «{name}»	Gộp với «{name}»
+Merge this colour with another: the areas of both colours become one class with the name and colour of the one it is merged with.	Gộp màu này với màu khác: vùng của cả hai màu thành một lớp với tên và màu của màu được gộp vào.
+Colour {n}	Màu {n}
+Classes from tracing	Lớp từ vẽ đường
+Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.	Lớp có tên và màu từ cửa sổ «Vẽ đường» hoặc «Trích xuất đối tượng» sau «Tính». Lớp không có điểm sẽ bị thay, điểm được đặt bằng cách nhấp lên quả địa cầu.
+Classes from tracing: {n}.	Lớp từ vẽ đường: {n}.
+The «Tracing» window has no built classes.	Cửa sổ «Vẽ đường» chưa có lớp nào được tính.
+Source - {source}.	Nguồn - {source}.
+Settings - {settings}.	Cài đặt - {settings}.
+Classes - {rows}.	Lớp - {rows}.
+colours {n}	màu {n}
+smoothing {n}	làm mịn {n}
+areas from {n} cells	vùng từ {n} ô
+rounding {v}	bo góc {v}
+pixel {pixel} m	điểm ảnh {pixel} m
+task «{task}»	tác vụ «{task}»
+second image «{name}»	ảnh thứ hai «{name}»
+spring and autumn images {count}	ảnh mùa xuân và mùa thu {count}
+classes {n}	lớp {n}
+objects: scale {scale}, texture {weight} %, from {least} cells	đối tượng: tỉ lệ {scale}, kết cấu {weight} %, từ {least} ô
+neighbours merged	các vùng kề được gộp
+Refine with points	Tinh chỉnh bằng điểm
+Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	Mở cửa sổ «Phân loại» với cùng ảnh, khu vực và các lớp của cửa sổ này. Tại đó các lớp được tinh chỉnh bằng điểm kiểm soát riêng khi nhấp lên quả địa cầu.
+Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	Các lớp từ cửa sổ «Trích xuất đối tượng». Chọn lớp bằng nút tròn và nhấp các mẫu của nó lên quả địa cầu, ít nhất ba điểm mỗi lớp, rồi «Tính».
+Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	Các lớp của khu vực theo điểm kiểm soát riêng trên quả địa cầu - theo raster đang mở, bản đồ nền hoặc embedding AlphaEarth.

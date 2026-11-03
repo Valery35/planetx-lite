@@ -2191,3 +2191,127 @@ The image of the area is split into colours, the areas of one colour are outline
 Splitting the image into colours…	画像を色に分けています…
 Colours {colors}, areas {regions}.	色 {colors}、領域 {regions}。
 There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	領域が {n} を超えるため、「OK」はポリゴンの代わりに色の画像を保存します。
+Object extraction	地物抽出
+Object extraction…	地物抽出…
+Typical tasks over tracing - forests and clearcuts, fields, water, overgrown fields. The colours are named by the reflectance of a Sentinel-2 image.	トレースに基づく定型タスク - 森林と伐採地、農地、水域、放棄地。色は Sentinel-2 画像の反射率で名付けられます。
+Task	タスク
+A typical task sets the number of colours and the smallest area and after «Build» names the classes by the reflectance of the image.	定型タスクは色の数と最小領域を設定し、「作成」の後に画像の反射率でクラスを名付けます。
+Forests and clearcuts	森林と伐採地
+Coniferous forest, broadleaf forest and grass, clearcuts and burns, open soil, water. A clearcut is open soil with at least a quarter of coniferous forest in a band of three cells around it.	針葉樹林、広葉樹林と草地、伐採地と焼け跡、裸地、水域。伐採地は周囲3セルの帯の4分の1以上が針葉樹林の裸地です。
+Fields	農地
+Vegetation, open soil and ploughland, clearcuts, water. Fields stay separate polygons, the smallest area is larger.	植生、裸地と耕地、伐採地、水域。農地は個別のポリゴンのまま、最小領域は大きめです。
+Water and everything else - land.	水域とそれ以外のすべて - 陸地。
+Overgrown fields	放棄地
+Tilled fields, abandoned for 1-2 years, fallow and meadows, overgrowing with trees, forest. Spring and autumn images of 4 years show the year when the field was bare soil for the last time. The field borders are by the summer image.	耕作中の農地、放棄1-2年、休耕地と草地、樹木が侵入中、森林。4年分の春と秋の画像から、農地が最後に裸地だった年がわかります。農地の境界は夏の画像によります。
+No suitable image is open	適した画像が開かれていません
+A Sentinel-2 or Landsat image with labelled bands. The list has only images in which the window recognised the near infrared and the red or SWIR by the labels.	バンドにラベルのある Sentinel-2 または Landsat 画像。一覧には、ラベルから近赤外と赤または SWIR を認識できた画像だけが入ります。
+Find an image	画像を探す
+Summer Sentinel-2 images of the area for three years, cloud cover over the area up to 5 %. A double click on an image loads the composite «Agriculture» (B11 B8 B2) and sets it as the source.	区域の3年分の夏の Sentinel-2 画像、区域上の雲量5 %まで。画像をダブルクリックすると「農業」合成（B11 B8 B2）を読み込み、ソースにします。
+A double click loads the image.	ダブルクリックで画像を読み込みます。
+{day} - cloud cover over the area {cloud} %, data {valid} %	{day} - 区域上の雲量 {cloud} %、データ {valid} %
+{day} - cloud cover over the area {cloud} %	{day} - 区域上の雲量 {cloud} %
+Second image	2枚目の画像
+An image of the same place in another season, better with snow. Its bands go to the same grid of the area and are split into colours together with the first. On snow coniferous forest is what stayed dark, without snow - what hardly changed in the near infrared.	同じ場所の別の季節の画像、雪があるとよい。そのバンドは同じ区域グリッドに載り、1枚目と一緒に色分けされます。雪の上では暗いままの部分、雪がなければ近赤外がほとんど変わらない部分が針葉樹林です。
+Sentinel-2 images of the area in March, April and October for three years. On snow coniferous forest is dark, bare broadleaf forest and fields are light. In October without snow broadleaf forest loses the near infrared, coniferous does not. A double click loads the image and sets it as the second.	区域の3年分の3月・4月・10月の Sentinel-2 画像。雪の上では針葉樹林は暗く、落葉した広葉樹林と農地は明るい。10月の雪のない時期、広葉樹林は近赤外を失い、針葉樹林は失いません。ダブルクリックで画像を読み込み、2枚目にします。
+Spring and autumn	春と秋
+Images {count} of {total}	画像 {count} / {total}
+Pick images	画像を選ぶ
+Searches for Sentinel-2 images of the area in spring and autumn for 4 years, takes the clearest into each empty cell and loads it. Images that are already open are not loaded again.	区域の4年分の春と秋の Sentinel-2 画像を探し、空のセルごとに最もきれいなものを選んで読み込みます。開いている画像は読み込み直しません。
+Spring	春
+Autumn	秋
+No image	画像なし
+First «Pick images»	まず「画像を選ぶ」
+Images of spring (April - May) and autumn (September - October) by years. Ploughland at this time is bare soil, fallow is old grass and shrubs. A click on a cell - other dates of the season.	年ごとの春（4-5月）と秋（9-10月）の画像。この時期の耕地は裸地、休耕地は古い草と低木です。セルをクリックすると季節の他の日付が出ます。
+Linear objects	線状地物
+Roads and cutlines, rivers and canals, shelterbelts - as centre lines, a separate folder. A line is a narrow part of soil, water or vegetation, a connected piece of a line is not shorter than 200 m.	道路と林道、川と水路、防風林 - 中心線として別フォルダに。線は土壌・水・植生の細い部分で、つながった線は200 m以上です。
+Line width up to	線幅の上限
+An object narrower than this is a line. The width is at least two pixels of the grid, otherwise the line breaks.	これより細い対象は線です。幅はグリッドの2ピクセル以上、そうでないと線が切れます。
+Fine settings: pixel, colours, smoothing, smallest area, corner rounding, line width. The task sets them itself.	詳細設定：ピクセル、色、平滑化、最小領域、角の丸め、線幅。タスクが自動で設定します。
+Coniferous forest	針葉樹林
+Broadleaf forest and grass	広葉樹林と草地
+Open soil	裸地
+Clearcuts and burns	伐採地と焼け跡
+Ploughland, tilled	耕地、耕作中
+Abandoned 1-2 years	放棄1-2年
+Fallow or meadow	休耕地または草地
+Overgrowing with trees	樹木が侵入中
+Roads and cutlines	道路と林道
+Rivers and canals	川と水路
+Shelterbelts and cutlines	防風林と林道
+Lines	線
+Lines {km} km.	線 {km} km。
+No linear objects were found.	線状地物は見つかりませんでした。
+Clearcuts and burns - {area} ha.	伐採地と焼け跡 {area} ha。
+Searching for Sentinel-2 images of the area…	区域の Sentinel-2 画像を検索中…
+There are no Sentinel-2 scenes of the needed season over the area.	区域上に必要な季節の Sentinel-2 シーンはありません。
+Scenes {count}, the cloud cover over the area is counted…	シーン {count}、区域上の雲量を計算中…
+There are no suitable images: over the area the scenes have cloud cover above {cloud} % or less than {valid} % of data.	適した画像はありません：区域上のシーンは雲量 {cloud} %超またはデータ {valid} %未満です。
+Suitable images: {count}. A double click on an image loads it.	適した画像：{count}。画像をダブルクリックすると読み込みます。
+Loading the image {when}…	画像 {when} を読み込み中…
+Loading the image {when}: bands {done} of {total}	画像 {when} を読み込み中：バンド {done} / {total}
+The server did not give the image, repeat {n} of {total}…	サーバーが画像を返しません、再試行 {n} / {total}…
+The image was not loaded - the server did not give the bands {error}. Repeat the double click later or take another image.	画像を読み込めませんでした - サーバーがバンド {error} を返しません。後でダブルクリックし直すか、別の画像を選んでください。
+The image «{name}» is loaded.	画像「{name}」を読み込みました。
+The image is loaded and set as the source: {name}.	画像を読み込み、ソースにしました：{name}。
+The second image is loaded: {name}.	2枚目の画像を読み込みました：{name}。
+Loading the image of {season} {year}: {day}…	{year}年{season}の画像を読み込み中：{day}…
+Season images {count} of {total}. Empty cells are seasons without a clear image over the area, the computation goes without them.	季節の画像 {count} / {total}。空のセルは区域上にきれいな画像がない季節で、計算はそれらなしで行います。
+No clear spring and autumn images were found over the area.	区域上にきれいな春と秋の画像は見つかりませんでした。
+Suitable. Bands - {names}.	適しています。バンド - {names}。
+Image of {day}.	{day} の画像。
+The image is not a summer one, coniferous and broadleaf forest differ worse.	夏の画像ではないため、針葉樹林と広葉樹林は区別しにくくなります。
+No open image has the near infrared and the red or SWIR. «Find an image» finds a summer Sentinel-2 image of the area.	近赤外と赤または SWIR を持つ画像が開かれていません。「画像を探す」で区域の夏の Sentinel-2 画像を探します。
+No image. The «Find an image» button finds and loads a summer Sentinel-2 image of the area.	画像がありません。「画像を探す」ボタンで区域の夏の Sentinel-2 画像を探して読み込みます。
+The near infrared and the red or SWIR of the raster are not recognised - an image with labelled bands is needed.	ラスターの近赤外と赤または SWIR を認識できません - バンドにラベルのある画像が必要です。
+No spring and autumn images. «Pick images» finds and loads them for the area.	春と秋の画像がありません。「画像を選ぶ」で区域用に探して読み込みます。
+The second image is the same as the first.	2枚目の画像は1枚目と同じです。
+The second image is no longer open.	2枚目の画像はもう開かれていません。
+The near infrared of the second image is not recognised - an image with labelled bands is needed.	2枚目の画像の近赤外を認識できません - バンドにラベルのある画像が必要です。
+The second image is not read or does not cover the area.	2枚目の画像を読めないか、区域を覆っていません。
+The image	画像
+The second image	2枚目の画像
+{which} covers only {share} % of the area. «Find an image» loads an image of the whole area, or outline the area inside the image.	{which}は区域の {share} %しか覆っていません。「画像を探す」で区域全体の画像を読み込むか、画像の内側に区域を描いてください。
+Reading the bands of the other images…	他の画像のバンドを読み込み中…
+Reading the bands of the other images: {done} %.	他の画像のバンドを読み込み中：{done} %。
+The raster values do not look like reflectance, the classes are not named.	ラスターの値が反射率らしくないため、クラスに名前を付けていません。
+Coniferous forest is told from broadleaf by the snow of the second image.	2枚目の画像の雪で針葉樹林を広葉樹林から分けました。
+Coniferous forest is told from broadleaf by two images.	2枚の画像で針葉樹林を広葉樹林から分けました。
+Spring and autumn images {count}, years {first}-{last}.	春と秋の画像 {count} 枚、{first}-{last}年。
+The spring and autumn images did not fall on the area, the classes are by the summer image.	春と秋の画像が区域に重なりませんでした。クラスは夏の画像によります。
+The image of the area is split into colours, the colours are named by the reflectance rules of the task, the areas are outlined with smooth outlines.	区域の画像を色に分け、色はタスクの反射規則で名付け、領域は滑らかな輪郭で囲みます。
+Names from the assistant	アシスタントの名前
+The AI assistant proposes class names by the table - mean band values, share of the area, size of areas, place and month of the image. The image and layer names are not sent to the model, pressing the button is consent to send the table. The names can be corrected.	AI アシスタントが表からクラス名を提案します - バンドの平均値、区域に占める割合、領域の大きさ、撮影場所と月。画像とレイヤー名はモデルに送られず、ボタンを押すことが表の送信への同意です。名前は修正できます。
+The assistant is thinking…	アシスタントが考え中…
+The assistant is busy with the previous question or not connected.	アシスタントは前の質問を処理中か、接続されていません。
+The assistant gave no names: {error}	アシスタントは名前を返しませんでした：{error}
+empty answer	空の回答
+The names were proposed by the assistant, they can be corrected. Classes with the same name are merged.	名前はアシスタントの提案で、修正できます。同じ名前のクラスは統合しました。
+First press «Build».	まず「作成」を押してください。
+The class name - in the name field of the polygons and in the scale on the globe.	クラス名 - ポリゴンの name 欄と地球儀上の凡例に入ります。
+Share of the area.	区域に占める割合。
+Own class	独自のクラス
+Merge with «{name}»	「{name}」と統合
+Merge this colour with another: the areas of both colours become one class with the name and colour of the one it is merged with.	この色を別の色と統合します：両方の色の領域が、統合先の名前と色を持つ1つのクラスになります。
+Colour {n}	色 {n}
+Classes from tracing	トレースのクラス
+Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.	「作成」後の「トレース」または「地物抽出」ウィンドウの名前と色のクラス。点のないクラスは置き換えられ、点は地球儀のクリックで置きます。
+Classes from tracing: {n}.	トレースのクラス：{n}。
+The «Tracing» window has no built classes.	「トレース」ウィンドウに作成済みのクラスはありません。
+Source - {source}.	ソース - {source}。
+Settings - {settings}.	設定 - {settings}。
+Classes - {rows}.	クラス - {rows}。
+colours {n}	色 {n}
+smoothing {n}	平滑化 {n}
+areas from {n} cells	領域 {n} セル以上
+rounding {v}	角の丸め {v}
+pixel {pixel} m	ピクセル {pixel} m
+task «{task}»	タスク「{task}」
+second image «{name}»	2枚目の画像「{name}」
+spring and autumn images {count}	春と秋の画像 {count} 枚
+classes {n}	クラス {n}
+objects: scale {scale}, texture {weight} %, from {least} cells	オブジェクト：スケール {scale}、テクスチャ {weight} %、{least} セル以上
+neighbours merged	隣接を統合
+Refine with points	点で調整
+Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	同じ画像・区域・このウィンドウのクラスで「分類」ウィンドウを開きます。そこで地球儀をクリックして自分の基準点でクラスを調整します。
+Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	「地物抽出」ウィンドウのクラスです。丸でクラスを選び、地球儀でその見本をクリックします。1クラス3点以上、その後「作成」。
+Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	地球儀上の自分の基準点による区域のクラス - 開いたラスター、地球儀の背景地図または AlphaEarth 埋め込みによる。

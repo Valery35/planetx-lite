@@ -2191,3 +2191,127 @@ The image of the area is split into colours, the areas of one colour are outline
 Splitting the image into colours…	სურათი ფერებად იყოფა…
 Colours {colors}, areas {regions}.	ფერი {colors}, არე {regions}.
 There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	არე {n}-ზე მეტია, «OK» მრავალკუთხედების ნაცვლად ფერების სურათს შეინახავს.
+Object extraction	ობიექტების გამოყოფა
+Object extraction…	ობიექტების გამოყოფა…
+Typical tasks over tracing - forests and clearcuts, fields, water, overgrown fields. The colours are named by the reflectance of a Sentinel-2 image.	ტიპური ამოცანები ტრასირების საფუძველზე - ტყეები და ჭრები, მინდვრები, წყალი, მიტოვებული მინდვრები. ფერებს ერქმევა Sentinel-2 სურათის არეკვლით.
+Task	ამოცანა
+A typical task sets the number of colours and the smallest area and after «Build» names the classes by the reflectance of the image.	ტიპური ამოცანა აყენებს ფერების რაოდენობას და უმცირეს არეს, «აგების» შემდეგ კი კლასებს არქმევს სურათის არეკვლით.
+Forests and clearcuts	ტყეები და ჭრები
+Coniferous forest, broadleaf forest and grass, clearcuts and burns, open soil, water. A clearcut is open soil with at least a quarter of coniferous forest in a band of three cells around it.	წიწვოვანი ტყე, ფოთლოვანი ტყე და ბალახი, ჭრები და ნახანძრალები, ღია ნიადაგი, წყალი. ჭრა არის ღია ნიადაგი, რომლის გარშემო სამი უჯრის ზოლის მეოთხედი მაინც წიწვოვანი ტყეა.
+Fields	მინდვრები
+Vegetation, open soil and ploughland, clearcuts, water. Fields stay separate polygons, the smallest area is larger.	მცენარეულობა, ღია ნიადაგი და სახნავი, ჭრები, წყალი. მინდვრები ცალკე მრავალკუთხედებად რჩება, უმცირესი არე უფრო დიდია.
+Water and everything else - land.	წყალი და დანარჩენი ყველაფერი - ხმელეთი.
+Overgrown fields	მიტოვებული მინდვრები
+Tilled fields, abandoned for 1-2 years, fallow and meadows, overgrowing with trees, forest. Spring and autumn images of 4 years show the year when the field was bare soil for the last time. The field borders are by the summer image.	დამუშავებული მინდვრები, 1-2 წლით მიტოვებული, ნასვენი და მდელოები, ხეებით დაფარვადი, ტყე. 4 წლის გაზაფხულისა და შემოდგომის სურათები აჩვენებს, რომელ წელს იყო მინდორი ბოლოს ღია ნიადაგი. მინდვრების საზღვრები ზაფხულის სურათით.
+No suitable image is open	შესაფერისი სურათი გახსნილი არ არის
+A Sentinel-2 or Landsat image with labelled bands. The list has only images in which the window recognised the near infrared and the red or SWIR by the labels.	Sentinel-2 ან Landsat სურათი არხების წარწერებით. სიაში მხოლოდ სურათებია, რომელთა წარწერებით ფანჯარამ იცნო ახლო ინფრაწითელი და წითელი ან SWIR.
+Find an image	სურათის პოვნა
+Summer Sentinel-2 images of the area for three years, cloud cover over the area up to 5 %. A double click on an image loads the composite «Agriculture» (B11 B8 B2) and sets it as the source.	უბნის სამი წლის ზაფხულის Sentinel-2 სურათები, ღრუბლიანობა უბანზე 5 %-მდე. სურათზე ორმაგი დაწკაპება ტვირთავს კომბინაციას «სოფლის მეურნეობა» (B11 B8 B2) და აყენებს წყაროდ.
+A double click loads the image.	ორმაგი დაწკაპება ტვირთავს სურათს.
+{day} - cloud cover over the area {cloud} %, data {valid} %	{day} - ღრუბლიანობა უბანზე {cloud} %, მონაცემები {valid} %
+{day} - cloud cover over the area {cloud} %	{day} - ღრუბლიანობა უბანზე {cloud} %
+Second image	მეორე სურათი
+An image of the same place in another season, better with snow. Its bands go to the same grid of the area and are split into colours together with the first. On snow coniferous forest is what stayed dark, without snow - what hardly changed in the near infrared.	იმავე ადგილის სხვა სეზონის სურათი, უმჯობესია თოვლით. მისი არხები იმავე ბადეზე ეწყობა და პირველებთან ერთად იყოფა ფერებად. თოვლზე წიწვოვანი ტყე ის არის, რაც მუქი დარჩა, თოვლის გარეშე - რაც ახლო ინფრაწითელში თითქმის არ შეიცვალა.
+Sentinel-2 images of the area in March, April and October for three years. On snow coniferous forest is dark, bare broadleaf forest and fields are light. In October without snow broadleaf forest loses the near infrared, coniferous does not. A double click loads the image and sets it as the second.	უბნის სამი წლის მარტის, აპრილისა და ოქტომბრის Sentinel-2 სურათები. თოვლზე წიწვოვანი ტყე მუქია, შიშველი ფოთლოვანი ტყე და მინდვრები ღია. ოქტომბერში თოვლის გარეშე ფოთლოვანი ტყე კარგავს ახლო ინფრაწითელს, წიწვოვანი არა. ორმაგი დაწკაპება ტვირთავს სურათს და აყენებს მეორედ.
+Spring and autumn	გაზაფხული და შემოდგომა
+Images {count} of {total}	სურათები {count} / {total}
+Pick images	სურათების შერჩევა
+Searches for Sentinel-2 images of the area in spring and autumn for 4 years, takes the clearest into each empty cell and loads it. Images that are already open are not loaded again.	ეძებს უბნის 4 წლის გაზაფხულისა და შემოდგომის Sentinel-2 სურათებს, თითოეულ ცარიელ უჯრაში იღებს ყველაზე სუფთას და ტვირთავს. უკვე გახსნილი სურათები ხელახლა არ იტვირთება.
+Spring	გაზაფხული
+Autumn	შემოდგომა
+No image	სურათის გარეშე
+First «Pick images»	ჯერ «სურათების შერჩევა»
+Images of spring (April - May) and autumn (September - October) by years. Ploughland at this time is bare soil, fallow is old grass and shrubs. A click on a cell - other dates of the season.	გაზაფხულის (აპრილი - მაისი) და შემოდგომის (სექტემბერი - ოქტომბერი) სურათები წლების მიხედვით. ამ დროს სახნავი ღია ნიადაგია, ნასვენი - ძველი ბალახი და ბუჩქები. უჯრაზე დაწკაპება - სეზონის სხვა თარიღები.
+Linear objects	ხაზოვანი ობიექტები
+Roads and cutlines, rivers and canals, shelterbelts - as centre lines, a separate folder. A line is a narrow part of soil, water or vegetation, a connected piece of a line is not shorter than 200 m.	გზები და ტყის ზოლები, მდინარეები და არხები, ქარსაფარი ზოლები - ღერძული ხაზებით, ცალკე საქაღალდეში. ხაზი ნიადაგის, წყლის ან მცენარეულობის ვიწრო ნაწილია, დაკავშირებული მონაკვეთი 200 მ-ზე ნაკლები არ არის.
+Line width up to	ხაზის სიგანე მაქსიმუმ
+An object narrower than this is a line. The width is at least two pixels of the grid, otherwise the line breaks.	ამაზე ვიწრო ობიექტი ხაზია. სიგანე ბადის ორ პიქსელზე ნაკლები არ უნდა იყოს, თორემ ხაზი წყდება.
+Fine settings: pixel, colours, smoothing, smallest area, corner rounding, line width. The task sets them itself.	დახვეწილი პარამეტრები: პიქსელი, ფერები, გასწორება, უმცირესი არე, კუთხეების მომრგვალება, ხაზის სიგანე. ამოცანა თავად აყენებს მათ.
+Coniferous forest	წიწვოვანი ტყე
+Broadleaf forest and grass	ფოთლოვანი ტყე და ბალახი
+Open soil	ღია ნიადაგი
+Clearcuts and burns	ჭრები და ნახანძრალები
+Ploughland, tilled	სახნავი, მუშავდება
+Abandoned 1-2 years	1-2 წლით მიტოვებული
+Fallow or meadow	ნასვენი ან მდელო
+Overgrowing with trees	ხეებით იფარება
+Roads and cutlines	გზები და ტყის ზოლები
+Rivers and canals	მდინარეები და არხები
+Shelterbelts and cutlines	ქარსაფარი ზოლები და ტყის ზოლები
+Lines	ხაზები
+Lines {km} km.	ხაზები {km} კმ.
+No linear objects were found.	ხაზოვანი ობიექტები ვერ მოიძებნა.
+Clearcuts and burns - {area} ha.	ჭრები და ნახანძრალები - {area} ჰა.
+Searching for Sentinel-2 images of the area…	უბნის Sentinel-2 სურათების ძიება…
+There are no Sentinel-2 scenes of the needed season over the area.	უბანზე საჭირო სეზონის Sentinel-2 სცენები არ არის.
+Scenes {count}, the cloud cover over the area is counted…	სცენები {count}, ითვლება ღრუბლიანობა უბანზე…
+There are no suitable images: over the area the scenes have cloud cover above {cloud} % or less than {valid} % of data.	შესაფერისი სურათები არ არის: უბანზე სცენების ღრუბლიანობა {cloud} %-ზე მეტია ან მონაცემები {valid} %-ზე ნაკლები.
+Suitable images: {count}. A double click on an image loads it.	შესაფერისი სურათები: {count}. სურათზე ორმაგი დაწკაპება ტვირთავს მას.
+Loading the image {when}…	{when} სურათის ჩატვირთვა…
+Loading the image {when}: bands {done} of {total}	{when} სურათის ჩატვირთვა: არხები {done} / {total}
+The server did not give the image, repeat {n} of {total}…	სერვერმა სურათი არ მოგვცა, გამეორება {n} / {total}…
+The image was not loaded - the server did not give the bands {error}. Repeat the double click later or take another image.	სურათი არ ჩაიტვირთა - სერვერმა არხები {error} არ მოგვცა. გაიმეორეთ ორმაგი დაწკაპება მოგვიანებით ან აიღეთ სხვა სურათი.
+The image «{name}» is loaded.	სურათი «{name}» ჩაიტვირთა.
+The image is loaded and set as the source: {name}.	სურათი ჩაიტვირთა და დაყენდა წყაროდ: {name}.
+The second image is loaded: {name}.	მეორე სურათი ჩაიტვირთა: {name}.
+Loading the image of {season} {year}: {day}…	{year} წლის {season} სურათის ჩატვირთვა: {day}…
+Season images {count} of {total}. Empty cells are seasons without a clear image over the area, the computation goes without them.	სეზონის სურათები {count} / {total}. ცარიელი უჯრები ის სეზონებია, რომელთაც უბანზე სუფთა სურათი არ აქვთ, გამოთვლა მათ გარეშე მიდის.
+No clear spring and autumn images were found over the area.	უბანზე სუფთა გაზაფხულისა და შემოდგომის სურათები ვერ მოიძებნა.
+Suitable. Bands - {names}.	გამოდგება. არხები - {names}.
+Image of {day}.	{day}-ის სურათი.
+The image is not a summer one, coniferous and broadleaf forest differ worse.	სურათი ზაფხულის არ არის, წიწვოვანი და ფოთლოვანი ტყე უარესად განსხვავდება.
+No open image has the near infrared and the red or SWIR. «Find an image» finds a summer Sentinel-2 image of the area.	გახსნილ სურათებს არ აქვს ახლო ინფრაწითელი და წითელი ან SWIR. «სურათის პოვნა» იპოვის უბნის ზაფხულის Sentinel-2 სურათს.
+No image. The «Find an image» button finds and loads a summer Sentinel-2 image of the area.	სურათი არ არის. ღილაკი «სურათის პოვნა» იპოვის და ჩატვირთავს უბნის ზაფხულის Sentinel-2 სურათს.
+The near infrared and the red or SWIR of the raster are not recognised - an image with labelled bands is needed.	რასტრის ახლო ინფრაწითელი და წითელი ან SWIR ვერ ამოიცნობა - საჭიროა სურათი არხების წარწერებით.
+No spring and autumn images. «Pick images» finds and loads them for the area.	გაზაფხულისა და შემოდგომის სურათები არ არის. «სურათების შერჩევა» იპოვის და ჩატვირთავს მათ უბნისთვის.
+The second image is the same as the first.	მეორე სურათი პირველს ემთხვევა.
+The second image is no longer open.	მეორე სურათი აღარ არის გახსნილი.
+The near infrared of the second image is not recognised - an image with labelled bands is needed.	მეორე სურათის ახლო ინფრაწითელი ვერ ამოიცნობა - საჭიროა სურათი არხების წარწერებით.
+The second image is not read or does not cover the area.	მეორე სურათი ვერ წაიკითხა ან უბანს არ ფარავს.
+The image	სურათი
+The second image	მეორე სურათი
+{which} covers only {share} % of the area. «Find an image» loads an image of the whole area, or outline the area inside the image.	{which} უბნის მხოლოდ {share} %-ს ფარავს. «სურათის პოვნა» ჩატვირთავს მთელი უბნის სურათს, ან შემოხაზეთ უბანი სურათის შიგნით.
+Reading the bands of the other images…	სხვა სურათების არხების კითხვა…
+Reading the bands of the other images: {done} %.	სხვა სურათების არხების კითხვა: {done} %.
+The raster values do not look like reflectance, the classes are not named.	რასტრის მნიშვნელობები არეკვლას არ ჰგავს, კლასებს სახელი არ დაერქვა.
+Coniferous forest is told from broadleaf by the snow of the second image.	წიწვოვანი ტყე ფოთლოვანისგან მეორე სურათის თოვლით გამოიყო.
+Coniferous forest is told from broadleaf by two images.	წიწვოვანი ტყე ფოთლოვანისგან ორი სურათით გამოიყო.
+Spring and autumn images {count}, years {first}-{last}.	გაზაფხულისა და შემოდგომის სურათები {count}, წლები {first}-{last}.
+The spring and autumn images did not fall on the area, the classes are by the summer image.	გაზაფხულისა და შემოდგომის სურათები უბანს არ დაემთხვა, კლასები ზაფხულის სურათითაა.
+The image of the area is split into colours, the colours are named by the reflectance rules of the task, the areas are outlined with smooth outlines.	უბნის სურათი იყოფა ფერებად, ფერებს ერქმევა ამოცანის არეკვლის წესებით, არეები გლუვი კონტურებით შემოიხაზება.
+Names from the assistant	სახელები ასისტენტისგან
+The AI assistant proposes class names by the table - mean band values, share of the area, size of areas, place and month of the image. The image and layer names are not sent to the model, pressing the button is consent to send the table. The names can be corrected.	AI ასისტენტი კლასების სახელებს ცხრილით გვთავაზობს - არხების საშუალო მნიშვნელობები, უბნის წილი, არეების ზომა, გადაღების ადგილი და თვე. სურათი და ფენების სახელები მოდელს არ ეგზავნება, ღილაკზე დაჭერა ცხრილის გაგზავნაზე თანხმობაა. სახელების შესწორება შეიძლება.
+The assistant is thinking…	ასისტენტი ფიქრობს…
+The assistant is busy with the previous question or not connected.	ასისტენტი წინა კითხვითაა დაკავებული ან დაკავშირებული არ არის.
+The assistant gave no names: {error}	ასისტენტმა სახელები არ მოგვცა: {error}
+empty answer	ცარიელი პასუხი
+The names were proposed by the assistant, they can be corrected. Classes with the same name are merged.	სახელები ასისტენტმა შემოგვთავაზა, მათი შესწორება შეიძლება. ერთნაირი სახელის კლასები გაერთიანდა.
+First press «Build».	ჯერ დააჭირეთ «აგებას».
+The class name - in the name field of the polygons and in the scale on the globe.	კლასის სახელი - მრავალკუთხედების name ველში და გლობუსის შკალაზე.
+Share of the area.	უბნის წილი.
+Own class	საკუთარი კლასი
+Merge with «{name}»	«{name}»-თან გაერთიანება
+Merge this colour with another: the areas of both colours become one class with the name and colour of the one it is merged with.	ამ ფერის სხვასთან გაერთიანება: ორივე ფერის არეები გახდება ერთი კლასი იმის სახელითა და ფერით, რომელთანაც გაერთიანდა.
+Colour {n}	ფერი {n}
+Classes from tracing	კლასები ტრასირებიდან
+Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.	კლასები სახელებითა და ფერებით «ტრასირების» ან «ობიექტების გამოყოფის» ფანჯრიდან «აგების» შემდეგ. წერტილების გარეშე კლასები იცვლება, წერტილები გლობუსზე დაწკაპებით ისმება.
+Classes from tracing: {n}.	კლასები ტრასირებიდან: {n}.
+The «Tracing» window has no built classes.	«ტრასირების» ფანჯარაში აგებული კლასები არ არის.
+Source - {source}.	წყარო - {source}.
+Settings - {settings}.	პარამეტრები - {settings}.
+Classes - {rows}.	კლასები - {rows}.
+colours {n}	ფერი {n}
+smoothing {n}	გასწორება {n}
+areas from {n} cells	არეები {n} უჯრიდან
+rounding {v}	მომრგვალება {v}
+pixel {pixel} m	პიქსელი {pixel} მ
+task «{task}»	ამოცანა «{task}»
+second image «{name}»	მეორე სურათი «{name}»
+spring and autumn images {count}	გაზაფხულისა და შემოდგომის სურათები {count}
+classes {n}	კლასი {n}
+objects: scale {scale}, texture {weight} %, from {least} cells	ობიექტები: მასშტაბი {scale}, ტექსტურა {weight} %, {least} უჯრიდან
+neighbours merged	მეზობლები გაერთიანდა
+Refine with points	წერტილებით დაზუსტება
+Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	ხსნის «კლასიფიკაციის» ფანჯარას იმავე სურათით, უბნითა და ამ ფანჯრის კლასებით. იქ კლასები ზუსტდება საკუთარი საკონტროლო წერტილებით, გლობუსზე დაწკაპებით.
+Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	კლასები «ობიექტების გამოყოფის» ფანჯრიდან. აირჩიეთ კლასი წრით და დააწკაპეთ მისი ნიმუშები გლობუსზე, კლასზე სამი წერტილი მაინც, შემდეგ «აგება».
+Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	უბნის კლასები გლობუსზე საკუთარი საკონტროლო წერტილებით - გახსნილი რასტრით, გლობუსის ფონით ან AlphaEarth ჩაშენებებით.

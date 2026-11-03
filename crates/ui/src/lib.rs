@@ -86,6 +86,8 @@ pub mod ruler;
 pub mod satellites;
 pub mod search;
 pub mod sentinel;
+pub mod s2scenes;
+pub mod objecttasks;
 pub mod spectral;
 pub mod emit;
 pub mod basemapread;

@@ -2191,3 +2191,127 @@ The image of the area is split into colours, the areas of one colour are outline
 Splitting the image into colours…	Citra dipecah menjadi warna…
 Colours {colors}, areas {regions}.	Warna {colors}, wilayah {regions}.
 There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	Ada lebih dari {n} wilayah, «OK» menyimpan gambar warna sebagai ganti poligon.
+Object extraction	Ekstraksi objek
+Object extraction…	Ekstraksi objek…
+Typical tasks over tracing - forests and clearcuts, fields, water, overgrown fields. The colours are named by the reflectance of a Sentinel-2 image.	Tugas umum di atas penelusuran - hutan dan tebangan, ladang, air, ladang telantar. Warna dinamai menurut reflektansi citra Sentinel-2.
+Task	Tugas
+A typical task sets the number of colours and the smallest area and after «Build» names the classes by the reflectance of the image.	Tugas umum mengatur jumlah warna dan area terkecil, lalu setelah «Hitung» menamai kelas menurut reflektansi citra.
+Forests and clearcuts	Hutan dan tebangan
+Coniferous forest, broadleaf forest and grass, clearcuts and burns, open soil, water. A clearcut is open soil with at least a quarter of coniferous forest in a band of three cells around it.	Hutan konifer, hutan berdaun lebar dan rumput, tebangan dan bekas terbakar, tanah terbuka, air. Tebangan adalah tanah terbuka dengan setidaknya seperempat hutan konifer dalam jalur tiga sel di sekitarnya.
+Fields	Ladang
+Vegetation, open soil and ploughland, clearcuts, water. Fields stay separate polygons, the smallest area is larger.	Vegetasi, tanah terbuka dan lahan bajak, tebangan, air. Ladang tetap poligon terpisah, area terkecil lebih besar.
+Water and everything else - land.	Air dan selebihnya - daratan.
+Overgrown fields	Ladang telantar
+Tilled fields, abandoned for 1-2 years, fallow and meadows, overgrowing with trees, forest. Spring and autumn images of 4 years show the year when the field was bare soil for the last time. The field borders are by the summer image.	Ladang digarap, ditinggalkan 1-2 tahun, bera dan padang rumput, ditumbuhi pohon, hutan. Citra musim semi dan gugur selama 4 tahun menunjukkan tahun terakhir ladang berupa tanah terbuka. Batas ladang menurut citra musim panas.
+No suitable image is open	Tidak ada citra yang sesuai terbuka
+A Sentinel-2 or Landsat image with labelled bands. The list has only images in which the window recognised the near infrared and the red or SWIR by the labels.	Citra Sentinel-2 atau Landsat dengan kanal berlabel. Daftar hanya berisi citra yang inframerah dekat dan merah atau SWIR-nya dikenali jendela dari label.
+Find an image	Cari citra
+Summer Sentinel-2 images of the area for three years, cloud cover over the area up to 5 %. A double click on an image loads the composite «Agriculture» (B11 B8 B2) and sets it as the source.	Citra Sentinel-2 musim panas area selama tiga tahun, tutupan awan di atas area hingga 5 %. Klik ganda pada citra memuat komposit «Pertanian» (B11 B8 B2) dan menjadikannya sumber.
+A double click loads the image.	Klik ganda memuat citra.
+{day} - cloud cover over the area {cloud} %, data {valid} %	{day} - tutupan awan di atas area {cloud} %, data {valid} %
+{day} - cloud cover over the area {cloud} %	{day} - tutupan awan di atas area {cloud} %
+Second image	Citra kedua
+An image of the same place in another season, better with snow. Its bands go to the same grid of the area and are split into colours together with the first. On snow coniferous forest is what stayed dark, without snow - what hardly changed in the near infrared.	Citra tempat yang sama di musim lain, lebih baik bersalju. Kanalnya masuk ke grid area yang sama dan dipecah menjadi warna bersama yang pertama. Di atas salju konifer adalah yang tetap gelap, tanpa salju yang hampir tidak berubah di inframerah dekat.
+Sentinel-2 images of the area in March, April and October for three years. On snow coniferous forest is dark, bare broadleaf forest and fields are light. In October without snow broadleaf forest loses the near infrared, coniferous does not. A double click loads the image and sets it as the second.	Citra Sentinel-2 area pada Maret, April, dan Oktober selama tiga tahun. Di atas salju konifer gelap, hutan berdaun lebar gundul dan ladang terang. Pada Oktober tanpa salju hutan berdaun lebar kehilangan inframerah dekat, konifer tidak. Klik ganda memuat citra dan menjadikannya yang kedua.
+Spring and autumn	Musim semi dan gugur
+Images {count} of {total}	Citra {count} dari {total}
+Pick images	Pilih citra
+Searches for Sentinel-2 images of the area in spring and autumn for 4 years, takes the clearest into each empty cell and loads it. Images that are already open are not loaded again.	Mencari citra Sentinel-2 area pada musim semi dan gugur selama 4 tahun, mengambil yang paling bersih untuk tiap sel kosong dan memuatnya. Citra yang sudah terbuka tidak dimuat ulang.
+Spring	Musim semi
+Autumn	Musim gugur
+No image	Tanpa citra
+First «Pick images»	Dahulu «Pilih citra»
+Images of spring (April - May) and autumn (September - October) by years. Ploughland at this time is bare soil, fallow is old grass and shrubs. A click on a cell - other dates of the season.	Citra musim semi (April - Mei) dan gugur (September - Oktober) per tahun. Lahan bajak saat itu tanah terbuka, bera rumput tua dan semak. Klik pada sel menampilkan tanggal lain musim itu.
+Linear objects	Objek linear
+Roads and cutlines, rivers and canals, shelterbelts - as centre lines, a separate folder. A line is a narrow part of soil, water or vegetation, a connected piece of a line is not shorter than 200 m.	Jalan dan jalur tebang, sungai dan kanal, sabuk pelindung - sebagai garis tengah dalam folder terpisah. Garis adalah bagian sempit tanah, air, atau vegetasi, potongan yang tersambung tidak kurang dari 200 m.
+Line width up to	Lebar garis hingga
+An object narrower than this is a line. The width is at least two pixels of the grid, otherwise the line breaks.	Objek yang lebih sempit dari ini adalah garis. Lebarnya minimal dua piksel grid, jika tidak garis terputus.
+Fine settings: pixel, colours, smoothing, smallest area, corner rounding, line width. The task sets them itself.	Pengaturan halus: piksel, warna, penghalusan, area terkecil, pembulatan sudut, lebar garis. Tugas mengaturnya sendiri.
+Coniferous forest	Hutan konifer
+Broadleaf forest and grass	Hutan berdaun lebar dan rumput
+Open soil	Tanah terbuka
+Clearcuts and burns	Tebangan dan bekas terbakar
+Ploughland, tilled	Lahan bajak, digarap
+Abandoned 1-2 years	Ditinggalkan 1-2 tahun
+Fallow or meadow	Bera atau padang rumput
+Overgrowing with trees	Ditumbuhi pohon
+Roads and cutlines	Jalan dan jalur tebang
+Rivers and canals	Sungai dan kanal
+Shelterbelts and cutlines	Sabuk pelindung dan jalur tebang
+Lines	Garis
+Lines {km} km.	Garis {km} km.
+No linear objects were found.	Tidak ditemukan objek linear.
+Clearcuts and burns - {area} ha.	Tebangan dan bekas terbakar - {area} ha.
+Searching for Sentinel-2 images of the area…	Mencari citra Sentinel-2 area…
+There are no Sentinel-2 scenes of the needed season over the area.	Tidak ada scene Sentinel-2 musim yang diperlukan di atas area.
+Scenes {count}, the cloud cover over the area is counted…	Scene {count}, tutupan awan di atas area dihitung…
+There are no suitable images: over the area the scenes have cloud cover above {cloud} % or less than {valid} % of data.	Tidak ada citra yang sesuai: di atas area scene memiliki awan lebih dari {cloud} % atau data kurang dari {valid} %.
+Suitable images: {count}. A double click on an image loads it.	Citra yang sesuai: {count}. Klik ganda pada citra memuatnya.
+Loading the image {when}…	Memuat citra {when}…
+Loading the image {when}: bands {done} of {total}	Memuat citra {when}: kanal {done} dari {total}
+The server did not give the image, repeat {n} of {total}…	Server tidak memberikan citra, ulangan {n} dari {total}…
+The image was not loaded - the server did not give the bands {error}. Repeat the double click later or take another image.	Citra tidak dimuat - server tidak memberikan kanal {error}. Ulangi klik ganda nanti atau ambil citra lain.
+The image «{name}» is loaded.	Citra «{name}» dimuat.
+The image is loaded and set as the source: {name}.	Citra dimuat dan dijadikan sumber: {name}.
+The second image is loaded: {name}.	Citra kedua dimuat: {name}.
+Loading the image of {season} {year}: {day}…	Memuat citra {season} {year}: {day}…
+Season images {count} of {total}. Empty cells are seasons without a clear image over the area, the computation goes without them.	Citra musim {count} dari {total}. Sel kosong adalah musim tanpa citra bersih di atas area, perhitungan berjalan tanpanya.
+No clear spring and autumn images were found over the area.	Tidak ditemukan citra musim semi dan gugur yang bersih di atas area.
+Suitable. Bands - {names}.	Sesuai. Kanal - {names}.
+Image of {day}.	Citra {day}.
+The image is not a summer one, coniferous and broadleaf forest differ worse.	Citra bukan musim panas, konifer dan berdaun lebar sulit dibedakan.
+No open image has the near infrared and the red or SWIR. «Find an image» finds a summer Sentinel-2 image of the area.	Tidak ada citra terbuka dengan inframerah dekat dan merah atau SWIR. «Cari citra» menemukan citra Sentinel-2 musim panas area.
+No image. The «Find an image» button finds and loads a summer Sentinel-2 image of the area.	Tidak ada citra. Tombol «Cari citra» menemukan dan memuat citra Sentinel-2 musim panas area.
+The near infrared and the red or SWIR of the raster are not recognised - an image with labelled bands is needed.	Inframerah dekat dan merah atau SWIR raster tidak dikenali - perlu citra dengan kanal berlabel.
+No spring and autumn images. «Pick images» finds and loads them for the area.	Tidak ada citra musim semi dan gugur. «Pilih citra» menemukan dan memuatnya untuk area.
+The second image is the same as the first.	Citra kedua sama dengan yang pertama.
+The second image is no longer open.	Citra kedua tidak lagi terbuka.
+The near infrared of the second image is not recognised - an image with labelled bands is needed.	Inframerah dekat citra kedua tidak dikenali - perlu citra dengan kanal berlabel.
+The second image is not read or does not cover the area.	Citra kedua tidak terbaca atau tidak menutupi area.
+The image	Citra
+The second image	Citra kedua
+{which} covers only {share} % of the area. «Find an image» loads an image of the whole area, or outline the area inside the image.	{which} hanya menutupi {share} % area. «Cari citra» memuat citra seluruh area, atau gambar area di dalam citra.
+Reading the bands of the other images…	Membaca kanal citra lain…
+Reading the bands of the other images: {done} %.	Membaca kanal citra lain: {done} %.
+The raster values do not look like reflectance, the classes are not named.	Nilai raster tidak tampak seperti reflektansi, kelas tidak dinamai.
+Coniferous forest is told from broadleaf by the snow of the second image.	Konifer dipisahkan dari berdaun lebar berdasarkan salju citra kedua.
+Coniferous forest is told from broadleaf by two images.	Konifer dipisahkan dari berdaun lebar dengan dua citra.
+Spring and autumn images {count}, years {first}-{last}.	Citra musim semi dan gugur {count}, tahun {first}-{last}.
+The spring and autumn images did not fall on the area, the classes are by the summer image.	Citra musim semi dan gugur tidak jatuh di area, kelas menurut citra musim panas.
+The image of the area is split into colours, the colours are named by the reflectance rules of the task, the areas are outlined with smooth outlines.	Citra area dipecah menjadi warna, warna dinamai menurut aturan reflektansi tugas, area dibatasi garis halus.
+Names from the assistant	Nama dari asisten
+The AI assistant proposes class names by the table - mean band values, share of the area, size of areas, place and month of the image. The image and layer names are not sent to the model, pressing the button is consent to send the table. The names can be corrected.	Asisten AI mengusulkan nama kelas dari tabel - nilai rata-rata kanal, porsi area, ukuran area, tempat dan bulan citra. Citra dan nama layer tidak dikirim ke model, menekan tombol berarti setuju mengirim tabel. Nama dapat diperbaiki.
+The assistant is thinking…	Asisten sedang berpikir…
+The assistant is busy with the previous question or not connected.	Asisten sibuk dengan pertanyaan sebelumnya atau tidak terhubung.
+The assistant gave no names: {error}	Asisten tidak memberi nama: {error}
+empty answer	jawaban kosong
+The names were proposed by the assistant, they can be corrected. Classes with the same name are merged.	Nama diusulkan asisten dan dapat diperbaiki. Kelas dengan nama sama digabung.
+First press «Build».	Tekan «Hitung» terlebih dahulu.
+The class name - in the name field of the polygons and in the scale on the globe.	Nama kelas - di bidang name poligon dan di skala pada globe.
+Share of the area.	Porsi area.
+Own class	Kelas sendiri
+Merge with «{name}»	Gabung dengan «{name}»
+Merge this colour with another: the areas of both colours become one class with the name and colour of the one it is merged with.	Gabungkan warna ini dengan yang lain: area kedua warna menjadi satu kelas dengan nama dan warna tujuan.
+Colour {n}	Warna {n}
+Classes from tracing	Kelas dari penelusuran
+Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.	Kelas dengan nama dan warna dari jendela «Penelusuran» atau «Ekstraksi objek» setelah «Hitung». Kelas tanpa titik diganti, titik dipasang dengan klik pada globe.
+Classes from tracing: {n}.	Kelas dari penelusuran: {n}.
+The «Tracing» window has no built classes.	Jendela «Penelusuran» tidak memiliki kelas yang dihitung.
+Source - {source}.	Sumber - {source}.
+Settings - {settings}.	Pengaturan - {settings}.
+Classes - {rows}.	Kelas - {rows}.
+colours {n}	warna {n}
+smoothing {n}	penghalusan {n}
+areas from {n} cells	area dari {n} sel
+rounding {v}	pembulatan {v}
+pixel {pixel} m	piksel {pixel} m
+task «{task}»	tugas «{task}»
+second image «{name}»	citra kedua «{name}»
+spring and autumn images {count}	citra musim semi dan gugur {count}
+classes {n}	kelas {n}
+objects: scale {scale}, texture {weight} %, from {least} cells	objek: skala {scale}, tekstur {weight} %, dari {least} sel
+neighbours merged	tetangga digabung
+Refine with points	Perhalus dengan titik
+Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	Membuka jendela «Klasifikasi» dengan citra, area, dan kelas yang sama dari jendela ini. Di sana kelas diperhalus dengan titik kontrol sendiri lewat klik pada globe.
+Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	Kelas dari jendela «Ekstraksi objek». Pilih kelas dengan lingkarannya dan klik sampelnya di globe, minimal tiga titik per kelas, lalu «Hitung».
+Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	Kelas area dari titik kontrol sendiri di globe - menurut raster terbuka, peta dasar globe, atau embedding AlphaEarth.

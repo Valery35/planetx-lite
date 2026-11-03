@@ -61,6 +61,7 @@ use crate::aefread::BlockRead;
 use crate::analysis::{self, Button, Saved, SiteEdit};
 use crate::basemapread::BaseRead;
 use crate::i18n::{Lang, tr, trf};
+use crate::objecttasks::Task;
 
 /// Участок по умолчанию и наибольший, километры, `CLASS_SIDE` модуля.
 const SIDE: f64 = 3.0;
@@ -102,10 +103,64 @@ pub const BASEMAP: &str = "@basemap";
 const TRACE_SIDE: f64 = 1.0;
 const TRACE_OPACITY: f64 = 0.8;
 
-/// Трассировка: настройки и готовый итог для «OK».
+/// Строк таблицы классов без прокрутки, `TABLE_ROWS` модуля, в точках
+/// высоты строки.
+const TABLE_HEIGHT: f32 = 6.0 * 24.0;
+
+/// Трассировка: настройки, итог до слияния цветов, таблица классов
+/// и итог по таблице для «OK».
 struct Trace {
     params: tracing::Params,
-    result: Option<Traced>,
+    base: Option<TraceBase>,
+    /// Строки таблицы классов по убыванию доли участка.
+    rows: Vec<ColorRow>,
+    joined: Option<Joined>,
+    /// Окно «Выделение объектов»: задача поверх трассировки.
+    task: Option<Box<Task>>,
+    /// Вопрос помощнику о названиях: системный текст и таблица. Его
+    /// забирает окно глобуса.
+    ask: Option<(String, String)>,
+    /// Ответ помощника ждётся.
+    waiting: bool,
+}
+
+/// Итог трассировки до таблицы классов, `base` модуля 1.33: цвета,
+/// их названия и настройки расчёта.
+pub struct TraceBase {
+    pub done: Traced,
+    pub colors: Vec<[u8; 3]>,
+    pub hexes: Vec<String>,
+    pub names: Vec<String>,
+    /// Настройки строками для названия результата.
+    pub settings: Vec<String>,
+    pub index: Arc<ZoneIndex>,
+    pub x0: f64,
+    pub y0: f64,
+    pub step: f64,
+    pub rows: usize,
+    pub cols: usize,
+}
+
+/// Итог по таблице классов: цвета клеток и областей после слияния,
+/// цвета, названия и коды классов, свои поля областей.
+#[derive(Clone)]
+pub struct Joined {
+    pub classes: Vec<i32>,
+    pub kinds: Vec<i16>,
+    pub colors: Vec<[u8; 3]>,
+    pub names: Vec<String>,
+    pub hexes: Vec<String>,
+    /// Поля областей: имя и значение по номеру области.
+    pub fields: Vec<(&'static str, Vec<String>)>,
+}
+
+/// Строка таблицы классов: номер цвета, название, доля участка, цвет,
+/// с которым слит, -1 - свой класс.
+struct ColorRow {
+    number: usize,
+    name: String,
+    share: f64,
+    target: i32,
 }
 
 /// Подложка на глобусе для источника «Подложка глобуса»: название,
@@ -147,6 +202,10 @@ enum OwnStage {
     Kinds { grid: Arc<Mosaic<f32>>, parts: Arc<Vec<i32>>, table: Vec<f32>, plain: Vec<f32>, run: Box<Run>, outside: usize, share: f64 },
     /// Трассировка шагами.
     Trace { grid: Arc<Mosaic<f32>>, tracer: Box<Tracer>, share: f64 },
+    /// Каналы второго снимка или снимков сезонов на сетке первого: сетка,
+    /// растры в очереди, идущий пересчёт, каналы готовых и доли участка
+    /// с данными.
+    More { grid: Arc<Mosaic<f32>>, queue: Vec<(String, Arc<Vec<u8>>)>, current: Option<Box<(Source, Warp)>>, parts: Vec<(Vec<f32>, usize)>, shares: Vec<f64> },
 }
 
 /// Сетка участка готова к делению на объекты.
@@ -364,6 +423,9 @@ pub fn preview_overlay(layer: &Layer) -> Option<scene::kml::Overlay> {
     Some(overlay)
 }
 
+/// «Уточнить точками»: участок, снимок и классы окна задач.
+pub type Refine = (Vec<(f64, f64)>, Option<String>, Vec<([u8; 3], String)>);
+
 /// Окно «Классификация».
 pub struct ClassCalc {
     pub open: bool,
@@ -411,6 +473,22 @@ pub struct ClassCalc {
     credit: String,
     /// Окно «Трассировка», None - другие режимы.
     trace: Option<Trace>,
+    /// Растры, чьи каналы ложатся на сетку за каналами источника, -
+    /// второй снимок или снимки сезонов задачи. Ставит «Построить».
+    extras: Vec<String>,
+    /// Доли участка с данными источника и растров за ним.
+    cover: Vec<f64>,
+    /// Загруженные окном снимки: окно глобуса открывает их растрами
+    /// программы.
+    pub loaded: Vec<Raster>,
+    /// Нажата «Классы из трассировки»: классы ставит окно глобуса
+    /// ([`ClassCalc::take_traced`]).
+    pub wants_traced: bool,
+    /// Нажата «Уточнить точками»: «Классификацию» открывает окно глобуса
+    /// ([`ClassCalc::take_refine`]).
+    wants_refine: bool,
+    /// Настройки последнего «Построить» строками для названия результата.
+    settings: Vec<String>,
 }
 
 impl ClassCalc {
@@ -421,8 +499,137 @@ impl ClassCalc {
         calc.site = SiteEdit::new(lat, lon, TRACE_SIDE, RASTER_MOST);
         calc.source = Some(BASEMAP.to_string());
         calc.opacity = TRACE_OPACITY;
-        calc.trace = Some(Trace { params: tracing::Params::default(), result: None });
+        calc.trace = Some(Trace { params: tracing::Params::default(), base: None, rows: Vec::new(), joined: None, task: None, ask: None, waiting: false });
         calc
+    }
+
+    /// Окно «Выделение объектов», `TaskDialog` модуля 1.33-1.36:
+    /// трассировка с типовой задачей. Источник - снимок с подписями
+    /// каналов.
+    pub fn objects(lat: f64, lon: f64, place: String, rasters: Vec<Raster>, lang: Lang) -> Self {
+        let mut calc = Self::tracing(lat, lon, place, rasters, lang);
+        calc.source = None;
+        if let Some(trace) = &mut calc.trace {
+            let task = Task::default();
+            let spec = task.scenario.spec();
+            trace.params = tracing::Params { colors: spec.colors, smooth: spec.smooth, least: spec.least, ..tracing::Params::default() };
+            trace.task = Some(Box::new(task));
+        }
+        calc
+    }
+
+    /// Окно «Выделение объектов».
+    fn task_mode(&self) -> bool {
+        self.trace.as_ref().is_some_and(|t| t.task.is_some())
+    }
+
+    /// Название окна трассировки или задач.
+    fn tool_title(&self, lang: Lang) -> &'static str {
+        if self.task_mode() { tr(lang, "Object extraction") } else { tr(lang, "Tracing") }
+    }
+
+    /// Вопрос помощнику о названиях классов, его забирает окно глобуса.
+    pub fn take_ask(&mut self) -> Option<(String, String)> {
+        let trace = self.trace.as_mut()?;
+        let ask = trace.ask.take()?;
+        trace.waiting = true;
+        Some(ask)
+    }
+
+    /// Помощник не взял вопрос: занят или не подключён.
+    pub fn ask_refused(&mut self, lang: Lang) {
+        if let Some(trace) = &mut self.trace {
+            trace.waiting = false;
+        }
+        self.status = tr(lang, "The assistant is busy with the previous question or not connected.").to_string();
+    }
+
+    /// Ждёт ли окно ответа помощника.
+    pub fn waits_names(&self) -> bool {
+        self.trace.as_ref().is_some_and(|t| t.waiting)
+    }
+
+    /// Классы трассировки (цвет, название) по убыванию доли - для окна
+    /// «Классификация», `class_pairs` модуля. Пусто, если итога нет.
+    pub fn class_pairs(&self) -> Vec<([u8; 3], String)> {
+        let Some(joined) = self.trace.as_ref().and_then(|t| t.joined.as_ref()) else {
+            return Vec::new();
+        };
+        let shares = color_shares(&joined.classes, joined.colors.len());
+        let mut order: Vec<usize> = (0..joined.colors.len()).filter(|n| shares[*n] > 0.0).collect();
+        order.sort_by(|a, b| shares[*b].total_cmp(&shares[*a]));
+        order.into_iter().map(|n| (joined.colors[n], joined.names[n].clone())).collect()
+    }
+
+    /// «Классы из трассировки», `take_traced` модуля 1.33: классы без
+    /// точек заменяются классами трассировки с их названиями и цветами.
+    pub fn take_traced(&mut self, lang: Lang, pairs: &[([u8; 3], String)]) {
+        self.wants_traced = false;
+        if pairs.is_empty() {
+            self.status = tr(lang, "The «Tracing» window has no built classes.").to_string();
+            return;
+        }
+        self.classes.retain(|c| !c.points.is_empty());
+        for (color, name) in pairs {
+            if !self.classes.iter().any(|c| c.name == *name) {
+                self.classes.push(Class { name: name.clone(), color: *color, points: Vec::new() });
+            }
+        }
+        self.active = self.active.min(self.classes.len().saturating_sub(1));
+        self.status = trf(lang, "Classes from tracing: {n}.", &[("n", &pairs.len().to_string())]);
+    }
+
+    /// «Уточнить точками», `refine` модуля 1.37: участок, снимок и классы
+    /// окна задач для окна «Классификация». None - итога нет, причина -
+    /// в строке окна.
+    pub fn take_refine(&mut self, lang: Lang) -> Option<Refine> {
+        if !std::mem::take(&mut self.wants_refine) {
+            return None;
+        }
+        let pairs = self.class_pairs();
+        if pairs.is_empty() || self.site.site.ring.len() < 3 {
+            self.status = tr(lang, "First press «Build».").to_string();
+            return None;
+        }
+        Some((self.site.site.ring.clone(), self.source.clone(), pairs))
+    }
+
+    /// Классы окна задач в «Классификации» с тем же снимком.
+    pub fn refine_from(&mut self, lang: Lang, source: Option<String>, pairs: &[([u8; 3], String)]) {
+        if source.as_ref().is_some_and(|s| self.rasters.iter().any(|r| r.0 == *s)) {
+            self.source = source;
+        }
+        self.take_traced(lang, pairs);
+        self.status = tr(lang, "Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».").to_string();
+    }
+
+    /// Ответ помощника о названиях, `_names_came` модуля: названия -
+    /// в таблицу, классы с одинаковым названием сливаются с самым крупным.
+    pub fn names_came(&mut self, lang: Lang, answer: &str, error: &str) {
+        let Some(trace) = &mut self.trace else {
+            return;
+        };
+        trace.waiting = false;
+        let count = trace.rows.len();
+        if count == 0 {
+            return;
+        }
+        let Some(names) = data::classnames::parse_names(answer, count) else {
+            let reason = if !error.is_empty() { error.to_string() } else if answer.is_empty() { tr(lang, "empty answer").to_string() } else { answer.chars().take(200).collect() };
+            self.status = trf(lang, "The assistant gave no names: {error}", &[("error", &reason)]);
+            return;
+        };
+        let mut first: Vec<(String, usize)> = Vec::new();
+        for row in &mut trace.rows {
+            let name = names.get(row.number).cloned().unwrap_or_default();
+            row.target = first.iter().find(|(n, _)| *n == name).map_or(-1, |(_, k)| *k as i32);
+            if row.target < 0 {
+                first.push((name.clone(), row.number));
+            }
+            row.name = name;
+        }
+        self.apply_trace(lang);
+        self.status = tr(lang, "The names were proposed by the assistant, they can be corrected. Classes with the same name are merged.").to_string();
     }
 
     /// Окно «Похожие области», `SimilarDialog` модуля.
@@ -467,6 +674,12 @@ impl ClassCalc {
             terms: false,
             credit: String::new(),
             trace: None,
+            extras: Vec::new(),
+            cover: Vec::new(),
+            loaded: Vec::new(),
+            wants_traced: false,
+            wants_refine: false,
+            settings: Vec::new(),
         };
         calc.add_class(lang);
         calc.add_class(lang);
@@ -491,6 +704,11 @@ impl ClassCalc {
         self.job.is_some() || self.own_job.is_some()
     }
 
+    /// Идёт поиск или загрузка снимков задачи.
+    pub fn finding(&self) -> bool {
+        self.trace.as_ref().and_then(|t| t.task.as_ref()).is_some_and(|t| t.busy())
+    }
+
     pub fn site_edit(&mut self) -> Option<&mut SiteEdit> {
         if self.open { Some(&mut self.site) } else { None }
     }
@@ -507,7 +725,12 @@ impl ClassCalc {
             find.moved = None;
         }
         if let Some(trace) = &mut self.trace {
-            trace.result = None;
+            trace.base = None;
+            trace.rows.clear();
+            trace.joined = None;
+            if let Some(task) = &mut trace.task {
+                task.stop();
+            }
         }
         self.status.clear();
     }
@@ -519,7 +742,19 @@ impl ClassCalc {
     }
 
     fn build(&mut self, lang: Lang) {
-        if self.trace.is_some() {
+        self.extras.clear();
+        self.cover.clear();
+        if let Some(task) = self.trace.as_mut().and_then(|t| t.task.as_mut()) {
+            // Задаче нужен снимок с известными каналами, второй снимок или
+            // снимки сезонов ложатся на ту же сетку.
+            match task.before(lang, &self.rasters, self.source.as_deref()) {
+                Ok(extras) => self.extras = extras,
+                Err(text) => {
+                    self.status = text;
+                    return;
+                }
+            }
+        } else if self.trace.is_some() {
             // У трассировки нет ни точек, ни образцов.
         } else if let Some(find) = &self.find {
             if find.rings.is_empty() {
@@ -536,6 +771,19 @@ impl ClassCalc {
         if let Some(problem) = self.site.problem(lang) {
             self.status = problem;
             return;
+        }
+        if self.trace.is_none() && self.find.is_none() {
+            // Настройки классификации для названия результата,
+            // `class_settings` модуля 1.33.
+            let classes = self.classes.iter().filter(|c| !c.points.is_empty()).count();
+            let points: usize = self.classes.iter().map(|c| c.points.len()).sum();
+            self.settings = vec![trf(lang, "classes {n}", &[("n", &classes.to_string())]), trf(lang, "points {n}", &[("n", &points.to_string())])];
+            if self.split.on {
+                self.settings.push(trf(lang, "objects: scale {scale}, texture {weight} %, from {least} cells", &[("scale", &self.split.scale.to_string()), ("weight", &self.split.weight.to_string()), ("least", &self.split.least.to_string())]));
+                if self.split.join {
+                    self.settings.push(tr(lang, "neighbours merged").to_string());
+                }
+            }
         }
         let (lat, lon) = self.site.site.centre();
         if self.source.as_deref() == Some(BASEMAP) {
@@ -679,20 +927,48 @@ impl ClassCalc {
     /// каналы без разброса.
     fn start_classes(&mut self, lang: Lang, key: (String, String, Option<usize>), index: Arc<ZoneIndex>, grid: Arc<Mosaic<f32>>) {
         let keep = ring_mask(&index, &grid, &self.site.site.ring);
-        let share = rasterclass::covered(&grid.values, grid.depth, &keep);
+        // Сетка с каналами других снимков: доля участка - у источника.
+        let share = self.cover.first().copied().unwrap_or_else(|| rasterclass::covered(&grid.values, grid.depth, &keep));
         if share <= 0.0 {
             self.own_problem(lang, Problem::Outside);
             return;
         }
+        if !self.extras.is_empty() {
+            // Каналы второго снимка или снимков сезонов - на ту же сетку.
+            let queue: Vec<(String, Arc<Vec<u8>>)> = std::mem::take(&mut self.extras).into_iter().filter_map(|n| self.rasters.iter().find(|r| r.0 == n).cloned()).collect();
+            let (bbox, side) = (self.site.site.bbox(), self.site.site.size());
+            self.status = tr(lang, "Reading the bands of the other images…").to_string();
+            self.own_job = Some(OwnJob { key, index, bbox, side, stage: OwnStage::More { grid, queue, current: None, parts: Vec::new(), shares: vec![share] } });
+            return;
+        }
+        if self.cover.is_empty() {
+            self.cover = vec![share];
+        }
+        if let Some(text) = self.trace.as_ref().and_then(|t| t.task.as_ref()).and_then(|t| t.short_cover(lang, &self.cover)) {
+            self.own_job = None;
+            if self.layer.take().is_some() {
+                self.changed = true;
+            }
+            self.status = text;
+            return;
+        }
         if let Some(trace) = &self.trace {
             // Трассировка - по клеткам участка со всеми каналами, сетка не
-            // больше, чем у деления на объекты, как у модуля.
+            // больше, чем у деления на объекты, как у модуля. У заросших
+            // полей на цвета идут только каналы летнего снимка.
             if segments::too_big(grid.rows, grid.cols) {
                 self.own_problem(lang, Problem::Pieces);
                 return;
             }
-            let good: Vec<bool> = grid.values.chunks(grid.depth.max(1)).zip(&keep).map(|(cell, k)| *k && rasterclass::usable(cell)).collect();
-            let tracer = Box::new(Tracer::new(&grid.values, grid.depth, grid.rows, grid.cols, &good, trace.params));
+            let depth = grid.depth.max(1);
+            let split = trace.task.as_ref().and_then(|t| t.split()).filter(|s| *s < depth);
+            let traced: Vec<f32> = match split {
+                Some(s) => grid.values.chunks(depth).flat_map(|cell| cell[..s].iter().copied()).collect(),
+                None => grid.values.clone(),
+            };
+            let used = split.unwrap_or(depth);
+            let good: Vec<bool> = traced.chunks(used).zip(&keep).map(|(cell, k)| *k && rasterclass::usable(cell)).collect();
+            let tracer = Box::new(Tracer::new(&traced, used, grid.rows, grid.cols, &good, trace.params));
             let (bbox, side) = (self.site.site.bbox(), self.site.site.size());
             self.status = tr(lang, "Splitting the image into colours…").to_string();
             self.own_job = Some(OwnJob { key, index, bbox, side, stage: OwnStage::Trace { grid, tracer, share } });
@@ -1028,7 +1304,85 @@ impl ClassCalc {
                     self.traced_built(lang);
                 }
             }
+            OwnStage::More { grid, queue, current, parts, shares } => {
+                let bbox = job.bbox;
+                if current.is_none() {
+                    if queue.is_empty() {
+                        self.merge_more(lang);
+                        return;
+                    }
+                    let (name, bytes) = queue.remove(0);
+                    let fallow = self.trace.as_ref().and_then(|t| t.task.as_ref()).is_some_and(|t| t.split().is_some());
+                    match Source::read(&bytes, &name).and_then(|s| s.warp(&index, bbox, grid.step).map(|w| (s, w))) {
+                        Ok(pair) if (pair.1.grid.rows, pair.1.grid.cols) == (grid.rows, grid.cols) => *current = Some(Box::new(pair)),
+                        // Снимок сезона, который не лёг на сетку, - пустые
+                        // каналы, расчёт обходится без него.
+                        _ if fallow => {
+                            let bands = rasterclass::feature_bands(&bytes).unwrap_or(1).max(1);
+                            parts.push((vec![f32::NAN; grid.rows * grid.cols * bands], bands));
+                            shares.push(0.0);
+                        }
+                        _ => self.own_problem_text(tr(lang, "The second image is not read or does not cover the area.")),
+                    }
+                    return;
+                }
+                let Some(pair) = current else {
+                    return;
+                };
+                let (source, warp) = &mut **pair;
+                let mut done = false;
+                while !done && started.elapsed().as_secs_f64() < BUDGET {
+                    done = source.warp_rows(warp, WARP_ROWS);
+                }
+                if !done {
+                    self.status = trf(lang, "Reading the bands of the other images: {done} %.", &[("done", &format!("{:.0}", 100.0 * warp.done() as f64 / warp.grid.rows.max(1) as f64))]);
+                    return;
+                }
+                let warped = &warp.grid;
+                let keep = ring_mask(&index, warped, &self.site.site.ring);
+                let share = rasterclass::covered(&warped.values, warped.depth, &keep);
+                let fallow = self.trace.as_ref().and_then(|t| t.task.as_ref()).is_some_and(|t| t.split().is_some());
+                if !fallow && !warped.values.iter().any(|v| v.is_finite()) {
+                    self.own_problem_text(tr(lang, "The second image is not read or does not cover the area."));
+                    return;
+                }
+                parts.push((warped.values.clone(), warped.depth.max(1)));
+                shares.push(share);
+                *current = None;
+            }
         }
+    }
+
+    /// Отказ расчёта текстом.
+    fn own_problem_text(&mut self, text: &str) {
+        self.own_job = None;
+        if self.layer.take().is_some() {
+            self.changed = true;
+        }
+        self.status = text.to_string();
+    }
+
+    /// Каналы других снимков за каналами источника, клетка за клеткой.
+    fn merge_more(&mut self, lang: Lang) {
+        let Some(OwnJob { key, index, stage: OwnStage::More { grid, parts, shares, .. }, .. }) = self.own_job.take() else {
+            return;
+        };
+        let depth = grid.depth.max(1);
+        let cells = grid.rows * grid.cols;
+        let total = depth + parts.iter().map(|p| p.1).sum::<usize>();
+        let mut values = Vec::with_capacity(cells * total);
+        for cell in 0..cells {
+            values.extend_from_slice(grid.values.get(cell * depth..(cell + 1) * depth).unwrap_or(&[]));
+            for (part, bands) in &parts {
+                match part.get(cell * bands..(cell + 1) * bands) {
+                    Some(v) => values.extend_from_slice(v),
+                    None => values.extend(std::iter::repeat_n(f32::NAN, *bands)),
+                }
+            }
+        }
+        let merged = Mosaic { x0: grid.x0, y0: grid.y0, step: grid.step, rows: grid.rows, cols: grid.cols, depth: total, values };
+        self.cover = shares;
+        self.start_classes(lang, key, index, Arc::new(merged));
     }
 
     /// Трассировка готова, `_built` окна модуля: на глобусе - цвета клеток
@@ -1041,23 +1395,162 @@ impl ClassCalc {
             return;
         };
         let colors = tracing::display_colors(&done.centers);
-        let names: Vec<String> = colors.iter().map(|[r, g, b]| format!("#{r:02x}{g:02x}{b:02x}")).collect();
+        let hexes: Vec<String> = colors.iter().map(|c| hex(*c)).collect();
+        let count = colors.len();
+        let shares = color_shares(&done.classes, count);
+        let mut order: Vec<usize> = (0..count).collect();
+        order.sort_by(|a, b| shares[*b].total_cmp(&shares[*a]));
+        // Название до переименования - номер цвета по доле участка с 1.
+        let mut names = vec![String::new(); count];
+        for (rank, n) in order.iter().enumerate() {
+            names[*n] = trf(lang, "Colour {n}", &[("n", &(rank + 1).to_string())]);
+        }
         let regions = done.shapes.len();
-        let mut text = trf(lang, "Colours {colors}, areas {regions}.", &[("colors", &colors.len().to_string()), ("regions", &regions.to_string())]);
+        let label = self.source_title(&key.0).to_string();
+        let Some(trace) = &mut self.trace else {
+            return;
+        };
+        let p = trace.params;
+        let settings = vec![
+            trf(lang, "colours {n}", &[("n", &p.colors.to_string())]),
+            trf(lang, "smoothing {n}", &[("n", &p.smooth.to_string())]),
+            trf(lang, "areas from {n} cells", &[("n", &p.least.to_string())]),
+            trf(lang, "rounding {v}", &[("v", &format!("{:.2}", p.corner))]),
+            trf(lang, "pixel {pixel} m", &[("pixel", &crate::spectral::short(grid.step))]),
+        ];
+        let mut base = TraceBase { done, colors, hexes, names, settings, index, x0: grid.x0, y0: grid.y0, step: grid.step, rows: grid.rows, cols: grid.cols };
+        let target = match &mut trace.task {
+            Some(task) => {
+                let title = task.title(lang);
+                task.prepare(lang, &mut base, &grid, title)
+            }
+            None => vec![-1; count],
+        };
+        trace.rows = order.iter().map(|n| ColorRow { number: *n, name: base.names[*n].clone(), share: shares[*n], target: target.get(*n).copied().unwrap_or(-1) }).collect();
+        trace.base = Some(base);
+        let mut text = trf(lang, "Colours {colors}, areas {regions}.", &[("colors", &count.to_string()), ("regions", &regions.to_string())]);
         if share < rasterclass::COVERED {
             text = format!("{text} {}", trf(lang, "The raster covers {share} % of the area.", &[("share", &format!("{:.0}", 100.0 * share))]));
         }
         if regions > MOST_OBJECTS {
             text = format!("{text} {}", trf(lang, "There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.", &[("n", &MOST_OBJECTS.to_string())]));
         }
-        self.status = format!("{text} {}", analysis::built_text(lang, crate::pointcalc::clock_now()));
-        let classes = done.classes.iter().map(|c| i16::try_from(*c).unwrap_or(-1)).collect();
-        self.layer = Some(Arc::new(Layer { index, step: grid.step, x0: grid.x0, y0: grid.y0, rows: grid.rows, cols: grid.cols, classes, colors, names, opacity: self.opacity, objects: None }));
-        self.label = self.source_title(&key.0).to_string();
-        if let Some(trace) = &mut self.trace {
-            trace.result = Some(done);
+        text = format!("{text} {}", analysis::built_text(lang, crate::pointcalc::clock_now()));
+        if let Some(notes) = trace.task.as_ref().map(|t| t.notes()).filter(|n| !n.is_empty()) {
+            text = format!("{text} {notes}");
         }
+        self.status = text;
+        self.label = label;
+        self.apply_trace(lang);
+    }
+
+    /// Итог по таблице классов, `_apply_classes` модуля 1.33: слитые цвета -
+    /// один класс с цветом и названием того, с которым слиты. У задачи -
+    /// ещё рубки, виды полей и линии на глобусе.
+    fn apply_trace(&mut self, lang: Lang) {
+        let Some(trace) = &mut self.trace else {
+            return;
+        };
+        let Some(base) = &trace.base else {
+            return;
+        };
+        let count = base.colors.len();
+        let mut target = vec![-1i32; count];
+        for row in &trace.rows {
+            if let Some(t) = target.get_mut(row.number) {
+                *t = row.target;
+            }
+        }
+        let (lookup, keep) = tracing::join_colors(&target);
+        let (classes, kinds) = tracing::joined(&base.done.classes, &base.done.kinds, &lookup);
+        let name_of = |k: usize| trace.rows.iter().find(|r| r.number == k).map(|r| r.name.trim().to_string()).filter(|n| !n.is_empty()).unwrap_or_else(|| base.names.get(k).cloned().unwrap_or_default());
+        let mut joined = Joined {
+            classes,
+            kinds,
+            colors: keep.iter().map(|k| base.colors[*k]).collect(),
+            names: keep.iter().map(|k| name_of(*k)).collect(),
+            hexes: keep.iter().map(|k| base.hexes[*k].clone()).collect(),
+            fields: Vec::new(),
+        };
+        let mut shown = joined.classes.clone();
+        let mut extra = Vec::new();
+        if let Some(task) = &trace.task {
+            joined = task.classes(lang, base, joined);
+            (shown, extra) = task.line_layer(lang, base, &joined.classes, joined.colors.len());
+        }
+        let mut colors = joined.colors.clone();
+        let mut names = joined.names.clone();
+        for (c, n) in extra {
+            colors.push(c);
+            names.push(n);
+        }
+        let classes = shown.iter().map(|c| i16::try_from(*c).unwrap_or(-1)).collect();
+        self.layer = Some(Arc::new(Layer { index: base.index.clone(), step: base.step, x0: base.x0, y0: base.y0, rows: base.rows, cols: base.cols, classes, colors, names, opacity: self.opacity, objects: None }));
+        trace.joined = Some(joined);
         self.changed = true;
+    }
+
+    /// «Названия от помощника», `ask_names` модуля 1.33: таблица классов -
+    /// в модель одним запросом, ответ - названия в таблице. Снимок и имена
+    /// в модель не уходят.
+    fn ask_names(&mut self, lang: Lang) {
+        let source_is_basemap = self.source.as_deref() == Some(BASEMAP);
+        let place = self.site.site.centre();
+        let Some(trace) = &mut self.trace else {
+            return;
+        };
+        let Some(base) = &trace.base else {
+            self.status = tr(lang, "First press «Build».").to_string();
+            return;
+        };
+        let count = base.colors.len();
+        let mut cells = vec![0usize; count];
+        for c in &base.done.classes {
+            if let Some(n) = usize::try_from(*c).ok().filter(|n| *n < count) {
+                cells[n] += 1;
+            }
+        }
+        let mut regions = vec![0usize; count];
+        for k in &base.done.kinds {
+            if let Some(n) = usize::try_from(*k).ok().filter(|n| *n < count) {
+                regions[n] += 1;
+            }
+        }
+        let total = cells.iter().sum::<usize>().max(1);
+        let highest = base.done.centers.iter().flatten().copied().fold(f64::NEG_INFINITY, f64::max);
+        let ru = lang == Lang::RU;
+        let units = if source_is_basemap {
+            if ru { "яркость 0-255" } else { "brightness 0-255" }
+        } else if highest <= data::objecttasks::REFLECTANCE_MAX {
+            if ru { "отражение 0-1" } else { "reflectance 0-1" }
+        } else if ru {
+            "значения растра"
+        } else {
+            "raster values"
+        };
+        let rules = trace.task.as_ref().and_then(|t| t.rules());
+        let rows: Vec<data::classnames::Row> = (0..count)
+            .map(|n| data::classnames::Row {
+                means: base.done.centers.get(n).cloned().unwrap_or_default(),
+                share: cells[n] as f64 / total as f64,
+                regions: regions[n],
+                area_ha: cells[n] as f64 * base.step * base.step / 1e4 / regions[n].max(1) as f64,
+                rule: rules.and_then(|r| r.get(n)).cloned(),
+            })
+            .collect();
+        let roles: Option<Vec<Option<String>>> = if source_is_basemap {
+            Some(vec![Some("red".into()), Some("green".into()), Some("blue".into())])
+        } else {
+            trace.task.as_ref().map(|t| t.grid_roles()).or_else(|| {
+                let raster = self.source.as_ref().and_then(|s| self.rasters.iter().find(|r| r.0 == *s))?;
+                crate::objecttasks::raster_roles(raster).0.map(|r| r.iter().map(|x| x.map(str::to_string)).collect())
+            })
+        };
+        let month = trace.task.as_ref().and_then(|t| t.month());
+        let text = data::classnames::question(&rows, roles.as_deref(), units, Some(place), month, ru);
+        let system = data::classnames::system_text(ru, lang.english_name());
+        trace.ask = Some((system, text));
+        self.status = tr(lang, "The assistant is thinking…").to_string();
     }
 
     /// Классы по растру готовы, `_built` модуля.
@@ -1087,7 +1580,33 @@ impl ClassCalc {
     }
 
     /// Шаг загрузки векторов.
+    /// Шаг задачи: поиск и загрузка снимков, загруженный снимок - растр
+    /// программы и источник.
+    fn step_task(&mut self, lang: Lang, request: Request) {
+        if !self.task_mode() {
+            return;
+        }
+        let problem = self.site.problem(lang);
+        let ring = self.site.site.ring.clone();
+        let Some(task) = self.trace.as_mut().and_then(|t| t.task.as_mut()) else {
+            return;
+        };
+        task.step(lang, &ring, problem, request);
+        if let Some(text) = task.status.take() {
+            self.status = text;
+        }
+        for raster in task.loaded.drain(..) {
+            self.rasters.retain(|r| r.0 != raster.0);
+            self.rasters.push(raster.clone());
+            self.loaded.push(raster);
+        }
+        if let Some(name) = task.take_source.take() {
+            self.source = Some(name);
+        }
+    }
+
     pub fn step(&mut self, lang: Lang, request: Request) {
+        self.step_task(lang, request);
         self.step_own(lang, request);
         self.indexes.step();
         let Some(job) = &mut self.job else {
@@ -1289,7 +1808,13 @@ impl ClassCalc {
         let tiff = class_tiff(layer);
         let shown = layer.clone();
         let sample = move |points: &[(f64, f64)]| shown.sample(points);
-        let name = trf(lang, if self.find.is_some() { "Similar areas {year}" } else { "Classification {year}" }, &[("year", &self.label)]);
+        let mut name = trf(lang, if self.find.is_some() { "Similar areas {year}" } else { "Classification {year}" }, &[("year", &self.label)]);
+        if self.find.is_none() {
+            // Название несёт настройки расчёта, `titled` модуля 1.33.
+            let mut settings = self.settings.clone();
+            settings.push(trf(lang, "pixel {pixel} m", &[("pixel", &crate::spectral::short(layer.step))]));
+            name = titled(&name, &settings);
+        }
         let rows: Vec<(String, [u8; 3])> = if self.find.is_some() { vec![(tr(lang, "Similar areas").to_string(), FOUND_COLOR)] } else { self.classes.iter().filter(|c| !c.points.is_empty()).map(|c| (c.name.clone(), c.color)).collect() };
         // С объектами итог - многоугольники, растр классов не пишется.
         // Признаки выборки считаются только здесь: ползунку они не нужны.
@@ -1344,25 +1869,45 @@ impl ClassCalc {
     /// многоугольники областей с полями cls, color и area_ha. Областей
     /// больше [`MOST_OBJECTS`] - картинка цветов и GeoTIFF их номеров.
     fn save_trace(&mut self, lang: Lang) {
-        let (Some(layer), Some(done)) = (&self.layer, self.trace.as_ref().and_then(|t| t.result.as_ref())) else {
+        let title = self.tool_title(lang);
+        let (Some(layer), Some(trace)) = (&self.layer, &self.trace) else {
             return;
         };
-        let name = trf(lang, "Tracing {source}", &[("source", &self.label)]);
-        let credit = if self.source.as_deref() == Some(BASEMAP) { self.credit.clone() } else { String::new() };
-        let (layers, extra) = match trace_places(layer, done, &name, self.opacity) {
+        let (Some(base), Some(joined)) = (&trace.base, &trace.joined) else {
+            return;
+        };
+        // Название - источник и настройки, описание - ещё классы с долей
+        // участка, `set_abstract` модуля 1.33.
+        let name = titled(&format!("{title} {}", self.label), &base.settings);
+        let mut about = vec![
+            trf(lang, "Source - {source}.", &[("source", &self.label)]),
+            trf(lang, "Settings - {settings}.", &[("settings", &base.settings.join(", "))]),
+            trf(lang, "Classes - {rows}.", &[("rows", &class_text(&joined.classes, &joined.names))]),
+        ];
+        if self.source.as_deref() == Some(BASEMAP) && !self.credit.is_empty() {
+            about.push(self.credit.clone());
+        }
+        let about = about.join("\n");
+        let (layers, mut extra) = match trace_places(layer, base, joined, &name, self.opacity) {
             Some(mut folder) => {
-                folder.description = credit;
+                folder.description = about;
                 (Vec::new(), vec![Item::Folder(folder)])
             }
             None => {
                 let shown = layer.clone();
                 let sample = move |points: &[(f64, f64)]| shown.sample(points);
                 let mut picture = analysis::picture(name, "tracing", layer.bbox(), layer.step, &sample, class_tiff(layer));
-                picture.summary = credit;
+                picture.summary = about;
                 (vec![picture], Vec::new())
             }
         };
-        self.saved = Some(Saved { title: tr(lang, "Tracing").to_string(), ring: self.site.site.ring.clone(), layers, extra, session: None });
+        if let Some(task) = &trace.task {
+            let to_degrees = |p: &(f64, f64)| aef::from_utm(base.index.number, base.index.south, base.x0 + p.0 * base.step, base.y0 - p.1 * base.step);
+            if let Some(folder) = task.line_places(lang, base, &to_degrees) {
+                extra.push(Item::Folder(folder));
+            }
+        }
+        self.saved = Some(Saved { title: title.to_string(), ring: self.site.site.ring.clone(), layers, extra, session: None });
     }
 
     /// Мышь над глобусом: точки выбранного класса щелчком, щелчок по
@@ -1538,14 +2083,38 @@ impl ClassCalc {
         let mut add = false;
         let searching = self.find.is_some();
         let tracing_mode = self.trace.is_some();
+        let task_mode = self.task_mode();
+        // У задачи тонкие настройки свёрнуты под «Дополнительно», просьба
+        // автора модуля «система громоздкая, упрости».
+        let fine = !task_mode || self.trace.as_ref().and_then(|t| t.task.as_ref()).is_some_and(|t| t.more);
+        let fallow = self.trace.as_ref().and_then(|t| t.task.as_ref()).is_some_and(|t| t.scenario == data::objecttasks::Scenario::Fallow);
         let mut pick_now = false;
-        let title = tr(lang, if tracing_mode { "Tracing" } else if searching { "Similar areas" } else { "Classification" });
-        let id = if tracing_mode { "planetx-tracing" } else if searching { "planetx-similar" } else { "planetx-aef-class" };
+        let mut table_changed = false;
+        let mut ask = false;
+        let mut refine = false;
+        let mut new_task = None;
+        let title = if tracing_mode { self.tool_title(lang) } else { tr(lang, if searching { "Similar areas" } else { "Classification" }) };
+        let id = if task_mode {
+            "planetx-objects"
+        } else if tracing_mode {
+            "planetx-tracing"
+        } else if searching {
+            "planetx-similar"
+        } else {
+            "planetx-aef-class"
+        };
         egui::Window::new(title).id(egui::Id::unique(id)).open(&mut open).collapsible(false).resizable(false).min_width(400.0).show(ctx, |ui| {
             egui::Grid::new("planetx-aef-class-form").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
                 ui.label(tr(lang, "Point"));
                 ui.label(&self.place);
                 ui.end_row();
+                if let Some(task) = self.trace.as_mut().and_then(|t| t.task.as_mut()) {
+                    new_task = task.rows(ui, lang, &self.rasters, &mut self.source);
+                    ui.label(tr(lang, "Area|site"));
+                    self.site.row(ui, lang);
+                    ui.end_row();
+                }
+                if !task_mode {
                 ui.label(tr(lang, "Source"));
                 let shown = match self.source.as_deref() {
                     None => "AlphaEarth",
@@ -1592,6 +2161,8 @@ impl ClassCalc {
                 ui.label(tr(lang, "Area|site"));
                 self.site.row(ui, lang);
                 ui.end_row();
+                }
+                if fine {
                 ui.label(tr(lang, "Pixel"));
                 let text = match self.chosen_pixel() {
                     None => tr(lang, "Auto").to_string(),
@@ -1621,7 +2192,8 @@ impl ClassCalc {
                     ui.add(egui::Label::new(text).wrap());
                     ui.end_row();
                 }
-                if let Some(trace) = &mut self.trace {
+                }
+                if fine && let Some(trace) = &mut self.trace {
                     let p = &mut trace.params;
                     ui.label(tr(lang, "Colours"));
                     ui.add(egui::DragValue::new(&mut p.colors).range(2..=32)).on_hover_text(tr(lang, "How many colours the image is split into. More colours give more detailed areas and more polygons."));
@@ -1635,6 +2207,9 @@ impl ClassCalc {
                     ui.label(tr(lang, "Corner rounding"));
                     ui.add(egui::DragValue::new(&mut p.corner).range(0.0..=1.33).speed(0.05).fixed_decimals(2)).on_hover_text(tr(lang, "Rounding of the outline corners, as in Potrace. 0 gives only corners, a broken line. The larger the value, the more corners become smooth arcs."));
                     ui.end_row();
+                }
+                if let Some(task) = self.trace.as_mut().and_then(|t| t.task.as_mut()) {
+                    task.bottom_rows(ui, lang);
                 }
                 if !searching && !tracing_mode {
                     ui.label("");
@@ -1689,6 +2264,63 @@ impl ClassCalc {
             ui.add_space(4.0);
             if tracing_mode {
                 ui.add(egui::Label::new(tr(lang, "The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.")).wrap());
+                // Таблица классов после «Построить», у заросших полей классы
+                // задаёт ряд снимков, таблицы нет.
+                if let Some(trace) = &mut self.trace
+                    && !trace.rows.is_empty()
+                    && !fallow
+                {
+                    ui.horizontal(|ui| {
+                        ui.label(tr(lang, "Classes"));
+                        let waiting = trace.waiting;
+                        if ui
+                            .add_enabled(!waiting, egui::Button::new(tr(lang, "Names from the assistant")))
+                            .on_hover_text(tr(lang, "The AI assistant proposes class names by the table - mean band values, share of the area, size of areas, place and month of the image. The image and layer names are not sent to the model, pressing the button is consent to send the table. The names can be corrected."))
+                            .clicked()
+                        {
+                            ask = true;
+                        }
+                        if task_mode
+                            && ui
+                                .button(tr(lang, "Refine with points"))
+                                .on_hover_text(tr(lang, "Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe."))
+                                .clicked()
+                        {
+                            refine = true;
+                        }
+                    });
+                    let colors = trace.base.as_ref().map(|b| b.colors.clone()).unwrap_or_default();
+                    let names: Vec<(usize, String)> = trace.rows.iter().map(|r| (r.number, r.name.clone())).collect();
+                    egui::ScrollArea::vertical().id_salt("planetx-trace-table").max_height(TABLE_HEIGHT).show(ui, |ui| {
+                        for row in &mut trace.rows {
+                            ui.horizontal(|ui| {
+                                let (rect, _) = ui.allocate_exact_size(egui::vec2(16.0, 16.0), egui::Sense::hover());
+                                let [r, g, b] = colors.get(row.number).copied().unwrap_or([128; 3]);
+                                ui.painter().rect_filled(rect, 2.0, egui::Color32::from_rgb(r, g, b));
+                                if ui.add(egui::TextEdit::singleline(&mut row.name).desired_width(170.0)).on_hover_text(tr(lang, "The class name - in the name field of the polygons and in the scale on the globe.")).changed() {
+                                    table_changed = true;
+                                }
+                                ui.label(format!("{:.0} %", 100.0 * row.share)).on_hover_text(tr(lang, "Share of the area."));
+                                let merge = |name: &str| trf(lang, "Merge with «{name}»", &[("name", name)]);
+                                let shown = names.iter().find(|(n, _)| *n as i32 == row.target).map_or_else(|| tr(lang, "Own class").to_string(), |(_, name)| merge(name));
+                                egui::ComboBox::from_id_salt(("planetx-trace-join", row.number))
+                                    .selected_text(shown)
+                                    .show_ui(ui, |ui| {
+                                        if ui.selectable_value(&mut row.target, -1, tr(lang, "Own class")).changed() {
+                                            table_changed = true;
+                                        }
+                                        for (n, name) in &names {
+                                            if *n != row.number && ui.selectable_value(&mut row.target, *n as i32, merge(name)).changed() {
+                                                table_changed = true;
+                                            }
+                                        }
+                                    })
+                                    .response
+                                    .on_hover_text(tr(lang, "Merge this colour with another: the areas of both colours become one class with the name and colour of the one it is merged with."));
+                            });
+                        }
+                    });
+                }
             } else if searching {
                 ui.add(egui::Label::new(tr(lang, "Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.")).wrap());
             } else {
@@ -1704,9 +2336,14 @@ impl ClassCalc {
                         }
                     });
                 }
-                if ui.button(tr(lang, "Add a class")).clicked() {
-                    add = true;
-                }
+                ui.horizontal(|ui| {
+                    if ui.button(tr(lang, "Add a class")).clicked() {
+                        add = true;
+                    }
+                    if ui.button(tr(lang, "Classes from tracing")).on_hover_text(tr(lang, "Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.")).clicked() {
+                        self.wants_traced = true;
+                    }
+                });
                 ui.add(egui::Label::new(tr(lang, "Click the globe to put a point of the chosen class, a click on a point removes it. At least two classes of three points each are needed.")).wrap());
             }
             ui.add_space(4.0);
@@ -1715,7 +2352,9 @@ impl ClassCalc {
                 ui.add(egui::Label::new(egui::RichText::new(format!("{} {}", tr(lang, "Data - AlphaEarth Foundations Satellite Embedding, CC BY 4.0."), aef::CREDIT)).small()).wrap());
             }
             ui.add_space(4.0);
-            let tip = if tracing_mode {
+            let tip = if task_mode {
+                tr(lang, "The image of the area is split into colours, the colours are named by the reflectance rules of the task, the areas are outlined with smooth outlines.")
+            } else if tracing_mode {
                 tr(lang, "The image of the area is split into colours, the areas of one colour are outlined with smooth outlines.")
             } else if searching {
                 tr(lang, "The area is divided into objects, each object is compared with the samples in colour and texture.")
@@ -1735,6 +2374,23 @@ impl ClassCalc {
         }
         if add {
             self.add_class(lang);
+        }
+        if let Some(s) = new_task
+            && let Some(trace) = &mut self.trace
+        {
+            let spec = s.spec();
+            trace.params.colors = spec.colors;
+            trace.params.smooth = spec.smooth;
+            trace.params.least = spec.least;
+        }
+        if table_changed {
+            self.apply_trace(lang);
+        }
+        if ask {
+            self.ask_names(lang);
+        }
+        if refine {
+            self.wants_refine = true;
         }
         // Ползунок считает выборку после паузы, флажок - сразу.
         if let Some(find) = &mut self.find
@@ -1776,7 +2432,7 @@ impl ClassCalc {
         if std::mem::take(&mut self.site.changed) && self.layer.is_some() && !self.busy() {
             self.status = tr(lang, "The area has changed. Press «Build» to compute it again.").to_string();
         }
-        if self.busy() {
+        if self.busy() || self.finding() || self.waits_names() {
             ctx.request_repaint();
         }
     }
@@ -1784,7 +2440,9 @@ impl ClassCalc {
 
 impl analysis::SiteTool for ClassCalc {
     fn id(&self) -> &'static str {
-        if self.trace.is_some() {
+        if self.task_mode() {
+            "objects"
+        } else if self.trace.is_some() {
             "tracing"
         } else if self.find.is_some() {
             "similar"
@@ -1800,7 +2458,7 @@ impl analysis::SiteTool for ClassCalc {
     }
     fn legend_title(&self, lang: Lang) -> Option<&'static str> {
         if self.trace.is_some() {
-            return Some(tr(lang, "Tracing"));
+            return Some(self.tool_title(lang));
         }
         self.find.is_none().then(|| tr(lang, "Classification"))
     }
@@ -1815,7 +2473,9 @@ impl analysis::SiteTool for ClassCalc {
             find.base = None;
         }
         if let Some(trace) = &mut self.trace {
-            trace.result = None;
+            trace.base = None;
+            trace.rows.clear();
+            trace.joined = None;
         }
     }
 }
@@ -1841,7 +2501,8 @@ fn class_tiff(layer: &Layer) -> Vec<u8> {
 /// Многоугольники трассировки папкой «Моих меток», `write_traced` модуля.
 /// Кольца - углы клеток сетки слоя, контур - цветом заливки, как
 /// `_stroke_as_fill` модуля. None - областей больше [`MOST_OBJECTS`].
-fn trace_places(layer: &Layer, done: &Traced, name: &str, opacity: f64) -> Option<scene::kml::Folder> {
+fn trace_places(layer: &Layer, base: &TraceBase, joined: &Joined, name: &str, opacity: f64) -> Option<scene::kml::Folder> {
+    let done = &base.done;
     if done.shapes.len() > MOST_OBJECTS {
         return None;
     }
@@ -1849,11 +2510,13 @@ fn trace_places(layer: &Layer, done: &Traced, name: &str, opacity: f64) -> Optio
     let alpha = (opacity * 255.0).round() as u8;
     let mut folder = scene::kml::Folder::new(name);
     for (region, (outer, holes)) in &done.shapes {
-        let Some(kind) = done.kinds.get(*region).and_then(|k| usize::try_from(*k).ok()) else {
+        let Some(kind) = joined.kinds.get(*region).and_then(|k| usize::try_from(*k).ok()) else {
             continue;
         };
-        let ([r, g, b], color) = (layer.colors.get(kind).copied().unwrap_or([128; 3]), layer.names.get(kind).cloned().unwrap_or_default());
-        let mut place = Place::new(&format!("{color} {}", region + 1), Kind::Polygon, to_degrees(outer));
+        let [r, g, b] = joined.colors.get(kind).copied().unwrap_or([128; 3]);
+        let class = joined.names.get(kind).cloned().unwrap_or_default();
+        let color = joined.hexes.get(kind).cloned().unwrap_or_default();
+        let mut place = Place::new(&format!("{class} {}", region + 1), Kind::Polygon, to_degrees(outer));
         place.color = [r, g, b, 255];
         place.fill = Some([r, g, b, alpha]);
         if !holes.is_empty() {
@@ -1861,10 +2524,47 @@ fn trace_places(layer: &Layer, done: &Traced, name: &str, opacity: f64) -> Optio
         }
         let cells = tracing::ring_area(outer).abs() - holes.iter().map(|h| tracing::ring_area(h).abs()).sum::<f64>();
         let area = cells * layer.step * layer.step / 1e4;
-        place.data = Some(vec![("cls".to_string(), (kind + 1).to_string()), ("color".to_string(), color), ("area_ha".to_string(), format!("{area:.4}"))]);
+        let mut fields = vec![("cls".to_string(), (kind + 1).to_string()), ("name".to_string(), class), ("color".to_string(), color), ("area_ha".to_string(), format!("{area:.4}"))];
+        for (field, values) in &joined.fields {
+            fields.push(((*field).to_string(), values.get(*region).cloned().unwrap_or_default()));
+        }
+        place.data = Some(fields);
         folder.children.push(Item::Place(place));
     }
     Some(folder)
+}
+
+/// Цвет строкой «#rrggbb».
+fn hex([r, g, b]: [u8; 3]) -> String {
+    format!("#{r:02x}{g:02x}{b:02x}")
+}
+
+/// Доли участка цветов 0..count по клеткам classes, `shares` модуля.
+fn color_shares(classes: &[i32], count: usize) -> Vec<f64> {
+    let mut found = vec![0usize; count];
+    for c in classes {
+        if let Some(n) = usize::try_from(*c).ok().filter(|n| *n < count) {
+            found[n] += 1;
+        }
+    }
+    let total = found.iter().sum::<usize>().max(1);
+    found.iter().map(|n| *n as f64 / total as f64).collect()
+}
+
+/// Название результата с настройками расчёта «Название (a, b)», `titled`
+/// модуля 1.33: по названию видно, при каких настройках получен итог.
+pub fn titled(title: &str, settings: &[String]) -> String {
+    let parts: Vec<&str> = settings.iter().map(String::as_str).filter(|s| !s.is_empty()).collect();
+    if parts.is_empty() { title.to_string() } else { format!("{title} ({})", parts.join(", ")) }
+}
+
+/// Классы с долей участка строкой: «Хвойный лес 43 %, Вода 21 %», по
+/// убыванию доли, `class_rows` модуля.
+fn class_text(classes: &[i32], names: &[String]) -> String {
+    let shares = color_shares(classes, names.len());
+    let mut order: Vec<usize> = (0..names.len()).filter(|n| shares[*n] > 0.0).collect();
+    order.sort_by(|a, b| shares[*b].total_cmp(&shares[*a]));
+    order.iter().map(|n| format!("{} {:.0} %", names[*n], 100.0 * shares[*n])).collect::<Vec<_>>().join(", ")
 }
 
 /// Доли классов строкой итога: «Лес 60%, Вода 40%».
@@ -1899,4 +2599,246 @@ fn pixel(nav: &Navigator, (lat, lon): (f64, f64)) -> ([f64; 2], bool) {
     let (px, front) = nav.camera.project(point);
     let facing = (nav.camera.eye - point).dot(point.normalize_or_zero()) > 0.0;
     ([px.x, px.y], front && facing)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Запрос без сети: ответа нет никогда.
+    struct Silent(net::Stats);
+
+    impl net::Request for Silent {
+        fn start(&self, _url: &str) {}
+        fn take(&self) -> Option<Result<Vec<u8>, String>> {
+            None
+        }
+        fn stats(&self) -> &net::Stats {
+            &self.0
+        }
+    }
+
+    const LAT: f64 = 58.0;
+    const LON: f64 = 56.25;
+
+    /// Снимок «Сельское хозяйство» 2 × 2 км в UTM с подписями каналов:
+    /// хвоя слева, листва справа, вырубка в хвое, вода внизу, дорога
+    /// в три клетки поперёк листвы.
+    fn summer() -> Raster {
+        let Some(index) = ZoneIndex::bare(&aef::zone_of(LON, LAT)) else {
+            return (String::new(), Arc::new(Vec::new()));
+        };
+        let (cx, cy) = index.project(LAT, LON);
+        let (rows, cols) = (200usize, 200usize);
+        let mut bands: Vec<Vec<f32>> = (0..3).map(|_| Vec::with_capacity(rows * cols)).collect();
+        for r in 0..rows {
+            for c in 0..cols {
+                let cell: [f32; 3] = if (135..145).contains(&r) {
+                    [0.01, 0.02, 0.04]
+                } else if (60..90).contains(&r) && (40..70).contains(&c) {
+                    [0.30, 0.22, 0.08]
+                } else if c < 100 {
+                    [0.08, 0.20, 0.02]
+                } else if (120..123).contains(&r) {
+                    [0.30, 0.22, 0.08]
+                } else {
+                    [0.17, 0.38, 0.03]
+                };
+                for (b, v) in bands.iter_mut().zip(cell) {
+                    b.push(v);
+                }
+            }
+        }
+        let labels = ["B11 swir16", "B8 nir", "B2 blue"];
+        let values: Vec<(String, Vec<f32>)> = labels.iter().map(|l| l.to_string()).zip(bands).collect();
+        let grid = data::geotiff::MercatorGrid { x0: cx - 1000.0 + 5.0, y0: cy + 1000.0 - 5.0, step: 10.0, cols, rows };
+        let bytes = data::geotiff::write_bands_projected(&grid, utm_epsg(&index), &values).unwrap_or_default();
+        ("S2_20250721_40VDK_agriculture.tif".to_string(), Arc::new(bytes))
+    }
+
+    /// Кадр окна без экрана.
+    fn frame(ctx: &egui::Context, calc: &mut ClassCalc, lang: Lang) {
+        let mut out = ctx.run_pass(egui::RawInput::default(), |ctx| calc.show(ctx, lang));
+        out.textures_delta.clear();
+    }
+
+    #[test]
+    fn objects_window_names_classes_and_saves() {
+        // Окно «Выделение объектов» по снимку с подписями каналов: виды по
+        // отражению, рубка в хвое, линии, таблица классов и «OK».
+        let lang = Lang::EN;
+        let raster = summer();
+        assert!(!raster.1.is_empty());
+        let mut calc = ClassCalc::objects(LAT, LON, "test".into(), vec![raster.clone()], lang);
+        let ctx = egui::Context::default();
+        frame(&ctx, &mut calc, lang);
+        assert_eq!(calc.source.as_deref(), Some(raster.0.as_str()));
+        if let Some(task) = calc.trace.as_mut().and_then(|t| t.task.as_mut()) {
+            task.lines = true;
+        }
+        calc.build(lang);
+        let request = |_: u64| Box::new(Silent(net::Stats::default())) as Box<dyn net::Request>;
+        for _ in 0..5000 {
+            calc.step(lang, &request);
+            if !calc.busy() {
+                break;
+            }
+        }
+        assert!(!calc.busy(), "{}", calc.status);
+        let names = calc.trace.as_ref().and_then(|t| t.joined.as_ref()).map(|j| j.names.clone()).unwrap_or_default();
+        for name in ["Coniferous forest", "Broadleaf forest and grass", "Water", "Clearcuts and burns"] {
+            assert!(names.iter().any(|n| n == name), "{name} нет в {names:?}, {}", calc.status);
+        }
+        assert!(calc.status.contains("Lines"), "{}", calc.status);
+        // Таблица и кнопки на виду, слияние двух классов - один класс.
+        frame(&ctx, &mut calc, lang);
+        let before = names.len();
+        if let Some(trace) = &mut calc.trace
+            && trace.rows.len() >= 2
+        {
+            let first = trace.rows[0].number as i32;
+            trace.rows[1].target = first;
+        }
+        calc.apply_trace(lang);
+        let after = calc.trace.as_ref().and_then(|t| t.joined.as_ref()).map_or(0, |j| j.names.len());
+        assert!(after < before, "{before} -> {after}");
+        assert!(!calc.class_pairs().is_empty());
+        calc.save(lang);
+        let saved = calc.saved.take();
+        let folders: Vec<String> = saved.iter().flat_map(|s| s.extra.iter()).filter_map(|i| if let Item::Folder(f) = i { Some(f.name.clone()) } else { None }).collect();
+        assert!(folders.iter().any(|n| n.starts_with("Object extraction S2_") && n.contains("task «Forests and clearcuts»")), "{folders:?}");
+        assert!(folders.iter().any(|n| n == "Lines"), "{folders:?}");
+        // «Уточнить точками»: участок, снимок и классы - окну «Классификация».
+        calc.wants_refine = true;
+        let refined = calc.take_refine(lang);
+        assert!(refined.is_some(), "нет классов для «Классификации»");
+        let Some((ring, source, pairs)) = refined else {
+            return;
+        };
+        let mut classes = ClassCalc::new(LAT, LON, "test".into(), vec![raster.clone()], lang);
+        classes.site.site.ring = ring;
+        classes.refine_from(lang, source, &pairs);
+        assert_eq!(classes.source.as_deref(), Some(raster.0.as_str()));
+        assert_eq!(classes.classes.len(), pairs.len());
+    }
+
+    #[test]
+    fn short_cover_is_refused() {
+        // Снимок накрывает часть участка: «Построить» отказывает.
+        let lang = Lang::EN;
+        let raster = summer();
+        let mut calc = ClassCalc::objects(LAT + 0.012, LON, "test".into(), vec![raster.clone()], lang);
+        calc.source = Some(raster.0.clone());
+        calc.build(lang);
+        let request = |_: u64| Box::new(Silent(net::Stats::default())) as Box<dyn net::Request>;
+        for _ in 0..5000 {
+            calc.step(lang, &request);
+            if !calc.busy() {
+                break;
+            }
+        }
+        assert!(calc.layer.is_none());
+        assert!(calc.status.contains("covers only"), "{}", calc.status);
+    }
+
+    /// Снимок 2 × 2 км: слева left, посередине right, справа field.
+    fn image(name: &str, left: [f32; 3], right: [f32; 3], field: [f32; 3]) -> Raster {
+        let Some(index) = ZoneIndex::bare(&aef::zone_of(LON, LAT)) else {
+            return (String::new(), Arc::new(Vec::new()));
+        };
+        let (cx, cy) = index.project(LAT, LON);
+        let (rows, cols) = (200usize, 200usize);
+        let mut bands: Vec<Vec<f32>> = (0..3).map(|_| Vec::with_capacity(rows * cols)).collect();
+        for _ in 0..rows {
+            for c in 0..cols {
+                for (b, v) in bands.iter_mut().zip(if c < 100 { left } else if c < 130 { right } else { field }) {
+                    b.push(v);
+                }
+            }
+        }
+        let values: Vec<(String, Vec<f32>)> = ["B11 swir16", "B8 nir", "B2 blue"].iter().map(|l| l.to_string()).zip(bands).collect();
+        let grid = data::geotiff::MercatorGrid { x0: cx - 1000.0 + 5.0, y0: cy + 1000.0 - 5.0, step: 10.0, cols, rows };
+        let bytes = data::geotiff::write_bands_projected(&grid, utm_epsg(&index), &values).unwrap_or_default();
+        (name.to_string(), Arc::new(bytes))
+    }
+
+    #[test]
+    fn snow_of_second_image_splits_conifers() {
+        // Летом хвоя и листва одной яркости ИК, в марте хвоя тёмная на
+        // снегу, голый лиственный лес светлый, `test_snow_tells_conifer`
+        // модуля на сетке окна.
+        let lang = Lang::EN;
+        let summer = image("S2_20250721_40VDK_agriculture.tif", [0.17, 0.32, 0.03], [0.17, 0.33, 0.03], [0.30, 0.22, 0.08]);
+        let march = image("S2_20260317_40VDK_agriculture.tif", [0.10, 0.22, 0.12], [0.18, 0.55, 0.45], [0.08, 0.80, 0.85]);
+        let mut calc = ClassCalc::objects(LAT, LON, "test".into(), vec![summer.clone(), march.clone()], lang);
+        calc.source = Some(summer.0.clone());
+        if let Some(task) = calc.trace.as_mut().and_then(|t| t.task.as_mut()) {
+            task.second = Some(march.0.clone());
+        }
+        calc.build(lang);
+        let request = |_: u64| Box::new(Silent(net::Stats::default())) as Box<dyn net::Request>;
+        for _ in 0..5000 {
+            calc.step(lang, &request);
+            if !calc.busy() {
+                break;
+            }
+        }
+        assert!(calc.status.contains("by the snow of the second image"), "{}", calc.status);
+        let names = calc.trace.as_ref().and_then(|t| t.joined.as_ref()).map(|j| j.names.clone()).unwrap_or_default();
+        assert!(names.contains(&"Coniferous forest".to_string()) && names.contains(&"Broadleaf forest and grass".to_string()), "{names:?}");
+    }
+
+    /// Снимок сезона «SWIR» (B12 B8A B4) 2 × 2 км: слева left, справа right.
+    fn season(name: &str, left: [f32; 3], right: [f32; 3]) -> Raster {
+        let Some(index) = ZoneIndex::bare(&aef::zone_of(LON, LAT)) else {
+            return (String::new(), Arc::new(Vec::new()));
+        };
+        let (cx, cy) = index.project(LAT, LON);
+        let (rows, cols) = (200usize, 200usize);
+        let mut bands: Vec<Vec<f32>> = (0..3).map(|_| Vec::with_capacity(rows * cols)).collect();
+        for _ in 0..rows {
+            for c in 0..cols {
+                for (b, v) in bands.iter_mut().zip(if c < 100 { left } else { right }) {
+                    b.push(v);
+                }
+            }
+        }
+        let values: Vec<(String, Vec<f32>)> = ["B12 swir22", "B8A nir08", "B4 red"].iter().map(|l| l.to_string()).zip(bands).collect();
+        let grid = data::geotiff::MercatorGrid { x0: cx - 1000.0 + 5.0, y0: cy + 1000.0 - 5.0, step: 10.0, cols, rows };
+        let bytes = data::geotiff::write_bands_projected(&grid, utm_epsg(&index), &values).unwrap_or_default();
+        (name.to_string(), Arc::new(bytes))
+    }
+
+    #[test]
+    fn overgrown_fields_by_season_images() {
+        // Два поля одного летнего вида: левое голое весной 2026 года -
+        // пашня, правое ни разу не голое - залежь. Снимки сезонов клетки
+        // таблицы берут из открытых растров по дню в имени.
+        let lang = Lang::EN;
+        let summer = image("S2_20250721_40VDK_agriculture.tif", [0.17, 0.38, 0.03], [0.18, 0.37, 0.03], [0.17, 0.38, 0.03]);
+        let year = crate::s2scenes::today().0;
+        let spring = season(&format!("S2_{year}0525_40VDK_swir.tif"), [0.20, 0.17, 0.12], [0.14, 0.30, 0.06]);
+        let autumn = season(&format!("S2_{}1004_40VDK_swir.tif", year - 1), [0.20, 0.17, 0.12], [0.14, 0.30, 0.06]);
+        let mut calc = ClassCalc::objects(LAT, LON, "test".into(), vec![summer.clone(), spring, autumn], lang);
+        if let Some(task) = calc.trace.as_mut().and_then(|t| t.task.as_mut()) {
+            task.scenario = data::objecttasks::Scenario::Fallow;
+        }
+        let ctx = egui::Context::default();
+        let mut out = ctx.run_pass(egui::RawInput::default(), |ctx| calc.show(ctx, lang));
+        out.textures_delta.clear();
+        calc.source = Some(summer.0.clone());
+        calc.build(lang);
+        let request = |_: u64| Box::new(Silent(net::Stats::default())) as Box<dyn net::Request>;
+        for _ in 0..5000 {
+            calc.step(lang, &request);
+            if !calc.busy() {
+                break;
+            }
+        }
+        assert!(calc.status.contains("Spring and autumn images 2"), "{}", calc.status);
+        let joined = calc.trace.as_ref().and_then(|t| t.joined.clone());
+        let names = joined.as_ref().map(|j| j.names.clone()).unwrap_or_default();
+        assert!(names.contains(&"Ploughland, tilled".to_string()) && names.contains(&"Fallow or meadow".to_string()), "{names:?}");
+        assert!(joined.is_some_and(|j| j.fields.iter().any(|(n, _)| *n == "last_bare")));
+    }
 }

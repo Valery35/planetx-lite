@@ -2191,3 +2191,127 @@ The image of the area is split into colours, the areas of one colour are outline
 Splitting the image into colours…	Das Bild wird in Farben zerlegt…
 Colours {colors}, areas {regions}.	Farben {colors}, Bereiche {regions}.
 There are more than {n} areas, «OK» saves a picture of the colours instead of polygons.	Es gibt mehr als {n} Bereiche, «OK» speichert ein Bild der Farben statt Polygonen.
+Object extraction	Objekterkennung
+Object extraction…	Objekterkennung…
+Typical tasks over tracing - forests and clearcuts, fields, water, overgrown fields. The colours are named by the reflectance of a Sentinel-2 image.	Typische Aufgaben auf Basis des Nachzeichnens - Wälder und Kahlschläge, Felder, Wasser, verwachsene Felder. Die Farben werden nach der Reflexion eines Sentinel-2-Bildes benannt.
+Task	Aufgabe
+A typical task sets the number of colours and the smallest area and after «Build» names the classes by the reflectance of the image.	Eine typische Aufgabe setzt die Anzahl der Farben und die kleinste Fläche und benennt nach «Berechnen» die Klassen nach der Reflexion des Bildes.
+Forests and clearcuts	Wälder und Kahlschläge
+Coniferous forest, broadleaf forest and grass, clearcuts and burns, open soil, water. A clearcut is open soil with at least a quarter of coniferous forest in a band of three cells around it.	Nadelwald, Laubwald und Gras, Kahlschläge und Brandflächen, offener Boden, Wasser. Ein Kahlschlag ist offener Boden mit mindestens einem Viertel Nadelwald in einem Streifen von drei Zellen ringsum.
+Fields	Felder
+Vegetation, open soil and ploughland, clearcuts, water. Fields stay separate polygons, the smallest area is larger.	Vegetation, offener Boden und Ackerland, Kahlschläge, Wasser. Felder bleiben eigene Polygone, die kleinste Fläche ist größer.
+Water and everything else - land.	Wasser und alles andere - Land.
+Overgrown fields	Verwachsene Felder
+Tilled fields, abandoned for 1-2 years, fallow and meadows, overgrowing with trees, forest. Spring and autumn images of 4 years show the year when the field was bare soil for the last time. The field borders are by the summer image.	Bewirtschaftete Felder, seit 1-2 Jahren aufgegebene, Brachen und Wiesen, mit Bäumen zuwachsende, Wald. Frühjahrs- und Herbstbilder aus 4 Jahren zeigen, in welchem Jahr das Feld zuletzt offener Boden war. Die Feldgrenzen stammen aus dem Sommerbild.
+No suitable image is open	Kein passendes Bild geöffnet
+A Sentinel-2 or Landsat image with labelled bands. The list has only images in which the window recognised the near infrared and the red or SWIR by the labels.	Ein Sentinel-2- oder Landsat-Bild mit beschrifteten Kanälen. Die Liste enthält nur Bilder, bei denen das Fenster anhand der Beschriftungen das nahe Infrarot und Rot oder SWIR erkannt hat.
+Find an image	Bild suchen
+Summer Sentinel-2 images of the area for three years, cloud cover over the area up to 5 %. A double click on an image loads the composite «Agriculture» (B11 B8 B2) and sets it as the source.	Sommerliche Sentinel-2-Bilder des Gebiets aus drei Jahren, Bewölkung über dem Gebiet bis 5 %. Ein Doppelklick auf ein Bild lädt die Kombination «Landwirtschaft» (B11 B8 B2) und setzt sie als Quelle.
+A double click loads the image.	Ein Doppelklick lädt das Bild.
+{day} - cloud cover over the area {cloud} %, data {valid} %	{day} - Bewölkung über dem Gebiet {cloud} %, Daten {valid} %
+{day} - cloud cover over the area {cloud} %	{day} - Bewölkung über dem Gebiet {cloud} %
+Second image	Zweites Bild
+An image of the same place in another season, better with snow. Its bands go to the same grid of the area and are split into colours together with the first. On snow coniferous forest is what stayed dark, without snow - what hardly changed in the near infrared.	Ein Bild desselben Ortes aus einer anderen Jahreszeit, besser mit Schnee. Seine Kanäle kommen auf dasselbe Gitter des Gebiets und werden zusammen mit den ersten in Farben zerlegt. Auf Schnee ist Nadelwald das, was dunkel blieb, ohne Schnee das, was sich im nahen Infrarot kaum änderte.
+Sentinel-2 images of the area in March, April and October for three years. On snow coniferous forest is dark, bare broadleaf forest and fields are light. In October without snow broadleaf forest loses the near infrared, coniferous does not. A double click loads the image and sets it as the second.	Sentinel-2-Bilder des Gebiets im März, April und Oktober aus drei Jahren. Auf Schnee ist Nadelwald dunkel, kahler Laubwald und Felder sind hell. Im Oktober ohne Schnee verliert Laubwald das nahe Infrarot, Nadelwald nicht. Ein Doppelklick lädt das Bild und setzt es als zweites.
+Spring and autumn	Frühjahr und Herbst
+Images {count} of {total}	Bilder {count} von {total}
+Pick images	Bilder auswählen
+Searches for Sentinel-2 images of the area in spring and autumn for 4 years, takes the clearest into each empty cell and loads it. Images that are already open are not loaded again.	Sucht Sentinel-2-Bilder des Gebiets aus Frühjahr und Herbst von 4 Jahren, nimmt für jede leere Zelle das klarste und lädt es. Bereits geöffnete Bilder werden nicht erneut geladen.
+Spring	Frühjahr
+Autumn	Herbst
+No image	Kein Bild
+First «Pick images»	Zuerst «Bilder auswählen»
+Images of spring (April - May) and autumn (September - October) by years. Ploughland at this time is bare soil, fallow is old grass and shrubs. A click on a cell - other dates of the season.	Bilder aus Frühjahr (April - Mai) und Herbst (September - Oktober) nach Jahren. Ackerland ist zu dieser Zeit offener Boden, Brache altes Gras und Gebüsch. Ein Klick auf eine Zelle zeigt andere Daten der Jahreszeit.
+Linear objects	Linienobjekte
+Roads and cutlines, rivers and canals, shelterbelts - as centre lines, a separate folder. A line is a narrow part of soil, water or vegetation, a connected piece of a line is not shorter than 200 m.	Straßen und Schneisen, Flüsse und Kanäle, Windschutzstreifen - als Mittellinien in einem eigenen Ordner. Eine Linie ist ein schmaler Teil von Boden, Wasser oder Vegetation, ein zusammenhängendes Stück ist mindestens 200 m lang.
+Line width up to	Linienbreite bis
+An object narrower than this is a line. The width is at least two pixels of the grid, otherwise the line breaks.	Ein schmaleres Objekt ist eine Linie. Die Breite beträgt mindestens zwei Pixel des Gitters, sonst reißt die Linie ab.
+Fine settings: pixel, colours, smoothing, smallest area, corner rounding, line width. The task sets them itself.	Feineinstellungen: Pixel, Farben, Glättung, kleinste Fläche, Eckenrundung, Linienbreite. Die Aufgabe setzt sie selbst.
+Coniferous forest	Nadelwald
+Broadleaf forest and grass	Laubwald und Gras
+Open soil	Offener Boden
+Clearcuts and burns	Kahlschläge und Brandflächen
+Ploughland, tilled	Ackerland, bewirtschaftet
+Abandoned 1-2 years	Seit 1-2 Jahren aufgegeben
+Fallow or meadow	Brache oder Wiese
+Overgrowing with trees	Wächst mit Bäumen zu
+Roads and cutlines	Straßen und Schneisen
+Rivers and canals	Flüsse und Kanäle
+Shelterbelts and cutlines	Windschutzstreifen und Schneisen
+Lines	Linien
+Lines {km} km.	Linien {km} km.
+No linear objects were found.	Keine Linienobjekte gefunden.
+Clearcuts and burns - {area} ha.	Kahlschläge und Brandflächen - {area} ha.
+Searching for Sentinel-2 images of the area…	Sentinel-2-Bilder des Gebiets werden gesucht…
+There are no Sentinel-2 scenes of the needed season over the area.	Über dem Gebiet gibt es keine Sentinel-2-Szenen der gewünschten Jahreszeit.
+Scenes {count}, the cloud cover over the area is counted…	Szenen {count}, die Bewölkung über dem Gebiet wird ermittelt…
+There are no suitable images: over the area the scenes have cloud cover above {cloud} % or less than {valid} % of data.	Keine passenden Bilder: über dem Gebiet haben die Szenen mehr als {cloud} % Bewölkung oder weniger als {valid} % Daten.
+Suitable images: {count}. A double click on an image loads it.	Passende Bilder: {count}. Ein Doppelklick auf ein Bild lädt es.
+Loading the image {when}…	Bild {when} wird geladen…
+Loading the image {when}: bands {done} of {total}	Bild {when} wird geladen: Kanäle {done} von {total}
+The server did not give the image, repeat {n} of {total}…	Der Server hat das Bild nicht geliefert, Wiederholung {n} von {total}…
+The image was not loaded - the server did not give the bands {error}. Repeat the double click later or take another image.	Das Bild wurde nicht geladen - der Server hat die Kanäle {error} nicht geliefert. Doppelklick später wiederholen oder ein anderes Bild nehmen.
+The image «{name}» is loaded.	Das Bild «{name}» ist geladen.
+The image is loaded and set as the source: {name}.	Das Bild ist geladen und als Quelle gesetzt: {name}.
+The second image is loaded: {name}.	Das zweite Bild ist geladen: {name}.
+Loading the image of {season} {year}: {day}…	Bild {season} {year} wird geladen: {day}…
+Season images {count} of {total}. Empty cells are seasons without a clear image over the area, the computation goes without them.	Jahreszeitenbilder {count} von {total}. Leere Zellen sind Jahreszeiten ohne klares Bild über dem Gebiet, die Berechnung kommt ohne sie aus.
+No clear spring and autumn images were found over the area.	Über dem Gebiet wurden keine klaren Frühjahrs- und Herbstbilder gefunden.
+Suitable. Bands - {names}.	Passt. Kanäle - {names}.
+Image of {day}.	Bild vom {day}.
+The image is not a summer one, coniferous and broadleaf forest differ worse.	Das Bild ist kein Sommerbild, Nadel- und Laubwald unterscheiden sich schlechter.
+No open image has the near infrared and the red or SWIR. «Find an image» finds a summer Sentinel-2 image of the area.	Kein geöffnetes Bild hat nahes Infrarot und Rot oder SWIR. «Bild suchen» findet ein Sommerbild Sentinel-2 des Gebiets.
+No image. The «Find an image» button finds and loads a summer Sentinel-2 image of the area.	Kein Bild. Die Schaltfläche «Bild suchen» findet und lädt ein Sommerbild Sentinel-2 des Gebiets.
+The near infrared and the red or SWIR of the raster are not recognised - an image with labelled bands is needed.	Nahes Infrarot und Rot oder SWIR des Rasters werden nicht erkannt - ein Bild mit beschrifteten Kanälen ist nötig.
+No spring and autumn images. «Pick images» finds and loads them for the area.	Keine Frühjahrs- und Herbstbilder. «Bilder auswählen» findet und lädt sie für das Gebiet.
+The second image is the same as the first.	Das zweite Bild ist dasselbe wie das erste.
+The second image is no longer open.	Das zweite Bild ist nicht mehr geöffnet.
+The near infrared of the second image is not recognised - an image with labelled bands is needed.	Das nahe Infrarot des zweiten Bildes wird nicht erkannt - ein Bild mit beschrifteten Kanälen ist nötig.
+The second image is not read or does not cover the area.	Das zweite Bild wurde nicht gelesen oder deckt das Gebiet nicht ab.
+The image	Das Bild
+The second image	Das zweite Bild
+{which} covers only {share} % of the area. «Find an image» loads an image of the whole area, or outline the area inside the image.	{which} deckt nur {share} % des Gebiets ab. «Bild suchen» lädt ein Bild des ganzen Gebiets, oder umranden Sie das Gebiet innerhalb des Bildes.
+Reading the bands of the other images…	Kanäle der anderen Bilder werden gelesen…
+Reading the bands of the other images: {done} %.	Kanäle der anderen Bilder werden gelesen: {done} %.
+The raster values do not look like reflectance, the classes are not named.	Die Rasterwerte sehen nicht wie Reflexion aus, die Klassen werden nicht benannt.
+Coniferous forest is told from broadleaf by the snow of the second image.	Nadelwald wurde anhand des Schnees im zweiten Bild vom Laubwald getrennt.
+Coniferous forest is told from broadleaf by two images.	Nadelwald wurde anhand von zwei Bildern vom Laubwald getrennt.
+Spring and autumn images {count}, years {first}-{last}.	Frühjahrs- und Herbstbilder {count}, Jahre {first}-{last}.
+The spring and autumn images did not fall on the area, the classes are by the summer image.	Die Frühjahrs- und Herbstbilder lagen nicht auf dem Gebiet, die Klassen stammen aus dem Sommerbild.
+The image of the area is split into colours, the colours are named by the reflectance rules of the task, the areas are outlined with smooth outlines.	Das Bild des Gebiets wird in Farben zerlegt, die Farben werden nach den Reflexionsregeln der Aufgabe benannt, die Flächen erhalten glatte Umrisse.
+Names from the assistant	Namen vom Assistenten
+The AI assistant proposes class names by the table - mean band values, share of the area, size of areas, place and month of the image. The image and layer names are not sent to the model, pressing the button is consent to send the table. The names can be corrected.	Der KI-Assistent schlägt Klassennamen anhand der Tabelle vor - mittlere Kanalwerte, Anteil am Gebiet, Größe der Flächen, Ort und Monat der Aufnahme. Bild und Ebenennamen gehen nicht an das Modell, das Drücken der Schaltfläche ist die Zustimmung zum Senden der Tabelle. Die Namen lassen sich korrigieren.
+The assistant is thinking…	Der Assistent denkt nach…
+The assistant is busy with the previous question or not connected.	Der Assistent ist mit der vorigen Frage beschäftigt oder nicht verbunden.
+The assistant gave no names: {error}	Der Assistent hat keine Namen geliefert: {error}
+empty answer	leere Antwort
+The names were proposed by the assistant, they can be corrected. Classes with the same name are merged.	Die Namen hat der Assistent vorgeschlagen, sie lassen sich korrigieren. Klassen mit gleichem Namen sind zusammengeführt.
+First press «Build».	Zuerst «Berechnen» drücken.
+The class name - in the name field of the polygons and in the scale on the globe.	Der Klassenname - im Feld name der Polygone und in der Skala auf dem Globus.
+Share of the area.	Anteil am Gebiet.
+Own class	Eigene Klasse
+Merge with «{name}»	Mit «{name}» zusammenführen
+Merge this colour with another: the areas of both colours become one class with the name and colour of the one it is merged with.	Diese Farbe mit einer anderen zusammenführen: die Flächen beider Farben werden eine Klasse mit Name und Farbe der Zielfarbe.
+Colour {n}	Farbe {n}
+Classes from tracing	Klassen aus dem Nachzeichnen
+Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.	Klassen mit Namen und Farben aus dem Fenster «Nachzeichnen» oder «Objekterkennung» nach «Berechnen». Klassen ohne Punkte werden ersetzt, die Punkte setzt man per Klick auf den Globus.
+Classes from tracing: {n}.	Klassen aus dem Nachzeichnen: {n}.
+The «Tracing» window has no built classes.	Das Fenster «Nachzeichnen» hat keine berechneten Klassen.
+Source - {source}.	Quelle - {source}.
+Settings - {settings}.	Einstellungen - {settings}.
+Classes - {rows}.	Klassen - {rows}.
+colours {n}	Farben {n}
+smoothing {n}	Glättung {n}
+areas from {n} cells	Flächen ab {n} Zellen
+rounding {v}	Rundung {v}
+pixel {pixel} m	Pixel {pixel} m
+task «{task}»	Aufgabe «{task}»
+second image «{name}»	zweites Bild «{name}»
+spring and autumn images {count}	Frühjahrs- und Herbstbilder {count}
+classes {n}	Klassen {n}
+objects: scale {scale}, texture {weight} %, from {least} cells	Objekte: Maßstab {scale}, Textur {weight} %, ab {least} Zellen
+neighbours merged	Nachbarn zusammengeführt
+Refine with points	Mit Punkten verfeinern
+Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe.	Öffnet das Fenster «Klassifikation» mit demselben Bild, Gebiet und denselben Klassen. Dort werden die Klassen mit eigenen Kontrollpunkten per Klick auf den Globus verfeinert.
+Classes from the «Object extraction» window. Choose a class with its circle and click its samples on the globe, at least three points per class, then «Build».	Klassen aus dem Fenster «Objekterkennung». Klasse per Kreis wählen und ihre Muster auf dem Globus anklicken, mindestens drei Punkte je Klasse, dann «Berechnen».
+Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.	Klassen des Gebiets nach eigenen Kontrollpunkten auf dem Globus - nach einem geöffneten Raster, der Grundkarte oder AlphaEarth-Einbettungen.
