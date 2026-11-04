@@ -90,6 +90,6 @@
 - Форум Rust: ответ 2 в теме 143483
 - OSGeo Discourse: ответ 3 в теме 155878
 - Mastodon: https://en.osm.town/@Vaery35/117560172295079513
-- LinkedIn, Facebook, X - посты 5 ноября 2026 года
+- Telegram, LinkedIn, Facebook, X - посты 5 ноября 2026 года
 - Сайт informpp.ru (шесть страниц, блок «Что нового» 9970), Dropbox - обновлены
 - Форум OSM - не опубликовано, учётная запись заблокирована
