@@ -27,7 +27,7 @@
 | Каталог QGIS (модуль) | Valery35 | plugins.qgis.org |
 | Telegram, @qgis_isolines | автор | Приложение Telegram, текст через буфер, пост один раз |
 | ВК, vk.ru/qgismodules | автор | Пост или статья через Claude in Chrome |
-| Форум OSM, community.openstreetmap.org | Valery35 | General talk по-английски, «Россия (Russia)» по-русски |
+| Форум OSM, community.openstreetmap.org | Valery35 | Не публиковать: 5 ноября 2026 года учётная запись заблокирована с пометкой «SPAM» |
 | Форум Rust, users.rust-lang.org | автор, вход через GitHub | Раздел Announcements, только Lite |
 | OSGeo Discourse, discourse.osgeo.org | автор, вход через GitHub | Раздел General (id 4) |
 | LinkedIn | автор | Пост на английском с хештегами, без продвижения |
@@ -41,9 +41,12 @@
 
 Особенности площадок:
 
-- Форум OSM. Новичку разрешены две ссылки в посте. Категория
-  выбирается до ввода заголовка, иначе её название попадает
-  в заголовок.
+- Форум OSM. Пять тем и ответов о своих программах за сутки модераторы
+  сочли рекламой и заблокировали учётную запись. Возврат - только
+  через обращение автора к модераторам.
+- Discourse (форумы Rust и OSGeo). Ответ в своей теме - fetch POST
+  /posts.json {topic_id, raw} с X-CSRF-Token из meta csrf-token.
+- Mastodon. Предел поста - 500 знаков, подсказку тегов закрывает пробел.
 - OSGeo Discourse. В главный раздел QGIS темы не ставятся,
   его подразделы - языковые и региональные.
 - This Week in Rust берёт проекты только из r/rust.
@@ -78,3 +81,15 @@
 - Telegram, LinkedIn, Facebook, X - посты 4 ноября 2026 года
 - Сайт informpp.ru (главная, «Что нового»), Dropbox - обновлены
 - Reddit r/QGIS, r/gis - опубликовал автор 5 ноября 2026 года, тексты в planetx/site/posts_1.40_social.md, ссылок на посты помощник не видит (reddit.com закрыт)
+
+### PlanetX Lite 0.23.0, 5 ноября 2026 года
+
+- GitHub: https://github.com/Valery35/planetx-lite/releases/tag/v0.23.0
+- Формы ошибок и пожеланий: https://github.com/Valery35/planetx-lite/issues/new/choose
+- ВК: https://vk.ru/wall-241229428_48
+- Форум Rust: ответ 2 в теме 143483
+- OSGeo Discourse: ответ 3 в теме 155878
+- Mastodon: https://en.osm.town/@Vaery35/117560172295079513
+- LinkedIn, Facebook, X - посты 5 ноября 2026 года
+- Сайт informpp.ru (шесть страниц, блок «Что нового» 9970), Dropbox - обновлены
+- Форум OSM - не опубликовано, учётная запись заблокирована
