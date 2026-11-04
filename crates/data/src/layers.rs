@@ -2,15 +2,89 @@
 // Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Слои GeoPackage из байтов файла, через terrio.
+//! Векторные слои из байтов файла, через terrio: GeoPackage, Shapefile,
+//! GeoJSON, GPX, TopoJSON, GML, MapInfo, FlatGeobuf, DXF и DWG.
 //!
 //! Объект слоя - части геометрии в широте и долготе WGS84 (точка - одна
 //! часть из одной точки, многоугольник - внешнее кольцо и дыры
 //! отдельными частями) и значения полей текстом. Таблица без геометрии -
 //! слой без частей у объектов.
+//!
+//! Шейпфайл и MapInfo - несколько файлов. Из памяти terrio читает их
+//! архивом ZIP, [`bundle`] собирает архив из главного файла и соседних.
+//! Слой без системы координат читается в градусах. Координаты вне
+//! градусов у такого слоя - ошибка [`NO_CRS`]: чертёж DXF в метрах лёг
+//! бы у нулевой точки.
+
+use std::io::Write;
 
 use terrio::crs::{SpatialRef, Transformer};
 use terrio::{FieldValue, Geometry};
+
+/// Расширения векторных файлов, которые открываются слоями.
+pub const EXTENSIONS: [&str; 14] = ["gpkg", "shp", "geojson", "json", "geojsonl", "gpx", "topojson", "gml", "mif", "tab", "fgb", "dxf", "dwg", "zip"];
+
+/// Расширения соседних файлов шейпфайла и MapInfo.
+pub const SIDECARS: [&str; 9] = ["dbf", "shx", "prj", "cpg", "qpj", "mid", "dat", "map", "id"];
+
+/// Главные файлы, которым нужны соседние.
+pub const WITH_SIDECARS: [&str; 3] = ["shp", "mif", "tab"];
+
+/// Ошибка слоя без системы координат с координатами не в градусах.
+pub const NO_CRS: &str = "The layer has no coordinate system, and its coordinates are not degrees";
+
+/// Расширение имени файла строчными буквами, пустое - без расширения.
+pub fn extension(name: &str) -> String {
+    let file = name.rsplit(['/', '\\']).next().unwrap_or(name);
+    file.rsplit_once('.').map(|(_, e)| e.to_ascii_lowercase()).unwrap_or_default()
+}
+
+/// Имя файла без расширения.
+pub fn stem(name: &str) -> &str {
+    let file = name.rsplit(['/', '\\']).next().unwrap_or(name);
+    file.rsplit_once('.').map_or(file, |(s, _)| s)
+}
+
+/// Файл открывается векторным слоем.
+pub fn is_vector(name: &str) -> bool {
+    EXTENSIONS.contains(&extension(name).as_str())
+}
+
+/// Файл - соседний у шейпфайла или MapInfo.
+pub fn is_sidecar(name: &str) -> bool {
+    SIDECARS.contains(&extension(name).as_str())
+}
+
+/// Главному файлу нужны соседние.
+pub fn needs_sidecars(name: &str) -> bool {
+    WITH_SIDECARS.contains(&extension(name).as_str())
+}
+
+/// Соседние файлы главного name из списка files: то же имя без
+/// расширения, без учёта регистра, расширение из [`SIDECARS`].
+pub fn sidecars_of<'a>(name: &str, files: &'a [(String, Vec<u8>)]) -> Vec<&'a (String, Vec<u8>)> {
+    let base = stem(name).to_lowercase();
+    files.iter().filter(|(n, _)| is_sidecar(n) && stem(n).to_lowercase() == base).collect()
+}
+
+/// Архив ZIP из главного файла и соседних для чтения из памяти: байты
+/// и имя архива. Расширения в архиве строчные, как их ищет terrio.
+pub fn bundle(main: &[u8], name: &str, sidecars: &[&(String, Vec<u8>)]) -> Result<(Vec<u8>, String), String> {
+    let base = stem(name);
+    let mut zip = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
+    let options = zip::write::SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
+    for (ext, bytes) in std::iter::once((extension(name), main)).chain(sidecars.iter().map(|(n, b)| (extension(n), b.as_slice()))) {
+        zip.start_file(format!("{base}.{ext}"), options).map_err(|e| e.to_string())?;
+        zip.write_all(bytes).map_err(|e| e.to_string())?;
+    }
+    let cursor = zip.finish().map_err(|e| e.to_string())?;
+    Ok((cursor.into_inner(), format!("{base}.zip")))
+}
+
+/// Точка в градусах.
+fn in_degrees(x: f64, y: f64) -> bool {
+    (-180.0..=180.0).contains(&x) && (-90.0..=90.0).contains(&y)
+}
 
 /// Вид геометрии объекта.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -98,8 +172,9 @@ fn parts(g: &Geometry, out: &mut RawParts) -> Shape {
     }
 }
 
-/// Слои GeoPackage из байтов файла. Точки пересчитываются в WGS84,
-/// объект, чья точка не пересчиталась, пропускается.
+/// Слои из байтов файла. Точки пересчитываются в WGS84, объект, чья
+/// точка не пересчиталась, пропускается. Слой без системы координат
+/// с точкой вне градусов - ошибка [`NO_CRS`].
 pub fn read(bytes: Vec<u8>, name: &str) -> Result<Vec<LayerData>, String> {
     let ds = terrio::memory::open_vector_bytes(bytes, name, &Default::default()).map_err(|e| e.to_string())?;
     let wgs = SpatialRef::from_epsg(4326).map_err(|e| e.to_string())?;
@@ -140,6 +215,9 @@ pub fn read(bytes: Vec<u8>, name: &str) -> Result<Vec<LayerData>, String> {
             let Some(parts) = converted else {
                 continue;
             };
+            if to_wgs.is_none() && parts.iter().flatten().any(|(lat, lon)| !in_degrees(*lon, *lat)) {
+                return Err(NO_CRS.to_string());
+            }
             items.push(Item { shape, parts, heights, values: f.attributes.iter().map(text).collect() });
         }
         let numeric = numeric.iter().zip(&filled).map(|(n, f)| *n && *f).collect();

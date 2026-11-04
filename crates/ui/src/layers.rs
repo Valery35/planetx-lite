@@ -246,6 +246,8 @@ pub struct State<'a> {
     pub earth: bool,
     /// Снимки события на глобусе.
     pub events: bool,
+    /// «Мои данные» - векторные слои файлов.
+    pub data: &'a crate::datalayers::DataLayers,
 }
 
 /// Что попросили строки раздела или каталог.
@@ -292,6 +294,8 @@ pub enum Action {
     Events,
     /// Свой источник убрать из списка основ.
     RemoveOwn(Basemap),
+    /// Действие меню слоя «Моих данных» по его номеру.
+    Data(u64, crate::datalayers::Act),
 }
 
 /// Название основы в строке и меню, как в списке подложек модуля: Esri
@@ -309,14 +313,14 @@ const MORE: f32 = 22.0;
 
 /// Строка списка: флажок или значок, текст, «⋯» или «▾» справа. Возвращает
 /// щелчок по флажку, щелчок по тексту и щелчок по зоне меню.
-struct RowHit {
-    check: bool,
-    text: bool,
-    menu: bool,
-    rect: egui::Rect,
+pub(crate) struct RowHit {
+    pub check: bool,
+    pub text: bool,
+    pub menu: bool,
+    pub rect: egui::Rect,
 }
 
-fn row(ui: &mut egui::Ui, indent: f32, check: Option<Option<bool>>, icon: bool, text: &str, marker: &str, tip: &str) -> RowHit {
+pub(crate) fn row(ui: &mut egui::Ui, indent: f32, check: Option<Option<bool>>, icon: bool, text: &str, marker: &str, tip: &str) -> RowHit {
     let height = 22.0;
     let (rect, response) = ui.allocate_exact_size(egui::vec2(ui.available_width(), height), egui::Sense::click());
     let p = crate::theme::pal();
@@ -380,6 +384,10 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
         out.push(Action::Catalog);
     }
     ui.spacing_mut().item_spacing.y = 0.0;
+    // Слои файлов - над основой, как слои проекта над подложкой.
+    let mut data = Vec::new();
+    crate::datalayers::rows(ui, lang, state.data, menu_open, &mut data);
+    out.extend(data.into_iter().map(|(id, act)| Action::Data(id, act)));
     // Основа: щелчок по строке - меню выбора подложки.
     let title = format!("{} · {}", tr(lang, "Base map"), basemap_title(lang, state.basemap));
     let hit = row(ui, 4.0, None, true, &title, "▾", tr(lang, "Imagery or map on the surface. A click on the row chooses the basemap. Esri World Imagery is an example basemap, its terms are set by Esri."));
@@ -612,7 +620,7 @@ fn extra_on(state: &State<'_>, extra: Extra) -> bool {
 /// Меню строки под строкой rect, открыто, пока menu_open - его ключ.
 /// add возвращает true, когда пункт выбран: меню закрывается. Щелчок
 /// мимо меню и Escape тоже закрывают его.
-fn popup(ui: &mut egui::Ui, menu_open: &mut Option<String>, key: &str, rect: egui::Rect, add: impl FnOnce(&mut egui::Ui) -> bool) {
+pub(crate) fn popup(ui: &mut egui::Ui, menu_open: &mut Option<String>, key: &str, rect: egui::Rect, add: impl FnOnce(&mut egui::Ui) -> bool) {
     if menu_open.as_deref() != Some(key) {
         return;
     }

@@ -2356,3 +2356,23 @@ an outline	輪郭
 a point	点
 The task needs at least two classes.	タスクには少なくとも2クラス必要です。
 The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	夏の画像の近赤外と赤またはSWIRが判別できません。タスクの規則にはバンド名付きの画像が必要です。
+Zoom to layer	レイヤーにズーム
+Line width	線の太さ
+Point size	点のサイズ
+Width of lines and outlines in pixels. Zero - polygons without an outline.	線と輪郭の太さ (ピクセル)。0 はポリゴンの輪郭なし。
+Fill of polygons, a share of the layer opacity. Zero - outlines only.	ポリゴンの塗り、レイヤーの不透明度に対する割合。0 は輪郭のみ。
+Diameter of points in pixels.	点の直径 (ピクセル)。
+Labels: {field}	ラベル: {field}
+A field whose value labels the objects on the globe. Of each layer the labels nearest to the view point are shown.	値で地球上のオブジェクトにラベルを付けるフィールド。各レイヤーは視点に近いラベルを表示します。
+Extrusion: {field}	押し出し: {field}
+Objects rise above the terrain to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall. An object with an empty, zero or negative value stays flat.	オブジェクトは数値フィールドの高さまで地形から立ち上がります。ポリゴンは角柱、点は柱、線は壁になります。空、0、負の値のオブジェクトは平らなままです。
+Up	上へ
+Down	下へ
+Copy to My Places	「マイプレイス」にコピー
+The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.	レイヤーのオブジェクトは「マイプレイス」のフォルダの目印になり、編集、計測、シーンへの保存ができます。大きなレイヤーは先頭のオブジェクトまでに切り詰められます。
+Table	テーブル
+The file has no layers with geometry	ファイルにジオメトリ付きのレイヤーがありません
+The layer has no coordinate system, and its coordinates are not degrees	レイヤーに座標系がなく、座標が度ではありません
+Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	追加したレイヤー: {count}。「レイヤー」の行の「⋯」メニューでスタイル、ラベル、押し出しを設定します。
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}、レイヤー {layer}、オブジェクト: {count}。チェックでレイヤーを隠し、「⋯」メニューでスタイル、ラベル、押し出しを設定します。
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	.planetx シーン、KML、KMZ、GeoTIFF 標高ラスター、LAS・LAZ・COPC 点群を開くかウィンドウにドロップします。GeoPackage、Shapefile、GeoJSON、GPX、MapInfo、FlatGeobuf、DXF のレイヤーは「レイヤー」に入ります。

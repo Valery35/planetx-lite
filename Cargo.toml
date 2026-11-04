@@ -20,7 +20,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.21.0"
+version = "0.22.0"
 edition = "2024"
 license = "Apache-2.0"
 authors = ["ООО «Информ++»"]
@@ -70,8 +70,9 @@ addin-host = { path = "crates/addin-host" }
 wasmi = { version = "2", default-features = false, features = ["std", "validate"] }
 # Чтение форматов, версия закреплена точно - doc/PLAN.md, «Проверка
 # terrio». Только нужные наборы: GeoTIFF и COG, LERC, GeoPackage, облака
-# точек. Без remote: сеть Lite - свой крейт net.
-terrio = { version = "=0.6.0", default-features = false, features = ["geotiff", "lerc", "sqlite", "pointcloud", "grib"] }
+# точек, GRIB, DXF и DWG (acadrust, MPL-2.0), FlatGeobuf. Без remote:
+# сеть Lite - свой крейт net.
+terrio = { version = "=0.6.0", default-features = false, features = ["geotiff", "lerc", "sqlite", "pointcloud", "grib", "cad", "flatgeobuf"] }
 # Сжатие только на Rust: в наборе zip по умолчанию есть библиотеки на C
 # (bzip2, zstd, lzma), под wasm32 они не собираются.
 zip = { version = "9.0.5", default-features = false, features = ["deflate-flate2-zlib-rs"] }

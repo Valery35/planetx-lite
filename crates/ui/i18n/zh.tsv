@@ -2356,3 +2356,23 @@ an outline	一个轮廓
 a point	一个点
 The task needs at least two classes.	任务至少需要两个类别。
 The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	无法识别夏季影像的近红外及红光或 SWIR——任务规则需要带波段标签的影像。
+Zoom to layer	缩放到图层
+Line width	线宽
+Point size	点大小
+Width of lines and outlines in pixels. Zero - polygons without an outline.	线和轮廓的宽度，单位像素。零表示多边形无轮廓。
+Fill of polygons, a share of the layer opacity. Zero - outlines only.	多边形填充，占图层不透明度的比例。零表示只有轮廓。
+Diameter of points in pixels.	点的直径，单位像素。
+Labels: {field}	标注：{field}
+A field whose value labels the objects on the globe. Of each layer the labels nearest to the view point are shown.	用其值标注地球上对象的字段。每个图层显示离视点最近的标注。
+Extrusion: {field}	拉伸：{field}
+Objects rise above the terrain to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall. An object with an empty, zero or negative value stays flat.	对象按数值字段的高度升出地形：多边形成棱柱，点成柱子，线成墙。值为空、零或负的对象保持平面。
+Up	上移
+Down	下移
+Copy to My Places	复制到「我的地点」
+The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.	图层对象成为「我的地点」中一个文件夹的地标：可以编辑、测量并保存到场景。大图层只保留前面的对象。
+Table	表
+The file has no layers with geometry	文件中没有带几何的图层
+The layer has no coordinate system, and its coordinates are not degrees	图层没有坐标系，其坐标也不是度
+Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	已添加图层：{count}。「图层」部分中行的「⋯」菜单设置样式、标注和拉伸。
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}，图层 {layer}，对象：{count}。复选框隐藏图层，「⋯」菜单设置样式、标注和拉伸。
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	打开或拖入 .planetx 场景、KML、KMZ、GeoTIFF 高程栅格或 LAS、LAZ、COPC 点云。GeoPackage、Shapefile、GeoJSON、GPX、MapInfo、FlatGeobuf 和 DXF 图层进入「图层」部分。

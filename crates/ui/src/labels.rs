@@ -251,6 +251,8 @@ pub struct Labels {
     /// Подписи геофизики: склонение, скорости плит, полюса, как
     /// `geo_marks` модуля.
     geo: Vec<Place>,
+    /// Подписи слоёв «Моих данных» по полю.
+    layers: Vec<Place>,
     /// Цвет значка метки по номеру пункта.
     mark_colors: HashMap<u64, egui::Color32>,
     /// Классы подписей по включённым строкам векторной основы, как
@@ -280,6 +282,7 @@ impl Labels {
             marks: Vec::new(),
             plates: Vec::new(),
             geo: Vec::new(),
+            layers: Vec::new(),
             mark_colors: HashMap::new(),
             kinds: crate::vector::VectorBase::default().label_kinds(),
             queue: std::collections::VecDeque::new(),
@@ -311,6 +314,12 @@ impl Labels {
     /// Подписи геофизики: текст, широта, долгота.
     pub fn set_geo(&mut self, labels: &[(String, f64, f64)]) {
         self.geo = labels.iter().enumerate().map(|(n, (text, lat, lon))| Place::new(u64::MAX - 2_000_000 - n as u64, text, Kind::Grid, 1, *lat, *lon)).collect();
+    }
+
+    /// Подписи слоёв «Моих данных»: текст, широта, долгота, без значка,
+    /// как подписи слоёв проекта модуля.
+    pub fn set_layers(&mut self, labels: &[(String, f64, f64)]) {
+        self.layers = labels.iter().enumerate().map(|(n, (text, lat, lon))| Place::new(u64::MAX - 3_000_000 - n as u64, text, Kind::Layer, 1, *lat, *lon)).collect();
     }
 
     /// Метка найденного места, одна на окно. None - метки нет.
@@ -378,7 +387,8 @@ impl Labels {
         let marks = self.marks.clone();
         let plates = self.plates.clone();
         let geo = self.geo.clone();
-        let all: Vec<&Place> = search.iter().chain(marks.iter()).chain(plates.iter()).chain(geo.iter()).chain(collected.iter()).collect();
+        let layers = self.layers.clone();
+        let all: Vec<&Place> = search.iter().chain(marks.iter()).chain(plates.iter()).chain(geo.iter()).chain(layers.iter()).chain(collected.iter()).collect();
         if all.is_empty() {
             self.shown.clear();
             return;

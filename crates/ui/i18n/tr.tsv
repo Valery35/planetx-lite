@@ -2356,3 +2356,23 @@ an outline	bir sınır
 a point	bir nokta
 The task needs at least two classes.	Görev için en az iki sınıf gerekir.
 The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	Yaz görüntüsünün yakın kızılötesi ile kırmızı veya SWIR'i tanınmadı - görev kuralları bant etiketli bir görüntü ister.
+Zoom to layer	Katmana yakınlaştır
+Line width	Çizgi kalınlığı
+Point size	Nokta boyutu
+Width of lines and outlines in pixels. Zero - polygons without an outline.	Çizgi ve sınırların piksel cinsinden kalınlığı. Sıfır - sınırsız çokgenler.
+Fill of polygons, a share of the layer opacity. Zero - outlines only.	Çokgen dolgusu, katman opaklığının payı. Sıfır - yalnızca sınırlar.
+Diameter of points in pixels.	Noktaların piksel cinsinden çapı.
+Labels: {field}	Etiketler: {field}
+A field whose value labels the objects on the globe. Of each layer the labels nearest to the view point are shown.	Değeri küre üzerindeki nesneleri etiketleyen alan. Her katmanın bakış noktasına en yakın etiketleri görünür.
+Extrusion: {field}	Ekstrüzyon: {field}
+Objects rise above the terrain to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall. An object with an empty, zero or negative value stays flat.	Nesneler sayısal bir alandaki yüksekliğe kadar arazinin üzerine yükselir: çokgen prizma, nokta sütun, çizgi duvar olur. Boş, sıfır veya negatif değerli nesne düz kalır.
+Up	Yukarı
+Down	Aşağı
+Copy to My Places	«Yerlerim»e kopyala
+The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.	Katmanın nesneleri «Yerlerim»de bir klasörün yer işaretleri olur: düzenlenebilir, ölçülebilir ve sahneye kaydedilebilir. Büyük katman ilk nesnelerine kısaltılır.
+Table	Tablo
+The file has no layers with geometry	Dosyada geometrili katman yok
+The layer has no coordinate system, and its coordinates are not degrees	Katmanın koordinat sistemi yok ve koordinatları derece değil
+Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Eklenen katman: {count}. Katmanlar bölümündeki satırın «⋯» menüsü stili, etiketleri ve ekstrüzyonu ayarlar.
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, katman {layer}, nesne: {count}. Onay kutusu katmanı gizler, «⋯» menüsü stilini, etiketlerini ve ekstrüzyonunu ayarlar.
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Pencereye bir .planetx sahnesi, KML, KMZ, GeoTIFF yükseklik rasteri veya LAS, LAZ, COPC nokta bulutu açın ya da sürükleyin. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf ve DXF katmanları Katmanlar bölümüne gider.

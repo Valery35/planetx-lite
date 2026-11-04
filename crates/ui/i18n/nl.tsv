@@ -2356,3 +2356,23 @@ an outline	een omtrek
 a point	een punt
 The task needs at least two classes.	De taak heeft minstens twee klassen nodig.
 The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	Nabij-infrarood en rood of SWIR van het zomerbeeld zijn niet herkend - de regels van de taak vragen een beeld met benoemde banden.
+Zoom to layer	Zoomen naar laag
+Line width	Lijndikte
+Point size	Puntgrootte
+Width of lines and outlines in pixels. Zero - polygons without an outline.	Dikte van lijnen en omtrekken in pixels. Nul - polygonen zonder omtrek.
+Fill of polygons, a share of the layer opacity. Zero - outlines only.	Vulling van polygonen, deel van de laagdekking. Nul - alleen omtrekken.
+Diameter of points in pixels.	Diameter van punten in pixels.
+Labels: {field}	Labels: {field}
+A field whose value labels the objects on the globe. Of each layer the labels nearest to the view point are shown.	Een veld waarvan de waarde de objecten op de globe labelt. Van elke laag zijn de labels het dichtst bij het kijkpunt zichtbaar.
+Extrusion: {field}	Extrusie: {field}
+Objects rise above the terrain to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall. An object with an empty, zero or negative value stays flat.	Objecten rijzen boven het terrein tot de hoogte uit een numeriek veld: een polygoon als prisma, een punt als zuil, een lijn als wand. Een object met lege, nul- of negatieve waarde blijft plat.
+Up	Omhoog
+Down	Omlaag
+Copy to My Places	Kopie naar «Mijn plaatsen»
+The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.	De objecten van de laag worden plaatsmarkeringen van een map in «Mijn plaatsen»: ze zijn te bewerken, te meten en in een scène op te slaan. Een grote laag wordt ingekort tot de eerste objecten.
+Table	Tabel
+The file has no layers with geometry	Het bestand heeft geen lagen met geometrie
+The layer has no coordinate system, and its coordinates are not degrees	De laag heeft geen coördinatenstelsel en de coördinaten zijn geen graden
+Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Lagen toegevoegd: {count}. Het menu «⋯» van een rij in de sectie Lagen zet stijl, labels en extrusie.
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, laag {layer}, objecten: {count}. Het vinkje verbergt de laag, het menu «⋯» zet stijl, labels en extrusie.
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Open of sleep een .planetx-scène, KML, KMZ, een GeoTIFF-hoogteraster of een LAS-, LAZ-, COPC-puntenwolk in het venster. Lagen uit GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf en DXF gaan naar de sectie Lagen.

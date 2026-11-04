@@ -181,6 +181,10 @@ fn main() -> ExitCode {
             if let Some(dir) = demo_cache {
                 app = app.with_demo_cache(dir);
             }
+            // Соседние файлы шейпфайла - из папки первого файла.
+            if let Some(dir) = files.first().and_then(|p| p.parent()) {
+                app = app.with_open_dir(if dir.as_os_str().is_empty() { std::path::PathBuf::from(".") } else { dir.to_path_buf() });
+            }
             for (bytes, name) in opened {
                 app = app.with_file(bytes, &name);
             }

@@ -2356,3 +2356,23 @@ an outline	კონტური
 a point	წერტილი
 The task needs at least two classes.	ამოცანას სჭირდება ორი კლასი მაინც.
 The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	ზაფხულის სურათის ახლო ინფრაწითელი და წითელი ან SWIR ვერ ამოიცნო - ამოცანის წესებს სჭირდება არხების წარწერებიანი სურათი.
+Zoom to layer	ფენასთან მიახლოება
+Line width	ხაზის სისქე
+Point size	წერტილის ზომა
+Width of lines and outlines in pixels. Zero - polygons without an outline.	ხაზებისა და კონტურების სისქე პიქსელებში. ნული - მრავალკუთხედები კონტურის გარეშე.
+Fill of polygons, a share of the layer opacity. Zero - outlines only.	მრავალკუთხედების შევსება, ფენის გაუმჭვირვალობის წილი. ნული - მხოლოდ კონტურები.
+Diameter of points in pixels.	წერტილების დიამეტრი პიქსელებში.
+Labels: {field}	წარწერები: {field}
+A field whose value labels the objects on the globe. Of each layer the labels nearest to the view point are shown.	ველი, რომლის მნიშვნელობა აწერს ობიექტებს გლობუსზე. თითოეულ ფენაზე ჩანს ხედის წერტილთან უახლოესი წარწერები.
+Extrusion: {field}	ამოწევა: {field}
+Objects rise above the terrain to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall. An object with an empty, zero or negative value stays flat.	ობიექტები რელიეფზე მაღლდება რიცხვითი ველის სიმაღლემდე: მრავალკუთხედი პრიზმად, წერტილი სვეტად, ხაზი კედლად. ცარიელი, ნულოვანი ან უარყოფითი მნიშვნელობის ობიექტი ბრტყელი რჩება.
+Up	ზემოთ
+Down	ქვემოთ
+Copy to My Places	ასლი «ჩემს ადგილებში»
+The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.	ფენის ობიექტები ხდება საქაღალდის ნიშნულები «ჩემს ადგილებში»: მათი რედაქტირება, გაზომვა და სცენაში შენახვაა შესაძლებელი. დიდი ფენა პირველ ობიექტებამდე იჭრება.
+Table	ცხრილი
+The file has no layers with geometry	ფაილში გეომეტრიიანი ფენა არ არის
+The layer has no coordinate system, and its coordinates are not degrees	ფენას არ აქვს კოორდინატთა სისტემა და მისი კოორდინატები გრადუსებში არ არის
+Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	დამატებული ფენები: {count}. «ფენების» განყოფილებაში სტრიქონის «⋯» მენიუ აწყობს სტილს, წარწერებს და ამოწევას.
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, ფენა {layer}, ობიექტები: {count}. ალამი მალავს ფენას, «⋯» მენიუ აწყობს მის სტილს, წარწერებს და ამოწევას.
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	გახსენით ან ჩააგდეთ ფანჯარაში .planetx სცენა, KML, KMZ, GeoTIFF სიმაღლეების რასტრი ან LAS, LAZ, COPC წერტილების ღრუბელი. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf და DXF ფენები «ფენების» განყოფილებაში ხვდება.

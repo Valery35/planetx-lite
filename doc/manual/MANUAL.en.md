@@ -54,7 +54,7 @@ The window is laid out as in the PlanetX plugin for QGIS.
 - **Left panel.** The search line, the Places section with My Places,
   the Layers section and the status line at the bottom. The first status
   line is the view height and the number of loads in progress, for
-  example "View from 20 000 km В· loading 42". The second one is the point
+  example "View from 20 000 km · loading 42". The second one is the point
   under the cursor with its height or depth. Program messages take the
   first line for five seconds.
 - **Toolbar** in the top left corner of the globe, a spinner turns to its
@@ -65,14 +65,14 @@ The window is laid out as in the PlanetX plugin for QGIS.
 | Sidebar | Hides or shows the left panel. On a narrow screen the panel starts hidden |
 | Identify features | When on, a click on the globe opens the Features window - coordinates, height or depth of the point and the placemarks there |
 | Ruler | The Ruler window: length, perimeter and area on the ellipsoid |
-| New placemark в–ѕ | Menu Placemark, Path, Polygon, Circle - the New placemark window on that tab |
+| New placemark ▾ | Menu Placemark, Path, Polygon, Circle - the New placemark window on that tab |
 | Save view | Asks for a name and puts a placemark with the current camera view into the selected folder |
 | Record a flight | Records the camera path. A second click ends the recording and asks for the tour name |
 | Time slider | Opens and closes the time slider. Available when visible placemarks have time |
 | View snapshot | Saves the view to a PNG file |
 | Copy the view | Puts the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider |
-| Scene в–ѕ | Save SceneвЂ¦, Open SceneвЂ¦, Share ViewвЂ¦ - a link to the view. On a phone the system Share window opens |
-| Demo в–ѕ | Prepared scenes by topic |
+| Scene ▾ | Save Scene…, Open Scene…, Share View… - a link to the view. On a phone the system Share window opens |
+| Demo ▾ | Prepared scenes by topic |
 | View properties | The View properties window |
 | Full screen | Full screen, F11. The panels hide, the navigation controls and the time slider stay. Esc or F11 returns the window |
 | About | Version, the user guide, links |
@@ -132,7 +132,7 @@ command line open:
 |---|---|
 | `.planetx` | A PlanetX scene: camera, placemarks, tours, overlays |
 | `.kml`, `.kmz` | Placemarks, paths, polygons, overlays, tours, 3D models |
-| `.gpkg` | GeoPackage layers as placemarks |
+| `.gpkg`, `.shp`, `.geojson`, `.gpx`, `.topojson`, `.gml`, `.mif`, `.tab`, `.fgb`, `.dxf`, `.dwg`, `.zip` | Layers in the Layers section, see [File layers](#file-layers) |
 | `.tif`, `.tiff` | A GeoTIFF or COG elevation raster cut into the globe terrain |
 | `.las`, `.laz` | A point cloud, COPC included, in the colours of the file |
 | `.csv` | Points, read by a sandboxed WebAssembly add-in |
@@ -156,9 +156,9 @@ its content between runs.
 - Drag a row onto a folder to put it inside, onto another row to put it
   before that row, onto My Places to put it at the end.
 
-Under the tree there is an opacity slider and the в–¶ button. The slider
+Under the tree there is an opacity slider and the ▶ button. The slider
 changes the opacity of the selected placemarks, paths, polygons, pictures
-and folder contents, the value is kept in KML. The в–¶ button plays a tour:
+and folder contents, the value is kept in KML. The ▶ button plays a tour:
 for My Places and a folder over the checked placemarks, for a path along
 the path, for a placemark over its folder.
 
@@ -166,17 +166,17 @@ The right button opens the menu, as in the plugin:
 
 | Row | Menu |
 |---|---|
-| Folder | Fly to, Add в–ё, Cut, Copy, Paste, Delete, Open KML or KMZвЂ¦, Save as KMLвЂ¦, Snapshot folder view, Sort A-Z, Play tour, PropertiesвЂ¦ |
-| Placemark, path, overlay | Fly to, Play tour (for a recorded tour), Tour along the path and Elevation profile (for a path), Snapshot view, PropertiesвЂ¦, New Folder, Cut, Copy, Paste, Delete |
-| My Places | Add в–ё, Play tour, Sort A-Z, Open KML or KMZвЂ¦, Save as KMLвЂ¦, Copy, Paste, Clear My PlacesвЂ¦ |
+| Folder | Fly to, Add ▸, Cut, Copy, Paste, Delete, Open KML or KMZ…, Save as KML…, Snapshot folder view, Sort A-Z, Play tour, Properties… |
+| Placemark, path, overlay | Fly to, Play tour (for a recorded tour), Tour along the path and Elevation profile (for a path), Snapshot view, Properties…, New Folder, Cut, Copy, Paste, Delete |
+| My Places | Add ▸, Play tour, Sort A-Z, Open KML or KMZ…, Save as KML…, Copy, Paste, Clear My Places… |
 
-Add в–ё adds a folder, a placemark, a path, a polygon or a recorded tour.
-Snapshot view sets the current camera view to the row. PropertiesвЂ¦ of a
+Add ▸ adds a folder, a placemark, a path, a polygon or a recorded tour.
+Snapshot view sets the current camera view to the row. Properties… of a
 folder: name, expanding, radio group, Hide beyond, description and the
 folder view.
 
-**Saving.** "Save as KMLвЂ¦" writes the row to KML, or to KMZ when it
-contains pictures or models. "Save SceneвЂ¦" in the Scene menu writes a
+**Saving.** "Save as KML…" writes the row to KML, or to KMZ when it
+contains pictures or models. "Save Scene…" in the Scene menu writes a
 `.planetx` scene with the current camera and the selected folder. The
 PlanetX plugin for QGIS opens these scenes too. On the web page the file
 is downloaded.
@@ -187,18 +187,53 @@ The Layers section shows everything on the globe:
 
 - the Add data button - the catalog: base maps, the vector base and the
   grid, the atmosphere and the sun;
-- "Base map В· name" - a click opens the choice of the basemap;
-- "Terrain В· Terrarium" - the checkbox turns the terrain on, a click on
+- "Base map · name" - a click opens the choice of the basemap;
+- "Terrain · Terrarium" - the checkbox turns the terrain on, a click on
   the name opens the terrain menu;
 - layers of the catalog that are on: Atmosphere, Sun, Grid. The checkbox
   turns a layer off, the row stays until "Remove from the globe" in the
-  "в‹Ї" menu;
+  "⋯" menu;
 - groups of the OpenFreeMap vector base: Borders and names (borders,
   settlements, water names), Transport (roads, road numbers, railways,
   airports), Nature (rivers, lakes and reservoirs, peaks, reserves and
   national parks). Lines lie over the imagery as in the plugin:
   countries yellow, regions white, motorways yellow, railways light with
   a dark dash, rivers blue. Borders and settlements are on by default.
+
+### File layers
+
+A vector file becomes rows at the top of the Layers section, like the
+QGIS project layers in the plugin. One row is one layer of the file. The
+program reads GeoPackage, Shapefile, GeoJSON, GPX, TopoJSON, GML,
+MapInfo (MIF and TAB), FlatGeobuf, DXF and DWG, and a ZIP archive with a
+shapefile. KML, KMZ and scenes still go to My Places.
+
+- A shapefile is several files. In the program the `.dbf`, `.prj` and
+  `.cpg` files are taken from the folder of the `.shp`. On the web page
+  they are chosen or dropped together with the `.shp`.
+- A layer in another coordinate system is converted to WGS84. A layer
+  without a coordinate system is read in degrees. A DXF drawing in
+  metres without a coordinate system does not open, the program says so.
+- Lines and polygons lie over the imagery, points are circles on the
+  terrain. A new layer takes the next of eight colours.
+
+The checkbox of a row hides the layer. The "⋯" menu of a row:
+
+| Item | What it does |
+|---|---|
+| Zoom to layer | Flight to the extent of the layer |
+| Colour, line width, fill, point size, opacity | The style of the layer |
+| Labels ▸ | A field whose value labels the objects. A layer shows at most 500 labels nearest to the view point |
+| Extrusion ▸ and factor | Objects rise to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall |
+| Up, Down | The order of layers: the upper row is drawn on top |
+| Copy to My Places | The objects of the layer become placemarks of a folder. They can be edited, measured and saved into a scene |
+| Remove from the globe | The layer leaves the section |
+
+A click of Identify features on an object of a layer shows its fields in
+the Features window. File layers live until the program closes and are
+not written into a scene, like the QGIS project layers of the plugin. A
+layer with a time field opens as tracks, a subsurface model file opens
+the Subsurface mode window.
 
 ## Globe menu
 
@@ -207,7 +242,7 @@ A right click without dragging opens the menu:
 - the coordinates of the point - a click copies them;
 - while drawing - Delete vertex, Finish drawing or Continue drawing,
   Save, Clear;
-- over a placemark - its name and PropertiesвЂ¦;
+- over a placemark - its name and Properties…;
 - Add placemark, Measure distance, Fly to, Orbit around, Point
   details. Point details opens the Features window with the address of the
   point from Nominatim and its height.
@@ -538,7 +573,7 @@ The View properties window - the gear button, as in the plugin:
 
 | Group | What it sets |
 |---|---|
-| Base map | The basemap and the Data sourcesвЂ¦ button |
+| Base map | The basemap and the Data sources… button |
 | Terrain | Vertical exaggeration from 0.5 to 10 |
 | Labels | Language of names on the globe: as the interface, local names or a chosen language |
 | Coordinates | Format: decimal degrees, degrees-minutes-seconds, UTM, MGRS |

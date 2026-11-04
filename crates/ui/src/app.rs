@@ -510,6 +510,17 @@ pub struct LiteApp {
     route_only: HashSet<TileKey>,
     /// Прочитанные браузером брошенные файлы: байты или ошибка и имя.
     dropped_box: DroppedBox,
+    /// «Мои данные» - векторные слои файлов в разделе «Слои».
+    data_layers: crate::datalayers::DataLayers,
+    /// Сетки выдавленных объектов «Моих данных».
+    data_meshes: Vec<render::FeatureMesh>,
+    /// Соседние файлы шейпфайла и MapInfo, пришедшие отдельно: имя
+    /// и байты. Главный файл берёт свои.
+    sidecars: Vec<(String, Vec<u8>)>,
+    /// Главные файлы шейпфайла и MapInfo на странице, ждущие соседних:
+    /// байты, имя и время прихода последнего файла.
+    waiting: Vec<(Vec<u8>, String)>,
+    waiting_since: f64,
     /// Снимок окна вместе с панелью.
     shot_ui: bool,
     /// Идущий тур.
@@ -977,6 +988,10 @@ type OpacityState = (Vec<usize>, Vec<(Vec<usize>, Vec<Option<scene::Rgba>>)>, f6
 /// Сообщение строки состояния видно столько секунд, `MESSAGE_TIME` модуля.
 pub const MESSAGE_TIME: f64 = 5.0;
 
+/// Столько секунд главный файл шейпфайла на странице ждёт соседних:
+/// браузер читает выбранные файлы по одному.
+const SIDECAR_PAUSE: f64 = 0.5;
+
 /// Наибольшая высота списков подсказок и найденных мест, `FOUND_HEIGHT`
 /// модуля.
 const FOUND_HEIGHT: f32 = 160.0;
@@ -1255,6 +1270,11 @@ impl LiteApp {
             route_only: HashSet::new(),
             route: crate::route::Router::new(data::routing::Mode::from_name(&settings.route).unwrap_or(data::routing::Mode::Car)),
             dropped_box: DroppedBox::default(),
+            data_layers: crate::datalayers::DataLayers::default(),
+            data_meshes: Vec::new(),
+            sidecars: Vec::new(),
+            waiting: Vec::new(),
+            waiting_since: 0.0,
             shot_ui: false,
             player: None,
             tour_index: None,
@@ -2419,6 +2439,22 @@ impl LiteApp {
         };
         let places: Vec<&scene::kml::Place> = paths.iter().filter_map(|p| self.marks.place(p)).collect();
         groups.extend(crate::identify::places_group(self.lang, &places));
+        // Объекты слоёв «Моих данных», как группы слоёв проекта модуля.
+        // Допуск - PICK_PIXELS пикселей кадра, у линий - в метрах у точки.
+        if let Some((px, py, ppp)) = pixel {
+            let radius = crate::card::PICK_PIXELS * ppp;
+            let camera = &self.nav.camera;
+            let ground = |la: f64, lo: f64| self.nav.pose.terrain.as_ref().map_or(0.0, |t| t(la, lo));
+            let p = camera.ellipsoid.geodetic_to_ecef(lat, lon, ground(lat, lon));
+            let scale = 2.0 * (camera.fov_y.to_radians() / 2.0).tan() / f64::from(camera.height.max(1));
+            let metres = radius * (camera.eye - p).length() * scale;
+            let gap = |la: f64, lo: f64| {
+                let (q, front) = camera.project(camera.ellipsoid.geodetic_to_ecef(la, lo, ground(la, lo)));
+                let gap = (q.x - px).hypot(q.y - py);
+                (front && gap <= radius).then_some(gap / radius.max(1e-9))
+            };
+            groups.extend(self.data_layers.identify(self.lang, lat, lon, metres, &gap));
+        }
         if let Some((px, py, ppp)) = pixel {
             groups.extend(self.dots.identify(self.lang, &self.nav, (lat, lon), (px, py), crate::card::PICK_PIXELS * ppp * 2.0, self.timebar.window()));
         }
@@ -3320,7 +3356,7 @@ impl LiteApp {
     }
 
     /// Действия раздела «Слои» и каталога «Добавить данные».
-    fn apply_layers(&mut self, actions: Vec<crate::layers::Action>) {
+    fn apply_layers(&mut self, actions: Vec<crate::layers::Action>, now: f64) {
         use crate::layers::Action;
         for action in actions {
             match action {
@@ -3331,6 +3367,7 @@ impl LiteApp {
                     self.sea_changed();
                 }
                 Action::AddSource => self.own_dialog = Some(OwnDialog::default()),
+                Action::Data(id, act) => self.data_act(id, &act, now),
                 Action::GibsCatalog => self.ask_gibs_catalog(),
                 Action::Events => self.events.open(&*self.loaders.request),
                 Action::RemoveOwn(b) => {
@@ -3705,6 +3742,108 @@ impl LiteApp {
         self.settings_dirty = true;
     }
 
+    /// Действие меню слоя «Моих данных».
+    fn data_act(&mut self, id: u64, act: &crate::datalayers::Act, now: f64) {
+        use crate::datalayers::Act;
+        match act {
+            Act::Zoom => {
+                let points = self.data_layers.get(id).map(crate::datalayers::DataLayer::extent_points).unwrap_or_default();
+                let camera = &self.nav.camera;
+                if let Some(pose) = marks::fit_points(&points, camera.fov_y, camera.aspect()) {
+                    crate::input::fly(&mut self.nav, pose, now);
+                }
+            }
+            Act::ToPlaces => {
+                if let Some(layer) = self.data_layers.get(id) {
+                    let folder = crate::gpkg::folder(vec![layer.data.clone()], &layer.title);
+                    let title = layer.title.clone();
+                    self.marks.add(folder, &title, marks::root_name(self.lang));
+                    self.marks_changed();
+                }
+            }
+            _ => {
+                self.data_layers.apply(id, act);
+            }
+        }
+    }
+
+    /// Векторные слои файла name в «Мои данные», камера - к их охвату.
+    /// Подземная модель и треки идут своими окнами. Возвращает позу.
+    fn open_vector(&mut self, layers: Vec<data::layers::LayerData>, name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
+        if crate::subsurface::is_subsurface(&layers) {
+            return Ok(self.open_subsurface(layers, name, fly));
+        }
+        if !crate::tracks::Tracks::split(&layers, name).0.is_empty() {
+            return Ok(self.open_tracks(layers, name, fly).flatten());
+        }
+        let before = self.data_layers.list.len();
+        let count = self.data_layers.add(layers, name);
+        if count == 0 {
+            let e = tr(self.lang, "The file has no layers with geometry").to_string();
+            self.open_message = Some(trf(self.lang, "The file did not open: {name}: {e}", &[("name", name), ("e", &e)]));
+            return Err(e);
+        }
+        self.open_message = Some(trf(self.lang, "Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.", &[("count", &count.to_string())]));
+        let points: Vec<(f64, f64)> = self.data_layers.list.iter().take(self.data_layers.list.len() - before).flat_map(crate::datalayers::DataLayer::extent_points).collect();
+        let camera = &self.nav.camera;
+        let pose = marks::fit_points(&points, camera.fov_y, camera.aspect());
+        if let Some(pose) = pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
+            match fly {
+                Some(now) => crate::input::fly(&mut self.nav, pose, now),
+                None => self.nav.show(pose),
+            }
+        }
+        Ok(pose)
+    }
+
+    /// Соседние файлы главного файла name: пришедшие отдельно и, в
+    /// программе, лежащие рядом с ним в папке последнего открытия.
+    fn sidecars_for(&self, name: &str) -> Vec<(String, Vec<u8>)> {
+        let found: Vec<(String, Vec<u8>)> = data::layers::sidecars_of(name, &self.sidecars).into_iter().cloned().collect();
+        #[cfg(not(target_arch = "wasm32"))]
+        let mut found = found;
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Some(dir) = &self.open_dir
+            && let Ok(entries) = std::fs::read_dir(dir)
+        {
+            let base = data::layers::stem(name).to_lowercase();
+            for entry in entries.flatten() {
+                let file = entry.file_name().to_string_lossy().into_owned();
+                let ext = data::layers::extension(&file);
+                if data::layers::is_sidecar(&file)
+                    && data::layers::stem(&file).to_lowercase() == base
+                    && !found.iter().any(|(n, _)| data::layers::extension(n) == ext)
+                    && let Ok(bytes) = std::fs::read(entry.path())
+                {
+                    found.push((file, bytes));
+                }
+            }
+        }
+        found
+    }
+
+    /// Открыть векторный файл: шейпфайл и MapInfo - с соседними файлами.
+    fn open_vector_file(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
+        let read = if data::layers::needs_sidecars(name) {
+            let around = self.sidecars_for(name);
+            let refs: Vec<&(String, Vec<u8>)> = around.iter().collect();
+            data::layers::bundle(bytes, name, &refs).and_then(|(zip, zip_name)| data::layers::read(zip, &zip_name))
+        } else {
+            data::layers::read(bytes.to_vec(), name)
+        };
+        // Взятые соседние файлы больше не нужны.
+        let base = data::layers::stem(name).to_lowercase();
+        self.sidecars.retain(|(n, _)| data::layers::stem(n).to_lowercase() != base);
+        match read {
+            Ok(layers) => self.open_vector(layers, name, fly),
+            Err(e) => {
+                let e = if e == data::layers::NO_CRS { tr(self.lang, data::layers::NO_CRS).to_string() } else { e };
+                self.open_message = Some(trf(self.lang, "The file did not open: {name}: {e}", &[("name", name), ("e", &e)]));
+                Err(e)
+            }
+        }
+    }
+
     /// Состояние для раздела «Слои» и каталога.
     fn layers_state(&self) -> crate::layers::State<'_> {
         crate::layers::State {
@@ -3722,6 +3861,7 @@ impl LiteApp {
             sat_groups: &self.settings.sat_groups,
             earth: self.planet.earth,
             events: self.events.shown.is_some(),
+            data: &self.data_layers,
         }
     }
 
@@ -3802,6 +3942,13 @@ impl LiteApp {
     /// встаёт в позу сцены.
     pub fn with_file(mut self, bytes: Vec<u8>, name: &str) -> Self {
         self.pending_open.push((bytes, name.to_string()));
+        self
+    }
+
+    /// Папка файлов командной строки: из неё берутся соседние файлы
+    /// шейпфайла и MapInfo.
+    pub fn with_open_dir(mut self, dir: std::path::PathBuf) -> Self {
+        self.open_dir = Some(dir);
         self
     }
 
@@ -4410,15 +4557,26 @@ impl LiteApp {
             sub.add_side(name, bytes.to_vec());
             return Ok(None);
         }
-        if lower.ends_with(".gpkg")
-            && let Ok(layers) = data::layers::read(bytes.to_vec(), name)
+        // Соседний файл шейпфайла или MapInfo ждёт своего главного.
+        if data::layers::is_sidecar(name) {
+            self.sidecars.retain(|(n, _)| !n.eq_ignore_ascii_case(name));
+            self.sidecars.push((name.to_string(), bytes.to_vec()));
+            if let Some(at) = fly {
+                self.waiting_since = at;
+            }
+            return Ok(None);
+        }
+        // На странице файлы приходят по одному: главный ждёт соседних.
+        if cfg!(target_arch = "wasm32")
+            && data::layers::needs_sidecars(name)
+            && let Some(at) = fly
         {
-            if crate::subsurface::is_subsurface(&layers) {
-                return Ok(self.open_subsurface(layers, name, fly));
-            }
-            if let Some(pose) = self.open_tracks(layers, name, fly) {
-                return Ok(pose);
-            }
+            self.waiting.push((bytes.to_vec(), name.to_string()));
+            self.waiting_since = at;
+            return Ok(None);
+        }
+        if data::layers::is_vector(name) && !lower.ends_with(".kmz") {
+            return self.open_vector_file(bytes, name, fly);
         }
         // Модель самосвала демо ждёт слой самосвалов.
         if name == crate::tracks::DEMO_MODEL {
@@ -4494,8 +4652,8 @@ impl LiteApp {
     /// прежняя модель уходит, окно режима открывается, камера летит
     /// к модели.
     /// Точечные слои файла с полем времени - треки, остальные слои -
-    /// папкой в «Мои метки». None - треков в файле нет, иначе поза
-    /// к охвату точек треков.
+    /// в «Мои данные». None - треков в файле нет, иначе поза к охвату
+    /// точек треков.
     fn open_tracks(&mut self, layers: Vec<data::layers::LayerData>, name: &str, fly: Option<f64>) -> Option<Option<Pose>> {
         let (found, rest) = crate::tracks::Tracks::split(&layers, name);
         if found.is_empty() {
@@ -4503,10 +4661,7 @@ impl LiteApp {
         }
         let points: Vec<(f64, f64)> = found.iter().flat_map(crate::tracks::Layer::places).collect();
         let others: Vec<data::layers::LayerData> = layers.into_iter().enumerate().filter(|(n, _)| rest.contains(n)).map(|(_, l)| l).collect();
-        if others.iter().any(|l| l.items.iter().any(|i| i.shape != data::layers::Shape::None)) {
-            self.marks.add(crate::gpkg::folder(others, name), name, marks::root_name(self.lang));
-            self.marks_changed();
-        }
+        self.data_layers.add(others, name);
         let count = found.len();
         let demo = self.tracks.demo_model.is_some();
         self.tracks.add(found, name);
@@ -6388,7 +6543,7 @@ impl LiteApp {
         let title = tr(lang, "Places");
         let hint = tr(
             lang,
-            "Open or drop a .planetx scene, KML, KMZ, GeoPackage layers, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window.",
+            "Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.",
         );
         let layers_title = tr(lang, "Layers");
         // Во весь экран панель прячется, как у модуля.
@@ -6458,7 +6613,7 @@ impl LiteApp {
                     crate::layers::panel(ui, lang, &state, &mut menu, &mut out);
                 });
                 self.layers_menu = menu;
-                self.apply_layers(out);
+                self.apply_layers(out, now);
             }
             self.layers_height = ui.cursor().top() - top;
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Min), |ui| {
@@ -6899,11 +7054,19 @@ impl LiteApp {
     /// Выбор файла сцены. В программе - диалог системы, на странице -
     /// выбор файла браузером, байты приходят в ящик брошенных файлов.
     fn pick_file(&mut self, ctx: &egui::Context, now: f64) {
-        const KINDS: [&str; 9] = ["planetx", "kml", "kmz", "gpkg", "tif", "tiff", "las", "laz", "csv"];
+        // Векторные форматы слоёв - из data::layers::EXTENSIONS, на
+        // странице и соседние файлы шейпфайла: браузер не видит папку.
+        const BASE: [&str; 8] = ["planetx", "kml", "kmz", "tif", "tiff", "las", "laz", "csv"];
+        let mut kinds: Vec<&str> = BASE.to_vec();
+        kinds.extend(data::layers::EXTENSIONS);
+        if cfg!(target_arch = "wasm32") {
+            kinds.extend(data::layers::SIDECARS);
+        }
+        let title = "PlanetX, KML, KMZ, GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf, DXF, GeoTIFF, LAS, LAZ, CSV";
         #[cfg(not(target_arch = "wasm32"))]
         {
             let _ = ctx;
-            if let Some(path) = rfd::FileDialog::new().add_filter("PlanetX, KML, KMZ, GeoPackage, GeoTIFF, LAS, LAZ, CSV", &KINDS).pick_file() {
+            if let Some(path) = rfd::FileDialog::new().add_filter(title, &kinds).pick_file() {
                 let name = path.file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
                 match std::fs::read(&path) {
                     Ok(bytes) => {
@@ -6919,8 +7082,10 @@ impl LiteApp {
         {
             let _ = now;
             let (slot, ctx) = (self.dropped_box.clone(), ctx.clone());
+            let dialog = rfd::AsyncFileDialog::new().add_filter(title, &kinds);
             wasm_bindgen_futures::spawn_local(async move {
-                if let Some(file) = rfd::AsyncFileDialog::new().add_filter("PlanetX, KML, KMZ, GeoPackage, GeoTIFF, LAS, LAZ, CSV", &KINDS).pick_file().await {
+                // Несколько файлов - шейпфайл с его .dbf и .prj.
+                for file in dialog.pick_files().await.unwrap_or_default() {
                     let bytes = file.read().await;
                     if let Ok(mut s) = slot.lock() {
                         s.push((Ok(bytes), file.file_name()));
@@ -7519,12 +7684,17 @@ impl LiteApp {
     /// странице браузер читает его асинхронно, байты приходят в ящик
     /// [`LiteApp::dropped_box`] и открываются в следующем кадре.
     fn dropped(&mut self, ctx: &egui::Context, now: f64) {
-        let files = ctx.input(|i| i.raw.dropped_files.clone());
+        let mut files = ctx.input(|i| i.raw.dropped_files.clone());
+        // Соседние файлы шейпфайла - раньше главного.
+        files.sort_by_key(|f| !data::layers::is_sidecar(&f.path().to_string_lossy()));
         for file in files {
             let name = file.path().file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
             #[cfg(not(target_arch = "wasm32"))]
             match file.bytes() {
                 Ok(bytes) => {
+                    if let Some(dir) = file.path().parent().filter(|d| !d.as_os_str().is_empty()) {
+                        self.open_dir = Some(dir.to_path_buf());
+                    }
                     // Ошибку открытия показывает панель.
                     let _ = self.open_file(&bytes, &name, Some(now));
                 }
@@ -7542,8 +7712,9 @@ impl LiteApp {
                 });
             }
         }
-        let arrived: Vec<(Result<Vec<u8>, String>, String)> =
+        let mut arrived: Vec<(Result<Vec<u8>, String>, String)> =
             self.dropped_box.lock().map(|mut s| s.drain(..).collect()).unwrap_or_default();
+        arrived.sort_by_key(|(_, name)| !data::layers::is_sidecar(name));
         for (read, name) in arrived {
             match read {
                 Ok(bytes) => {
@@ -7551,6 +7722,17 @@ impl LiteApp {
                     let _ = self.open_file(&bytes, &name, Some(now));
                 }
                 Err(e) => self.open_message = Some(format!("{name}: {e}")),
+            }
+        }
+        // Главные файлы открываются, когда соседние перестали приходить.
+        if !self.waiting.is_empty() {
+            if now - self.waiting_since >= SIDECAR_PAUSE {
+                for (bytes, name) in std::mem::take(&mut self.waiting) {
+                    let _ = self.open_vector_file(&bytes, &name, Some(now));
+                }
+                self.sidecars.clear();
+            } else {
+                ctx.request_repaint_after(std::time::Duration::from_secs_f64(SIDECAR_PAUSE));
             }
         }
     }
@@ -7801,11 +7983,21 @@ impl LiteApp {
         }
         // Линии слоёв линий и линии склонения - в картинки наложения,
         // названия плит - в надписи.
-        if self.dots.dirty || self.geo.lines_dirty {
+        // Слои «Моих данных»: точки - вместе с точками слоёв, подписи
+        // по полю - у точки взгляда, `layer_labels` модуля.
+        self.dots.dirty |= std::mem::take(&mut self.data_layers.dots_dirty);
+        let key = crate::datalayers::label_key(self.nav.pose.lat, self.nav.pose.lon, self.view_width());
+        if std::mem::take(&mut self.data_layers.labels_dirty) || self.data_layers.labels_key != Some(key) {
+            self.data_layers.labels_key = Some(key);
+            self.labels.set_layers(&self.data_layers.labels(self.nav.pose.lat, self.nav.pose.lon));
+        }
+        let data_lines = std::mem::take(&mut self.data_layers.lines_dirty);
+        if self.dots.dirty || self.geo.lines_dirty || data_lines {
             self.geo.lines_dirty = false;
             self.labels.set_plates(&self.dots.plate_names());
             let mut sets = self.dots.line_sets();
             sets.extend(self.geo.line_set());
+            sets.extend(self.data_layers.line_set());
             if self.vector.set_line_sets(sets)
                 && let Some(globe) = &mut self.globe
             {
@@ -7825,6 +8017,19 @@ impl LiteApp {
             all.extend(self.sat_points.iter().cloned());
 
             all.extend(self.dots.meshes(&self.nav.camera.ellipsoid, &height, window));
+            // Точки слоёв «Моих данных» - кругами на рельефе.
+            for (dots, color, size, alpha) in self.data_layers.dot_sets() {
+                let points: Vec<DVec3> = dots.iter().map(|(lat, lon)| self.nav.camera.ellipsoid.geodetic_to_ecef(*lat, *lon, height(*lat, *lon))).collect();
+                let center = points.iter().fold(DVec3::ZERO, |a, p| a + *p) / points.len() as f64;
+                all.push(render::PointsMesh {
+                    center,
+                    offsets: points.iter().map(|p| (*p - center).as_vec3().to_array()).collect(),
+                    colors: vec![color; points.len()],
+                    size,
+                    sizes: Vec::new(),
+                    dot: Some(render::Dot { alpha, lift: crate::dots::LIFT, space: false }),
+                });
+            }
             // Объекты треков: точка над землёй или на своей высоте над
             // уровнем моря, подписи - у тех же точек.
             self.track_dots_dirty = false;
@@ -9143,7 +9348,14 @@ impl eframe::App for LiteApp {
         let fresh = self.marks.meshes(&store, now);
         let geo_stale = self.geo.shapes_dirty;
         let tracks_stale = self.tracks.dirty || self.gps.dirty;
-        if fresh.is_some() || water_stale || geo_stale || tracks_stale {
+        let data_stale = std::mem::take(&mut self.data_layers.shapes_dirty);
+        if fresh.is_some() || water_stale || geo_stale || tracks_stale || data_stale {
+            // Выдавленные объекты «Моих данных» стоят на рельефе:
+            // строятся заново и с новыми высотами.
+            if data_stale || fresh.is_some() {
+                let radius = self.nav.camera.ellipsoid.a;
+                self.data_meshes = self.data_layers.shapes(radius).iter().filter_map(|s| crate::marks::mesh(s, &store)).collect();
+            }
             if let Some(meshes) = &fresh {
                 self.marks_meshes = meshes.clone();
             }
@@ -9168,6 +9380,7 @@ impl eframe::App for LiteApp {
             all.extend(self.water.iter().flat_map(|(w, _)| w.iter().cloned()));
             all.extend(self.geo_meshes.iter().cloned());
             all.extend(self.track_meshes.iter().cloned());
+            all.extend(self.data_meshes.iter().cloned());
             globe.set_features(&all);
         }
         if listed && (fresh.is_some() || tracks_models || preview_dirty) && self.overlays_built != Some(self.marks.overlays_version()) {
@@ -9533,7 +9746,7 @@ impl eframe::App for LiteApp {
             let mut catalog = std::mem::take(&mut self.catalog);
             catalog.window(&ctx, self.lang, &self.layers_state(), &mut out);
             self.catalog = catalog;
-            self.apply_layers(out);
+            self.apply_layers(out, now);
         }
 
         if let Some(check) = &mut self.check {

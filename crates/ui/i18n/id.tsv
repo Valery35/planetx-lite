@@ -2356,3 +2356,23 @@ an outline	garis batas
 a point	titik
 The task needs at least two classes.	Tugas memerlukan minimal dua kelas.
 The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	Inframerah dekat dan merah atau SWIR citra musim panas tidak dikenali - aturan tugas memerlukan citra dengan label kanal.
+Zoom to layer	Perbesar ke lapisan
+Line width	Tebal garis
+Point size	Ukuran titik
+Width of lines and outlines in pixels. Zero - polygons without an outline.	Tebal garis dan batas dalam piksel. Nol - poligon tanpa batas.
+Fill of polygons, a share of the layer opacity. Zero - outlines only.	Isian poligon, bagian dari opasitas lapisan. Nol - hanya batas.
+Diameter of points in pixels.	Diameter titik dalam piksel.
+Labels: {field}	Label: {field}
+A field whose value labels the objects on the globe. Of each layer the labels nearest to the view point are shown.	Bidang yang nilainya melabeli objek di globe. Dari tiap lapisan tampak label terdekat ke titik pandang.
+Extrusion: {field}	Ekstrusi: {field}
+Objects rise above the terrain to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall. An object with an empty, zero or negative value stays flat.	Objek naik di atas medan setinggi nilai bidang numerik: poligon sebagai prisma, titik sebagai kolom, garis sebagai dinding. Objek dengan nilai kosong, nol, atau negatif tetap datar.
+Up	Naik
+Down	Turun
+Copy to My Places	Salin ke «Tempat saya»
+The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.	Objek lapisan menjadi penanda sebuah folder di «Tempat saya»: dapat disunting, diukur, dan disimpan ke adegan. Lapisan besar dipotong hingga objek pertamanya.
+Table	Tabel
+The file has no layers with geometry	Berkas tidak memiliki lapisan bergeometri
+The layer has no coordinate system, and its coordinates are not degrees	Lapisan tidak memiliki sistem koordinat, dan koordinatnya bukan derajat
+Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Lapisan ditambahkan: {count}. Menu «⋯» pada baris di bagian Lapisan mengatur gaya, label, dan ekstrusi.
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, lapisan {layer}, objek: {count}. Kotak centang menyembunyikan lapisan, menu «⋯» mengatur gaya, label, dan ekstrusi.
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Buka atau seret ke jendela adegan .planetx, KML, KMZ, raster ketinggian GeoTIFF, atau awan titik LAS, LAZ, COPC. Lapisan GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf, dan DXF masuk ke bagian Lapisan.

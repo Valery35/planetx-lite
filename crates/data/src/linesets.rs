@@ -8,13 +8,17 @@
 //! `core/pick.py` модуля.
 
 /// Линия набора: точки (широта, долгота), цвет RGBA, толщина в пикселях
-/// картинки тайла, рамка (юг, запад, север, восток).
+/// картинки тайла, рамка (юг, запад, север, восток). У многоугольника
+/// есть заливка: точки - внешнее кольцо, holes - дыры, контур
+/// замыкается.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Line {
     pub points: Vec<(f64, f64)>,
     pub color: [u8; 4],
     pub width: f32,
     pub bbox: (f64, f64, f64, f64),
+    pub fill: Option<[u8; 4]>,
+    pub holes: Vec<Vec<(f64, f64)>>,
 }
 
 impl Line {
@@ -26,7 +30,16 @@ impl Line {
             w = w.min(*lon);
             e = e.max(*lon);
         }
-        Line { points, color, width, bbox: (s, w, n, e) }
+        Line { points, color, width, bbox: (s, w, n, e), fill: None, holes: Vec::new() }
+    }
+
+    /// Многоугольник: внешнее кольцо outer, дыры holes, заливка fill.
+    /// Толщина 0 - без контура.
+    pub fn polygon(outer: Vec<(f64, f64)>, holes: Vec<Vec<(f64, f64)>>, color: [u8; 4], width: f32, fill: [u8; 4]) -> Line {
+        let mut line = Line::new(outer, color, width);
+        line.fill = Some(fill);
+        line.holes = holes;
+        line
     }
 }
 
@@ -110,25 +123,37 @@ pub fn draw(key: (u32, u32, u32), sets: &[&[Line]]) -> Option<Vec<u8>> {
                 continue;
             }
             let mut path = tiny_skia::PathBuilder::new();
-            let mut last: Option<f64> = None;
-            for (lat, lon) in &line.points {
-                let (px, py) = pixel(z, x, y, *lat, *lon);
-                match last {
-                    Some(prev) if (lon - prev).abs() <= 180.0 => path.line_to(px, py),
-                    _ => path.move_to(px, py),
+            let closed = line.fill.is_some();
+            for ring in std::iter::once(&line.points).chain(line.holes.iter()) {
+                let mut last: Option<f64> = None;
+                for (lat, lon) in ring {
+                    let (px, py) = pixel(z, x, y, *lat, *lon);
+                    match last {
+                        Some(prev) if (lon - prev).abs() <= 180.0 => path.line_to(px, py),
+                        _ => path.move_to(px, py),
+                    }
+                    last = Some(*lon);
                 }
-                last = Some(*lon);
+                if closed && last.is_some() {
+                    path.close();
+                }
             }
             let Some(path) = path.finish() else {
                 continue;
             };
-            let mut paint = tiny_skia::Paint::default();
-            let [r, g, b, a] = line.color;
-            paint.set_color_rgba8(r, g, b, a);
-            paint.anti_alias = true;
-            let stroke = tiny_skia::Stroke { width: line.width, line_cap: tiny_skia::LineCap::Round, line_join: tiny_skia::LineJoin::Round, ..Default::default() };
-            canvas.stroke_path(&path, &paint, &stroke, tiny_skia::Transform::identity(), None);
-            any = true;
+            let mut paint = tiny_skia::Paint { anti_alias: true, ..Default::default() };
+            if let Some([r, g, b, a]) = line.fill {
+                paint.set_color_rgba8(r, g, b, a);
+                canvas.fill_path(&path, &paint, tiny_skia::FillRule::EvenOdd, tiny_skia::Transform::identity(), None);
+                any = true;
+            }
+            if line.width > 0.0 {
+                let [r, g, b, a] = line.color;
+                paint.set_color_rgba8(r, g, b, a);
+                let stroke = tiny_skia::Stroke { width: line.width, line_cap: tiny_skia::LineCap::Round, line_join: tiny_skia::LineJoin::Round, ..Default::default() };
+                canvas.stroke_path(&path, &paint, &stroke, tiny_skia::Transform::identity(), None);
+                any = true;
+            }
         }
     }
     if !any {

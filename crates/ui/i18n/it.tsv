@@ -2356,3 +2356,23 @@ an outline	un contorno
 a point	un punto
 The task needs at least two classes.	Il compito richiede almeno due classi.
 The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	Il vicino infrarosso e il rosso o SWIR dell'immagine estiva non sono riconosciuti - le regole del compito richiedono un'immagine con bande etichettate.
+Zoom to layer	Zoom sul layer
+Line width	Spessore linea
+Point size	Dimensione punto
+Width of lines and outlines in pixels. Zero - polygons without an outline.	Spessore di linee e contorni in pixel. Zero - poligoni senza contorno.
+Fill of polygons, a share of the layer opacity. Zero - outlines only.	Riempimento dei poligoni, quota dell'opacità del layer. Zero - solo contorni.
+Diameter of points in pixels.	Diametro dei punti in pixel.
+Labels: {field}	Etichette: {field}
+A field whose value labels the objects on the globe. Of each layer the labels nearest to the view point are shown.	Un campo il cui valore etichetta gli oggetti sul globo. Di ogni layer si vedono le etichette più vicine al punto di vista.
+Extrusion: {field}	Estrusione: {field}
+Objects rise above the terrain to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall. An object with an empty, zero or negative value stays flat.	Gli oggetti si alzano sul rilievo all'altezza di un campo numerico: un poligono come prisma, un punto come colonna, una linea come muro. Un oggetto con valore vuoto, zero o negativo resta piatto.
+Up	Su
+Down	Giù
+Copy to My Places	Copia in «I miei luoghi»
+The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.	Gli oggetti del layer diventano segnaposto di una cartella in «I miei luoghi»: si possono modificare, misurare e salvare in una scena. Un layer grande è ridotto ai primi oggetti.
+Table	Tabella
+The file has no layers with geometry	Il file non ha layer con geometria
+The layer has no coordinate system, and its coordinates are not degrees	Il layer non ha sistema di coordinate e le sue coordinate non sono in gradi
+Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Layer aggiunti: {count}. Il menu «⋯» di una riga nella sezione Layer imposta stile, etichette ed estrusione.
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, layer {layer}, oggetti: {count}. La casella nasconde il layer, il menu «⋯» imposta stile, etichette ed estrusione.
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Apri o trascina nella finestra una scena .planetx, KML, KMZ, un raster di quote GeoTIFF o una nuvola di punti LAS, LAZ, COPC. I layer GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf e DXF vanno nella sezione Layer.

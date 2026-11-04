@@ -2356,3 +2356,23 @@ an outline	un contorno
 a point	un punto
 The task needs at least two classes.	La tarea necesita al menos dos clases.
 The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	No se reconocen el infrarrojo cercano y el rojo o SWIR de la imagen de verano - las reglas de la tarea necesitan una imagen con bandas etiquetadas.
+Zoom to layer	Acercar a la capa
+Line width	Grosor de línea
+Point size	Tamaño de punto
+Width of lines and outlines in pixels. Zero - polygons without an outline.	Grosor de líneas y contornos en píxeles. Cero - polígonos sin contorno.
+Fill of polygons, a share of the layer opacity. Zero - outlines only.	Relleno de polígonos, fracción de la opacidad de la capa. Cero - solo contornos.
+Diameter of points in pixels.	Diámetro de los puntos en píxeles.
+Labels: {field}	Etiquetas: {field}
+A field whose value labels the objects on the globe. Of each layer the labels nearest to the view point are shown.	Un campo cuyo valor etiqueta los objetos en el globo. De cada capa se ven las etiquetas más cercanas al punto de vista.
+Extrusion: {field}	Extrusión: {field}
+Objects rise above the terrain to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall. An object with an empty, zero or negative value stays flat.	Los objetos se elevan sobre el relieve a la altura de un campo numérico: un polígono como prisma, un punto como columna, una línea como muro. Un objeto con valor vacío, cero o negativo queda plano.
+Up	Subir
+Down	Bajar
+Copy to My Places	Copiar a «Mis lugares»
+The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.	Los objetos de la capa se vuelven marcas de una carpeta en «Mis lugares»: se pueden editar, medir y guardar en una escena. Una capa grande se recorta a sus primeros objetos.
+Table	Tabla
+The file has no layers with geometry	El archivo no tiene capas con geometría
+The layer has no coordinate system, and its coordinates are not degrees	La capa no tiene sistema de coordenadas y sus coordenadas no están en grados
+Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Capas añadidas: {count}. El menú «⋯» de una fila en la sección Capas fija el estilo, las etiquetas y la extrusión.
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, capa {layer}, objetos: {count}. La casilla oculta la capa, el menú «⋯» fija su estilo, etiquetas y extrusión.
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Abra o arrastre a la ventana una escena .planetx, KML, KMZ, un ráster de alturas GeoTIFF o una nube de puntos LAS, LAZ, COPC. Las capas GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf y DXF van a la sección Capas.

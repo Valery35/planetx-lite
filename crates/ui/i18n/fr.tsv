@@ -2356,3 +2356,23 @@ an outline	un contour
 a point	un point
 The task needs at least two classes.	La tâche demande au moins deux classes.
 The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	Le proche infrarouge et le rouge ou SWIR de l'image d'été ne sont pas reconnus - les règles de la tâche demandent une image aux bandes étiquetées.
+Zoom to layer	Zoom sur la couche
+Line width	Épaisseur de ligne
+Point size	Taille des points
+Width of lines and outlines in pixels. Zero - polygons without an outline.	Épaisseur des lignes et contours en pixels. Zéro - polygones sans contour.
+Fill of polygons, a share of the layer opacity. Zero - outlines only.	Remplissage des polygones, part de l'opacité de la couche. Zéro - contours seuls.
+Diameter of points in pixels.	Diamètre des points en pixels.
+Labels: {field}	Étiquettes : {field}
+A field whose value labels the objects on the globe. Of each layer the labels nearest to the view point are shown.	Un champ dont la valeur étiquette les objets sur le globe. De chaque couche on voit les étiquettes les plus proches du point de vue.
+Extrusion: {field}	Extrusion : {field}
+Objects rise above the terrain to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall. An object with an empty, zero or negative value stays flat.	Les objets s'élèvent au-dessus du relief à la hauteur d'un champ numérique : un polygone en prisme, un point en colonne, une ligne en mur. Un objet de valeur vide, nulle ou négative reste plat.
+Up	Monter
+Down	Descendre
+Copy to My Places	Copier dans «Mes lieux»
+The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.	Les objets de la couche deviennent des repères d'un dossier dans «Mes lieux» : on peut les modifier, les mesurer et les enregistrer dans une scène. Une grande couche est coupée à ses premiers objets.
+Table	Table
+The file has no layers with geometry	Le fichier n'a pas de couche avec géométrie
+The layer has no coordinate system, and its coordinates are not degrees	La couche n'a pas de système de coordonnées et ses coordonnées ne sont pas en degrés
+Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Couches ajoutées : {count}. Le menu «⋯» d'une ligne de la section Couches règle le style, les étiquettes et l'extrusion.
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, couche {layer}, objets : {count}. La case masque la couche, le menu «⋯» règle son style, ses étiquettes et l'extrusion.
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Ouvrez ou déposez dans la fenêtre une scène .planetx, un KML, KMZ, un raster d'altitudes GeoTIFF ou un nuage de points LAS, LAZ, COPC. Les couches GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf et DXF vont dans la section Couches.

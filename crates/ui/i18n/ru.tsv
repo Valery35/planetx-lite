@@ -2356,3 +2356,23 @@ an outline	контур
 a point	точку
 The task needs at least two classes.	У задачи нужно хотя бы два класса.
 The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	У летнего снимка не узнать ближний ИК и красный или SWIR - правилам задачи нужен снимок с подписями каналов.
+Zoom to layer	Приблизить к слою
+Line width	Толщина линии
+Point size	Размер точки
+Width of lines and outlines in pixels. Zero - polygons without an outline.	Толщина линий и контуров в пикселях. Ноль - многоугольники без контура.
+Fill of polygons, a share of the layer opacity. Zero - outlines only.	Заливка многоугольников, доля непрозрачности слоя. Ноль - только контуры.
+Diameter of points in pixels.	Диаметр точек в пикселях.
+Labels: {field}	Подписи: {field}
+A field whose value labels the objects on the globe. Of each layer the labels nearest to the view point are shown.	Поле, значение которого подписывает объекты на глобусе. У каждого слоя видны подписи, ближайшие к точке взгляда.
+Extrusion: {field}	Выдавливание: {field}
+Objects rise above the terrain to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall. An object with an empty, zero or negative value stays flat.	Объекты поднимаются над рельефом на высоту из числового поля: многоугольник призмой, точка столбиком, линия стенкой. Объект с пустым, нулевым или отрицательным значением остаётся плоским.
+Up	Выше
+Down	Ниже
+Copy to My Places	Копия в «Мои метки»
+The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.	Объекты слоя становятся метками папки в «Моих метках»: их можно править, измерять и сохранять в сцену. Большой слой обрезается до первых объектов.
+Table	Таблица
+The file has no layers with geometry	В файле нет слоёв с геометрией
+The layer has no coordinate system, and its coordinates are not degrees	У слоя нет системы координат, а его координаты не в градусах
+Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Добавлено слоёв: {count}. Меню «⋯» строки в разделе «Слои» задаёт стиль, подписи и выдавливание.
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, слой {layer}, объектов: {count}. Флажок прячет слой, меню «⋯» задаёт его стиль, подписи и выдавливание.
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Откройте или перетащите в окно сцену .planetx, KML, KMZ, растр высот GeoTIFF или облако точек LAS, LAZ, COPC. Слои GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf и DXF ложатся в раздел «Слои».

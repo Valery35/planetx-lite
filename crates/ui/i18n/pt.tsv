@@ -2356,3 +2356,23 @@ an outline	um contorno
 a point	um ponto
 The task needs at least two classes.	A tarefa precisa de ao menos duas classes.
 The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	O infravermelho próximo e o vermelho ou SWIR da imagem de verão não são reconhecidos - as regras da tarefa precisam de uma imagem com bandas rotuladas.
+Zoom to layer	Aproximar à camada
+Line width	Espessura da linha
+Point size	Tamanho do ponto
+Width of lines and outlines in pixels. Zero - polygons without an outline.	Espessura de linhas e contornos em pixels. Zero - polígonos sem contorno.
+Fill of polygons, a share of the layer opacity. Zero - outlines only.	Preenchimento dos polígonos, fração da opacidade da camada. Zero - só contornos.
+Diameter of points in pixels.	Diâmetro dos pontos em pixels.
+Labels: {field}	Rótulos: {field}
+A field whose value labels the objects on the globe. Of each layer the labels nearest to the view point are shown.	Um campo cujo valor rotula os objetos no globo. De cada camada veem-se os rótulos mais próximos do ponto de vista.
+Extrusion: {field}	Extrusão: {field}
+Objects rise above the terrain to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall. An object with an empty, zero or negative value stays flat.	Os objetos sobem acima do relevo à altura de um campo numérico: um polígono como prisma, um ponto como coluna, uma linha como parede. Um objeto com valor vazio, zero ou negativo fica plano.
+Up	Subir
+Down	Descer
+Copy to My Places	Copiar para «Meus lugares»
+The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.	Os objetos da camada tornam-se marcadores de uma pasta em «Meus lugares»: podem ser editados, medidos e guardados numa cena. Uma camada grande é cortada aos primeiros objetos.
+Table	Tabela
+The file has no layers with geometry	O arquivo não tem camadas com geometria
+The layer has no coordinate system, and its coordinates are not degrees	A camada não tem sistema de coordenadas e as coordenadas não estão em graus
+Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Camadas adicionadas: {count}. O menu «⋯» de uma linha na secção Camadas define o estilo, os rótulos e a extrusão.
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, camada {layer}, objetos: {count}. A caixa oculta a camada, o menu «⋯» define estilo, rótulos e extrusão.
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Abra ou arraste para a janela uma cena .planetx, KML, KMZ, um raster de altitudes GeoTIFF ou uma nuvem de pontos LAS, LAZ, COPC. As camadas GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf e DXF vão para a secção Camadas.

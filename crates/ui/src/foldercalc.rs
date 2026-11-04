@@ -80,7 +80,7 @@ pub fn column(lat: f64, lon: f64, radius_m: f64, radius: f64) -> Vec<(f64, f64)>
 }
 
 /// Радиус столбика по поперечнику точек папки, метры.
-fn column_radius(points: &[(f64, f64)]) -> f64 {
+pub fn column_radius(points: &[(f64, f64)]) -> f64 {
     let (lat0, lat1) = points.iter().fold((f64::INFINITY, f64::NEG_INFINITY), |(a, b), p| (a.min(p.0), b.max(p.0)));
     let (lon0, lon1) = points.iter().fold((f64::INFINITY, f64::NEG_INFINITY), |(a, b), p| (a.min(p.1), b.max(p.1)));
     let height = (lat1 - lat0) * data::site::METERS_PER_DEGREE;

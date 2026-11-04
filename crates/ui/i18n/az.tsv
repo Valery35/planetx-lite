@@ -2356,3 +2356,23 @@ an outline	kontur
 a point	nöqtə
 The task needs at least two classes.	Tapşırıq üçün ən azı iki sinif lazımdır.
 The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	Yay təsvirinin yaxın İQ və qırmızı və ya SWIR kanalları tanınmadı - tapşırığın qaydalarına kanalları imzalı təsvir lazımdır.
+Zoom to layer	Laya yaxınlaşdır
+Line width	Xətt qalınlığı
+Point size	Nöqtə ölçüsü
+Width of lines and outlines in pixels. Zero - polygons without an outline.	Xətlərin və konturların piksellə qalınlığı. Sıfır - konturu olmayan çoxbucaqlılar.
+Fill of polygons, a share of the layer opacity. Zero - outlines only.	Çoxbucaqlıların doldurulması, layın qeyri-şəffaflığının payı. Sıfır - yalnız konturlar.
+Diameter of points in pixels.	Nöqtələrin piksellə diametri.
+Labels: {field}	Yazılar: {field}
+A field whose value labels the objects on the globe. Of each layer the labels nearest to the view point are shown.	Dəyəri qlobusda obyektləri yazan sahə. Hər layın baxış nöqtəsinə ən yaxın yazıları görünür.
+Extrusion: {field}	Sıxışdırma: {field}
+Objects rise above the terrain to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall. An object with an empty, zero or negative value stays flat.	Obyektlər rəqəmli sahədəki hündürlüyə qədər relyefdən qalxır: çoxbucaqlı prizma, nöqtə sütun, xətt divar kimi. Boş, sıfır və ya mənfi dəyərli obyekt yastı qalır.
+Up	Yuxarı
+Down	Aşağı
+Copy to My Places	«Mənim yerlərim»ə köçür
+The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.	Layın obyektləri «Mənim yerlərim»də qovluğun nişanlarına çevrilir: onları redaktə etmək, ölçmək və səhnəyə saxlamaq olar. Böyük lay ilk obyektlərinə qədər kəsilir.
+Table	Cədvəl
+The file has no layers with geometry	Faylda həndəsəli lay yoxdur
+The layer has no coordinate system, and its coordinates are not degrees	Layın koordinat sistemi yoxdur və koordinatları dərəcə deyil
+Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Əlavə edilən lay: {count}. Laylar bölməsində sətrin «⋯» menyusu üslubu, yazıları və sıxışdırmanı təyin edir.
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, lay {layer}, obyekt: {count}. Bayraq layı gizlədir, «⋯» menyusu onun üslubunu, yazılarını və sıxışdırmasını təyin edir.
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Pəncərəyə .planetx səhnəsi, KML, KMZ, GeoTIFF hündürlük rastri və ya LAS, LAZ, COPC nöqtə buludu açın ya da sürükləyin. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf və DXF layları Laylar bölməsinə düşür.

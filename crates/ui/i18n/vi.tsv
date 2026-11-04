@@ -2356,3 +2356,23 @@ an outline	một đường viền
 a point	một điểm
 The task needs at least two classes.	Nhiệm vụ cần ít nhất hai lớp.
 The near infrared and the red or SWIR of the summer image are not recognised - the task rules need an image with labelled bands.	Không nhận ra cận hồng ngoại và đỏ hoặc SWIR của ảnh mùa hè - quy tắc nhiệm vụ cần ảnh có nhãn kênh.
+Zoom to layer	Phóng tới lớp
+Line width	Độ dày đường
+Point size	Cỡ điểm
+Width of lines and outlines in pixels. Zero - polygons without an outline.	Độ dày đường và viền tính bằng điểm ảnh. Không - đa giác không viền.
+Fill of polygons, a share of the layer opacity. Zero - outlines only.	Tô màu đa giác, phần của độ đục lớp. Không - chỉ viền.
+Diameter of points in pixels.	Đường kính điểm tính bằng điểm ảnh.
+Labels: {field}	Nhãn: {field}
+A field whose value labels the objects on the globe. Of each layer the labels nearest to the view point are shown.	Trường có giá trị dùng làm nhãn đối tượng trên quả cầu. Mỗi lớp hiện các nhãn gần điểm nhìn nhất.
+Extrusion: {field}	Đùn khối: {field}
+Objects rise above the terrain to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall. An object with an empty, zero or negative value stays flat.	Đối tượng nhô lên trên địa hình tới độ cao từ một trường số: đa giác thành lăng trụ, điểm thành cột, đường thành tường. Đối tượng có giá trị trống, bằng không hoặc âm vẫn phẳng.
+Up	Lên
+Down	Xuống
+Copy to My Places	Sao chép vào «Địa điểm của tôi»
+The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.	Các đối tượng của lớp thành dấu vị trí của một thư mục trong «Địa điểm của tôi»: có thể sửa, đo và lưu vào cảnh. Lớp lớn bị cắt còn các đối tượng đầu.
+Table	Bảng
+The file has no layers with geometry	Tệp không có lớp có hình học
+The layer has no coordinate system, and its coordinates are not degrees	Lớp không có hệ tọa độ và tọa độ không tính bằng độ
+Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Đã thêm lớp: {count}. Trình đơn «⋯» của một hàng trong mục Lớp đặt kiểu, nhãn và đùn khối.
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, lớp {layer}, đối tượng: {count}. Ô đánh dấu ẩn lớp, trình đơn «⋯» đặt kiểu, nhãn và đùn khối.
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Mở hoặc kéo vào cửa sổ cảnh .planetx, KML, KMZ, raster độ cao GeoTIFF hoặc đám mây điểm LAS, LAZ, COPC. Các lớp GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf và DXF vào mục Lớp.

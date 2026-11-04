@@ -118,3 +118,19 @@ fn draw_line_on_tile() {
     // Тайл далеко от линии - пусто.
     assert!(linesets::draw((4, 3, 2), &[&lines]).is_none());
 }
+
+#[test]
+fn polygon_with_hole_filled_on_tile() {
+    // Квадрат на большую часть тайла 0/0/0 с дырой посередине, без
+    // контура. Шаг долготы меньше 180°: больший разрывает линию.
+    let outer = vec![(-60.0, -120.0), (-60.0, 0.0), (-60.0, 120.0), (60.0, 120.0), (60.0, 0.0), (60.0, -120.0)];
+    let hole = vec![(-20.0, -40.0), (-20.0, 40.0), (20.0, 40.0), (20.0, -40.0)];
+    let lines = [linesets::Line::polygon(outer, vec![hole], [0, 0, 0, 0], 0.0, [0, 0, 255, 255])];
+    let rgba = linesets::draw((0, 0, 0), &[&lines]).unwrap_or_default();
+    assert_eq!(rgba.len(), (linesets::SIZE * linesets::SIZE * 4) as usize);
+    let alpha = |x: usize, y: usize| rgba[(y * linesets::SIZE as usize + x) * 4 + 3];
+    // Между кольцом и дырой - залито, в дыре и вне квадрата - пусто.
+    assert_eq!(alpha(50, 128), 255);
+    assert_eq!(alpha(128, 128), 0);
+    assert_eq!(alpha(2, 2), 0);
+}
