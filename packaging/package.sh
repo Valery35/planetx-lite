@@ -84,8 +84,13 @@ macos() {
     # Подписи Apple нет: подпись ad-hoc, без неё Apple Silicon не запускает.
     codesign --force --deep --sign - "$app"
     ln -s /Applications "$stage/dmg/Applications"
-    hdiutil create -volname "PlanetX Lite" -srcfolder "$stage/dmg" -ov -format UDZO \
-        "$out/PlanetX-Lite-$version-macos-$arch.dmg"
+    # Размер тома - явно, с запасом в четверть и 20 МБ. Оценка hdiutil
+    # по папке мала для программы после подписи ad-hoc - «No space left
+    # on device» на Apple Silicon у выпуска 0.22.0.
+    local mb
+    mb=$(du -sm "$stage/dmg" | cut -f1)
+    hdiutil create -volname "PlanetX Lite" -srcfolder "$stage/dmg" -size "$((mb + mb / 4 + 20))m" \
+        -ov -format UDZO "$out/PlanetX-Lite-$version-macos-$arch.dmg"
 }
 
 case "$(uname -s)" in
