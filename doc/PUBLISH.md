@@ -77,4 +77,4 @@
 - linux.org.ru: https://www.linux.org.ru/news/opensource/18414410 (ждёт модератора)
 - Telegram, LinkedIn, Facebook, X - посты 4 ноября 2026 года
 - Сайт informpp.ru (главная, «Что нового»), Dropbox - обновлены
-- Reddit r/QGIS, r/gis - тексты в planetx/site/posts_1.40_social.md, публикует автор
+- Reddit r/QGIS, r/gis - опубликовал автор 5 ноября 2026 года, тексты в planetx/site/posts_1.40_social.md, ссылок на посты помощник не видит (reddit.com закрыт)
