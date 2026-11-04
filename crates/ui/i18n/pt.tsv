@@ -2374,5 +2374,4 @@ Table	Tabela
 The file has no layers with geometry	O arquivo não tem camadas com geometria
 The layer has no coordinate system, and its coordinates are not degrees	A camada não tem sistema de coordenadas e as coordenadas não estão em graus
 Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Camadas adicionadas: {count}. O menu «⋯» de uma linha na secção Camadas define o estilo, os rótulos e a extrusão.
-{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, camada {layer}, objetos: {count}. A caixa oculta a camada, o menu «⋯» define estilo, rótulos e extrusão.
 Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Abra ou arraste para a janela uma cena .planetx, KML, KMZ, um raster de altitudes GeoTIFF ou uma nuvem de pontos LAS, LAZ, COPC. As camadas GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf e DXF vão para a secção Camadas.

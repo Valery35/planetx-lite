@@ -2374,5 +2374,4 @@ Table	Tabel
 The file has no layers with geometry	Het bestand heeft geen lagen met geometrie
 The layer has no coordinate system, and its coordinates are not degrees	De laag heeft geen coördinatenstelsel en de coördinaten zijn geen graden
 Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Lagen toegevoegd: {count}. Het menu «⋯» van een rij in de sectie Lagen zet stijl, labels en extrusie.
-{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, laag {layer}, objecten: {count}. Het vinkje verbergt de laag, het menu «⋯» zet stijl, labels en extrusie.
 Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Open of sleep een .planetx-scène, KML, KMZ, een GeoTIFF-hoogteraster of een LAS-, LAZ-, COPC-puntenwolk in het venster. Lagen uit GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf en DXF gaan naar de sectie Lagen.

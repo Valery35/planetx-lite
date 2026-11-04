@@ -2374,5 +2374,4 @@ Table	Bảng
 The file has no layers with geometry	Tệp không có lớp có hình học
 The layer has no coordinate system, and its coordinates are not degrees	Lớp không có hệ tọa độ và tọa độ không tính bằng độ
 Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Đã thêm lớp: {count}. Trình đơn «⋯» của một hàng trong mục Lớp đặt kiểu, nhãn và đùn khối.
-{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, lớp {layer}, đối tượng: {count}. Ô đánh dấu ẩn lớp, trình đơn «⋯» đặt kiểu, nhãn và đùn khối.
 Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Mở hoặc kéo vào cửa sổ cảnh .planetx, KML, KMZ, raster độ cao GeoTIFF hoặc đám mây điểm LAS, LAZ, COPC. Các lớp GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf và DXF vào mục Lớp.

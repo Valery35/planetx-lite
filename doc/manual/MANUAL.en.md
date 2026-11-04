@@ -200,9 +200,9 @@ The Layers section shows everything on the globe:
   countries yellow, regions white, motorways yellow, railways light with
   a dark dash, rivers blue. Borders and settlements are on by default.
 
-### File layers
+### My layers
 
-A vector file becomes rows at the top of the Layers section, like the
+A vector file becomes rows of My layers at the top of the Layers section, like the
 QGIS project layers in the plugin. One row is one layer of the file. The
 program reads GeoPackage, Shapefile, GeoJSON, GPX, TopoJSON, GML,
 MapInfo (MIF and TAB), FlatGeobuf, DXF and DWG, and a ZIP archive with a
@@ -225,15 +225,24 @@ The checkbox of a row hides the layer. The "⋯" menu of a row:
 | Colour, line width, fill, point size, opacity | The style of the layer |
 | Labels ▸ | A field whose value labels the objects. A layer shows at most 500 labels nearest to the view point |
 | Extrusion ▸ and factor | Objects rise to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall |
+| Folder ▸ | The layer moves to a folder of the list, to a new folder by name or out of folders |
 | Up, Down | The order of layers: the upper row is drawn on top |
 | Copy to My Places | The objects of the layer become placemarks of a folder. They can be edited, measured and saved into a scene |
+| Save as GeoJSON… | The objects of the layer with all fields go to a GeoJSON file in WGS84 |
 | Remove from the globe | The layer leaves the section |
 
+Folders of one level gather layers. The checkbox of a folder row shows or
+hides all its layers, a click on the name folds the folder. The "⋯" menu
+of a folder removes all its layers from the globe.
+
 A click of Identify features on an object of a layer shows its fields in
-the Features window. File layers live until the program closes and are
-not written into a scene, like the QGIS project layers of the plugin. A
-layer with a time field opens as tracks, a subsurface model file opens
-the Subsurface mode window.
+the Features window. My layers stay between launches, like My Places. In
+the program the objects of the layers are GeoJSON files in the data
+folder of the program, the source file is not needed after opening. The
+web page keeps the layers in the browser while together they are under
+1 MB. Layers are not written into a scene, like the QGIS project layers
+of the plugin. A layer with a time field opens as tracks, a subsurface
+model file opens the Subsurface mode window.
 
 ## Globe menu
 

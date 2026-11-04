@@ -246,7 +246,7 @@ pub struct State<'a> {
     pub earth: bool,
     /// Снимки события на глобусе.
     pub events: bool,
-    /// «Мои данные» - векторные слои файлов.
+    /// «Мои слои» - векторные слои файлов и результатов.
     pub data: &'a crate::datalayers::DataLayers,
 }
 
@@ -294,7 +294,7 @@ pub enum Action {
     Events,
     /// Свой источник убрать из списка основ.
     RemoveOwn(Basemap),
-    /// Действие меню слоя «Моих данных» по его номеру.
+    /// Действие меню слоя «Моих слоёв» по его номеру, у папки номер 0.
     Data(u64, crate::datalayers::Act),
 }
 
@@ -377,8 +377,9 @@ pub(crate) fn row(ui: &mut egui::Ui, indent: f32, check: Option<Option<bool>>, i
 }
 
 /// Раздел «Слои»: кнопка «Добавить данные» и строки. menu_open - какое
-/// меню строки открыто, хранится окном.
-pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut Option<String>, out: &mut Vec<Action>) {
+/// меню строки открыто, new_folder - поле имени новой папки «Моих
+/// слоёв», оба хранятся окном.
+pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut Option<String>, new_folder: &mut String, out: &mut Vec<Action>) {
     let add = ui.add_sized([ui.available_width(), 24.0], egui::Button::new(tr(lang, "Add data")));
     if add.on_hover_text(tr(lang, "Catalog of layers - vector base, coordinate grid, atmosphere and sun. The catalog opens in its own window, it can stay open next to the globe.")).clicked() {
         out.push(Action::Catalog);
@@ -386,8 +387,11 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
     ui.spacing_mut().item_spacing.y = 0.0;
     // Слои файлов - над основой, как слои проекта над подложкой.
     let mut data = Vec::new();
-    crate::datalayers::rows(ui, lang, state.data, menu_open, &mut data);
+    crate::datalayers::rows(ui, lang, state.data, menu_open, new_folder, &mut data);
     out.extend(data.into_iter().map(|(id, act)| Action::Data(id, act)));
+    if !state.data.list.is_empty() {
+        ui.add_space(4.0);
+    }
     // Основа: щелчок по строке - меню выбора подложки.
     let title = format!("{} · {}", tr(lang, "Base map"), basemap_title(lang, state.basemap));
     let hit = row(ui, 4.0, None, true, &title, "▾", tr(lang, "Imagery or map on the surface. A click on the row chooses the basemap. Esri World Imagery is an example basemap, its terms are set by Esri."));

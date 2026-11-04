@@ -16,6 +16,8 @@ net.workspace = true
 ui.workspace = true
 eframe.workspace = true
 image.workspace = true
+# Папка данных пользователя для «Моих слоёв».
+dirs.workspace = true
 
 # Выбор X11 вместо Wayland, `display_server` в main.rs. Та же версия,
 # что у eframe.

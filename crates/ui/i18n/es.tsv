@@ -2374,5 +2374,4 @@ Table	Tabla
 The file has no layers with geometry	El archivo no tiene capas con geometría
 The layer has no coordinate system, and its coordinates are not degrees	La capa no tiene sistema de coordenadas y sus coordenadas no están en grados
 Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Capas añadidas: {count}. El menú «⋯» de una fila en la sección Capas fija el estilo, las etiquetas y la extrusión.
-{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, capa {layer}, objetos: {count}. La casilla oculta la capa, el menú «⋯» fija su estilo, etiquetas y extrusión.
 Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Abra o arrastre a la ventana una escena .planetx, KML, KMZ, un ráster de alturas GeoTIFF o una nube de puntos LAS, LAZ, COPC. Las capas GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf y DXF van a la sección Capas.

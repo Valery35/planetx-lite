@@ -2374,5 +2374,4 @@ Table	ცხრილი
 The file has no layers with geometry	ფაილში გეომეტრიიანი ფენა არ არის
 The layer has no coordinate system, and its coordinates are not degrees	ფენას არ აქვს კოორდინატთა სისტემა და მისი კოორდინატები გრადუსებში არ არის
 Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	დამატებული ფენები: {count}. «ფენების» განყოფილებაში სტრიქონის «⋯» მენიუ აწყობს სტილს, წარწერებს და ამოწევას.
-{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, ფენა {layer}, ობიექტები: {count}. ალამი მალავს ფენას, «⋯» მენიუ აწყობს მის სტილს, წარწერებს და ამოწევას.
 Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	გახსენით ან ჩააგდეთ ფანჯარაში .planetx სცენა, KML, KMZ, GeoTIFF სიმაღლეების რასტრი ან LAS, LAZ, COPC წერტილების ღრუბელი. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf და DXF ფენები «ფენების» განყოფილებაში ხვდება.

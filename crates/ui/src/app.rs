@@ -510,9 +510,16 @@ pub struct LiteApp {
     route_only: HashSet<TileKey>,
     /// Прочитанные браузером брошенные файлы: байты или ошибка и имя.
     dropped_box: DroppedBox,
-    /// «Мои данные» - векторные слои файлов в разделе «Слои».
+    /// «Мои слои» - векторные слои файлов и результатов в разделе «Слои».
     data_layers: crate::datalayers::DataLayers,
-    /// Сетки выдавленных объектов «Моих данных».
+    /// Список «Моих слоёв» прошлого запуска, ждёт папки данных программы.
+    my_layers_saved: Option<String>,
+    /// Папка данных пользователя: в ней лежат файлы «Моих слоёв». Не
+    /// папка кэша - кэш система может очистить. У страницы её нет.
+    user_dir: Option<std::path::PathBuf>,
+    /// Поле имени новой папки «Моих слоёв».
+    new_folder: String,
+    /// Сетки выдавленных объектов «Моих слоёв».
     data_meshes: Vec<render::FeatureMesh>,
     /// Соседние файлы шейпфайла и MapInfo, пришедшие отдельно: имя
     /// и байты. Главный файл берёт свои.
@@ -1271,6 +1278,9 @@ impl LiteApp {
             route: crate::route::Router::new(data::routing::Mode::from_name(&settings.route).unwrap_or(data::routing::Mode::Car)),
             dropped_box: DroppedBox::default(),
             data_layers: crate::datalayers::DataLayers::default(),
+            my_layers_saved: None,
+            user_dir: None,
+            new_folder: String::new(),
             data_meshes: Vec::new(),
             sidecars: Vec::new(),
             waiting: Vec::new(),
@@ -1398,6 +1408,11 @@ impl LiteApp {
             app.marks.set(root, "");
             app.marks_changed();
             app.places_dirty = false;
+        }
+        // «Мои слои» прошлого запуска. Файлы их объектов лежат в папке
+        // данных, она известна после запуска - слои читаются первым кадром.
+        if app.check.is_none() {
+            app.my_layers_saved = cc.storage.and_then(|s| s.get_string(crate::datalayers::KEY));
         }
         // «Временные метки» прошлого запуска, строка выделена: новое
         // ложится туда, `select_temporary` модуля. Самопроверка - без них.
@@ -3742,10 +3757,82 @@ impl LiteApp {
         self.settings_dirty = true;
     }
 
-    /// Действие меню слоя «Моих данных».
+    /// «Мои слои» прошлого запуска - в раздел, первым кадром: в программе
+    /// объекты лежат файлами в папке данных, на странице - в самом
+    /// списке. Слои, открытые до этого, остаются сверху.
+    fn restore_my_layers(&mut self) {
+        let Some(text) = self.my_layers_saved.take() else {
+            return;
+        };
+        let dir = self.user_dir.as_ref().map(|d| d.join(crate::datalayers::DIR));
+        let read = |name: &str| dir.as_ref().and_then(|d| std::fs::read(d.join(name)).ok());
+        let (saved, lost) = crate::datalayers::DataLayers::from_index(&text, &read);
+        self.data_layers.restore(saved);
+        if !lost.is_empty() {
+            self.open_message = Some(trf(self.lang, "My layers: the objects of these layers were not found: {names}", &[("names", &lost.join(", "))]));
+        }
+    }
+
+    /// «Мои слои» - в хранилище, если изменились. В программе объекты
+    /// новых слоёв пишутся файлами GeoJSON в папку данных, файлы убранных
+    /// слоёв удаляются. На странице объекты идут в сам список, пока он
+    /// меньше [`crate::datalayers::INLINE_LIMIT`].
+    fn save_my_layers(&mut self, storage: &mut dyn eframe::Storage) {
+        // Список прошлого запуска ещё не прочитан - не затирать его.
+        if !self.data_layers.save_dirty || self.my_layers_saved.is_some() {
+            return;
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            // Без папки данных слои живут до закрытия программы.
+            let Some(dir) = self.user_dir.as_ref().map(|d| d.join(crate::datalayers::DIR)) else {
+                return;
+            };
+            if let Err(e) = std::fs::create_dir_all(&dir) {
+                self.open_message = Some(format!("{}: {e}", dir.display()));
+                return;
+            }
+            for (id, name) in self.data_layers.unstored() {
+                let Some(layer) = self.data_layers.get(id) else {
+                    continue;
+                };
+                match std::fs::write(dir.join(&name), data::layers::to_geojson(&layer.data)) {
+                    Ok(()) => self.data_layers.stored(id, name),
+                    Err(e) => self.open_message = Some(format!("{}: {e}", dir.join(&name).display())),
+                }
+            }
+            for name in std::mem::take(&mut self.data_layers.dropped) {
+                // Файла уже нет - удалять нечего.
+                let _ = std::fs::remove_file(dir.join(name));
+            }
+            storage.set_string(crate::datalayers::KEY, self.data_layers.index(false));
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            let text = self.data_layers.index(true);
+            if text.len() > crate::datalayers::INLINE_LIMIT {
+                self.open_message = Some(tr(self.lang, "My layers exceed 1 MB, the page keeps them until it is closed").to_string());
+            } else {
+                storage.set_string(crate::datalayers::KEY, text);
+            }
+        }
+        self.data_layers.save_dirty = false;
+    }
+
+    /// Действие меню слоя «Моих слоёв».
     fn data_act(&mut self, id: u64, act: &crate::datalayers::Act, now: f64) {
         use crate::datalayers::Act;
         match act {
+            Act::Export => {
+                if let Some(layer) = self.data_layers.get(id) {
+                    let name = format!("{}.geojson", data::layers::stem(&layer.title));
+                    match crate::export::save_bytes(&name, ("GeoJSON", "geojson"), data::layers::to_geojson(&layer.data).as_bytes()) {
+                        Ok(Some(path)) => self.open_message = Some(trf(self.lang, "Saved: {to}", &[("to", &path)])),
+                        Ok(None) => {}
+                        Err(e) => self.open_message = Some(e),
+                    }
+                }
+            }
             Act::Zoom => {
                 let points = self.data_layers.get(id).map(crate::datalayers::DataLayer::extent_points).unwrap_or_default();
                 let camera = &self.nav.camera;
@@ -3767,7 +3854,7 @@ impl LiteApp {
         }
     }
 
-    /// Векторные слои файла name в «Мои данные», камера - к их охвату.
+    /// Векторные слои файла name в «Мои слои», камера - к их охвату.
     /// Подземная модель и треки идут своими окнами. Возвращает позу.
     fn open_vector(&mut self, layers: Vec<data::layers::LayerData>, name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
         if crate::subsurface::is_subsurface(&layers) {
@@ -3968,6 +4055,12 @@ impl LiteApp {
         {
             self.mcp_cli = true;
         }
+        self
+    }
+
+    /// Папка данных пользователя для «Моих слоёв».
+    pub fn with_user_dir(mut self, dir: std::path::PathBuf) -> Self {
+        self.user_dir = Some(dir);
         self
     }
 
@@ -6607,12 +6700,14 @@ impl LiteApp {
             if crate::theme::section(ui, "layers", layers_title) {
                 let mut out = Vec::new();
                 let mut menu = self.layers_menu.take();
+                let mut folder = std::mem::take(&mut self.new_folder);
                 let state = self.layers_state();
                 let room = (ui.available_height() - status_height - 8.0).max(SECTION_MIN);
                 egui::ScrollArea::vertical().id_salt("layers").max_height(room).auto_shrink([false, true]).show(ui, |ui| {
-                    crate::layers::panel(ui, lang, &state, &mut menu, &mut out);
+                    crate::layers::panel(ui, lang, &state, &mut menu, &mut folder, &mut out);
                 });
                 self.layers_menu = menu;
+                self.new_folder = folder;
                 self.apply_layers(out, now);
             }
             self.layers_height = ui.cursor().top() - top;
@@ -8738,6 +8833,7 @@ impl eframe::App for LiteApp {
             storage.set_string(crate::settings::KEY, self.settings.to_text());
             self.settings_dirty = false;
         }
+        self.save_my_layers(storage);
         if !self.places_dirty {
             return;
         }
@@ -8765,6 +8861,7 @@ impl eframe::App for LiteApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
         let now = ctx.input(|i| i.time);
+        self.restore_my_layers();
         self.ask_temporary(&ctx);
         self.upload();
         if std::mem::take(&mut self.fonts_dirty) {

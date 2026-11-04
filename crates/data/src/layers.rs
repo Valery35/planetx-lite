@@ -172,6 +172,123 @@ fn parts(g: &Geometry, out: &mut RawParts) -> Shape {
     }
 }
 
+/// Кольцо или линия: точки (широта, долгота).
+pub type Ring = Vec<(f64, f64)>;
+/// Многоугольник: внешнее кольцо и дыры.
+pub type Polygon = (Ring, Vec<Ring>);
+
+/// Многоугольники объекта из его частей: внешнее кольцо и дыры. Кольцо
+/// внутри нечётного количества других - дыра того из объемлющих, что
+/// вложен глубже всех.
+pub fn polygons(parts: &[Ring]) -> Vec<Polygon> {
+    let rings: Vec<&Ring> = parts.iter().filter(|p| p.len() > 2).collect();
+    let within = |i: usize, j: usize| i != j && rings[i].first().is_some_and(|p| crate::site::inside(&[*p], rings[j]).first().copied().unwrap_or(false));
+    let depth: Vec<usize> = (0..rings.len()).map(|i| (0..rings.len()).filter(|&j| within(i, j)).count()).collect();
+    let mut out: Vec<(usize, Ring, Vec<Ring>)> = (0..rings.len()).filter(|&i| depth[i].is_multiple_of(2)).map(|i| (i, rings[i].clone(), Vec::new())).collect();
+    for i in (0..rings.len()).filter(|&i| !depth[i].is_multiple_of(2)) {
+        let owner = out.iter_mut().filter(|(o, _, _)| within(i, *o)).max_by_key(|(o, _, _)| depth[*o]);
+        if let Some((_, _, holes)) = owner {
+            holes.push(rings[i].clone());
+        }
+    }
+    out.into_iter().map(|(_, outer, holes)| (outer, holes)).collect()
+}
+
+/// Точки части в GeoJSON: [долгота, широта] или с отметкой Z, если
+/// у части есть отметки всех точек. closed - кольцо замыкается.
+fn coords(part: &[(f64, f64)], heights: Option<&Vec<f64>>, closed: bool) -> serde_json::Value {
+    let z = heights.filter(|h| h.len() == part.len());
+    let mut out: Vec<serde_json::Value> = part
+        .iter()
+        .enumerate()
+        .map(|(n, (lat, lon))| match z.and_then(|h| h.get(n)) {
+            Some(h) => serde_json::json!([lon, lat, h]),
+            None => serde_json::json!([lon, lat]),
+        })
+        .collect();
+    if closed && part.len() > 2 && part.first() != part.last()
+        && let Some(first) = out.first().cloned()
+    {
+        out.push(first);
+    }
+    serde_json::Value::Array(out)
+}
+
+/// Геометрия объекта в GeoJSON, None - объект без геометрии.
+fn geometry(item: &Item) -> Option<serde_json::Value> {
+    let height = |n: usize| item.heights.get(n);
+    let (kind, coordinates) = match item.shape {
+        Shape::None => return None,
+        Shape::Point => {
+            let points: Vec<serde_json::Value> = item.parts.iter().enumerate().filter(|(_, p)| !p.is_empty()).map(|(n, p)| coords(&p[..1], height(n), false)).collect();
+            match points.as_slice() {
+                [] => return None,
+                [one] => ("Point", one.get(0).cloned().unwrap_or_default()),
+                _ => ("MultiPoint", serde_json::json!(points.iter().filter_map(|p| p.get(0).cloned()).collect::<Vec<_>>())),
+            }
+        }
+        Shape::Line => {
+            let lines: Vec<serde_json::Value> = item.parts.iter().enumerate().filter(|(_, p)| p.len() > 1).map(|(n, p)| coords(p, height(n), false)).collect();
+            match lines.as_slice() {
+                [] => return None,
+                [one] => ("LineString", one.clone()),
+                _ => ("MultiLineString", serde_json::Value::Array(lines)),
+            }
+        }
+        Shape::Polygon => {
+            // Отметки Z у многоугольника не пишутся: кольца после разбора
+            // на внешние и дыры теряют номера частей.
+            let shapes: Vec<serde_json::Value> = polygons(&item.parts)
+                .iter()
+                .map(|(outer, holes)| serde_json::Value::Array(std::iter::once(outer).chain(holes).map(|r| coords(r, None, true)).collect()))
+                .collect();
+            match shapes.as_slice() {
+                [] => return None,
+                [one] => ("Polygon", one.clone()),
+                _ => ("MultiPolygon", serde_json::Value::Array(shapes)),
+            }
+        }
+    };
+    Some(serde_json::json!({ "type": kind, "coordinates": coordinates }))
+}
+
+/// Значение поля в GeoJSON: число у числового поля, пустое - null.
+fn value(text: &str, numeric: bool) -> serde_json::Value {
+    let t = text.trim();
+    if t.is_empty() {
+        return serde_json::Value::Null;
+    }
+    if numeric {
+        if let Ok(i) = t.parse::<i64>() {
+            return serde_json::json!(i);
+        }
+        if let Some(n) = t.parse::<f64>().ok().and_then(serde_json::Number::from_f64) {
+            return serde_json::Value::Number(n);
+        }
+    }
+    serde_json::Value::String(text.to_string())
+}
+
+/// Слой текстом GeoJSON в WGS84. Чтение [`read`] этого текста даёт те же
+/// объекты, поля и признаки числовых полей. Объект без геометрии пишется
+/// с геометрией null.
+pub fn to_geojson(layer: &LayerData) -> String {
+    let features: Vec<serde_json::Value> = layer
+        .items
+        .iter()
+        .map(|item| {
+            let properties: serde_json::Map<String, serde_json::Value> = layer
+                .fields
+                .iter()
+                .enumerate()
+                .map(|(n, f)| (f.clone(), value(item.values.get(n).map_or("", String::as_str), layer.numeric.get(n).copied().unwrap_or(false))))
+                .collect();
+            serde_json::json!({ "type": "Feature", "geometry": geometry(item), "properties": properties })
+        })
+        .collect();
+    serde_json::json!({ "type": "FeatureCollection", "name": layer.name, "features": features }).to_string()
+}
+
 /// Слои из байтов файла. Точки пересчитываются в WGS84, объект, чья
 /// точка не пересчиталась, пропускается. Слой без системы координат
 /// с точкой вне градусов - ошибка [`NO_CRS`].

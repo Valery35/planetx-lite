@@ -181,6 +181,10 @@ fn main() -> ExitCode {
             if let Some(dir) = demo_cache {
                 app = app.with_demo_cache(dir);
             }
+            // «Мои слои» - в папке данных пользователя, не в кэше.
+            if let Some(dir) = dirs::data_dir() {
+                app = app.with_user_dir(dir.join("PlanetX-Lite"));
+            }
             // Соседние файлы шейпфайла - из папки первого файла.
             if let Some(dir) = files.first().and_then(|p| p.parent()) {
                 app = app.with_open_dir(if dir.as_os_str().is_empty() { std::path::PathBuf::from(".") } else { dir.to_path_buf() });

@@ -2374,5 +2374,19 @@ Table	Таблица
 The file has no layers with geometry	В файле нет слоёв с геометрией
 The layer has no coordinate system, and its coordinates are not degrees	У слоя нет системы координат, а его координаты не в градусах
 Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Добавлено слоёв: {count}. Меню «⋯» строки в разделе «Слои» задаёт стиль, подписи и выдавливание.
-{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, слой {layer}, объектов: {count}. Флажок прячет слой, меню «⋯» задаёт его стиль, подписи и выдавливание.
+{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels, extrusion and folder.	{file}, слой {layer}, объектов: {count}. Флажок прячет слой, меню «⋯» задаёт его стиль, подписи, выдавливание и папку.
+My layers	Мои слои
+Layers of files and results of the analysis windows. They stay between launches, as «My places». A scene does not carry them.	Слои файлов и результаты окон анализа. Они сохраняются между запусками, как «Мои метки». Сцена их не несёт.
+Folder of layers: {count}. The check shows or hides all its layers, a click on the name folds the folder.	Папка, слоёв: {count}. Флажок показывает или прячет все её слои, щелчок по названию сворачивает папку.
+Remove the folder from the globe	Убрать папку с глобуса
+All layers of the folder leave «My layers».	Все слои папки уходят из «Моих слоёв».
+Folder: {folder}	Папка: {folder}
+Outside folders	Вне папок
+Move	Перенести
+The layer moves to a new folder with this name.	Слой переносится в новую папку с этим именем.
+Folders of one level gather layers: a check of the folder shows or hides them all.	Папки одного уровня собирают слои. Флажок папки показывает или прячет их все.
+Save as GeoJSON…	Сохранить как GeoJSON…
+The objects of the layer go to a GeoJSON file in WGS84 with all fields. QGIS and other GIS open it.	Объекты слоя записываются файлом GeoJSON в WGS84 со всеми полями. Его открывают QGIS и другие ГИС.
+My layers: the objects of these layers were not found: {names}	Мои слои: не найдены объекты слоёв {names}
+My layers exceed 1 MB, the page keeps them until it is closed	«Мои слои» больше 1 МБ, страница держит их до закрытия
 Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Откройте или перетащите в окно сцену .planetx, KML, KMZ, растр высот GeoTIFF или облако точек LAS, LAZ, COPC. Слои GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf и DXF ложатся в раздел «Слои».

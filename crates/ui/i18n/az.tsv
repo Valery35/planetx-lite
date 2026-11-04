@@ -2374,5 +2374,4 @@ Table	Cədvəl
 The file has no layers with geometry	Faylda həndəsəli lay yoxdur
 The layer has no coordinate system, and its coordinates are not degrees	Layın koordinat sistemi yoxdur və koordinatları dərəcə deyil
 Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Əlavə edilən lay: {count}. Laylar bölməsində sətrin «⋯» menyusu üslubu, yazıları və sıxışdırmanı təyin edir.
-{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels and extrusion.	{file}, lay {layer}, obyekt: {count}. Bayraq layı gizlədir, «⋯» menyusu onun üslubunu, yazılarını və sıxışdırmasını təyin edir.
 Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Pəncərəyə .planetx səhnəsi, KML, KMZ, GeoTIFF hündürlük rastri və ya LAS, LAZ, COPC nöqtə buludu açın ya da sürükləyin. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf və DXF layları Laylar bölməsinə düşür.
