@@ -1,0 +1,42 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Форма пожелания, на английском и русском.
+
+name: Wish / Пожелание
+description: An idea, a new feature or data / Идея, новая возможность или данные
+labels: ["wish"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the idea. Write in English or in Russian.
+        Спасибо за идею. Пишите по-русски или по-английски.
+  - type: textarea
+    id: wish
+    attributes:
+      label: What you would like / Что хотелось бы
+      description: What the program should do / Что программа должна уметь
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What for / Зачем
+      description: Your task - this helps to make it right / Ваша задача - так проще сделать как нужно
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example / Пример
+      description: A file, a link, a picture or a program where it already works / Файл, ссылка, картинка или программа, где это уже есть
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where it is needed / Где это нужно
+      multiple: true
+      options:
+        - PlanetX Lite
+        - PlanetX plugin for QGIS / Модуль PlanetX для QGIS

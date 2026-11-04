@@ -1,0 +1,57 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Форма сообщения об ошибке, на английском и русском.
+
+name: Bug / Ошибка
+description: Something works wrong / Что-то работает неверно
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the report. Write in English or in Russian.
+        Спасибо за сообщение. Пишите по-русски или по-английски.
+  - type: input
+    id: version
+    attributes:
+      label: Version / Версия
+      description: The «About» window or the file name, for example 0.23.0 / Окно «О программе» или имя файла, например 0.23.0
+      placeholder: "0.23.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Where / Где
+      options:
+        - Windows
+        - Linux
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Web page / Страница в браузере
+        - Phone / Телефон
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened / Что случилось
+      description: What you did, what you expected and what you saw / Что вы делали, чего ждали и что увидели
+      placeholder: |
+        1. Opened ... / Открыл ...
+        2. Pressed ... / Нажал ...
+        3. Expected ..., but ... / Ждал ..., а ...
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: Screenshot, file or place / Снимок экрана, файл или место
+      description: Drop a screenshot or a small file here, or give the coordinates / Перетащите сюда снимок экрана или небольшой файл, или укажите координаты
+  - type: input
+    id: hardware
+    attributes:
+      label: Graphics card / Видеокарта
+      description: If the globe is not drawn or is slow / Если глобус не рисуется или тормозит

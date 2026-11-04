@@ -1,0 +1,14 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Выбор формы: ошибка или пожелание, пустой вопрос закрыт.
+
+blank_issues_enabled: false
+contact_links:
+  - name: Telegram channel / Канал Telegram
+    url: https://t.me/qgis_isolines
+    about: News and discussion / Новости и обсуждение
+  - name: Manual / Руководство
+    url: https://github.com/Valery35/planetx-lite/blob/main/doc/manual/MANUAL.en.md
+    about: How the program works / Как устроена программа
