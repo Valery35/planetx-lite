@@ -33,8 +33,8 @@
 | LinkedIn | автор | Пост на английском с хештегами, без продвижения |
 | Facebook | автор | Пост на русском на странице автора |
 | X, @Valery35 | автор | До 280 знаков, ссылка считается за 23 |
-| Mastodon, en.osm.town | Valery35 | Заявка ждала одобрения 4 ноября 2026 года |
-| linux.org.ru | - | Раздел «Новости», вход не готов 4 ноября 2026 года |
+| Mastodon, en.osm.town | Vaery35 | Пост на английском, с 1.40.0 |
+| linux.org.ru | автор | Раздел «Новости», новость проходит модератора |
 | Reddit r/gis, r/QGIS, r/rust | автор | Только автор, сайт закрыт для браузеров помощника |
 | AlternativeTo | автор | Карточка подана 4 ноября 2026 года |
 | winget | Valery35 | Пакет `InformPP.PlanetXLite`, заявка в microsoft/winget-pkgs |
@@ -64,3 +64,17 @@
 - winget: https://github.com/microsoft/winget-pkgs/pull/470778
 - Telegram, LinkedIn, Facebook, X - посты 4 ноября 2026 года
 - Сайт informpp.ru, Dropbox, AlternativeTo - обновлены
+
+### PlanetX для QGIS 1.40.0, 4-5 ноября 2026 года
+
+- GitHub: https://github.com/Valery35/planetx/releases/tag/v1.40.0
+- Каталог QGIS: https://plugins.qgis.org/plugins/planetx/version/1.40.0/
+- ВК, статья: https://vk.ru/@qgismodules-planetx-140-analiz-uchastka-v-qgis-chto-uzhe-est-i-chto
+- ВК, пост с опросом: https://vk.ru/wall-241229428_45
+- Форум OSM: ответы 2 в темах 149679 и 149680
+- OSGeo Discourse: ответ 2 в теме 155878
+- Mastodon: https://en.osm.town/@Vaery35/117559681201596064
+- linux.org.ru: https://www.linux.org.ru/news/opensource/18414410 (ждёт модератора)
+- Telegram, LinkedIn, Facebook, X - посты 4 ноября 2026 года
+- Сайт informpp.ru (главная, «Что нового»), Dropbox - обновлены
+- Reddit r/QGIS, r/gis - тексты в planetx/site/posts_1.40_social.md, публикует автор
