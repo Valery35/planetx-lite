@@ -265,18 +265,13 @@ impl GlobeMenu {
                                         // заголовков CORS (AlphaEarth проверено 30 октября
                                         // 2026 года), у страницы этих пунктов нет. Классы
                                         // по подложке глобуса и открытому растру у неё есть.
-                                        // «Распознавание» первым в группе классов,
-                                        // как в модуле 1.38.
-                                        item(ui, "Recognition…", "Classes of the area by own points on the globe. The window picks and loads Sentinel-2 images of the area itself on «Build».", Choice::Recognize);
+                                        // Одно окно «Распознавание» вместо «Классификации»,
+                                        // «Выделения объектов», «Трассировки» и «Похожих
+                                        // областей», модуль 1.40: они - задачи окна.
+                                        item(ui, "Recognition…", "Classes of the area in one window: own samples, image colours, similar to a sample, forests, fields, water, overgrown fields. The source - Sentinel-2 images of the area, the globe basemap, an opened raster or AlphaEarth.", Choice::Recognize);
                                         if !cfg!(target_arch = "wasm32") {
                                             item(ui, "Changes of the terrain…", "Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.", Choice::Changes);
-                                            item(ui, "Classification…", "Classes of the area by own control points on the globe - by an opened raster, the globe basemap or AlphaEarth embeddings.", Choice::Classes);
-                                        } else {
-                                            item(ui, "Classification…", "Classes of the area by control points on the globe - by the globe basemap or the bands of an opened raster.", Choice::Classes);
                                         }
-                                        item(ui, "Object extraction…", "Typical tasks over tracing - forests and clearcuts, fields, water, overgrown fields. The colours are named by the reflectance of a Sentinel-2 image.", Choice::Objects);
-                                        item(ui, "Tracing…", "The image of the area is split into colours, the areas are outlined with smooth polygons.", Choice::Trace);
-                                        item(ui, "Similar areas…", "Outline a sample, the program finds objects of the area similar to it in colour and texture.", Choice::Similar);
                                         item(ui, "Minerals by spectrum…", "Spectrum of a pixel of a multi-band raster and the nearest references of the USGS library, classes of the area by the angle between spectra.", Choice::Spectral);
                                         if !cfg!(target_arch = "wasm32") {
                                             item(ui, "EMIT minerals…", "NASA mineral maps from images of the EMIT spectrometer, pixel 60 m, arid regions since 2022. Files by an Earthdata key.", Choice::Emit);

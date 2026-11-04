@@ -391,9 +391,9 @@ pub struct LiteApp {
     object_tasks: Option<crate::aefclass::ClassCalc>,
     /// Окно «Распознавание».
     recognize: Option<crate::aefclass::ClassCalc>,
-    /// Окно, которое ждёт названий классов от помощника: true - «Выделение
-    /// объектов», false - «Трассировка».
-    names_for: Option<bool>,
+    /// Окно, которое ждёт названий классов от помощника: 0 - «Трассировка»,
+    /// 1 - «Выделение объектов», 2 - «Распознавание».
+    names_for: Option<u8>,
     /// Окно «Минералы по спектру».
     spectral: Option<crate::spectral::Spectral>,
     /// Окно «Минералы EMIT».
@@ -5740,6 +5740,14 @@ impl LiteApp {
                     self.settings_dirty = true;
                 }
             }
+            // Другая задача или источник «Распознавания»: окно
+            // пересобирается с тем же участком, модуль 1.40.
+            if let Some((goal, source)) = self.recognize.as_mut().and_then(|c| c.wants.take())
+                && let Some(old) = self.recognize.take()
+            {
+                self.recognize = Some(old.rebuilt(lang, goal, source));
+                changed = true;
+            }
             // Снимки окна «Выделение объектов» - растры программы, источник
             // и других окон анализа.
             for calc in [&mut self.object_tasks, &mut self.recognize].into_iter().flatten() {
@@ -5775,15 +5783,19 @@ impl LiteApp {
                 }
             }
             // Названия классов от помощника одним запросом.
-            for objects in [false, true] {
-                let calc = if objects { &mut self.object_tasks } else { &mut self.tracing };
+            for which in 0..3u8 {
+                let calc = match which {
+                    0 => &mut self.tracing,
+                    1 => &mut self.object_tasks,
+                    _ => &mut self.recognize,
+                };
                 if let Some(calc) = calc
                     && let Some((system, text)) = calc.take_ask()
                 {
                     let loaders = &self.loaders;
                     let request = |limit: u64| (loaders.request)(limit);
                     if self.ai.complete(lang, &system, &text, &self.settings.ai, &request) {
-                        self.names_for = Some(objects);
+                        self.names_for = Some(which);
                     } else {
                         calc.ask_refused(lang);
                     }
@@ -5791,8 +5803,9 @@ impl LiteApp {
             }
             if let Some((answer, error)) = self.ai.completed.take() {
                 let calc = match self.names_for.take() {
-                    Some(true) => self.object_tasks.as_mut(),
-                    Some(false) => self.tracing.as_mut(),
+                    Some(0) => self.tracing.as_mut(),
+                    Some(1) => self.object_tasks.as_mut(),
+                    Some(_) => self.recognize.as_mut(),
                     None => None,
                 };
                 if let Some(calc) = calc {
@@ -5856,7 +5869,10 @@ impl LiteApp {
         saved.extend(self.similar.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.tracing.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.object_tasks.as_mut().and_then(|c| c.saved.take()));
-        saved.extend(self.recognize.as_mut().and_then(|c| c.saved.take()));
+        if let Some(mut s) = self.recognize.as_mut().and_then(|c| c.saved.take()) {
+            self.vectors_to_layers(&mut s);
+            saved.push(s);
+        }
         saved.extend(self.spectral.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.emit.as_mut().and_then(|c| c.saved.take()));
         for s in saved {
@@ -5928,6 +5944,29 @@ impl LiteApp {
     /// модуля: файлы GeoTIFF слоёв - в программе в папку results папки
     /// данных, на странице скачиванием, папка расчёта - вверху папки
     /// «Анализ участка» «Моих меток».
+    /// Многоугольники и линии расчёта - слоями «Моих слоёв» в папку
+    /// «Название ЧЧ:ММ:СС UTC», как слои проекта модуля 1.40. Папки меток
+    /// из многоугольников и линий уходят из saved, точки и картинки
+    /// остаются папкой «Моих меток».
+    fn vectors_to_layers(&mut self, saved: &mut crate::analysis::Saved) {
+        let folder = format!("{} {} UTC", saved.title, crate::analysis::clock(crate::pointcalc::clock_now()));
+        let mut layers = Vec::new();
+        saved.extra.retain(|item| match item {
+            scene::kml::Item::Folder(f) => match crate::datalayers::folder_layer(f) {
+                Some(layer) => {
+                    layers.push(layer);
+                    false
+                }
+                None => true,
+            },
+            _ => true,
+        });
+        for layer in layers.into_iter().rev() {
+            let title = layer.name.clone();
+            self.data_layers.add_to(vec![layer], &title, &folder);
+        }
+    }
+
     fn save_analysis(&mut self, saved: &crate::analysis::Saved) {
         let lang = self.lang;
         let unix = crate::pointcalc::clock_now();

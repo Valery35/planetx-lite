@@ -277,9 +277,23 @@ the item again removes them.
 ## Recognition
 
 The «Recognition…» item of the «Area analysis» submenu of the globe menu
-opens the «Recognition» window for the clicked point. It is the simplest
-way to area classes. You set the area, add classes and place their
-samples, and the window finds the images itself.
+opens the «Recognition» window for the clicked point. Since version 0.23
+it is one window instead of five, as in the PlanetX plugin 1.40. The
+former «Classification», «Object extraction», «Tracing» and «Similar
+areas» became tasks of the «Task» list of this window, they have no menu
+items of their own.
+
+| Task | What it does |
+|---|---|
+| Own samples | Classes by points and outlines. The source - Sentinel-2 images of the area, the globe basemap, an opened raster or AlphaEarth |
+| Image colours | The image is split into colours, as in the former «Tracing» |
+| Similar to the sample | A sample is outlined, the window finds similar objects, as in the former «Similar areas» |
+| Forests and clearcuts, Fields, Water | Classes by the rules of the task from the summer and snow images |
+| Overgrown fields | A series of spring and autumn images of 4 years, as in the former «Object extraction» |
+
+A change of the task rebuilds the window, the area stays. Below is the
+way of own samples by the images of the area: you set the area, add
+classes and place their samples, and the window finds the images itself.
 
 Step by step:
 1. Area - a square at the point, «Draw» or «From places», up to 20 km.
@@ -324,17 +338,24 @@ fields» is not in the list - it needs a series of images of 4 years.
 Picking and loading two images of a 3 km area takes a few minutes, most
 of it is the cloud cover over the area of catalogue scenes.
 
-«OK» puts a computation folder into «My places» - a picture of the
-classes with a GeoTIFF file, the control points and the «Class samples»
-folder with the sample outlines. «Cancel» removes the classes from the
-globe. Fine settings - the pixel, splitting into objects, another
-source - are in the «Classification» window.
+After «Build» each class gets a «Visible» check. Without it the class is
+hidden from the globe and the terrain is seen under it, the result keeps
+the class. The «Show on the globe» check removes the whole preview of
+the window, the computation stays.
+
+«OK» puts the polygons and lines of the computation into «My layers», in
+the folder «Recognition - task HH:MM:SS UTC». The class polygons are
+drawn in the colours of their classes. A computation folder goes to «My
+places» - the area, a picture of the classes with a GeoTIFF file and the
+control points. «Cancel» removes the classes from the globe. Fine
+settings - the pixel, splitting into objects - are there for own samples
+with a source other than the images of the area.
 
 ## Tracing and object extraction
 
-The «Tracing…» and «Object extraction…» windows are in the «Area
-analysis» submenu of the globe menu. Their area is shared with the other
-analysis windows. It is a square at the clicked point, an own outline or
+Tracing and object extraction are the «Image colours» and «Overgrown
+fields» tasks of the «Recognition» window, below are their details as in
+the former windows. Their area is shared with the other analysis windows. It is a square at the clicked point, an own outline or
 a polygon of My Places.
 
 ### Tracing

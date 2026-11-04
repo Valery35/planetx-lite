@@ -145,7 +145,62 @@ pub fn nearest(mut items: Vec<(String, f64, f64)>, lat: f64, lon: f64, count: us
     items
 }
 
+/// Слой из папки меток расчёта: многоугольники и линии на любой глубине,
+/// поля - name и поля меток по порядку первого появления. Цвет метки -
+/// поле color «#rrggbb», если его нет: так слой рисует классы своими
+/// цветами. None - в папке есть другие метки или меток нет.
+pub fn folder_layer(folder: &scene::kml::Folder) -> Option<LayerData> {
+    let places = folder.places();
+    if places.is_empty() || places.iter().any(|p| !matches!(p.kind, Kind::Polygon | Kind::Line)) {
+        return None;
+    }
+    let mut fields = vec!["name".to_string()];
+    for p in &places {
+        for (key, _) in p.data.iter().flatten() {
+            if !fields.contains(key) {
+                fields.push(key.clone());
+            }
+        }
+    }
+    let colored = !fields.iter().any(|f| f.eq_ignore_ascii_case("color"));
+    if colored {
+        fields.push("color".to_string());
+    }
+    let items: Vec<data::layers::Item> = places
+        .iter()
+        .map(|p| {
+            let value = |key: &str| p.data.iter().flatten().find(|(k, _)| k == key).map(|(_, v)| v.clone());
+            let mut values: Vec<String> = fields.iter().map(|f| if f == "name" { value("name").unwrap_or_else(|| p.name.clone()) } else { value(f).unwrap_or_default() }).collect();
+            if colored && let Some(last) = values.last_mut() {
+                let [r, g, b, _] = p.color;
+                *last = format!("#{r:02x}{g:02x}{b:02x}");
+            }
+            let (shape, parts) = match p.kind {
+                Kind::Polygon => (Geom::Polygon, std::iter::once(p.points.clone()).chain(p.holes.iter().flatten().cloned()).collect()),
+                _ => (Geom::Line, vec![p.points.clone()]),
+            };
+            data::layers::Item { shape, parts, heights: Vec::new(), values }
+        })
+        .collect();
+    let numeric = (0..fields.len())
+        .map(|n| {
+            let mut filled = items.iter().map(|i| i.values[n].trim()).filter(|v| !v.is_empty()).peekable();
+            filled.peek().is_some() && filled.all(|v| v.parse::<f64>().is_ok())
+        })
+        .collect();
+    Some(LayerData { name: folder.name.clone(), epsg: Some(4326), fields, numeric, items })
+}
+
 impl DataLayer {
+    /// Цвет объекта n: поле color «#rrggbb» слоя, иначе цвет стиля.
+    fn item_color(&self, n: usize) -> [u8; 3] {
+        let field = self.data.fields.iter().position(|f| f.eq_ignore_ascii_case("color"));
+        field
+            .and_then(|f| self.data.items.get(n)?.values.get(f))
+            .and_then(|v| crate::gpkg::color_of(v))
+            .map_or(self.style.color, |[r, g, b, _]| [r, g, b])
+    }
+
     /// Высота объекта n по полю выдавливания, None - не выдавлен.
     fn raised(&self, n: usize) -> Option<f64> {
         let (field, factor) = self.extrude?;
@@ -158,12 +213,13 @@ impl DataLayer {
 
     /// Линии и многоугольники для картинки наложения, кроме выдавленных.
     pub fn lines(&self) -> Vec<Line> {
-        let (color, fill) = (self.style.line_rgba(), self.style.fill_rgba());
         let mut out = Vec::new();
         for (n, item) in self.data.items.iter().enumerate() {
             if self.raised(n).is_some() {
                 continue;
             }
+            let style = Style { color: self.item_color(n), ..self.style };
+            let (color, fill) = (style.line_rgba(), style.fill_rgba());
             match item.shape {
                 Geom::Line => out.extend(item.parts.iter().filter(|p| p.len() > 1).map(|p| Line::new(p.clone(), color, self.style.width))),
                 Geom::Polygon => {
@@ -917,6 +973,38 @@ mod tests {
         assert_eq!(layers.apply(0, &Act::FolderRemove("Результаты".into())).len(), 2);
         assert_eq!(layers.list.len(), 1);
         assert_eq!(layers.dropped.len(), 2);
+    }
+
+    #[test]
+    fn result_folder_becomes_a_coloured_layer() {
+        use scene::kml::{Folder, Item as KmlItem, Place};
+        let mut forest = Place::new("Лес 1", Kind::Polygon, square(58.0, 56.0, 0.1));
+        forest.color = [40, 120, 40, 255];
+        forest.holes = Some(vec![square(58.02, 56.02, 0.01)]);
+        forest.data = Some(vec![("cls".into(), "1".into()), ("name".into(), "Лес".into()), ("area_ha".into(), "12.5".into())]);
+        let mut water = Place::new("Вода 2", Kind::Polygon, square(58.2, 56.0, 0.1));
+        water.color = [30, 60, 220, 255];
+        water.data = Some(vec![("cls".into(), "2".into()), ("name".into(), "Вода".into()), ("area_ha".into(), "3".into())]);
+        let road = Place::new("Дорога", Kind::Line, vec![(58.0, 56.0), (58.1, 56.1)]);
+        let folder = Folder::with("Классы", vec![KmlItem::Folder(Folder::with("1 - Лес", vec![KmlItem::Place(forest), KmlItem::Place(water)])), KmlItem::Place(road)]);
+        let layer = folder_layer(&folder).unwrap();
+        assert_eq!(layer.name, "Классы");
+        assert_eq!(layer.fields, ["name", "cls", "area_ha", "color"]);
+        assert_eq!(layer.numeric, [false, true, true, false]);
+        assert_eq!(layer.items[0].parts.len(), 2);
+        assert_eq!(layer.items[0].values, ["Лес", "1", "12.5", "#287828"]);
+        // Метка без полей - название из имени метки.
+        assert_eq!(layer.items[2].values[0], "Дорога");
+        assert_eq!(layer.items[2].shape, Geom::Line);
+        // Слой рисует объекты цветом из поля color.
+        let mut layers = DataLayers::default();
+        layers.add_to(vec![layer], "Классы", "Распознавание");
+        let set = layers.line_set().unwrap();
+        assert_eq!(&set[0].color[..3], &[40, 120, 40]);
+        assert_eq!(&set[1].color[..3], &[30, 60, 220]);
+        // Папка с точкой - не слой.
+        let point = Place::new("Точка", Kind::Point, vec![(58.0, 56.0)]);
+        assert!(folder_layer(&Folder::with("Точки", vec![KmlItem::Place(point)])).is_none());
     }
 
     #[test]

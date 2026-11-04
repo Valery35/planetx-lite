@@ -193,6 +193,9 @@ pub struct Task {
     pub line_width: f64,
     /// Тонкие настройки на виду.
     pub more: bool,
+    /// Задачу выбирает список «Задача» окна «Распознавание», свой список
+    /// задачи не показывается.
+    pub fixed: bool,
     finder: SceneFinder,
     target: Target,
     scenes: Vec<Found>,
@@ -221,6 +224,7 @@ impl Default for Task {
             lines: false,
             line_width: linear::WIDTH,
             more: false,
+            fixed: false,
             finder: SceneFinder::default(),
             target: Target::Source,
             scenes: Vec::new(),
@@ -300,24 +304,26 @@ impl Task {
     /// настройки трассировки.
     pub fn rows(&mut self, ui: &mut egui::Ui, lang: Lang, rasters: &[Raster], source: &mut Option<String>) -> Option<Scenario> {
         let mut changed = None;
-        ui.label(tr(lang, "Task"));
-        let (title, _) = scenario_text(lang, self.scenario);
-        egui::ComboBox::from_id_salt("planetx-objects-task")
-            .selected_text(title)
-            .show_ui(ui, |ui| {
-                for s in ot::SCENARIOS {
-                    let (name, tip) = scenario_text(lang, s);
-                    if ui.selectable_value(&mut self.scenario, s, name).on_hover_text(tip).clicked() {
-                        changed = Some(s);
+        if !self.fixed {
+            ui.label(tr(lang, "Task"));
+            let (title, _) = scenario_text(lang, self.scenario);
+            egui::ComboBox::from_id_salt("planetx-objects-task")
+                .selected_text(title)
+                .show_ui(ui, |ui| {
+                    for s in ot::SCENARIOS {
+                        let (name, tip) = scenario_text(lang, s);
+                        if ui.selectable_value(&mut self.scenario, s, name).on_hover_text(tip).clicked() {
+                            changed = Some(s);
+                        }
                     }
-                }
-            })
-            .response
-            .on_hover_text(tr(lang, "A typical task sets the number of colours and the smallest area and after «Build» names the classes by the reflectance of the image."));
-        ui.end_row();
-        ui.label("");
-        ui.add(egui::Label::new(egui::RichText::new(scenario_text(lang, self.scenario).1).small()).wrap());
-        ui.end_row();
+                })
+                .response
+                .on_hover_text(tr(lang, "A typical task sets the number of colours and the smallest area and after «Build» names the classes by the reflectance of the image."));
+            ui.end_row();
+            ui.label("");
+            ui.add(egui::Label::new(egui::RichText::new(scenario_text(lang, self.scenario).1).small()).wrap());
+            ui.end_row();
+        }
         // Источник - только подходящие снимки.
         let suitable = Self::suitable(rasters, true);
         if source.as_deref().is_none_or(|s| s == BASEMAP || !suitable.iter().any(|n| n == s)) {

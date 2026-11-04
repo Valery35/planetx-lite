@@ -516,6 +516,24 @@ pub struct ClassCalc {
     settings: Vec<String>,
     /// Окно «Распознавание», None - другие режимы.
     recognize: Option<Box<Recognize>>,
+    /// Окно - объединённое «Распознавание» модуля 1.40: любой режим
+    /// показывает список «Задача», название окна - «Распознавание».
+    pub unified: bool,
+    /// Выбрана другая задача или источник своих образцов: окно глобуса
+    /// пересобирает окно ([`ClassCalc::rebuilt`]). Источник: None - по
+    /// задаче, Some(None) - AlphaEarth, Some(Some(имя)) - растр, подложка
+    /// или [`recognize::SHOTS`].
+    pub wants: Option<(recognize::Goal, Option<Option<String>>)>,
+    /// Спрятанные классы итога по номеру класса слоя, флажок «Видно»
+    /// модуля 1.40: под спрятанным классом видна местность.
+    hidden: Vec<bool>,
+    /// «Показывать на глобусе»: без флажка предпросмотр снят, расчёт
+    /// остаётся.
+    on_globe: bool,
+    /// Слой на глобусе с учётом двух флажков и признак, по которому он
+    /// собран: адрес итога, спрятанные классы, флажок.
+    display: Option<Arc<Layer>>,
+    display_key: (usize, Vec<bool>, bool),
 }
 
 impl ClassCalc {
@@ -553,12 +571,97 @@ impl ClassCalc {
         calc.site = SiteEdit::new(lat, lon, SIDE, recognize::SIDE_MOST);
         calc.source = None;
         calc.recognize = Some(Box::default());
+        calc.unified = true;
         calc
     }
 
     /// Окно «Распознавание».
     fn recognize_mode(&self) -> bool {
         self.recognize.is_some()
+    }
+
+    /// Слой на глобусе по флажкам «Видно» и «Показывать на глобусе»:
+    /// собирается заново, только если итог или флажки изменились. true -
+    /// слой на глобусе сменился.
+    fn sync_display(&mut self) -> bool {
+        let key = (self.layer.as_ref().map_or(0, |l| Arc::as_ptr(l) as usize), self.hidden.clone(), self.on_globe);
+        if key == self.display_key {
+            return false;
+        }
+        self.display = match &self.layer {
+            Some(layer) if self.on_globe && self.hidden.iter().any(|h| *h) => {
+                let hide = |c: i16| usize::try_from(c).ok().is_some_and(|k| self.hidden.get(k).copied().unwrap_or(false));
+                let classes = layer.classes.iter().map(|c| if hide(*c) { -1 } else { *c }).collect();
+                Some(Arc::new(Layer { index: layer.index.clone(), step: layer.step, x0: layer.x0, y0: layer.y0, rows: layer.rows, cols: layer.cols, classes, colors: layer.colors.clone(), names: layer.names.clone(), opacity: layer.opacity, objects: layer.objects.clone() }))
+            }
+            Some(layer) if self.on_globe => Some(layer.clone()),
+            _ => None,
+        };
+        self.display_key = key;
+        true
+    }
+
+    /// Задача объединённого окна по его режиму.
+    pub fn goal(&self) -> recognize::Goal {
+        use recognize::Goal;
+        if self.find.is_some() {
+            return Goal::Similar;
+        }
+        if let Some(trace) = &self.trace {
+            return trace.task.as_ref().map_or(Goal::Colors, |t| Goal::Rules(t.scenario));
+        }
+        self.task().map_or(Goal::Own, Goal::Rules)
+    }
+
+    /// Окно с задачей goal и источником source ([`ClassCalc::wants`]):
+    /// режим окна по задаче, участок, растры и подложка - прежние, итог
+    /// прежнего режима уходит с глобуса. Свои образцы со снимками участка,
+    /// леса, поля и вода - «Распознавание», свои образцы с другим
+    /// источником - «Классификация», цвета - трассировка, похожие - поиск
+    /// по образцу, заросшие поля - задача «Выделения объектов».
+    pub fn rebuilt(self, lang: Lang, goal: recognize::Goal, source: Option<Option<String>>) -> ClassCalc {
+        use recognize::Goal;
+        let ring = &self.site.site.ring;
+        let n = ring.len().max(1) as f64;
+        let (lat, lon) = (ring.iter().map(|p| p.0).sum::<f64>() / n, ring.iter().map(|p| p.1).sum::<f64>() / n);
+        let (place, rasters) = (self.place.clone(), self.rasters.clone());
+        let mut calc = match goal {
+            Goal::Own => match source {
+                Some(src) if src.as_deref() != Some(recognize::SHOTS) => {
+                    let mut c = Self::new(lat, lon, place, rasters, lang);
+                    c.source = src;
+                    c
+                }
+                _ => Self::recognition(lat, lon, place, rasters, lang),
+            },
+            Goal::Colors => Self::tracing(lat, lon, place, rasters, lang),
+            Goal::Similar => Self::similar(lat, lon, place, rasters, lang),
+            Goal::Rules(data::objecttasks::Scenario::Fallow) => {
+                let mut c = Self::objects(lat, lon, place, rasters, lang);
+                if let Some(trace) = &mut c.trace {
+                    let spec = data::objecttasks::Scenario::Fallow.spec();
+                    trace.params = tracing::Params { colors: spec.colors, smooth: spec.smooth, least: spec.least, ..tracing::Params::default() };
+                    if let Some(task) = &mut trace.task {
+                        task.scenario = data::objecttasks::Scenario::Fallow;
+                        task.fixed = true;
+                    }
+                }
+                c
+            }
+            Goal::Rules(s) => {
+                let mut c = Self::recognition(lat, lon, place, rasters, lang);
+                c.set_task(lang, Some(s));
+                c
+            }
+        };
+        calc.site = self.site;
+        calc.unified = true;
+        calc.loaded = self.loaded;
+        calc.accepted = self.accepted;
+        calc.basemap = self.basemap;
+        // Итог прежнего режима снимается с глобуса.
+        calc.changed = true;
+        calc
     }
 
     /// Образцов хватает: не меньше двух классов с образцами, у каждого
@@ -876,6 +979,12 @@ impl ClassCalc {
             wants_refine: false,
             settings: Vec::new(),
             recognize: None,
+            unified: false,
+            wants: None,
+            hidden: Vec::new(),
+            on_globe: true,
+            display: None,
+            display_key: (0, Vec::new(), true),
         };
         calc.add_class(lang);
         calc.add_class(lang);
@@ -2472,8 +2581,12 @@ impl ClassCalc {
         let mut ask = false;
         let mut refine = false;
         let mut new_task = None;
-        let mut chosen_task = None;
-        let title = if tracing_mode {
+        let unified = self.unified;
+        let goal = self.goal();
+        let mut wants = None;
+        let title = if unified {
+            tr(lang, "Recognition")
+        } else if tracing_mode {
             self.tool_title(lang)
         } else {
             tr(
@@ -2487,7 +2600,7 @@ impl ClassCalc {
                 },
             )
         };
-        let id = if recognize_mode {
+        let id = if unified || recognize_mode {
             "planetx-recognize"
         } else if task_mode {
             "planetx-objects"
@@ -2500,6 +2613,28 @@ impl ClassCalc {
         };
         egui::Window::new(title).id(egui::Id::unique(id)).open(&mut open).collapsible(false).resizable(false).min_width(400.0).show(ctx, |ui| {
             egui::Grid::new("planetx-aef-class-form").num_columns(2).spacing([10.0, 6.0]).show(ui, |ui| {
+                // Список «Задача» объединённого окна, модуль 1.40: смена
+                // задачи пересобирает окно, участок остаётся.
+                if unified {
+                    ui.label(tr(lang, "Task"));
+                    egui::ComboBox::from_id_salt("planetx-recognize-goal")
+                        .selected_text(goal.text(lang).0)
+                        .width(220.0)
+                        .show_ui(ui, |ui| {
+                            for g in recognize::GOALS {
+                                let (name, tip) = g.text(lang);
+                                if ui.selectable_label(g == goal, name).on_hover_text(tip).clicked() && g != goal {
+                                    wants = Some((g, None));
+                                }
+                            }
+                        })
+                        .response
+                        .on_hover_text(tr(lang, "What the window does with the area. Own samples - classes by points and outlines, image colours - tracing, similar to the sample - a search by an outline, forests, fields, water and overgrown fields - classes by the rules of the task."));
+                    ui.end_row();
+                    ui.label("");
+                    ui.add(egui::Label::new(egui::RichText::new(goal.text(lang).1).small()).wrap());
+                    ui.end_row();
+                }
                 if recognize_mode {
                     // Снимки, участок и образцы, `RecognizeDialog` модуля
                     // 1.38: источник, год, пиксель, объекты и непрозрачность
@@ -2512,25 +2647,13 @@ impl ClassCalc {
                     ui.label(tr(lang, "Area|site"));
                     self.site.row(ui, lang);
                     ui.end_row();
-                    // Список «Задача», модуль 1.39.
-                    ui.label(tr(lang, "Task"));
-                    let current = self.task();
-                    let mut chosen = current;
-                    let name = |s: Option<data::objecttasks::Scenario>| s.map_or(tr(lang, "Own samples"), |s| crate::objecttasks::scenario_text(lang, s).0);
-                    egui::ComboBox::from_id_salt("planetx-recognize-task")
-                        .selected_text(name(current))
-                        .show_ui(ui, |ui| {
-                            ui.selectable_value(&mut chosen, None, name(None)).on_hover_text(tr(lang, "Classes and samples are set by hand, at least two classes are needed."));
-                            for s in recognize::TASKS {
-                                ui.selectable_value(&mut chosen, Some(s), name(Some(s))).on_hover_text(crate::objecttasks::scenario_text(lang, s).1);
-                            }
-                        })
-                        .response
-                        .on_hover_text(tr(lang, "The task sets up the classes itself and computes them by rules from the summer and snow images, no samples are needed. A sample point or area corrects its class, «Build» computes again with it."));
-                    if chosen != current {
-                        chosen_task = Some(chosen);
+                    // Источник своих образцов, модуль 1.40: снимки участка,
+                    // подложка, растр или AlphaEarth. Не снимки - окно
+                    // «Классификации» с тем же участком.
+                    if self.task().is_none() {
+                        source_row(ui, lang, &self.rasters, Some(recognize::SHOTS), &mut wants);
+                        ui.end_row();
                     }
-                    ui.end_row();
                     ui.label(tr(lang, "Samples"));
                     if let Some(rec) = &mut self.recognize {
                         ui.horizontal(|ui| {
@@ -2565,6 +2688,11 @@ impl ClassCalc {
                 egui::ComboBox::from_id_salt("planetx-aef-class-source")
                     .selected_text(shown)
                     .show_ui(ui, |ui| {
+                        // Свои образцы объединённого окна - и по снимкам
+                        // участка, которые окно подбирает само.
+                        if unified && !searching && !tracing_mode && ui.selectable_label(false, tr(lang, "Sentinel-2 images of the area")).clicked() {
+                            wants = Some((recognize::Goal::Own, Some(Some(recognize::SHOTS.to_string()))));
+                        }
                         // У эмбеддингов AlphaEarth цвета нет, трассировке
                         // они не годятся, `TraceSource` модуля.
                         if !cfg!(target_arch = "wasm32") && !tracing_mode {
@@ -2703,8 +2831,16 @@ impl ClassCalc {
                 }
             });
             ui.add_space(4.0);
+            if self.layer.is_some() {
+                ui.checkbox(&mut self.on_globe, tr(lang, "Show on the globe|preview")).on_hover_text(tr(lang, "Without the check the preview of the window leaves the globe, the computation stays: «OK» saves it."));
+            }
             if tracing_mode {
-                ui.add(egui::Label::new(tr(lang, "The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border.")).wrap());
+                let text = if unified {
+                    "The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My layers», neighbouring areas share their border."
+                } else {
+                    "The globe shows the colours of the area cells. «OK» puts smooth polygons of the areas into «My Places», neighbouring areas share their border."
+                };
+                ui.add(egui::Label::new(tr(lang, text)).wrap());
                 // Таблица классов после «Построить», у заросших полей классы
                 // задаёт ряд снимков, таблицы нет.
                 if let Some(trace) = &mut self.trace
@@ -2722,6 +2858,7 @@ impl ClassCalc {
                             ask = true;
                         }
                         if task_mode
+                            && !unified
                             && ui
                                 .button(tr(lang, "Refine with points"))
                                 .on_hover_text(tr(lang, "Opens the «Classification» window with the same image, area and classes of this window. There the classes are refined with own control points by clicks on the globe."))
@@ -2766,8 +2903,32 @@ impl ClassCalc {
                 ui.add(egui::Label::new(tr(lang, "Click the globe to outline a sample, a click on the first vertex closes the outline. There may be several samples.")).wrap());
             } else {
                 ui.label(tr(lang, "Classes"));
+                // Номер класса в слое итога: классы с образцами по порядку,
+                // у задачи - все. Флажок «Видно» прячет класс с глобуса.
+                let numbers: Vec<Option<usize>> = {
+                    let mut next = 0;
+                    self.classes
+                        .iter()
+                        .map(|c| {
+                            self.uses(c).then(|| {
+                                next += 1;
+                                next - 1
+                            })
+                        })
+                        .collect()
+                };
+                let built = self.layer.is_some();
                 for (k, class) in self.classes.iter_mut().enumerate() {
                     ui.horizontal(|ui| {
+                        if let Some(n) = numbers.get(k).copied().flatten().filter(|_| built) {
+                            if self.hidden.len() <= n {
+                                self.hidden.resize(n + 1, false);
+                            }
+                            let mut seen = !self.hidden[n];
+                            if ui.checkbox(&mut seen, "").on_hover_text(tr(lang, "Visible: without the check the class is hidden from the globe and the terrain is seen under it. The result keeps the class.")).changed() {
+                                self.hidden[n] = !seen;
+                            }
+                        }
                         ui.radio_value(&mut self.active, k, "").on_hover_text(tr(lang, "A click on the globe puts a point of this class."));
                         ui.color_edit_button_srgb(&mut class.color);
                         ui.add(egui::TextEdit::singleline(&mut class.name).desired_width(140.0));
@@ -2785,7 +2946,7 @@ impl ClassCalc {
                     if ui.button(tr(lang, "Add a class")).clicked() {
                         add = true;
                     }
-                    if !recognize_mode && ui.button(tr(lang, "Classes from tracing")).on_hover_text(tr(lang, "Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.")).clicked() {
+                    if !recognize_mode && !unified && ui.button(tr(lang, "Classes from tracing")).on_hover_text(tr(lang, "Classes with names and colours from the «Tracing» or «Object extraction» window after «Build». Classes without points are replaced, the points are put by clicks on the globe.")).clicked() {
                         self.wants_traced = true;
                     }
                 });
@@ -2825,8 +2986,8 @@ impl ClassCalc {
             pressed = analysis::buttons(ui, lang, self.layer.is_some() && !self.busy(), tip);
         });
         self.terms_window(ctx, lang);
-        if let Some(task) = chosen_task {
-            self.set_task(lang, task);
+        if wants.is_some() {
+            self.wants = wants;
         }
         if let Some(k) = remove
             && k < self.classes.len()
@@ -2878,6 +3039,12 @@ impl ClassCalc {
             Some(Button::Build) => self.build(lang),
             Some(Button::Ok) => {
                 self.save(lang);
+                // Итог объединённого окна - «Распознавание - задача».
+                if self.unified
+                    && let Some(saved) = &mut self.saved
+                {
+                    saved.title = format!("{} - {}", tr(lang, "Recognition"), goal.text(lang).0);
+                }
                 self.clear();
                 self.open = false;
             }
@@ -2897,12 +3064,15 @@ impl ClassCalc {
         if self.busy() || self.finding() || self.waits_names() {
             ctx.request_repaint();
         }
+        if self.sync_display() {
+            self.changed = true;
+        }
     }
 }
 
 impl analysis::SiteTool for ClassCalc {
     fn id(&self) -> &'static str {
-        if self.recognize_mode() {
+        if self.unified || self.recognize_mode() {
             "recognize"
         } else if self.task_mode() {
             "objects"
@@ -2917,22 +3087,28 @@ impl analysis::SiteTool for ClassCalc {
     fn shown(&self) -> bool {
         self.layer.is_some()
     }
+    /// Слой на глобусе - с флажками «Видно» и «Показывать на глобусе».
     fn layer(&self) -> Option<Arc<Layer>> {
-        self.layer.clone()
+        self.display.clone()
     }
     fn legend_title(&self, lang: Lang) -> Option<&'static str> {
+        if self.unified {
+            return (self.find.is_none()).then(|| tr(lang, "Recognition"));
+        }
         if self.trace.is_some() {
             return Some(self.tool_title(lang));
         }
         self.find.is_none().then(|| tr(lang, if self.recognize_mode() { "Recognition" } else { "Classification" }))
     }
     fn painter(&self) -> Option<crate::vector::Painter> {
-        self.layer.clone().map(painter)
+        self.display.clone().map(painter)
     }
     fn drop_result(&mut self) {
         if self.layer.take().is_some() {
             self.changed = true;
         }
+        self.display = None;
+        self.display_key = (0, self.hidden.clone(), self.on_globe);
         if let Some(find) = &mut self.find {
             find.base = None;
         }
@@ -2996,6 +3172,39 @@ fn trace_places(layer: &Layer, base: &TraceBase, joined: &Joined, name: &str, op
         folder.children.push(Item::Place(place));
     }
     Some(folder)
+}
+
+/// Строка «Источник» своих образцов объединённого окна, `RecognizeSource`
+/// модуля 1.40: снимки Sentinel-2 участка, подложка глобуса, растры
+/// программы и AlphaEarth. Выбор - в wants, окно пересобирается.
+fn source_row(ui: &mut egui::Ui, lang: Lang, rasters: &[Raster], current: Option<&str>, wants: &mut Option<(recognize::Goal, Option<Option<String>>)>) {
+    ui.label(tr(lang, "Source"));
+    let shown = match current {
+        Some(recognize::SHOTS) => tr(lang, "Sentinel-2 images of the area"),
+        Some(BASEMAP) => tr(lang, "Globe basemap"),
+        Some(name) => name,
+        None => "AlphaEarth",
+    };
+    egui::ComboBox::from_id_salt("planetx-recognize-source")
+        .selected_text(shown)
+        .width(220.0)
+        .show_ui(ui, |ui| {
+            let mut pick = |ui: &mut egui::Ui, value: Option<&str>, text: &str| {
+                if ui.selectable_label(current == value, text).clicked() && current != value {
+                    *wants = Some((recognize::Goal::Own, Some(value.map(str::to_string))));
+                }
+            };
+            pick(ui, Some(recognize::SHOTS), tr(lang, "Sentinel-2 images of the area"));
+            pick(ui, Some(BASEMAP), tr(lang, "Globe basemap"));
+            for (name, _) in rasters {
+                pick(ui, Some(name), name);
+            }
+            if !cfg!(target_arch = "wasm32") {
+                pick(ui, None, "AlphaEarth");
+            }
+        })
+        .response
+        .on_hover_text(tr(lang, "What the cells are divided by. Sentinel-2 images of the area - the window picks and loads the summer image and the image with snow itself. The globe basemap, a raster opened in the program or AlphaEarth vectors - as in the former «Classification» window."));
 }
 
 /// Цвет строкой «#rrggbb».
@@ -3377,10 +3586,72 @@ mod tests {
         assert_eq!(class_of(&calc, -445.0, 245.0), Some(K::Broadleaf), "{}", calc.status);
         assert_eq!(class_of(&calc, -500.0, -500.0), Some(K::Conifer), "{}", calc.status);
         assert!(calc.settings.first().is_some_and(|s| s.contains("Forests and clearcuts")), "{:?}", calc.settings);
+        // Флажок «Видно» модуля 1.40: спрятанный класс уходит со слоя на
+        // глобусе, итог его хранит. «Показывать на глобусе» снимает слой.
+        use analysis::SiteTool;
+        assert!(calc.sync_display());
+        assert!(calc.layer().is_some_and(|l| Arc::ptr_eq(&l, calc.layer.as_ref().unwrap_or(&l))));
+        let conifer = calc.classes.iter().position(|c| c.kind == Some(K::Conifer)).unwrap_or(0);
+        calc.hidden = vec![false; calc.classes.len()];
+        calc.hidden[conifer] = true;
+        assert!(calc.sync_display());
+        let shown = calc.layer().map(|l| l.classes.contains(&(conifer as i16)));
+        assert_eq!(shown, Some(false));
+        assert!(calc.layer.as_ref().is_some_and(|l| l.classes.contains(&(conifer as i16))));
+        assert!(!calc.sync_display());
+        calc.on_globe = false;
+        assert!(calc.sync_display() && calc.layer().is_none());
         // Свои образцы - снова два пустых класса.
         calc.set_task(lang, None);
         assert_eq!(calc.classes.len(), 2);
         assert!(calc.classes.iter().all(|c| c.kind.is_none()));
+    }
+
+    #[test]
+    fn one_window_switches_tasks_and_keeps_the_area() {
+        // Одно окно «Распознавание» модуля 1.40: задача меняет режим окна,
+        // участок остаётся.
+        use recognize::Goal;
+        use data::objecttasks::Scenario;
+        let lang = Lang::EN;
+        let calc = ClassCalc::recognition(LAT, LON, "test".into(), vec![summer()], lang);
+        assert!(calc.unified);
+        assert_eq!(calc.goal(), Goal::Own);
+        let mut calc = calc;
+        let ring = vec![(58.0, 56.2), (58.01, 56.2), (58.01, 56.22), (58.0, 56.22)];
+        calc.site.site.ring = ring.clone();
+        let ctx = egui::Context::default();
+        let check = |calc: &ClassCalc, goal: Goal| {
+            assert!(calc.unified);
+            assert_eq!(calc.goal(), goal);
+            assert_eq!(calc.site.site.ring, ring);
+        };
+        let mut calc = calc.rebuilt(lang, Goal::Colors, None);
+        check(&calc, Goal::Colors);
+        assert_eq!(calc.source.as_deref(), Some(BASEMAP));
+        frame(&ctx, &mut calc, lang);
+        let mut calc = calc.rebuilt(lang, Goal::Similar, None);
+        check(&calc, Goal::Similar);
+        frame(&ctx, &mut calc, lang);
+        let mut calc = calc.rebuilt(lang, Goal::Rules(Scenario::Fallow), None);
+        check(&calc, Goal::Rules(Scenario::Fallow));
+        assert!(calc.trace.as_ref().and_then(|t| t.task.as_ref()).is_some_and(|t| t.fixed));
+        frame(&ctx, &mut calc, lang);
+        let mut calc = calc.rebuilt(lang, Goal::Rules(Scenario::Water), None);
+        check(&calc, Goal::Rules(Scenario::Water));
+        assert!(calc.classes.iter().all(|c| c.kind.is_some()));
+        frame(&ctx, &mut calc, lang);
+        // Свои образцы по подложке - окно «Классификации», по снимкам
+        // участка - снова «Распознавание».
+        let mut calc = calc.rebuilt(lang, Goal::Own, Some(Some(BASEMAP.to_string())));
+        check(&calc, Goal::Own);
+        assert!(calc.recognize.is_none() && calc.source.as_deref() == Some(BASEMAP));
+        assert_eq!(calc.classes.len(), 2);
+        frame(&ctx, &mut calc, lang);
+        let calc = calc.rebuilt(lang, Goal::Own, Some(Some(recognize::SHOTS.to_string())));
+        check(&calc, Goal::Own);
+        assert!(calc.recognize.is_some());
+        assert_eq!(analysis::SiteTool::id(&calc), "recognize");
     }
 
     /// Снимок сезона «SWIR» (B12 B8A B4) 2 × 2 км: слева left, справа right.

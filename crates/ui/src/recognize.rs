@@ -56,6 +56,40 @@ pub const TASKS: [Scenario; 3] = [Scenario::Forest, Scenario::Fields, Scenario::
 /// помощника модуля 1.39.
 pub const TASK_SAMPLES: usize = 60;
 
+/// Источник «Снимки Sentinel-2 участка» - снимки подбирает само окно,
+/// `SHOTS` модуля 1.40.
+pub const SHOTS: &str = "@shots";
+
+/// Задача объединённого окна, список «Задача» модуля 1.40: одно окно
+/// вместо «Классификации», «Выделения объектов», «Трассировки»
+/// и «Похожих областей».
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Goal {
+    /// Классы по своим образцам.
+    Own,
+    /// Цвета снимка - трассировка.
+    Colors,
+    /// Похожие на образец.
+    Similar,
+    /// Классы правилами задачи: леса, поля, вода, заросшие поля.
+    Rules(Scenario),
+}
+
+/// Задачи списка по порядку.
+pub const GOALS: [Goal; 7] = [Goal::Own, Goal::Colors, Goal::Similar, Goal::Rules(Scenario::Forest), Goal::Rules(Scenario::Fields), Goal::Rules(Scenario::Water), Goal::Rules(Scenario::Fallow)];
+
+impl Goal {
+    /// Название и подсказка строки списка.
+    pub fn text(self, lang: Lang) -> (&'static str, &'static str) {
+        match self {
+            Goal::Own => (tr(lang, "Own samples"), tr(lang, "Classes and samples are set by hand, at least two classes are needed.")),
+            Goal::Colors => (tr(lang, "Image colours"), tr(lang, "The image is split into a given number of colours, as by tracing, no samples are needed. Colours get names, the same names merge.")),
+            Goal::Similar => (tr(lang, "Similar to the sample"), tr(lang, "Outline a sample, the window finds objects of the area similar to it in colour and texture.")),
+            Goal::Rules(s) => crate::objecttasks::scenario_text(lang, s),
+        }
+    }
+}
+
 /// Роли каналов растра, `None` у растра без подписей.
 pub type Roles = Vec<Option<&'static str>>;
 
