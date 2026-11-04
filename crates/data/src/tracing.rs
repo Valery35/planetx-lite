@@ -831,6 +831,19 @@ impl Tracer {
     }
 }
 
+/// Сглаженные многоугольники классов окна «Распознавание», `class_shapes`
+/// модуля 1.40: области меньше least клеток сливаются с соседом, границы -
+/// цепочки, общие у соседних областей, сглаживание как у трассировки.
+/// Итог - (класс области, область клетки, многоугольники областей). Классы
+/// растра не меняются.
+pub fn class_shapes(classes: &[i32], rows: usize, cols: usize, least: usize, corner: f64) -> (Vec<i16>, Vec<i32>, BTreeMap<usize, Shape>) {
+    let (parts, kinds, _) = merge_small(classes, rows, cols, least);
+    let found = chains(&parts, rows, cols);
+    let smooth: Vec<Vec<Point>> = found.iter().map(|c| smooth_chain(&c.points, c.closed, corner, TOLERANCE)).collect();
+    let shapes = rings(&found, &smooth);
+    (kinds, parts, shapes)
+}
+
 /// Трассировка целиком, [`Tracer`] без деления на кадры.
 pub fn trace(grid: &[f32], depth: usize, rows: usize, cols: usize, good: &[bool], params: Params) -> Option<Traced> {
     let mut tracer = Tracer::new(grid, depth, rows, cols, good, params);

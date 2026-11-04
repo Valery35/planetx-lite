@@ -2230,6 +2230,15 @@ impl ClassCalc {
             extra.extend(places);
             Vec::new()
         } else {
+            // Объединённое окно, модуль 1.40: по OK всегда и растр
+            // классов, и сглаженные многоугольники классов.
+            if self.unified
+                && self.find.is_none()
+                && let Some(mut folder) = class_places(layer, &rows, &name)
+            {
+                folder.description.clone_from(&credit);
+                extra.push(Item::Folder(folder));
+            }
             let mut picture = analysis::picture(name, "aef_class", layer.bbox(), layer.step, &sample, tiff);
             picture.summary.clone_from(&credit);
             vec![picture]
@@ -3174,6 +3183,36 @@ fn trace_places(layer: &Layer, base: &TraceBase, joined: &Joined, name: &str, op
     Some(folder)
 }
 
+/// Сглаженные многоугольники классов слоя папкой меток, `_export_polygons`
+/// модуля 1.40: поля class, name, color и area_ha, цвет - цвет класса.
+/// None - многоугольников нет или их больше [`MOST_OBJECTS`].
+fn class_places(layer: &Layer, rows: &[(String, [u8; 3])], name: &str) -> Option<scene::kml::Folder> {
+    let classes: Vec<i32> = layer.classes.iter().map(|c| i32::from(*c)).collect();
+    let (kinds, _, shapes) = tracing::class_shapes(&classes, layer.rows, layer.cols, tracing::LEAST, tracing::CORNER);
+    if shapes.is_empty() || shapes.len() > MOST_OBJECTS {
+        return None;
+    }
+    let to_degrees = |ring: &Vec<(f64, f64)>| -> Vec<(f64, f64)> { ring.iter().map(|p| aef::from_utm(layer.index.number, layer.index.south, layer.x0 + p.0 * layer.step, layer.y0 - p.1 * layer.step)).collect() };
+    let alpha = (layer.opacity * 255.0).round() as u8;
+    let mut folder = scene::kml::Folder::new(name);
+    for (region, (outer, holes)) in &shapes {
+        let Some((class, (title, [r, g, b]))) = kinds.get(*region).and_then(|k| usize::try_from(*k).ok()).and_then(|k| rows.get(k).map(|row| (k, row))) else {
+            continue;
+        };
+        let mut place = Place::new(&format!("{title} {}", region + 1), Kind::Polygon, to_degrees(outer));
+        place.color = [*r, *g, *b, 255];
+        place.fill = Some([*r, *g, *b, alpha]);
+        if !holes.is_empty() {
+            place.holes = Some(holes.iter().map(to_degrees).collect());
+        }
+        let cells = tracing::ring_area(outer).abs() - holes.iter().map(|h| tracing::ring_area(h).abs()).sum::<f64>();
+        let area = cells * layer.step * layer.step / 1e4;
+        place.data = Some(vec![("class".to_string(), (class + 1).to_string()), ("name".to_string(), title.clone()), ("color".to_string(), hex([*r, *g, *b])), ("area_ha".to_string(), format!("{area:.4}"))]);
+        folder.children.push(Item::Place(place));
+    }
+    (!folder.children.is_empty()).then_some(folder)
+}
+
 /// Строка «Источник» своих образцов объединённого окна, `RecognizeSource`
 /// модуля 1.40: снимки Sentinel-2 участка, подложка глобуса, растры
 /// программы и AlphaEarth. Выбор - в wants, окно пересобирается.
@@ -3586,6 +3625,21 @@ mod tests {
         assert_eq!(class_of(&calc, -445.0, 245.0), Some(K::Broadleaf), "{}", calc.status);
         assert_eq!(class_of(&calc, -500.0, -500.0), Some(K::Conifer), "{}", calc.status);
         assert!(calc.settings.first().is_some_and(|s| s.contains("Forests and clearcuts")), "{:?}", calc.settings);
+        // По OK объединённое окно даёт и многоугольники классов, модуль
+        // 1.40: папка становится слоем «Моих слоёв» с площадью и цветом.
+        calc.save(lang);
+        let saved = calc.saved.take();
+        let polygons = saved.iter().flat_map(|s| &s.extra).find_map(|i| match i {
+            Item::Folder(f) => crate::datalayers::folder_layer(f).filter(|l| l.fields.iter().any(|n| n == "area_ha")),
+            _ => None,
+        });
+        assert!(polygons.is_some(), "нет многоугольников классов");
+        let Some(polygons) = polygons else {
+            return;
+        };
+        assert!(polygons.items.len() >= 4, "{}", polygons.items.len());
+        assert!(polygons.items.iter().all(|i| i.shape == data::layers::Shape::Polygon));
+        assert!(polygons.items.iter().any(|i| i.values.iter().any(|v| v == "Coniferous forest")), "{:?}", polygons.items.first().map(|i| &i.values));
         // Флажок «Видно» модуля 1.40: спрятанный класс уходит со слоя на
         // глобусе, итог его хранит. «Показывать на глобусе» снимает слой.
         use analysis::SiteTool;
