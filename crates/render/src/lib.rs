@@ -357,6 +357,8 @@ pub struct Globe {
     live: Models,
     /// Свой самолёт режима полёта.
     flight: Models,
+    /// Куски наборов 3D Tiles по ключу куска.
+    tiles: Models,
     air: wgpu::Buffer,
     air_bind: wgpu::BindGroup,
     air_layout: wgpu::BindGroupLayout,
@@ -911,6 +913,7 @@ impl Globe {
             models: Models::new(device, queue, &shadow.model_layout),
             live: Models::new(device, queue, &shadow.model_layout),
             flight: Models::new(device, queue, &shadow.model_layout),
+            tiles: Models::new(device, queue, &shadow.model_layout),
             shadow,
             shadow_pipeline,
             air,
@@ -1812,11 +1815,33 @@ impl Globe {
         self.models.place(index, place);
     }
 
+    /// Кусок набора 3D Tiles под ключом key, прежний под тем же ключом
+    /// заменяется.
+    pub fn add_tile(&mut self, key: u64, model: &ModelMesh) {
+        self.tiles.add(&self.device, &self.queue, key, model);
+    }
+
+    /// Убрать кусок набора 3D Tiles под ключом key.
+    pub fn remove_tile(&mut self, key: u64) {
+        self.tiles.remove(key);
+    }
+
+    /// Виден ли кусок набора 3D Tiles под ключом key.
+    pub fn show_tile(&mut self, key: u64, shown: bool) {
+        self.tiles.show(key, shown);
+    }
+
+    /// Ключи кусков 3D Tiles в видеокарте.
+    pub fn tile_keys(&self) -> Vec<u64> {
+        self.tiles.keys().collect()
+    }
+
     /// Солнце для моделей: направление в ECEF, None - свет модели свой.
     pub fn set_model_sun(&mut self, sun: Option<[f32; 3]>) {
         self.models.sun = sun;
         self.live.sun = sun;
         self.flight.sun = sun;
+        self.tiles.sun = sun;
     }
 
     /// Матрицы дорожек анимации модели номер index на кадр.
@@ -2005,7 +2030,7 @@ impl Globe {
             self.ensure_pixels();
         }
         if !options.sky {
-            for models in [&mut self.models, &mut self.live, &mut self.flight] {
+            for models in [&mut self.models, &mut self.live, &mut self.flight, &mut self.tiles] {
                 models.prepare(&self.device, &self.queue, camera, light.as_ref());
             }
         }
@@ -2056,6 +2081,7 @@ impl Globe {
             self.models.draw_depth(&mut pass, frame);
             self.live.draw_depth(&mut pass, frame);
             self.flight.draw_depth(&mut pass, frame);
+            self.tiles.draw_depth(&mut pass, frame);
         }
         {
             let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -2157,6 +2183,7 @@ impl Globe {
                 draws += self.models.draw(&mut pass, &self.shadow.model_bind);
                 draws += self.live.draw(&mut pass, &self.shadow.model_bind);
                 draws += self.flight.draw(&mut pass, &self.shadow.model_bind);
+                draws += self.tiles.draw(&mut pass, &self.shadow.model_bind);
                 draws += self.points.draw(&self.device, &self.queue, &mut pass, camera, ratio);
                 draws += self.pictures.draw(&self.device, &self.queue, &mut pass, camera);
                 draws += self.features.draw(&self.device, &self.queue, &mut pass, camera, ratio);

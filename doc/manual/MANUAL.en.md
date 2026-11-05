@@ -256,8 +256,11 @@ and B3DM pieces.
 - A `tileset.json` file in the program takes the pieces from its folder.
   The web page does not see the folder, it needs an archive.
 - External tilesets inside a set are read in depth.
-- There is no loading on approach. One cut of the tree is taken, at most
-  256 pieces: tiles with the largest error are split into children first.
+- Pieces load on approach. A tile is refined when its error on the screen
+  exceeds 16 pixels. Until the children's pieces are read, the parent
+  stays in their place, there are no holes.
+- Pieces outside the view are not read. Pieces not seen for long leave
+  the video memory above 512 MB.
 - Pieces with Draco or meshopt compression are not read, the result line
   names their count.
 

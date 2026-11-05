@@ -2917,6 +2917,9 @@ impl LiteApp {
                 items.extend(crate::viewexport::model_items(mesh, &format!("model {}", i + 1)));
             }
         }
+        for (i, mesh) in self.tilesets.meshes().iter().enumerate() {
+            items.extend(crate::viewexport::model_items(mesh, &format!("3D Tiles {}", i + 1)));
+        }
         items
     }
 
@@ -3872,24 +3875,26 @@ impl LiteApp {
     /// несёт куски в себе. У tileset.json куски берутся в программе из
     /// папки последнего открытия, у страницы их нет - нужен архив.
     fn open_tiles(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
+        use crate::tilesets::Source;
         let read = if bytes.starts_with(b"PK") {
-            scene::tiles3d::read_zip(bytes)
+            scene::tiles3d::ZipSet::open(bytes).and_then(|zip| Ok((scene::tiles3d::Tree::open(&zip.root, &|p| zip.get(p))?, Source::Zip(zip))))
         } else {
-            let dir = self.open_dir.clone();
-            let fetch = |path: &str| dir.as_ref().and_then(|d| std::fs::read(d.join(path)).ok());
-            scene::tiles3d::read(bytes, &fetch)
+            let source = Source::Dir(self.open_dir.clone().unwrap_or_default());
+            scene::tiles3d::Tree::open(bytes, &|p| source.get(p)).map(|tree| (tree, source))
         };
-        let set = match read {
+        let (tree, source) = match read {
             Ok(set) => set,
             Err(e) => {
                 self.open_message = Some(trf(self.lang, "The file did not open: {name}: {e}", &[("name", name), ("e", &e.0)]));
                 return Err(e.0);
             }
         };
-        let skipped = set.skipped.len();
+        let skipped = tree.skipped.len();
+        let dir_less = cfg!(target_arch = "wasm32") && !bytes.starts_with(b"PK");
         let title = if name.to_lowercase().ends_with("tileset.json") { self.open_dir_name().unwrap_or_else(|| name.to_string()) } else { data::layers::stem(name).to_string() };
-        let Some(id) = self.tilesets.add(set, &title, &self.nav.camera.ellipsoid) else {
-            let e = if cfg!(target_arch = "wasm32") && !bytes.starts_with(b"PK") {
+        let added = if dir_less { None } else { self.tilesets.add(tree, source, &title, &self.nav.camera.ellipsoid) };
+        let Some(id) = added else {
+            let e = if dir_less {
                 tr(self.lang, "The page cannot read the pieces next to tileset.json - open the set as a ZIP archive").to_string()
             } else {
                 tr(self.lang, "No piece of the 3D Tiles set was read").to_string()
@@ -9347,8 +9352,7 @@ impl eframe::App for LiteApp {
         // Треки на момент шкалы, сменились модели треков - модели заново.
         self.tracks.step(self.timebar.window().map(|w| w.1));
         let tracks_models = std::mem::take(&mut self.tracks.models_dirty);
-        // Сменились наборы 3D Tiles - модели заново, как у предпросмотра.
-        let preview_dirty = std::mem::take(&mut self.preview_dirty) | std::mem::take(&mut self.tilesets.dirty);
+        let preview_dirty = std::mem::take(&mut self.preview_dirty);
         if tracks_models || preview_dirty {
             self.overlays_built = None;
         }
@@ -9596,14 +9600,15 @@ impl eframe::App for LiteApp {
             let mut meshes = self.marks.picture_meshes(&store);
             meshes.extend(self.preview.as_ref().and_then(|o| crate::pictures::ground_mesh(o, &crate::pictures::key_of(o), &store)));
             globe.set_pictures(&meshes);
-            let mut built = self.models.meshes(&model_list, &store, now);
-            // Куски 3D Tiles - в конец: номера моделей на путях и
-            // анимированных моделей не сдвигаются.
-            built.meshes.extend(self.tilesets.meshes());
+            let built = self.models.meshes(&model_list, &store, now);
             globe.set_models(&built.meshes);
             self.export_models = built.meshes;
             self.movers = built.movers;
             self.animated = built.animated;
+        }
+        // Куски 3D Tiles по экранной ошибке, пока не прочитаны все нужные.
+        if self.tilesets.update(globe, &self.nav.camera) {
+            ui.ctx().request_repaint();
         }
         let window = self.timebar.window();
         for mover in &self.movers {

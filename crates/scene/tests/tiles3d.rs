@@ -110,3 +110,68 @@ fn hostile_sets_do_not_break() {
     // Короткий B3DM - ошибка куска, не паника.
     assert!(tiles3d::content(b"b3dm\x01\x00\x00\x00", &|_| None).is_err());
 }
+
+/// Дерево: корень REPLACE со сферой радиуса 100 м у точки и два ребёнка
+/// по 50 м, у одного внук. Ошибки 64, 8 и 0 метров.
+const TREE: &str = r#"{"asset":{"version":"1.0"},"geometricError":200,"root":{
+  "boundingVolume":{"sphere":[0,0,0,100]},"geometricError":64,"refine":"REPLACE","content":{"uri":"0.glb"},
+  "transform":[1,0,0,0, 0,1,0,0, 0,0,1,0, 6378137,0,0,1],
+  "children":[
+    {"boundingVolume":{"sphere":[0,50,0,50]},"geometricError":8,"content":{"uri":"1.glb"},
+     "children":[{"boundingVolume":{"sphere":[0,50,0,10]},"geometricError":0,"content":{"uri":"3.glb"}}]},
+    {"boundingVolume":{"box":[0,-50,0, 50,0,0, 0,50,0, 0,0,50]},"geometricError":8,"content":{"uri":"2.glb"}}]}}"#;
+
+/// Вид с глаза на расстоянии distance над точкой по оси X, 1000 пикселей
+/// на радиан, всё видно.
+fn view_from(distance: f64, f: &dyn Fn(globe_core::DVec3, f64) -> bool) -> tiles3d::View<'_> {
+    tiles3d::View { eye: globe_core::DVec3::new(6378137.0 + distance, 0.0, 0.0), pixels: 1000.0, visible: f }
+}
+
+#[test]
+fn spheres_of_boxes_and_spheres_follow_the_transform() {
+    let tree = tiles3d::Tree::open(TREE.as_bytes(), &|_| None).expect("дерево");
+    assert_eq!(tree.nodes.len(), 4);
+    let root = &tree.nodes[tree.root];
+    assert!((root.center.x - 6378137.0).abs() < 1e-6 && (root.radius - 100.0).abs() < 1e-9);
+    // Куб с полуосями 50 м - сфера радиуса 50√3.
+    let cube = tree.nodes.iter().find(|n| n.uri.as_deref() == Some("2.glb")).unwrap();
+    assert!((cube.radius - 50.0 * 3f64.sqrt()).abs() < 1e-6, "{}", cube.radius);
+    assert!((cube.center.y + 50.0).abs() < 1e-9);
+}
+
+#[test]
+fn far_view_shows_the_root_near_view_refines_without_holes() {
+    let tree = tiles3d::Tree::open(TREE.as_bytes(), &|_| None).expect("дерево");
+    let all = |_: globe_core::DVec3, _: f64| true;
+    let idx = |uri: &str| tree.nodes.iter().position(|n| n.uri.as_deref() == Some(uri)).unwrap();
+    // Издалека: ошибка корня 64 × 1000 / (10 000 - 100) < 16 - корень.
+    let far = view_from(10_000.0, &all);
+    let sel = tree.select(&far, 16.0, &|_| false);
+    assert!(sel.show.is_empty());
+    assert_eq!(sel.load.iter().map(|l| l.0).collect::<Vec<_>>(), vec![idx("0.glb")]);
+    let sel = tree.select(&far, 16.0, &|_| true);
+    assert_eq!(sel.show, vec![idx("0.glb")]);
+    // Близко, дети не готовы: рисуется корень, дети грузятся - дыр нет.
+    let near = view_from(1_000.0, &all);
+    let root_only = |n: usize| n == idx("0.glb");
+    let sel = tree.select(&near, 16.0, &root_only);
+    assert_eq!(sel.show, vec![idx("0.glb")]);
+    let mut wanted: Vec<usize> = sel.load.iter().map(|l| l.0).collect();
+    wanted.sort_unstable();
+    assert_eq!(wanted, vec![idx("1.glb"), idx("2.glb")]);
+    // Дети готовы - корень уступает им место.
+    let sel = tree.select(&near, 16.0, &|_| true);
+    let mut shown = sel.show.clone();
+    shown.sort_unstable();
+    assert_eq!(shown, vec![idx("1.glb"), idx("2.glb")]);
+    // Невидимый ребёнок не мешает замене и не грузится.
+    let one_side = |c: globe_core::DVec3, _: f64| c.y > -10.0;
+    let near = view_from(1_000.0, &one_side);
+    let ready = |n: usize| n != idx("2.glb");
+    let sel = tree.select(&near, 16.0, &ready);
+    assert_eq!(sel.show, vec![idx("1.glb")]);
+    assert!(sel.load.is_empty());
+    // Глаз внутри сферы - ошибка бесконечна, тайл уточняется.
+    let inside = view_from(10.0, &all);
+    assert!(tree.sse(tree.root, &inside).is_infinite());
+}

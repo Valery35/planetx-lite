@@ -83,12 +83,22 @@ struct Vertex {
 }
 
 struct GpuPart {
-    model: usize,
     vertices: wgpu::Buffer,
     count: u32,
+    /// Номер картинки в [`GpuModel::textures`].
     texture: Option<usize>,
     rgba: [f32; 4],
     track: Option<usize>,
+}
+
+/// Модель в видеокарте: ключ, место, матрицы дорожек, картинки, части.
+struct GpuModel {
+    key: u64,
+    place: ModelPlace,
+    /// Матрицы дорожек анимации в осях вершин частей.
+    deltas: HashMap<usize, DMat4>,
+    textures: Vec<wgpu::BindGroup>,
+    parts: Vec<GpuPart>,
 }
 
 /// Модели и их конвейер.
@@ -104,13 +114,9 @@ pub struct Models {
     uniform: wgpu::Buffer,
     capacity: u64,
     bind: wgpu::BindGroup,
-    places: Vec<ModelPlace>,
-    /// Матрицы дорожек анимации по моделям, в осях вершин части.
-    deltas: Vec<HashMap<usize, DMat4>>,
     /// Настоящее солнце для всех моделей, None - солнце каждой модели.
     pub sun: Option<[f32; 3]>,
-    textures: Vec<wgpu::BindGroup>,
-    parts: Vec<GpuPart>,
+    models: Vec<GpuModel>,
 }
 
 impl Models {
@@ -241,96 +247,118 @@ impl Models {
             uniform,
             capacity,
             bind,
-            places: Vec::new(),
-            deltas: Vec::new(),
             sun: None,
-            textures: Vec::new(),
-            parts: Vec::new(),
+            models: Vec::new(),
         }
     }
 
-    /// Новый набор моделей. Картинка размера не по пределу видеокарты
-    /// или не совпавшая с байтами - часть без картинки.
+    /// Новый набор моделей, ключ модели - её номер в списке.
     pub fn set(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, models: &[ModelMesh]) {
-        self.places.clear();
-        self.deltas.clear();
-        self.textures.clear();
-        self.parts.clear();
-        let limit = device.limits().max_texture_dimension_2d;
+        self.models.clear();
         for (m, model) in models.iter().enumerate() {
-            self.places.push(ModelPlace { center: model.center, orient: model.orient, sun: model.sun, shown: true });
-            self.deltas.push(HashMap::new());
-            let mut keys: HashMap<&str, usize> = HashMap::new();
-            for (key, w, h, rgba) in &model.images {
-                if *w == 0 || *h == 0 || *w > limit || *h > limit || rgba.len() != (*w as usize) * (*h as usize) * 4 {
-                    continue;
-                }
-                keys.insert(key.as_str(), self.textures.len());
-                self.textures.push(texture_bind(device, queue, &self.texture_layout, &self.sampler, *w, *h, rgba));
+            self.add(device, queue, m as u64, model);
+        }
+    }
+
+    /// Модель под ключом key в конец списка, прежняя под тем же ключом
+    /// убирается. Картинка размера не по пределу видеокарты или не
+    /// совпавшая с байтами - часть без картинки.
+    pub fn add(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, key: u64, model: &ModelMesh) {
+        self.remove(key);
+        let limit = device.limits().max_texture_dimension_2d;
+        let mut textures = Vec::new();
+        let mut keys: HashMap<&str, usize> = HashMap::new();
+        for (name, w, h, rgba) in &model.images {
+            if *w == 0 || *h == 0 || *w > limit || *h > limit || rgba.len() != (*w as usize) * (*h as usize) * 4 {
+                continue;
             }
-            for part in &model.parts {
-                let n = part.positions.len().min(part.normals.len()) / 3 * 3;
-                let vertices: Vec<Vertex> = (0..n)
-                    .map(|i| Vertex {
-                        offset: part.positions[i],
-                        normal: part.normals[i],
-                        uv: part.uv.get(i).copied().unwrap_or([0.0, 0.0]),
-                    })
-                    .collect();
-                let Some(count) = u32::try_from(vertices.len()).ok().filter(|c| *c > 0) else {
-                    continue;
-                };
-                let texture = part.image.as_deref().and_then(|k| keys.get(k).copied());
-                self.parts.push(GpuPart {
-                    model: m,
-                    vertices: device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                        label: Some("model vertices"),
-                        contents: bytemuck::cast_slice(&vertices),
-                        usage: wgpu::BufferUsages::VERTEX,
-                    }),
-                    count,
-                    texture,
-                    rgba: part.rgba,
-                    track: part.track,
-                });
-            }
+            keys.insert(name.as_str(), textures.len());
+            textures.push(texture_bind(device, queue, &self.texture_layout, &self.sampler, *w, *h, rgba));
+        }
+        let mut parts = Vec::new();
+        for part in &model.parts {
+            let n = part.positions.len().min(part.normals.len()) / 3 * 3;
+            let vertices: Vec<Vertex> = (0..n)
+                .map(|i| Vertex {
+                    offset: part.positions[i],
+                    normal: part.normals[i],
+                    uv: part.uv.get(i).copied().unwrap_or([0.0, 0.0]),
+                })
+                .collect();
+            let Some(count) = u32::try_from(vertices.len()).ok().filter(|c| *c > 0) else {
+                continue;
+            };
+            parts.push(GpuPart {
+                vertices: device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                    label: Some("model vertices"),
+                    contents: bytemuck::cast_slice(&vertices),
+                    usage: wgpu::BufferUsages::VERTEX,
+                }),
+                count,
+                texture: part.image.as_deref().and_then(|k| keys.get(k).copied()),
+                rgba: part.rgba,
+                track: part.track,
+            });
+        }
+        let place = ModelPlace { center: model.center, orient: model.orient, sun: model.sun, shown: true };
+        self.models.push(GpuModel { key, place, deltas: HashMap::new(), textures, parts });
+    }
+
+    /// Убрать модель под ключом key.
+    pub fn remove(&mut self, key: u64) {
+        self.models.retain(|m| m.key != key);
+    }
+
+    /// Ключи моделей.
+    pub fn keys(&self) -> impl Iterator<Item = u64> + '_ {
+        self.models.iter().map(|m| m.key)
+    }
+
+    /// Видна ли модель под ключом key.
+    pub fn show(&mut self, key: u64, shown: bool) {
+        if let Some(m) = self.models.iter_mut().find(|m| m.key == key) {
+            m.place.shown = shown;
         }
     }
 
     /// Новое место модели номер index из [`Models::set`]: модель едет.
     pub fn place(&mut self, index: usize, place: ModelPlace) {
-        if let Some(p) = self.places.get_mut(index) {
-            *p = place;
+        if let Some(m) = self.models.get_mut(index) {
+            m.place = place;
         }
     }
 
     /// Матрицы дорожек анимации модели номер index на кадр: дорожка -
     /// матрица в осях вершин частей.
     pub fn animate(&mut self, index: usize, deltas: HashMap<usize, DMat4>) {
-        if let Some(d) = self.deltas.get_mut(index) {
-            *d = deltas;
+        if let Some(m) = self.models.get_mut(index) {
+            m.deltas = deltas;
         }
+    }
+
+    /// Части по порядку слотов буфера: модель и часть.
+    fn slots(&self) -> impl Iterator<Item = (&GpuModel, &GpuPart)> + '_ {
+        self.models.iter().flat_map(|m| m.parts.iter().map(move |p| (m, p)))
     }
 
     /// Значения кадра в буфер, до прохода карты теней и прохода кадра.
     pub fn prepare(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, camera: &Camera, light: Option<&LightFrame>) {
-        if self.parts.is_empty() {
+        let total = self.models.iter().map(|m| m.parts.len()).sum::<usize>();
+        if total == 0 {
             return;
         }
-        let count = self.parts.len() as u64;
+        let count = total as u64;
         if count > self.capacity {
             self.capacity = count.next_power_of_two();
             (self.uniform, self.bind) = uniform_buffer(device, &self.layout, self.stride, self.capacity);
         }
         let projection = (depth_fix() * camera.projection()).as_mat4().to_cols_array();
         let stride = self.stride as usize;
-        let mut bytes = vec![0u8; stride * self.parts.len()];
-        for (chunk, part) in bytes.chunks_exact_mut(stride).zip(&self.parts) {
-            let Some(place) = self.places.get(part.model) else {
-                continue;
-            };
+        let mut bytes = vec![0u8; stride * total];
+        for (chunk, (model, part)) in bytes.chunks_exact_mut(stride).zip(self.slots()) {
+            let place = &model.place;
             // Часть с дорожкой анимации - её матрица на кадр.
-            let delta = part.track.and_then(|t| self.deltas.get(part.model)?.get(&t).copied()).unwrap_or(DMat4::IDENTITY);
+            let delta = part.track.and_then(|t| model.deltas.get(&t).copied()).unwrap_or(DMat4::IDENTITY);
             let turn = DMat4::from_mat3(place.orient) * delta;
             // Нормали вершин - в осях до поворота, солнце поворачивается
             // к ним обратным поворотом.
@@ -354,13 +382,14 @@ impl Models {
     /// Глубина моделей у карты теней в открытом проходе карты. Модель
     /// дальше [`REACH`] от края карты тени в неё не бросает.
     pub fn draw_depth(&self, pass: &mut wgpu::RenderPass<'_>, frame: &LightFrame) {
-        if self.parts.is_empty() {
+        if self.models.is_empty() {
             return;
         }
         pass.set_pipeline(&self.depth_pipeline);
         let reach = 1.0 + REACH / frame.radius;
-        for (slot, part) in self.parts.iter().enumerate() {
-            let near = self.places.get(part.model).is_some_and(|p| p.shown && frame.project(p.center).truncate().length() <= reach);
+        for (slot, (model, part)) in self.slots().enumerate() {
+            let p = &model.place;
+            let near = p.shown && frame.project(p.center).truncate().length() <= reach;
             let Some(offset) = u32::try_from(slot as u64 * self.stride).ok().filter(|_| near) else {
                 continue;
             };
@@ -373,20 +402,20 @@ impl Models {
     /// Нарисовать модели в открытом проходе кадра. Возвращает
     /// количество отрисовок.
     pub fn draw(&self, pass: &mut wgpu::RenderPass<'_>, shadow: &wgpu::BindGroup) -> usize {
-        if self.parts.is_empty() {
+        if self.models.is_empty() {
             return 0;
         }
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(2, shadow, &[]);
         let mut drawn = 0;
-        for (slot, part) in self.parts.iter().enumerate() {
-            if !self.places.get(part.model).is_some_and(|p| p.shown) {
+        for (slot, (model, part)) in self.slots().enumerate() {
+            if !model.place.shown {
                 continue;
             }
             let Ok(offset) = u32::try_from(slot as u64 * self.stride) else {
                 continue;
             };
-            let texture = part.texture.and_then(|t| self.textures.get(t)).unwrap_or(&self.white);
+            let texture = part.texture.and_then(|t| model.textures.get(t)).unwrap_or(&self.white);
             pass.set_bind_group(0, &self.bind, &[offset]);
             pass.set_bind_group(1, texture, &[]);
             pass.set_vertex_buffer(0, part.vertices.slice(..));
