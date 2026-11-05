@@ -149,6 +149,7 @@ pub mod emit;
 pub mod sounding;
 pub mod spectra;
 pub mod tilemosaic;
+pub mod thumbs;
 pub mod satellites;
 pub mod section;
 pub mod sentinel;

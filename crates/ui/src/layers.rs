@@ -681,6 +681,42 @@ enum Category {
 /// Знаков поиска, с которых просится каталог GIBS, `GIBS_SEARCH` модуля.
 const GIBS_SEARCH: usize = 3;
 
+/// Разделы левого столбца каталога: название, подсказка, категории по
+/// порядку, `catalog_sections` модуля, раскладка - решение автора от
+/// 27 октября 2026 года. Раздел из одной категории стоит строкой этой
+/// категории.
+const SECTIONS: [(&str, &str, &[Category]); 7] = [
+    ("Basis", "Base maps, local data, the vector map, transparent map overlays and Wikipedia articles.", &[Category::Base, Category::Local, Category::Map, Category::Tiles, Category::Wiki]),
+    ("Earth now", "Weather, NASA imagery and maps by days - fire, water, air, life, and soils.", &[Category::Weather, Category::Fire, Category::Water, Category::Gases, Category::Life, Category::Soil, Category::Gibs]),
+    ("Archive and survey", "", &[Category::Archive]),
+    ("Inside the Earth", "", &[Category::Depths]),
+    ("Sky", "The sun, stars, the atmosphere and artificial satellites.", &[Category::Sky, Category::Satellites]),
+    ("Energy and transport", "Power plants, power lines, pipelines, cables, trains, ships and aircraft.", &[Category::Infra, Category::Transport]),
+    ("", "", &[Category::Terrain]),
+];
+
+/// Ширина столбца разделов в точках: «Энергетика и транспорт» жирным
+/// встаёт в одну строку. У модуля 150 пикселей при своём шрифте. Выбор
+/// помощника.
+const CATEGORY_WIDTH: f32 = 196.0;
+/// Высота строки списка в точках: две строки текста и флажок по середине.
+const ROW_HEIGHT: f32 = 40.0;
+/// Высота под списком: описание выбранной строки и кнопка.
+const DETAILS_HEIGHT: f32 = 150.0;
+/// Высота столбцов окна в точках, от и до: у модуля окно 780 × 640.
+const BODY_MIN: f32 = 320.0;
+const BODY_MAX: f32 = 660.0;
+
+/// Строка левого столбца: название, подсказка, категории, заголовок
+/// раздела. Пустые категории - «Все».
+struct Pick<'a> {
+    title: &'a str,
+    tip: &'a str,
+    categories: Vec<Category>,
+    head: bool,
+    indent: bool,
+}
+
 /// Окно каталога «Добавить данные»: открыто ли, категория, поиск,
 /// выбранная строка.
 #[derive(Debug, Default)]
@@ -689,6 +725,55 @@ pub struct Catalog {
     category: Option<usize>,
     search: String,
     chosen: Option<String>,
+    /// Превью строк.
+    thumbs: crate::thumbs::Thumbs,
+}
+
+/// Сторона превью строки в точках, `ICON` модуля.
+const ICON: f32 = 40.0;
+
+/// Цвета 0..1 в цвета 0..255.
+fn unit_colors(colors: impl Iterator<Item = [f64; 3]>) -> Vec<[u8; 3]> {
+    colors.map(|c| c.map(|v| (v * 255.0).round().clamp(0.0, 255.0) as u8)).collect()
+}
+
+/// Как собрать превью строки, `_base_done` и `_layer_thumb` модуля:
+/// слои с цветами шкалы - полоса цветов, карты и темы - их тайл поверх
+/// подложки, подоснова - свой тайл.
+fn recipe(item: Item) -> crate::thumbs::Recipe {
+    use crate::thumbs::Recipe;
+    use data::thumbs as th;
+    let ramp = |c: &[[u8; 3]]| Recipe::Ramp(c.to_vec());
+    match item {
+        Item::Base(b) => Recipe::Own(net::tile_url(&b.source(), th::TILE)),
+        Item::Group(n) => Recipe::Flat(th::vector_colors(n).to_vec()),
+        Item::Sat(n) => Recipe::Flat(data::satellites::GROUPS.get(n).map_or_else(Vec::new, |g| vec![[16, 20, 40], g.1, [16, 20, 40]])),
+        Item::Events => Recipe::Base,
+        Item::Extra(e) => {
+            use crate::dots::Layer;
+            match e {
+                Extra::Weather(n) => crate::weather::ROWS.get(n).and_then(|r| data::weather::legend(r.field)).map_or(Recipe::Base, |m| Recipe::Ramp(m.colors)),
+                Extra::Dots(Layer::Fires) => Recipe::Ramp(data::fires::FRP_STOPS.iter().map(|s| s.1).collect()),
+                Extra::Dots(Layer::Quakes | Layer::Iscgem) => Recipe::Ramp(data::quakes::DEPTH_STOPS.iter().map(|s| s.1).collect()),
+                Extra::Dots(Layer::Deposits | Layer::OsmMines) => Recipe::Ramp(data::deposits::GROUPS.iter().map(|g| g.2).collect()),
+                Extra::Dots(Layer::Plants) => Recipe::Ramp(data::plants::FUELS.iter().map(|f| f.2).collect()),
+                Extra::Live(crate::live::Kind::Trains) => Recipe::Ramp(unit_colors(data::trains::CATEGORIES.iter().map(|c| c.1))),
+                Extra::Live(crate::live::Kind::Vessels) => Recipe::Ramp(unit_colors(data::vessels::GROUPS.iter().map(|g| g.1))),
+                Extra::Live(crate::live::Kind::Aircraft) => Recipe::Ramp(unit_colors(data::aircraft::GROUPS.iter().map(|g| g.3))),
+                Extra::Currents => Recipe::Ramp(data::flow::CURRENT_STOPS.iter().map(|s| s.1.map(|v| v.round().clamp(0.0, 255.0) as u8)).collect()),
+                _ if let Some(c) = th::colors(e.key()) => ramp(c),
+                Extra::Map(_) => match crate::maps::kind(e.key()) {
+                    Some(crate::maps::Kind::Theme(t)) => Recipe::Theme(t),
+                    Some(crate::maps::Kind::Terrain(crate::maps::Analysis::Slope)) => Recipe::Ramp(data::slope::SLOPE_STOPS.iter().map(|s| s.1).collect()),
+                    Some(crate::maps::Kind::Terrain(crate::maps::Analysis::Aspect)) => Recipe::Ramp(data::slope::ASPECT_STOPS.iter().map(|s| s.1).collect()),
+                    // Карта, которой на мелком тайле нет, - одна подложка.
+                    Some(kind) if kind.wants(th::TILE) => kind.sources(e.key()).into_iter().find(|(level, _)| *level <= th::TILE.0).map_or(Recipe::Base, |(_, s)| Recipe::Map(net::tile_url(&s, th::TILE), kind)),
+                    _ => Recipe::Base,
+                },
+                _ => Recipe::Base,
+            }
+        }
+    }
 }
 
 /// Строка каталога.
@@ -859,10 +944,12 @@ pub fn toggle_group(vector: &VectorBase, n: usize) -> BTreeSet<Row> {
 
 impl Catalog {
     /// Окно каталога. Действия - в out.
-    pub fn window(&mut self, ctx: &egui::Context, lang: Lang, state: &State<'_>, out: &mut Vec<Action>) {
+    pub fn window(&mut self, ctx: &egui::Context, lang: Lang, state: &State<'_>, request: &dyn Fn(u64) -> Box<dyn net::Request>, out: &mut Vec<Action>) {
         if !self.open {
             return;
         }
+        // Превью: тайл подложки глобуса, затем тайлы показанных строк.
+        self.thumbs.step(ctx, &net::tile_url(&state.basemap.source(), data::thumbs::TILE), request);
         let mut open = self.open;
         let categories = [
             (Category::All, tr(lang, "All"), tr(lang, "All maps and layers of the catalog.")),
@@ -890,23 +977,63 @@ impl Catalog {
                 tr(lang, "The whole NASA GIBS catalog - more than a thousand raster layers of imagery and maps. The list comes from the GIBS catalog on the first show of the category or on a search from three characters. The search finds a layer by all words of the query, the layer names are in English. These rows are not shown in «All»."),
             ),
         ];
-        egui::Window::new(tr(lang, "Add data")).open(&mut open).default_size([780.0, 520.0]).show(ctx, |ui| {
+        // Левый столбец: «Все», разделы модуля жирным и их категории
+        // с отступом. Раздел из одной категории - строка категории.
+        let named = |c: Category| categories.iter().find(|(k, _, _)| *k == c).map_or(("", ""), |(_, t, h)| (*t, *h));
+        let mut picks: Vec<Pick<'_>> = vec![Pick { title: categories[0].1, tip: categories[0].2, categories: Vec::new(), head: false, indent: false }];
+        for (title, tip, members) in SECTIONS {
+            let (title, tip) = (tr(lang, title), tr(lang, tip));
+            if let [one] = members {
+                let (t, h) = named(*one);
+                picks.push(Pick { title: t, tip: h, categories: vec![*one], head: false, indent: false });
+                continue;
+            }
+            // Весь каталог GIBS - только своей строкой: в нём больше
+            // тысячи слоёв.
+            picks.push(Pick { title, tip, categories: members.iter().copied().filter(|c| *c != Category::Gibs).collect(), head: true, indent: false });
+            for c in members {
+                let (t, h) = named(*c);
+                picks.push(Pick { title: t, tip: h, categories: vec![*c], head: false, indent: true });
+            }
+        }
+        let current = self.category.filter(|i| *i < picks.len()).unwrap_or(0);
+        // Высота столбцов - от экрана, а не от остатка окна: окно egui
+        // подгоняет размер под содержимое, и столбец «во всю высоту»
+        // растягивал его без конца, окно не показывалось.
+        let body = (ctx.content_rect().height() - 220.0).clamp(BODY_MIN, BODY_MAX);
+        egui::Window::new(tr(lang, "Add data")).open(&mut open).default_size([820.0, 720.0]).show(ctx, |ui| {
             ui.add(egui::TextEdit::singleline(&mut self.search).hint_text(tr(lang, "snow, mines, wind")).desired_width(f32::INFINITY));
             ui.horizontal_top(|ui| {
                 ui.vertical(|ui| {
-                    ui.set_width(116.0);
-                    for (i, (_, title, tip)) in categories.iter().enumerate() {
-                        let current = self.category.unwrap_or(0) == i;
-                        if ui.selectable_label(current, *title).on_hover_text(*tip).clicked() {
-                            self.category = Some(i);
-                        }
-                    }
+                    ui.set_width(CATEGORY_WIDTH);
+                    egui::ScrollArea::vertical().id_salt("catalog categories").auto_shrink([false, false]).max_height(body).min_scrolled_height(body).show(ui, |ui| {
+                        ui.with_layout(egui::Layout::top_down_justified(egui::Align::LEFT), |ui| {
+                            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
+                            ui.spacing_mut().item_spacing.y = 2.0;
+                            for (i, pick) in picks.iter().enumerate() {
+                                // Категория раздела - с отступом под заголовком.
+                                let semibold = egui::FontFamily::Name(crate::fonts::SEMIBOLD.into());
+                                let text = match (pick.head, pick.indent) {
+                                    (true, _) => egui::RichText::new(pick.title).family(semibold).strong(),
+                                    (false, true) => egui::RichText::new(format!("    {}", pick.title)),
+                                    (false, false) => egui::RichText::new(pick.title),
+                                };
+                                let r = ui.selectable_label(current == i, text);
+                                let r = if pick.tip.is_empty() { r } else { r.on_hover_text(pick.tip) };
+                                if r.clicked() {
+                                    self.category = Some(i);
+                                }
+                            }
+                        });
+                    });
                 });
                 ui.separator();
                 ui.vertical(|ui| {
-                    let category = categories[self.category.unwrap_or(0)].0;
+                    let pick = &picks[current];
+                    let all = pick.categories.is_empty();
+                    let gibs_row = pick.categories == [Category::Gibs];
                     let text = self.search.trim().to_lowercase();
-                    if (category == Category::Gibs || text.chars().count() >= GIBS_SEARCH) && !crate::maps::has_catalog() && !out.contains(&Action::GibsCatalog) {
+                    if (gibs_row || text.chars().count() >= GIBS_SEARCH) && !crate::maps::has_catalog() && !out.contains(&Action::GibsCatalog) {
                         out.push(Action::GibsCatalog);
                     }
                     let words: Vec<String> = text.split_whitespace().map(String::from).collect();
@@ -916,42 +1043,79 @@ impl Catalog {
                             data::gibs::fits_words(&format!("{} {}", item.name(lang), item.key()), &words)
                         } else if !text.is_empty() {
                             item.name(lang).to_lowercase().contains(&text) || item.tip(lang).to_lowercase().contains(&text)
-                        } else if category == Category::All {
+                        } else if all {
                             !matches!(item, Item::Base(_)) && !gibs
                         } else {
-                            item.category() == category
+                            pick.categories.contains(&item.category())
                         }
                     };
                     let shown: Vec<Item> = items().into_iter().filter(|i| fits(*i)).collect();
-                    egui::ScrollArea::vertical().max_height(360.0).show(ui, |ui| {
+                    let list_height = (body - DETAILS_HEIGHT).max(ROW_HEIGHT * 3.0);
+                    egui::ScrollArea::vertical().id_salt("catalog rows").auto_shrink([false, false]).max_height(list_height).min_scrolled_height(list_height).show(ui, |ui| {
                         let bases: Vec<Item> = shown.iter().copied().filter(|i| matches!(i, Item::Base(_))).collect();
                         let layers: Vec<Item> = shown.iter().copied().filter(|i| !matches!(i, Item::Base(_)) && i.category() != Category::Gibs).collect();
                         let gibs: Vec<Item> = shown.iter().copied().filter(|i| i.category() == Category::Gibs).collect();
-                        if category == Category::Gibs && gibs.is_empty() && !crate::maps::has_catalog() {
+                        if gibs_row && gibs.is_empty() && !crate::maps::has_catalog() {
                             ui.label(tr(lang, "The NASA GIBS catalog is loading, the first time about 10 seconds."));
                         }
                         for (head, list) in [(tr(lang, "Base map on the globe - one"), bases), (tr(lang, "Layers - switched on together"), layers), (tr(lang, "NASA GIBS layers - also one map on the globe"), gibs)] {
                             if list.is_empty() {
                                 continue;
                             }
-                            ui.label(egui::RichText::new(head).strong());
+                            ui.add_space(4.0);
+                            ui.label(egui::RichText::new(head).family(egui::FontFamily::Name(crate::fonts::SEMIBOLD.into())).strong());
                             for item in list {
                                 let mut on = item.is_on(state);
                                 let missing = item.unavailable(state).filter(|_| !on);
-                                ui.horizontal(|ui| {
+                                // Строки одной высоты, флажок по середине
+                                // строки, источник - второй строкой
+                                // приглушённым цветом, как у модуля.
+                                let size = egui::vec2(ui.available_width(), ROW_HEIGHT);
+                                ui.allocate_ui_with_layout(size, egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                    ui.set_min_size(size);
                                     let check = ui.add_enabled_ui(missing.is_none(), |ui| crate::theme::checkbox(ui, &mut on).clicked()).inner;
                                     if check {
                                         self.chosen = Some(item.key());
                                         click(item, state, out);
                                     }
+                                    // Превью строки, до прихода - тёмный квадрат.
+                                    let icon = egui::vec2(ICON, ICON);
+                                    match self.thumbs.texture(&item.key(), || recipe(item)) {
+                                        Some(id) => {
+                                            ui.add(egui::Image::new((id, icon)).corner_radius(3.0));
+                                        }
+                                        None => {
+                                            let (rect, _) = ui.allocate_exact_size(icon, egui::Sense::hover());
+                                            let [r, g, b] = data::thumbs::BACKGROUND;
+                                            ui.painter().rect_filled(rect, 3.0, egui::Color32::from_rgb(r, g, b));
+                                        }
+                                    }
                                     let sub = item.subtitle();
-                                    let label = if sub.is_empty() { item.name(lang) } else { format!("{}\n{}", item.name(lang), sub) };
+                                    let mut label = egui::text::LayoutJob::default();
+                                    let body = egui::TextFormat { font_id: egui::TextStyle::Body.resolve(ui.style()), color: ui.visuals().text_color(), ..Default::default() };
+                                    label.append(&item.name(lang), 0.0, body.clone());
+                                    if !sub.is_empty() {
+                                        label.append(&format!("\n{sub}"), 0.0, egui::TextFormat { color: ui.visuals().weak_text_color(), ..body });
+                                    }
                                     let selected = self.chosen.as_deref() == Some(&item.key());
                                     let tip = match missing {
                                         Some(why) => format!("{}\n\n{}", item.tip(lang), tr(lang, why)),
                                         None => item.tip(lang),
                                     };
-                                    let r = ui.selectable_label(selected, label).on_hover_text(tip);
+                                    // Две строки целиком: с обрезкой egui
+                                    // сводил их в одну с «…».
+                                    ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
+                                    // Текст влево во всю ширину, по высоте -
+                                    // по середине строки, как флажок.
+                                    let lines = if sub.is_empty() { 1.0 } else { 2.0 };
+                                    let tall = lines * ui.text_style_height(&egui::TextStyle::Body) + 2.0 * ui.spacing().button_padding.y;
+                                    let r = ui
+                                        .with_layout(egui::Layout::top_down_justified(egui::Align::LEFT), |ui| {
+                                            ui.add_space(((ROW_HEIGHT - tall) / 2.0).max(0.0));
+                                            ui.selectable_label(selected, label)
+                                        })
+                                        .inner
+                                        .on_hover_text(tip);
                                     if r.clicked() {
                                         self.chosen = Some(item.key());
                                     }

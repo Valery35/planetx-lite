@@ -9997,7 +9997,7 @@ impl eframe::App for LiteApp {
             self.overlay_windows(&ctx);
             let mut out = Vec::new();
             let mut catalog = std::mem::take(&mut self.catalog);
-            catalog.window(&ctx, self.lang, &self.layers_state(), &mut out);
+            catalog.window(&ctx, self.lang, &self.layers_state(), &*self.loaders.request, &mut out);
             self.catalog = catalog;
             self.apply_layers(out, now);
         }

@@ -2408,3 +2408,11 @@ The page cannot read the pieces next to tileset.json - open the set as a ZIP arc
 No piece of the 3D Tiles set was read	Не прочитан ни один кусок набора 3D Tiles
 3D Tiles: {title}, pieces not read: {skipped}. Draco and meshopt compression is not read.	3D Tiles: {title}, не прочитано кусков: {skipped}. Сжатие Draco и meshopt не читается.
 3D Tiles: {title}.	3D Tiles: {title}.
+Basis	Основа
+Base maps, local data, the vector map, transparent map overlays and Wikipedia articles.	Подоснова, локальные данные, векторная карта, прозрачные наложения карт и статьи Википедии.
+Earth now	Земля сейчас
+Weather, NASA imagery and maps by days - fire, water, air, life, and soils.	Погода, снимки и карты NASA по дням - огонь, вода, воздух, жизнь, а также почвы.
+Archive and survey	Архив и съёмка
+The sun, stars, the atmosphere and artificial satellites.	Солнце, звёзды, атмосфера и искусственные спутники.
+Energy and transport	Энергетика и транспорт
+Power plants, power lines, pipelines, cables, trains, ships and aircraft.	Электростанции, ЛЭП, трубопроводы, кабели, поезда, суда и самолёты.

@@ -102,6 +102,7 @@ pub mod subsurface;
 pub mod theme;
 pub mod timeline;
 pub mod tool;
+pub mod thumbs;
 pub mod tours;
 pub mod tracks;
 pub mod vector;
