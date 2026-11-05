@@ -177,7 +177,7 @@ pub mod viewshed;
 pub mod volcanoes;
 pub mod volumes;
 pub mod warp;
+pub mod watermask;
 pub mod wayback;
 pub mod weather;
-pub mod watermask;
 pub mod wikipedia;
