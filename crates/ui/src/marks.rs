@@ -276,6 +276,99 @@ fn visible_mut(item: &mut Item) -> &mut bool {
     }
 }
 
+/// Флажки дерева как у модуля (`ui/panel.py` `_fill`, `_update_checks`,
+/// `core/placetree.radio_states`), решение автора от 6 ноября 2026 года.
+/// Прежде флажки шли по правилам KML: папка детям флажок не передавала,
+/// снятая скрывала отмеченных детей, «частично» не было, и флажки
+/// «Моих меток» вели себя иначе, чем у «Моих слоёв».
+///
+/// Метка рисуется по своему флажку. Флажок обычной папки - сумма детей:
+/// все, никого или часть (None), щелчок ставит или снимает всех. Пустая
+/// папка и папка без раскрытия (checkHideChildren) держат свой флажок,
+/// у второй он переходит на всё содержимое. Папка-переключатель отмечена,
+/// пока виден ребёнок, снятая гасит всех, отмеченная включает первого.
+/// Состояние флажка строки: Some(вкл), None - отмечена часть детей.
+pub fn check_state(item: &Item) -> Option<bool> {
+    match item {
+        Item::Folder(f) => folder_state(f, 0),
+        Item::Place(p) => Some(p.visible),
+        Item::Overlay(o) => Some(o.visible),
+    }
+}
+
+/// Состояние флажка папки, skip первых детей не считаются: у корня это
+/// «Временные метки» со своим флажком.
+pub fn folder_state(folder: &Folder, skip: usize) -> Option<bool> {
+    let kids = folder.children.get(skip..).unwrap_or_default();
+    if kids.is_empty() || !folder.expandable {
+        return Some(folder.visible);
+    }
+    if folder.radio {
+        return Some(kids.iter().any(|k| check_state(k) != Some(false)));
+    }
+    let mut states = kids.iter().map(check_state);
+    let first = states.next().flatten();
+    if first.is_some() && states.all(|s| s == first) { first } else { None }
+}
+
+/// Поставить или снять флажок строки со всем, что она передаёт детям.
+pub fn set_checked(item: &mut Item, on: bool) {
+    match item {
+        Item::Folder(f) => set_folder(f, on, 0),
+        Item::Place(p) => p.visible = on,
+        Item::Overlay(o) => o.visible = on,
+    }
+}
+
+fn set_folder(folder: &mut Folder, on: bool, skip: usize) {
+    folder.visible = on;
+    let expandable = folder.expandable;
+    let radio = folder.radio;
+    let Some(kids) = folder.children.get_mut(skip..) else {
+        return;
+    };
+    if radio && expandable && !kids.is_empty() {
+        if !on {
+            kids.iter_mut().for_each(|k| set_checked(k, false));
+        } else if !kids.iter().any(|k| check_state(k) != Some(false))
+            && let Some(first) = kids.first_mut()
+        {
+            set_checked(first, true);
+        }
+        return;
+    }
+    kids.iter_mut().for_each(|k| set_checked(k, on));
+}
+
+/// Снятая папка из файла гасит своё содержимое, как её показывает
+/// Google Earth: с флажками модуля отмеченные дети снятой папки иначе
+/// появились бы на глобусе. Только при открытии и вставке.
+pub fn hide_inside_hidden(folder: &mut Folder) {
+    if !folder.visible {
+        folder.children.iter_mut().for_each(|k| set_checked(k, false));
+        return;
+    }
+    for child in &mut folder.children {
+        if let Item::Folder(f) = child {
+            hide_inside_hidden(f);
+        }
+    }
+}
+
+/// Флажки папок по детям, снизу вверх: папка видна, пока в ней что-то
+/// видно. Такой флажок уходит и в KML: снятая папка в Google Earth
+/// скрыла бы отмеченных детей. skip - как у [`folder_state`].
+pub fn sync_folders(folder: &mut Folder, skip: usize) {
+    for child in folder.children.iter_mut().skip(skip) {
+        if let Item::Folder(f) = child {
+            sync_folders(f, 0);
+        }
+    }
+    if folder.expandable && folder.children.len() > skip {
+        folder.visible = folder_state(folder, skip) != Some(false);
+    }
+}
+
 /// Папка-переключатель: включён ребёнок number - соседи гаснут.
 pub fn radio_keep(folder: &mut Folder, number: usize) {
     if !folder.radio {
@@ -698,7 +791,7 @@ fn temporary_ui(ui: &mut eframe::egui::Ui, folder: &mut Folder, lang: crate::i18
     let header = egui::collapsing_header::CollapsingState::load_with_default_open(ui.ctx(), id, true);
     let (_, head, _) = header
         .show_header(ui, |ui| {
-            if crate::theme::checkbox(ui, &mut folder.visible).changed() {
+            if crate::theme::tristate(ui, folder_state(folder, 0)).changed() {
                 actions.push(Action::Toggled(TEMPORARY.to_vec()));
             }
             crate::theme::clock_icon(ui);
@@ -727,7 +820,7 @@ pub fn root_ui(
     let header = egui::collapsing_header::CollapsingState::load_with_default_open(ui.ctx(), id, true);
     let (_, head, _) = header
         .show_header(ui, |ui| {
-            if crate::theme::checkbox(ui, &mut root.visible).changed() {
+            if crate::theme::tristate(ui, folder_state(root, usize::from(temporary))).changed() {
                 actions.push(Action::Toggled(Vec::new()));
             }
             crate::theme::star(ui);
@@ -790,7 +883,7 @@ pub fn tree_ui(
                 let header = egui::collapsing_header::CollapsingState::load_with_default_open(ui.ctx(), id, path.len() == 1);
                 let (_, head, _) = header
                     .show_header(ui, |ui| {
-                        if crate::theme::checkbox(ui, &mut f.visible).changed() {
+                        if crate::theme::tristate(ui, folder_state(f, 0)).changed() {
                             actions.push(Action::Toggled(path.clone()));
                         }
                         crate::theme::folder_icon(ui);
@@ -802,7 +895,7 @@ pub fn tree_ui(
             }
             Item::Place(p) => {
                 let row = ui.horizontal(|ui| {
-                    if crate::theme::checkbox(ui, &mut p.visible).changed() {
+                    if crate::theme::tristate(ui, Some(p.visible)).changed() {
                         actions.push(Action::Toggled(path.clone()));
                     }
                     let icon = if p.tour.is_some() {
@@ -831,7 +924,7 @@ pub fn tree_ui(
             }
             Item::Overlay(o) => {
                 let row = ui.horizontal(|ui| {
-                    if crate::theme::checkbox(ui, &mut o.visible).changed() {
+                    if crate::theme::tristate(ui, Some(o.visible)).changed() {
                         actions.push(Action::Toggled(path.clone()));
                     }
                     let icon = match o.kind() {
@@ -884,7 +977,8 @@ pub struct Marks {
 
 impl Marks {
     /// Показать метки дерева tree.
-    pub fn set(&mut self, tree: Folder, name: &str) {
+    pub fn set(&mut self, mut tree: Folder, name: &str) {
+        hide_inside_hidden(&mut tree);
         self.tree = Some(tree);
         self.temporary = false;
         self.name = name.to_string();
@@ -903,6 +997,7 @@ impl Marks {
         if tree.name.trim().is_empty() {
             tree.name = name.to_string();
         }
+        hide_inside_hidden(&mut tree);
         self.root(root).children.push(Item::Folder(tree));
         self.name = name.to_string();
         self.refresh();
@@ -912,7 +1007,8 @@ impl Marks {
     /// `temporary_key` модуля: это папка дерева, поэтому путь, перенос,
     /// вставка и тур у неё те же, что у других папок. Панель показывает
     /// её своим корнем, хранилище - отдельно. root - название корня.
-    pub fn set_temporary(&mut self, folder: Folder, root: &str) {
+    pub fn set_temporary(&mut self, mut folder: Folder, root: &str) {
+        hide_inside_hidden(&mut folder);
         self.root(root).children.insert(0, Item::Folder(folder));
         self.temporary = true;
         self.refresh();
@@ -992,7 +1088,10 @@ impl Marks {
     /// Новая строка item в конец папки по пути folder, пустой путь -
     /// корень. Строка не папки - в папку, где она лежит. Возвращает путь
     /// новой строки. root - название корня на языке интерфейса.
-    pub fn insert(&mut self, folder: &[usize], item: Item, root: &str) -> Vec<usize> {
+    pub fn insert(&mut self, folder: &[usize], mut item: Item, root: &str) -> Vec<usize> {
+        if let Item::Folder(f) = &mut item {
+            hide_inside_hidden(f);
+        }
         let tree = self.root(root);
         let mut path = folder.to_vec();
         if !path.is_empty() && !matches!(item_at(tree, &path), Some(Item::Folder(_))) {
@@ -1418,6 +1517,11 @@ impl Marks {
 
     /// Объекты заново по флажкам дерева. Снятый флажок корня скрывает всё.
     pub fn refresh(&mut self) {
+        // Флажки папок - по детям, как у модуля.
+        let skip = self.first_index();
+        if let Some(tree) = self.tree.as_mut() {
+            sync_folders(tree, skip);
+        }
         // Снятый флажок корня «Временные метки» не скрывает: у них свой.
         let only_temporary = self.tree.as_ref().filter(|t| !t.visible && self.temporary).map(|t| {
             let mut folder = Folder::new("");
@@ -1495,17 +1599,32 @@ impl Marks {
             .collect()
     }
 
-    /// Флажок строки сменился: в папке-переключателе соседи гаснут,
-    /// объекты собираются заново.
+    /// Щелчок по флажку строки path, `_places_toggled` модуля: отмеченная
+    /// строка снимается, снятая и отмеченная частично - ставится вместе
+    /// с детьми. В папке-переключателе включённый ребёнок гасит соседей,
+    /// а свой щелчок его не гасит. Объекты собираются заново.
     pub fn toggled(&mut self, path: &[usize]) {
-        if let (Some(tree), Some((last, parent))) = (self.tree.as_mut(), path.split_last()) {
-            let checked = item_at(tree, path).is_some_and(|item| match item {
-                Item::Folder(f) => f.visible,
-                Item::Place(p) => p.visible,
-                Item::Overlay(o) => o.visible,
-            });
-            if checked && let Some(folder) = folder_at_mut(tree, parent) {
-                radio_keep(folder, *last);
+        let skip = self.first_index();
+        if let Some(tree) = self.tree.as_mut() {
+            match path.split_last() {
+                None => {
+                    let on = folder_state(tree, skip) != Some(true);
+                    set_folder(tree, on, skip);
+                }
+                Some((last, parent)) => {
+                    let radio = folder_at_mut(tree, parent).is_some_and(|f| f.radio && f.expandable);
+                    let state = item_at(tree, path).map(check_state);
+                    let on = state != Some(Some(true));
+                    if let (false, Some(item)) = (radio && !on, item_at_mut(tree, path)) {
+                        set_checked(item, on);
+                    }
+                    if on
+                        && radio
+                        && let Some(folder) = folder_at_mut(tree, parent)
+                    {
+                        radio_keep(folder, *last);
+                    }
+                }
             }
         }
         self.refresh();
@@ -1633,6 +1752,126 @@ mod tests {
         assert_eq!(super::visible_shapes(marks.tree.as_ref().unwrap()).len(), 3);
     }
 
+    fn point(name: &str) -> scene::kml::Item {
+        scene::kml::Item::Place(scene::kml::Place::new(name, Kind::Point, vec![(58.0, 56.0)]))
+    }
+
+    /// Видимость меток дерева по порядку обхода.
+    fn shown(marks: &super::Marks) -> Vec<String> {
+        super::visible_shapes(marks.tree.as_ref().unwrap()).into_iter().map(|s| s.name).collect()
+    }
+
+    /// Корень с папкой «П» из двух меток и меткой «в» рядом.
+    fn folder_marks() -> super::Marks {
+        let mut marks = super::Marks::default();
+        let mut folder = scene::kml::Folder::new("П");
+        folder.children = vec![point("а"), point("б")];
+        let mut root = scene::kml::Folder::new("Мои метки");
+        root.children = vec![scene::kml::Item::Folder(folder), point("в")];
+        marks.set(root, "");
+        marks
+    }
+
+    fn state(marks: &super::Marks, path: &[usize]) -> Option<bool> {
+        let tree = marks.tree.as_ref().unwrap();
+        if path.is_empty() { super::folder_state(tree, marks.first_index()) } else { super::check_state(super::item_at(tree, path).unwrap()) }
+    }
+
+    /// Флажки как у модуля, замечание автора от 6 ноября 2026 года:
+    /// флажок папки ставит и снимает детей, папка показывает их сумму.
+    /// На прежних правилах KML снятая метка оставляла папку отмеченной,
+    /// а отмеченная папка не включала снятых детей.
+    #[test]
+    fn folder_check_follows_children() {
+        let mut marks = folder_marks();
+        assert_eq!(state(&marks, &[0]), Some(true));
+        // Снята одна метка - папка отмечена частично, другая видна.
+        marks.toggled(&[0, 0]);
+        assert_eq!(state(&marks, &[0]), None);
+        assert_eq!(state(&marks, &[]), None);
+        assert_eq!(shown(&marks), ["б", "в"]);
+        // Щелчок по частично отмеченной папке ставит всех.
+        marks.toggled(&[0]);
+        assert_eq!(shown(&marks), ["а", "б", "в"]);
+        // Снятая папка снимает детей, сняты оба - папка пуста.
+        marks.toggled(&[0]);
+        assert_eq!((state(&marks, &[0, 0]), state(&marks, &[0, 1]), state(&marks, &[0])), (Some(false), Some(false), Some(false)));
+        assert_eq!(shown(&marks), ["в"]);
+        // Отмечен ребёнок снятой папки - он виден.
+        marks.toggled(&[0, 1]);
+        assert_eq!(shown(&marks), ["б", "в"]);
+        // Корень снимает и ставит всё.
+        marks.toggled(&[0]);
+        marks.toggled(&[]);
+        assert!(shown(&marks).is_empty());
+        marks.toggled(&[]);
+        assert_eq!(shown(&marks), ["а", "б", "в"]);
+    }
+
+    #[test]
+    fn closed_folder_passes_its_check_inside() {
+        let mut marks = folder_marks();
+        if let Some(scene::kml::Item::Folder(f)) = marks.tree.as_mut().unwrap().children.get_mut(0) {
+            f.expandable = false;
+        }
+        marks.toggled(&[0]);
+        assert_eq!(state(&marks, &[0]), Some(false));
+        assert_eq!(shown(&marks), ["в"]);
+        marks.toggled(&[0]);
+        assert_eq!(shown(&marks), ["а", "б", "в"]);
+    }
+
+    /// Папка-переключатель, `radio_states` модуля.
+    #[test]
+    fn radio_folder_checks() {
+        let mut marks = folder_marks();
+        if let Some(scene::kml::Item::Folder(f)) = marks.tree.as_mut().unwrap().children.get_mut(0) {
+            f.radio = true;
+        }
+        // Включённый ребёнок гасит соседа, свой щелчок его не гасит.
+        marks.toggled(&[0]);
+        assert_eq!(shown(&marks), ["в"]);
+        marks.toggled(&[0, 1]);
+        assert_eq!(shown(&marks), ["б", "в"]);
+        marks.toggled(&[0, 0]);
+        assert_eq!(shown(&marks), ["а", "в"]);
+        marks.toggled(&[0, 0]);
+        assert_eq!(shown(&marks), ["а", "в"]);
+        // Флажок папки не трёхпозиционный: снятый гасит всех, поставленный
+        // включает первого.
+        assert_eq!(state(&marks, &[0]), Some(true));
+        marks.toggled(&[0]);
+        assert_eq!(shown(&marks), ["в"]);
+        marks.toggled(&[0]);
+        assert_eq!(shown(&marks), ["а", "в"]);
+    }
+
+    /// Снятая папка из KML гасит отмеченных детей при открытии: без этого
+    /// с флажками модуля они появились бы на глобусе.
+    #[test]
+    fn hidden_folder_from_file_stays_hidden() {
+        let mut marks = super::Marks::default();
+        marks.add(open(KML.as_bytes(), "test.kml").unwrap().tree, "test.kml", "Мои метки");
+        assert_eq!(state(&marks, &[0, 1]), Some(false));
+        assert_eq!(state(&marks, &[0, 1, 0]), Some(false));
+        assert_eq!(state(&marks, &[0]), None);
+        assert_eq!(shown(&marks).len(), 2);
+    }
+
+    /// «Временные метки» держат свой флажок, корень их не считает.
+    #[test]
+    fn root_check_skips_temporary() {
+        let mut marks = with_temporary();
+        marks.toggled(&[]);
+        assert_eq!(state(&marks, &[]), Some(false));
+        assert_eq!(state(&marks, &super::TEMPORARY), Some(true));
+        marks.toggled(&super::TEMPORARY);
+        assert_eq!(state(&marks, &super::TEMPORARY), Some(false));
+        marks.toggled(&[]);
+        assert_eq!(state(&marks, &[]), Some(true));
+        assert_eq!(state(&marks, &super::TEMPORARY), Some(false));
+    }
+
     #[test]
     fn radio_folder_keeps_one_child() {
         let mut folder = scene::kml::Folder::new("Снимки");
@@ -1683,8 +1922,10 @@ mod tests {
         assert_eq!(marks.points().len(), 1);
         assert!(!marks.remove(&[5]));
         assert!(!marks.remove(&[]));
-        marks.tree.as_mut().unwrap().visible = false;
-        marks.toggled(&[]);
+        // Щелчки по корню: частично отмеченный сначала ставит всё.
+        while state(&marks, &[]) != Some(false) {
+            marks.toggled(&[]);
+        }
         assert!(marks.points().is_empty());
         marks.clear();
         assert!(marks.tree.as_ref().unwrap().children.is_empty());

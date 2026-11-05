@@ -356,6 +356,30 @@ pub fn checkbox(ui: &mut egui::Ui, checked: &mut bool) -> egui::Response {
     response
 }
 
+/// Флажок с тремя состояниями, как папка дерева модуля: Some - отмечен
+/// или пуст, None - отмечена часть детей, серый квадрат, как у папки
+/// «Моих слоёв». Сам флажок не меняется: щелчок решает владелец.
+pub fn tristate(ui: &mut egui::Ui, state: Option<bool>) -> egui::Response {
+    match state {
+        Some(on) => {
+            let mut shown = on;
+            checkbox(ui, &mut shown)
+        }
+        None => {
+            let side = 14.0;
+            let (rect, mut response) =
+                ui.allocate_exact_size(egui::vec2(side + 4.0, ui.spacing().interact_size.y.max(side)), egui::Sense::click());
+            if response.clicked() {
+                response.mark_changed();
+            }
+            let at = egui::Rect::from_center_size(rect.center(), egui::vec2(side, side));
+            let p = pal();
+            ui.painter().rect_filled(at, CornerRadius::same(2), p.muted);
+            response
+        }
+    }
+}
+
 /// Значок панели значков, набор модуля (`ui/style.py`, `_draw`): светлые
 /// линии на плашке, у светлого оформления - тёмные. Порядок вариантов -
 /// порядок кнопок панели модуля (`ui/toolbar.py`).
