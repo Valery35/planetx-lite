@@ -93,3 +93,18 @@
 - Telegram, LinkedIn, Facebook, X - посты 5 ноября 2026 года
 - Сайт informpp.ru (шесть страниц, блок «Что нового» 9970), Dropbox - обновлены
 - Форум OSM - не опубликовано, учётная запись заблокирована
+
+### Формы ошибок и пожеланий на GitHub, 5 ноября 2026 года
+
+Тексты - planetx/site/posts_issue_forms.md.
+
+- Формы: https://github.com/Valery35/planetx/issues/new/choose и https://github.com/Valery35/planetx-lite/issues/new/choose
+- Telegram: https://t.me/qgis_isolines/186
+- ВК: https://vk.ru/wall-241229428_49
+- OSGeo Discourse: ответ в теме 155878, ждёт модератора
+- Mastodon: https://en.osm.town/@Vaery35/117564382084961506
+- X: https://x.com/Valery35/status/2118354934856872285
+- LinkedIn: https://www.linkedin.com/feed/update/urn:li:activity:7524120941312933888/
+- Facebook: пост на странице https://www.facebook.com/valery35/ 5 ноября 2026 года
+- Форум OSM - не опубликовано, учётная запись Valery35 отключена (silenced), темы 149679 и 149680 скрыты
+- linux.org.ru - не публикуется, объявление о формах не новость; Reddit - по желанию автора
