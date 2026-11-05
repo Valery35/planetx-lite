@@ -1529,6 +1529,13 @@ impl LiteApp {
         let recording = self.recording.is_some();
         let measuring = matches!(self.tool.as_ref().map(|t| &t.purpose), Some(crate::tool::Purpose::Ruler));
         let other_body = !self.planet.earth;
+        // Синхронизация с картой RustGIS - кнопка-переключатель, пока есть
+        // связь, как значок синхронизации модуля. На других телах её нет.
+        #[cfg(not(target_arch = "wasm32"))]
+        let sync_button = self.rustgis.as_ref().map(|b| (b.sync, b.connected && !other_body));
+        #[cfg(target_arch = "wasm32")]
+        let sync_button: Option<(bool, bool)> = None;
+        let mut sync_toggle = false;
         let current = if self.sky.is_some() { "sky" } else { self.planet.key() };
         // Узкий экран, телефон: все значки панели в ширину вида не входят.
         // На панели остаются частые, прочие - строками с названиями
@@ -1599,6 +1606,11 @@ impl LiteApp {
                         let tip = if panel { tr(lang, "Hide sidebar") } else { tr(lang, "Show sidebar") };
                         if tool_button(ui, Tool::Sidebar, false, false, true, tip).clicked() {
                             panel = !panel;
+                        }
+                        if let Some((on, ready)) = sync_button
+                            && tool_button(ui, Tool::Sync, on, false, ready, tr(lang, "Synchronisation with the RustGIS map window. The direction is in the view properties.")).clicked()
+                        {
+                            sync_toggle = true;
                         }
                         if tool_button(ui, Tool::Identify, identify, false, true, tr(lang, "Identify. A click on the globe shows the coordinates, the height or depth of the point and the placemarks there.")).clicked() {
                             identify = !identify;
@@ -1697,6 +1709,13 @@ impl LiteApp {
                 });
         }
         self.spinner(ctx, area.response.rect, now);
+        #[cfg(not(target_arch = "wasm32"))]
+        if sync_toggle && let Some(b) = &mut self.rustgis {
+            let on = !b.sync;
+            b.set_sync(on);
+        }
+        #[cfg(target_arch = "wasm32")]
+        let _ = sync_toggle;
         self.panel_open = panel;
         self.settings_open = settings;
         self.identify = identify;
@@ -3144,6 +3163,10 @@ impl LiteApp {
             let wake_ctx = ctx.clone();
             self.rustgis = Some(Bridge::new(Link::start(Arc::new(move || wake_ctx.request_repaint()))));
         }
+        // Направление синхронизации - из «Свойств вида».
+        if let Some(sync) = &mut self.rustgis {
+            sync.direction = crate::rustgislink::Direction::from_key(&self.settings.sync).unwrap_or_default();
+        }
         let mut news = Vec::new();
         if let Some(sync) = &self.rustgis {
             while let Some(n) = sync.link.take() {
@@ -3178,11 +3201,15 @@ impl LiteApp {
                         sync.names = state.layers.iter().filter(|l| l.drawn()).map(|l| (l.id, l.name.clone())).collect();
                         state.view.and_then(|v| sync.map_view(v))
                     });
-                    if let Some((lat, lon, w, h)) = moved {
-                        let camera = &self.nav.camera;
-                        let distance = data::rustgis::distance_for(w, h, camera.fov_y, camera.aspect());
-                        self.nav.show(Pose::new(lat, lon, distance, 0.0, 0.0));
-                        let spot = (self.nav.pose.lat, self.nav.pose.lon, self.view_width());
+                    // Карта ведёт глобус: перелёт к её охвату, наклон
+                    // и азимут глобуса остаются, `fly_view` модуля.
+                    if let Some((lat, lon, w, h)) = moved.filter(|_| self.planet.earth) {
+                        let (fov_y, aspect) = (self.nav.camera.fov_y, self.nav.camera.aspect());
+                        let distance = data::rustgis::distance_for(w, h, fov_y, aspect);
+                        let (heading, tilt) = (self.nav.pose.heading, self.nav.pose.tilt);
+                        crate::input::fly(&mut self.nav, Pose::new(lat, lon, distance, heading, tilt), now);
+                        // Вид в конце перелёта: ширина полосы, как у view_width.
+                        let spot = (lat, lon, 2.0 * distance * (fov_y.to_radians() / 2.0).tan() * aspect);
                         if let Some(sync) = &mut self.rustgis {
                             sync.applied(spot);
                         }
@@ -3199,10 +3226,13 @@ impl LiteApp {
             }
         }
         crate::datalayers::RUSTGIS_LINKED.store(self.rustgis.as_ref().is_some_and(|s| s.connected), std::sync::atomic::Ordering::Relaxed);
-        // Вид глобуса - на карту, когда глобус постоял.
+        // Вид глобуса - на карту, когда глобус постоял. На других телах
+        // синхронизации нет, как у модуля.
         let spot = (self.nav.pose.lat, self.nav.pose.lon, self.view_width());
+        let earth = self.planet.earth;
         if let Some(sync) = &mut self.rustgis
             && sync.connected
+            && earth
         {
             if let Some(ask) = sync.globe_view(spot, now) {
                 sync.link.ask(ask);

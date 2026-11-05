@@ -387,6 +387,9 @@ pub fn tristate(ui: &mut egui::Ui, state: Option<bool>) -> egui::Response {
 pub enum Tool {
     /// Скрыть или показать боковую панель.
     Sidebar,
+    /// Синхронизация с картой RustGIS: две дуги со стрелками, как
+    /// «sync» модуля.
+    Sync,
     /// Определить объекты: прицел.
     Identify,
     /// Линейка: планка с делениями наискось.
@@ -660,7 +663,7 @@ pub fn paint_tool(painter: &egui::Painter, rect: egui::Rect, tool: Tool, menu: b
             pen.bar(14.0, 5.5, 3.5, 13.0, 1.0);
         }
         Tool::Stop => pen.bar(6.5, 6.5, 11.0, 11.0, 1.5),
-        Tool::Loop => {
+        Tool::Loop | Tool::Sync => {
             pen.arc(5.0, 5.0, 14.0, 14.0, 40.0, 260.0);
             pen.arrow(17.4, 7.6, 50.0, 3.5);
             pen.arc(5.0, 5.0, 14.0, 14.0, 220.0, 40.0);

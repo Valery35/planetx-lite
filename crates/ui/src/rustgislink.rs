@@ -370,6 +370,54 @@ pub const SETTLE_SECONDS: f64 = 0.3;
 /// Вид: широта, долгота, ширина полосы на местности в метрах.
 pub type Spot = (f64, f64, f64);
 
+/// Кто за кем следует при включённой синхронизации, `core/sync.py`
+/// модуля. Выбор - в «Свойствах вида», по умолчанию в обе стороны.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum Direction {
+    #[default]
+    Both,
+    /// Карта ведёт глобус: глобус переходит к охвату карты, наклон
+    /// и азимут глобуса остаются.
+    MapToGlobe,
+    /// Глобус ведёт карту: карта встаёт в точку взгляда глобуса, когда
+    /// он остановится.
+    GlobeToMap,
+}
+
+impl Direction {
+    pub const ALL: [Direction; 3] = [Direction::Both, Direction::MapToGlobe, Direction::GlobeToMap];
+
+    /// Ключ в настройках, как у модуля.
+    pub fn key(self) -> &'static str {
+        match self {
+            Direction::Both => "both",
+            Direction::MapToGlobe => "map",
+            Direction::GlobeToMap => "globe",
+        }
+    }
+
+    pub fn from_key(key: &str) -> Option<Direction> {
+        Direction::ALL.into_iter().find(|d| d.key() == key)
+    }
+
+    /// Название в списке «Свойств вида», ключ перевода.
+    pub fn name(self) -> &'static str {
+        match self {
+            Direction::Both => "Both ways",
+            Direction::MapToGlobe => "Map leads the globe",
+            Direction::GlobeToMap => "Globe leads the map",
+        }
+    }
+
+    fn map_leads(self) -> bool {
+        self != Direction::GlobeToMap
+    }
+
+    fn globe_leads(self) -> bool {
+        self != Direction::MapToGlobe
+    }
+}
+
 /// Связь окна с RustGIS: поток, состояние и синхронизация видов,
 /// как `ui/sync.py` модуля в обе стороны.
 pub struct Bridge {
@@ -389,20 +437,60 @@ pub struct Bridge {
     last_globe: Option<Spot>,
     moved_at: f64,
     pending: bool,
+    /// Синхронизация включена кнопкой панели значков, как у модуля:
+    /// без неё виды карты и глобуса независимы.
+    pub sync: bool,
+    pub direction: Direction,
+    /// Синхронизацию только включили, глобус ведёт: его вид уходит
+    /// на карту сразу, без ожидания покоя.
+    push_now: bool,
 }
 
 impl Bridge {
     pub fn new(link: Link) -> Bridge {
-        Bridge { link, connected: false, status: String::new(), view: None, names: Vec::new(), last_map: None, last_sent: None, last_globe: None, moved_at: 0.0, pending: false }
+        Bridge {
+            link,
+            connected: false,
+            status: String::new(),
+            view: None,
+            names: Vec::new(),
+            last_map: None,
+            last_sent: None,
+            last_globe: None,
+            moved_at: 0.0,
+            pending: false,
+            sync: false,
+            direction: Direction::Both,
+            push_now: false,
+        }
     }
 
-    /// Пришёл вид карты. Some - карту сдвинул пользователь RustGIS, глобус
-    /// идёт за ней: широта, долгота, ширина и высота полосы в метрах.
-    /// None - карта на месте или это ответ на шаг глобуса.
+    /// Кнопка синхронизации, `MapSync.set_enabled` модуля. При включении
+    /// ведущая сторона сразу ставит ведомую: глобус ведёт карту только
+    /// в направлении «Глобус ведёт карту», иначе ведёт карта.
+    pub fn set_sync(&mut self, on: bool) {
+        if on == self.sync {
+            return;
+        }
+        self.sync = on;
+        self.last_map = None;
+        self.last_sent = None;
+        self.pending = false;
+        // Глобус ведёт - его вид уходит на карту на ближайшем кадре.
+        self.push_now = on && self.direction == Direction::GlobeToMap;
+    }
+
+    /// Пришёл вид карты. Some - синхронизация включена, карта ведёт и её
+    /// сдвинул пользователь RustGIS (или синхронизацию только включили):
+    /// глобус идёт за ней - широта, долгота, ширина и высота полосы
+    /// в метрах. None - карта на месте или это ответ на шаг глобуса.
     pub fn map_view(&mut self, view: data::rustgis::View) -> Option<(f64, f64, f64, f64)> {
         let (w, h) = data::rustgis::ground_size(&view);
         let spot = (view.lat, view.lon, w);
         self.view = Some(view);
+        if !self.sync || !self.direction.map_leads() {
+            return None;
+        }
         if self.last_map.is_some_and(|m| data::rustgis::same_view(m, spot)) {
             return None;
         }
@@ -422,6 +510,18 @@ impl Bridge {
     /// Вид глобуса на этом кадре. Some - глобус сдвинули и он постоял
     /// [`SETTLE_SECONDS`]: просьба передвинуть карту.
     pub fn globe_view(&mut self, globe: Spot, now: f64) -> Option<Ask> {
+        if !self.sync || !self.direction.globe_leads() {
+            self.last_globe = Some(globe);
+            return None;
+        }
+        // Только включили, глобус ведёт: сразу, как только известен вид
+        // карты (масштаб считается от него).
+        if self.push_now && self.view.is_some() {
+            self.push_now = false;
+            self.last_globe = Some(globe);
+            self.pending = true;
+            self.moved_at = f64::NEG_INFINITY;
+        }
         if !self.last_globe.is_some_and(|g| data::rustgis::same_view(g, globe)) {
             self.last_globe = Some(globe);
             self.moved_at = now;
@@ -554,6 +654,7 @@ mod tests {
         let (_news_tx, news) = channel::<News>();
         let link = Link { asks: channel::<Ask>().0, news, stop: Arc::new(AtomicBool::new(false)) };
         let mut s = Bridge::new(link);
+        s.set_sync(true);
         // Карта сдвинулась - глобус идёт за ней.
         let moved = s.map_view(view(58.0, 56.0, 0.5));
         assert!(moved.is_some());
@@ -574,6 +675,43 @@ mod tests {
         let half = 0.5 * 58f64.to_radians().cos() / 59f64.to_radians().cos();
         let echo = view(59.0, 56.0, half);
         assert!(s.map_view(echo).is_none());
+    }
+
+    fn bridge() -> Bridge {
+        let (_news_tx, news) = channel::<News>();
+        Bridge::new(Link { asks: channel::<Ask>().0, news, stop: Arc::new(AtomicBool::new(false)) })
+    }
+
+    /// Синхронизация как у модуля, `ui/sync.py`: без кнопки виды
+    /// независимы, направление решает, кто ведёт, при включении ведущая
+    /// сторона сразу ставит ведомую. Прежде связь гоняла виды всегда.
+    #[test]
+    fn sync_button_and_direction() {
+        let mut s = bridge();
+        // Кнопка не нажата - ни карта, ни глобус друг друга не двигают.
+        assert!(s.map_view(view(58.0, 56.0, 0.5)).is_none());
+        assert!(s.globe_view((59.0, 56.0, 50_000.0), 1.0).is_none());
+        assert!(s.globe_view((59.0, 56.0, 50_000.0), 5.0).is_none());
+        // Включена в обе стороны - карта сразу ставит глобус, даже на
+        // прежнем виде.
+        s.set_sync(true);
+        assert!(s.map_view(view(58.0, 56.0, 0.5)).is_some());
+        // Карта ведёт глобус - глобус карту не двигает.
+        s.direction = Direction::MapToGlobe;
+        assert!(s.globe_view((61.0, 56.0, 50_000.0), 6.0).is_none());
+        assert!(s.globe_view((61.0, 56.0, 50_000.0), 7.0).is_none());
+        // Глобус ведёт карту - карта глобус не двигает, а при включении
+        // глобус уходит на карту на ближайшем кадре.
+        s.set_sync(false);
+        s.direction = Direction::GlobeToMap;
+        s.set_sync(true);
+        assert!(s.map_view(view(10.0, 20.0, 0.5)).is_none());
+        let ask = s.globe_view((61.0, 56.0, 50_000.0), 8.0);
+        assert!(matches!(ask, Some(Ask::GoTo { lat, .. }) if lat == 61.0));
+        // Ключи настроек - как у модуля.
+        assert_eq!(Direction::ALL.map(Direction::key), ["both", "map", "globe"]);
+        assert_eq!(Direction::from_key("globe"), Some(Direction::GlobeToMap));
+        assert_eq!(Direction::from_key("off"), None);
     }
 
     #[test]
