@@ -219,6 +219,13 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
         if in.height >= draw.sea.z {
             discard;
         }
+        // В проходе воды группа 1 - маска воды тайла (`_water_mask`
+        // модуля): красный 0 - суша ниже нуля, Прикаспий, польдеры,
+        // карьер, воды там нет. Поднятый уровень заливает и её вместе
+        // с сушей выше нуля. Без маски текстура белая.
+        if in.height < 0.0 && draw.sea.z <= 0.0 && picture.r < 0.5 {
+            discard;
+        }
         base = draw.water.rgb;
         alpha = alpha * draw.water.a * clamp((draw.sea.z - in.height) / draw.sea.y, 0.25, 1.0);
         shade = 1.0;

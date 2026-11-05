@@ -191,6 +191,16 @@ type OverPair = (Option<TileKey>, Option<TileKey>, Option<TileKey>, Option<TileK
 /// Наибольший уровень тайлов огней городов, `LIGHTS_LEVEL` модуля.
 pub const LIGHTS_LEVEL: u32 = 8;
 
+/// Масок воды в видеокарте не больше стольких, `MASKS_KEPT` модуля.
+pub const MASKS_KEPT: usize = 400;
+
+/// Маска воды тайла в видеокарте и кадр, когда она нужна была последний
+/// раз.
+struct GpuMask {
+    bind_group: wgpu::BindGroup,
+    last_used: u64,
+}
+
 struct Target {
     width: u32,
     height: u32,
@@ -298,6 +308,9 @@ struct Item {
     over_pair: OverPair,
     /// Снимок шапки: 0 - северной, 1 - южной.
     cap: Option<usize>,
+    /// Проход воды: тайл с маской воды, её окно - в uniform.window.
+    /// None - маски нет, вода по высотам.
+    mask: Option<TileKey>,
     uniform: DrawUniform,
 }
 
@@ -389,6 +402,9 @@ pub struct Globe {
     overlays: HashMap<TileKey, GpuView>,
     /// Огни городов на ночной стороне по тайлам, core/sun.py модуля.
     lights: HashMap<TileKey, GpuView>,
+    /// Маски воды прохода воды по тайлам, `GlobeView._water_mask`
+    /// модуля: белое - вода, чёрное - суша ниже нуля.
+    water_masks: HashMap<TileKey, GpuMask>,
     /// Снимки события по тайлам: «после» и «до» для шторки.
     events: [HashMap<TileKey, GpuView>; 2],
     /// Линия шторки в пикселях кадра, None - шторки нет.
@@ -713,8 +729,14 @@ impl Globe {
         // Вода - та же программа тайла: глубину не пишет, дно видно
         // сквозь неё, суша выше нуля закрывает её проверкой глубины, как
         // `_draw_water` модуля. Альфа кадра остаётся.
+        // Цвет - SRC_ALPHA, ONE_MINUS_SRC_ALPHA, как у модуля: шейдер
+        // тайла отдаёт цвет без умножения на альфу. С OVER (цвет без
+        // умножения плюс фон) синий воды прибавлялся к снимку целиком,
+        // вода выходила ярко-голубой, мелководье и суша ниже нуля почти
+        // белыми. Замечание автора от 6 ноября 2026 года - «в Про вода
+        // вообще не видна такой».
         let water_blend = wgpu::BlendState {
-            color: wgpu::BlendComponent::OVER,
+            color: wgpu::BlendComponent { src_factor: wgpu::BlendFactor::SrcAlpha, dst_factor: wgpu::BlendFactor::OneMinusSrcAlpha, operation: wgpu::BlendOperation::Add },
             alpha: wgpu::BlendComponent { src_factor: wgpu::BlendFactor::Zero, dst_factor: wgpu::BlendFactor::One, operation: wgpu::BlendOperation::Add },
         };
         let make_tile_pipeline = |label: &str, water: bool, blend: bool| {
@@ -937,6 +959,7 @@ impl Globe {
             blank,
             clear,
             overlays: HashMap::new(),
+            water_masks: HashMap::new(),
             events: [HashMap::new(), HashMap::new()],
             split: None,
             lights: HashMap::new(),
@@ -1281,6 +1304,48 @@ impl Globe {
     /// Есть ли своё наложение у тайла.
     pub fn has_overlay(&self, key: TileKey) -> bool {
         self.overlays.contains_key(&key)
+    }
+
+    /// Положить маску воды тайла key, `data::watermask::mask_image`:
+    /// RGBA side × side, красный 255 - вода, 0 - суша ниже нуля. Картинка
+    /// не того размера отбрасывается. Сверх [`MASKS_KEPT`] уходят давно
+    /// не нужные.
+    pub fn set_water_mask(&mut self, key: TileKey, side: u32, rgba: &[u8]) {
+        if side == 0 || rgba.len() as u64 != u64::from(side) * u64::from(side) * 4 {
+            return;
+        }
+        let bind_group = Self::texture_bind_as(&self.device, &self.queue, &self.texture_layout, &self.sampler, side, side, rgba, OVERLAY_FORMAT);
+        self.water_masks.insert(key, GpuMask { bind_group, last_used: self.frame });
+        while self.water_masks.len() > MASKS_KEPT {
+            let Some(old) = self.water_masks.iter().min_by_key(|(_, m)| m.last_used).map(|(k, _)| *k) else {
+                break;
+            };
+            self.water_masks.remove(&old);
+        }
+    }
+
+    /// Есть ли своя маска воды у тайла.
+    pub fn has_water_mask(&self, key: TileKey) -> bool {
+        self.water_masks.contains_key(&key)
+    }
+
+    /// Забыть все маски воды.
+    pub fn clear_water_masks(&mut self) {
+        self.water_masks.clear();
+    }
+
+    /// Маска воды для тайла: своя или доля маски ближайшего предка, пока
+    /// своя не готова. Ключ тайла с маской и окно в ней.
+    fn water_mask_of(&self, key: TileKey) -> Option<(TileKey, [f32; 4])> {
+        let (z, x, y) = key;
+        (0..=z.min(31)).find_map(|depth| {
+            let parent = (z - depth, x >> depth, y >> depth);
+            self.water_masks.contains_key(&parent).then(|| {
+                let cells = 1u32 << depth;
+                let side = 1.0 / cells as f32;
+                (parent, [(x % cells) as f32 * side, (y % cells) as f32 * side, side, 0.0])
+            })
+        })
     }
 
     /// Забыть все наложения: сменились группы векторной основы.
@@ -1649,7 +1714,7 @@ impl Globe {
                 let shadow = light.filter(|_| kind == Kind::Tile).map_or([0.0; 16], |f| f.matrix(center).as_mat4().to_cols_array());
                 let pair = (overlay, lights, after, before);
                 me.ensure_over(pair);
-                out.push(Item { kind, mesh, texture, over_pair: pair, cap: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow, water: [0.0; 4], sea: [0.0; 4], cut: [0.0; 4], glass: [1.0, 0.0, 0.0, 0.0], wedge: [0.0; 4], wedge_lat: [0.0; 4], event, event_before, split, light: shadow } });
+                out.push(Item { kind, mesh, texture, over_pair: pair, cap: None, mask: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow, water: [0.0; 4], sea: [0.0; 4], cut: [0.0; 4], glass: [1.0, 0.0, 0.0, 0.0], wedge: [0.0; 4], wedge_lat: [0.0; 4], event, event_before, split, light: shadow } });
             }
         };
         let flat = |rgb: [f32; 3]| [rgb[0], rgb[1], rgb[2], 1.0];
@@ -1721,18 +1786,35 @@ impl Globe {
         {
             // z - уровень моря на экране: уровень, умноженный на масштаб рельефа.
             let sea = [1.0, (f64::from(SHALLOW) * store.scale()).max(1.0) as f32, (f64::from(sea_level) * store.scale()) as f32, 0.0];
+            // Группа 1 прохода воды - маска воды тайла, `_water_mask`
+            // модуля: суша ниже нуля по векторной основе воды не получает.
+            // Без маски - белая текстура, вода по высотам.
             let copies: Vec<Item> = out
                 .iter()
                 .filter(|i| matches!(i.kind, Kind::Tile | Kind::Cap))
-                .map(|i| Item {
-                    kind: Kind::Water,
-                    mesh: i.mesh,
-                    texture: i.texture,
-                    over_pair: i.over_pair,
-                    cap: i.cap,
-                    uniform: DrawUniform { water: color, sea, ..i.uniform },
+                .map(|i| {
+                    let found = match i.mesh {
+                        MeshId::Tile { z, x, y } => self.water_mask_of((z, x, y)),
+                        MeshId::PolarCap { .. } => None,
+                    };
+                    let window = found.map_or(WHOLE, |(_, w)| w);
+                    Item {
+                        kind: Kind::Water,
+                        mesh: i.mesh,
+                        texture: None,
+                        over_pair: i.over_pair,
+                        cap: None,
+                        mask: found.map(|(k, _)| k),
+                        uniform: DrawUniform { water: color, sea, window, ..i.uniform },
+                    }
                 })
                 .collect();
+            let frame = self.frame;
+            for key in copies.iter().filter_map(|i| i.mask) {
+                if let Some(m) = self.water_masks.get_mut(&key) {
+                    m.last_used = frame;
+                }
+            }
             out.extend(copies);
         }
         out
@@ -2131,6 +2213,7 @@ impl Globe {
                 let cap = item.cap.and_then(|i| self.polar_binds.get(i).and_then(Option::as_ref).or_else(|| self.cap_binds.get(i).and_then(Option::as_ref)));
                 let texture = match cap {
                     Some(bind) => bind,
+                    None if item.kind == Kind::Water => item.mask.and_then(|k| self.water_masks.get(&k)).map_or(&self.blank, |m| &m.bind_group),
                     None => item.texture.and_then(|k| self.textures.get(&k)).map_or(&self.blank, |t| &t.bind_group),
                 };
                 let Ok(offset) = u32::try_from(i as u64 * self.stride) else {

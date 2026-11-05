@@ -511,6 +511,11 @@ pub struct LiteApp {
     /// Прочитанные браузером брошенные файлы: байты или ошибка и имя.
     dropped_box: DroppedBox,
     /// «Мои слои» - векторные слои файлов и результатов в разделе «Слои».
+    /// Тайлы воды масок прохода воды у того же загрузчика и те из них,
+    /// что не нужны самой основе.
+    water_tiles: crate::watermask::WaterTiles,
+    water_keys: HashSet<TileKey>,
+    water_only: HashSet<TileKey>,
     data_layers: crate::datalayers::DataLayers,
     /// Наборы 3D Tiles в разделе «Слои».
     tilesets: crate::tilesets::Tilesets,
@@ -1295,6 +1300,9 @@ impl LiteApp {
             pictures: Pictures::default(),
             screen_textures: HashMap::new(),
             keep_pose: false,
+            water_tiles: crate::watermask::WaterTiles::default(),
+            water_keys: HashSet::new(),
+            water_only: HashSet::new(),
             scene_source: None,
             fetching: None,
             demo_cache: None,
@@ -8413,6 +8421,13 @@ impl LiteApp {
                     let sea = depths.is_some();
                     if let Some(d) = depths {
                         store.add_depths(loaded.key, d);
+            if self.water_keys.contains(&loaded.key) {
+                self.water_tiles.add(loaded.key, bytes.as_ref());
+                // Тайл только маски воды в основу не идёт.
+                if self.water_only.contains(&loaded.key) {
+                    continue;
+                }
+            }
                     }
                     store.add(self.relief.patch(tile));
                     // Потомки, пришедшие раньше, берут дно у этого тайла.
@@ -9720,6 +9735,18 @@ impl eframe::App for LiteApp {
             if !rect.contains(at) {
                 continue;
             }
+        // Тайлы воды масок прохода воды - тем же загрузчиком, только для
+        // тайлов кадра с рельефом ниже нуля, пока вода по уровню моря.
+        let water_on = self.settings.sea && self.planet.earth && self.geoid.is_none() && self.hydro.sea_level <= 0.0;
+        let water_list = if water_on {
+            let low = |k: TileKey| store.range_for(k).0 < 0.0;
+            self.water_tiles.wanted(&selection.draw, &low, &|k| globe.has_water_mask(k))
+        } else {
+            Vec::new()
+        };
+        self.water_keys = water_list.iter().map(|(k, _)| *k).collect();
+        self.water_only = self.water_keys.iter().copied().filter(|k| !vector_tiles.iter().any(|(v, _)| v == k)).collect();
+        vector_tiles.extend(water_list.into_iter().filter(|(k, _)| self.water_only.contains(k)));
             let font = egui::FontId::proportional(11.0);
             let galley = painter.layout_no_wrap(text.clone(), font.clone(), egui::Color32::WHITE);
             let place = egui::Rect::from_min_size(at - egui::vec2(0.0, galley.size().y), galley.size()).expand(2.0);
@@ -9842,6 +9869,16 @@ impl eframe::App for LiteApp {
             calc.site.paint(&painter, rect, ppp, &self.nav);
         }
         for site in self.hydro.sites().into_iter().chain(self.earthwork.site()) {
+        // Маски воды - в том же бюджете кадра. Снимок --shot ждёт их,
+        // как линий основы.
+        let mut water_pending = water_on && !self.water_keys.is_empty();
+        if water_on {
+            let low = |k: TileKey| store.range_for(k).0 < 0.0;
+            if self.water_tiles.step(&selection.draw, &low, VECTOR_BUDGET, globe) {
+                water_pending = true;
+                ctx.request_repaint();
+            }
+        }
             site.paint(&painter, rect, ppp, &self.nav);
         }
         if let Some(calc) = self.aef_change.as_ref().filter(|c| c.open) {
@@ -9970,7 +10007,7 @@ impl eframe::App for LiteApp {
             check.note_labels(&self.labels.drawn, rect);
         }
         self.finish_check(&ctx);
-        self.step_shot(&ctx, moving || loading || lines_pending);
+        self.step_shot(&ctx, moving || loading || lines_pending || water_pending);
         if moving || animating || loading || lines_pending || self.labels.pending || self.check.is_some() {
             ctx.request_repaint();
         }

@@ -110,6 +110,7 @@ pub mod volumecalc;
 pub mod wayback;
 pub mod weather;
 pub mod wiki;
+pub mod watermask;
 
 pub use app::{LiteApp, Loaders, Report, ShotSink};
 pub use check::Scenario;

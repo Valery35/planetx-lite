@@ -178,4 +178,5 @@ pub mod volumes;
 pub mod warp;
 pub mod wayback;
 pub mod weather;
+pub mod watermask;
 pub mod wikipedia;
