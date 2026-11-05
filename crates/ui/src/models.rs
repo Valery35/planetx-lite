@@ -43,7 +43,7 @@ pub struct Parsed {
 }
 
 /// Картинка модели в RGBA, не больше [`MAX_SIDE`] по стороне.
-fn decode(bytes: &[u8]) -> Option<(u32, u32, Vec<u8>)> {
+pub(crate) fn decode(bytes: &[u8]) -> Option<(u32, u32, Vec<u8>)> {
     let mut img = image::load_from_memory(bytes).ok()?.to_rgba8();
     let (w, h) = img.dimensions();
     if w > MAX_SIDE || h > MAX_SIDE {

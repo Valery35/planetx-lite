@@ -512,6 +512,8 @@ pub struct LiteApp {
     dropped_box: DroppedBox,
     /// «Мои слои» - векторные слои файлов и результатов в разделе «Слои».
     data_layers: crate::datalayers::DataLayers,
+    /// Наборы 3D Tiles в разделе «Слои».
+    tilesets: crate::tilesets::Tilesets,
     /// Список «Моих слоёв» прошлого запуска, ждёт папки данных программы.
     my_layers_saved: Option<String>,
     /// Папка данных пользователя: в ней лежат файлы «Моих слоёв». Не
@@ -1278,6 +1280,7 @@ impl LiteApp {
             route: crate::route::Router::new(data::routing::Mode::from_name(&settings.route).unwrap_or(data::routing::Mode::Car)),
             dropped_box: DroppedBox::default(),
             data_layers: crate::datalayers::DataLayers::default(),
+            tilesets: crate::tilesets::Tilesets::default(),
             my_layers_saved: None,
             user_dir: None,
             new_folder: String::new(),
@@ -3383,6 +3386,17 @@ impl LiteApp {
                 }
                 Action::AddSource => self.own_dialog = Some(OwnDialog::default()),
                 Action::Data(id, act) => self.data_act(id, &act, now),
+                Action::Tiles(id, act) => {
+                    if act == crate::tilesets::Act::Zoom {
+                        let spots = self.tilesets.get(id).map(|s| s.spots.clone()).unwrap_or_default();
+                        let camera = &self.nav.camera;
+                        if let Some(pose) = marks::fit_points(&spots, camera.fov_y, camera.aspect()) {
+                            crate::input::fly(&mut self.nav, pose, now);
+                        }
+                    } else {
+                        self.tilesets.apply(id, act);
+                    }
+                }
                 Action::GibsCatalog => self.ask_gibs_catalog(),
                 Action::Events => self.events.open(&*self.loaders.request),
                 Action::RemoveOwn(b) => {
@@ -3854,6 +3868,57 @@ impl LiteApp {
         }
     }
 
+    /// Набор 3D Tiles файла name в раздел «Слои», камера - к нему. Архив
+    /// несёт куски в себе. У tileset.json куски берутся в программе из
+    /// папки последнего открытия, у страницы их нет - нужен архив.
+    fn open_tiles(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
+        let read = if bytes.starts_with(b"PK") {
+            scene::tiles3d::read_zip(bytes)
+        } else {
+            let dir = self.open_dir.clone();
+            let fetch = |path: &str| dir.as_ref().and_then(|d| std::fs::read(d.join(path)).ok());
+            scene::tiles3d::read(bytes, &fetch)
+        };
+        let set = match read {
+            Ok(set) => set,
+            Err(e) => {
+                self.open_message = Some(trf(self.lang, "The file did not open: {name}: {e}", &[("name", name), ("e", &e.0)]));
+                return Err(e.0);
+            }
+        };
+        let skipped = set.skipped.len();
+        let title = if name.to_lowercase().ends_with("tileset.json") { self.open_dir_name().unwrap_or_else(|| name.to_string()) } else { data::layers::stem(name).to_string() };
+        let Some(id) = self.tilesets.add(set, &title, &self.nav.camera.ellipsoid) else {
+            let e = if cfg!(target_arch = "wasm32") && !bytes.starts_with(b"PK") {
+                tr(self.lang, "The page cannot read the pieces next to tileset.json - open the set as a ZIP archive").to_string()
+            } else {
+                tr(self.lang, "No piece of the 3D Tiles set was read").to_string()
+            };
+            self.open_message = Some(trf(self.lang, "The file did not open: {name}: {e}", &[("name", name), ("e", &e)]));
+            return Err(e);
+        };
+        self.open_message = Some(if skipped > 0 {
+            trf(self.lang, "3D Tiles: {title}, pieces not read: {skipped}. Draco and meshopt compression is not read.", &[("title", &title), ("skipped", &skipped.to_string())])
+        } else {
+            trf(self.lang, "3D Tiles: {title}.", &[("title", &title)])
+        });
+        let spots = self.tilesets.get(id).map(|s| s.spots.clone()).unwrap_or_default();
+        let camera = &self.nav.camera;
+        let pose = marks::fit_points(&spots, camera.fov_y, camera.aspect());
+        if let Some(pose) = pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
+            match fly {
+                Some(now) => crate::input::fly(&mut self.nav, pose, now),
+                None => self.nav.show(pose),
+            }
+        }
+        Ok(pose)
+    }
+
+    /// Имя папки последнего открытия - название набора tileset.json.
+    fn open_dir_name(&self) -> Option<String> {
+        self.open_dir.as_ref()?.file_name().map(|n| n.to_string_lossy().into_owned())
+    }
+
     /// Векторные слои файла name в «Мои слои», камера - к их охвату.
     /// Подземная модель и треки идут своими окнами. Возвращает позу.
     fn open_vector(&mut self, layers: Vec<data::layers::LayerData>, name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
@@ -3949,6 +4014,7 @@ impl LiteApp {
             earth: self.planet.earth,
             events: self.events.shown.is_some(),
             data: &self.data_layers,
+            tiles: &self.tilesets,
         }
     }
 
@@ -4667,6 +4733,11 @@ impl LiteApp {
             self.waiting.push((bytes.to_vec(), name.to_string()));
             self.waiting_since = at;
             return Ok(None);
+        }
+        // Набор 3D Tiles - архив с tileset.json или сам tileset.json, раньше
+        // слоёв: у них тоже .zip и .json.
+        if (lower.ends_with(".zip") && scene::tiles3d::zip_has_tileset(bytes)) || (lower.ends_with(".json") && scene::tiles3d::is_tileset(bytes)) {
+            return self.open_tiles(bytes, name, fly);
         }
         if data::layers::is_vector(name) && !lower.ends_with(".kmz") {
             return self.open_vector_file(bytes, name, fly);
@@ -7196,7 +7267,7 @@ impl LiteApp {
         if cfg!(target_arch = "wasm32") {
             kinds.extend(data::layers::SIDECARS);
         }
-        let title = "PlanetX, KML, KMZ, GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf, DXF, GeoTIFF, LAS, LAZ, CSV";
+        let title = "PlanetX, KML, KMZ, GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf, DXF, GeoTIFF, LAS, LAZ, CSV, 3D Tiles";
         #[cfg(not(target_arch = "wasm32"))]
         {
             let _ = ctx;
@@ -9276,7 +9347,8 @@ impl eframe::App for LiteApp {
         // Треки на момент шкалы, сменились модели треков - модели заново.
         self.tracks.step(self.timebar.window().map(|w| w.1));
         let tracks_models = std::mem::take(&mut self.tracks.models_dirty);
-        let preview_dirty = std::mem::take(&mut self.preview_dirty);
+        // Сменились наборы 3D Tiles - модели заново, как у предпросмотра.
+        let preview_dirty = std::mem::take(&mut self.preview_dirty) | std::mem::take(&mut self.tilesets.dirty);
         if tracks_models || preview_dirty {
             self.overlays_built = None;
         }
@@ -9524,7 +9596,10 @@ impl eframe::App for LiteApp {
             let mut meshes = self.marks.picture_meshes(&store);
             meshes.extend(self.preview.as_ref().and_then(|o| crate::pictures::ground_mesh(o, &crate::pictures::key_of(o), &store)));
             globe.set_pictures(&meshes);
-            let built = self.models.meshes(&model_list, &store, now);
+            let mut built = self.models.meshes(&model_list, &store, now);
+            // Куски 3D Tiles - в конец: номера моделей на путях и
+            // анимированных моделей не сдвигаются.
+            built.meshes.extend(self.tilesets.meshes());
             globe.set_models(&built.meshes);
             self.export_models = built.meshes;
             self.movers = built.movers;

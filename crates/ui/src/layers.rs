@@ -248,6 +248,8 @@ pub struct State<'a> {
     pub events: bool,
     /// «Мои слои» - векторные слои файлов и результатов.
     pub data: &'a crate::datalayers::DataLayers,
+    /// Наборы 3D Tiles.
+    pub tiles: &'a crate::tilesets::Tilesets,
 }
 
 /// Что попросили строки раздела или каталог.
@@ -296,6 +298,8 @@ pub enum Action {
     RemoveOwn(Basemap),
     /// Действие меню слоя «Моих слоёв» по его номеру, у папки номер 0.
     Data(u64, crate::datalayers::Act),
+    /// Действие меню набора 3D Tiles по его номеру.
+    Tiles(u64, crate::tilesets::Act),
 }
 
 /// Название основы в строке и меню, как в списке подложек модуля: Esri
@@ -389,6 +393,9 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
     let mut data = Vec::new();
     crate::datalayers::rows(ui, lang, state.data, menu_open, new_folder, &mut data);
     out.extend(data.into_iter().map(|(id, act)| Action::Data(id, act)));
+    let mut tiles = Vec::new();
+    crate::tilesets::rows(ui, lang, state.tiles, menu_open, &mut tiles);
+    out.extend(tiles.into_iter().map(|(id, act)| Action::Tiles(id, act)));
     if !state.data.list.is_empty() {
         ui.add_space(4.0);
     }

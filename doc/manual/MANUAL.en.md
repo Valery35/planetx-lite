@@ -244,6 +244,27 @@ web page keeps the layers in the browser while together they are under
 of the plugin. A layer with a time field opens as tracks, a subsurface
 model file opens the Subsurface mode window.
 
+### 3D Tiles
+
+A 3D Tiles set - `tileset.json` and GLB or B3DM pieces - opens as the row
+«3D Tiles · name» of the Layers section. This way open the 3D Tiles
+exports of Lite itself and of the PlanetX plugin, and open sets with GLB
+and B3DM pieces.
+
+- A ZIP archive with `tileset.json` opens as a whole, in the program and
+  on the web page.
+- A `tileset.json` file in the program takes the pieces from its folder.
+  The web page does not see the folder, it needs an archive.
+- External tilesets inside a set are read in depth.
+- There is no loading on approach. One cut of the tree is taken, at most
+  256 pieces: tiles with the largest error are split into children first.
+- Pieces with Draco or meshopt compression are not read, the result line
+  names their count.
+
+The check of the row hides the set, the "⋯" menu has «Zoom to layer» and
+«Remove from the globe». Sets live until the program closes and are not
+written into a scene.
+
 ## Globe menu
 
 A right click without dragging opens the menu:

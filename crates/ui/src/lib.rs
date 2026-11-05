@@ -37,6 +37,7 @@ pub mod flight;
 pub mod folderprops;
 pub mod fonts;
 pub mod datalayers;
+pub mod tilesets;
 pub mod gpkg;
 pub mod geophysics;
 pub mod netlinks;

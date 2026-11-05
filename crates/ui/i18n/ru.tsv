@@ -2402,3 +2402,9 @@ The globe shows the colours of the area cells. «OK» puts smooth polygons of th
 Visible: without the check the class is hidden from the globe and the terrain is seen under it. The result keeps the class.	Видно: без флажка класс спрятан с глобуса, под ним видна местность. Итог класс сохраняет.
 Show on the globe|preview	Показывать на глобусе
 Without the check the preview of the window leaves the globe, the computation stays: «OK» saves it.	Без флажка предпросмотр окна снят с глобуса, расчёт остаётся: «OK» его сохраняет.
+3D Tiles, pieces on the globe: {count}, not read: {skipped}. The check hides the set.	3D Tiles, кусков на глобусе: {count}, не прочитано: {skipped}. Флажок прячет набор.
+3D Tiles, pieces on the globe: {count}. The check hides the set.	3D Tiles, кусков на глобусе: {count}. Флажок прячет набор.
+The page cannot read the pieces next to tileset.json - open the set as a ZIP archive	Страница не видит куски рядом с tileset.json - откройте набор архивом ZIP
+No piece of the 3D Tiles set was read	Не прочитан ни один кусок набора 3D Tiles
+3D Tiles: {title}, pieces not read: {skipped}. Draco and meshopt compression is not read.	3D Tiles: {title}, не прочитано кусков: {skipped}. Сжатие Draco и meshopt не читается.
+3D Tiles: {title}.	3D Tiles: {title}.
