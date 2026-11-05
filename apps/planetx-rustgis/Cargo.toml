@@ -1,0 +1,28 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "planetx-rustgis"
+description = "RustPlanetX - глобус PlanetX для RustGIS, как модуль PlanetX для QGIS"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish = false
+
+[[bin]]
+name = "rustplanetx"
+path = "src/main.rs"
+
+[dependencies]
+desktop.workspace = true
+ui.workspace = true
+
+# Значок и сведения о программе в exe под Windows.
+[target.'cfg(windows)'.build-dependencies]
+winresource = "0.1"
+
+[lints]
+workspace = true

@@ -27,6 +27,7 @@ pub mod credits;
 pub mod currents;
 pub mod cutaway;
 pub mod demos;
+pub mod edition;
 pub mod dots;
 pub mod etomesto;
 pub mod events;
@@ -117,3 +118,4 @@ pub mod wiki;
 
 pub use app::{LiteApp, Loaders, Report, ShotSink};
 pub use check::Scenario;
+pub use edition::Edition;

@@ -725,6 +725,8 @@ pub struct LiteApp {
     /// Агенты пущены флагом `--mcp` на этот запуск.
     #[cfg(not(target_arch = "wasm32"))]
     mcp_cli: bool,
+    /// Издание: PlanetX Lite или RustPlanetX, `doc/EDITIONS.md`.
+    edition: crate::Edition,
     /// Сообщение со снимком, куда ответить, когда пришло и снимок уже
     /// просили.
     #[cfg(not(target_arch = "wasm32"))]
@@ -1400,6 +1402,7 @@ impl LiteApp {
             mcp_failed: false,
             #[cfg(not(target_arch = "wasm32"))]
             mcp_cli: false,
+            edition: crate::Edition::Lite,
             #[cfg(not(target_arch = "wasm32"))]
             mcp_shot: None,
             #[cfg(not(target_arch = "wasm32"))]
@@ -4342,6 +4345,17 @@ impl LiteApp {
             self.mcp_cli = true;
         }
         self
+    }
+
+    /// Издание программы, `doc/EDITIONS.md`. По умолчанию PlanetX Lite.
+    pub fn with_edition(mut self, edition: crate::Edition) -> Self {
+        self.edition = edition;
+        self
+    }
+
+    /// Издание программы.
+    pub fn edition(&self) -> crate::Edition {
+        self.edition
     }
 
     /// Связь с RustGIS в этом запуске, `planetx-lite --rustgis`, без

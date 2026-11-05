@@ -12,17 +12,9 @@ authors.workspace = true
 repository.workspace = true
 
 [dependencies]
-net.workspace = true
+# Запуск и окно - общие с RustPlanetX.
+desktop.workspace = true
 ui.workspace = true
-eframe.workspace = true
-image.workspace = true
-# Папка данных пользователя для «Моих слоёв».
-dirs.workspace = true
-
-# Выбор X11 вместо Wayland, `display_server` в main.rs. Та же версия,
-# что у eframe.
-[target.'cfg(target_os = "linux")'.dependencies]
-winit = { version = "0.30", default-features = false, features = ["x11"] }
 
 # Значок и сведения о программе в exe под Windows.
 [target.'cfg(windows)'.build-dependencies]

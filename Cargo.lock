@@ -561,6 +561,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "desktop"
+version = "0.23.0"
+dependencies = [
+ "dirs",
+ "eframe",
+ "image",
+ "net",
+ "ui",
+ "winit",
+]
+
+[[package]]
 name = "dirs"
 version = "7.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2739,12 +2751,17 @@ checksum = "b4596b6d070b27117e987119b4dac604f3c58cfb0b191112e24771b2faeac1a6"
 name = "planetx-lite"
 version = "0.23.0"
 dependencies = [
- "dirs",
- "eframe",
- "image",
- "net",
+ "desktop",
  "ui",
- "winit",
+ "winresource",
+]
+
+[[package]]
+name = "planetx-rustgis"
+version = "0.23.0"
+dependencies = [
+ "desktop",
+ "ui",
  "winresource",
 ]
 

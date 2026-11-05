@@ -1,0 +1,28 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "desktop"
+description = "Запуск настольных программ PlanetX Lite и RustPlanetX - окно, загрузчики, ключи командной строки"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+net.workspace = true
+ui.workspace = true
+eframe.workspace = true
+image.workspace = true
+# Папка данных пользователя для «Моих слоёв».
+dirs.workspace = true
+
+# Выбор X11 вместо Wayland, `display_server`. Та же версия, что у eframe.
+[target.'cfg(target_os = "linux")'.dependencies]
+winit = { version = "0.30", default-features = false, features = ["x11"] }
+
+[lints]
+workspace = true
