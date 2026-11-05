@@ -74,6 +74,9 @@ pub const LABEL_BUDGET: f64 = 0.003;
 /// Наименьшая высота дерева меток и раздела «Слои» при перетаскивании
 /// границы, точки экрана. Выбор помощника.
 pub const SECTION_MIN: f32 = 60.0;
+/// Строк раздела «Проект RustGIS» без прокрутки.
+#[cfg(not(target_arch = "wasm32"))]
+const RUSTGIS_ROWS: f32 = 8.0;
 /// Снимков основы в видеокарту за кадр, как `UPLOADS_PER_FRAME`
 /// в `render/view.py` модуля. Пока камера движется - один.
 pub const UPLOADS_PER_FRAME: usize = 3;
@@ -726,6 +729,11 @@ pub struct LiteApp {
     /// просили.
     #[cfg(not(target_arch = "wasm32"))]
     mcp_shot: Option<(String, std::sync::mpsc::Sender<Option<String>>, f64, bool)>,
+    /// Связь с открытым RustGIS и флаг `--rustgis` этого запуска.
+    #[cfg(not(target_arch = "wasm32"))]
+    rustgis: Option<crate::rustgislink::Bridge>,
+    #[cfg(not(target_arch = "wasm32"))]
+    rustgis_cli: bool,
     /// Кадров подряд без загрузки и движения.
     idle_frames: u32,
     explaining: Option<(Vec<usize>, usize)>,
@@ -1394,6 +1402,10 @@ impl LiteApp {
             mcp_cli: false,
             #[cfg(not(target_arch = "wasm32"))]
             mcp_shot: None,
+            #[cfg(not(target_arch = "wasm32"))]
+            rustgis: None,
+            #[cfg(not(target_arch = "wasm32"))]
+            rustgis_cli: false,
             idle_frames: 0,
             film: None,
             explaining: None,
@@ -2495,6 +2507,14 @@ impl LiteApp {
                 (front && gap <= radius).then_some(gap / radius.max(1e-9))
             };
             groups.extend(self.data_layers.identify(self.lang, lat, lon, metres, &gap));
+            // Объект слоя RustGIS выделяется и на карте RustGIS, как
+            // определение объектов слоёв проекта QGIS модулем.
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(sync) = self.rustgis.as_ref().filter(|s| s.connected)
+                && let Some((layer, row)) = self.data_layers.live_hit(lat, lon, metres, &gap)
+            {
+                sync.link.ask(crate::rustgislink::Ask::Select { layer, rows: vec![row] });
+            }
         }
         if let Some((px, py, ppp)) = pixel {
             groups.extend(self.dots.identify(self.lang, &self.nav, (lat, lon), (px, py), crate::card::PICK_PIXELS * ppp * 2.0, self.timebar.window()));
@@ -3101,6 +3121,92 @@ impl LiteApp {
         }
         self.player = None;
         self.open_message = Some(text);
+    }
+
+    /// Связь с RustGIS: запуск и остановка по настройке или `--rustgis`,
+    /// вести потока - в этом кадре. Слои проекта - живыми слоями папки
+    /// «RustGIS», вид карты - на глобус, вид глобуса после покоя - на
+    /// карту, как синхронизация модуля с окном карты QGIS.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn step_rustgis(&mut self, ctx: &egui::Context, now: f64) {
+        use crate::rustgislink::{Bridge, FOLDER, Link, News};
+        if !self.settings.rustgis && !self.rustgis_cli {
+            if self.rustgis.take().is_some() {
+                self.data_layers.drop_live();
+                crate::datalayers::RUSTGIS_LINKED.store(false, std::sync::atomic::Ordering::Relaxed);
+            }
+            return;
+        }
+        if self.rustgis.is_none() {
+            let wake_ctx = ctx.clone();
+            self.rustgis = Some(Bridge::new(Link::start(Arc::new(move || wake_ctx.request_repaint()))));
+        }
+        let mut news = Vec::new();
+        if let Some(sync) = &self.rustgis {
+            while let Some(n) = sync.link.take() {
+                news.push(n);
+            }
+        }
+        for n in news {
+            match n {
+                News::Connected => {
+                    if let Some(sync) = &mut self.rustgis {
+                        sync.connected = true;
+                        sync.status.clear();
+                    }
+                    self.open_message = Some(tr(self.lang, "Linked with RustGIS.").to_string());
+                }
+                News::Waiting(why) => {
+                    let was = self.rustgis.as_ref().is_some_and(|s| s.connected);
+                    if let Some(sync) = &mut self.rustgis {
+                        sync.connected = false;
+                        sync.status = why.clone();
+                    }
+                    self.data_layers.drop_live();
+                    if was || self.rustgis_cli {
+                        let why = if why == crate::rustgislink::RELAY_OFF { tr(self.lang, crate::rustgislink::RELAY_OFF).to_string() } else { why };
+                        self.open_message = Some(trf(self.lang, "No link with RustGIS: {error}. In RustGIS start the MCP Relay command.", &[("error", &why)]));
+                    }
+                }
+                News::State(state) => {
+                    let order: Vec<i64> = state.layers.iter().filter(|l| l.drawn()).map(|l| l.id).collect();
+                    self.data_layers.sync_live(&order);
+                    let moved = self.rustgis.as_mut().and_then(|sync| {
+                        sync.names = state.layers.iter().filter(|l| l.drawn()).map(|l| (l.id, l.name.clone())).collect();
+                        state.view.and_then(|v| sync.map_view(v))
+                    });
+                    if let Some((lat, lon, w, h)) = moved {
+                        let camera = &self.nav.camera;
+                        let distance = data::rustgis::distance_for(w, h, camera.fov_y, camera.aspect());
+                        self.nav.show(Pose::new(lat, lon, distance, 0.0, 0.0));
+                        let spot = (self.nav.pose.lat, self.nav.pose.lon, self.view_width());
+                        if let Some(sync) = &mut self.rustgis {
+                            sync.applied(spot);
+                        }
+                    }
+                }
+                News::Layer { id, data, style } => {
+                    let name = self.rustgis.as_ref().map_or_else(|| format!("RustGIS {id}"), |s| s.name(id));
+                    let n = self.data_layers.list.len();
+                    let (colors, look, label) = crate::rustgislink::paint(&data, &style, n);
+                    self.data_layers.set_live(FOLDER, id, &name, (*data, colors), look, label);
+                }
+                News::Done(name) => self.open_message = Some(trf(self.lang, "The layer {name} is added to the RustGIS project.", &[("name", &name)])),
+                News::Failed(why) => self.open_message = Some(trf(self.lang, "RustGIS: {error}", &[("error", &why)])),
+            }
+        }
+        crate::datalayers::RUSTGIS_LINKED.store(self.rustgis.as_ref().is_some_and(|s| s.connected), std::sync::atomic::Ordering::Relaxed);
+        // Вид глобуса - на карту, когда глобус постоял.
+        let spot = (self.nav.pose.lat, self.nav.pose.lon, self.view_width());
+        if let Some(sync) = &mut self.rustgis
+            && sync.connected
+        {
+            if let Some(ask) = sync.globe_view(spot, now) {
+                sync.link.ask(ask);
+            }
+            // Покой глобуса досчитывается и без движения мыши.
+            ctx.request_repaint_after(std::time::Duration::from_secs_f64(crate::rustgislink::SETTLE_SECONDS));
+        }
     }
 
     /// Ретранслятор MCP: запуск и остановка по настройке, сообщения
@@ -3912,6 +4018,23 @@ impl LiteApp {
     fn data_act(&mut self, id: u64, act: &crate::datalayers::Act, now: f64) {
         use crate::datalayers::Act;
         match act {
+            Act::ToRustGis => {
+                #[cfg(not(target_arch = "wasm32"))]
+                if let (Some(sync), Some(layer)) = (self.rustgis.as_ref().filter(|s| s.connected), self.data_layers.get(id)) {
+                    sync.link.ask(crate::rustgislink::Ask::AddLayer { name: data::layers::stem(&layer.title).to_string(), geojson: data::layers::to_geojson(&layer.data) });
+                }
+            }
+            Act::FolderToRustGis(folder) => {
+                #[cfg(not(target_arch = "wasm32"))]
+                if let Some(sync) = self.rustgis.as_ref().filter(|s| s.connected) {
+                    for layer in self.data_layers.list.iter().filter(|l| &l.folder == folder && l.live.is_none()) {
+                        let name = format!("{folder} · {}", data::layers::stem(&layer.title));
+                        sync.link.ask(crate::rustgislink::Ask::AddLayer { name, geojson: data::layers::to_geojson(&layer.data) });
+                    }
+                }
+                #[cfg(target_arch = "wasm32")]
+                let _ = folder;
+            }
             Act::Export => {
                 if let Some(layer) = self.data_layers.get(id) {
                     let name = format!("{}.geojson", data::layers::stem(&layer.title));
@@ -4217,6 +4340,17 @@ impl LiteApp {
         #[cfg(not(target_arch = "wasm32"))]
         {
             self.mcp_cli = true;
+        }
+        self
+    }
+
+    /// Связь с RustGIS в этом запуске, `planetx-lite --rustgis`, без
+    /// записи в настройки. Так глобус открывает расширение RustGIS.
+    #[cfg_attr(target_arch = "wasm32", allow(unused_mut))]
+    pub fn with_rustgis(mut self) -> Self {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            self.rustgis_cli = true;
         }
         self
     }
@@ -6916,6 +7050,10 @@ impl LiteApp {
                 self.splitter(ui, shown);
             }
             let top = ui.cursor().top();
+            // Раздел «Проект RustGIS» - между «Метками» и «Слоями», как раздел
+            // «Проект QGIS» модуля, решение автора от 5 ноября 2026 года.
+            #[cfg(not(target_arch = "wasm32"))]
+            self.rustgis_section(ui, lang);
             if crate::theme::section(ui, "layers", layers_title) {
                 let mut out = Vec::new();
                 let mut menu = self.layers_menu.take();
@@ -6936,6 +7074,52 @@ impl LiteApp {
             });
         });
         self.tree_actions(ui, actions, now);
+    }
+
+    /// Раздел «Проект RustGIS» левой панели между «Метками» и «Слоями», как
+    /// раздел «Проект QGIS» модуля: слои открытого проекта RustGIS сверху
+    /// вниз, флажок показывает слой на глобусе. По умолчанию слои
+    /// выключены: свои слои глобуса нарисованы лучше. Без связи - строка
+    /// с причиной.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn rustgis_section(&mut self, ui: &mut egui::Ui, lang: Lang) {
+        let Some(sync) = &self.rustgis else {
+            return;
+        };
+        if !crate::theme::section(ui, "rustgis", tr(lang, "RustGIS project")) {
+            return;
+        }
+        let muted = crate::theme::pal().muted;
+        if !sync.connected {
+            let why = if sync.status == crate::rustgislink::RELAY_OFF { tr(lang, crate::rustgislink::RELAY_OFF).to_string() } else { sync.status.clone() };
+            ui.label(egui::RichText::new(trf(lang, "No link with RustGIS: {error}. In RustGIS start the MCP Relay command.", &[("error", &why)])).color(muted));
+            return;
+        }
+        let rows: Vec<(i64, String)> = sync.names.clone();
+        if rows.is_empty() {
+            ui.label(egui::RichText::new(tr(lang, "The RustGIS project has no vector layers.")).color(muted));
+            return;
+        }
+        let mut toggled = Vec::new();
+        // Не больше восьми строк: под разделом - «Слои».
+        let room = (22.0 * RUSTGIS_ROWS).min(ui.available_height() - SECTION_MIN).max(22.0);
+        egui::ScrollArea::vertical().id_salt("rustgis").max_height(room).auto_shrink([false, true]).show(ui, |ui| {
+            for (id, name) in &rows {
+                let shown = self.data_layers.live_shown(*id);
+                let tip = match shown {
+                    Some(_) => tr(lang, "A layer of the open RustGIS project in its RustGIS colours. The check shows it on the globe."),
+                    None => tr(lang, "The features of the layer are being read from RustGIS."),
+                };
+                let mut on = shown.unwrap_or(false);
+                let check = ui.add_enabled(shown.is_some(), egui::Checkbox::new(&mut on, name.as_str())).on_hover_text(tip);
+                if check.changed() {
+                    toggled.push((*id, on));
+                }
+            }
+        });
+        for (id, on) in toggled {
+            self.data_layers.show_live(id, on);
+        }
     }
 
     /// Граница между «Моими метками» и «Слоями»: тянется мышью, как
@@ -9448,6 +9632,8 @@ impl eframe::App for LiteApp {
         self.step_gps(&ctx, now);
         #[cfg(not(target_arch = "wasm32"))]
         self.step_mcp(&ctx, now);
+        #[cfg(not(target_arch = "wasm32"))]
+        self.step_rustgis(&ctx, now);
         self.paleo_bar(&ctx, now);
         self.step_cutaway();
         self.check_linked_models(now);

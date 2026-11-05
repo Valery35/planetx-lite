@@ -30,6 +30,10 @@
 //! стоит флажок «Пускать агентов MCP». Окна не открывает.
 //! `planetx-lite --mcp` - открыть программу с этим флажком.
 //!
+//! `planetx-lite --rustgis` - открыть программу со связью с открытым
+//! RustGIS (`ui::rustgislink`). `planetx-lite rustgis-plugin` - команда
+//! расширения RustGIS «Глобус PlanetX», её запускает RustGIS.
+//!
 //! Сборка release под Windows - программа окна без консоли. Отчёт
 //! самопроверки тогда виден, когда вывод перенаправлен в файл.
 
@@ -75,6 +79,31 @@ fn display_server() -> Option<eframe::EventLoopBuilderHook> {
     None
 }
 
+/// Глобус со связью с RustGIS - отдельным процессом этой же программы.
+/// RustGIS останавливает расширение-процесс вскоре после ответа, глобус
+/// должен его пережить: свой процесс без консоли, вне задания RustGIS,
+/// если задание это разрешает.
+fn launch_linked() -> Result<(), String> {
+    let exe = std::env::current_exe().map_err(|e| e.to_string())?;
+    let spawn = |flags: u32| {
+        let mut cmd = std::process::Command::new(&exe);
+        cmd.arg("--rustgis").stdin(std::process::Stdio::null()).stdout(std::process::Stdio::null()).stderr(std::process::Stdio::null());
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            cmd.creation_flags(flags);
+        }
+        #[cfg(not(windows))]
+        let _ = flags;
+        cmd.spawn().map(|_| ())
+    };
+    // DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP, сначала с
+    // CREATE_BREAKAWAY_FROM_JOB.
+    const DETACHED: u32 = 0x0000_0008 | 0x0000_0200;
+    const BREAKAWAY: u32 = 0x0100_0000;
+    spawn(DETACHED | BREAKAWAY).or_else(|_| spawn(DETACHED)).map_err(|e| e.to_string())
+}
+
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().collect();
     // `planetx-lite mcp` - мост stdio клиента MCP к открытой программе,
@@ -85,6 +114,22 @@ fn main() -> ExitCode {
             Ok(()) => ExitCode::SUCCESS,
             Err(e) => {
                 eprintln!("PlanetX Lite MCP: {e}");
+                ExitCode::FAILURE
+            }
+        };
+    }
+    // `planetx-lite rustgis-plugin` - команда расширения RustGIS
+    // «Глобус PlanetX»: запрос RustGIS на stdin, ответ на stdout, глобус
+    // со связью - отдельным процессом (`ui::rustgislink::plugin`).
+    if args.get(1).is_some_and(|a| a == "rustgis-plugin") {
+        let relay_on = ui::rustgislink::token_path(ui::rustgislink::port()).is_file();
+        let stdin = std::io::stdin();
+        let mut input = stdin.lock();
+        let mut output = std::io::stdout();
+        return match ui::rustgislink::plugin(&mut input, &mut output, relay_on, &launch_linked) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("PlanetX Lite RustGIS: {e}");
                 ExitCode::FAILURE
             }
         };
@@ -213,6 +258,9 @@ fn main() -> ExitCode {
             }
             if args.iter().any(|a| a == "--mcp") {
                 app = app.with_mcp();
+            }
+            if args.iter().any(|a| a == "--rustgis") {
+                app = app.with_rustgis();
             }
             if let Some(path) = shot {
                 app = app.with_shot(Box::new(move |image| {

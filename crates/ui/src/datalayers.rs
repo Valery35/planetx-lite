@@ -51,6 +51,9 @@ const WINDOW: f64 = 3.0;
 /// Подписи выбираются заново при сдвиге на эту долю окна, `STEP` модуля.
 const STEP: f64 = 0.5;
 const M_PER_DEGREE: f64 = 111_320.0;
+/// Есть связь с RustGIS: в меню слоя - «В проект RustGIS». Ставит окно
+/// на каждом кадре.
+pub static RUSTGIS_LINKED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 /// Ключ списка «Моих слоёв» в хранилище программы.
 pub const KEY: &str = "my_layers";
 /// Папка файлов слоёв в папке данных программы.
@@ -107,6 +110,12 @@ pub struct DataLayer {
     pub folder: String,
     /// Имя файла GeoJSON слоя в папке [`DIR`], None - объекты не записаны.
     pub store: Option<String>,
+    /// Номер слоя проекта RustGIS: слой живой, его ведёт связь с RustGIS
+    /// ([`crate::rustgislink`]), в хранилище он не пишется.
+    pub live: Option<i64>,
+    /// Цвета объектов по порядку - отрисовка слоя RustGIS. Пусто - поле
+    /// color или цвет стиля.
+    pub colors: Vec<[u8; 3]>,
 }
 
 pub use data::layers::{Polygon, Ring, polygons};
@@ -192,8 +201,12 @@ pub fn folder_layer(folder: &scene::kml::Folder) -> Option<LayerData> {
 }
 
 impl DataLayer {
-    /// Цвет объекта n: поле color «#rrggbb» слоя, иначе цвет стиля.
+    /// Цвет объекта n: цвет отрисовки RustGIS, поле color «#rrggbb» слоя,
+    /// иначе цвет стиля.
     fn item_color(&self, n: usize) -> [u8; 3] {
+        if let Some(c) = self.colors.get(n) {
+            return *c;
+        }
         let field = self.data.fields.iter().position(|f| f.eq_ignore_ascii_case("color"));
         field
             .and_then(|f| self.data.items.get(n)?.values.get(f))
@@ -222,10 +235,15 @@ impl DataLayer {
             let (color, fill) = (style.line_rgba(), style.fill_rgba());
             match item.shape {
                 Geom::Line => out.extend(item.parts.iter().filter(|p| p.len() > 1).map(|p| Line::new(p.clone(), color, self.style.width))),
+                // Каждая часть мультимногоугольника - своим многоугольником:
+                // рамка линии считается по внешнему кольцу, и далёкая часть
+                // (Гвиана у Франции, Чукотка за линией перемены дат у
+                // России) не выпадает из тайлов.
                 Geom::Polygon => {
-                    let mut rings = item.parts.iter().filter(|p| p.len() > 2).cloned();
-                    if let Some(outer) = rings.next() {
-                        out.push(Line::polygon(outer, rings.collect(), color, self.style.width, fill));
+                    for (outer, holes) in polygons(&item.parts) {
+                        if outer.len() > 2 {
+                            out.push(Line::polygon(outer, holes, color, self.style.width, fill));
+                        }
                     }
                 }
                 Geom::Point | Geom::None => {}
@@ -401,6 +419,8 @@ pub enum Act {
     ToPlaces,
     /// Сохранить объекты слоя файлом GeoJSON.
     Export,
+    /// Слой - в проект открытого RustGIS.
+    ToRustGis,
     Up,
     Down,
     Remove,
@@ -410,6 +430,9 @@ pub enum Act {
     FolderCollapse(String),
     /// Убрать с глобуса все слои папки.
     FolderRemove(String),
+    /// Все слои папки - в проект открытого RustGIS: так уходят результаты
+    /// окон анализа.
+    FolderToRustGis(String),
 }
 
 /// Слои «Моих слоёв». Флаги *_dirty снимает тот, кто перестроил своё:
@@ -457,7 +480,20 @@ impl DataLayers {
             let title = if single { file.to_string() } else { format!("{file} · {}", data.name) };
             let style = Style::new(self.next as usize);
             self.next += 1;
-            let layer = DataLayer { id: self.next, title, file: file.to_string(), data, visible: true, style, label: None, extrude: None, folder: folder.to_string(), store: None };
+            let layer = DataLayer {
+                id: self.next,
+                title,
+                file: file.to_string(),
+                data,
+                visible: true,
+                style,
+                label: None,
+                extrude: None,
+                folder: folder.to_string(),
+                store: None,
+                live: None,
+                colors: Vec::new(),
+            };
             self.list.insert(k, layer);
         }
         if count > 0 {
@@ -471,10 +507,11 @@ impl DataLayers {
         self.list.iter().find(|l| l.id == id)
     }
 
-    /// Папки в порядке первого слоя каждой, без пустой.
+    /// Папки в порядке первого слоя каждой, без пустой. Живые слои RustGIS
+    /// - в своём разделе панели, их папки здесь нет.
     pub fn folders(&self) -> Vec<String> {
         let mut out: Vec<String> = Vec::new();
-        for l in &self.list {
+        for l in self.list.iter().filter(|l| l.live.is_none()) {
             if !l.folder.is_empty() && !out.contains(&l.folder) {
                 out.push(l.folder.clone());
             }
@@ -539,6 +576,7 @@ impl DataLayers {
         let layers: Vec<serde_json::Value> = self
             .list
             .iter()
+            .filter(|l| l.live.is_none())
             .map(|l| {
                 let s = &l.style;
                 let mut v = serde_json::json!({
@@ -572,7 +610,7 @@ impl DataLayers {
     /// Слои без записанных объектов: номер слоя и имя файла, которое ему
     /// даётся. Имя записывается в слой - после записи файла.
     pub fn unstored(&self) -> Vec<(u64, String)> {
-        self.list.iter().filter(|l| l.store.is_none()).map(|l| (l.id, format!("layer-{}-{}.geojson", web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0, |d| d.as_millis()), l.id))).collect()
+        self.list.iter().filter(|l| l.store.is_none() && l.live.is_none()).map(|l| (l.id, format!("layer-{}-{}.geojson", web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0, |d| d.as_millis()), l.id))).collect()
     }
 
     /// Объекты слоя id записаны файлом name.
@@ -624,7 +662,7 @@ impl DataLayers {
                 .filter(|(n, _)| *n < fields);
             out.next += 1;
             let visible = v.get("visible").and_then(serde_json::Value::as_bool).unwrap_or(true);
-            out.list.push(DataLayer { id: out.next, title, file: text_of("file"), data, visible, style, label, extrude, folder: text_of("folder"), store });
+            out.list.push(DataLayer { id: out.next, title, file: text_of("file"), data, visible, style, label, extrude, folder: text_of("folder"), store, live: None, colors: Vec::new() });
         }
         out.collapsed = root.get("collapsed").and_then(serde_json::Value::as_array).into_iter().flatten().filter_map(|f| f.as_str().map(str::to_string)).collect();
         if !out.list.is_empty() {
@@ -674,13 +712,104 @@ impl DataLayers {
             })
             .collect()
     }
+
+    /// Живой слой RustGIS номер live в папке folder: заменяется на месте,
+    /// новый - сверху папки и выключен, как слои проекта QGIS в модуле:
+    /// глобус показывает его, когда пользователь поставит флажок в разделе
+    /// «Проект RustGIS». Стиль и подписи - из RustGIS.
+    pub fn set_live(&mut self, folder: &str, live: i64, title: &str, layer: (LayerData, Vec<[u8; 3]>), style: Style, label: Option<usize>) {
+        let (data, colors) = layer;
+        if let Some(l) = self.list.iter_mut().find(|l| l.live == Some(live)) {
+            l.title = title.to_string();
+            l.data = data;
+            l.colors = colors;
+            l.style = style;
+            l.label = label;
+        } else {
+            self.next += 1;
+            let at = self.list.iter().position(|l| l.folder == folder).unwrap_or(0);
+            let layer = DataLayer {
+                id: self.next,
+                title: title.to_string(),
+                file: title.to_string(),
+                data,
+                visible: false,
+                style,
+                label,
+                extrude: None,
+                folder: folder.to_string(),
+                store: None,
+                live: Some(live),
+                colors,
+            };
+            self.list.insert(at, layer);
+        }
+        self.changed();
+    }
+
+    /// Живые слои - по проекту RustGIS: order - номера слоёв сверху вниз.
+    /// Слоя нет в order - он убирается, порядок - как в RustGIS. Флажки
+    /// ставит пользователь в разделе «Проект RustGIS». Возвращает true,
+    /// если что-то изменилось.
+    pub fn sync_live(&mut self, order: &[i64]) -> bool {
+        let before: Vec<Option<i64>> = self.list.iter().map(|l| l.live).collect();
+        self.list.retain(|l| l.live.is_none_or(|id| order.contains(&id)));
+        // Живые слои занимают свои места в списке в порядке RustGIS.
+        let slots: Vec<usize> = (0..self.list.len()).filter(|&i| self.list[i].live.is_some()).collect();
+        let rank = |l: &DataLayer| l.live.and_then(|id| order.iter().position(|o| *o == id)).unwrap_or(usize::MAX);
+        let mut live: Vec<DataLayer> = Vec::new();
+        for &i in slots.iter().rev() {
+            live.push(self.list.remove(i));
+        }
+        live.sort_by_key(rank);
+        for (slot, layer) in slots.into_iter().zip(live) {
+            self.list.insert(slot, layer);
+        }
+        let after: Vec<Option<i64>> = self.list.iter().map(|l| l.live).collect();
+        let changed = before != after;
+        if changed {
+            self.changed();
+        }
+        changed
+    }
+
+    /// Показать или спрятать живой слой RustGIS номер live.
+    pub fn show_live(&mut self, live: i64, on: bool) {
+        if let Some(l) = self.list.iter_mut().find(|l| l.live == Some(live))
+            && l.visible != on
+        {
+            l.visible = on;
+            self.changed();
+        }
+    }
+
+    /// Показан ли живой слой RustGIS номер live; None - объекты ещё не
+    /// пришли.
+    pub fn live_shown(&self, live: i64) -> Option<bool> {
+        self.list.iter().find(|l| l.live == Some(live)).map(|l| l.visible)
+    }
+
+    /// Убрать все живые слои: связь выключена.
+    pub fn drop_live(&mut self) {
+        let had = self.list.iter().any(|l| l.live.is_some());
+        self.list.retain(|l| l.live.is_none());
+        if had {
+            self.changed();
+        }
+    }
+
+    /// Первый объект живого видимого слоя у точки: номер слоя RustGIS
+    /// и номер объекта, он же строка слоя в RustGIS.
+    pub fn live_hit(&self, lat: f64, lon: f64, metres: f64, gap: &dyn Fn(f64, f64) -> Option<f64>) -> Option<(i64, usize)> {
+        self.list.iter().filter(|l| l.visible).find_map(|l| Some((l.live?, *l.hits(lat, lon, metres, gap).first()?)))
+    }
 }
 
 /// Строки «Моих слоёв» в разделе «Слои»: заголовок, слои вне папок,
 /// затем папки со своими слоями. menu_open - открытое меню раздела,
 /// new_folder - поле имени новой папки, out - действия по номерам слоёв.
 pub fn rows(ui: &mut egui::Ui, lang: Lang, layers: &DataLayers, menu_open: &mut Option<String>, new_folder: &mut String, out: &mut Vec<(u64, Act)>) {
-    if layers.list.is_empty() {
+    if layers.list.iter().all(|l| l.live.is_some()) {
         return;
     }
     let p = crate::theme::pal();
@@ -688,11 +817,11 @@ pub fn rows(ui: &mut egui::Ui, lang: Lang, layers: &DataLayers, menu_open: &mut 
     ui.label(egui::RichText::new(tr(lang, "My layers")).size(12.0).color(p.muted))
         .on_hover_text(tr(lang, "Layers of files and results of the analysis windows. They stay between launches, as «My places». A scene does not carry them."));
     let folders = layers.folders();
-    for layer in layers.list.iter().filter(|l| l.folder.is_empty()) {
+    for layer in layers.list.iter().filter(|l| l.folder.is_empty() && l.live.is_none()) {
         layer_row(ui, lang, layer, &folders, 4.0, menu_open, new_folder, out);
     }
     for folder in &folders {
-        let inside: Vec<&DataLayer> = layers.list.iter().filter(|l| &l.folder == folder).collect();
+        let inside: Vec<&DataLayer> = layers.list.iter().filter(|l| &l.folder == folder && l.live.is_none()).collect();
         let shown = inside.iter().filter(|l| l.visible).count();
         let state = if shown == inside.len() { Some(true) } else if shown == 0 { Some(false) } else { None };
         let open = !layers.collapsed.contains(folder);
@@ -710,6 +839,12 @@ pub fn rows(ui: &mut egui::Ui, lang: Lang, layers: &DataLayers, menu_open: &mut 
             *menu_open = Some(key.clone());
         }
         crate::layers::popup(ui, menu_open, &key, hit.rect, |ui| {
+            if RUSTGIS_LINKED.load(std::sync::atomic::Ordering::Relaxed)
+                && ui.button(tr(lang, "Folder to the RustGIS project")).on_hover_text(tr(lang, "Every layer of the folder goes to the open RustGIS project as a new layer, with all fields.")).clicked()
+            {
+                out.push((0, Act::FolderToRustGis(folder.clone())));
+                return true;
+            }
             if ui.button(tr(lang, "Remove the folder from the globe")).on_hover_text(tr(lang, "All layers of the folder leave «My layers».")).clicked() {
                 out.push((0, Act::FolderRemove(folder.clone())));
                 return true;
@@ -884,6 +1019,13 @@ fn menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], ne
         out.push((id, Act::Export));
         chosen = true;
     }
+    if RUSTGIS_LINKED.load(std::sync::atomic::Ordering::Relaxed)
+        && layer.live.is_none()
+        && ui.button(tr(lang, "To the RustGIS project")).on_hover_text(tr(lang, "The objects of the layer with all fields go to the open RustGIS project as a new layer.")).clicked()
+    {
+        out.push((id, Act::ToRustGis));
+        chosen = true;
+    }
     if ui.button(tr(lang, "Remove from the globe")).clicked() {
         out.push((id, Act::Remove));
         chosen = true;
@@ -1005,6 +1147,61 @@ mod tests {
         // Папка с точкой - не слой.
         let point = Place::new("Точка", Kind::Point, vec![(58.0, 56.0)]);
         assert!(folder_layer(&Folder::with("Точки", vec![KmlItem::Place(point)])).is_none());
+    }
+
+    /// Мультимногоугольник с далёкой первой частью - Франция с Гвианой
+    /// первой, как в Natural Earth: каждая часть - своя линия со своей
+    /// рамкой. Прежде вторая часть шла дырой первой, рамка - по Гвиане,
+    /// и тайлы над Францией пропускали её.
+    #[test]
+    fn multipolygon_parts_keep_their_tiles() {
+        let guiana = vec![(2.0, -54.0), (5.5, -54.0), (5.5, -51.6), (2.0, -51.6)];
+        let france = vec![(42.5, -4.5), (51.0, -4.5), (51.0, 8.0), (42.5, 8.0)];
+        let item = data::layers::Item { shape: Geom::Polygon, parts: vec![guiana, france], heights: Vec::new(), values: vec!["France".into()] };
+        let data = LayerData { name: "Countries".into(), epsg: Some(4326), fields: vec!["name".into()], numeric: vec![false], items: vec![item] };
+        let mut layers = DataLayers::default();
+        layers.add(vec![data], "countries.geojson");
+        let set = layers.line_set().unwrap();
+        assert_eq!(set.len(), 2);
+        let (s, w, n, e) = set[1].bbox;
+        assert!(s <= 43.0 && n >= 50.0 && w <= -4.0 && e >= 7.0, "{:?}", set[1].bbox);
+    }
+
+    /// Живые слои RustGIS: на месте при обновлении, порядок и видимость
+    /// по проекту, в хранилище не пишутся.
+    #[test]
+    fn live_layers_follow_rustgis() {
+        let mut layers = DataLayers::default();
+        layers.add(vec![layer()], "ponds.gpkg");
+        let own = layers.line_set().map_or(0, |s| s.len());
+        layers.set_live("RustGIS", 4, "Cities", (layer(), Vec::new()), Style::new(0), None);
+        layers.set_live("RustGIS", 1, "Countries", (layer(), vec![[1, 2, 3]]), Style::new(1), Some(0));
+        assert_eq!(layers.list.len(), 3);
+        // Тот же слой заново - на месте.
+        layers.set_live("RustGIS", 4, "Cities", (layer(), Vec::new()), Style::new(0), None);
+        assert_eq!(layers.list.len(), 3);
+        // Новые слои выключены, как слои проекта QGIS в модуле.
+        assert_eq!(layers.live_shown(4), Some(false));
+        assert_eq!(layers.line_set().map_or(0, |s| s.len()), own);
+        layers.show_live(1, true);
+        assert_eq!(layers.live_shown(1), Some(true));
+        assert_eq!(layers.live_shown(7), None);
+        // Порядок RustGIS: Cities над Countries.
+        assert!(layers.sync_live(&[4, 1]));
+        let live: Vec<Option<i64>> = layers.list.iter().filter(|l| l.live.is_some()).map(|l| l.live).collect();
+        assert_eq!(live, vec![Some(4), Some(1)]);
+        assert!(!layers.sync_live(&[4, 1]));
+        // Флажок пользователя опрос не сбрасывает.
+        assert_eq!(layers.live_shown(1), Some(true));
+        // Живые слои не пишутся, не ждут записи и не видны в «Моих слоях».
+        assert!(!layers.index(false).contains("Cities"));
+        assert_eq!(layers.unstored().len(), 1);
+        assert!(layers.folders().is_empty());
+        // Слой убран из проекта - убран с глобуса.
+        layers.sync_live(&[1]);
+        assert!(layers.list.iter().all(|l| l.live != Some(4)));
+        layers.drop_live();
+        assert_eq!(layers.list.len(), 1);
     }
 
     #[test]

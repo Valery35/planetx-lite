@@ -2409,6 +2409,24 @@ No piece of the 3D Tiles set was read	Не прочитан ни один кус
 3D Tiles: {title}, inner sets not read: {skipped}.	3D Tiles: {title}, не прочитано внутренних наборов: {skipped}.
 3D Tiles: these sets were not found: {names}	3D Tiles: не найдены наборы: {names}
 3D Tiles: {title}.	3D Tiles: {title}.
+Link with the open RustGIS	Связь с открытым RustGIS
+Layers of the RustGIS project are listed in the RustGIS project section, switched off: a check shows a layer on the globe in its RustGIS colours. The globe follows the RustGIS map, and the map follows the globe. A click with Identify selects the feature in RustGIS. In RustGIS start the MCP Relay command or tick Let your Agents Control RustGIS in the assistant settings.	Слои проекта RustGIS - в разделе «Проект RustGIS», выключенные: флажок показывает слой на глобусе в цветах RustGIS. Глобус идёт за картой RustGIS, карта - за глобусом. Щелчок инструментом «Объекты» выделяет объект в RustGIS. В RustGIS нужна команда «MCP-релей» или флажок «Let your Agents Control RustGIS» в настройках помощника.
+Linked with RustGIS.	Связь с RustGIS установлена.
+No link with RustGIS: {error}. In RustGIS start the MCP Relay command.	Связи с RustGIS нет: {error}. В RustGIS нужна команда «MCP-релей».
+the MCP relay of RustGIS is off	ретранслятор MCP RustGIS выключен
+The layer {name} is added to the RustGIS project.	Слой {name} добавлен в проект RustGIS.
+RustGIS: {error}	RustGIS: {error}
+To the RustGIS project	В проект RustGIS
+The objects of the layer with all fields go to the open RustGIS project as a new layer.	Объекты слоя со всеми полями уходят новым слоем в открытый проект RustGIS.
+PlanetX Lite did not start: {error}	PlanetX Lite не запустился: {error}
+The PlanetX globe opens linked with this map.	Глобус PlanetX открывается со связью с этой картой.
+The PlanetX globe opens. For the link start the MCP Relay command (Ctrl+K) or tick Let your Agents Control RustGIS in the assistant settings.	Глобус PlanetX открывается. Для связи нужна команда «MCP-релей» (Ctrl+K) или флажок «Let your Agents Control RustGIS» в настройках помощника.
+RustGIS project	Проект RustGIS
+The RustGIS project has no vector layers.	В проекте RustGIS нет векторных слоёв.
+A layer of the open RustGIS project in its RustGIS colours. The check shows it on the globe.	Слой открытого проекта RustGIS в цветах RustGIS. Флажок показывает его на глобусе.
+The features of the layer are being read from RustGIS.	Объекты слоя читаются из RustGIS.
+Folder to the RustGIS project	Папку в проект RustGIS
+Every layer of the folder goes to the open RustGIS project as a new layer, with all fields.	Каждый слой папки уходит новым слоем в открытый проект RustGIS, со всеми полями.
 Basis	Основа
 Base maps, local data, the vector map, transparent map overlays and Wikipedia articles.	Подоснова, локальные данные, векторная карта, прозрачные наложения карт и статьи Википедии.
 Earth now	Земля сейчас
