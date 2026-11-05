@@ -521,6 +521,13 @@ pub struct LiteApp {
     tilesets: crate::tilesets::Tilesets,
     /// Список «Моих слоёв» прошлого запуска, ждёт папки данных программы.
     my_layers_saved: Option<String>,
+    /// Список наборов 3D Tiles прошлого запуска, открывается первым кадром.
+    tilesets_saved: Option<String>,
+    /// Наборы, которые открываются снова при запуске: путь или адрес -
+    /// флажок набора. Камера к ним не летит.
+    tiles_restoring: HashMap<String, bool>,
+    /// Путь файла с диска, который сейчас открывается.
+    opening_path: Option<std::path::PathBuf>,
     /// Папка данных пользователя: в ней лежат файлы «Моих слоёв». Не
     /// папка кэша - кэш система может очистить. У страницы её нет.
     user_dir: Option<std::path::PathBuf>,
@@ -561,6 +568,9 @@ pub struct LiteApp {
     demo_fetching: Option<&'static str>,
     /// Адреса сцен из ссылки, которые ещё не открыты, по порядку.
     url_queue: std::collections::VecDeque<String>,
+    /// Адрес файла из ссылки, который сейчас грузится или открывается:
+    /// по нему набор 3D Tiles берёт свои куски.
+    fetching_url: Option<String>,
     /// Адреса открытых сцен и файлов демо по порядку - для ссылки
     /// «Поделиться». Файлы с диска адреса не имеют.
     shared: Vec<String>,
@@ -1290,6 +1300,9 @@ impl LiteApp {
             data_layers: crate::datalayers::DataLayers::default(),
             tilesets: crate::tilesets::Tilesets::default(),
             my_layers_saved: None,
+            tilesets_saved: None,
+            tiles_restoring: HashMap::new(),
+            opening_path: None,
             user_dir: None,
             new_folder: String::new(),
             data_meshes: Vec::new(),
@@ -1309,6 +1322,7 @@ impl LiteApp {
             demo_queue: std::collections::VecDeque::new(),
             demo_fetching: None,
             url_queue: std::collections::VecDeque::new(),
+            fetching_url: None,
             shared: Vec::new(),
             places_dirty: false,
             tree_state: marks::TreeState::default(),
@@ -1424,6 +1438,7 @@ impl LiteApp {
         // данных, она известна после запуска - слои читаются первым кадром.
         if app.check.is_none() {
             app.my_layers_saved = cc.storage.and_then(|s| s.get_string(crate::datalayers::KEY));
+            app.tilesets_saved = cc.storage.and_then(|s| s.get_string(crate::tilesets::KEY));
         }
         // «Временные метки» прошлого запуска, строка выделена: новое
         // ложится туда, `select_temporary` модуля. Самопроверка - без них.
@@ -3798,6 +3813,55 @@ impl LiteApp {
         }
     }
 
+    /// Наборы 3D Tiles прошлого запуска - снова на глобус, первым кадром:
+    /// файл читается с диска, ссылка встаёт в очередь ссылок. Камера
+    /// к ним не летит. Файл, которого больше нет, - в строке итога.
+    fn restore_tilesets(&mut self) {
+        let Some(text) = self.tilesets_saved.take() else {
+            return;
+        };
+        let mut lost = Vec::new();
+        for (origin, visible) in crate::tilesets::parse_index(&text) {
+            self.tiles_restoring.insert(origin.text().to_string(), visible);
+            match origin {
+                crate::tilesets::Origin::Link(url) => self.open_link(&url),
+                crate::tilesets::Origin::File(path) => {
+                    if !self.reopen_tiles(std::path::Path::new(&path)) {
+                        self.tiles_restoring.remove(&path);
+                        lost.push(path);
+                    }
+                }
+            }
+        }
+        if !lost.is_empty() {
+            self.open_message = Some(trf(self.lang, "3D Tiles: these sets were not found: {names}", &[("names", &lost.join(", "))]));
+            // Пропавшие наборы уходят и из списка в хранилище.
+            self.tilesets.save_dirty = true;
+        }
+    }
+
+    /// Открыть набор с диска снова. Папка последнего открытия остаётся
+    /// прежней. false - файл не прочёлся.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn reopen_tiles(&mut self, path: &std::path::Path) -> bool {
+        let Ok(bytes) = std::fs::read(path) else {
+            return false;
+        };
+        let name = path.file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
+        let dir = std::mem::replace(&mut self.open_dir, path.parent().map(std::path::Path::to_path_buf));
+        self.opening_path = Some(path.to_path_buf());
+        let opened = self.open_tiles(&bytes, &name, None).is_ok();
+        self.opening_path = None;
+        self.open_dir = dir;
+        opened
+    }
+
+    /// У страницы диска нет.
+    #[cfg(target_arch = "wasm32")]
+    fn reopen_tiles(&mut self, _path: &std::path::Path) -> bool {
+        false
+    }
+
     /// «Мои слои» - в хранилище, если изменились. В программе объекты
     /// новых слоёв пишутся файлами GeoJSON в папку данных, файлы убранных
     /// слоёв удаляются. На странице объекты идут в сам список, пока он
@@ -3884,8 +3948,12 @@ impl LiteApp {
     /// папки последнего открытия, у страницы их нет - нужен архив.
     fn open_tiles(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
         use crate::tilesets::Source;
+        let link = self.fetching_url.clone().filter(|_| !bytes.starts_with(b"PK"));
         let read = if bytes.starts_with(b"PK") {
             scene::tiles3d::ZipSet::open(bytes).and_then(|zip| Ok((scene::tiles3d::Tree::open(&zip.root, &|p| zip.get(p))?, Source::Zip(zip))))
+        } else if let Some(link) = &link {
+            // По ссылке: куски и внешние наборы - запросами по мере надобности.
+            scene::tiles3d::Tree::open_lazy(bytes).map(|tree| (tree, Source::url(link)))
         } else {
             let source = Source::Dir(self.open_dir.clone().unwrap_or_default());
             scene::tiles3d::Tree::open(bytes, &|p| source.get(p)).map(|tree| (tree, source))
@@ -3898,9 +3966,24 @@ impl LiteApp {
             }
         };
         let skipped = tree.skipped.len();
-        let dir_less = cfg!(target_arch = "wasm32") && !bytes.starts_with(b"PK");
-        let title = if name.to_lowercase().ends_with("tileset.json") { self.open_dir_name().unwrap_or_else(|| name.to_string()) } else { data::layers::stem(name).to_string() };
-        let added = if dir_less { None } else { self.tilesets.add(tree, source, &title, &self.nav.camera.ellipsoid) };
+        let dir_less = cfg!(target_arch = "wasm32") && !bytes.starts_with(b"PK") && link.is_none();
+        let folder = match &link {
+            Some(l) => crate::tilesets::link_folder(l),
+            None => self.open_dir_name(),
+        };
+        let title = if name.to_lowercase().ends_with("tileset.json") { folder.unwrap_or_else(|| name.to_string()) } else { data::layers::stem(name).to_string() };
+        // Откуда набор: ссылка или файл с диска - по ним он откроется при
+        // следующем запуске.
+        let origin = match (&self.fetching_url, &self.opening_path) {
+            (Some(url), _) => Some(crate::tilesets::Origin::Link(url.clone())),
+            (None, Some(path)) => Some(crate::tilesets::Origin::File(path.to_string_lossy().into_owned())),
+            (None, None) => None,
+        };
+        let restoring = origin.as_ref().and_then(|o| self.tiles_restoring.remove(o.text()));
+        let added = if dir_less { None } else { self.tilesets.add(tree, source, &title, origin, &self.nav.camera.ellipsoid) };
+        if let (Some(id), Some(visible)) = (added, restoring) {
+            self.tilesets.apply(id, crate::tilesets::Act::Visible(visible));
+        }
         let Some(id) = added else {
             let e = if dir_less {
                 tr(self.lang, "The page cannot read the pieces next to tileset.json - open the set as a ZIP archive").to_string()
@@ -3911,14 +3994,15 @@ impl LiteApp {
             return Err(e);
         };
         self.open_message = Some(if skipped > 0 {
-            trf(self.lang, "3D Tiles: {title}, pieces not read: {skipped}. Draco and meshopt compression is not read.", &[("title", &title), ("skipped", &skipped.to_string())])
+            trf(self.lang, "3D Tiles: {title}, inner sets not read: {skipped}.", &[("title", &title), ("skipped", &skipped.to_string())])
         } else {
             trf(self.lang, "3D Tiles: {title}.", &[("title", &title)])
         });
         let spots = self.tilesets.get(id).map(|s| s.spots.clone()).unwrap_or_default();
         let camera = &self.nav.camera;
         let pose = marks::fit_points(&spots, camera.fov_y, camera.aspect());
-        if let Some(pose) = pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
+        // Набор прошлого запуска камеру не трогает.
+        if let Some(pose) = pose.clone().filter(|_| restoring.is_none() && (fly.is_some() || !self.keep_pose)) {
             match fly {
                 Some(now) => crate::input::fly(&mut self.nav, pose, now),
                 None => self.nav.show(pose),
@@ -4212,6 +4296,16 @@ impl LiteApp {
         self.loaders.files.start(&url);
         self.remember_url(&url);
         self.fetching = Some((name, false));
+        self.fetching_url = Some(url);
+    }
+
+    /// Открыть файл по ссылке из строки поиска: сцену, KML, набор
+    /// 3D Tiles. Ссылка встаёт в очередь сцен из ссылки.
+    fn open_link(&mut self, url: &str) {
+        self.url_queue.push_back(url.to_string());
+        if self.fetching.is_none() {
+            self.next_scene_url();
+        }
     }
 
     /// Рейс самосвалов демо, как `_play_model_trucks` и `_haul_loop`
@@ -4374,6 +4468,7 @@ impl LiteApp {
                 }
                 None => {
                     let _ = self.open_file(&bytes, &name, None);
+                    self.fetching_url = None;
                     self.next_scene_url();
                 }
             },
@@ -4384,6 +4479,7 @@ impl LiteApp {
             }
             (Err(e), false) => {
                 self.demo_fetching = None;
+                self.fetching_url = None;
                 self.demo_queue.clear();
                 self.url_queue.clear();
                 self.open_message = Some(format!("{name}: {e}"));
@@ -7290,7 +7386,9 @@ impl LiteApp {
                     Ok(bytes) => {
                     self.open_dir = path.parent().map(std::path::Path::to_path_buf);
                     // Ошибку открытия показывает панель.
+                    self.opening_path = Some(path.clone());
                     let _ = self.open_file(&bytes, &name, Some(now));
+                    self.opening_path = None;
                 }
                     Err(e) => self.open_message = Some(format!("{name}: {e}")),
                 }
@@ -7914,7 +8012,9 @@ impl LiteApp {
                         self.open_dir = Some(dir.to_path_buf());
                     }
                     // Ошибку открытия показывает панель.
+                    self.opening_path = Some(file.path().to_path_buf()).filter(|p| p.is_file());
                     let _ = self.open_file(&bytes, &name, Some(now));
+                    self.opening_path = None;
                 }
                 Err(e) => self.open_message = Some(format!("{name}: {e}")),
             }
@@ -8750,6 +8850,12 @@ impl LiteApp {
         }
         // Enter с точным совпадением названия метки или действия -
         // подсказка, иначе запрос Nominatim, правило службы.
+        // Ссылка на файл - открыть его: сцену, KML, набор 3D Tiles.
+        let link = self.search_text.trim().to_string();
+        if (entered || clicked) && chosen.is_none() && crate::tilesets::is_link(&link) {
+            self.open_link(&link);
+            return;
+        }
         if entered && chosen.is_none() {
             chosen = scene::searchbar::exact(&self.search_text, &items).into_iter().find(|s| s.kind != scene::searchbar::Kind::History);
         }
@@ -8964,6 +9070,11 @@ impl eframe::App for LiteApp {
             self.settings_dirty = false;
         }
         self.save_my_layers(storage);
+        // Список наборов прошлого запуска ещё не открыт - не затирать его.
+        if self.tilesets.save_dirty && self.tilesets_saved.is_none() {
+            storage.set_string(crate::tilesets::KEY, self.tilesets.index());
+            self.tilesets.save_dirty = false;
+        }
         if !self.places_dirty {
             return;
         }
@@ -8992,6 +9103,7 @@ impl eframe::App for LiteApp {
         let ctx = ui.ctx().clone();
         let now = ctx.input(|i| i.time);
         self.restore_my_layers();
+        self.restore_tilesets();
         self.ask_temporary(&ctx);
         self.upload();
         if std::mem::take(&mut self.fonts_dirty) {
@@ -9050,6 +9162,7 @@ impl eframe::App for LiteApp {
             || self.search.busy()
             || self.pictures.busy()
             || self.fetching.is_some()
+            || self.tilesets.busy()
             || self.wiki.as_ref().is_some_and(crate::wiki::Wiki::busy)
             || self.mining.as_ref().is_some_and(crate::mining::Mining::busy)
             || self.parcel_ask.is_some()
@@ -9644,7 +9757,7 @@ impl eframe::App for LiteApp {
             self.animated = built.animated;
         }
         // Куски 3D Tiles по экранной ошибке, пока не прочитаны все нужные.
-        if self.tilesets.update(globe, &self.nav.camera) {
+        if self.tilesets.update(globe, &self.nav.camera, &*self.loaders.request) {
             ui.ctx().request_repaint();
         }
         let window = self.timebar.window();

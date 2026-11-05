@@ -10,8 +10,9 @@
 //! разворачиваются), POSITION, NORMAL, TEXCOORD_0, номера вершин,
 //! материал pbrMetallicRoughness - baseColorFactor и картинка
 //! baseColorTexture. Узлы сцены - matrix или translation, rotation,
-//! scale. Сжатие сеток KHR_draco_mesh_compression и EXT_meshopt не
-//! читается - такой файл даёт ошибку с именем расширения.
+//! scale. Сетки KHR_draco_mesh_compression распаковываются крейтом
+//! draco-core. Сжатие EXT_meshopt и квантование KHR_mesh_quantization
+//! не читаются - такой файл даёт ошибку с именем расширения.
 //!
 //! Ось Y glTF смотрит вверх, итог переводится в ось Z вверх
 //! ([`from_y_up`]): передняя сторона модели +Z смотрит на юг.
@@ -32,7 +33,16 @@ use crate::animation::{self, Animation, Mode};
 use crate::models::{GLB_MAGIC, GRAY, MAX_VERTICES, ModelError, Part, Pictures, error, from_y_up, rows, split_glb};
 
 /// Расширения сжатия, которые не читаются.
-pub const UNSUPPORTED: [&str; 3] = ["KHR_draco_mesh_compression", "EXT_meshopt_compression", "KHR_mesh_quantization"];
+pub const UNSUPPORTED: [&str; 2] = ["EXT_meshopt_compression", "KHR_mesh_quantization"];
+/// Расширение сжатия сеток Draco.
+pub const DRACO: &str = "KHR_draco_mesh_compression";
+
+/// Распакованный примитив Draco: значения атрибутов по именам glTF
+/// и номера вершин треугольников.
+struct Unpacked {
+    attributes: HashMap<String, Accessor>,
+    indices: Vec<usize>,
+}
 /// Наибольшая вложенность узлов сцены.
 pub const MAX_DEPTH: usize = 64;
 /// Наибольшее количество обходов узлов: узел, который много раз стоит
@@ -321,6 +331,29 @@ impl<'a> Doc<'a> {
         self.uri(Some(image.get("uri").unwrap_or(&Value::String(String::new()))))
     }
 
+    /// Распаковать сетку Draco расширения ext примитива. Количество точек
+    /// и треугольников ограничено [`MAX_VERTICES`].
+    fn draco(&mut self, ext: &Value) -> Result<Unpacked, ModelError> {
+        let bytes = self.view(ext.get("bufferView"))?.0.to_vec();
+        let top = MAX_VERTICES as u64;
+        let limits = draco_core::DecodeLimits::default().with_max_points(top).with_max_faces(top).with_max_decoded_bytes(top.saturating_mul(64));
+        let mut buffer = draco_core::DecoderBuffer::new(&bytes).with_limits(limits);
+        let mut mesh = draco_core::Mesh::new();
+        draco_core::MeshDecoder::new().decode(&mut buffer, &mut mesh).map_err(|e| error(format!("Draco: {e}")))?;
+        let points = mesh.num_points();
+        let mut attributes = HashMap::new();
+        for (name, id) in ext.get("attributes").and_then(Value::as_object).into_iter().flatten() {
+            let Some(found) = id.as_u64().and_then(|i| u32::try_from(i).ok()).and_then(|i| mesh.attribute_by_unique_id(i)) else {
+                continue;
+            };
+            let size = usize::from(found.num_components()).clamp(1, 4);
+            let values = found.read_f32s(points, size).into_iter().map(f64::from).collect();
+            attributes.insert(name.clone(), Accessor { size, values });
+        }
+        let indices = mesh.faces().iter().flat_map(|f| f.iter().map(|p| p.0 as usize)).collect();
+        Ok(Unpacked { attributes, indices })
+    }
+
     fn mesh(&mut self, mesh: &'a Map<String, Value>, matrix: &DMat4, out: &mut Vec<Part>, pictures: &mut Pictures) -> Result<(), ModelError> {
         let linear = DMat3::from_mat4(*matrix);
         let det = linear.determinant();
@@ -335,14 +368,27 @@ impl<'a> Doc<'a> {
             let Some(attributes) = prim.get("attributes").and_then(Value::as_object) else {
                 continue;
             };
-            let Some(position) = attributes.get("POSITION") else {
+            if !attributes.contains_key("POSITION") {
                 continue;
+            }
+            // Сетка Draco: атрибуты и номера вершин - из распакованного.
+            let mut unpacked = match prim.get("extensions").and_then(|e| e.get(DRACO)) {
+                Some(ext) => Some(self.draco(ext)?),
+                None => None,
             };
-            let positions = self.accessor(Some(position))?;
+            let packed_indices = unpacked.as_mut().map(|u| std::mem::take(&mut u.indices));
+            let mut take = |doc: &mut Self, name: &str| -> Result<Option<Accessor>, ModelError> {
+                match &mut unpacked {
+                    Some(u) => Ok(u.attributes.remove(name)),
+                    None => attributes.get(name).map(|a| doc.accessor(Some(a))).transpose(),
+                }
+            };
+            let positions = take(self, "POSITION")?.ok_or_else(|| error("bad POSITION"))?;
             if positions.size < 3 {
                 return Err(error("bad POSITION"));
             }
             let indices = match prim.get("indices") {
+                _ if packed_indices.is_some() => packed_indices,
                 Some(found) => {
                     let found = self.accessor(Some(found))?;
                     let rows = (0..found.count()).map(|i| found.row(i).first().copied().unwrap_or(-1.0));
@@ -374,8 +420,7 @@ impl<'a> Doc<'a> {
             }
             let points: Vec<DVec3> = order.iter().map(|i| linear * positions.vec3(*i) + shift).collect();
             let mut normals = None;
-            if let Some(found) = attributes.get("NORMAL") {
-                let found = self.accessor(Some(found))?;
+            if let Some(found) = take(self, "NORMAL")? {
                 if found.size < 3 || order.iter().any(|i| *i >= found.count()) {
                     return Err(error("bad NORMAL"));
                 }
@@ -389,8 +434,9 @@ impl<'a> Doc<'a> {
             let (image, rgba) = self.material(prim.get("material"))?;
             let mut uv = None;
             let mut name = None;
-            if let (Some(image), Some(found)) = (image, attributes.get("TEXCOORD_0")) {
-                let found = self.accessor(Some(found))?;
+            if let Some(image) = image
+                && let Some(found) = take(self, "TEXCOORD_0")?
+            {
                 if found.size < 2 || order.iter().any(|i| *i >= found.count()) {
                     return Err(error("bad TEXCOORD_0"));
                 }

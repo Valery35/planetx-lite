@@ -76,6 +76,10 @@ terrio = { version = "=0.6.0", default-features = false, features = ["geotiff", 
 # Сжатие только на Rust: в наборе zip по умолчанию есть библиотеки на C
 # (bzip2, zstd, lzma), под wasm32 они не собираются.
 zip = { version = "9.0.5", default-features = false, features = ["deflate-flate2-zlib-rs"] }
+# Распаковка сеток Draco (KHR_draco_mesh_compression) на Rust, Apache-2.0,
+# без unsafe. Только чтение, кодировщик - для тестов. Версия закреплена
+# точно: файл чужой, распаковщик сверяется при смене версии.
+draco-core = { version = "=2.3.2", default-features = false, features = ["decoder", "point_cloud_decode", "edgebreaker_valence_decode", "legacy_bitstream_decode"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

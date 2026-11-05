@@ -28,8 +28,8 @@
 //!
 //! Враждебный набор ограничен: глубина дерева не больше [`MAX_DEPTH`],
 //! тайлов в обходе не больше [`MAX_TILES`], кусков в срезе не больше
-//! [`MAX_CONTENTS`]. Сжатые сетки Draco и meshopt не читаются - кусок
-//! с ними пропускается, его имя - в списке непрочитанных.
+//! [`MAX_CONTENTS`]. Сетки Draco распаковываются, сжатие meshopt не
+//! читается - кусок с ним пропускается, его имя - в списке непрочитанных.
 
 use std::collections::HashMap;
 
@@ -70,7 +70,7 @@ pub struct Tileset {
 
 /// Тайл дерева: путь куска от корня набора или None, накопленная
 /// матрица, ошибка в метрах, способ уточнения, дети и сфера вокруг
-/// объёма тайла в ECEF.
+/// объёма тайла в ECEF, глубина от корня набора.
 #[derive(Debug, Clone)]
 pub struct TileNode {
     pub uri: Option<String>,
@@ -80,6 +80,7 @@ pub struct TileNode {
     pub children: Vec<usize>,
     pub center: DVec3,
     pub radius: f64,
+    pub depth: usize,
 }
 
 /// Дерево набора: тайлы по номерам, номер корня, ось Z вверх у кусков
@@ -180,14 +181,26 @@ fn sphere(tile: &Value, transform: DMat4) -> Option<(DVec3, f64)> {
 }
 
 /// Путь uri от папки dir: «./», «../» и обратные косые разбираются,
-/// адрес с протоколом и путь от корня остаются как есть.
-fn join(dir: &str, uri: &str) -> String {
-    let uri = uri.split(['?', '#']).next().unwrap_or(uri).replace('\\', "/");
-    if uri.contains("://") || dir.is_empty() {
-        return uri.trim_start_matches("./").to_string();
+/// адрес с протоколом остаётся как есть. Запрос после «?» сохраняется -
+/// у наборов по ссылке в нём бывает ключ сеанса, якорь «#» отбрасывается.
+pub fn join(dir: &str, uri: &str) -> String {
+    let uri = uri.split('#').next().unwrap_or(uri);
+    let (path, query) = match uri.find('?') {
+        Some(at) => (&uri[..at], &uri[at..]),
+        None => (uri, ""),
+    };
+    let path = path.replace('\\', "/");
+    // Папка-адрес: протокол и сервер остаются, путь разбирается.
+    if !path.contains("://")
+        && let Some((scheme, rest)) = dir.split_once("://")
+    {
+        return format!("{scheme}://{}", join(rest, &format!("{path}{query}")));
+    }
+    if path.contains("://") || dir.is_empty() {
+        return format!("{}{query}", path.trim_start_matches("./"));
     }
     let mut parts: Vec<&str> = dir.split('/').filter(|p| !p.is_empty()).collect();
-    for p in uri.split('/') {
+    for p in path.split('/') {
         match p {
             "" | "." => {}
             ".." => {
@@ -196,19 +209,31 @@ fn join(dir: &str, uri: &str) -> String {
             _ => parts.push(p),
         }
     }
-    parts.join("/")
+    format!("{}{query}", parts.join("/"))
 }
 
-/// Папка пути: всё до последней косой.
+/// Путь без запроса после «?» - имя файла на диске или в архиве.
+pub fn path_of(uri: &str) -> &str {
+    uri.split('?').next().unwrap_or(uri)
+}
+
+/// Папка пути без запроса: всё до последней косой.
 fn folder(path: &str) -> &str {
+    let path = path_of(path);
     path.rfind('/').map_or("", |at| &path[..at])
 }
 
+/// Внешний ли это набор: путь к файлу `.json`.
+fn external(uri: &str) -> bool {
+    path_of(uri).to_ascii_lowercase().ends_with(".json")
+}
+
 /// Обход дерева тайлов: узлы по номерам. Внешний набор - content с .json -
-/// читается через fetch и встаёт ребёнком вместо куска.
+/// читается через fetch и встаёт ребёнком вместо куска. Без fetch внешний
+/// набор остаётся путём тайла и подшивается позже, [`Tree::graft`].
 struct Walker<'f> {
     nodes: Vec<TileNode>,
-    fetch: Fetch<'f>,
+    fetch: Option<Fetch<'f>>,
     skipped: Vec<String>,
 }
 
@@ -236,18 +261,21 @@ impl Walker<'_> {
         let content = tile.get("content").or_else(|| tile.get("contents").and_then(|c| c.get(0)));
         let uri = content.and_then(|c| c.get("uri").or_else(|| c.get("url"))).and_then(Value::as_str).map(|u| join(dir, u));
         let at = self.nodes.len();
-        self.nodes.push(TileNode { uri: None, transform, error, add, children: Vec::new(), center, radius });
+        self.nodes.push(TileNode { uri: None, transform, error, add, children: Vec::new(), center, radius, depth });
         let here = Parent { transform, add, sphere: (center, radius) };
         let mut children = Vec::new();
         match uri {
             // Внешний набор - ребёнок с его корнем.
-            Some(u) if u.to_ascii_lowercase().ends_with(".json") => match (self.fetch)(&u).and_then(|b| serde_json::from_slice::<Value>(&b).ok()) {
-                Some(sub) => {
-                    if let Some(root) = sub.get("root") {
-                        children.extend(self.walk(root, here, folder(&u), depth + 1));
+            Some(u) if external(&u) => match self.fetch {
+                Some(fetch) => match fetch(&u).and_then(|b| serde_json::from_slice::<Value>(&b).ok()) {
+                    Some(sub) => {
+                        if let Some(root) = sub.get("root") {
+                            children.extend(self.walk(root, here, folder(&u), depth + 1));
+                        }
                     }
-                }
-                None => self.skipped.push(u),
+                    None => self.skipped.push(u),
+                },
+                None => self.nodes[at].uri = Some(u),
             },
             other => self.nodes[at].uri = other,
         }
@@ -262,6 +290,42 @@ impl Walker<'_> {
 impl Tree {
     /// Дерево из `tileset.json` root, внешние наборы - через fetch.
     pub fn open(root: &[u8], fetch: Fetch<'_>) -> Result<Tree, ModelError> {
+        Self::parse(root, Some(fetch))
+    }
+
+    /// Дерево без чтения внешних наборов: они подшиваются по мере
+    /// надобности, [`Tree::graft`]. Так открывается набор по ссылке.
+    pub fn open_lazy(root: &[u8]) -> Result<Tree, ModelError> {
+        Self::parse(root, None)
+    }
+
+    /// Внешний ли набор у тайла n - его надо подшить, а не читать куском.
+    pub fn is_external(&self, n: usize) -> bool {
+        self.nodes.get(n).and_then(|node| node.uri.as_deref()).is_some_and(external)
+    }
+
+    /// Подшить внешний набор bytes под тайл n: его корень - ребёнок тайла,
+    /// путь набора у тайла снимается. Набор не прочёлся - ошибка, тайл
+    /// остаётся как был.
+    pub fn graft(&mut self, n: usize, bytes: &[u8]) -> Result<(), ModelError> {
+        let node = self.nodes.get(n).ok_or_else(|| error("no such tile"))?;
+        let uri = node.uri.clone().filter(|u| external(u)).ok_or_else(|| error("tile has no external tileset"))?;
+        let json: Value = serde_json::from_slice(bytes).map_err(|_| error("bad tileset JSON"))?;
+        let tile = json.get("root").ok_or_else(|| error("tileset has no root"))?;
+        let parent = Parent { transform: node.transform, add: node.add, sphere: (node.center, node.radius) };
+        let depth = node.depth + 1;
+        let mut walker = Walker { nodes: std::mem::take(&mut self.nodes), fetch: None, skipped: Vec::new() };
+        let child = walker.walk(tile, parent, folder(&uri), depth);
+        self.nodes = walker.nodes;
+        let child = child.ok_or_else(|| error("empty tileset"))?;
+        if let Some(node) = self.nodes.get_mut(n) {
+            node.uri = None;
+            node.children.push(child);
+        }
+        Ok(())
+    }
+
+    fn parse(root: &[u8], fetch: Option<Fetch<'_>>) -> Result<Tree, ModelError> {
         let json: Value = serde_json::from_slice(root).map_err(|_| error("bad tileset JSON"))?;
         let tile = json.get("root").ok_or_else(|| error("tileset has no root"))?;
         // gltfUpAxis Z у старых наборов 1.0: ось glTF уже Z вверх, перевод
@@ -394,10 +458,17 @@ impl Tree {
     /// Прочитать кусок тайла n через fetch. Тайл без куска - ошибка.
     pub fn load(&self, n: usize, fetch: Fetch<'_>) -> Result<Piece, ModelError> {
         let uri = self.nodes.get(n).and_then(|node| node.uri.as_deref()).ok_or_else(|| error("tile has no content"))?;
+        let bytes = fetch(uri).ok_or_else(|| error("missing file"))?;
+        self.piece(n, &bytes, fetch)
+    }
+
+    /// Кусок тайла n из уже полученных байтов его файла. Файлы рядом
+    /// с куском - картинки glTF - берутся через fetch.
+    pub fn piece(&self, n: usize, bytes: &[u8], fetch: Fetch<'_>) -> Result<Piece, ModelError> {
+        let uri = self.nodes.get(n).and_then(|node| node.uri.as_deref()).ok_or_else(|| error("tile has no content"))?;
         let dir = folder(uri).to_string();
         let near = |name: &str| fetch(&join(&dir, name));
-        let bytes = fetch(uri).ok_or_else(|| error("missing file"))?;
-        let (parts, pictures) = content(&bytes, &near)?;
+        let (parts, pictures) = content(bytes, &near)?;
         Ok(self.place(n, &parts, &pictures))
     }
 }
@@ -527,9 +598,9 @@ impl ZipSet {
         Ok(ZipSet { root, dir: folder(&main.replace('\\', "/")).to_string(), files })
     }
 
-    /// Файл по пути от папки набора.
+    /// Файл по пути от папки набора, запрос после «?» не в счёт.
     pub fn get(&self, path: &str) -> Option<Vec<u8>> {
-        self.files.get(&join(&self.dir, path)).cloned()
+        self.files.get(path_of(&join(&self.dir, path))).cloned()
     }
 }
 

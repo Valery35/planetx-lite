@@ -175,3 +175,41 @@ fn far_view_shows_the_root_near_view_refines_without_holes() {
     let inside = view_from(10.0, &all);
     assert!(tree.sse(tree.root, &inside).is_infinite());
 }
+
+#[test]
+fn lazy_tree_grafts_external_sets_when_selection_reaches_them() {
+    // Корень без куска, ребёнок - внешний набор в папке sub с запросом.
+    let root = br#"{"asset":{"version":"1.0"},"root":{"boundingVolume":{"sphere":[6378137,0,0,100]},"geometricError":64,
+      "children":[{"boundingVolume":{"sphere":[6378137,0,0,100]},"geometricError":64,"content":{"uri":"sub/tileset.json?v=2"}}]}}"#;
+    let sub = br#"{"asset":{"version":"1.0"},"root":{"boundingVolume":{"sphere":[6378137,0,0,50]},"geometricError":0,"content":{"uri":"a.glb"}}}"#;
+    let mut tree = tiles3d::Tree::open_lazy(root).expect("дерево");
+    let ext = tree.nodes.iter().position(|n| n.uri.is_some()).unwrap();
+    assert!(tree.is_external(ext));
+    assert_eq!(tree.nodes[ext].uri.as_deref(), Some("sub/tileset.json?v=2"));
+    // Выбор просит внешний набор как кусок.
+    let all = |_: globe_core::DVec3, _: f64| true;
+    let near = view_from(1_000.0, &all);
+    let sel = tree.select(&near, 16.0, &|_| false);
+    assert_eq!(sel.load.iter().map(|l| l.0).collect::<Vec<_>>(), vec![ext]);
+    // Испорченный набор не подшивается, тайл остаётся как был.
+    assert!(tree.graft(ext, b"not json").is_err());
+    assert!(tree.is_external(ext));
+    // Подшитый набор - ребёнок тайла, путь куска от папки набора.
+    tree.graft(ext, sub).expect("подшивка");
+    assert!(!tree.is_external(ext) && tree.nodes[ext].uri.is_none());
+    let piece = tree.nodes[ext].children[0];
+    assert_eq!(tree.nodes[piece].uri.as_deref(), Some("sub/a.glb"));
+    assert_eq!(tree.nodes[piece].depth, tree.nodes[ext].depth + 1);
+    let sel = tree.select(&near, 16.0, &|_| false);
+    assert_eq!(sel.load.iter().map(|l| l.0).collect::<Vec<_>>(), vec![piece]);
+    // Тайл без внешнего набора не подшивается.
+    assert!(tree.graft(piece, sub).is_err());
+}
+
+#[test]
+fn join_keeps_the_query_and_the_server() {
+    assert_eq!(tiles3d::join("a/b", "../c.glb?k=1#x"), "a/c.glb?k=1");
+    assert_eq!(tiles3d::join("https://h.org/t", "../s/c.b3dm"), "https://h.org/s/c.b3dm");
+    assert_eq!(tiles3d::join("https://h.org/t", "https://x.org/c.glb"), "https://x.org/c.glb");
+    assert_eq!(tiles3d::path_of("a/c.glb?k=1"), "a/c.glb");
+}

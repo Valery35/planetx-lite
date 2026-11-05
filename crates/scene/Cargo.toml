@@ -18,6 +18,11 @@ geographiclib-rs.workspace = true
 # escape-html - таблица сущностей HTML для правки KML с &nbsp; и подобным.
 quick-xml = { workspace = true, features = ["escape-html"] }
 zip.workspace = true
+draco-core.workspace = true
+
+[dev-dependencies]
+# Кодировщик Draco - сжатые куски для тестов чтения.
+draco-core = { workspace = true, features = ["encoder"] }
 
 [lints]
 workspace = true

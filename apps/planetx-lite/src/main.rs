@@ -22,6 +22,8 @@
 //! `planetx-lite сцена.planetx` - открыть сцену, KML или KMZ. Растр
 //! высот GeoTIFF врезается своим рельефом. Файлов может быть несколько,
 //! они открываются по порядку. Файл можно и бросить в окно.
+//! `planetx-lite https://…/tileset.json` - открыть файл по ссылке:
+//! сцену, KML, набор 3D Tiles.
 //!
 //! `planetx-lite mcp [--port N]` - мост клиента MCP (Claude Code, Claude
 //! Desktop) к открытой программе, у которой в «Настройках помощника»
@@ -122,13 +124,18 @@ fn main() -> ExitCode {
     // Файлы - аргументы без «--», которые не значения флагов, по порядку:
     // растр высот, потом сцена.
     const VALUED: [&str; 5] = ["--check", "--pose", "--shot", "--demo", "--event"];
-    let files: Vec<std::path::PathBuf> = args
+    let plain: Vec<&String> = args
         .iter()
         .enumerate()
         .skip(1)
         .filter(|(i, a)| !a.starts_with("--") && !args.get(i - 1).is_some_and(|prev| VALUED.contains(&prev.as_str())))
-        .map(|(_, a)| std::path::PathBuf::from(a))
+        .map(|(_, a)| a)
         .collect();
+    // Ссылки открываются по сети, как `?scene=` страницы: сцена, KML,
+    // набор 3D Tiles.
+    let (links, paths): (Vec<&String>, Vec<&String>) = plain.into_iter().partition(|a| ui::tilesets::is_link(a));
+    let links: Vec<String> = links.into_iter().cloned().collect();
+    let files: Vec<std::path::PathBuf> = paths.into_iter().map(std::path::PathBuf::from).collect();
     let mut opened = Vec::new();
     for path in &files {
         match std::fs::read(path) {
@@ -191,6 +198,9 @@ fn main() -> ExitCode {
             }
             for (bytes, name) in opened {
                 app = app.with_file(bytes, &name);
+            }
+            for link in &links {
+                app = app.with_scene_url(link);
             }
             if let Some(p) = pose {
                 app = app.with_pose(p);

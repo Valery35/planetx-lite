@@ -4,8 +4,10 @@
 
 //! Наборы 3D Tiles на глобусе: строки раздела «Слои» и подгрузка кусков
 //! по мере приближения. Дерево и выбор тайлов - `scene::tiles3d`. Набор
-//! открывается архивом ZIP (так его выгружают модуль и Lite) или файлом
-//! `tileset.json`, в программе - с кусками из его папки.
+//! открывается архивом ZIP (так его выгружают модуль и Lite), файлом
+//! `tileset.json` - в программе с кусками из его папки - или ссылкой на
+//! `tileset.json`. По ссылке куски и внешние наборы приходят запросами,
+//! внешний набор подшивается к дереву, когда до него дошёл выбор.
 //!
 //! Каждый кадр [`Tilesets::update`] выбирает тайлы по экранной ошибке
 //! с порогом [`THRESHOLD`] пикселей и читает нужные куски, пока не
@@ -16,8 +18,13 @@
 //! выбор не ждёт его вечно.
 //!
 //! Кусок набора - модель с центром в ECEF и смещениями float32, как модели
-//! «Моих меток»: мировые координаты в видеокарту не попадают. Наборы
-//! живут до закрытия программы, в сцену не пишутся.
+//! «Моих меток»: мировые координаты в видеокарту не попадают.
+//!
+//! Наборы живут между запусками, как «Мои слои»: строка хранилища
+//! ([`KEY`], [`Tilesets::index`]) помнит путь файла или ссылку и флажок
+//! набора, при запуске набор открывается снова. Набор, открытый на
+//! странице из файла, пути не имеет и не запоминается. В сцену наборы
+//! не пишутся.
 
 use std::collections::{HashMap, HashSet};
 
@@ -37,20 +44,103 @@ pub const LOAD_TIME: web_time::Duration = web_time::Duration::from_millis(8);
 /// Предел памяти кусков в видеокарте, байты.
 pub const MEMORY: usize = 512 << 20;
 
-/// Откуда берутся файлы набора: архив в памяти или папка `tileset.json`.
+/// Запросов к набору по ссылке сразу, не больше.
+pub const REQUESTS: usize = 6;
+/// Предел ответа на запрос куска, байты.
+const ANSWER_LIMIT: u64 = 64 << 20;
+
+/// Откуда берутся файлы набора: архив в памяти, папка `tileset.json` или
+/// ссылка - папка набора на сервере и запрос после «?», он идёт с каждым
+/// файлом набора.
 pub enum Source {
     Zip(ZipSet),
     Dir(std::path::PathBuf),
+    Url { base: String, query: String },
 }
 
 impl Source {
-    /// Файл по пути от папки набора.
+    /// Набор по ссылке на его `tileset.json`.
+    pub fn url(link: &str) -> Source {
+        let link = link.split('#').next().unwrap_or(link);
+        let (path, query) = link.split_once('?').unwrap_or((link, ""));
+        let base = path.rfind('/').map_or("", |at| &path[..=at]);
+        Source::Url { base: base.to_string(), query: query.to_string() }
+    }
+
+    /// Файл по пути от папки набора. По ссылке файл так не взять - None.
     pub fn get(&self, path: &str) -> Option<Vec<u8>> {
         match self {
             Source::Zip(set) => set.get(path),
-            Source::Dir(dir) => std::fs::read(dir.join(path)).ok(),
+            Source::Dir(dir) => std::fs::read(dir.join(scene::tiles3d::path_of(path))).ok(),
+            Source::Url { .. } => None,
         }
     }
+
+    /// Адрес файла набора по ссылке, у архива и папки - None. Запрос набора
+    /// дописывается к адресу без своего запроса и к адресу со своим.
+    pub fn address(&self, path: &str) -> Option<String> {
+        let Source::Url { base, query } = self else {
+            return None;
+        };
+        let mut url = if path.contains("://") { path.to_string() } else { format!("{base}{path}") };
+        if !query.is_empty() && !url.contains(query.as_str()) {
+            url.push(if url.contains('?') { '&' } else { '?' });
+            url.push_str(query);
+        }
+        Some(url)
+    }
+}
+
+/// Ключ списка наборов в хранилище программы.
+pub const KEY: &str = "tilesets";
+
+/// Откуда набор открыт - по этому он открывается снова при запуске.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Origin {
+    /// Файл на диске: архив ZIP или `tileset.json`.
+    File(String),
+    /// Ссылка на архив или `tileset.json`.
+    Link(String),
+}
+
+impl Origin {
+    /// Путь или адрес.
+    pub fn text(&self) -> &str {
+        match self {
+            Origin::File(t) | Origin::Link(t) => t,
+        }
+    }
+}
+
+/// Список наборов прошлого запуска из строки хранилища: откуда набор
+/// и виден ли он. Строки без пути и адреса пропускаются.
+pub fn parse_index(text: &str) -> Vec<(Origin, bool)> {
+    let Ok(serde_json::Value::Array(items)) = serde_json::from_str::<serde_json::Value>(text) else {
+        return Vec::new();
+    };
+    items
+        .iter()
+        .filter_map(|item| {
+            let get = |key: &str| item.get(key).and_then(serde_json::Value::as_str).filter(|s| !s.is_empty()).map(str::to_string);
+            let origin = get("file").map(Origin::File).or_else(|| get("link").map(Origin::Link))?;
+            Some((origin, item.get("visible").and_then(serde_json::Value::as_bool).unwrap_or(true)))
+        })
+        .collect()
+}
+
+/// Ссылка ли текст: адрес http или https без пробелов.
+pub fn is_link(text: &str) -> bool {
+    let lower = text.to_ascii_lowercase();
+    (lower.starts_with("http://") || lower.starts_with("https://")) && !text.contains(char::is_whitespace) && text.len() > "https://".len()
+}
+
+/// Имя папки набора по ссылке на его `tileset.json` - название набора.
+pub fn link_folder(link: &str) -> Option<String> {
+    let path = scene::tiles3d::path_of(link.split('#').next().unwrap_or(link));
+    let path = path.split_once("://").map_or(path, |(_, rest)| rest);
+    let mut parts = path.split('/').filter(|p| !p.is_empty());
+    let _file = parts.next_back();
+    parts.next_back().map(str::to_string)
 }
 
 /// Прочитанный кусок: сетка, её размер в байтах и номер кадра, когда
@@ -73,8 +163,12 @@ pub struct Set {
     failed: HashSet<usize>,
     /// Тайлы, которые рисуются сейчас.
     shown: HashSet<usize>,
+    /// Запросы по ссылке, которые идут: тайл и запрос.
+    pending: Vec<(usize, Box<dyn net::Request>)>,
     /// Края набора (широта, долгота) - для перелёта к нему.
     pub spots: Vec<(f64, f64)>,
+    /// Откуда набор открыт. None - из памяти, при запуске не открывается.
+    pub origin: Option<Origin>,
 }
 
 impl Set {
@@ -86,6 +180,28 @@ impl Set {
     /// Количество кусков и внешних наборов, которые не прочлись.
     pub fn skipped(&self) -> usize {
         self.failed.len() + self.tree.skipped.len()
+    }
+
+    /// Разобрать байты файла тайла n: внешний набор подшивается к дереву,
+    /// кусок ложится в видеокарту. Не прочёлся - тайл в «не прочлись».
+    fn receive(&mut self, n: usize, bytes: &[u8], globe: &mut Globe, ellipsoid: &Ellipsoid, frame: u64) {
+        if self.tree.is_external(n) {
+            if self.tree.graft(n, bytes).is_err() {
+                self.failed.insert(n);
+            }
+            return;
+        }
+        let source = &self.source;
+        let piece = self.tree.piece(n, bytes, &|p| source.get(p));
+        match piece.ok().and_then(|p| mesh(&p.parts, &p.pictures, ellipsoid)) {
+            Some(m) => {
+                globe.add_tile(key(self.id, n), &m);
+                self.loaded.insert(n, Loaded { bytes: mesh_bytes(&m), mesh: m, used: frame });
+            }
+            None => {
+                self.failed.insert(n);
+            }
+        }
     }
 }
 
@@ -103,6 +219,8 @@ pub struct Tilesets {
     pub list: Vec<Set>,
     next: u64,
     frame: u64,
+    /// Список изменился - записать его в хранилище.
+    pub save_dirty: bool,
 }
 
 /// Ключ куска в видеокарте: номер набора и номер тайла.
@@ -181,10 +299,15 @@ fn visible(camera: &Camera, center: DVec3, radius: f64) -> bool {
 impl Tilesets {
     /// Набор под названием title сверху списка. Возвращает его номер,
     /// None - в наборе нет ни одного тайла с куском.
-    pub fn add(&mut self, tree: Tree, source: Source, title: &str, ellipsoid: &Ellipsoid) -> Option<u64> {
+    pub fn add(&mut self, tree: Tree, source: Source, title: &str, origin: Option<Origin>, ellipsoid: &Ellipsoid) -> Option<u64> {
         if !tree.nodes.iter().any(|n| n.uri.is_some()) {
             return None;
         }
+        // Тот же файл или ссылка второй раз - прежний набор уходит.
+        if let Some(o) = &origin {
+            self.list.retain(|s| s.origin.as_ref() != Some(o));
+        }
+        self.save_dirty = true;
         self.next += 1;
         let spots = spots(&tree, ellipsoid);
         self.list.insert(
@@ -198,10 +321,17 @@ impl Tilesets {
                 loaded: HashMap::new(),
                 failed: HashSet::new(),
                 shown: HashSet::new(),
+                pending: Vec::new(),
                 spots,
+                origin,
             },
         );
         Some(self.next)
+    }
+
+    /// Идут ли запросы кусков по ссылке.
+    pub fn busy(&self) -> bool {
+        self.list.iter().any(|s| s.visible && !s.pending.is_empty())
     }
 
     pub fn get(&self, id: u64) -> Option<&Set> {
@@ -211,6 +341,9 @@ impl Tilesets {
     /// Применить действие меню к набору id. Куски убранного набора
     /// уходят из видеокарты в [`Tilesets::update`].
     pub fn apply(&mut self, id: u64, act: Act) {
+        if act != Act::Zoom {
+            self.save_dirty = true;
+        }
         match act {
             Act::Visible(on) => {
                 if let Some(s) = self.list.iter_mut().find(|s| s.id == id) {
@@ -223,12 +356,15 @@ impl Tilesets {
     }
 
     /// Выбрать тайлы на кадр, прочитать нужные куски и вытеснить лишние.
-    /// Возвращает true, пока нужные куски не все прочитаны: нужен ещё кадр.
-    pub fn update(&mut self, globe: &mut Globe, camera: &Camera) -> bool {
+    /// Набор по ссылке заказывает куски запросами request, не больше
+    /// [`REQUESTS`] сразу, и разбирает пришедшие ответы. Возвращает true,
+    /// пока нужные куски не все прочитаны: нужен ещё кадр.
+    pub fn update(&mut self, globe: &mut Globe, camera: &Camera, request: &dyn Fn(u64) -> Box<dyn net::Request>) -> bool {
         self.frame += 1;
         let frame = self.frame;
         let start = web_time::Instant::now();
         let mut read = 0usize;
+        let ellipsoid = &camera.ellipsoid;
         // Куски убранных наборов.
         for k in globe.tile_keys() {
             if !self.list.iter().any(|s| s.id == k >> 32) {
@@ -246,25 +382,61 @@ impl Tilesets {
                 set.shown.clear();
                 continue;
             }
+            // Пришедшие ответы на запросы по ссылке.
+            let mut i = 0;
+            while i < set.pending.len() {
+                if read > 0 && start.elapsed() > LOAD_TIME {
+                    busy = true;
+                    break;
+                }
+                let Some(answer) = set.pending[i].1.take() else {
+                    i += 1;
+                    continue;
+                };
+                let (n, _) = set.pending.swap_remove(i);
+                read += 1;
+                match answer {
+                    Ok(bytes) => set.receive(n, &bytes, globe, ellipsoid, frame),
+                    Err(_) => {
+                        set.failed.insert(n);
+                    }
+                }
+            }
             let selection = set.tree.select(&view, THRESHOLD, &|n| set.loaded.contains_key(&n) || set.failed.contains(&n));
             for &(n, _) in &selection.load {
+                if let Source::Url { .. } = set.source {
+                    if set.pending.iter().any(|(p, _)| *p == n) {
+                        continue;
+                    }
+                    if set.pending.len() >= REQUESTS {
+                        break;
+                    }
+                    match set.tree.nodes.get(n).and_then(|node| node.uri.as_deref()).and_then(|u| set.source.address(u)) {
+                        Some(address) => {
+                            let r = request(ANSWER_LIMIT);
+                            r.start(&address);
+                            set.pending.push((n, r));
+                        }
+                        None => {
+                            set.failed.insert(n);
+                        }
+                    }
+                    continue;
+                }
                 if read > 0 && start.elapsed() > LOAD_TIME {
                     busy = true;
                     break;
                 }
                 read += 1;
-                let source = &set.source;
-                let piece = set.tree.load(n, &|p| source.get(p));
-                match piece.ok().and_then(|p| mesh(&p.parts, &p.pictures, &camera.ellipsoid)) {
-                    Some(m) => {
-                        globe.add_tile(key(set.id, n), &m);
-                        set.loaded.insert(n, Loaded { bytes: mesh_bytes(&m), mesh: m, used: frame });
-                    }
+                let uri = set.tree.nodes.get(n).and_then(|node| node.uri.clone()).unwrap_or_default();
+                match set.source.get(&uri) {
+                    Some(bytes) => set.receive(n, &bytes, globe, ellipsoid, frame),
                     None => {
                         set.failed.insert(n);
                     }
                 }
             }
+            busy |= !set.pending.is_empty();
             set.shown = selection.show.into_iter().collect();
             for (&n, l) in &mut set.loaded {
                 let on = set.shown.contains(&n);
@@ -299,6 +471,25 @@ impl Tilesets {
             globe.remove_tile(key(id, n));
             over = over.saturating_sub(bytes);
         }
+    }
+
+    /// Список наборов для хранилища, снизу вверх: при запуске они
+    /// открываются по порядку и встают как были. Набор из памяти в список
+    /// не входит.
+    pub fn index(&self) -> String {
+        let items: Vec<serde_json::Value> = self
+            .list
+            .iter()
+            .rev()
+            .filter_map(|s| {
+                let (key, text) = match s.origin.as_ref()? {
+                    Origin::File(t) => ("file", t),
+                    Origin::Link(t) => ("link", t),
+                };
+                Some(serde_json::json!({ key: text, "visible": s.visible }))
+            })
+            .collect();
+        serde_json::Value::Array(items).to_string()
     }
 
     /// Сетки кусков на экране у видимых наборов - для выгрузки вида.
@@ -362,7 +553,7 @@ mod tests {
         let zip = ZipSet::open(&se::tiles_zip(&[item]).unwrap()).unwrap();
         let tree = Tree::open(&zip.root, &|p| zip.get(p)).unwrap();
         let mut sets = Tilesets::default();
-        let id = sets.add(tree, Source::Zip(zip), "город", &e).unwrap();
+        let id = sets.add(tree, Source::Zip(zip), "город", None, &e).unwrap();
         let s = sets.get(id).unwrap();
         // Края набора - у точки выгрузки.
         assert!((s.spots[0].0 - 58.0).abs() < 1e-2 && (s.spots[0].1 - 56.25).abs() < 1e-2, "{:?}", s.spots);
@@ -379,7 +570,44 @@ mod tests {
         assert!(sets.list.is_empty());
         // Набор без кусков не ложится.
         let empty = Tree::open(br#"{"asset":{"version":"1.0"},"root":{"geometricError":0}}"#, &|_| None).unwrap();
-        assert!(sets.add(empty, Source::Dir(std::path::PathBuf::new()), "пусто", &e).is_none());
+        assert!(sets.add(empty, Source::Dir(std::path::PathBuf::new()), "пусто", None, &e).is_none());
+    }
+
+    #[test]
+    fn sets_are_remembered_by_path_and_link() {
+        let e = Ellipsoid::wgs84();
+        let tree = || Tree::open_lazy(br#"{"asset":{"version":"1.0"},"root":{"geometricError":1,"content":{"uri":"a.glb"}}}"#).unwrap();
+        let mut sets = Tilesets::default();
+        let file = Origin::File("C:/data/city.zip".into());
+        let link = Origin::Link("https://h.org/t/tileset.json".into());
+        sets.add(tree(), Source::Dir(std::path::PathBuf::new()), "город", Some(file.clone()), &e).unwrap();
+        let id = sets.add(tree(), Source::url(link.text()), "t", Some(link.clone()), &e).unwrap();
+        sets.add(tree(), Source::Dir(std::path::PathBuf::new()), "память", None, &e).unwrap();
+        sets.apply(id, Act::Visible(false));
+        assert!(sets.save_dirty);
+        // Снизу вверх, без набора из памяти, флажок сохраняется.
+        assert_eq!(parse_index(&sets.index()), vec![(file.clone(), true), (link.clone(), false)]);
+        // Тот же файл второй раз - один набор.
+        sets.add(tree(), Source::Dir(std::path::PathBuf::new()), "город", Some(file.clone()), &e).unwrap();
+        assert_eq!(sets.list.iter().filter(|s| s.origin.as_ref() == Some(&file)).count(), 1);
+        // Испорченная строка - пустой список.
+        assert!(parse_index("{").is_empty() && parse_index(r#"[{"file":""},{"x":1}]"#).is_empty());
+    }
+
+    #[test]
+    fn link_addresses_carry_the_query_of_the_set() {
+        let s = Source::url("https://h.org/city/tileset.json?key=abc#top");
+        assert_eq!(s.address("tiles/0.b3dm").as_deref(), Some("https://h.org/city/tiles/0.b3dm?key=abc"));
+        assert_eq!(s.address("tiles/0.b3dm?v=1").as_deref(), Some("https://h.org/city/tiles/0.b3dm?v=1&key=abc"));
+        assert_eq!(s.address("https://cdn.org/a.glb?key=abc").as_deref(), Some("https://cdn.org/a.glb?key=abc"));
+        assert!(s.get("tiles/0.b3dm").is_none());
+        let plain = Source::url("https://h.org/tileset.json");
+        assert_eq!(plain.address("a.glb").as_deref(), Some("https://h.org/a.glb"));
+        assert!(Source::Dir(std::path::PathBuf::new()).address("a.glb").is_none());
+        assert!(is_link(" https://h.org/tileset.json".trim()) && is_link("HTTP://h.org/a"));
+        assert!(!is_link("https://") && !is_link("Москва") && !is_link("https://h.org/a b"));
+        assert_eq!(link_folder("https://h.org/city/tileset.json?key=1").as_deref(), Some("city"));
+        assert_eq!(link_folder("https://h.org/tileset.json").as_deref(), Some("h.org"));
     }
 
     #[test]

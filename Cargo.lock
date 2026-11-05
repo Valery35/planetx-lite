@@ -630,6 +630,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8b14ccef22fc6f5a8f4d7d768562a182c04ce9a3b3157b91390b52ddfdf1a76"
 
 [[package]]
+name = "draco-core"
+version = "2.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "17957b93c10365b1392c98c86a091ea342741ea27d75e0a5b30102fa7e6841e9"
+dependencies = [
+ "bytemuck",
+]
+
+[[package]]
 name = "e57"
 version = "0.11.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3285,6 +3294,7 @@ dependencies = [
 name = "scene"
 version = "0.23.0"
 dependencies = [
+ "draco-core",
  "geographiclib-rs",
  "globe-core",
  "quick-xml 0.42.0",

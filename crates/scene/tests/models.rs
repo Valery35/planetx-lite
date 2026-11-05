@@ -259,10 +259,79 @@ fn node_matrix_by_columns() {
 }
 
 #[test]
-fn draco_refused() {
-    let text = json!({"asset": {"version": "2.0"}, "extensionsRequired": ["KHR_draco_mesh_compression"]}).to_string();
+fn meshopt_refused() {
+    let text = json!({"asset": {"version": "2.0"}, "extensionsRequired": ["EXT_meshopt_compression"]}).to_string();
     let found = gltf::read(text.as_bytes(), &nothing);
-    assert!(found.unwrap_err().0.contains("KHR_draco_mesh_compression"));
+    assert!(found.unwrap_err().0.contains("EXT_meshopt_compression"));
+}
+
+/// Сетка Draco из треугольников: вершины points, номера faces.
+fn draco_stream(points: &[[f32; 3]], faces: &[[u32; 3]]) -> Vec<u8> {
+    use draco_core::{DataType, EncoderBuffer, EncoderOptions, FaceIndex, GeometryAttributeType, Mesh, MeshEncoder, PointAttribute, PointIndex};
+    let mut mesh = Mesh::new();
+    let mut position = PointAttribute::new();
+    position.init(GeometryAttributeType::Position, 3, DataType::Float32, false, points.len());
+    for (i, p) in points.iter().enumerate() {
+        let bytes: Vec<u8> = p.iter().flat_map(|v| v.to_le_bytes()).collect();
+        position.buffer_mut().write(i * 12, &bytes);
+    }
+    mesh.add_attribute(position);
+    mesh.set_num_faces(faces.len());
+    for (i, f) in faces.iter().enumerate() {
+        mesh.set_face(FaceIndex(i as u32), f.map(PointIndex));
+    }
+    let mut encoder = MeshEncoder::new();
+    encoder.set_mesh(mesh);
+    let mut out = EncoderBuffer::new();
+    encoder.encode(&EncoderOptions::new(), &mut out).unwrap();
+    out.data().to_vec()
+}
+
+/// GLB с одним примитивом Draco: accessor POSITION без bufferView,
+/// сетка - в bufferView расширения.
+fn draco_glb(stream: &[u8], points: usize, faces: usize) -> Vec<u8> {
+    let doc = json!({
+        "asset": {"version": "2.0"},
+        "extensionsUsed": ["KHR_draco_mesh_compression"],
+        "extensionsRequired": ["KHR_draco_mesh_compression"],
+        "buffers": [{"byteLength": stream.len()}],
+        "bufferViews": [{"buffer": 0, "byteOffset": 0, "byteLength": stream.len()}],
+        "accessors": [
+            {"componentType": 5126, "count": points, "type": "VEC3"},
+            {"componentType": 5125, "count": faces * 3, "type": "SCALAR"}
+        ],
+        "meshes": [{"primitives": [{"attributes": {"POSITION": 0}, "indices": 1,
+            "extensions": {"KHR_draco_mesh_compression": {"bufferView": 0, "attributes": {"POSITION": 0}}}}]}],
+        "nodes": [{"mesh": 0}],
+        "scenes": [{"nodes": [0]}]
+    });
+    let mut blob = stream.to_vec();
+    while !blob.len().is_multiple_of(4) {
+        blob.push(0);
+    }
+    glb_of(&doc, &blob)
+}
+
+#[test]
+fn draco_mesh_unpacks() {
+    let points = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0]];
+    let faces = [[0, 1, 2], [2, 1, 3]];
+    let data = draco_glb(&draco_stream(&points, &faces), points.len(), faces.len());
+    let (parts, _) = gltf::read(&data, &nothing).unwrap();
+    assert_eq!(parts.len(), 1);
+    let got = &parts[0].positions;
+    assert_eq!(got.len(), 6);
+    // Y вверх glTF - Z вверх: каждая вершина квадрата на месте, сжатие
+    // квантует координаты.
+    for p in points {
+        let want = DVec3::new(f64::from(p[0]), -f64::from(p[2]), f64::from(p[1]));
+        assert!(got.iter().any(|g| near2(*g, want, 1e-3)), "{want:?} нет в {got:?}");
+    }
+    // Испорченная сетка - ошибка с именем Draco, не паника.
+    let mut broken = draco_stream(&points, &faces);
+    broken.truncate(broken.len() / 2);
+    let found = gltf::read(&draco_glb(&broken, points.len(), faces.len()), &nothing);
+    assert!(found.unwrap_err().0.contains("Draco"));
 }
 
 #[test]

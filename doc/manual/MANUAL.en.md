@@ -255,18 +255,26 @@ and B3DM pieces.
   on the web page.
 - A `tileset.json` file in the program takes the pieces from its folder.
   The web page does not see the folder, it needs an archive.
-- External tilesets inside a set are read in depth.
+- A link to `tileset.json` or to an archive, pasted into the search line,
+  opens the set from the server. Pieces come by requests, at most six at
+  a time. The query after «?» of the link, an access key for example,
+  goes with every file of the set. The web page reads the set only if the
+  server allows requests from other pages (CORS).
+- External tilesets inside a set are read in depth. In a set opened by a
+  link an external tileset is read when the approach reaches it.
 - Pieces load on approach. A tile is refined when its error on the screen
   exceeds 16 pixels. Until the children's pieces are read, the parent
   stays in their place, there are no holes.
 - Pieces outside the view are not read. Pieces not seen for long leave
   the video memory above 512 MB.
-- Pieces with Draco or meshopt compression are not read, the result line
-  names their count.
+- Draco compressed meshes are unpacked. Pieces with meshopt compression
+  are not read, the tooltip of the row names the count of unread pieces.
 
 The check of the row hides the set, the "⋯" menu has «Zoom to layer» and
-«Remove from the globe». Sets live until the program closes and are not
-written into a scene.
+«Remove from the globe». Sets live between runs: at start a set opens
+again by the file path or by the link, its check stays as it was. A set
+opened on the web page from a file has no path and lives until the page
+closes. Sets are not written into a scene.
 
 ## Globe menu
 
