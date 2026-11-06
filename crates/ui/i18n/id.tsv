@@ -2373,5 +2373,3 @@ The objects of the layer become placemarks of a folder in «My places»: they ca
 Table	Tabel
 The file has no layers with geometry	Berkas tidak memiliki lapisan bergeometri
 The layer has no coordinate system, and its coordinates are not degrees	Lapisan tidak memiliki sistem koordinat, dan koordinatnya bukan derajat
-Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Lapisan ditambahkan: {count}. Menu «⋯» pada baris di bagian Lapisan mengatur gaya, label, dan ekstrusi.
-Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Buka atau seret ke jendela adegan .planetx, KML, KMZ, raster ketinggian GeoTIFF, atau awan titik LAS, LAZ, COPC. Lapisan GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf, dan DXF masuk ke bagian Lapisan.

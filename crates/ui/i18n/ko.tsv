@@ -2373,5 +2373,3 @@ The objects of the layer become placemarks of a folder in «My places»: they ca
 Table	표
 The file has no layers with geometry	파일에 지오메트리가 있는 레이어가 없습니다
 The layer has no coordinate system, and its coordinates are not degrees	레이어에 좌표계가 없고 좌표가 도 단위가 아닙니다
-Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	추가된 레이어: {count}. 레이어 섹션의 행 «⋯» 메뉴에서 스타일, 레이블, 돌출을 정합니다.
-Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	.planetx 장면, KML, KMZ, GeoTIFF 고도 래스터 또는 LAS, LAZ, COPC 점군을 열거나 창에 끌어 놓으세요. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf, DXF 레이어는 레이어 섹션으로 갑니다.

@@ -2373,5 +2373,3 @@ The objects of the layer become placemarks of a folder in «My places»: they ca
 Table	Tablo
 The file has no layers with geometry	Dosyada geometrili katman yok
 The layer has no coordinate system, and its coordinates are not degrees	Katmanın koordinat sistemi yok ve koordinatları derece değil
-Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Eklenen katman: {count}. Katmanlar bölümündeki satırın «⋯» menüsü stili, etiketleri ve ekstrüzyonu ayarlar.
-Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Pencereye bir .planetx sahnesi, KML, KMZ, GeoTIFF yükseklik rasteri veya LAS, LAZ, COPC nokta bulutu açın ya da sürükleyin. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf ve DXF katmanları Katmanlar bölümüne gider.

@@ -2373,5 +2373,3 @@ The objects of the layer become placemarks of a folder in «My places»: they ca
 Table	表
 The file has no layers with geometry	文件中没有带几何的图层
 The layer has no coordinate system, and its coordinates are not degrees	图层没有坐标系，其坐标也不是度
-Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	已添加图层：{count}。「图层」部分中行的「⋯」菜单设置样式、标注和拉伸。
-Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	打开或拖入 .planetx 场景、KML、KMZ、GeoTIFF 高程栅格或 LAS、LAZ、COPC 点云。GeoPackage、Shapefile、GeoJSON、GPX、MapInfo、FlatGeobuf 和 DXF 图层进入「图层」部分。

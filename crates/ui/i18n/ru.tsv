@@ -2373,7 +2373,7 @@ The objects of the layer become placemarks of a folder in «My places»: they ca
 Table	Таблица
 The file has no layers with geometry	В файле нет слоёв с геометрией
 The layer has no coordinate system, and its coordinates are not degrees	У слоя нет системы координат, а его координаты не в градусах
-Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Добавлено слоёв: {count}. Меню «⋯» строки в разделе «Слои» задаёт стиль, подписи и выдавливание.
+Layers added: {count}. The «⋯» menu of a row in the My layers section sets the style, labels and extrusion.	Добавлено слоёв: {count}. Меню «⋯» строки в разделе «Мои слои» задаёт стиль, подписи и выдавливание.
 {file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels, extrusion and folder.	{file}, слой {layer}, объектов: {count}. Флажок прячет слой, меню «⋯» задаёт его стиль, подписи, выдавливание и папку.
 My layers	Мои слои
 Layers of files and results of the analysis windows. They stay between launches, as «My places». A scene does not carry them.	Слои файлов и результаты окон анализа. Они сохраняются между запусками, как «Мои метки». Сцена их не несёт.
@@ -2389,7 +2389,7 @@ Save as GeoJSON…	Сохранить как GeoJSON…
 The objects of the layer go to a GeoJSON file in WGS84 with all fields. QGIS and other GIS open it.	Объекты слоя записываются файлом GeoJSON в WGS84 со всеми полями. Его открывают QGIS и другие ГИС.
 My layers: the objects of these layers were not found: {names}	Мои слои: не найдены объекты слоёв {names}
 My layers exceed 1 MB, the page keeps them until it is closed	«Мои слои» больше 1 МБ, страница держит их до закрытия
-Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Откройте или перетащите в окно сцену .planetx, KML, KMZ, растр высот GeoTIFF или облако точек LAS, LAZ, COPC. Слои GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf и DXF ложатся в раздел «Слои».
+Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the My layers section.	Откройте или перетащите в окно сцену .planetx, KML, KMZ, растр высот GeoTIFF или облако точек LAS, LAZ, COPC. Слои GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf и DXF ложатся в раздел «Мои слои».
 Image colours	Цвета снимка
 The image is split into a given number of colours, as by tracing, no samples are needed. Colours get names, the same names merge.	Снимок делится на заданное количество цветов, как при трассировке, образцы не нужны. Цветам даются названия, одинаковые названия сливаются.
 Similar to the sample	Похожие на образец
@@ -2435,12 +2435,26 @@ Archive and survey	Архив и съёмка
 The sun, stars, the atmosphere and artificial satellites.	Солнце, звёзды, атмосфера и искусственные спутники.
 Energy and transport	Энергетика и транспорт
 Power plants, power lines, pipelines, cables, trains, ships and aircraft.	Электростанции, ЛЭП, трубопроводы, кабели, поезда, суда и самолёты.
+Open or drop a GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf or DXF file: its layers come here. Results of the analysis windows come here too.	Откройте или бросьте в окно файл GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf или DXF: его слои лягут сюда. Сюда же ложатся результаты окон анализа.
+{file}, layer {layer}, objects: {count}. The check hides the layer, a double click flies to it, the row can be dragged to another place, the «⋯» menu sets its style, labels, extrusion and folder.	{file}, слой {layer}, объектов: {count}. Флажок прячет слой, двойной щелчок - перелёт к нему, строку можно перетащить на другое место, меню «⋯» задаёт стиль, подписи, выдавливание и папку.
+Opacity of the layer {layer}. To the right the layer is opaque.	Непрозрачность слоя {layer}. Вправо - слой непрозрачен.
+A click on the name of a layer selects it, the slider sets its opacity.	Щелчок по названию слоя выделяет его, ползунок задаёт его непрозрачность.
 Synchronisation	Синхронизация
 Both ways	В обе стороны
 Map leads the globe	Карта ведёт глобус
 Globe leads the map	Глобус ведёт карту
 Who follows whom when the synchronisation is on by the icon in the corner of the view. Map leads the globe - a shift and zoom of the map move the globe to the same area, the tilt and heading of the globe stay. Globe leads the map - after the globe stops, the map goes to its look-at point.	Кто за кем следует, когда синхронизация включена значком в углу вида. Карта ведёт глобус - сдвиг и масштаб карты переносят глобус на тот же участок, наклон и поворот глобуса остаются. Глобус ведёт карту - после остановки глобуса карта встаёт в его точку взгляда.
 Synchronisation with the RustGIS map window. The direction is in the view properties.	Синхронизация с окном карты RustGIS. Направление - в свойствах вида.
+Refresh|layer	Обновить
+the file changed	файл изменился
+The file of the layer changed on the disk. A click reads it again, the style and the folder stay.	Файл слоя изменился на диске. Щелчок читает его заново, стиль и папка остаются.
+Layer refreshed from the file {name}.	Слой обновлён из файла {name}.
+The file {name} has no such layer any more.	В файле {name} больше нет такого слоя.
+Calculation marks	Метки расчёта
+Saved to «My layers», folder {folder}. The GeoTIFF file is not written: {e}	Сохранено в «Мои слои», папка {folder}. Файл GeoTIFF не записан: {e}
+Saved to «My layers», folder {folder}.	Сохранено в «Мои слои», папка {folder}.
+Saved to «My layers», folder {folder}, the values - {path}.	Сохранено в «Мои слои», папка {folder}, значения - {path}.
+The picture becomes a ground overlay in «My places»: it goes into a scene and a KMZ file.	Картинка становится наложением на землю в «Моих метках»: она войдёт в сцену и в файл KMZ.
 The calculation is added to the RustGIS project, group {group}.	Расчёт добавлен в проект RustGIS, группа {group}.
 RustPlanetX - area analysis	RustPlanetX - анализ участка
 The calculation goes to the RustGIS project, group {group}.	Расчёт уходит в проект RustGIS, группа {group}.

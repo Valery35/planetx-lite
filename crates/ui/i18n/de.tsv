@@ -2373,5 +2373,3 @@ The objects of the layer become placemarks of a folder in «My places»: they ca
 Table	Tabelle
 The file has no layers with geometry	Die Datei hat keine Layer mit Geometrie
 The layer has no coordinate system, and its coordinates are not degrees	Der Layer hat kein Koordinatensystem, und seine Koordinaten sind keine Grad
-Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	Layer hinzugefügt: {count}. Das Menü «⋯» einer Zeile im Abschnitt Layer setzt Stil, Beschriftung und Extrusion.
-Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	Öffnen oder ziehen Sie eine .planetx-Szene, KML, KMZ, ein GeoTIFF-Höhenraster oder eine LAS-, LAZ-, COPC-Punktwolke ins Fenster. Layer aus GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf und DXF kommen in den Abschnitt Layer.

@@ -77,6 +77,8 @@ pub const SECTION_MIN: f32 = 60.0;
 /// Строк раздела «Проект RustGIS» без прокрутки.
 #[cfg(not(target_arch = "wasm32"))]
 const RUSTGIS_ROWS: f32 = 8.0;
+/// Строк раздела «Мои слои» без прокрутки.
+const MY_LAYERS_ROWS: f32 = 10.0;
 /// Снимков основы в видеокарту за кадр, как `UPLOADS_PER_FRAME`
 /// в `render/view.py` модуля. Пока камера движется - один.
 pub const UPLOADS_PER_FRAME: usize = 3;
@@ -405,6 +407,8 @@ pub struct LiteApp {
     preview: Option<scene::kml::Overlay>,
     /// Предпросмотр сменился: сетки картинок собираются заново.
     preview_dirty: bool,
+    /// Отпечаток слоёв-картинок «Моих слоёв» в прошлом кадре.
+    data_pictures_seen: u64,
     /// Хозяин общего слоя вида окон анализа.
     site_layer: crate::analysis::SiteLayer,
     /// Многоканальные растры: рельеф они не меняют, ждут классификации.
@@ -1247,6 +1251,7 @@ impl LiteApp {
             emit: None,
             preview: None,
             preview_dirty: false,
+            data_pictures_seen: 0,
             site_layer: crate::analysis::SiteLayer::default(),
             band_rasters: Vec::new(),
             area_site: None,
@@ -4071,7 +4076,7 @@ impl LiteApp {
                 let Some(layer) = self.data_layers.get(id) else {
                     continue;
                 };
-                match std::fs::write(dir.join(&name), data::layers::to_geojson(&layer.data)) {
+                match std::fs::write(dir.join(&name), crate::datalayers::DataLayers::stored_bytes(layer)) {
                     Ok(()) => self.data_layers.stored(id, name),
                     Err(e) => self.open_message = Some(format!("{}: {e}", dir.join(&name).display())),
                 }
@@ -4115,6 +4120,7 @@ impl LiteApp {
                 #[cfg(target_arch = "wasm32")]
                 let _ = folder;
             }
+            Act::Reload => self.reload_layer(id),
             Act::Export => {
                 if let Some(layer) = self.data_layers.get(id) {
                     let name = format!("{}.geojson", data::layers::stem(&layer.title));
@@ -4134,7 +4140,15 @@ impl LiteApp {
             }
             Act::ToPlaces => {
                 if let Some(layer) = self.data_layers.get(id) {
-                    let folder = crate::gpkg::folder(vec![layer.data.clone()], &layer.title);
+                    // Слой-картинка - наложением на землю, иначе - метками.
+                    let folder = match &layer.picture {
+                        Some(p) => {
+                            let mut f = scene::kml::Folder::new(&layer.title);
+                            f.children.push(scene::kml::Item::Overlay(p.clone()));
+                            f
+                        }
+                        None => crate::gpkg::folder(vec![layer.data.clone()], &layer.title),
+                    };
                     let title = layer.title.clone();
                     self.marks.add(folder, &title, marks::root_name(self.lang));
                     self.marks_changed();
@@ -4229,13 +4243,14 @@ impl LiteApp {
             return Ok(self.open_tracks(layers, name, fly).flatten());
         }
         let before = self.data_layers.list.len();
-        let count = self.data_layers.add(layers, name);
+        let source = self.opening_source();
+        let count = self.data_layers.add_from(layers, name, source);
         if count == 0 {
             let e = tr(self.lang, "The file has no layers with geometry").to_string();
             self.open_message = Some(trf(self.lang, "The file did not open: {name}: {e}", &[("name", name), ("e", &e)]));
             return Err(e);
         }
-        self.open_message = Some(trf(self.lang, "Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.", &[("count", &count.to_string())]));
+        self.open_message = Some(trf(self.lang, "Layers added: {count}. The «⋯» menu of a row in the My layers section sets the style, labels and extrusion.", &[("count", &count.to_string())]));
         let points: Vec<(f64, f64)> = self.data_layers.list.iter().take(self.data_layers.list.len() - before).flat_map(crate::datalayers::DataLayer::extent_points).collect();
         let camera = &self.nav.camera;
         let pose = marks::fit_points(&points, camera.fov_y, camera.aspect());
@@ -4274,15 +4289,46 @@ impl LiteApp {
         found
     }
 
-    /// Открыть векторный файл: шейпфайл и MapInfo - с соседними файлами.
-    fn open_vector_file(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
-        let read = if data::layers::needs_sidecars(name) {
+    /// Слои векторного файла: шейпфайл и MapInfo - с соседними файлами.
+    fn read_vector(&self, bytes: &[u8], name: &str) -> Result<Vec<data::layers::LayerData>, String> {
+        if data::layers::needs_sidecars(name) {
             let around = self.sidecars_for(name);
             let refs: Vec<&(String, Vec<u8>)> = around.iter().collect();
             data::layers::bundle(bytes, name, &refs).and_then(|(zip, zip_name)| data::layers::read(zip, &zip_name))
         } else {
             data::layers::read(bytes.to_vec(), name)
+        }
+    }
+
+    /// Файл с диска, который сейчас открывается, и время его изменения -
+    /// источник слоёв для строки «Обновить».
+    fn opening_source(&self) -> Option<crate::datalayers::Source> {
+        let path = self.opening_path.as_ref()?;
+        Some(crate::datalayers::Source { path: path.to_string_lossy().into_owned(), modified: crate::datalayers::file_modified(&path.to_string_lossy())? })
+    }
+
+    /// Перечитать файл слоя id с диска, «Обновить» строки слоя.
+    fn reload_layer(&mut self, id: u64) {
+        let Some(source) = self.data_layers.get(id).and_then(|l| l.source.clone()) else {
+            return;
         };
+        let path = std::path::PathBuf::from(&source.path);
+        let name = path.file_name().map_or(String::new(), |n| n.to_string_lossy().into_owned());
+        let modified = crate::datalayers::file_modified(&source.path).unwrap_or(source.modified);
+        let dir = std::mem::replace(&mut self.open_dir, path.parent().map(std::path::Path::to_path_buf));
+        let read = crate::datalayers::read_file(&path).and_then(|bytes| self.read_vector(&bytes, &name));
+        self.open_dir = dir;
+        let read = read.map(|layers| self.data_layers.reload(id, layers, modified));
+        self.open_message = Some(match read {
+            Ok(true) => trf(self.lang, "Layer refreshed from the file {name}.", &[("name", &name)]),
+            Ok(false) => trf(self.lang, "The file {name} has no such layer any more.", &[("name", &name)]),
+            Err(e) => trf(self.lang, "The file did not open: {name}: {e}", &[("name", &name), ("e", &e)]),
+        });
+    }
+
+    /// Открыть векторный файл: шейпфайл и MapInfo - с соседними файлами.
+    fn open_vector_file(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
+        let read = self.read_vector(bytes, name);
         // Взятые соседние файлы больше не нужны.
         let base = data::layers::stem(name).to_lowercase();
         self.sidecars.retain(|(n, _)| data::layers::stem(n).to_lowercase() != base);
@@ -6274,14 +6320,11 @@ impl LiteApp {
         saved.extend(self.similar.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.tracing.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.object_tasks.as_mut().and_then(|c| c.saved.take()));
-        if let Some(mut s) = self.recognize.as_mut().and_then(|c| c.saved.take()) {
-            self.vectors_to_layers(&mut s);
-            saved.push(s);
-        }
+        saved.extend(self.recognize.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.spectral.as_mut().and_then(|c| c.saved.take()));
         saved.extend(self.emit.as_mut().and_then(|c| c.saved.take()));
         for s in saved {
-            self.save_analysis(&s);
+            self.save_analysis(s);
         }
         // Квадрат уклона занимает место строк «Уклон» и «Экспозиция».
         if self.relief_calc.as_mut().is_some_and(|c| std::mem::take(&mut c.built)) {
@@ -6345,20 +6388,18 @@ impl LiteApp {
         }
     }
 
-    /// Сохранённый расчёт анализа участка, `Session` и `write_lat_lon`
-    /// модуля: файлы GeoTIFF слоёв - в программе в папку results папки
-    /// данных, на странице скачиванием, папка расчёта - вверху папки
-    /// «Анализ участка» «Моих меток».
-    /// Многоугольники и линии расчёта - слоями «Моих слоёв» в папку
-    /// «Название ЧЧ:ММ:СС UTC», как слои проекта модуля 1.40. Папки меток
-    /// из многоугольников и линий уходят из saved, точки и картинки
-    /// остаются папкой «Моих меток».
-    fn vectors_to_layers(&mut self, saved: &mut crate::analysis::Saved) {
-        let folder = format!("{} {} UTC", saved.title, crate::analysis::clock(crate::pointcalc::clock_now()));
+    /// Многоугольники, линии и точки расчёта - слоями «Моих слоёв» в папку
+    /// folder, как слои проекта модуля 1.40. Папки меток, которые стали
+    /// слоем, уходят из saved. Отдельные метки расчёта - вершины, створы -
+    /// одним слоем «Метки расчёта».
+    fn vectors_to_layers(&mut self, saved: &mut crate::analysis::Saved, folder: &str) {
         let mut layers = Vec::new();
+        // Описания папок - источник, настройки, классы - в подсказки слоёв.
+        let mut abouts = Vec::new();
         saved.extra.retain(|item| match item {
             scene::kml::Item::Folder(f) => match crate::datalayers::folder_layer(f) {
                 Some(layer) => {
+                    abouts.push((layer.name.clone(), f.description.clone()));
                     layers.push(layer);
                     false
                 }
@@ -6366,13 +6407,37 @@ impl LiteApp {
             },
             _ => true,
         });
+        let mut loose = scene::kml::Folder::new(tr(self.lang, "Calculation marks"));
+        saved.extra.retain(|item| match item {
+            scene::kml::Item::Place(p) => {
+                loose.children.push(scene::kml::Item::Place(p.clone()));
+                false
+            }
+            _ => true,
+        });
+        match crate::datalayers::folder_layer(&loose) {
+            Some(layer) => layers.push(layer),
+            // Слоем метки не стали - остаются метками.
+            None => saved.extra.extend(loose.children),
+        }
         for layer in layers.into_iter().rev() {
             let title = layer.name.clone();
-            self.data_layers.add_to(vec![layer], &title, &folder);
+            self.data_layers.add_to(vec![layer], &title, folder);
+        }
+        for (title, about) in abouts.iter().filter(|(_, a)| !a.trim().is_empty()) {
+            self.data_layers.set_about(folder, title, about);
         }
     }
 
-    fn save_analysis(&mut self, saved: &crate::analysis::Saved) {
+    /// Сохранённый расчёт анализа участка, `Session` и `write_lat_lon`
+    /// модуля: файлы GeoTIFF слоёв - в программе в папку results папки
+    /// данных, на странице скачиванием. Расчёт ложится в «Мои слои» папкой
+    /// «Название ЧЧ:ММ:СС UTC», как результаты инструментов модуля - в
+    /// проект своей группой, решение автора от 6 ноября 2026 года: контур
+    /// участка и векторы - слоями, растры - слоями-картинками под ними.
+    /// Расчёт той же сессии окна - в её папку, пока она есть. Что слоем
+    /// не стало, - папкой «Анализа участка» «Моих меток».
+    fn save_analysis(&mut self, mut saved: crate::analysis::Saved) {
         let lang = self.lang;
         let unix = crate::pointcalc::clock_now();
         let mut files = Vec::new();
@@ -6395,43 +6460,55 @@ impl LiteApp {
         // как результаты инструментов модуля - в проект QGIS.
         #[cfg(not(target_arch = "wasm32"))]
         if self.edition.linked() && self.rustgis.as_ref().is_some_and(|b| b.connected) {
-            self.analysis_to_rustgis(saved, &files, failed, unix);
+            self.analysis_to_rustgis(&saved, &files, failed, unix);
             return;
         }
-        let root = marks::root_name(lang);
-        let group = tr(lang, "Area analysis");
-        let tree = self.marks.root(root);
-        let found = tree.children.iter().position(|c| matches!(c, scene::kml::Item::Folder(f) if f.name == group));
-        let at = match found {
-            Some(i) => i,
-            None => self.marks.insert_at(&[], self.marks.first_index(), scene::kml::Item::Folder(scene::kml::Folder::new(group)), root).first().copied().unwrap_or(0),
-        };
-        let folder = saved.folder(lang, unix, &files);
         // Расчёт той же сессии - в её папку, пока она есть, `Session.group_for`
         // модуля: контур участка там уже лежит.
-        let earlier = saved.session.and_then(|s| self.analysis_sessions.get(&s).cloned()).and_then(|name| {
-            let group = self.marks.folder(&[at])?;
-            group.children.iter().position(|c| matches!(c, scene::kml::Item::Folder(f) if f.name == name))
-        });
-        match earlier {
-            Some(i) => {
-                for item in folder.children.into_iter().skip(usize::from(saved.ring.len() >= 3)) {
-                    self.marks.insert(&[at, i], item, root);
+        let earlier = saved.session.and_then(|s| self.analysis_sessions.get(&s).cloned()).filter(|name| self.data_layers.list.iter().any(|l| &l.folder == name));
+        let folder = earlier.clone().unwrap_or_else(|| format!("{} {} UTC", saved.title, crate::analysis::clock(unix)));
+        if let Some(s) = saved.session {
+            self.analysis_sessions.insert(s, folder.clone());
+        }
+        // Растры - слоями-картинками, векторы - над ними, контур - сверху.
+        for picture in saved.pictures(lang, &files) {
+            self.data_layers.add_picture(picture, &folder);
+        }
+        self.vectors_to_layers(&mut saved, &folder);
+        if saved.ring.len() >= 3 && earlier.is_none() {
+            let site = tr(lang, "Area|site");
+            let mut outline = scene::kml::Folder::new(site);
+            outline.children.push(scene::kml::Item::Place(scene::kml::Place::new(site, scene::features::Kind::Polygon, saved.ring.clone())));
+            if let Some(layer) = crate::datalayers::folder_layer(&outline) {
+                self.data_layers.add_to(vec![layer], site, &folder);
+                let [r, g, b, _] = crate::analysis::SITE_COLOR;
+                let style = crate::datalayers::Style { color: [r, g, b], width: 2.0, fill: 0.0, ..crate::datalayers::Style::new(0) };
+                if let Some(id) = self.data_layers.list.iter().find(|l| l.folder == folder && l.title == site).map(|l| l.id) {
+                    self.data_layers.apply(id, &crate::datalayers::Act::Style(style));
                 }
-            }
-            None => {
-                if let Some(s) = saved.session {
-                    self.analysis_sessions.insert(s, folder.name.clone());
-                }
-                self.marks.insert_at(&[at], 0, scene::kml::Item::Folder(folder), root);
             }
         }
-        self.marks_changed();
+        // Что слоем не стало - наложения, модели - папкой «Анализа участка»
+        // «Моих меток».
+        if !saved.extra.is_empty() {
+            let root = marks::root_name(lang);
+            let group = tr(lang, "Area analysis");
+            let tree = self.marks.root(root);
+            let found = tree.children.iter().position(|c| matches!(c, scene::kml::Item::Folder(f) if f.name == group));
+            let at = match found {
+                Some(i) => i,
+                None => self.marks.insert_at(&[], self.marks.first_index(), scene::kml::Item::Folder(scene::kml::Folder::new(group)), root).first().copied().unwrap_or(0),
+            };
+            let mut rest = scene::kml::Folder::new(&folder);
+            rest.children = std::mem::take(&mut saved.extra);
+            self.marks.insert_at(&[at], 0, scene::kml::Item::Folder(rest), root);
+            self.marks_changed();
+        }
         let written: Vec<&str> = files.iter().map(String::as_str).filter(|f| !f.is_empty()).collect();
         self.open_message = Some(match failed {
-            Some(e) => trf(lang, "Saved to «My places». The GeoTIFF file is not written: {e}", &[("e", &e)]),
-            None if written.is_empty() => tr(lang, "Saved to «My places».").to_string(),
-            None => trf(lang, "Saved to «My places», the values - {path}.", &[("path", &written.join(", "))]),
+            Some(e) => trf(lang, "Saved to «My layers», folder {folder}. The GeoTIFF file is not written: {e}", &[("folder", &folder), ("e", &e)]),
+            None if written.is_empty() => trf(lang, "Saved to «My layers», folder {folder}.", &[("folder", &folder)]),
+            None => trf(lang, "Saved to «My layers», folder {folder}, the values - {path}.", &[("folder", &folder), ("path", &written.join(", "))]),
         });
     }
 
@@ -6505,9 +6582,11 @@ impl LiteApp {
         }
     }
 
-    /// Картинки наложений: «Мои метки» и предпросмотр окна анализа.
+    /// Картинки наложений: «Мои метки», слои-картинки «Моих слоёв»
+    /// и предпросмотр окна анализа.
     fn picture_overlays(&self) -> Vec<&scene::kml::Overlay> {
         let mut list = self.marks.all_overlays();
+        list.extend(self.data_layers.pictures());
         list.extend(self.preview.as_ref());
         list
     }
@@ -7087,7 +7166,7 @@ impl LiteApp {
         let title = tr(lang, "Places");
         let hint = tr(
             lang,
-            "Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.",
+            "Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the My layers section.",
         );
         let layers_title = tr(lang, "Layers");
         // Во весь экран панель прячется, как у модуля.
@@ -7152,17 +7231,16 @@ impl LiteApp {
             // «Проект QGIS» модуля, решение автора от 5 ноября 2026 года.
             #[cfg(not(target_arch = "wasm32"))]
             self.rustgis_section(ui, lang);
+            self.my_layers_section(ui, lang, now);
             if crate::theme::section(ui, "layers", layers_title) {
                 let mut out = Vec::new();
                 let mut menu = self.layers_menu.take();
-                let mut folder = std::mem::take(&mut self.new_folder);
                 let state = self.layers_state();
                 let room = (ui.available_height() - status_height - 8.0).max(SECTION_MIN);
                 egui::ScrollArea::vertical().id_salt("layers").max_height(room).auto_shrink([false, true]).show(ui, |ui| {
-                    crate::layers::panel(ui, lang, &state, &mut menu, &mut folder, &mut out);
+                    crate::layers::panel(ui, lang, &state, &mut menu, &mut out);
                 });
                 self.layers_menu = menu;
-                self.new_folder = folder;
                 self.apply_layers(out, now);
             }
             self.layers_height = ui.cursor().top() - top;
@@ -7217,6 +7295,29 @@ impl LiteApp {
         });
         for (id, on) in toggled {
             self.data_layers.show_live(id, on);
+        }
+    }
+
+    /// Раздел «Мои слои» левой панели между «Метками» и «Слоями», как
+    /// «Проект QGIS» модуля, решение автора от 6 ноября 2026 года: слои
+    /// файлов и результаты окон анализа в порядке отрисовки. Высота - по
+    /// строкам, не больше [`MY_LAYERS_ROWS`], дальше прокрутка.
+    fn my_layers_section(&mut self, ui: &mut egui::Ui, lang: Lang, now: f64) {
+        if !crate::theme::section(ui, "my-layers", tr(lang, "My layers")) {
+            return;
+        }
+        let mut data = Vec::new();
+        let mut menu = self.layers_menu.take();
+        let mut folder = std::mem::take(&mut self.new_folder);
+        let rows = crate::datalayers::row_count(&self.data_layers).max(1) as f32;
+        let room = (22.0 * rows.min(MY_LAYERS_ROWS) + 36.0).min(ui.available_height() - SECTION_MIN).max(48.0);
+        egui::ScrollArea::vertical().id_salt("my-layers").max_height(room).auto_shrink([false, true]).show(ui, |ui| {
+            crate::datalayers::rows(ui, lang, &self.data_layers, &mut menu, &mut folder, &mut data);
+        });
+        self.layers_menu = menu;
+        self.new_folder = folder;
+        for (id, act) in data {
+            self.data_act(id, &act, now);
         }
     }
 
@@ -9385,6 +9486,10 @@ impl eframe::App for LiteApp {
         let ctx = ui.ctx().clone();
         let now = ctx.input(|i| i.time);
         self.restore_my_layers();
+        // Файлы «Моих слоёв» на диске изменились - строки «Обновить».
+        if self.data_layers.check_sources(now, &crate::datalayers::file_modified) {
+            ctx.request_repaint();
+        }
         self.restore_tilesets();
         self.ask_temporary(&ctx);
         self.upload();
@@ -9764,6 +9869,13 @@ impl eframe::App for LiteApp {
         // Треки на момент шкалы, сменились модели треков - модели заново.
         self.tracks.step(self.timebar.window().map(|w| w.1));
         let tracks_models = std::mem::take(&mut self.tracks.models_dirty);
+        // Слои-картинки «Моих слоёв» сменились - сетки картинок заново.
+        let pictures_version = self.data_layers.pictures_version();
+        if pictures_version != self.data_pictures_seen {
+            self.data_pictures_seen = pictures_version;
+            self.preview_dirty = true;
+            self.pictures_changed();
+        }
         let preview_dirty = std::mem::take(&mut self.preview_dirty);
         if tracks_models || preview_dirty {
             self.overlays_built = None;
@@ -10032,6 +10144,7 @@ impl eframe::App for LiteApp {
         if listed && (fresh.is_some() || tracks_models || preview_dirty) && self.overlays_built != Some(self.marks.overlays_version()) {
             self.overlays_built = Some(self.marks.overlays_version());
             let mut meshes = self.marks.picture_meshes(&store);
+            meshes.extend(self.data_layers.pictures().into_iter().filter_map(|o| crate::pictures::ground_mesh(o, &crate::pictures::key_of(o), &store)));
             meshes.extend(self.preview.as_ref().and_then(|o| crate::pictures::ground_mesh(o, &crate::pictures::key_of(o), &store)));
             globe.set_pictures(&meshes);
             let built = self.models.meshes(&model_list, &store, now);

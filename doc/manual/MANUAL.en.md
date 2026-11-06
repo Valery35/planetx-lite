@@ -202,8 +202,9 @@ The Layers section shows everything on the globe:
 
 ### My layers
 
-A vector file becomes rows of My layers at the top of the Layers section, like the
-QGIS project layers in the plugin. One row is one layer of the file. The
+My layers is a section of its own in the left panel between Places and
+Layers, like the QGIS project section of the plugin. A vector file
+becomes rows of it. One row is one layer of the file. The
 program reads GeoPackage, Shapefile, GeoJSON, GPX, TopoJSON, GML,
 MapInfo (MIF and TAB), FlatGeobuf, DXF and DWG, and a ZIP archive with a
 shapefile. KML, KMZ and scenes still go to My Places.
@@ -217,7 +218,21 @@ shapefile. KML, KMZ and scenes still go to My Places.
 - Lines and polygons lie over the imagery, points are circles on the
   terrain. A new layer takes the next of eight colours.
 
-The checkbox of a row hides the layer. The "⋯" menu of a row:
+The order of rows is the drawing order, the upper row is drawn on top.
+
+- The checkbox of a row hides the layer.
+- A row can be dragged with the mouse to another place, into a folder and
+  out of it. A line shows where the layer goes. Layers of one folder
+  always stay together.
+- A click on the name selects the layer. The slider under the rows sets
+  the opacity of the selected layer.
+- A double click flies to the layer.
+- When the file of a layer changes on the disk, «Refresh» appears under
+  the row. A click reads the file again, the style, folder and place of
+  the layer stay. The program checks the files every 2 seconds. A layer
+  opened on the web page or from the command line does not know its file.
+
+The "⋯" menu of a row or the right button:
 
 | Item | What it does |
 |---|---|
@@ -226,7 +241,7 @@ The checkbox of a row hides the layer. The "⋯" menu of a row:
 | Labels ▸ | A field whose value labels the objects. A layer shows at most 500 labels nearest to the view point |
 | Extrusion ▸ and factor | Objects rise to the height from a numeric field: a polygon as a prism, a point as a column, a line as a wall |
 | Folder ▸ | The layer moves to a folder of the list, to a new folder by name or out of folders |
-| Up, Down | The order of layers: the upper row is drawn on top |
+| Up, Down | The layer one row up or down, a foreign folder is passed whole |
 | Copy to My Places | The objects of the layer become placemarks of a folder. They can be edited, measured and saved into a scene |
 | Save as GeoJSON… | The objects of the layer with all fields go to a GeoJSON file in WGS84 |
 | Remove from the globe | The layer leaves the section |
@@ -235,12 +250,21 @@ Folders of one level gather layers. The checkbox of a folder row shows or
 hides all its layers, a click on the name folds the folder. The "⋯" menu
 of a folder removes all its layers from the globe.
 
+Results of the analysis windows go to My layers as a folder «Name
+HH:MM:SS UTC», like the results of the plugin tools go to the project as
+their own group. The site outline, polygons, lines and points of the
+computation become vector layers, rasters become picture layers under
+them. The menu of a picture layer has the opacity, folder, order and a
+copy as a ground overlay to My Places. Computations of one window session
+go to one folder. My Places stay for KML, placemarks, paths and tours.
+
 A click of Identify features on an object of a layer shows its fields in
 the Features window. My layers stay between launches, like My Places. In
 the program the objects of the layers are GeoJSON files in the data
-folder of the program, the source file is not needed after opening. The
-web page keeps the layers in the browser while together they are under
-1 MB. Layers are not written into a scene, like the QGIS project layers
+folder of the program, pictures are PNG files there, the source file is
+not needed after opening. The web page keeps the vector layers in the
+browser while together they are under 1 MB, picture layers live until
+the page closes. Layers are not written into a scene, like the QGIS project layers
 of the plugin. A layer with a time field opens as tracks, a subsurface
 model file opens the Subsurface mode window.
 
@@ -377,11 +401,11 @@ hidden from the globe and the terrain is seen under it, the result keeps
 the class. The «Show on the globe» check removes the whole preview of
 the window, the computation stays.
 
-«OK» puts the polygons and lines of the computation into «My layers», in
-the folder «Recognition - task HH:MM:SS UTC». The class polygons are
-drawn in the colours of their classes. A computation folder goes to «My
-places» - the area, a picture of the classes with a GeoTIFF file and the
-control points. «Cancel» removes the classes from the globe. Fine
+«OK» puts the computation into «My layers», in the folder «Recognition -
+task HH:MM:SS UTC». The class polygons are drawn in the colours of their
+classes. The same folder holds the site outline, the control points and
+the picture of the classes, the path of the GeoTIFF file is in its menu.
+«Cancel» removes the classes from the globe. Fine
 settings - the pixel, splitting into objects - are there for own samples
 with a source other than the images of the area.
 
@@ -422,12 +446,12 @@ the button is consent to send the table. The assistant answers with a name
 for each colour, colours with the same name are merged. The assistant is
 connected in the «Assistant settings» window.
 
-«OK» puts the polygons into My Places as the folder of the computation.
-Each has the fields cls, name, color and area_ha. The folder name carries
-the source and the settings of the computation, for example «Tracing image
-(colours 8, smoothing 1, areas from 25 cells, rounding 1.00, pixel 10 m)».
-The folder description has the source, the settings and the classes with
-their share of the area. Neighbouring areas share their border, there are
+«OK» puts the polygons as a layer into My layers, in the folder of the
+computation. Each has the fields cls, name, color and area_ha. The layer
+name carries the source and the settings of the computation, for example
+«Tracing image (colours 8, smoothing 1, areas from 25 cells, rounding
+1.00, pixel 10 m)». The tooltip of the layer row has the source, the
+settings and the classes with their share of the area. Neighbouring areas share their border, there are
 no gaps and overlaps. With more than 5000 areas «OK» puts a picture of the
 colours and a GeoTIFF file of their numbers.
 

@@ -753,6 +753,15 @@ impl Saved {
             outline.fill = Some([255, 255, 255, 0]);
             folder.children.push(Item::Place(outline));
         }
+        folder.children.extend(self.pictures(lang, files).into_iter().map(Item::Overlay));
+        folder.children.extend(self.extra.iter().cloned());
+        folder
+    }
+
+    /// Картинки слоёв расчёта наложениями на землю: рамка, сводка и путь
+    /// файла значений в описании. files - как у [`Saved::folder`].
+    pub fn pictures(&self, lang: Lang, files: &[String]) -> Vec<Overlay> {
+        let mut out = Vec::new();
         for (i, layer) in self.layers.iter().enumerate() {
             let Some(png) = layer.png() else {
                 continue;
@@ -763,10 +772,9 @@ impl Saved {
             item.image = Some(png);
             let file = files.get(i).filter(|p| !p.is_empty()).map(|path| trf(lang, "Values - the GeoTIFF file {path}.", &[("path", path)]));
             item.description = [Some(layer.summary.clone()).filter(|s| !s.is_empty()), file].into_iter().flatten().collect::<Vec<_>>().join(" ");
-            folder.children.push(Item::Overlay(item));
+            out.push(item);
         }
-        folder.children.extend(self.extra.iter().cloned());
-        folder
+        out
     }
 }
 

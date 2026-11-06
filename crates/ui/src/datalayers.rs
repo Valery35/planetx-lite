@@ -116,6 +116,40 @@ pub struct DataLayer {
     /// Цвета объектов по порядку - отрисовка слоя RustGIS. Пусто - поле
     /// color или цвет стиля.
     pub colors: Vec<[u8; 3]>,
+    /// Файл слоя на диске, None - слой не из файла с диска.
+    pub source: Option<Source>,
+    /// Файл на диске изменился после чтения: строка «Обновить».
+    pub stale: bool,
+    /// Слой-картинка: растр окна анализа по рамке, объектов у него нет.
+    /// Непрозрачность стиля - в оттенке наложения.
+    pub picture: Option<scene::kml::Overlay>,
+    /// Описание слоя - у результата анализа источник, настройки, классы.
+    /// Идёт в подсказку строки.
+    pub about: String,
+}
+
+/// Файл слоя на диске и время его изменения, секунды Unix.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Source {
+    pub path: String,
+    pub modified: u64,
+}
+
+/// Как часто сверять время изменения файлов слоёв, секунды.
+pub const SOURCE_CHECK: f64 = 2.0;
+
+/// Время изменения файла path, секунды Unix. На странице файлов нет.
+pub fn file_modified(path: &str) -> Option<u64> {
+    if cfg!(target_arch = "wasm32") {
+        return None;
+    }
+    let time = std::fs::metadata(path).ok()?.modified().ok()?;
+    time.duration_since(std::time::UNIX_EPOCH).ok().map(|d| d.as_secs())
+}
+
+/// Байты файла path или текст ошибки.
+pub fn read_file(path: &std::path::Path) -> Result<Vec<u8>, String> {
+    std::fs::read(path).map_err(|e| e.to_string())
 }
 
 pub use data::layers::{Polygon, Ring, polygons};
@@ -154,13 +188,18 @@ pub fn nearest(mut items: Vec<(String, f64, f64)>, lat: f64, lon: f64, count: us
     items
 }
 
-/// Слой из папки меток расчёта: многоугольники и линии на любой глубине,
-/// поля - name и поля меток по порядку первого появления. Цвет метки -
-/// поле color «#rrggbb», если его нет: так слой рисует классы своими
-/// цветами. None - в папке есть другие метки или меток нет.
+/// Слой из папки меток расчёта: многоугольники, линии и точки на любой
+/// глубине, поля - name и поля меток по порядку первого появления. Цвет
+/// метки - поле color «#rrggbb», если его нет: так слой рисует классы
+/// своими цветами. None - в папке есть другие метки или меток нет.
 pub fn folder_layer(folder: &scene::kml::Folder) -> Option<LayerData> {
     let places = folder.places();
-    if places.is_empty() || places.iter().any(|p| !matches!(p.kind, Kind::Polygon | Kind::Line)) {
+    if places.is_empty() || places.iter().any(|p| !matches!(p.kind, Kind::Polygon | Kind::Line | Kind::Point) || p.points.is_empty()) {
+        return None;
+    }
+    // В папке есть и другое, кроме меток - картинки, модели: папка
+    // остаётся папкой меток.
+    if folder.children.iter().any(|c| !matches!(c, scene::kml::Item::Place(_) | scene::kml::Item::Folder(_))) {
         return None;
     }
     let mut fields = vec!["name".to_string()];
@@ -186,6 +225,7 @@ pub fn folder_layer(folder: &scene::kml::Folder) -> Option<LayerData> {
             }
             let (shape, parts) = match p.kind {
                 Kind::Polygon => (Geom::Polygon, std::iter::once(p.points.clone()).chain(p.holes.iter().flatten().cloned()).collect()),
+                Kind::Point => (Geom::Point, vec![p.points.iter().take(1).copied().collect()]),
                 _ => (Geom::Line, vec![p.points.clone()]),
             };
             data::layers::Item { shape, parts, heights: Vec::new(), values }
@@ -263,8 +303,11 @@ impl DataLayer {
             .collect()
     }
 
-    /// Все точки слоя - для охвата.
+    /// Все точки слоя - для охвата, у картинки - углы её рамки.
     pub fn extent_points(&self) -> Vec<(f64, f64)> {
+        if let Some(p) = &self.picture {
+            return p.overlay.corners.clone();
+        }
         self.data.items.iter().flat_map(|i| i.parts.iter().flatten().copied()).collect()
     }
 
@@ -423,6 +466,14 @@ pub enum Act {
     ToRustGis,
     Up,
     Down,
+    /// Перетаскивание: слой - перед слоем before в папку folder, None -
+    /// в конец папки или списка.
+    Move { before: Option<u64>, folder: String },
+    /// Щелчок по названию выделяет слой: ползунок прозрачности раздела
+    /// - его.
+    Select,
+    /// Перечитать файл слоя с диска.
+    Reload,
     Remove,
     /// Флажок строки папки: все её слои показать или спрятать.
     FolderVisible(String, bool),
@@ -453,10 +504,48 @@ pub struct DataLayers {
     pub collapsed: BTreeSet<String>,
     /// Файлы убранных слоёв, которые надо удалить из папки [`DIR`].
     pub dropped: Vec<String>,
+    /// Выделенный слой раздела.
+    pub selected: Option<u64>,
+    /// Когда последний раз сверялись файлы слоёв, секунды кадра.
+    checked_at: Option<f64>,
 }
 
 impl DataLayers {
+    /// Слои одной папки - подряд, папка стоит на месте своего первого
+    /// слоя. Тогда порядок строк раздела - порядок отрисовки, как у слоёв
+    /// проекта QGIS: верхняя строка поверх.
+    fn normalize(&mut self) {
+        let mut rest = std::mem::take(&mut self.list);
+        let mut out: Vec<DataLayer> = Vec::with_capacity(rest.len());
+        while !rest.is_empty() {
+            let first = rest.remove(0);
+            if first.folder.is_empty() {
+                out.push(first);
+                continue;
+            }
+            let folder = first.folder.clone();
+            out.push(first);
+            let (same, other): (Vec<DataLayer>, Vec<DataLayer>) = rest.into_iter().partition(|l| l.folder == folder);
+            out.extend(same);
+            rest = other;
+        }
+        self.list = out;
+    }
+
+    /// Начало и конец (не включая) строки at в порядке раздела: слой вне
+    /// папок - сам, слой чужой папки - вся папка.
+    fn unit(&self, at: usize, own: &str) -> (usize, usize) {
+        let folder = self.list.get(at).map_or("", |l| l.folder.as_str());
+        if folder.is_empty() || folder == own {
+            return (at, at + 1);
+        }
+        let start = self.list.iter().position(|l| l.folder == folder).unwrap_or(at);
+        let end = self.list.iter().rposition(|l| l.folder == folder).map_or(at + 1, |e| e + 1);
+        (start, end)
+    }
+
     fn changed(&mut self) {
+        self.normalize();
         self.lines_dirty = true;
         self.dots_dirty = true;
         self.labels_dirty = true;
@@ -467,12 +556,22 @@ impl DataLayers {
     /// Слои файла file с геометрией - строками сверху списка. Таблицы
     /// без геометрии пропускаются. Возвращает количество слоёв.
     pub fn add(&mut self, layers: Vec<LayerData>, file: &str) -> usize {
-        self.add_to(layers, file, "")
+        self.add_with(layers, file, "", None)
+    }
+
+    /// Слои файла с диска source - как [`DataLayers::add`], файл
+    /// сверяется [`DataLayers::check_sources`].
+    pub fn add_from(&mut self, layers: Vec<LayerData>, file: &str, source: Option<Source>) -> usize {
+        self.add_with(layers, file, "", source)
     }
 
     /// Слои с геометрией в папку folder - строками сверху списка, как
     /// [`DataLayers::add`]. Сюда же ложатся результаты окон анализа.
     pub fn add_to(&mut self, layers: Vec<LayerData>, file: &str, folder: &str) -> usize {
+        self.add_with(layers, file, folder, None)
+    }
+
+    fn add_with(&mut self, layers: Vec<LayerData>, file: &str, folder: &str, source: Option<Source>) -> usize {
         let shown: Vec<LayerData> = layers.into_iter().filter(|l| l.items.iter().any(|i| i.shape != Geom::None)).collect();
         let single = shown.len() == 1;
         let count = shown.len();
@@ -493,6 +592,10 @@ impl DataLayers {
                 store: None,
                 live: None,
                 colors: Vec::new(),
+                source: source.clone(),
+                stale: false,
+                picture: None,
+                about: String::new(),
             };
             self.list.insert(k, layer);
         }
@@ -505,6 +608,65 @@ impl DataLayers {
 
     pub fn get(&self, id: u64) -> Option<&DataLayer> {
         self.list.iter().find(|l| l.id == id)
+    }
+
+    /// Растр окна анализа - слоем-картинкой в папку folder, под её
+    /// векторными слоями: линии и контуры видны поверх картинки.
+    pub fn add_picture(&mut self, overlay: scene::kml::Overlay, folder: &str) -> u64 {
+        self.next += 1;
+        let mut style = Style::new(self.next as usize);
+        style.opacity = f32::from(overlay.overlay.color[3]) / 255.0;
+        let at = self.list.iter().rposition(|l| l.folder == folder && !folder.is_empty()).map_or(0, |p| p + 1);
+        let layer = DataLayer {
+            id: self.next,
+            title: overlay.name.clone(),
+            file: overlay.name.clone(),
+            data: LayerData { name: overlay.name.clone(), epsg: Some(4326), fields: Vec::new(), numeric: Vec::new(), items: Vec::new() },
+            visible: true,
+            style,
+            label: None,
+            extrude: None,
+            folder: folder.to_string(),
+            store: None,
+            live: None,
+            colors: Vec::new(),
+            source: None,
+            stale: false,
+            about: overlay.description.clone(),
+            picture: Some(overlay),
+        };
+        self.list.insert(at, layer);
+        self.collapsed.remove(folder);
+        self.changed();
+        self.next
+    }
+
+    /// Описание about слою title папки folder - подсказка его строки.
+    pub fn set_about(&mut self, folder: &str, title: &str, about: &str) {
+        if let Some(l) = self.list.iter_mut().find(|l| l.folder == folder && l.title == title) {
+            l.about = about.to_string();
+            self.save_dirty = true;
+        }
+    }
+
+    /// Отпечаток слоёв-картинок: номера, флажки, непрозрачность и порядок.
+    /// Сменился - сетки картинок собираются заново. Без картинок - 0.
+    pub fn pictures_version(&self) -> u64 {
+        use std::hash::{Hash, Hasher};
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        let mut any = false;
+        for l in &self.list {
+            if let Some(p) = &l.picture {
+                any = true;
+                (l.id, l.visible, p.overlay.color[3]).hash(&mut h);
+            }
+        }
+        if any { h.finish() | 1 } else { 0 }
+    }
+
+    /// Картинки видимых слоёв-картинок, нижняя строка - первой.
+    pub fn pictures(&self) -> Vec<&scene::kml::Overlay> {
+        self.list.iter().rev().filter(|l| l.visible).filter_map(|l| l.picture.as_ref()).collect()
     }
 
     /// Папки в порядке первого слоя каждой, без пустой. Живые слои RustGIS
@@ -552,13 +714,45 @@ impl DataLayers {
                     return removed;
                 };
                 match act {
+                    Act::Select => {
+                        self.selected = Some(id);
+                        return removed;
+                    }
                     Act::Visible(on) => self.list[at].visible = *on,
-                    Act::Style(s) => self.list[at].style = *s,
+                    Act::Style(s) => {
+                        let layer = &mut self.list[at];
+                        layer.style = *s;
+                        if let Some(p) = &mut layer.picture {
+                            p.overlay.color[3] = (s.opacity.clamp(0.0, 1.0) * 255.0).round() as u8;
+                        }
+                    }
                     Act::Label(f) => self.list[at].label = *f,
                     Act::Extrude(e) => self.list[at].extrude = *e,
                     Act::Folder(f) => self.list[at].folder = f.trim().to_string(),
-                    Act::Up if at > 0 => self.list.swap(at, at - 1),
-                    Act::Down if at + 1 < self.list.len() => self.list.swap(at, at + 1),
+                    // Вверх и вниз - через соседнюю строку раздела: чужая
+                    // папка проходится целиком.
+                    Act::Up if at > 0 => {
+                        let own = self.list[at].folder.clone();
+                        let (start, _) = self.unit(at - 1, &own);
+                        let layer = self.list.remove(at);
+                        self.list.insert(start, layer);
+                    }
+                    Act::Down if at + 1 < self.list.len() => {
+                        let own = self.list[at].folder.clone();
+                        let (_, end) = self.unit(at + 1, &own);
+                        let layer = self.list.remove(at);
+                        self.list.insert((end - 1).min(self.list.len()), layer);
+                    }
+                    Act::Move { before, folder } => {
+                        if *before == Some(id) {
+                            return removed;
+                        }
+                        let mut layer = self.list.remove(at);
+                        layer.folder = folder.trim().to_string();
+                        let end_of_folder = || self.list.iter().rposition(|l| !layer.folder.is_empty() && l.folder == layer.folder).map(|p| p + 1);
+                        let to = before.and_then(|b| self.list.iter().position(|l| l.id == b)).or_else(end_of_folder).unwrap_or(self.list.len());
+                        self.list.insert(to, layer);
+                    }
                     Act::Remove => removed.push(self.take(at)),
                     _ => return removed,
                 }
@@ -577,6 +771,9 @@ impl DataLayers {
             .list
             .iter()
             .filter(|l| l.live.is_none())
+            // Картинки на странице не хранятся: строке хранилища они
+            // велики.
+            .filter(|l| !(inline && l.picture.is_some()))
             .map(|l| {
                 let s = &l.style;
                 let mut v = serde_json::json!({
@@ -584,10 +781,22 @@ impl DataLayers {
                     "color": s.color, "width": s.width, "fill": s.fill, "opacity": s.opacity, "size": s.size,
                     "label": l.label, "extrude": l.extrude.map(|(f, k)| serde_json::json!([f, k])),
                 });
-                if inline {
+                if !l.about.is_empty() {
+                    v["about"] = serde_json::Value::String(l.about.clone());
+                }
+                if let Some(p) = &l.picture {
+                    v["picture"] = serde_json::json!({ "corners": p.overlay.corners, "box": p.overlay.latlon_box, "description": p.description });
+                    if let Some(store) = &l.store {
+                        v["store"] = serde_json::Value::String(store.clone());
+                    }
+                } else if inline {
                     v["data"] = serde_json::Value::String(data::layers::to_geojson(&l.data));
                 } else if let Some(store) = &l.store {
                     v["store"] = serde_json::Value::String(store.clone());
+                }
+                if let Some(s) = &l.source {
+                    v["path"] = serde_json::Value::String(s.path.clone());
+                    v["modified"] = serde_json::Value::from(s.modified);
                 }
                 v
             })
@@ -610,7 +819,17 @@ impl DataLayers {
     /// Слои без записанных объектов: номер слоя и имя файла, которое ему
     /// даётся. Имя записывается в слой - после записи файла.
     pub fn unstored(&self) -> Vec<(u64, String)> {
-        self.list.iter().filter(|l| l.store.is_none() && l.live.is_none()).map(|l| (l.id, format!("layer-{}-{}.geojson", web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0, |d| d.as_millis()), l.id))).collect()
+        let ms = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0, |d| d.as_millis());
+        self.list.iter().filter(|l| l.store.is_none() && l.live.is_none()).map(|l| (l.id, format!("layer-{ms}-{}.{}", l.id, if l.picture.is_some() { "png" } else { "geojson" }))).collect()
+    }
+
+    /// Байты файла объектов слоя для папки [`DIR`]: картинка слоя-картинки
+    /// или текст GeoJSON.
+    pub fn stored_bytes(layer: &DataLayer) -> Vec<u8> {
+        match &layer.picture {
+            Some(p) => p.image.clone().unwrap_or_default(),
+            None => data::layers::to_geojson(&layer.data).into_bytes(),
+        }
     }
 
     /// Объекты слоя id записаны файлом name.
@@ -639,7 +858,35 @@ impl DataLayers {
                 (None, Some(name)) => read(name),
                 (None, None) => None,
             };
-            let Some(mut data) = bytes.and_then(|b| data::layers::read(b, "layer.geojson").ok()).and_then(|mut l| (!l.is_empty()).then(|| l.remove(0))) else {
+            // Слой-картинка: картинка из файла, рамка из списка.
+            let picture = match v.get("picture") {
+                Some(p) => {
+                    let Some(image) = bytes.clone().filter(|b| !b.is_empty()) else {
+                        lost.push(title);
+                        continue;
+                    };
+                    let mut ground = scene::overlays::Overlay::new(scene::overlays::Kind::Ground);
+                    let floats = |key: &str| p.get(key).and_then(serde_json::Value::as_array).map(|a| a.iter().filter_map(serde_json::Value::as_f64).collect::<Vec<f64>>());
+                    match floats("box").filter(|b| b.len() == 5) {
+                        Some(b) => ground.set_box([b[0], b[1], b[2], b[3], b[4]]),
+                        None => {
+                            let corners = p.get("corners").and_then(serde_json::Value::as_array).map(|c| c.iter().filter_map(|x| Some((x.get(0)?.as_f64()?, x.get(1)?.as_f64()?))).collect::<Vec<_>>()).unwrap_or_default();
+                            ground.set_corners(corners);
+                        }
+                    }
+                    let mut overlay = scene::kml::Overlay::new(&title, ground);
+                    overlay.image = Some(image);
+                    overlay.description = p.get("description").and_then(serde_json::Value::as_str).unwrap_or_default().to_string();
+                    Some(overlay)
+                }
+                None => None,
+            };
+            let parsed = if picture.is_some() {
+                Some(LayerData { name: String::new(), epsg: Some(4326), fields: Vec::new(), numeric: Vec::new(), items: Vec::new() })
+            } else {
+                bytes.and_then(|b| data::layers::read(b, "layer.geojson").ok()).and_then(|mut l| (!l.is_empty()).then(|| l.remove(0)))
+            };
+            let Some(mut data) = parsed else {
                 lost.push(title);
                 continue;
             };
@@ -662,7 +909,29 @@ impl DataLayers {
                 .filter(|(n, _)| *n < fields);
             out.next += 1;
             let visible = v.get("visible").and_then(serde_json::Value::as_bool).unwrap_or(true);
-            out.list.push(DataLayer { id: out.next, title, file: text_of("file"), data, visible, style, label, extrude, folder: text_of("folder"), store, live: None, colors: Vec::new() });
+            let path = text_of("path");
+            let source = v.get("modified").and_then(serde_json::Value::as_u64).filter(|_| !path.is_empty()).map(|modified| Source { path, modified });
+            out.list.push(DataLayer {
+                id: out.next,
+                title,
+                file: text_of("file"),
+                data,
+                visible,
+                style,
+                label,
+                extrude,
+                folder: text_of("folder"),
+                store,
+                live: None,
+                colors: Vec::new(),
+                source,
+                stale: false,
+                picture: picture.map(|mut p| {
+                    p.overlay.color[3] = (style.opacity.clamp(0.0, 1.0) * 255.0).round() as u8;
+                    p
+                }),
+                about: text_of("about"),
+            });
         }
         out.collapsed = root.get("collapsed").and_then(serde_json::Value::as_array).into_iter().flatten().filter_map(|f| f.as_str().map(str::to_string)).collect();
         if !out.list.is_empty() {
@@ -670,6 +939,60 @@ impl DataLayers {
         }
         out.save_dirty = false;
         (out, lost)
+    }
+
+    /// Сверить файлы слоёв с диском не чаще [`SOURCE_CHECK`]: слой, чей
+    /// файл изменился после чтения, получает строку «Обновить». modified -
+    /// время изменения файла по пути, None - файла нет. true - отметки
+    /// изменились.
+    pub fn check_sources(&mut self, now: f64, modified: &dyn Fn(&str) -> Option<u64>) -> bool {
+        if self.checked_at.is_some_and(|at| now - at < SOURCE_CHECK && now >= at) {
+            return false;
+        }
+        self.checked_at = Some(now);
+        let mut changed = false;
+        for l in &mut self.list {
+            let Some(s) = &l.source else {
+                continue;
+            };
+            let stale = modified(&s.path).is_some_and(|m| m != s.modified);
+            changed |= stale != l.stale;
+            l.stale = stale;
+        }
+        changed
+    }
+
+    /// Перечитанный файл слоя id: из слоёв файла layers берётся слой
+    /// с тем же именем, у файла с одним слоем - он. Стиль, папка и место
+    /// остаются, поля подписей и выдавливания - если они ещё есть. false -
+    /// подходящего слоя в файле нет.
+    pub fn reload(&mut self, id: u64, layers: Vec<LayerData>, modified: u64) -> bool {
+        let Some(at) = self.list.iter().position(|l| l.id == id) else {
+            return false;
+        };
+        let single = layers.len() == 1;
+        let name = self.list[at].data.name.clone();
+        let Some(mut data) = layers.into_iter().find(|d| single || d.name == name) else {
+            return false;
+        };
+        data.name = name;
+        let fields = data.fields.len();
+        let numeric = |n: usize| data.numeric.get(n).copied().unwrap_or(false);
+        let extrude = self.list[at].extrude.filter(|(n, _)| *n < fields && numeric(*n));
+        let layer = &mut self.list[at];
+        layer.label = layer.label.filter(|n| *n < fields);
+        layer.extrude = extrude;
+        layer.data = data;
+        layer.stale = false;
+        if let Some(s) = &mut layer.source {
+            s.modified = modified;
+        }
+        // Объекты в хранилище - заново.
+        if let Some(old) = layer.store.take() {
+            self.dropped.push(old);
+        }
+        self.changed();
+        true
     }
 
     /// Линии видимых слоёв для картинки наложения: нижняя строка
@@ -741,6 +1064,10 @@ impl DataLayers {
                 store: None,
                 live: Some(live),
                 colors,
+                source: None,
+                stale: false,
+                picture: None,
+                about: String::new(),
             };
             self.list.insert(at, layer);
         }
@@ -805,29 +1132,67 @@ impl DataLayers {
     }
 }
 
-/// Строки «Моих слоёв» в разделе «Слои»: заголовок, слои вне папок,
-/// затем папки со своими слоями. menu_open - открытое меню раздела,
-/// new_folder - поле имени новой папки, out - действия по номерам слоёв.
+/// Что тянут мышью в разделе: номер слоя.
+#[derive(Debug, Clone, Copy)]
+struct Dragged(u64);
+
+/// Сброс перетаскиваемого слоя на строку rect: черта места - над строкой,
+/// отпущенный слой - перед before в папку folder.
+fn drop_target(ui: &egui::Ui, response: &egui::Response, before: Option<u64>, folder: &str, out: &mut Vec<(u64, Act)>) {
+    if response.dnd_hover_payload::<Dragged>().is_some() {
+        let r = response.rect;
+        ui.painter().hline(r.x_range(), r.top(), egui::Stroke::new(2.0, crate::theme::pal().accent));
+    }
+    if let Some(d) = response.dnd_release_payload::<Dragged>() {
+        out.push((d.0, Act::Move { before, folder: folder.to_string() }));
+    }
+}
+
+/// Количество строк раздела «Мои слои» - для его высоты.
+pub fn row_count(layers: &DataLayers) -> usize {
+    let own = || layers.list.iter().filter(|l| l.live.is_none());
+    let folders = layers.folders();
+    let hidden = own().filter(|l| layers.collapsed.contains(&l.folder)).count();
+    own().count() + folders.len() - hidden
+}
+
+/// Строки раздела «Мои слои» в порядке отрисовки, верхняя строка поверх:
+/// слои вне папок и папки со своими слоями, как «Проект QGIS» модуля.
+/// Строку слоя можно перетащить на другое место и в другую папку. Щелчок
+/// по названию выделяет слой, двойной - перелёт к нему, «⋯» и правая
+/// кнопка - меню. Под строками - прозрачность выделенного слоя.
+/// menu_open - открытое меню раздела, new_folder - поле имени новой
+/// папки, out - действия по номерам слоёв.
 pub fn rows(ui: &mut egui::Ui, lang: Lang, layers: &DataLayers, menu_open: &mut Option<String>, new_folder: &mut String, out: &mut Vec<(u64, Act)>) {
+    let p = crate::theme::pal();
     if layers.list.iter().all(|l| l.live.is_some()) {
+        ui.label(egui::RichText::new(tr(lang, "Open or drop a GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf or DXF file: its layers come here. Results of the analysis windows come here too.")).color(p.muted));
         return;
     }
-    let p = crate::theme::pal();
-    ui.add_space(2.0);
-    ui.label(egui::RichText::new(tr(lang, "My layers")).size(12.0).color(p.muted))
-        .on_hover_text(tr(lang, "Layers of files and results of the analysis windows. They stay between launches, as «My places». A scene does not carry them."));
-    let folders = layers.folders();
-    for layer in layers.list.iter().filter(|l| l.folder.is_empty() && l.live.is_none()) {
-        layer_row(ui, lang, layer, &folders, 4.0, menu_open, new_folder, out);
+    ui.spacing_mut().item_spacing.y = 0.0;
+    if ui.ctx().dragged_id().is_some() && egui::DragAndDrop::has_payload_of_type::<Dragged>(ui.ctx()) {
+        ui.ctx().set_cursor_icon(egui::CursorIcon::Grabbing);
     }
-    for folder in &folders {
-        let inside: Vec<&DataLayer> = layers.list.iter().filter(|l| &l.folder == folder && l.live.is_none()).collect();
+    let folders = layers.folders();
+    let own: Vec<&DataLayer> = layers.list.iter().filter(|l| l.live.is_none()).collect();
+    let mut at = 0;
+    while let Some(first) = own.get(at) {
+        if first.folder.is_empty() {
+            layer_row(ui, lang, layers, first, &folders, 4.0, menu_open, new_folder, out);
+            at += 1;
+            continue;
+        }
+        let folder = &first.folder;
+        let inside: Vec<&DataLayer> = own.iter().skip(at).take_while(|l| &l.folder == folder).copied().collect();
+        at += inside.len().max(1);
         let shown = inside.iter().filter(|l| l.visible).count();
         let state = if shown == inside.len() { Some(true) } else if shown == 0 { Some(false) } else { None };
         let open = !layers.collapsed.contains(folder);
         let title = format!("{} {folder}", if open { "▾" } else { "▸" });
         let tip = trf(lang, "Folder of layers: {count}. The check shows or hides all its layers, a click on the name folds the folder.", &[("count", &inside.len().to_string())]);
         let hit = crate::layers::row(ui, 4.0, Some(state), false, &title, "⋯", &tip);
+        // Слой, отпущенный на строку папки, - в начало папки.
+        drop_target(ui, &hit.response, inside.first().map(|l| l.id), folder, out);
         if hit.check {
             out.push((0, Act::FolderVisible(folder.clone(), state != Some(true))));
         }
@@ -853,27 +1218,76 @@ pub fn rows(ui: &mut egui::Ui, lang: Lang, layers: &DataLayers, menu_open: &mut 
         });
         if open {
             for layer in inside {
-                layer_row(ui, lang, layer, &folders, 22.0, menu_open, new_folder, out);
+                layer_row(ui, lang, layers, layer, &folders, 22.0, menu_open, new_folder, out);
             }
         }
     }
+    // Место под строками: слой, отпущенный здесь, - в конец вне папок.
+    let (_, end) = ui.allocate_exact_size(egui::vec2(ui.available_width(), 10.0), egui::Sense::hover());
+    drop_target(ui, &end, None, "", out);
+    opacity_row(ui, lang, layers, out);
+}
+
+/// Ползунок непрозрачности выделенного слоя под строками, как ползунок
+/// под деревом «Моих меток» и под слоями проекта у модуля.
+fn opacity_row(ui: &mut egui::Ui, lang: Lang, layers: &DataLayers, out: &mut Vec<(u64, Act)>) {
+    let selected = layers.selected.and_then(|id| layers.get(id)).filter(|l| l.live.is_none());
+    ui.horizontal(|ui| {
+        let mut value = selected.map_or(100.0, |l| (l.style.opacity * 100.0).round());
+        ui.spacing_mut().slider_width = (ui.available_width() - 60.0).max(40.0);
+        let tip = match selected {
+            Some(l) => trf(lang, "Opacity of the layer {layer}. To the right the layer is opaque.", &[("layer", &l.title)]),
+            None => tr(lang, "A click on the name of a layer selects it, the slider sets its opacity.").to_string(),
+        };
+        let slider = egui::Slider::new(&mut value, 5.0..=100.0).fixed_decimals(0).suffix(" %");
+        let changed = ui.add_enabled(selected.is_some(), slider).on_hover_text(tip).changed();
+        if let (true, Some(l)) = (changed, selected) {
+            let mut style = l.style;
+            style.opacity = value / 100.0;
+            out.push((l.id, Act::Style(style)));
+        }
+    });
 }
 
 /// Строка слоя с отступом indent и её меню.
 #[allow(clippy::too_many_arguments)]
-fn layer_row(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], indent: f32, menu_open: &mut Option<String>, new_folder: &mut String, out: &mut Vec<(u64, Act)>) {
+fn layer_row(ui: &mut egui::Ui, lang: Lang, layers: &DataLayers, layer: &DataLayer, folders: &[String], indent: f32, menu_open: &mut Option<String>, new_folder: &mut String, out: &mut Vec<(u64, Act)>) {
     let count = layer.data.items.len();
-    let tip = trf(
+    let mut tip = trf(
         lang,
-        "{file}, layer {layer}, objects: {count}. The check hides the layer, the «⋯» menu sets its style, labels, extrusion and folder.",
+        "{file}, layer {layer}, objects: {count}. The check hides the layer, a double click flies to it, the row can be dragged to another place, the «⋯» menu sets its style, labels, extrusion and folder.",
         &[("file", &layer.file), ("layer", &layer.data.name), ("count", &count.to_string())],
     );
-    let hit = crate::layers::row(ui, indent, Some(Some(layer.visible)), false, &layer.title, "⋯", &tip);
+    if !layer.about.is_empty() {
+        tip = format!("{}\n\n{tip}", layer.about);
+    }
+    let hit = crate::layers::drag_row(ui, layers.selected == Some(layer.id), indent, Some(Some(layer.visible)), &layer.title, "⋯", &tip);
+    if hit.response.dragged() {
+        hit.response.dnd_set_drag_payload(Dragged(layer.id));
+    }
+    drop_target(ui, &hit.response, Some(layer.id), &layer.folder, out);
     if hit.check {
         out.push((layer.id, Act::Visible(!layer.visible)));
     }
+    if hit.text {
+        out.push((layer.id, Act::Select));
+    }
+    if hit.response.double_clicked() {
+        out.push((layer.id, Act::Zoom));
+    }
+    // Файл слоя изменился на диске - строка «Обновить», как у слоёв
+    // проекта модуля при смене проекта.
+    if layer.stale {
+        ui.horizontal(|ui| {
+            ui.add_space(indent + 20.0);
+            if ui.link(tr(lang, "Refresh|layer")).on_hover_text(tr(lang, "The file of the layer changed on the disk. A click reads it again, the style and the folder stay.")).clicked() {
+                out.push((layer.id, Act::Reload));
+            }
+            ui.label(egui::RichText::new(tr(lang, "the file changed")).color(crate::theme::pal().muted));
+        });
+    }
     let key = format!("data:{}", layer.id);
-    if hit.menu || hit.text {
+    if hit.menu {
         *menu_open = Some(key.clone());
     }
     crate::layers::popup(ui, menu_open, &key, hit.rect, |ui| menu(ui, lang, layer, folders, new_folder, out));
@@ -920,6 +1334,9 @@ fn menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], ne
         return true;
     }
     ui.separator();
+    if layer.picture.is_some() {
+        return picture_menu(ui, lang, layer, folders, new_folder, out);
+    }
     let mut style = layer.style;
     let mut changed = false;
     ui.horizontal(|ui| {
@@ -1033,6 +1450,41 @@ fn menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], ne
     chosen
 }
 
+/// Меню слоя-картинки: объектов, подписей и стиля линий у неё нет.
+/// Остаются непрозрачность, папка, порядок, копия в «Мои метки».
+fn picture_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], new_folder: &mut String, out: &mut Vec<(u64, Act)>) -> bool {
+    let id = layer.id;
+    if let Some(text) = layer.picture.as_ref().map(|p| p.description.as_str()).filter(|d| !d.is_empty()) {
+        ui.label(egui::RichText::new(text).color(crate::theme::pal().muted));
+    }
+    let mut style = layer.style;
+    let mut percent = (style.opacity * 100.0).round();
+    ui.horizontal(|ui| {
+        ui.label(tr(lang, "Opacity"));
+        if ui.add(egui::Slider::new(&mut percent, 5.0..=100.0).fixed_decimals(0).suffix(" %")).changed() {
+            style.opacity = percent / 100.0;
+            out.push((id, Act::Style(style)));
+        }
+    });
+    ui.separator();
+    let mut chosen = folder_menu(ui, lang, layer, folders, new_folder, out);
+    for (name, act) in [("Up", Act::Up), ("Down", Act::Down)] {
+        if ui.button(tr(lang, name)).clicked() {
+            out.push((id, act));
+            chosen = true;
+        }
+    }
+    if ui.button(tr(lang, "Copy to My Places")).on_hover_text(tr(lang, "The picture becomes a ground overlay in «My places»: it goes into a scene and a KMZ file.")).clicked() {
+        out.push((id, Act::ToPlaces));
+        chosen = true;
+    }
+    if ui.button(tr(lang, "Remove from the globe")).clicked() {
+        out.push((id, Act::Remove));
+        chosen = true;
+    }
+    chosen
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -1118,6 +1570,147 @@ mod tests {
     }
 
     #[test]
+    fn changed_file_gives_refresh_and_reload_keeps_style() {
+        let mut layers = DataLayers::default();
+        let source = Source { path: "C:/data/ponds.gpkg".into(), modified: 100 };
+        layers.add_from(vec![layer()], "ponds.gpkg", Some(source.clone()));
+        layers.add(vec![layer()], "memory");
+        let id = id_of(&layers, "ponds.gpkg");
+        layers.apply(id, &Act::Style(Style { color: [1, 2, 3], ..Style::new(0) }));
+        layers.apply(id, &Act::Label(Some(1)));
+        layers.apply(id, &Act::Down);
+        layers.list.iter_mut().for_each(|l| l.store = Some(format!("{}.geojson", l.id)));
+        // Время то же - строки нет, другое - есть, сверка не чаще SOURCE_CHECK.
+        assert!(!layers.check_sources(0.0, &|_| Some(100)));
+        assert!(!layers.check_sources(1.0, &|_| Some(200)));
+        assert!(layers.check_sources(2.5, &|p| (p == "C:/data/ponds.gpkg").then_some(200)));
+        assert!(layers.get(id).unwrap().stale);
+        assert!(!layers.list.iter().any(|l| l.source.is_none() && l.stale));
+        // Путь и время файла - в хранилище и обратно.
+        let (back, _) = DataLayers::from_index(&layers.index(true), &|_| None);
+        assert_eq!(back.list.iter().find(|l| l.title == "ponds.gpkg").and_then(|l| l.source.clone()), Some(source));
+        // Перечитанный слой: новые объекты, стиль, подписи и место - прежние,
+        // объекты в хранилище - заново.
+        let mut fresh = layer();
+        fresh.items.truncate(1);
+        assert!(layers.reload(id, vec![fresh], 200));
+        let l = layers.get(id).unwrap();
+        assert_eq!((l.data.items.len(), l.style.color, l.label, l.stale), (1, [1, 2, 3], Some(1), false));
+        assert_eq!(l.source.as_ref().map(|s| s.modified), Some(200));
+        assert!(l.store.is_none());
+        assert_eq!(layers.dropped, [format!("{id}.geojson")]);
+        assert_eq!(order(&layers), ["memory", "ponds.gpkg"]);
+        // В файле нет слоя с этим именем, а слоёв больше одного - отказ.
+        let mut other = layer();
+        other.name = "other".into();
+        assert!(!layers.reload(id, vec![other.clone(), other], 300));
+    }
+
+    #[test]
+    fn analysis_picture_is_a_layer_under_its_vectors() {
+        let mut layers = DataLayers::default();
+        let mut ground = scene::overlays::Overlay::new(scene::overlays::Kind::Ground);
+        ground.set_box([58.1, 58.0, 56.3, 56.2, 0.0]);
+        let mut picture = scene::kml::Overlay::new("Тени", ground);
+        picture.image = Some(b"\x89PNG-bytes".to_vec());
+        let folder = "Тени 10:00:00 UTC";
+        let pid = layers.add_picture(picture, folder);
+        layers.add_to(vec![layer()], "Участок", folder);
+        assert_eq!(order(&layers), [format!("{folder}/Участок"), format!("{folder}/Тени")]);
+        // Охват - углы рамки, у картинки нет линий и точек.
+        assert_eq!(layers.get(pid).unwrap().extent_points().len(), 4);
+        assert!(layers.get(pid).unwrap().lines().is_empty());
+        // Непрозрачность - в оттенке картинки, отпечаток меняется.
+        let before = layers.pictures_version();
+        assert_ne!(before, 0);
+        layers.apply(pid, &Act::Style(Style { opacity: 0.5, ..Style::new(0) }));
+        assert_eq!(layers.get(pid).unwrap().picture.as_ref().unwrap().overlay.color[3], 128);
+        assert_ne!(layers.pictures_version(), before);
+        layers.apply(pid, &Act::Visible(false));
+        assert!(layers.pictures().is_empty());
+        layers.apply(pid, &Act::Visible(true));
+        assert_eq!(layers.pictures().len(), 1);
+        // В папку данных - картинкой, в списке - рамка, обратно - тот же слой.
+        let stored: Vec<(u64, String)> = layers.unstored();
+        let name = stored.iter().find(|(id, _)| *id == pid).map(|(_, n)| n.clone()).unwrap();
+        assert!(name.ends_with(".png"));
+        assert_eq!(DataLayers::stored_bytes(layers.get(pid).unwrap()), b"\x89PNG-bytes");
+        for (id, n) in stored {
+            layers.stored(id, n);
+        }
+        let files: std::collections::HashMap<String, Vec<u8>> = layers.list.iter().map(|l| (l.store.clone().unwrap(), DataLayers::stored_bytes(l))).collect();
+        let (back, lost) = DataLayers::from_index(&layers.index(false), &|n| files.get(n).cloned());
+        assert!(lost.is_empty(), "{lost:?}");
+        let p = back.list.iter().find(|l| l.picture.is_some()).unwrap();
+        assert_eq!((p.title.as_str(), p.folder.as_str()), ("Тени", folder));
+        let o = p.picture.as_ref().unwrap();
+        assert_eq!(o.overlay.latlon_box, Some([58.1, 58.0, 56.3, 56.2, 0.0]));
+        assert_eq!(o.overlay.color[3], 128);
+        // На странице картинки в строку хранилища не идут.
+        assert!(!layers.index(true).contains("picture"));
+        // Точки меток расчёта - тоже слой.
+        let mut marks = scene::kml::Folder::new("Вершины");
+        marks.children.push(scene::kml::Item::Place(scene::kml::Place::new("1", Kind::Point, vec![(58.0, 56.0)])));
+        let points = folder_layer(&marks).unwrap();
+        assert_eq!(points.items[0].shape, Geom::Point);
+    }
+
+    /// Названия слоёв с папками в порядке списка.
+    fn order(layers: &DataLayers) -> Vec<String> {
+        layers.list.iter().map(|l| if l.folder.is_empty() { l.title.clone() } else { format!("{}/{}", l.folder, l.title) }).collect()
+    }
+
+    /// Слой по названию.
+    fn id_of(layers: &DataLayers, title: &str) -> u64 {
+        layers.list.iter().find(|l| l.title == title).map(|l| l.id).unwrap()
+    }
+
+    #[test]
+    fn rows_order_is_drawing_order_with_folders_together() {
+        let mut layers = DataLayers::default();
+        for name in ["c", "b", "a"] {
+            layers.add(vec![layer()], name);
+        }
+        layers.add_to(vec![layer()], "f2", "F");
+        layers.add_to(vec![layer()], "f1", "F");
+        assert_eq!(order(&layers), ["F/f1", "F/f2", "a", "b", "c"]);
+        // Слой в папку - к своей папке, папка не рвётся.
+        layers.apply(id_of(&layers, "b"), &Act::Folder("F".into()));
+        assert_eq!(order(&layers), ["F/f1", "F/f2", "F/b", "a", "c"]);
+        // «Вниз» слоя вне папок под папкой проходит её целиком, «Вверх» -
+        // тоже.
+        layers.apply(id_of(&layers, "a"), &Act::Up);
+        assert_eq!(order(&layers), ["a", "F/f1", "F/f2", "F/b", "c"]);
+        layers.apply(id_of(&layers, "a"), &Act::Down);
+        assert_eq!(order(&layers), ["F/f1", "F/f2", "F/b", "a", "c"]);
+        // Внутри папки - на одну строку.
+        layers.apply(id_of(&layers, "f2"), &Act::Down);
+        assert_eq!(order(&layers), ["F/f1", "F/b", "F/f2", "a", "c"]);
+        // Перетаскивание: перед слоем в его папку, в конец папки, в конец
+        // списка вне папок, на себя - ничего.
+        layers.apply(id_of(&layers, "c"), &Act::Move { before: Some(id_of(&layers, "b")), folder: "F".into() });
+        assert_eq!(order(&layers), ["F/f1", "F/c", "F/b", "F/f2", "a"]);
+        layers.apply(id_of(&layers, "f1"), &Act::Move { before: None, folder: "F".into() });
+        assert_eq!(order(&layers), ["F/c", "F/b", "F/f2", "F/f1", "a"]);
+        layers.apply(id_of(&layers, "b"), &Act::Move { before: None, folder: String::new() });
+        assert_eq!(order(&layers), ["F/c", "F/f2", "F/f1", "a", "b"]);
+        let a = id_of(&layers, "a");
+        layers.apply(a, &Act::Move { before: Some(a), folder: "F".into() });
+        assert_eq!(order(&layers), ["F/c", "F/f2", "F/f1", "a", "b"]);
+        // Нижняя строка - внизу стопки линий.
+        let set = layers.line_set().unwrap();
+        assert_eq!(set.first().map(|l| l.color), layers.list.last().map(|l| l.style.line_rgba()));
+        // Выделение не меняет список и не просит записи.
+        layers.save_dirty = false;
+        layers.apply(a, &Act::Select);
+        assert_eq!(layers.selected, Some(a));
+        assert!(!layers.save_dirty);
+        assert_eq!(row_count(&layers), 6);
+        layers.apply(0, &Act::FolderCollapse("F".into()));
+        assert_eq!(row_count(&layers), 3);
+    }
+
+    #[test]
     fn result_folder_becomes_a_coloured_layer() {
         use scene::kml::{Folder, Item as KmlItem, Place};
         let mut forest = Place::new("Лес 1", Kind::Polygon, square(58.0, 56.0, 0.1));
@@ -1144,9 +1737,11 @@ mod tests {
         let set = layers.line_set().unwrap();
         assert_eq!(&set[0].color[..3], &[40, 120, 40]);
         assert_eq!(&set[1].color[..3], &[30, 60, 220]);
-        // Папка с точкой - не слой.
+        // Папка с картинкой рядом с метками - не слой: картинка осталась бы
+        // без места.
         let point = Place::new("Точка", Kind::Point, vec![(58.0, 56.0)]);
-        assert!(folder_layer(&Folder::with("Точки", vec![KmlItem::Place(point)])).is_none());
+        let picture = scene::kml::Overlay::new("Снимок", scene::overlays::Overlay::new(scene::overlays::Kind::Ground));
+        assert!(folder_layer(&Folder::with("Точки", vec![KmlItem::Place(point), KmlItem::Overlay(picture)])).is_none());
     }
 
     /// Мультимногоугольник с далёкой первой частью - Франция с Гвианой

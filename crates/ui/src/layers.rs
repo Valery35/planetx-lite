@@ -322,14 +322,30 @@ pub(crate) struct RowHit {
     pub text: bool,
     pub menu: bool,
     pub rect: egui::Rect,
+    /// Ответ строки: двойной щелчок, перетаскивание.
+    pub response: egui::Response,
 }
 
 pub(crate) fn row(ui: &mut egui::Ui, indent: f32, check: Option<Option<bool>>, icon: bool, text: &str, marker: &str, tip: &str) -> RowHit {
+    row_with(ui, egui::Sense::click(), false, indent, check, icon, text, marker, tip)
+}
+
+/// Строка, которую можно тянуть мышью, selected - выделенная строка,
+/// как строка слоя «Проекта QGIS» модуля.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn drag_row(ui: &mut egui::Ui, selected: bool, indent: f32, check: Option<Option<bool>>, text: &str, marker: &str, tip: &str) -> RowHit {
+    row_with(ui, egui::Sense::click_and_drag(), selected, indent, check, false, text, marker, tip)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn row_with(ui: &mut egui::Ui, sense: egui::Sense, selected: bool, indent: f32, check: Option<Option<bool>>, icon: bool, text: &str, marker: &str, tip: &str) -> RowHit {
     let height = 22.0;
-    let (rect, response) = ui.allocate_exact_size(egui::vec2(ui.available_width(), height), egui::Sense::click());
+    let (rect, response) = ui.allocate_exact_size(egui::vec2(ui.available_width(), height), sense);
     let p = crate::theme::pal();
     let painter = ui.painter();
-    if response.hovered() {
+    if selected {
+        painter.rect_filled(rect, 2.0, p.select.gamma_multiply(0.35));
+    } else if response.hovered() {
         painter.rect_filled(rect, 2.0, p.hover);
     }
     let mut x = rect.left() + indent;
@@ -371,34 +387,32 @@ pub(crate) fn row(ui: &mut egui::Ui, indent: f32, check: Option<Option<bool>>, i
     if !marker.is_empty() {
         painter.text(menu_rect.center(), egui::Align2::CENTER_CENTER, marker, font, p.muted);
     }
-    let response = if tip.is_empty() { response } else { response.on_hover_text(tip) };
+    // Пока строку тянут, подсказка не мешает.
+    let response = if tip.is_empty() || response.dragged() { response } else { response.on_hover_text(tip) };
     let at = response.interact_pointer_pos();
     let clicked = response.clicked();
     let secondary = response.secondary_clicked();
     let on_check = at.is_some_and(|p| check_rect.expand(3.0).contains(p));
     let on_menu = at.is_some_and(|p| menu_rect.contains(p));
-    RowHit { check: clicked && on_check, text: clicked && !on_check && !on_menu, menu: (clicked && on_menu) || secondary, rect }
+    RowHit { check: clicked && on_check, text: clicked && !on_check && !on_menu, menu: (clicked && on_menu) || secondary, rect, response }
 }
 
 /// Раздел «Слои»: кнопка «Добавить данные» и строки. menu_open - какое
-/// меню строки открыто, new_folder - поле имени новой папки «Моих
-/// слоёв», оба хранятся окном.
-pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut Option<String>, new_folder: &mut String, out: &mut Vec<Action>) {
+/// меню строки открыто, хранится окном.
+pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut Option<String>, out: &mut Vec<Action>) {
     let add = ui.add_sized([ui.available_width(), 24.0], egui::Button::new(tr(lang, "Add data")));
     if add.on_hover_text(tr(lang, "Catalog of layers - vector base, coordinate grid, atmosphere and sun. The catalog opens in its own window, it can stay open next to the globe.")).clicked() {
         out.push(Action::Catalog);
     }
     ui.spacing_mut().item_spacing.y = 0.0;
-    // Слои файлов - над основой, как слои проекта над подложкой.
-    let mut data = Vec::new();
-    crate::datalayers::rows(ui, lang, state.data, menu_open, new_folder, &mut data);
-    out.extend(data.into_iter().map(|(id, act)| Action::Data(id, act)));
+    // «Мои слои» - свой раздел панели над «Слоями», как «Проект QGIS»
+    // модуля, решение автора от 6 ноября 2026 года.
     let mut tiles = Vec::new();
     crate::tilesets::rows(ui, lang, state.tiles, menu_open, &mut tiles);
-    out.extend(tiles.into_iter().map(|(id, act)| Action::Tiles(id, act)));
-    if !state.data.list.is_empty() {
+    if !tiles.is_empty() || !state.tiles.list.is_empty() {
         ui.add_space(4.0);
     }
+    out.extend(tiles.into_iter().map(|(id, act)| Action::Tiles(id, act)));
     // Основа: щелчок по строке - меню выбора подложки.
     let title = format!("{} · {}", tr(lang, "Base map"), basemap_title(lang, state.basemap));
     let hit = row(ui, 4.0, None, true, &title, "▾", tr(lang, "Imagery or map on the surface. A click on the row chooses the basemap. Esri World Imagery is an example basemap, its terms are set by Esri."));

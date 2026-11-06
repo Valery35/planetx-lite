@@ -2373,5 +2373,3 @@ The objects of the layer become placemarks of a folder in «My places»: they ca
 Table	テーブル
 The file has no layers with geometry	ファイルにジオメトリ付きのレイヤーがありません
 The layer has no coordinate system, and its coordinates are not degrees	レイヤーに座標系がなく、座標が度ではありません
-Layers added: {count}. The «⋯» menu of a row in the Layers section sets the style, labels and extrusion.	追加したレイヤー: {count}。「レイヤー」の行の「⋯」メニューでスタイル、ラベル、押し出しを設定します。
-Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the Layers section.	.planetx シーン、KML、KMZ、GeoTIFF 標高ラスター、LAS・LAZ・COPC 点群を開くかウィンドウにドロップします。GeoPackage、Shapefile、GeoJSON、GPX、MapInfo、FlatGeobuf、DXF のレイヤーは「レイヤー」に入ります。
