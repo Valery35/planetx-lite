@@ -9,7 +9,8 @@
 //! public and can be used as desired», NOAA просит указывать источник. Поле
 //! берётся по диапазону байт из индекса .idx, так NOAA сама советует
 //! выбирать поля. Поле на весь мир - 0.5-0.8 МБ GRIB2, сетка 1440 × 721.
-//! Читает GRIB `terrio` 0.6, у модуля - GDAL.
+//! Читает GRIB свой разбор `crate::grib2` (до 6 ноября 2026 года -
+//! `terrio` 0.6), у модуля - GDAL.
 //!
 //! Выпуск модели - каждые 6 часов, файлы появляются через 3.5-5 часов.
 //! Часы прогноза - до 120 по одному, дальше до 384 через три. Момент шкалы
@@ -226,25 +227,26 @@ pub fn values_of(field: &Field, bands: &[Vec<f32>]) -> Vec<f32> {
     }
 }
 
-/// Поле из участка файла GRIB2. Температуру terrio отдаёт в градусах
-/// Цельсия, как GDAL, сетка начинается с -180°. None - файл не читается.
+/// Поле из участка файла GRIB2, свой разбор [`crate::grib2`] вместо terrio
+/// с 6 ноября 2026 года (`doc/EDITIONS.md`): температура в градусах
+/// Цельсия, сетка с -180°, как отдавал terrio, сверка - тест
+/// `gfs_fields_match_terrio`. Сообщение - канал: у ветра U и V. None -
+/// файл не читается.
 pub fn read_grib(bytes: Vec<u8>, field: &Field, run: f64, hour: u32) -> Option<Grid> {
-    let ds = terrio::memory::open_raster_bytes(bytes, "field.grib2").ok()?;
-    let r = &ds.raster;
-    let (cols, rows) = (r.cols, r.rows);
-    let bands: Vec<Vec<f32>> = (0..r.bands.max(1))
-        .map(|b| {
-            let mut out = Vec::with_capacity(cols * rows);
-            for row in 0..rows as isize {
-                for col in 0..cols as isize {
-                    out.push(r.get(b as isize, row, col) as f32);
-                }
-            }
-            out
-        })
-        .collect();
-    let g = ds.geo_transform();
-    let (west, north, step) = (g[0] + g[1] / 2.0, g[3] + g[5] / 2.0, g[1].abs());
+    let messages = crate::grib2::decode(&bytes).ok()?;
+    let mut bands: Vec<Vec<f32>> = Vec::new();
+    let mut geo: Option<(usize, usize, f64, f64, f64)> = None;
+    for m in &messages {
+        let (values, rows, cols, west, north, step) = crate::grib2::north_up(m);
+        match geo {
+            None => geo = Some((rows, cols, west, north, step)),
+            // Каналы на разных сетках не складываются.
+            Some((r, c, ..)) if (r, c) != (rows, cols) => return None,
+            Some(_) => {}
+        }
+        bands.push(values);
+    }
+    let (rows, cols, west, north, step) = geo?;
     let values = values_of(field, &bands);
     let vectors = match bands.as_slice() {
         [u, v, ..] if field.key == WIND.key => VectorGrid::new(u.clone(), v.clone(), rows, cols, west, north, step).map(Arc::new),

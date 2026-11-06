@@ -108,6 +108,7 @@ pub mod geotiff;
 pub mod geology;
 pub mod geomag;
 pub mod gibs;
+pub mod grib2;
 pub mod grid;
 pub mod hips;
 pub mod hydro;
