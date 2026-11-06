@@ -175,6 +175,49 @@ pub fn style(kind: Kind, big: bool) -> Style {
     if big { Style { size: base.size + BIG_STEP, ..base } } else { base }
 }
 
+/// Подписи основы издалека мельче, `label_scale` модуля
+/// (`core/places.py`), замечание автора от 7 ноября 2026 года «подписи
+/// огромные». До LABEL_NEAR метров высоты глаза кегль полный, к LABEL_FAR
+/// уменьшается до доли LABEL_SMALLEST по логарифму высоты, ступенями
+/// LABEL_STEP. Свои метки, линейка, подписи слоёв, сетки и погоды
+/// не уменьшаются.
+pub const LABEL_NEAR: f64 = 300e3;
+pub const LABEL_FAR: f64 = 6000e3;
+pub const LABEL_SMALLEST: f64 = 0.7;
+pub const LABEL_STEP: f64 = 0.1;
+
+/// Доля кегля подписей основы при высоте глаза altitude, метры.
+pub fn label_scale(altitude: f64) -> f32 {
+    if altitude.is_nan() || altitude <= LABEL_NEAR {
+        return 1.0;
+    }
+    let share = ((altitude / LABEL_NEAR).ln() / (LABEL_FAR / LABEL_NEAR).ln()).min(1.0);
+    let value = 1.0 - (1.0 - LABEL_SMALLEST) * share;
+    ((value / LABEL_STEP).round() * LABEL_STEP) as f32
+}
+
+/// Уменьшается ли подпись класса издалека, `SHRINK` модуля.
+pub fn shrinks(kind: Kind) -> bool {
+    matches!(
+        kind,
+        Kind::Country
+            | Kind::Capital
+            | Kind::City
+            | Kind::State
+            | Kind::Water
+            | Kind::Town
+            | Kind::River
+            | Kind::Suburb
+            | Kind::Park
+            | Kind::Peak
+            | Kind::Airport
+            | Kind::RoadRef
+            | Kind::Village
+            | Kind::Wiki
+            | Kind::Plate
+    )
+}
+
 /// Классы пунктов основы.
 pub const PLACE_KINDS: [Kind; 13] = [
     Kind::Country,
@@ -441,6 +484,7 @@ impl Labels {
         // Надпись целиком в кадре и не под занятыми местами, обрезанных
         // надписей нет.
         let room = rect.shrink(EDGE);
+        let scale = label_scale(altitude);
         let mut layouts = Vec::new();
         let mut boxes = Vec::new();
         let mut tiers = Vec::new();
@@ -448,7 +492,12 @@ impl Labels {
         for c in keep {
             let place = c.0;
             let big = matches!(place.kind, Kind::City | Kind::Capital) && place.rank <= BIG_RANK;
-            let st = style(place.kind, big);
+            let small = scale < 1.0 && shrinks(place.kind);
+            let mut st = style(place.kind, big);
+            if small {
+                st.size *= scale;
+                st.dot *= scale;
+            }
             let text = label_text(place, self.lang);
             let galley = painter.layout_job(job(&text, st, egui::Color32::WHITE, caps(place.kind)));
             let size = galley.size();
@@ -462,11 +511,16 @@ impl Labels {
                 continue;
             }
             placed.push(c);
+            // Уменьшенная издалека подпись основы при отборе занимает
+            // место прежнего кегля, как у модуля: иначе на освободившемся
+            // месте вставали новые мелкие подписи и кадр не становился
+            // чище.
+            let (gx, gy) = if small { (bw * (0.5 / scale - 0.5), bh * (0.5 / scale - 0.5)) } else { (0.0, 0.0) };
             boxes.push([
-                f64::from(x0 - PADDING),
-                f64::from(y0 - PADDING),
-                f64::from(x0 + bw + PADDING),
-                f64::from(y0 + bh + PADDING),
+                f64::from(x0 - PADDING - gx),
+                f64::from(y0 - PADDING - gy),
+                f64::from(x0 + bw + PADDING + gx),
+                f64::from(y0 + bh + PADDING + gy),
             ]);
             tiers.push(place.kind.tier());
             let mark = self.mark_colors.get(&place.id).copied().filter(|_| place.kind == Kind::Mark);
@@ -750,6 +804,18 @@ mod tests {
     use super::{Kind, Marker, OCCLUSION_MARGIN, occluded, style};
     use globe_core::camera::Camera;
     use globe_core::ellipsoid::Ellipsoid;
+
+    #[test]
+    fn base_labels_shrink_with_altitude() {
+        // Как `label_scale` модуля: полный кегль до 300 км, 0.7 с 6000 км,
+        // ступени по 0.1.
+        assert_eq!(super::label_scale(100e3), 1.0);
+        assert_eq!(super::label_scale(300e3), 1.0);
+        assert_eq!(super::label_scale(6000e3), 0.7);
+        assert_eq!(super::label_scale(20_000e3), 0.7);
+        assert!((super::label_scale(2000e3) - 0.8).abs() < 1e-6);
+        assert!(super::shrinks(Kind::Country) && !super::shrinks(Kind::Mark) && !super::shrinks(Kind::Layer));
+    }
 
     #[test]
     fn every_kind_has_style() {
