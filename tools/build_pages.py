@@ -354,7 +354,28 @@ def page_main(img):
          "a scene from Lite opens in the plugin."),
         '<p class="sub"><a target="_blank" href="%s" data-i18n="pro.a"></a>'
         '</p>' % PRO)
-    return "\n".join([hero, tasks, idea, phone, controls, download, pro])
+    # Ролики YouTube от 29 октября 2026 года, запись с экрана программы.
+    films = (
+        ("uyixuwx6zmA", "Облёт Земли: Альпы, Гранд-Каньон, Камчатка",
+         "A flight over the Earth: the Alps, the Grand Canyon, Kamchatka"),
+        ("g9f2BudWrN8", "Марс, Луна и звёздное небо",
+         "Mars, the Moon and the starry sky"),
+        ("_10c9z5I9A0", "Слои: землетрясения, разрез Земли, движение плит",
+         "Layers: earthquakes, a section of the Earth, plate motion"),
+    )
+    video = section(
+        "video", ("Видео", "Video"),
+        ("Lite в работе", "Lite at work"),
+        ("Запись с экрана программы, без монтажа.",
+         "Screen recordings of the program, no editing."),
+        trio(*('<figure><iframe class="film" src="https://www.youtube-nocookie'
+               '.com/embed/%s" title="%s" loading="lazy" allow="encrypted-'
+               'media; picture-in-picture; fullscreen" allowfullscreen>'
+               '</iframe>\n<figcaption data-i18n="%s"></figcaption></figure>'
+               % (vid, ru, t("video.%d" % n, ru, en))
+               for n, (vid, ru, en) in enumerate(films, 1))))
+    return "\n".join([hero, video, tasks, idea, phone, controls, download,
+                      pro])
 
 
 def page_places(img):
@@ -704,6 +725,8 @@ section .sub a{color:var(--teal-deep)}
 figure{margin:30px 0 0}
 figure img{width:100%;height:auto;display:block;border-radius:var(--r);
   border:1px solid var(--line);background:#000}
+.film{width:100%;aspect-ratio:16/9;display:block;border:1px solid var(--line);
+  border-radius:var(--r);background:#000}
 .shot{margin-top:38px}
 figcaption{margin-top:10px;font-size:14px;color:var(--ink-soft)}
 .tools{margin-top:34px;border:1px solid var(--line);border-radius:var(--r);
