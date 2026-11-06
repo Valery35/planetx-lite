@@ -132,6 +132,7 @@ pub mod plants;
 pub mod platemotion;
 pub mod plates;
 pub mod pmtiles;
+pub mod proj;
 pub mod quakes;
 pub mod rasterclass;
 pub mod rastermaps;

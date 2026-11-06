@@ -539,6 +539,7 @@ version = "0.23.0"
 dependencies = [
  "flate2",
  "jpeg-encoder 0.7.1",
+ "laz",
  "netcdf-reader",
  "netcdf-writer",
  "ruzstd 0.9.1",

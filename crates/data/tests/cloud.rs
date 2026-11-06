@@ -116,6 +116,47 @@ fn sparse_copc_takes_the_whole_file_from_a_server_without_range() {
     assert_eq!(got, direct);
 }
 
+/// Испорченный файл - ошибка или облако, но не падение: случайные байты
+/// в заголовке, записях, иерархии и сжатых точках, обрезка. Только
+/// в сборке release: у крейта `laz` в декодере есть `debug_assert`,
+/// в программе он не собирается.
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn damaged_files_do_not_panic() {
+    let good = copc(3000);
+    let mut s = 987654321u64;
+    let mut next = |n: usize| {
+        s = s.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        ((s >> 33) as usize) % n.max(1)
+    };
+    let mut errors = 0;
+    for round in 0..3000 {
+        let mut bad = good.clone();
+        if round % 10 == 0 {
+            bad.truncate(next(good.len()));
+        } else {
+            for _ in 0..1 + next(4) {
+                // Чаще - начало файла: заголовок и записи VLR.
+                let at = if round % 2 == 0 { next(1200.min(bad.len())) } else { next(bad.len()) };
+                bad[at] = (next(256)) as u8;
+            }
+        }
+        let name = if round % 3 == 0 { "x.laz" } else { "x.copc.laz" };
+        errors += usize::from(cloud::read(bad.clone(), name, 1000).is_err());
+        let mut sparse = SparseCloud::new(name, if round % 2 == 0 { Some(bad.len() as u64) } else { None }, 1000);
+        while let Ok(None) = sparse.read() {
+            let missing = sparse.missing();
+            if missing.is_empty() {
+                break;
+            }
+            for (start, len) in missing {
+                sparse.insert(start, range(&bad, start, len));
+            }
+        }
+    }
+    eprintln!("ошибок {errors} из 3000");
+}
+
 #[test]
 fn sparse_hostile_bytes_are_an_error() {
     // Не LAS.

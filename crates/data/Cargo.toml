@@ -29,6 +29,9 @@ tiff = { version = "0.11", default-features = false, features = ["deflate", "jpe
 # Файлы netCDF-4 минералов EMIT (src/emit.rs): чтение HDF5 на Rust, MIT
 # и Apache 2.0. Та же версия, что у набора netcdf-hdf5 terrio.
 netcdf-reader = { version = "=0.10.1", default-features = false, features = ["netcdf4"] }
+# Разжатие LAZ и COPC облаков точек (src/cloud.rs), Apache 2.0. Та же
+# версия уже собирается как зависимость terrio.
+laz = "0.13"
 
 [dev-dependencies]
 # Тайлы JPEG для проверок картинок COG, MIT и Apache 2.0, та же версия
