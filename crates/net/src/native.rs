@@ -27,6 +27,27 @@ use crate::{
 
 /// Рабочих потоков загрузчика.
 pub const WORKERS: usize = 4;
+
+/// Путь файла по адресу file:///: `file:///tmp/a` - `/tmp/a`,
+/// `file:///C:/a` - `C:/a`.
+pub fn local_path(url: &str) -> Option<PathBuf> {
+    let rest = url.strip_prefix("file://")?;
+    let bytes = rest.as_bytes();
+    let windows = bytes.len() > 2 && bytes[0] == b'/' && bytes[1].is_ascii_alphabetic() && bytes[2] == b':';
+    let path = if windows { &rest[1..] } else { rest };
+    (!path.is_empty() && !path.split(['/', '\\']).any(|p| p == "..")).then(|| PathBuf::from(path))
+}
+
+/// Байты файла тайла на диске, не больше limit. Нет файла - Err(None).
+fn read_local(url: &str, limit: u64) -> Result<Vec<u8>, Option<String>> {
+    let path = local_path(url).ok_or_else(|| Some(format!("неверный адрес {url}")))?;
+    match fs::metadata(&path) {
+        Ok(m) if m.len() > limit => Err(Some(format!("файл больше {limit} байт"))),
+        Ok(_) => fs::read(&path).map_err(|e| Some(e.to_string())),
+        Err(e) if e.kind() == io::ErrorKind::NotFound => Err(None),
+        Err(e) => Err(Some(e.to_string())),
+    }
+}
 /// Предел ожидания ответа сервера.
 pub const TIMEOUT: Duration = Duration::from_secs(20);
 /// Предел времени ответа больше [`LARGE_ANSWER`] байт: архив MRDS -
@@ -240,6 +261,11 @@ impl Worker {
 
     /// Запрос к серверу с разрешением источника.
     fn request(&self, url: &str, limit: u64) -> Result<Vec<u8>, Option<String>> {
+        // Тайлы на диске: растр проекта RustGIS, нарезанный во временную
+        // папку. Нет файла - нет тайла.
+        if url.starts_with("file:///") {
+            return read_local(url, limit);
+        }
         self.acquire().map_err(Some)?;
         let stats = &self.shared.stats;
         stats.request_started();
@@ -464,5 +490,19 @@ impl Request for Requests {
 
     fn stats(&self) -> &Stats {
         &self.stats
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::local_path;
+    use std::path::PathBuf;
+
+    /// Адрес тайла на диске: путь Windows и Unix, переход наверх - нет.
+    #[test]
+    fn local_paths() {
+        assert_eq!(local_path("file:///C:/Temp/r/3/1/2.png"), Some(PathBuf::from("C:/Temp/r/3/1/2.png")));
+        assert_eq!(local_path("file:///tmp/r/3/1/2.png"), Some(PathBuf::from("/tmp/r/3/1/2.png")));
+        assert_eq!(local_path("file:///tmp/../etc/passwd"), None);
+        assert_eq!(local_path("https://x/1.png"), None);
     }
 }

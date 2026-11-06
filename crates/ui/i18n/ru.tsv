@@ -2423,6 +2423,16 @@ The PlanetX globe opens linked with this map.	Глобус PlanetX открыв�
 The PlanetX globe opens. For the link start the MCP Relay command (Ctrl+K) or tick Let your Agents Control RustGIS in the assistant settings.	Глобус PlanetX открывается. Для связи нужна команда «MCP-релей» (Ctrl+K) или флажок «Let your Agents Control RustGIS» в настройках помощника.
 RustGIS project	Проект RustGIS
 The RustGIS project has no vector layers.	В проекте RustGIS нет векторных слоёв.
+The RustGIS project has no layers.	В проекте RustGIS нет слоёв.
+points	точки
+lines	линии
+polygons	полигоны
+raster	растр
+tiles	тайлы
+table	таблица
+A table without geometry does not go to the globe.	Таблица без геометрии на глобус не идёт.
+RustGIS is cutting the raster into tiles in its look.	RustGIS режет растр на тайлы в своём оформлении.
+A raster or tile layer of the open RustGIS project. It lies as tiles over the base map in its RustGIS look.	Растр или тайловый слой открытого проекта RustGIS. Он лежит тайлами поверх основы в оформлении RustGIS.
 A layer of the open RustGIS project in its RustGIS colours. The check shows it on the globe.	Слой открытого проекта RustGIS в цветах RustGIS. Флажок показывает его на глобусе.
 The features of the layer are being read from RustGIS.	Объекты слоя читаются из RustGIS.
 Folder to the RustGIS project	Папку в проект RustGIS

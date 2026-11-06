@@ -41,8 +41,26 @@ pub enum Kind {
     Point,
     Line,
     Polygon,
-    /// Растр, таблица без геометрии и прочее - на глобус не идёт.
+    /// Растр: на глобус - тайлами, их нарезает RustGIS в своём
+    /// оформлении, как QGIS рисует растр модулю.
+    Raster,
+    /// Таблица без геометрии и прочее - на глобус не идёт.
     Other,
+}
+
+/// Тайловый слой проекта RustGIS (`map.addTiles`, `service.add`): глобус
+/// берёт тайлы по тому же адресу.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TileLayer {
+    /// Ключ слоя в RustGIS (`id` или название).
+    pub id: String,
+    pub name: String,
+    /// Шаблон адреса тайлов с {z}, {x} и {y}.
+    pub url: String,
+    pub visible: bool,
+    pub opacity: f64,
+    pub max_zoom: u32,
+    pub attribution: String,
 }
 
 /// Слой проекта RustGIS.
@@ -57,12 +75,14 @@ pub struct Layer {
     pub renderer: String,
     /// Поле подписей или пусто.
     pub labels: String,
+    /// Охват в градусах: запад, юг, восток, север.
+    pub extent: Option<[f64; 4]>,
 }
 
 impl Layer {
-    /// Слой с геометрией, который ложится на глобус.
+    /// Векторный слой: глобус рисует его объекты сам.
     pub fn drawn(&self) -> bool {
-        self.kind != Kind::Other
+        matches!(self.kind, Kind::Point | Kind::Line | Kind::Polygon)
     }
 
     /// Ключ объектов слоя: другой ключ - объекты читаются заново.
@@ -83,6 +103,8 @@ impl Layer {
 pub struct State {
     pub view: Option<View>,
     pub layers: Vec<Layer>,
+    /// Тайловые слои сверху вниз.
+    pub tiles: Vec<TileLayer>,
     /// Ключ проекта для настроек глобуса: путь файла проекта, у ещё
     /// не сохранённого - название. Настройки глобуса хранятся по нему,
     /// как модуль хранит свои в записях проекта QGIS.
@@ -113,6 +135,7 @@ pub fn parse_state(text: &str) -> Option<State> {
                 "Point" | "MultiPoint" => Kind::Point,
                 "Polyline" | "LineString" | "MultiLineString" | "Line" => Kind::Line,
                 "Polygon" | "MultiPolygon" => Kind::Polygon,
+                "Raster" => Kind::Raster,
                 _ => Kind::Other,
             };
             Some(Layer {
@@ -123,11 +146,73 @@ pub fn parse_state(text: &str) -> Option<State> {
                 features: l["features"].as_u64().unwrap_or(0),
                 renderer: l["renderer"].as_str().unwrap_or("").to_string(),
                 labels: l["labels"].as_str().unwrap_or("").to_string(),
+                extent: extent_of(&l["extent"]),
             })
         })
         .collect();
+    let mut tiles: Vec<(i64, TileLayer)> = root["tileLayers"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|t| {
+            let url = t["url"].as_str()?.trim();
+            // Только растровые тайлы по шаблону: векторные тайлы, стиль
+            // и архивы глобус так не возьмёт.
+            let kind = t["kind"].as_str().unwrap_or("raster");
+            if kind != "raster" || !is_tile_template(url) {
+                return None;
+            }
+            let name = t["name"].as_str().filter(|n| !n.is_empty()).unwrap_or(url).to_string();
+            let layer = TileLayer {
+                id: t["id"].as_str().map_or_else(|| name.clone(), str::to_string),
+                name,
+                url: url.to_string(),
+                visible: t["visible"].as_bool().unwrap_or(true),
+                opacity: num(&t["opacity"]).unwrap_or(1.0).clamp(0.0, 1.0),
+                max_zoom: t["maxZoom"].as_u64().map_or(19, |z| z.min(22) as u32),
+                attribution: t["attribution"].as_str().unwrap_or("").chars().filter(|c| !c.is_control()).collect(),
+            };
+            Some((t["index"].as_i64().unwrap_or(i64::MAX), layer))
+        })
+        .collect();
+    tiles.sort_by_key(|(index, _)| *index);
+    let tiles = tiles.into_iter().map(|(_, t)| t).collect();
     let project = root["path"].as_str().filter(|p| !p.is_empty()).or_else(|| root["name"].as_str()).unwrap_or("").chars().filter(|c| !c.is_control()).collect();
-    Some(State { view, layers, project })
+    Some(State { view, layers, tiles, project })
+}
+
+/// Охват слоя [запад, юг, восток, север] в градусах, неверный - None.
+fn extent_of(v: &Value) -> Option<[f64; 4]> {
+    let e = v.as_array()?;
+    let b = [num(e.first()?)?, num(e.get(1)?)?, num(e.get(2)?)?, num(e.get(3)?)?];
+    (b[1] <= b[3] && b[1] >= -90.0 && b[3] <= 90.0 && b[0].abs() <= 540.0 && b[2].abs() <= 540.0).then_some(b)
+}
+
+/// Шаблон адреса тайлов XYZ по http или https.
+pub fn is_tile_template(url: &str) -> bool {
+    (url.starts_with("https://") || url.starts_with("http://")) && url.contains("{z}") && url.contains("{x}") && url.contains("{y}") && !url.chars().any(char::is_whitespace)
+}
+
+/// Уровень тайлов для нарезки растра с охватом extent: глубший, на котором
+/// тайлов не больше max_tiles, и не глубже max_level. Нарезку делает
+/// RustGIS (`imagery.hostedImagery`), большой растр не должен держать его
+/// окно минутами.
+pub fn cut_level(extent: [f64; 4], max_tiles: f64, max_level: u32) -> u32 {
+    let [west, south, east, north] = extent;
+    let mercator = |lat: f64| {
+        let phi = lat.clamp(-85.05, 85.05).to_radians();
+        (std::f64::consts::FRAC_PI_4 + phi / 2.0).tan().ln()
+    };
+    let (dx, dy) = ((east - west).abs().min(360.0) / 360.0, (mercator(north) - mercator(south)).abs() / std::f64::consts::TAU);
+    let mut level = 0;
+    for z in 0..=max_level {
+        let n = f64::from(1u32 << z.min(30));
+        if (dx * n).ceil().max(1.0) * (dy * n).ceil().max(1.0) > max_tiles {
+            break;
+        }
+        level = z;
+    }
+    level
 }
 
 /// Цвет из строки CSS: #rgb, #rrggbb, #rrggbbaa, rgb() и rgba().
@@ -472,18 +557,28 @@ mod tests {
 
     const LIST: &str = r#"{"activeMap":"World","center":{"lat":18.0,"lon":10.0},"extent":[-93.9,-52.8,113.9,69.9],"scale":88312391.0,
         "layers":[{"id":4,"name":"Cities","type":"Point","visible":true,"features":243,"renderer":"Proportional Symbols","labels":null},
-        {"id":9,"name":"DEM","type":"Raster","visible":true,"features":0,"renderer":"Stretch"},
+        {"id":9,"name":"DEM","type":"Raster","visible":true,"features":0,"renderer":"Stretch","extent":[56.0,57.5,57.0,58.5]},
         {"id":1,"name":"Countries","type":"Polygon","visible":false,"features":177,"renderer":"Graduated Colors","labels":"name"},
-        {"name":"no id"}]}"#;
+        {"name":"no id"}],
+        "tileLayers":[{"id":"sat","index":1,"kind":"raster","name":"Imagery","url":"https://t.example.org/{z}/{y}/{x}.jpg","visible":false,"opacity":0.5,"maxZoom":17},
+        {"id":"style","index":0,"kind":"style","name":"Style","url":"https://t.example.org/style.json"},
+        {"id":"moon","index":0,"kind":"raster","name":"Moon","url":"https://m.example.org/{z}/{x}/{y}.png","attribution":"USGS"}]}"#;
 
     #[test]
     fn state_of_list_layers() {
-        let s = parse_state(LIST).unwrap_or(State { view: None, layers: Vec::new(), project: String::new() });
+        let s = parse_state(LIST).unwrap_or(State { view: None, layers: Vec::new(), tiles: Vec::new(), project: String::new() });
         let v = s.view.unwrap_or(View { lat: 0.0, lon: 0.0, extent: [0.0; 4], scale: 0.0 });
         assert_eq!((v.lat, v.lon, v.scale), (18.0, 10.0, 88312391.0));
         assert_eq!(s.layers.len(), 3);
         assert_eq!(s.layers[0].kind, Kind::Point);
+        assert_eq!(s.layers[1].kind, Kind::Raster);
+        assert_eq!(s.layers[1].extent, Some([56.0, 57.5, 57.0, 58.5]));
         assert!(!s.layers[1].drawn());
+        // Тайловые слои по index сверху вниз, стиль MapLibre не берётся.
+        let tiles: Vec<&str> = s.tiles.iter().map(|t| t.id.as_str()).collect();
+        assert_eq!(tiles, ["moon", "sat"]);
+        assert_eq!((s.tiles[1].visible, s.tiles[1].opacity, s.tiles[1].max_zoom), (false, 0.5, 17));
+        assert_eq!(s.tiles[0].attribution, "USGS");
         assert!(!s.layers[2].visible);
         assert_eq!(s.layers[2].labels, "name");
         assert_ne!(s.layers[0].style_key(), s.layers[2].style_key());
@@ -492,6 +587,16 @@ mod tests {
         // Ключ проекта: путь файла, у несохранённого - название.
         assert_eq!(parse_state(r#"{"name":"World Atlas","path":null,"layers":[]}"#).map(|s| s.project), Some("World Atlas".to_string()));
         assert_eq!(parse_state(r#"{"name":"World Atlas","path":"C:/gis/atlas.rgis","layers":[]}"#).map(|s| s.project), Some("C:/gis/atlas.rgis".to_string()));
+    }
+
+    #[test]
+    fn raster_cut_level() {
+        // Участок 1° × 1° у 58° с. ш.: на уровне 14 тайлов 46 × 86.
+        assert_eq!(cut_level([56.0, 57.5, 57.0, 58.5], 4096.0, 18), 14);
+        // Весь мир: 4096 тайлов - уровень 6.
+        assert_eq!(cut_level([-180.0, -85.0, 180.0, 85.0], 4096.0, 18), 6);
+        assert_eq!(cut_level([10.0, 10.0, 10.0001, 10.0001], 4096.0, 16), 16);
+        assert!(is_tile_template("https://a.org/{z}/{x}/{y}.png") && !is_tile_template("https://a.org/style.json") && !is_tile_template("file:///{z}/{x}/{y}"));
     }
 
     #[test]

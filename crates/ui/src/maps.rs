@@ -533,6 +533,36 @@ pub fn register_wms(saved: &WmsSaved) -> Option<usize> {
     index(key)
 }
 
+/// Подсказка слоя проекта RustGIS картинкой тайлов, ключ перевода.
+pub const RUSTGIS_TIP: &str = "A raster or tile layer of the open RustGIS project. It lies as tiles over the base map in its RustGIS look.";
+
+/// Растр или тайловый слой проекта RustGIS - строка карт: тайлы XYZ
+/// по адресу http, https или по нарезке RustGIS во временной папке
+/// (file:///). Строка не хранится в настройках: слой приходит из проекта.
+/// Тот же шаблон - прежняя строка. Возвращает номер строки.
+pub fn register_tiles(name: &str, template: &str, credit: &str, max_level: u32) -> Option<usize> {
+    let template = template.trim();
+    let scheme = template.starts_with("https://") || template.starts_with("http://") || template.starts_with("file:///");
+    if !scheme || !(template.contains("{z}") && template.contains("{x}") && template.contains("{y}")) || template.chars().any(char::is_control) {
+        return None;
+    }
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+    for b in template.bytes() {
+        h = (h ^ u64::from(b)).wrapping_mul(0x0100_0000_01b3);
+    }
+    let key = format!("rustgis_{h:016x}");
+    if let Some(n) = index(&key) {
+        return Some(n);
+    }
+    let key = leak(key);
+    let name = name.replace(['\t', '\n', '\r'], " ").trim().chars().take(200).collect::<String>();
+    let credit = leak(credit.replace(['\t', '\n', '\r'], " ").trim().to_string());
+    let map = WmsMap { key, template: leak(template.to_string()), bbox: None, min_level: 0, max_level: max_level.min(22), credit };
+    let entry: &'static Entry = Box::leak(Box::new(Entry { key, name: leak(if name.is_empty() { "RustGIS".into() } else { name }), tip: RUSTGIS_TIP, group: Group::Local, source: credit }));
+    push_rows(vec![(entry, Kind::Wms(Box::leak(Box::new(map))))]);
+    index(key)
+}
+
 /// Каталог GIBS пришёл.
 pub fn has_catalog() -> bool {
     GIBS_READY.load(std::sync::atomic::Ordering::SeqCst)
@@ -784,6 +814,20 @@ mod tests {
         };
         // Тайл у 50.5° с. ш. 10.5° в. д. задевает охват, угол мира - нет.
         assert!(w.inside((12, 2167, 1380)) && !w.inside((12, 0, 0)));
+    }
+
+    /// Растр и тайловый слой RustGIS - строки карт по шаблону XYZ, в том
+    /// числе нарезка во временной папке.
+    #[test]
+    fn rustgis_tile_rows() {
+        let web = super::register_tiles("Imagery", "https://t.example.org/{z}/{x}/{y}.png", "Esri", 17);
+        assert!(web.is_some());
+        assert_eq!(super::register_tiles("Imagery", "https://t.example.org/{z}/{x}/{y}.png", "Esri", 17), web);
+        let cut = super::register_tiles("DEM", "file:///C:/Temp/raster-3/{z}/{x}/{y}.png", "", 12).and_then(super::entry).and_then(|e| kind(e.key));
+        assert!(matches!(cut, Some(k @ super::Kind::Wms(_)) if k.max_level() == 12));
+        for bad in ["ftp://x/{z}/{x}/{y}", "https://x/{z}/{x}.png", "file://host/{z}/{x}/{y}"] {
+            assert!(super::register_tiles("x", bad, "", 10).is_none(), "{bad}");
+        }
     }
 
     #[test]

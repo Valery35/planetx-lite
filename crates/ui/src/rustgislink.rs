@@ -22,7 +22,7 @@
 //! Только программа: у страницы нет ни сокетов, ни файлов.
 
 use std::collections::HashMap;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::net::{SocketAddr, TcpStream};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -94,6 +94,12 @@ pub enum Ask {
     Visibility { layer: i64, visible: bool },
     /// Прозрачность слоя на карте RustGIS в процентах, 0 - непрозрачный.
     Transparency { layer: i64, percent: u8 },
+    /// Растр слоя - тайлами в оформлении RustGIS до уровня max_zoom, как
+    /// QGIS рисует растр модулю (`imagery.hostedImagery`).
+    /// RustGIS ищет растр по названию, а не по номеру.
+    Raster { layer: i64, name: String, max_zoom: u32 },
+    /// Видимость тайлового слоя на карте RustGIS (`map.setTiles`).
+    TilesVisibility { id: String, visible: bool },
 }
 
 /// Весть потока окну.
@@ -111,6 +117,11 @@ pub enum News {
     Done(String),
     /// Расчёт лёг в проект RustGIS группой с этим названием.
     Added(String),
+    /// Тайлы растра слоя layer нарезаны: шаблон адреса file:/// с {z},
+    /// {x} и {y} и глубший уровень.
+    Tiles { layer: i64, template: String, max_zoom: u32 },
+    /// Нарезка растра layer не удалась: следующая отметка просит снова.
+    CutFailed { layer: i64, error: String },
     /// Просьба или чтение слоя не удались.
     Failed(String),
 }
@@ -274,7 +285,82 @@ fn perform(s: &mut Session, ask: Ask) -> Result<String, String> {
         Ask::AddResult { top, group, vectors, rasters } => perform_result(s, &top, &group, &vectors, &rasters),
         Ask::Visibility { layer, visible } => s.command("layer.visibility", serde_json::json!({"layer": layer, "visible": visible})).map(|_| String::new()),
         Ask::Transparency { layer, percent } => s.command("layer.transparency", serde_json::json!({"layer": layer, "value": percent.min(100)})).map(|_| String::new()),
+        Ask::TilesVisibility { id, visible } => s.command("map.setTiles", serde_json::json!({"id": id, "visible": visible})).map(|_| String::new()),
+        // Нарезку выполняет cut_raster, весть у него своя.
+        Ask::Raster { .. } => Ok(String::new()),
     }
+}
+
+/// Номер нарезки: у каждой своя папка, кэш тайлов глобуса не путает
+/// прежнее оформление растра с новым.
+static CUTS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+/// Растр слоя layer - тайлами в оформлении RustGIS: архив
+/// `imagery.hostedImagery` распаковывается во временную папку, тайлы
+/// `z/x/y.png` берёт глобус. Ok - шаблон адреса file:/// и глубший
+/// уровень.
+fn cut_raster(s: &mut Session, layer: i64, name: &str, max_zoom: u32) -> Result<(String, u32), String> {
+    let zip_path = temp_dir().join(format!("raster-{layer}.zip"));
+    s.command("imagery.hostedImagery", serde_json::json!({"layer": name, "path": slash(&zip_path), "minZoom": 0, "maxZoom": max_zoom}))?;
+    let bytes = take_file(&zip_path)?;
+    let n = CUTS.fetch_add(1, Ordering::SeqCst);
+    let dir = temp_dir().join(format!("raster-{layer}-{}-{n}", std::process::id()));
+    // Прежние нарезки этого слоя не нужны.
+    if let Ok(entries) = std::fs::read_dir(temp_dir()) {
+        let prefix = format!("raster-{layer}-");
+        for e in entries.flatten() {
+            if e.file_name().to_string_lossy().starts_with(&prefix) && e.path().is_dir() {
+                let _ = std::fs::remove_dir_all(e.path());
+            }
+        }
+    }
+    let deepest = unpack_tiles(&bytes, &dir)?;
+    let root = slash(&dir);
+    let root = root.trim_start_matches('/');
+    Ok((format!("file:///{root}/{{z}}/{{x}}/{{y}}.png"), deepest))
+}
+
+/// Наибольшее количество тайлов в архиве нарезки.
+const MAX_TILES: usize = 1 << 16;
+
+/// Тайлы `z/x/y.png` архива нарезки - в папку dir как `dir/z/x/y.png`.
+/// Архив считается враждебным: имена - только числа, размер тайла
+/// ограничен. Ok - глубший уровень.
+fn unpack_tiles(bytes: &[u8], dir: &std::path::Path) -> Result<u32, String> {
+    let mut archive = zip::ZipArchive::new(std::io::Cursor::new(bytes)).map_err(|e| e.to_string())?;
+    let mut deepest = None;
+    let mut count = 0usize;
+    for i in 0..archive.len() {
+        let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
+        // Имя не в UTF-8 - не тайл.
+        let Ok(name) = file.name().map(|n| n.replace('\\', "/")) else {
+            continue;
+        };
+        let Some((z, x, y)) = tile_name(&name) else {
+            continue;
+        };
+        count += 1;
+        if count > MAX_TILES {
+            break;
+        }
+        let mut data = Vec::new();
+        std::io::Read::take(&mut file, 4 << 20).read_to_end(&mut data).map_err(|e| e.to_string())?;
+        let folder = dir.join(z.to_string()).join(x.to_string());
+        std::fs::create_dir_all(&folder).map_err(|e| e.to_string())?;
+        std::fs::write(folder.join(format!("{y}.png")), &data).map_err(|e| e.to_string())?;
+        deepest = Some(deepest.map_or(z, |d: u32| d.max(z)));
+    }
+    deepest.ok_or_else(|| "the raster gave no tiles".to_string())
+}
+
+/// Уровень, столбец и строка тайла по имени `…/z/x/y.png` в архиве.
+fn tile_name(name: &str) -> Option<(u32, u32, u32)> {
+    let mut parts = name.strip_suffix(".png")?.rsplit('/');
+    let y: u32 = parts.next()?.parse().ok()?;
+    let x: u32 = parts.next()?.parse().ok()?;
+    let z: u32 = parts.next()?.parse().ok()?;
+    let side = 1u64 << z.min(30);
+    (z <= 22 && u64::from(x) < side && u64::from(y) < side).then_some((z, x, y))
 }
 
 /// Слой текстом GeoJSON в проект RustGIS. Строка ретранслятора - до 64 МБ.
@@ -353,6 +439,10 @@ fn worker(asks: &Receiver<Ask>, news: &Sender<News>, stop: &AtomicBool, wake: &(
                     Ok(Ask::AddResult { top, group, vectors, rasters }) => match perform_result(&mut s, &top, &group, &vectors, &rasters) {
                         Ok(name) => tell(News::Added(name)),
                         Err(e) => tell(News::Failed(e)),
+                    },
+                    Ok(Ask::Raster { layer, name, max_zoom }) => match cut_raster(&mut s, layer, &name, max_zoom) {
+                        Ok((template, max_zoom)) => tell(News::Tiles { layer, template, max_zoom }),
+                        Err(error) => tell(News::CutFailed { layer, error: format!("{name}: {error}") }),
                     },
                     Ok(ask) => match perform(&mut s, ask) {
                         Ok(text) => {
@@ -467,6 +557,67 @@ impl Direction {
     }
 }
 
+/// Ключ строки раздела «Проект RustGIS»: слой карты по номеру или
+/// тайловый слой по ключу RustGIS.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum RowKey {
+    Layer(i64),
+    Tiles(String),
+}
+
+/// Вид слоя в строке, как `layer_kind` модуля.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RowKind {
+    Points,
+    Lines,
+    Polygons,
+    Raster,
+    Tiles,
+    /// Таблица и прочее: на глобус не идёт.
+    Table,
+}
+
+impl RowKind {
+    /// Слово вида после названия, ключ перевода.
+    pub fn word(self) -> &'static str {
+        match self {
+            RowKind::Points => "points",
+            RowKind::Lines => "lines",
+            RowKind::Polygons => "polygons",
+            RowKind::Raster => "raster",
+            RowKind::Tiles => "tiles",
+            RowKind::Table => "table",
+        }
+    }
+
+    /// Слой рисуется картинкой тайлов, а не объектами.
+    pub fn is_picture(self) -> bool {
+        matches!(self, RowKind::Raster | RowKind::Tiles)
+    }
+}
+
+/// Строка раздела «Проект RustGIS»: все слои проекта в порядке карты,
+/// как список «Проект QGIS» модуля.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Row {
+    pub key: RowKey,
+    pub name: String,
+    pub kind: RowKind,
+    /// Охват в градусах для перелёта.
+    pub extent: Option<[f64; 4]>,
+    /// Слой включён на карте RustGIS.
+    pub on_map: bool,
+    /// Ключ оформления: другой - растр режется заново.
+    pub style: String,
+}
+
+/// Тайлов глубшего уровня в одной нарезке растра не больше: RustGIS
+/// режет их, держа своё окно, около 50 тайлов в секунду (6 ноября 2026
+/// года, RustGIS 0.5.0: 2913 тайлов - минута).
+pub const CUT_TILES: f64 = 1024.0;
+/// Глубший уровень нарезки растра.
+pub const CUT_LEVEL: u32 = 18;
+
 /// Связь окна с RustGIS: поток, состояние и синхронизация видов,
 /// как `ui/sync.py` модуля в обе стороны.
 pub struct Bridge {
@@ -482,6 +633,17 @@ pub struct Bridge {
     pub on_map: Vec<i64>,
     /// Ключ открытого проекта, [`data::rustgis::State::project`].
     pub project: String,
+    /// Все слои проекта в порядке карты, тайловые - под слоями.
+    pub rows: Vec<Row>,
+    /// Тайловые слои по ключу.
+    pub tiles: HashMap<String, data::rustgis::TileLayer>,
+    /// Растры и тайловые слои, заведённые строками карт глобуса: номер
+    /// строки [`crate::maps`] и глубший уровень.
+    pub pictures: HashMap<RowKey, usize>,
+    /// Растры и тайловые слои, которые должны быть на глобусе.
+    pub pictures_on: std::collections::HashSet<RowKey>,
+    /// Растры, нарезка которых попрошена: ключ оформления.
+    pub cut: HashMap<i64, String>,
     /// Вид карты, уже показанный на глобусе.
     last_map: Option<Spot>,
     /// Вид глобуса, отправленный в RustGIS.
@@ -509,6 +671,11 @@ impl Bridge {
             names: Vec::new(),
             on_map: Vec::new(),
             project: String::new(),
+            rows: Vec::new(),
+            tiles: HashMap::new(),
+            pictures: HashMap::new(),
+            pictures_on: std::collections::HashSet::new(),
+            cut: HashMap::new(),
             last_map: None,
             last_sent: None,
             last_globe: None,
@@ -608,9 +775,44 @@ impl Bridge {
         let drawn = || state.layers.iter().filter(|l| l.drawn());
         self.names = drawn().map(|l| (l.id, l.name.clone())).collect();
         self.on_map = drawn().filter(|l| l.visible).map(|l| l.id).collect();
+        self.rows = state
+            .layers
+            .iter()
+            .map(|l| Row {
+                key: RowKey::Layer(l.id),
+                name: l.name.clone(),
+                kind: match l.kind {
+                    data::rustgis::Kind::Point => RowKind::Points,
+                    data::rustgis::Kind::Line => RowKind::Lines,
+                    data::rustgis::Kind::Polygon => RowKind::Polygons,
+                    data::rustgis::Kind::Raster => RowKind::Raster,
+                    data::rustgis::Kind::Other => RowKind::Table,
+                },
+                extent: l.extent,
+                on_map: l.visible,
+                style: l.style_key(),
+            })
+            .chain(state.tiles.iter().map(|t| Row { key: RowKey::Tiles(t.id.clone()), name: t.name.clone(), kind: RowKind::Tiles, extent: None, on_map: t.visible, style: t.url.clone() }))
+            .collect();
+        self.tiles = state.tiles.iter().map(|t| (t.id.clone(), t.clone())).collect();
         let other = self.project != state.project;
+        if other {
+            self.pictures_on.clear();
+        }
         self.project.clone_from(&state.project);
         other
+    }
+
+    /// Должна ли строка быть на глобусе: в режиме «Слои как на карте
+    /// RustGIS» (follow) - как на карте, иначе - отмечена ли она
+    /// в настройках проекта (saved - названия слоёв).
+    pub fn wanted_row(row: &Row, follow: bool, saved: &[String]) -> bool {
+        if follow { row.on_map } else { saved.contains(&row.name) }
+    }
+
+    /// Строка по ключу.
+    pub fn row(&self, key: &RowKey) -> Option<&Row> {
+        self.rows.iter().find(|r| r.key == *key)
     }
 
     /// Должен ли слой id быть на глобусе: в режиме «Слои как на карте
@@ -767,20 +969,53 @@ mod tests {
     fn layers_follow_the_map_or_the_project() {
         let mut s = bridge();
         let state = data::rustgis::parse_state(
-            r#"{"name":"Atlas","path":null,"layers":[{"id":1,"name":"Cities","type":"Point","visible":true},{"id":2,"name":"Lakes","type":"Polygon","visible":false},{"id":3,"name":"DEM","type":"Raster","visible":true}]}"#,
+            r#"{"name":"Atlas","path":null,"layers":[{"id":1,"name":"Cities","type":"Point","visible":true},{"id":2,"name":"Lakes","type":"Polygon","visible":false},{"id":3,"name":"DEM","type":"Raster","visible":true,"extent":[56,57,57,58]}],
+                "tileLayers":[{"id":"sat","index":0,"kind":"raster","name":"Imagery","url":"https://t.example.org/{z}/{x}/{y}.png","visible":false}]}"#,
         )
-        .unwrap_or(data::rustgis::State { view: None, layers: Vec::new(), project: String::new() });
+        .unwrap_or(data::rustgis::State { view: None, layers: Vec::new(), tiles: Vec::new(), project: String::new() });
         assert!(s.take_state(&state));
         assert!(!s.take_state(&state));
         assert_eq!(s.project, "Atlas");
-        // Растр на глобус не идёт.
+        // Объекты читаются только у векторов.
         assert_eq!(s.names.len(), 2);
         assert!(s.wanted(1, true, &[]) && !s.wanted(2, true, &[]));
         let saved = vec!["Lakes".to_string()];
         assert!(!s.wanted(1, false, &saved) && s.wanted(2, false, &saved));
+        // В строках раздела - все слои в порядке карты, тайловые под ними.
+        let kinds: Vec<RowKind> = s.rows.iter().map(|r| r.kind).collect();
+        assert_eq!(kinds, [RowKind::Points, RowKind::Polygons, RowKind::Raster, RowKind::Tiles]);
+        let dem = s.row(&RowKey::Layer(3)).cloned();
+        assert!(dem.as_ref().is_some_and(|r| r.kind.is_picture() && r.extent.is_some()));
+        assert!(dem.as_ref().is_some_and(|r| Bridge::wanted_row(r, true, &[])));
+        let sat = s.row(&RowKey::Tiles("sat".into())).cloned();
+        assert!(sat.as_ref().is_some_and(|r| !Bridge::wanted_row(r, true, &[]) && Bridge::wanted_row(r, false, &["Imagery".to_string()])));
         let mut other = state.clone();
         other.project = "C:/gis/other.rgis".into();
         assert!(s.take_state(&other));
+    }
+
+    /// Тайлы нарезки растра: только числовые имена z/x/y.png в пределах
+    /// уровня, прочее в архиве - пропуск.
+    #[test]
+    fn raster_tiles_unpack() {
+        assert_eq!(tile_name("tiles/3/5/2.png"), Some((3, 5, 2)));
+        assert_eq!(tile_name("0/0/0.png"), Some((0, 0, 0)));
+        for bad in ["3/8/2.png", "a/1/1.png", "1/1/1.jpg", "tiles.json", "../../1/0/0.png.exe", "1/0.png"] {
+            assert_eq!(tile_name(bad), None, "{bad}");
+        }
+        let mut zip = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
+        let options = zip::write::SimpleFileOptions::default();
+        for (name, body) in [("out/0/0/0.png", "a"), ("out/1/1/0.png", "b"), ("out/index.html", "c"), ("out/../../evil/1/0/0.png", "d")] {
+            let _ = zip.start_file(name, options);
+            let _ = zip.write_all(body.as_bytes());
+        }
+        let bytes = zip.finish().map(std::io::Cursor::into_inner).unwrap_or_default();
+        let dir = std::env::temp_dir().join(format!("planetx-unpack-test-{}", std::process::id()));
+        assert_eq!(unpack_tiles(&bytes, &dir), Ok(1));
+        assert_eq!(std::fs::read(dir.join("1").join("1").join("0.png")).unwrap_or_default(), b"b");
+        // Имя с переходом наверх легло только по своим числам z/x/y.
+        assert!(!dir.join("..").join("evil").exists());
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     /// Синхронизация как у модуля, `ui/sync.py`: без кнопки виды

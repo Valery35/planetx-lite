@@ -41,6 +41,8 @@ skrifa = "0.44"
 # заливаются в картинку.
 epaint_default_fonts = "0.37"
 tiny-skia.workspace = true
+# Архив тайлов растра, нарезанного RustGIS (`rustgislink`).
+zip.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures.workspace = true
