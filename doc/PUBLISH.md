@@ -16,6 +16,15 @@
   и сверяется. Ссылка на неё заносится в журнал ниже.
 - Тексты на английском - для международных площадок, на русском -
   для Telegram, ВК, Facebook и раздела «Россия» форума OSM.
+- Форумы разработчиков (OSM, Rust) не принимают анонсов, тем более
+  похожих на текст ИИ: ровные списки достоинств, громкие заявления,
+  «feedback is welcome». Туда пишет только автор, своими словами,
+  коротко, с одним живым вопросом к сообществу. Помощник даёт факты,
+  но не готовый текст. Решение автора от 6 ноября 2026 года.
+- Соцсетям и витринам (X, LinkedIn, Facebook, ВК, Telegram, Mastodon,
+  Reddit, каталог QGIS, AlternativeTo, winget) происхождение текста
+  безразлично,
+  там тексты помощника публикуются как прежде.
 
 ## Площадки
 
@@ -27,8 +36,8 @@
 | Каталог QGIS (модуль) | Valery35 | plugins.qgis.org |
 | Telegram, @qgis_isolines | автор | Приложение Telegram, текст через буфер, пост один раз |
 | ВК, vk.ru/qgismodules | автор | Пост или статья через Claude in Chrome |
-| Форум OSM, community.openstreetmap.org | Valery35 | Не публиковать: 5 ноября 2026 года учётная запись заблокирована с пометкой «SPAM» |
-| Форум Rust, users.rust-lang.org | автор, вход через GitHub | Раздел Announcements, только Lite |
+| Форум OSM, community.openstreetmap.org | Valery35 | Не публиковать. Блокировку сняли 6 ноября 2026 года, но темы закрыты, писать в них нельзя |
+| Форум Rust, users.rust-lang.org | автор, вход через GitHub | Не публиковать: 6 ноября 2026 года учётная запись заморожена с причиной «slop», пост о 0.22.0 удалён |
 | OSGeo Discourse, discourse.osgeo.org | автор, вход через GitHub | Раздел General (id 4) |
 | LinkedIn | автор | Пост на английском с хештегами, без продвижения |
 | Facebook | автор | Пост на русском на странице автора |
@@ -41,9 +50,18 @@
 
 Особенности площадок:
 
-- Форум OSM. Пять тем и ответов о своих программах за сутки модераторы
-  сочли рекламой и заблокировали учётную запись. Возврат - только
-  через обращение автора к модераторам.
+- Форум OSM. Пять тем и ответов о своих программах за сутки участники
+  сочли рекламой, учётную запись заблокировали 5 ноября 2026 года.
+  Mateusz Konieczny: программа мало связана с OSM, кроме того, что
+  нагружает его серверы. Автор написал модераторам личным сообщением
+  (группа moderators), 6 ноября блокировку сняли, темы остались
+  закрытыми. Новичок (уровень доверия 0) пишет в личку только
+  модераторам. Участнику можно написать через почту openstreetmap.org:
+  openstreetmap.org/message/new/<имя>. Так автор ответил Zkir
+  (UrbanEye3D) про 3D-здания 6 ноября 2026 года.
+- Форум Rust. Пост о PlanetX Lite 0.22.0 удалён по жалобам, учётная
+  запись заморожена с причиной «slop» - текст похож на сгенерированный
+  ИИ, на форуме это запрещено. 6 ноября 2026 года.
 - Discourse (форумы Rust и OSGeo). Ответ в своей теме - fetch POST
   /posts.json {topic_id, raw} с X-CSRF-Token из meta csrf-token.
 - Mastodon. Предел поста - 500 знаков, подсказку тегов закрывает пробел.
@@ -77,7 +95,7 @@
 - Форум OSM: ответы 2 в темах 149679 и 149680
 - OSGeo Discourse: ответ 2 в теме 155878
 - Mastodon: https://en.osm.town/@Vaery35/117559681201596064
-- linux.org.ru: https://www.linux.org.ru/news/opensource/18414410 (ждёт модератора)
+- linux.org.ru: https://www.linux.org.ru/news/opensource/18414410 (прошла модерацию, в ленте новостей 6 ноября 2026 года)
 - Telegram, LinkedIn, Facebook, X - посты 4 ноября 2026 года
 - Сайт informpp.ru (главная, «Что нового»), Dropbox - обновлены
 - Reddit r/QGIS, r/gis - опубликовал автор 5 ноября 2026 года, тексты в planetx/site/posts_1.40_social.md, ссылок на посты помощник не видит (reddit.com закрыт)
@@ -101,7 +119,7 @@
 - Формы: https://github.com/Valery35/planetx/issues/new/choose и https://github.com/Valery35/planetx-lite/issues/new/choose
 - Telegram: https://t.me/qgis_isolines/186
 - ВК: https://vk.ru/wall-241229428_49
-- OSGeo Discourse: ответ в теме 155878, ждёт модератора
+- OSGeo Discourse: ответ в теме 155878 отправлен на модерацию, к 6 ноября 2026 года в теме не появился
 - Mastodon: https://en.osm.town/@Vaery35/117564382084961506
 - X: https://x.com/Valery35/status/2118354934856872285
 - LinkedIn: https://www.linkedin.com/feed/update/urn:li:activity:7524120941312933888/
@@ -112,3 +130,22 @@
 ### Просьба потестировать PlanetX 1.40.0 и Lite 0.23.0, 5 ноября 2026 года
 
 Текст - planetx/site/posts_test_request.md. Разослал автор в Telegram, около 6 групп и личных чатов, список не записан.
+
+### PlanetX 1.41.0, 6 ноября 2026 года
+
+Тексты - planetx/site/posts_1.41.md и posts_1.41_social.md, кадр - planetx/site/planetx_post_1.41.jpg.
+
+- GitHub: https://github.com/Valery35/planetx/releases/tag/v1.41.0
+- Каталог QGIS: https://plugins.qgis.org/plugins/planetx/version/1.41.0/ (загружена 6 ноября 2026 года, идут проверки безопасности каталога, итог - письмом автору)
+- Dropbox - архив скопирован
+- Сайт informpp.ru - «Что нового» и главная, коммит fd9890b
+- Telegram: https://t.me/qgis_isolines/187
+- ВК: https://vk.ru/wall-241229428_50 (запись на стене, без статьи - выпуск небольшой)
+- OSGeo Discourse: https://discourse.osgeo.org/t/155878/4
+- LinkedIn: https://www.linkedin.com/feed/update/urn:li:activity:7524352153843478528/
+- Facebook: https://www.facebook.com/valery35/posts/pfbid02tghY2a3e1zidQ64PH5oWz8Pt6CE9ekiZN5kSS5KFSp7aaGWJ2JRsqcftNJWVu6Ggl
+- X: https://x.com/Valery35/status/2118585519403659441 (вышел и повтор 2118585229577441567 - первый щелчок сработал с задержкой)
+- Mastodon: https://en.osm.town/@Vaery35/117567996150145928
+- linux.org.ru: https://www.linux.org.ru/news/opensource/18415249 (прошла модерацию, в ленте новостей)
+- Форум OSM - не опубликовано, учётная запись отключена, тема 149679 удалена
+- Reddit - публикует автор, текст в posts_1.41_social.md
