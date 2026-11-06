@@ -3222,6 +3222,7 @@ impl LiteApp {
                     self.data_layers.set_live(FOLDER, id, &name, (*data, colors), look, label);
                 }
                 News::Done(name) => self.open_message = Some(trf(self.lang, "The layer {name} is added to the RustGIS project.", &[("name", &name)])),
+                News::Added(group) => self.open_message = Some(trf(self.lang, "The calculation is added to the RustGIS project, group {group}.", &[("group", &group)])),
                 News::Failed(why) => self.open_message = Some(trf(self.lang, "RustGIS: {error}", &[("error", &why)])),
             }
         }
@@ -3240,6 +3241,52 @@ impl LiteApp {
             // Покой глобуса досчитывается и без движения мыши.
             ctx.request_repaint_after(std::time::Duration::from_secs_f64(crate::rustgislink::SETTLE_SECONDS));
         }
+    }
+
+    /// Расчёт окна анализа - в проект RustGIS, как результаты инструментов
+    /// модуля - в проект QGIS (`results.py`): подгруппа «Название ЧЧ:ММ:СС
+    /// UTC» группы «RustPlanetX - анализ участка», сверху контур участка
+    /// и векторы, под ними растры файлами GeoTIFF files. Названия слоёв -
+    /// со временем расчёта: группа находит свои слои по названию.
+    /// Наложения и модели расчёта в проект не идут, как у модуля.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn analysis_to_rustgis(&mut self, saved: &crate::analysis::Saved, files: &[String], failed: Option<String>, unix: f64) {
+        use scene::kml::{Folder, Item, Place};
+        let lang = self.lang;
+        let stamp = crate::analysis::clock(unix);
+        let group = format!("{} {stamp} UTC", saved.title);
+        let as_layer = |folder: &Folder| crate::datalayers::folder_layer(folder).map(|l| data::layers::to_geojson(&l));
+        let mut vectors = Vec::new();
+        if saved.ring.len() >= 3 {
+            let site = tr(lang, "Area|site");
+            let mut outline = Folder::new(site);
+            outline.children.push(Item::Place(Place::new(site, scene::features::Kind::Polygon, saved.ring.clone())));
+            vectors.extend(as_layer(&outline).map(|g| (format!("{site} {stamp}"), g)));
+        }
+        let mut loose = Folder::new(&saved.title);
+        for item in &saved.extra {
+            match item {
+                Item::Folder(f) => vectors.extend(as_layer(f).map(|g| (format!("{} {stamp}", f.name), g))),
+                Item::Place(p) => loose.children.push(Item::Place(p.clone())),
+                Item::Overlay(_) => {}
+            }
+        }
+        vectors.extend(as_layer(&loose).map(|g| (format!("{} {stamp}", saved.title), g)));
+        let rasters: Vec<(String, String)> = saved
+            .layers
+            .iter()
+            .zip(files)
+            .filter(|(_, f)| !f.is_empty())
+            .map(|(l, f)| (format!("{} {stamp}", if l.name.is_empty() { l.stem.as_str() } else { l.name.as_str() }), f.clone()))
+            .collect();
+        let top = tr(lang, "RustPlanetX - area analysis").to_string();
+        if let Some(b) = &self.rustgis {
+            b.link.ask(crate::rustgislink::Ask::AddResult { top, group: group.clone(), vectors, rasters });
+        }
+        self.open_message = Some(match failed {
+            Some(e) => trf(lang, "The calculation goes to the RustGIS project, group {group}. The GeoTIFF file is not written: {e}", &[("group", &group), ("e", &e)]),
+            None => trf(lang, "The calculation goes to the RustGIS project, group {group}.", &[("group", &group)]),
+        });
     }
 
     /// Ретранслятор MCP: запуск и остановка по настройке, сообщения
@@ -6343,6 +6390,13 @@ impl LiteApp {
                     failed = Some(e);
                 }
             }
+        }
+        // RustPlanetX со связью: расчёт - в проект RustGIS своей группой,
+        // как результаты инструментов модуля - в проект QGIS.
+        #[cfg(not(target_arch = "wasm32"))]
+        if self.edition.linked() && self.rustgis.as_ref().is_some_and(|b| b.connected) {
+            self.analysis_to_rustgis(saved, &files, failed, unix);
+            return;
         }
         let root = marks::root_name(lang);
         let group = tr(lang, "Area analysis");

@@ -84,6 +84,11 @@ pub enum Ask {
     Select { layer: i64, rows: Vec<usize> },
     /// Слой Lite - в проект RustGIS текстом GeoJSON.
     AddLayer { name: String, geojson: String },
+    /// Расчёт окна анализа - в проект RustGIS подгруппой group группы top,
+    /// как результаты инструментов модуля - в проект QGIS: векторы
+    /// текстом GeoJSON (название, текст), растры файлами GeoTIFF
+    /// (название, путь). Сверху вниз - векторы, под ними растры.
+    AddResult { top: String, group: String, vectors: Vec<(String, String)>, rasters: Vec<(String, String)> },
 }
 
 /// Весть потока окну.
@@ -99,6 +104,8 @@ pub enum News {
     Layer { id: i64, data: Box<LayerData>, style: Box<Style> },
     /// Просьба выполнена, текст - для строки сообщения.
     Done(String),
+    /// Расчёт лёг в проект RustGIS группой с этим названием.
+    Added(String),
     /// Просьба или чтение слоя не удались.
     Failed(String),
 }
@@ -256,10 +263,41 @@ fn perform(s: &mut Session, ask: Ask) -> Result<String, String> {
             if geojson.len() > MAX_OUT {
                 return Err(format!("{name}: the layer is larger than {} MB", MAX_OUT >> 20));
             }
-            let file: String = name.chars().map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '_' }).collect();
-            s.command("layer.addDataText", serde_json::json!({"fileName": format!("{file}.geojson"), "text": geojson, "name": name})).map(|_| name)
+            add_text(s, &name, &geojson).map(|_| name)
         }
+        // Расчёт выполняет perform_result, весть у него своя.
+        Ask::AddResult { top, group, vectors, rasters } => perform_result(s, &top, &group, &vectors, &rasters),
     }
+}
+
+/// Слой текстом GeoJSON в проект RustGIS. Строка ретранслятора - до 64 МБ.
+fn add_text(s: &mut Session, name: &str, geojson: &str) -> Result<(), String> {
+    if geojson.len() > MAX_OUT {
+        return Err(format!("{name}: the layer is larger than {} MB", MAX_OUT >> 20));
+    }
+    let file: String = name.chars().map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '_' }).collect();
+    s.command("layer.addDataText", serde_json::json!({"fileName": format!("{file}.geojson"), "text": geojson, "name": name})).map(|_| ())
+}
+
+/// Расчёт - в проект RustGIS, `results.add_group` модуля: слои, затем
+/// подгруппа с ними в группе top. Группы top ещё нет - она заводится.
+/// Ok - название подгруппы.
+fn perform_result(s: &mut Session, top: &str, group: &str, vectors: &[(String, String)], rasters: &[(String, String)]) -> Result<String, String> {
+    let mut names = Vec::new();
+    for (name, geojson) in vectors {
+        add_text(s, name, geojson)?;
+        names.push(name.clone());
+    }
+    for (name, path) in rasters {
+        s.command("layer.addData", serde_json::json!({"path": path.replace('\\', "/"), "name": name}))?;
+        names.push(name.clone());
+    }
+    let sub = serde_json::json!({"name": group, "parent": top, "layers": names});
+    if s.command("group.add", sub.clone()).is_err() {
+        s.command("group.add", serde_json::json!({"name": top}))?;
+        s.command("group.add", sub)?;
+    }
+    Ok(group.to_string())
 }
 
 /// Ждать до секунд seconds, просыпаясь на просьбы и остановку. false -
@@ -305,6 +343,10 @@ fn worker(asks: &Receiver<Ask>, news: &Sender<News>, stop: &AtomicBool, wake: &(
         let failed = loop {
             loop {
                 match asks.try_recv() {
+                    Ok(Ask::AddResult { top, group, vectors, rasters }) => match perform_result(&mut s, &top, &group, &vectors, &rasters) {
+                        Ok(name) => tell(News::Added(name)),
+                        Err(e) => tell(News::Failed(e)),
+                    },
                     Ok(ask) => match perform(&mut s, ask) {
                         Ok(text) => {
                             if !text.is_empty() {

@@ -2441,3 +2441,7 @@ Map leads the globe	Карта ведёт глобус
 Globe leads the map	Глобус ведёт карту
 Who follows whom when the synchronisation is on by the icon in the corner of the view. Map leads the globe - a shift and zoom of the map move the globe to the same area, the tilt and heading of the globe stay. Globe leads the map - after the globe stops, the map goes to its look-at point.	Кто за кем следует, когда синхронизация включена значком в углу вида. Карта ведёт глобус - сдвиг и масштаб карты переносят глобус на тот же участок, наклон и поворот глобуса остаются. Глобус ведёт карту - после остановки глобуса карта встаёт в его точку взгляда.
 Synchronisation with the RustGIS map window. The direction is in the view properties.	Синхронизация с окном карты RustGIS. Направление - в свойствах вида.
+The calculation is added to the RustGIS project, group {group}.	Расчёт добавлен в проект RustGIS, группа {group}.
+RustPlanetX - area analysis	RustPlanetX - анализ участка
+The calculation goes to the RustGIS project, group {group}.	Расчёт уходит в проект RustGIS, группа {group}.
+The calculation goes to the RustGIS project, group {group}. The GeoTIFF file is not written: {e}	Расчёт уходит в проект RustGIS, группа {group}. Файл GeoTIFF не записан: {e}
