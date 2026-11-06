@@ -262,12 +262,6 @@ impl LiteApp {
                 }
             }
         }
-        if let Some(m) = &mut self.mining {
-            if let Some(message) = m.step(lang) {
-                self.open_message = Some(message);
-            }
-            changed |= std::mem::take(&mut m.changed);
-        }
         // Новый результат занимает общий слой вида, прежний снимается.
         changed |= self.site_layer_settle();
         if changed {
@@ -476,11 +470,10 @@ impl LiteApp {
         if let Some(p) = self.weather.as_ref().and_then(|(_, w)| w.painter()) {
             painters.push(("weather", p));
         }
-        if let Some(grid) = self.currents.as_ref().and_then(crate::currents::Currents::grid) {
-            painters.push(("currents", crate::currents::painter(grid)));
-        }
-        if let Some(mines) = self.mining.as_ref().and_then(crate::mining::Mining::mines) {
-            painters.push(("mining", crate::mining::painter(mines)));
+        for (n, layer) in &self.plugged {
+            if let (Some(e), Some(p)) = (crate::registry::get(*n), layer.painter()) {
+                painters.push((e.key(), p));
+            }
         }
         for (id, c) in [("insolation", &self.insolation), ("shadows", &self.shadows)] {
             if let Some(l) = c.as_ref().and_then(|c| c.layer.as_ref()) {

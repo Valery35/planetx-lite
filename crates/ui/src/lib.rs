@@ -79,6 +79,7 @@ pub mod places;
 pub mod pointcalc;
 pub mod polar;
 pub mod profile;
+pub mod registry;
 pub mod relief;
 pub mod reliefcalc;
 pub mod route;

@@ -190,3 +190,68 @@ impl Mining {
 pub fn painter(mines: Arc<Mines>) -> crate::vector::Painter {
     Arc::new(move |key| data::areas::draw(key, &mines.areas, FILL, LINE, WIDTH))
 }
+
+/// Строка «Горные разработки» реестра слоёв каталога [`crate::registry`].
+pub struct Entry;
+
+/// Строка «Горные разработки» для [`crate::registry::ALL`].
+pub static ENTRY: Entry = Entry;
+
+impl crate::registry::Entry for Entry {
+    fn key(&self) -> &'static str {
+        "mining"
+    }
+
+    fn name(&self) -> &'static str {
+        "Mining areas"
+    }
+
+    fn tip(&self) -> &'static str {
+        "Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB."
+    }
+
+    fn category(&self) -> crate::layers::Category {
+        crate::layers::Category::Depths
+    }
+
+    fn source(&self) -> &'static str {
+        "Maus et al. 2022"
+    }
+
+    fn words(&self) -> &'static [&'static str] {
+        &["карьеры", "отвалы", "горные работы", "mining", "pits"]
+    }
+
+    fn legend(&self) -> Option<crate::thumbs::Recipe> {
+        data::thumbs::colors(self.key()).map(|c| crate::thumbs::Recipe::Ramp(c.to_vec()))
+    }
+
+    fn make(&self, cx: &crate::registry::Make<'_>) -> (Box<dyn crate::registry::Layer>, Option<String>) {
+        let path = cx.data_dir.map(|d| d.join(data::mining::POLYGONS_FILE));
+        let (mining, message) = Mining::new(cx.lang, path, cx.request);
+        (Box::new(mining), message)
+    }
+}
+
+impl crate::registry::Layer for Mining {
+    fn step(&mut self, cx: &crate::registry::Ctx<'_>) -> crate::registry::Stepped {
+        let message = Mining::step(self, cx.lang);
+        crate::registry::Stepped { message, painters: std::mem::take(&mut self.changed), tick: None }
+    }
+
+    fn painter(&self) -> Option<crate::vector::Painter> {
+        self.mines().map(painter)
+    }
+
+    fn busy(&self) -> bool {
+        Mining::busy(self)
+    }
+
+    fn attribution(&self) -> Option<(&'static str, &'static str)> {
+        Some(data::mining::POLYGONS_ATTRIBUTION)
+    }
+
+    fn identify(&self, lang: Lang, lat: f64, lon: f64) -> Option<(String, Vec<crate::identify::Feature>)> {
+        Mining::identify(self, lang, lat, lon)
+    }
+}

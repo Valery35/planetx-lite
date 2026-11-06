@@ -165,10 +165,20 @@ impl LiteApp {
                     self.refresh_painters();
                 }
             }
-            Extra::Currents => {
+            Extra::Plugged(n) => {
                 if on {
-                    self.currents.get_or_insert_with(crate::currents::Currents::default);
-                } else if self.currents.take().is_some() {
+                    if let Some(entry) = crate::registry::get(n).filter(|_| !self.plugged.contains_key(&n)) {
+                        let data_dir = self.data_dir();
+                        let loaders = &self.loaders;
+                        let request = |limit: u64| (loaders.request)(limit);
+                        let cx = crate::registry::Make { lang: self.lang, data_dir: data_dir.as_deref(), request: &request };
+                        let (layer, message) = entry.make(&cx);
+                        self.plugged.insert(n, layer);
+                        if message.is_some() {
+                            self.open_message = message;
+                        }
+                    }
+                } else if self.plugged.remove(&n).is_some() {
                     self.refresh_painters();
                 }
             }
@@ -192,21 +202,6 @@ impl LiteApp {
                     if extra == Extra::Overture {
                         self.overture = Some(crate::overture::Overture::new(&*self.loaders.request));
                     }
-                }
-            }
-            Extra::Mining => {
-                if on {
-                    if self.mining.is_none() {
-                        let path = self.data_dir().map(|d| d.join(data::mining::POLYGONS_FILE));
-                        let loaders = &self.loaders;
-                        let (m, message) = crate::mining::Mining::new(self.lang, path, &|limit: u64| (loaders.request)(limit));
-                        self.mining = Some(m);
-                        if message.is_some() {
-                            self.open_message = message;
-                        }
-                    }
-                } else if self.mining.take().is_some() {
-                    self.refresh_painters();
                 }
             }
             Extra::Satellites => {

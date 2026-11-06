@@ -463,25 +463,35 @@ impl LiteApp {
         }
     }
 
-    pub(super) fn step_currents(&mut self, ctx: &egui::Context, now: f64) {
+    /// Шаг кадра включённых слоёв реестра [`crate::registry`]: загрузка,
+    /// движение, сообщение, картинки тайлов.
+    pub(super) fn step_plugged(&mut self, ctx: &egui::Context, now: f64) {
+        if self.plugged.is_empty() {
+            return;
+        }
         let moment = match self.timebar.window() {
             Some((_, hi)) if hi.is_finite() => Some(hi),
             _ => None,
         };
         let altitude = self.nav.camera.ellipsoid.ecef_to_geodetic(self.nav.camera.eye).2;
         let view = (self.nav.pose.lat, self.nav.pose.lon, altitude, self.view_width());
-        let lang = self.lang;
-        let Some(c) = &mut self.currents else {
-            return;
-        };
         let loaders = &self.loaders;
-        if let Some(message) = c.step(lang, now, moment, view, &|limit: u64| (loaders.request)(limit)) {
-            self.open_message = Some(message);
+        let request = |limit: u64| (loaders.request)(limit);
+        let cx = crate::registry::Ctx { lang: self.lang, now, moment, view, request: &request };
+        let mut painters = false;
+        let mut message = None;
+        for layer in self.plugged.values_mut() {
+            let stepped = layer.step(&cx);
+            painters |= stepped.painters;
+            message = stepped.message.or(message);
+            if let Some(ms) = stepped.tick {
+                ctx.request_repaint_after(std::time::Duration::from_millis(ms));
+            }
         }
-        let changed = std::mem::take(&mut c.changed);
-        // Струйки бегут - кадры идут по такту частиц.
-        ctx.request_repaint_after(std::time::Duration::from_millis(u64::from(data::flow::TICK_MS)));
-        if changed {
+        if message.is_some() {
+            self.open_message = message;
+        }
+        if painters {
             self.refresh_painters();
         }
     }

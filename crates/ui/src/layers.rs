@@ -45,14 +45,12 @@ pub enum Extra {
     Wiki,
     /// Спутники CelesTrak выбранных групп.
     Satellites,
-    /// Контуры горных разработок, Maus и др. 2022.
-    Mining,
     /// 3D-здания OpenFreeMap.
     Buildings,
     /// 3D-здания Overture Maps архивом PMTiles.
     Overture,
-    /// Течения NOAA CoastWatch.
-    Currents,
+    /// Слой реестра [`crate::registry::ALL`], номер строки.
+    Plugged(usize),
     /// Поле погоды, номер строки [`crate::weather::ROWS`].
     Weather(usize),
 }
@@ -72,10 +70,9 @@ impl Extra {
         out.extend(crate::live::Kind::ALL.map(Extra::Live));
         out.push(Extra::Wiki);
         out.push(Extra::Satellites);
-        out.push(Extra::Mining);
         out.push(Extra::Buildings);
         out.push(Extra::Overture);
-        out.push(Extra::Currents);
+        out.extend((0..crate::registry::ALL.len()).map(Extra::Plugged));
         out.extend((0..crate::weather::ROWS.len()).map(Extra::Weather));
         out
     }
@@ -118,10 +115,9 @@ impl Extra {
             Extra::Live(k) => k.name(),
             Extra::Wiki => "Wikipedia nearby",
             Extra::Satellites => "Satellites",
-            Extra::Mining => "Mining areas",
             Extra::Buildings => "3D buildings",
             Extra::Overture => "3D buildings, Overture Maps",
-            Extra::Currents => "Currents",
+            Extra::Plugged(n) => crate::registry::get(n).map_or("", |e| e.name()),
             Extra::Weather(n) => crate::weather::ROWS.get(n).map_or("", |r| r.name),
         }
     }
@@ -144,10 +140,9 @@ impl Extra {
             Extra::Weather(n) => crate::weather::ROWS.get(n).map_or("", |r| r.tip),
             Extra::Dots(l) => l.tip(),
             Extra::Live(k) => k.tip(),
-            Extra::Currents => "Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB.",
+            Extra::Plugged(n) => crate::registry::get(n).map_or("", |e| e.tip()),
             Extra::Buildings => "Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.",
             Extra::Overture => "Volumetric buildings of Overture Maps - OpenStreetMap together with the open sets of Microsoft, Google Open Buildings and Esri in one PMTiles archive. Where OpenStreetMap is incomplete, for example in Africa and Asia, there are more buildings. They show when the camera is closer than 6 km to the ground. The height is the height field, otherwise the number of floors times 3.66 m. The row replaces the 3D buildings of the vector base.",
-            Extra::Mining => "Outlines of open pits, waste dumps, tailings and industrial sites of the world from Sentinel-2 images of 2019 - about 45 thousand areas, Maus et al., 2022. A click on an outline shows the country and area. The first switch-on downloads about 25 MB.",
             Extra::Satellites => "Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.",
             Extra::Wiki => "Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.",
             Extra::Geoid => "The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.",
@@ -183,9 +178,8 @@ impl Extra {
             Extra::Live(_) => Category::Transport,
             Extra::Wiki => Category::Wiki,
             Extra::Satellites => Category::Sky,
-            Extra::Mining => Category::Depths,
             Extra::Buildings | Extra::Overture => Category::Map,
-            Extra::Currents => Category::Water,
+            Extra::Plugged(n) => crate::registry::get(n).map_or(Category::Map, |e| e.category()),
             Extra::Weather(_) => Category::Weather,
         }
     }
@@ -205,10 +199,9 @@ impl Extra {
             Extra::Live(k) => k.key(),
             Extra::Wiki => "wiki",
             Extra::Satellites => "satellites",
-            Extra::Mining => "mining",
             Extra::Buildings => "buildings",
             Extra::Overture => "overture",
-            Extra::Currents => "currents",
+            Extra::Plugged(n) => crate::registry::get(n).map_or("", |e| e.key()),
             Extra::Weather(n) => crate::weather::ROWS.get(n).map_or("", |r| r.key),
         }
     }
@@ -666,7 +659,7 @@ pub(crate) fn popup(ui: &mut egui::Ui, menu_open: &mut Option<String>, key: &str
 
 /// Категория каталога, как у модуля.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Category {
+pub enum Category {
     All,
     Base,
     /// Службы WMS районов и свои службы WMS.
@@ -774,7 +767,7 @@ fn recipe(item: Item) -> crate::thumbs::Recipe {
                 Extra::Live(crate::live::Kind::Trains) => Recipe::Ramp(unit_colors(data::trains::CATEGORIES.iter().map(|c| c.1))),
                 Extra::Live(crate::live::Kind::Vessels) => Recipe::Ramp(unit_colors(data::vessels::GROUPS.iter().map(|g| g.1))),
                 Extra::Live(crate::live::Kind::Aircraft) => Recipe::Ramp(unit_colors(data::aircraft::GROUPS.iter().map(|g| g.3))),
-                Extra::Currents => Recipe::Ramp(data::flow::CURRENT_STOPS.iter().map(|s| s.1.map(|v| v.round().clamp(0.0, 255.0) as u8)).collect()),
+                Extra::Plugged(n) => crate::registry::get(n).and_then(|e| e.legend()).unwrap_or(Recipe::Base),
                 _ if let Some(c) = th::colors(e.key()) => ramp(c),
                 Extra::Map(_) => match crate::maps::kind(e.key()) {
                     Some(crate::maps::Kind::Theme(t)) => Recipe::Theme(t),
@@ -857,10 +850,9 @@ impl Item {
             Item::Extra(Extra::Wiki) => "Wikipedia",
             Item::Extra(Extra::Satellites) | Item::Sat(_) => "CelesTrak",
             Item::Events => "Vantor, Planet",
-            Item::Extra(Extra::Mining) => "Maus et al. 2022",
             Item::Extra(Extra::Buildings) => "OpenFreeMap",
             Item::Extra(Extra::Overture) => "Overture Maps",
-            Item::Extra(Extra::Currents) => "NOAA CoastWatch",
+            Item::Extra(Extra::Plugged(n)) => crate::registry::get(n).map_or("", |e| e.source()),
             Item::Extra(Extra::Weather(n)) => crate::weather::ROWS.get(n).map_or("", |r| r.source),
             Item::Extra(Extra::Cutaway) => "PREM, CRUST1.0, Slab2",
             Item::Extra(Extra::Paleo) => "PALEOMAP",
@@ -928,8 +920,7 @@ fn items() -> Vec<Item> {
             .map(|l| Item::Extra(Extra::Dots(l))),
     );
     // Порядок LAYERS витрины модуля.
-    out.push(Item::Extra(Extra::Mining));
-    out.push(Item::Extra(Extra::Currents));
+    out.extend((0..crate::registry::ALL.len()).map(|n| Item::Extra(Extra::Plugged(n))));
     out.extend((0..crate::weather::ROWS.len()).map(|n| Item::Extra(Extra::Weather(n))));
     out.push(Item::Extra(Extra::Geoid));
     out.extend(crate::live::Kind::ALL.map(|k| Item::Extra(Extra::Live(k))));

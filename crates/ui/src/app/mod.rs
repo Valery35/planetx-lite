@@ -467,8 +467,6 @@ pub struct LiteApp {
     osm_mines: Option<crate::overpass::Overpass<data::mining::Item>>,
     osm_infra: Option<crate::overpass::Overpass<data::infra::Item>>,
     overpass_mirrors: crate::overpass::Mirrors,
-    /// Строка «Горные разработки».
-    mining: Option<crate::mining::Mining>,
     /// Строка «3D-здания», тайлы зданий загрузчика OpenFreeMap и те из них,
     /// что нужны только зданиям.
     buildings: Option<crate::buildings::Buildings>,
@@ -486,8 +484,8 @@ pub struct LiteApp {
     /// участки для подсветки, `_ask_parcels` модуля.
     parcel_ask: Option<((f64, f64), Box<dyn net::Request>)>,
     parcels: Vec<data::cadastre::Parcel>,
-    /// Строка «Течения».
-    currents: Option<crate::currents::Currents>,
+    /// Включённые слои реестра [`crate::registry::ALL`] по номеру строки.
+    plugged: BTreeMap<usize, Box<dyn crate::registry::Layer>>,
     /// Поле погоды: строка [`crate::weather::ROWS`] и загрузчик.
     weather: Option<(usize, crate::weather::Weather)>,
     /// Окно «Карты Рамсея».
@@ -1299,7 +1297,6 @@ impl LiteApp {
             osm_mines: None,
             osm_infra: None,
             overpass_mirrors: crate::overpass::Mirrors::default(),
-            mining: None,
             buildings: None,
             solid_stamp: None,
             export_models: Vec::new(),
@@ -1309,7 +1306,7 @@ impl LiteApp {
             building_only: HashSet::new(),
             parcel_ask: None,
             parcels: Vec::new(),
-            currents: None,
+            plugged: BTreeMap::new(),
             weather: None,
             rumsey: None,
             oam: None,
@@ -2459,10 +2456,9 @@ impl LiteApp {
                 }
             }
         }
-        // Контур горной разработки под точкой, `_identify_mining` модуля.
-        if let Some(group) = self.mining.as_ref().and_then(|m| m.identify(self.lang, lat, lon)) {
-            groups.push(group);
-        }
+        // Слои реестра под точкой: контур горной разработки,
+        // `_identify_mining` модуля, и другие.
+        groups.extend(self.plugged.values().filter_map(|l| l.identify(self.lang, lat, lon)));
         // Спутник у пикселя, `SatelliteManager.identify` модуля.
         if let (Some((px, py, ppp)), Some(sats)) = (pixel, &self.satellites)
             && let Some(number) = self.satellite_under(px, py, ppp)
@@ -3669,15 +3665,10 @@ impl LiteApp {
         if self.satellites.is_some() {
             parts.push(data::satellites::ATTRIBUTION);
         }
-        if self.mining.is_some() {
-            parts.push(data::mining::POLYGONS_ATTRIBUTION);
-        }
         if let Some((_, w)) = &self.weather {
             parts.push((if w.is_aurora() { data::weather::AURORA_ATTRIBUTION.0 } else { data::weather::ATTRIBUTION.0 }, ""));
         }
-        if self.currents.is_some() {
-            parts.push(data::flow::CURRENTS_ATTRIBUTION);
-        }
+        parts.extend(self.plugged.values().filter_map(|l| l.attribution()));
         if self.overture.is_some() {
             parts.push(crate::overture::ATTRIBUTION);
         }
@@ -3878,9 +3869,8 @@ impl eframe::App for LiteApp {
             || self.fetching.is_some()
             || self.tilesets.busy()
             || self.wiki.as_ref().is_some_and(crate::wiki::Wiki::busy)
-            || self.mining.as_ref().is_some_and(crate::mining::Mining::busy)
             || self.parcel_ask.is_some()
-            || self.currents.as_ref().is_some_and(crate::currents::Currents::busy)
+            || self.plugged.values().any(|l| l.busy())
             || self.weather.as_ref().is_some_and(|(_, w)| w.busy())
             || self.rumsey.as_ref().is_some_and(crate::rumsey::Rumsey::busy)
             || self.oam.as_ref().is_some_and(crate::oam::Oam::busy)
@@ -4149,7 +4139,7 @@ impl eframe::App for LiteApp {
         self.step_satellites(now);
         self.step_overpass(now);
         self.step_parcels();
-        self.step_currents(&ctx, now);
+        self.step_plugged(&ctx, now);
         self.step_weather(&ctx, now);
         self.step_lidar(now);
         self.step_events(now);
@@ -4642,8 +4632,8 @@ impl eframe::App for LiteApp {
             }
         }
         // Струйки течений поверх глобуса.
-        if let Some(c) = &self.currents {
-            c.paint(&painter, rect, ppp, &self.nav.camera);
+        for layer in self.plugged.values() {
+            layer.paint(&painter, rect, ppp, &self.nav.camera);
         }
         // Струйки ветра и числа поля погоды.
         if let Some((_, w)) = &self.weather {

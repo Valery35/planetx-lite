@@ -316,3 +316,67 @@ pub fn painter(grid: Arc<VectorGrid>) -> crate::vector::Painter {
         pixels.iter().any(|p| p[3] > 0).then(|| pixels.concat())
     })
 }
+
+/// Строка «Течения» реестра слоёв каталога [`crate::registry`].
+pub struct Entry;
+
+/// Строка «Течения» для [`crate::registry::ALL`].
+pub static ENTRY: Entry = Entry;
+
+impl crate::registry::Entry for Entry {
+    fn key(&self) -> &'static str {
+        "currents"
+    }
+
+    fn name(&self) -> &'static str {
+        "Currents"
+    }
+
+    fn tip(&self) -> &'static str {
+        "Ocean surface currents as white running streaks over a speed colouring. Geostrophic currents of NOAA CoastWatch from satellite altimetry for the latest ready day, 0.5° grid. The first switch-on in a session downloads about 4 MB."
+    }
+
+    fn category(&self) -> crate::layers::Category {
+        crate::layers::Category::Water
+    }
+
+    fn source(&self) -> &'static str {
+        "NOAA CoastWatch"
+    }
+
+    fn words(&self) -> &'static [&'static str] {
+        &["течения", "океан", "гольфстрим", "currents", "ocean"]
+    }
+
+    fn legend(&self) -> Option<crate::thumbs::Recipe> {
+        Some(crate::thumbs::Recipe::Ramp(flow::CURRENT_STOPS.iter().map(|s| s.1.map(|v| v.round().clamp(0.0, 255.0) as u8)).collect()))
+    }
+
+    fn make(&self, _cx: &crate::registry::Make<'_>) -> (Box<dyn crate::registry::Layer>, Option<String>) {
+        (Box::new(Currents::default()), None)
+    }
+}
+
+impl crate::registry::Layer for Currents {
+    fn step(&mut self, cx: &crate::registry::Ctx<'_>) -> crate::registry::Stepped {
+        let message = Currents::step(self, cx.lang, cx.now, cx.moment, cx.view, cx.request);
+        // Струйки бегут - кадры идут по такту частиц.
+        crate::registry::Stepped { message, painters: std::mem::take(&mut self.changed), tick: Some(u64::from(flow::TICK_MS)) }
+    }
+
+    fn painter(&self) -> Option<crate::vector::Painter> {
+        self.grid().map(painter)
+    }
+
+    fn paint(&self, p: &egui::Painter, rect: egui::Rect, ppp: f64, camera: &globe_core::camera::Camera) {
+        Currents::paint(self, p, rect, ppp, camera);
+    }
+
+    fn busy(&self) -> bool {
+        Currents::busy(self)
+    }
+
+    fn attribution(&self) -> Option<(&'static str, &'static str)> {
+        Some(flow::CURRENTS_ATTRIBUTION)
+    }
+}
