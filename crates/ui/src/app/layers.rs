@@ -572,7 +572,8 @@ impl LiteApp {
         let mut data = Vec::new();
         let mut menu = self.layers_menu.take();
         let mut folder = std::mem::take(&mut self.new_folder);
-        let rows = crate::datalayers::row_count(&self.data_layers).max(1) as f32;
+        // Пустой раздел - подсказка в четыре строки, ей нужно место трёх строк слоёв.
+        let rows = crate::datalayers::row_count(&self.data_layers).max(3) as f32;
         let room = (22.0 * rows.min(MY_LAYERS_ROWS) + 36.0).min(ui.available_height() - SECTION_MIN).max(48.0);
         egui::ScrollArea::vertical().id_salt("my-layers").max_height(room).auto_shrink([false, true]).show(ui, |ui| {
             crate::datalayers::rows(ui, lang, &self.data_layers, &mut menu, &mut folder, &mut data);
