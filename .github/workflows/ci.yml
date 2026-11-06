@@ -46,6 +46,14 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      - name: Контракт сцены линейки
+        # Формат сцены и проверочные сцены - хранилище planetx-scene,
+        # тест crates/scene/tests/contract.rs.
+        uses: actions/checkout@v4
+        with:
+          repository: Valery35/planetx-scene
+          path: planetx-scene
+
       - name: Rust ${{ env.RUST_VERSION }}
         run: |
           rustup toolchain install "$RUST_VERSION" --profile minimal --component clippy --target wasm32-unknown-unknown
@@ -73,6 +81,8 @@ jobs:
       - name: Тесты
         # Строки упавших тестов - в аннотации: журнал прогона открыт только
         # после входа на GitHub, аннотации видны всем.
+        env:
+          PLANETX_SCENE: ${{ github.workspace }}/planetx-scene
         run: |
           set -o pipefail
           cargo test --workspace --locked 2>&1 | tee test.log || { grep -E "panicked|FAILED|^error" test.log | head -n 20 | sed 's/^/::error::/'; exit 1; }
