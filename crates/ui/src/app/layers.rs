@@ -1,0 +1,619 @@
+// PlanetX Lite - глобус PlanetX без QGIS.
+// Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+// SPDX-License-Identifier: Apache-2.0
+
+//! Раздел «Слои» и «Мои слои»: строки, каталог «Добавить данные», карты, основа.
+
+use super::*;
+
+impl LiteApp {
+    /// Флажок «Глубины морей и океанов» сменился: высоты заново из
+    /// глубин, сетки заново, как `_set_sea_floor` модуля.
+    pub(super) fn sea_changed(&mut self) {
+        let floor = self.earth_floor();
+        let relief = &self.relief;
+        self.heights.write().refloor(floor, &|tile| relief.patch(tile));
+        if let Some(globe) = &mut self.globe {
+            globe.stale_meshes(None);
+        }
+    }
+
+    /// Действия раздела «Слои» и каталога «Добавить данные».
+    pub(super) fn apply_layers(&mut self, actions: Vec<crate::layers::Action>, now: f64) {
+        use crate::layers::Action;
+        for action in actions {
+            match action {
+                Action::Basemap(b) => self.set_basemap(b),
+                Action::Sea(on) => {
+                    self.settings.sea = on;
+                    self.settings_dirty = true;
+                    self.sea_changed();
+                }
+                Action::AddSource => self.own_dialog = Some(OwnDialog::default()),
+                Action::Data(id, act) => self.data_act(id, &act, now),
+                Action::Tiles(id, act) => {
+                    if act == crate::tilesets::Act::Zoom {
+                        let spots = self.tilesets.get(id).map(|s| s.spots.clone()).unwrap_or_default();
+                        let camera = &self.nav.camera;
+                        if let Some(pose) = marks::fit_points(&spots, camera.fov_y, camera.aspect()) {
+                            crate::input::fly(&mut self.nav, pose, now);
+                        }
+                    } else {
+                        self.tilesets.apply(id, act);
+                    }
+                }
+                Action::GibsCatalog => self.ask_gibs_catalog(),
+                Action::Events => self.events.open(&*self.loaders.request),
+                Action::RemoveOwn(b) => {
+                    if let Some(own) = crate::basemap::own_of(b) {
+                        self.settings.own.retain(|o| *o != own);
+                        self.settings_dirty = true;
+                    }
+                    if self.basemap == b {
+                        self.set_basemap(Basemap::Esri);
+                    }
+                }
+                Action::GeoidScale(scale) => {
+                    self.settings.geoid_scale = scale;
+                    self.settings_dirty = true;
+                    if let Some(g) = &mut self.geoid {
+                        g.scale = scale;
+                        self.heights.write().set_scale(scale);
+                    }
+                }
+                Action::Stretch(on) => {
+                    self.settings.stretch = on;
+                    self.settings_dirty = true;
+                    if let Some(c) = &mut self.cutaway {
+                        c.set_stretch(on);
+                    }
+                }
+                Action::Opacity(key, alpha) => {
+                    self.map_opacity.insert(key.to_string(), alpha);
+                    self.settings.opacity = self.map_opacity.iter().map(|(k, v)| (k.clone(), *v)).collect();
+                    self.settings_dirty = true;
+                    if self.vector.set_opacity(key, alpha)
+                        && let Some(globe) = &mut self.globe
+                    {
+                        globe.clear_overlays();
+                    }
+                }
+                Action::Ground(alpha) => {
+                    if let Some(sub) = &mut self.subsurface {
+                        sub.options.opacity = alpha;
+                    }
+                }
+                Action::Subsurface => {
+                    if let Some(sub) = &mut self.subsurface {
+                        sub.window_open = true;
+                    }
+                }
+                Action::Relief(on) => {
+                    self.settings.relief = on;
+                    self.heights.write().set_scale(if on { self.settings.scale } else { 0.0 });
+                }
+                Action::Extra(e, on) => {
+                    self.extras.insert(e);
+                    self.set_extra(e, on);
+                }
+                Action::RemoveExtra(e) => {
+                    self.extras.remove(&e);
+                    self.set_extra(e, false);
+                }
+                Action::Rows(rows) => self.set_vector_rows(rows),
+                Action::RemoveGroup(n) => {
+                    let mut rows = self.vector.rows.clone();
+                    rows.retain(|r| !crate::vector::TREE[n].2.iter().any(|(k, _, _)| k == r));
+                    self.vector.seen.remove(&n);
+                    self.set_vector_rows(rows);
+                }
+                Action::Sources => self.credits.sources_open = true,
+            Action::SatGroups(groups) => {
+                self.settings.sat_groups = groups.clone();
+                self.settings_dirty = true;
+                if let Some(s) = &mut self.satellites {
+                    s.set_groups(groups.into_iter().collect());
+                }
+            }
+                Action::Catalog => self.catalog.open = !self.catalog.open,
+                Action::Volumes(name) => self.volumes = Some(crate::volumecalc::VolumeCalc::new(name)),
+                Action::Bathymetry(name) => {
+                    self.close_side();
+                    let level = self.shore_level(&name);
+                    self.bathy = Some(crate::bathymetry::Dialog::new(&name, self.relief.lake(&name), level));
+                }
+            }
+        }
+    }
+
+    /// Слой каталога включить или выключить.
+    pub(super) fn set_extra(&mut self, extra: crate::layers::Extra, on: bool) {
+        use crate::layers::Extra;
+        match extra {
+            Extra::Air => self.settings.air = on,
+            Extra::Stars => self.settings.stars = on,
+            Extra::Sun => self.settings.sun = on,
+            Extra::Grid => self.settings.grid = on,
+            Extra::Map(_) => {}
+            Extra::Live(kind) => {
+                if on {
+                    self.live.entry(kind).or_insert_with(|| crate::live::Live::new(kind));
+                } else if self.live.remove(&kind).is_some() {
+                    if self.live_follow.as_ref().is_some_and(|(k, _)| *k == kind) {
+                        self.live_follow = None;
+                    }
+                    self.live_keys.clear();
+                    if let Some(globe) = &mut self.globe {
+                        globe.set_live_models(&[]);
+                    }
+                    self.live_points.clear();
+                    self.live_labels.clear();
+                    self.dots.dirty = true;
+                }
+            }
+            Extra::Weather(n) => {
+                if on {
+                    // Поле погоды одно: новое занимает место прежнего.
+                    if let Some((old, _)) = self.weather.take().filter(|(old, _)| *old != n) {
+                        self.extras.remove(&Extra::Weather(old));
+                    }
+                    if let Some(row) = crate::weather::ROWS.get(n) {
+                        self.weather = Some((n, crate::weather::Weather::new(row.field)));
+                    }
+                } else if self.weather.as_ref().is_some_and(|(old, _)| *old == n) {
+                    self.weather = None;
+                    self.refresh_painters();
+                }
+            }
+            Extra::Currents => {
+                if on {
+                    self.currents.get_or_insert_with(crate::currents::Currents::default);
+                } else if self.currents.take().is_some() {
+                    self.refresh_painters();
+                }
+            }
+            // Здания основы и Overture - одно место: включение строки
+            // снимает другую (`extra_slot`), разобранные тайлы прежнего
+            // источника забываются.
+            Extra::Buildings | Extra::Overture => {
+                // Снятие строки, которая уже не на глобусе, ничего не трогает.
+                let active = self.buildings.is_some() && self.overture.is_some() == (extra == Extra::Overture);
+                if (on || active)
+                    && let Some(mut b) = self.buildings.take()
+                    && let Some(globe) = &mut self.globe
+                {
+                    b.clear(globe);
+                }
+                if on || active {
+                    self.overture = None;
+                }
+                if on {
+                    self.buildings = Some(crate::buildings::Buildings::default());
+                    if extra == Extra::Overture {
+                        self.overture = Some(crate::overture::Overture::new(&*self.loaders.request));
+                    }
+                }
+            }
+            Extra::Mining => {
+                if on {
+                    if self.mining.is_none() {
+                        let path = self.data_dir().map(|d| d.join(data::mining::POLYGONS_FILE));
+                        let loaders = &self.loaders;
+                        let (m, message) = crate::mining::Mining::new(self.lang, path, &|limit: u64| (loaders.request)(limit));
+                        self.mining = Some(m);
+                        if message.is_some() {
+                            self.open_message = message;
+                        }
+                    }
+                } else if self.mining.take().is_some() {
+                    self.refresh_painters();
+                }
+            }
+            Extra::Satellites => {
+                if on {
+                    if self.satellites.is_none() {
+                        self.satellites = Some(crate::satellites::Satellites::new(&self.settings.sat_groups, self.satellite_dir()));
+                    }
+                } else {
+                    self.satellites = None;
+                    self.sat_points.clear();
+                    self.sat_shown.clear();
+                    self.dots.dirty = true;
+                }
+            }
+            Extra::Wiki => {
+                if on {
+                    self.wiki.get_or_insert_with(crate::wiki::Wiki::default);
+                } else {
+                    self.wiki = None;
+                    self.wiki_labels.clear();
+                }
+            }
+            Extra::Geoid => {
+                if on && self.geoid.is_none() {
+                    let source = net::Source { name: "geoid", url: data::geoid::TILE_URL, max_requests: 4, max_level: data::geoid::MAX_LEVEL, ext: "png", placeholders: false, raw: false, tilejson: None };
+                    self.geoid = Some(GeoidState { loader: (self.loaders.make)(source), scale: self.settings.geoid_scale });
+                    let mut store = self.heights.write();
+                    store.clear();
+                    store.max_level = data::geoid::MAX_LEVEL;
+                    store.set_scale(self.settings.geoid_scale);
+                } else if !on && self.geoid.take().is_some() {
+                    let mut store = self.heights.write();
+                    store.clear();
+                    store.max_level = terrain::MAX_LEVEL;
+                    store.set_scale(if self.settings.relief { self.settings.scale } else { 0.0 });
+                }
+                if let Some(globe) = &mut self.globe {
+                    globe.stale_meshes(None);
+                }
+            }
+            Extra::Paleo => {
+                if on && self.paleo.is_none() {
+                    let state = PaleoState { index: 0, playing: false, last: 0.0, before: self.basemap, rows: self.vector.rows.clone() };
+                    self.paleo = Some(state);
+                    self.set_vector_rows(std::collections::BTreeSet::new());
+                    self.heights.write().set_scale(0.0);
+                    self.set_basemap(Basemap::Paleo(data::paleo::AGES[0]));
+                } else if !on && let Some(state) = self.paleo.take() {
+                    self.set_basemap(state.before);
+                    self.set_vector_rows(state.rows);
+                    let scale = if self.settings.relief { self.settings.scale } else { 0.0 };
+                    self.heights.write().set_scale(scale);
+                }
+            }
+            Extra::Cutaway => {
+                // Сектор под точкой взгляда в момент включения, как
+                // `_set_cutaway` модуля.
+                self.cutaway = on.then(|| crate::cutaway::Cutaway::new(self.nav.pose.lat, self.nav.pose.lon, self.settings.stretch, self.crust_cache().as_deref()));
+                self.nav.camera.deep = on;
+                if !on {
+                    self.labels.wedge = None;
+                }
+                if let Some(globe) = &mut self.globe
+                    && !on
+                {
+                    globe.set_wedge(None);
+                    globe.set_subsurface("cutaway", None);
+                    globe.set_subsurface("slabs", None);
+                }
+            }
+            Extra::Dots(layer) => {
+                if on {
+                    let loaders = &self.loaders;
+                    self.dots.enable(layer, &|| (loaders.request)(layer.bytes()));
+                } else {
+                    self.dots.disable(layer);
+                }
+
+                self.settings.dots = crate::dots::Layer::ALL.into_iter().filter(|l| if *l == layer { on } else { self.extras_on.contains(&Extra::Dots(*l)) }).map(|l| l.key().to_string()).collect();
+            }
+        }
+        if on {
+            // Карта значений или готовая карта на глобусе одна, как
+            // у модуля: включение другой снимает прежнюю.
+            if let Some(slot) = extra_slot(extra) {
+                let others: Vec<Extra> = self.extras_on.iter().copied().filter(|e| *e != extra && extra_slot(*e) == Some(slot)).collect();
+                for other in others {
+                    self.set_extra(other, false);
+                }
+            }
+            self.extras_on.insert(extra);
+            self.extras.insert(extra);
+        } else {
+            self.extras_on.remove(&extra);
+        }
+        if matches!(extra, Extra::Map(_)) {
+            self.sync_maps();
+        }
+        self.settings_dirty = true;
+    }
+
+    /// Попросить весь каталог NASA GIBS, один раз за запуск.
+    pub(super) fn ask_gibs_catalog(&mut self) {
+        if self.gibs_catalog.is_none() && !crate::maps::has_catalog() {
+            let request = (self.loaders.request)(GIBS_CATALOG_BYTES);
+            request.start(data::gibs::CAPABILITIES);
+            self.gibs_catalog = Some(request);
+        }
+    }
+
+    /// Карты картинками на глобусе - по включённым строкам: снизу карта
+    /// значений или готовая карта, над ней наложения. Загрузчики заводятся
+    /// и убираются вместе со строками.
+    pub(super) fn sync_maps(&mut self) {
+        let mut on: Vec<(&'static str, crate::maps::Kind)> = (0..crate::maps::count())
+            .filter(|n| self.extras_on.contains(&crate::layers::Extra::Map(*n)))
+            .filter_map(crate::maps::entry)
+            .filter_map(|e| crate::maps::kind(e.key).map(|k| (e.key, k)))
+            .collect();
+        // Слои каталога GIBS, который ещё не пришёл, остаются в настройках.
+        self.settings.maps = on.iter().map(|(id, _)| id.to_string()).chain(self.gibs_pending.iter().cloned()).collect();
+        // Тема GIBS ложится, когда известен день ряда: до ответа ряда
+        // дат картинки тайлов ждали бы её и не рисовались. У слоя всего
+        // каталога ряд пришёл с каталогом.
+        let now_utc = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64());
+        for (id, kind) in &on {
+            if let crate::maps::Kind::Theme(theme) = kind
+                && !self.theme_days.contains_key(id)
+            {
+                let state = if theme.intervals.is_some() {
+                    theme.catalog_day(now_utc).map_or(ThemeDay::Failed, ThemeDay::Day)
+                } else {
+                    let request = (self.loaders.request)(ANSWER_BYTES);
+                    request.start(&theme.domains_url());
+                    ThemeDay::Asking(request)
+                };
+                self.theme_days.insert(id, state);
+            }
+        }
+        on.retain(|(id, kind)| !matches!(kind, crate::maps::Kind::Theme(_)) || matches!(self.theme_days.get(id), Some(ThemeDay::Day(_))));
+        // Цвета горизонталей - по подложке: на снимке жёлтые, на карте
+        // коричневые, как у модуля.
+        let source = self.basemap.source();
+        let palette = if data::contours::is_imagery(self.basemap.key(), source.url, false) { data::contours::Palette::Imagery } else { data::contours::Palette::Map };
+        for (_, kind) in &mut on {
+            if let crate::maps::Kind::Contours(p) = kind {
+                *p = palette;
+            }
+        }
+        on.sort_by_key(|(_, k)| !k.is_single());
+        // Границы полей - своим загрузчиком архива PMTiles.
+        let year = on.iter().find_map(|(_, k)| if let crate::maps::Kind::Fields(y) = k { Some(*y) } else { None });
+        if self.field_tiles.as_ref().map(|f| f.year) != year {
+            let loaders = &self.loaders;
+            self.field_tiles = year.map(|y| crate::fieldmap::FieldTiles::new(y, &|limit: u64| (loaders.request)(limit)));
+        }
+        self.map_loaders.retain(|k, _| on.iter().any(|(id, _)| id == k));
+        for (id, kind) in &on {
+            if !self.map_loaders.contains_key(id) {
+                let mut sources = kind.sources(id);
+                if let (crate::maps::Kind::Theme(theme), Some(ThemeDay::Day(day))) = (kind, self.theme_days.get(id)) {
+                    let url = lasting(&mut self.lasting, theme.url(day));
+                    let name = lasting(&mut self.lasting, format!("gibs-{}-{day}", theme.key));
+                    let max_level = theme.level;
+                    let ext = if theme.ext == "jpeg" { "jpg" } else { "png" };
+                    sources = vec![(0, net::Source { name, url, max_requests: 4, max_level, ext, placeholders: false, raw: false, tilejson: None })];
+                    // Шкала темы - по её цветовой карте.
+                    if !self.theme_scales.contains_key(id) {
+                        let state = match theme.colormap_url() {
+                            Some(url) => {
+                                let request = (self.loaders.request)(ANSWER_BYTES);
+                                request.start(&url);
+                                ThemeScale::Asking(request)
+                            }
+                            None => ThemeScale::Ready(None),
+                        };
+                        self.theme_scales.insert(id, state);
+                    }
+                }
+                let loaders = sources.into_iter().map(|(level, source)| (level, (self.loaders.make)(source))).collect();
+                self.map_loaders.insert(id, loaders);
+            }
+        }
+        // Непрозрачность карт из настроек.
+        for (key, alpha) in &self.map_opacity {
+            if let Some(entry) = crate::maps::index(key).and_then(crate::maps::entry) {
+                self.vector.set_opacity(entry.key, *alpha);
+            }
+        }
+        if self.vector.set_maps(on)
+            && let Some(globe) = &mut self.globe
+        {
+            globe.clear_overlays();
+        }
+    }
+
+    /// Новые строки векторной основы: линии рисуются заново, подписи - по
+    /// новым классам.
+    pub(super) fn set_vector_rows(&mut self, rows: std::collections::BTreeSet<crate::vector::Row>) {
+        if self.vector.set_rows(rows)
+            && let Some(globe) = &mut self.globe
+        {
+            globe.clear_overlays();
+        }
+        self.labels.kinds = self.vector.label_kinds();
+        self.settings.vector = self.vector.to_text();
+        self.settings_dirty = true;
+    }
+
+    /// «Мои слои» прошлого запуска - в раздел, первым кадром: в программе
+    /// объекты лежат файлами в папке данных, на странице - в самом
+    /// списке. Слои, открытые до этого, остаются сверху.
+    pub(super) fn restore_my_layers(&mut self) {
+        let Some(text) = self.my_layers_saved.take() else {
+            return;
+        };
+        let dir = self.user_dir.as_ref().map(|d| d.join(crate::datalayers::DIR));
+        let read = |name: &str| dir.as_ref().and_then(|d| std::fs::read(d.join(name)).ok());
+        let (saved, lost) = crate::datalayers::DataLayers::from_index(&text, &read);
+        self.data_layers.restore(saved);
+        if !lost.is_empty() {
+            self.open_message = Some(trf(self.lang, "My layers: the objects of these layers were not found: {names}", &[("names", &lost.join(", "))]));
+        }
+    }
+
+    /// «Мои слои» - в хранилище, если изменились. В программе объекты
+    /// новых слоёв пишутся файлами GeoJSON в папку данных, файлы убранных
+    /// слоёв удаляются. На странице объекты идут в сам список, пока он
+    /// меньше [`crate::datalayers::INLINE_LIMIT`].
+    pub(super) fn save_my_layers(&mut self, storage: &mut dyn eframe::Storage) {
+        // Список прошлого запуска ещё не прочитан - не затирать его.
+        if !self.data_layers.save_dirty || self.my_layers_saved.is_some() {
+            return;
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            // Без папки данных слои живут до закрытия программы.
+            let Some(dir) = self.user_dir.as_ref().map(|d| d.join(crate::datalayers::DIR)) else {
+                return;
+            };
+            if let Err(e) = std::fs::create_dir_all(&dir) {
+                self.open_message = Some(format!("{}: {e}", dir.display()));
+                return;
+            }
+            for (id, name) in self.data_layers.unstored() {
+                let Some(layer) = self.data_layers.get(id) else {
+                    continue;
+                };
+                match std::fs::write(dir.join(&name), crate::datalayers::DataLayers::stored_bytes(layer)) {
+                    Ok(()) => self.data_layers.stored(id, name),
+                    Err(e) => self.open_message = Some(format!("{}: {e}", dir.join(&name).display())),
+                }
+            }
+            for name in std::mem::take(&mut self.data_layers.dropped) {
+                // Файла уже нет - удалять нечего.
+                let _ = std::fs::remove_file(dir.join(name));
+            }
+            storage.set_string(crate::datalayers::KEY, self.data_layers.index(false));
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            let text = self.data_layers.index(true);
+            if text.len() > crate::datalayers::INLINE_LIMIT {
+                self.open_message = Some(tr(self.lang, "My layers exceed 1 MB, the page keeps them until it is closed").to_string());
+            } else {
+                storage.set_string(crate::datalayers::KEY, text);
+            }
+        }
+        self.data_layers.save_dirty = false;
+    }
+
+    /// Действие меню слоя «Моих слоёв».
+    pub(super) fn data_act(&mut self, id: u64, act: &crate::datalayers::Act, now: f64) {
+        use crate::datalayers::Act;
+        match act {
+            Act::ToRustGis => {
+                #[cfg(not(target_arch = "wasm32"))]
+                if let (Some(sync), Some(layer)) = (self.rustgis.as_ref().filter(|s| s.connected), self.data_layers.get(id)) {
+                    sync.link.ask(crate::rustgislink::Ask::AddLayer { name: data::layers::stem(&layer.title).to_string(), geojson: data::layers::to_geojson(&layer.data) });
+                }
+            }
+            Act::FolderToRustGis(folder) => {
+                #[cfg(not(target_arch = "wasm32"))]
+                if let Some(sync) = self.rustgis.as_ref().filter(|s| s.connected) {
+                    for layer in self.data_layers.list.iter().filter(|l| &l.folder == folder && l.live.is_none()) {
+                        let name = format!("{folder} · {}", data::layers::stem(&layer.title));
+                        sync.link.ask(crate::rustgislink::Ask::AddLayer { name, geojson: data::layers::to_geojson(&layer.data) });
+                    }
+                }
+                #[cfg(target_arch = "wasm32")]
+                let _ = folder;
+            }
+            Act::Reload => self.reload_layer(id),
+            Act::Export => {
+                if let Some(layer) = self.data_layers.get(id) {
+                    let name = format!("{}.geojson", data::layers::stem(&layer.title));
+                    match crate::export::save_bytes(&name, ("GeoJSON", "geojson"), data::layers::to_geojson(&layer.data).as_bytes()) {
+                        Ok(Some(path)) => self.open_message = Some(trf(self.lang, "Saved: {to}", &[("to", &path)])),
+                        Ok(None) => {}
+                        Err(e) => self.open_message = Some(e),
+                    }
+                }
+            }
+            Act::Zoom => {
+                let points = self.data_layers.get(id).map(crate::datalayers::DataLayer::extent_points).unwrap_or_default();
+                let camera = &self.nav.camera;
+                if let Some(pose) = marks::fit_points(&points, camera.fov_y, camera.aspect()) {
+                    crate::input::fly(&mut self.nav, pose, now);
+                }
+            }
+            Act::ToPlaces => {
+                if let Some(layer) = self.data_layers.get(id) {
+                    // Слой-картинка - наложением на землю, иначе - метками.
+                    let folder = match &layer.picture {
+                        Some(p) => {
+                            let mut f = scene::kml::Folder::new(&layer.title);
+                            f.children.push(scene::kml::Item::Overlay(p.clone()));
+                            f
+                        }
+                        None => crate::gpkg::folder(vec![layer.data.clone()], &layer.title),
+                    };
+                    let title = layer.title.clone();
+                    self.marks.add(folder, &title, marks::root_name(self.lang));
+                    self.marks_changed();
+                }
+            }
+            _ => {
+                self.data_layers.apply(id, act);
+            }
+        }
+    }
+
+    /// Состояние для раздела «Слои» и каталога.
+    pub(super) fn layers_state(&self) -> crate::layers::State<'_> {
+        crate::layers::State {
+            basemap: self.basemap,
+            relief: self.settings.relief,
+            extras: &self.extras,
+            on: &self.extras_on,
+            vector: &self.vector,
+            own: self.relief.names().into_iter().map(str::to_string).collect(),
+            sea: self.settings.sea,
+            ground: self.subsurface.as_ref().map(|s| s.options.opacity),
+            opacity: &self.map_opacity,
+            stretch: self.settings.stretch,
+            geoid_scale: self.settings.geoid_scale,
+            sat_groups: &self.settings.sat_groups,
+            earth: self.planet.earth,
+            events: self.events.shown.is_some(),
+            data: &self.data_layers,
+            tiles: &self.tilesets,
+        }
+    }
+
+    /// Раздел «Мои слои» левой панели между «Метками» и «Слоями», как
+    /// «Проект QGIS» модуля, решение автора от 6 ноября 2026 года: слои
+    /// файлов и результаты окон анализа в порядке отрисовки. Высота - по
+    /// строкам, не больше [`MY_LAYERS_ROWS`], дальше прокрутка.
+    pub(super) fn my_layers_section(&mut self, ui: &mut egui::Ui, lang: Lang, now: f64) {
+        if !crate::theme::section(ui, "my-layers", tr(lang, "My layers")) {
+            return;
+        }
+        let mut data = Vec::new();
+        let mut menu = self.layers_menu.take();
+        let mut folder = std::mem::take(&mut self.new_folder);
+        let rows = crate::datalayers::row_count(&self.data_layers).max(1) as f32;
+        let room = (22.0 * rows.min(MY_LAYERS_ROWS) + 36.0).min(ui.available_height() - SECTION_MIN).max(48.0);
+        egui::ScrollArea::vertical().id_salt("my-layers").max_height(room).auto_shrink([false, true]).show(ui, |ui| {
+            crate::datalayers::rows(ui, lang, &self.data_layers, &mut menu, &mut folder, &mut data);
+        });
+        self.layers_menu = menu;
+        self.new_folder = folder;
+        for (id, act) in data {
+            self.data_act(id, &act, now);
+        }
+    }
+
+    /// Загрузчик основы: встроенный или готовой подосновы.
+    pub(super) fn base_loader(&self, basemap: Basemap) -> Option<&dyn TileLoader> {
+        self.loaders.basemap(basemap).or_else(|| self.ready_loader.as_ref().filter(|(b, _)| *b == basemap).map(|(_, l)| l.as_ref()))
+    }
+
+    /// Сменить основу: снимки прежней забываются.
+    pub(super) fn set_basemap(&mut self, basemap: Basemap) {
+        if basemap == self.basemap {
+            return;
+        }
+        self.basemap = basemap;
+        self.pending.clear();
+        // Подробная мозаика тела COG - свой загрузчик уровней после тайлов.
+        let deep = match basemap {
+            Basemap::Body(key) => scene::planets::planet_by_key(key).imagery.and_then(|i| i.deep.map(|d| (d, u32::from(i.max_level)))),
+            _ => None,
+        };
+        let loaders = &self.loaders;
+        self.cog_base = deep.map(|(d, from)| crate::cogtiles::CogTiles::new(d.url, d.clon, from + 1, u32::from(d.max_level), &|limit| (loaders.request)(limit)));
+        if matches!(basemap, Basemap::Ready(_) | Basemap::Own(_) | Basemap::Paleo(_) | Basemap::Body(_)) && self.ready_loader.as_ref().is_none_or(|(b, _)| *b != basemap) {
+            self.ready_loader = Some((basemap, (self.loaders.make)(basemap.source())));
+        }
+        // Карта палеогеографии - не выбор основы, в настройки не идёт.
+        if !matches!(basemap, Basemap::Paleo(_) | Basemap::Body(_)) {
+            self.settings.basemap = basemap.key().to_string();
+            self.settings_dirty = true;
+        }
+        self.sync_maps();
+        if let Some(globe) = &mut self.globe {
+            globe.clear_textures();
+        }
+    }
+}
