@@ -19,7 +19,9 @@ path = "src/main.rs"
 [dependencies]
 desktop.workspace = true
 # Без terrio и аддинов: данные приходят из RustGIS (doc/EDITIONS.md).
-ui.workspace = true
+# Темы слоёв каталога - признаки ui, doc/PLAN.md, «Как снять перегруз».
+# Пока все темы, какие убрать из RustPlanetX - решает автор.
+ui = { workspace = true, features = ["full"] }
 
 # Значок и сведения о программе в exe под Windows.
 [target.'cfg(windows)'.build-dependencies]

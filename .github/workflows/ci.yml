@@ -220,6 +220,13 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
 
+      - name: Сборка без признаков
+        # Строка реестра или модуль под признаком темы, который забыли
+        # закрыть, ломают сборку без тем и RustPlanetX.
+        run: |
+          cargo check --locked -p ui --no-default-features
+          cargo check --locked -p planetx-rustgis
+
       - name: Clippy под wasm32
         run: cargo clippy --locked --target wasm32-unknown-unknown $(printf -- '-p %s ' $WASM_CRATES) -- -D warnings
 

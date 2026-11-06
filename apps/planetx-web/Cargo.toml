@@ -13,7 +13,7 @@ repository.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 net.workspace = true
-ui = { workspace = true, features = ["import", "addins"] }
+ui = { workspace = true, features = ["full", "import", "addins"] }
 eframe.workspace = true
 # WebGL2 - запасной путь там, где нет WebGPU, например страница по http.
 wgpu = { workspace = true, features = ["webgl"] }
