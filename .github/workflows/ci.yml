@@ -2,17 +2,31 @@
 # Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Проверка каждой отправки в main и каждого запроса на слияние: тесты,
-# clippy, сборка программы и страницы под wasm32, лицензии зависимостей.
-# Тест дыр на видеокарте здесь пропускается - видеокарты на машине
-# GitHub нет. Дыры проверяет самопроверка planetx-lite --check perm.
+# Проверка ступенями, doc/PLAN.md, «Как снять перегруз».
+#
+# Быстрая ступень - каждая отправка в main и каждый запрос на слияние:
+# сборка всей рабочей области (cargo check), тесты и clippy только
+# изменённых крейтов, wasm32 изменённых крейтов. Правка одних документов
+# проверку не запускает.
+#
+# Полная ступень - ночью, вручную и по метке выпуска: тесты и clippy всей
+# рабочей области, программа и страница под wasm32, лицензии зависимостей,
+# контракт сцены линейки. Тест дыр на видеокарте здесь пропускается -
+# видеокарты на машине GitHub нет. Дыры проверяет самопроверка
+# planetx-lite --check perm.
 
 name: CI
 
 on:
   push:
     branches: [main]
+    tags: ["v*"]
+    paths-ignore: ["**.md", "doc/**", "LICENSE", "NOTICE*"]
   pull_request:
+    paths-ignore: ["**.md", "doc/**", "LICENSE", "NOTICE*"]
+  schedule:
+    # Ночью по Екатеринбургу, 2:00 местного времени.
+    - cron: "0 21 * * *"
   workflow_dispatch:
 
 permissions:
@@ -30,10 +44,126 @@ env:
   # Полные отладочные сведения не умещаются на диск машины GitHub.
   CARGO_PROFILE_DEV_DEBUG: line-tables-only
   CARGO_PROFILE_TEST_DEBUG: line-tables-only
+  # Крейты, которые собираются и под wasm32.
+  WASM_CRATES: "globe-core terrain data scene net render addin-api addin-host ui planetx-web"
 
 jobs:
+  # Какие крейты изменены. Правка корневых Cargo.toml, Cargo.lock,
+  # .cargo или этого файла - вся рабочая область.
+  changes:
+    name: Изменённые крейты
+    if: github.event_name == 'push' && github.ref_type == 'branch' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      native: ${{ steps.pick.outputs.native }}
+      wasm: ${{ steps.pick.outputs.wasm }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: pick
+        env:
+          BEFORE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then BEFORE="HEAD~1"; fi
+          files=$(git diff --name-only "$BEFORE" HEAD)
+          echo "$files"
+          if echo "$files" | grep -qE '^(Cargo\.toml|Cargo\.lock|\.cargo/|\.github/workflows/ci\.yml|rust-toolchain)'; then
+            native="--workspace"
+          else
+            native=$(echo "$files" | sed -nE 's#^(crates|apps)/([^/]+)/.*#\2#p' | sort -u | sed 's/^/-p /' | tr '\n' ' ')
+          fi
+          wasm=""
+          for c in $WASM_CRATES; do
+            if [ "$native" = "--workspace" ] || echo " $native " | grep -q " -p $c "; then wasm="$wasm -p $c"; fi
+          done
+          echo "native=$native" >> "$GITHUB_OUTPUT"
+          echo "wasm=$wasm" >> "$GITHUB_OUTPUT"
+          echo "крейты: ${native:-нет}, wasm32: ${wasm:-нет}"
+
+  # Быстрая ступень, программа: сборка всего, тесты и clippy изменённого.
+  fast:
+    name: Быстрая - тесты и clippy
+    needs: changes
+    if: needs.changes.outputs.native != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Место на диске
+        run: sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
+      - uses: actions/checkout@v4
+      - name: Контракт сцены линейки
+        uses: actions/checkout@v4
+        with:
+          repository: Valery35/planetx-scene
+          path: planetx-scene
+      - name: Rust ${{ env.RUST_VERSION }}
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal --component clippy
+          rustup default "$RUST_VERSION"
+      - name: Системные библиотеки окна
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev libxrandr-dev libxi-dev libgl1-mesa-dev
+      - name: Кэш Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: fast-${{ runner.os }}-${{ env.RUST_VERSION }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: fast-${{ runner.os }}-${{ env.RUST_VERSION }}-
+      - name: Сборка всей рабочей области
+        # Изменение API крейта ломает зависимые - их сборка ловит это сразу.
+        run: cargo check --workspace --all-targets --locked
+      - name: Тесты изменённых крейтов
+        env:
+          PLANETX_SCENE: ${{ github.workspace }}/planetx-scene
+          CRATES: ${{ needs.changes.outputs.native }}
+        run: |
+          set -o pipefail
+          cargo test $CRATES --locked 2>&1 | tee test.log || { grep -E "panicked|FAILED|^error" test.log | head -n 20 | sed 's/^/::error::/'; exit 1; }
+      - name: Clippy изменённых крейтов
+        env:
+          CRATES: ${{ needs.changes.outputs.native }}
+        run: cargo clippy $CRATES --all-targets --locked -- -D warnings
+
+  # Быстрая ступень, страница: clippy изменённых крейтов под wasm32,
+  # параллельно с программой.
+  fast-wasm:
+    name: Быстрая - wasm32
+    needs: changes
+    if: needs.changes.outputs.wasm != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust ${{ env.RUST_VERSION }}
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal --component clippy --target wasm32-unknown-unknown
+          rustup default "$RUST_VERSION"
+      - name: Кэш Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: wasm-${{ runner.os }}-${{ env.RUST_VERSION }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: wasm-${{ runner.os }}-${{ env.RUST_VERSION }}-
+      - name: Clippy под wasm32
+        env:
+          CRATES: ${{ needs.changes.outputs.wasm }}
+        run: cargo clippy $CRATES --locked --target wasm32-unknown-unknown -- -D warnings
+
+  # Полная ступень: ночью, вручную и по метке выпуска.
   check:
-    name: Тесты, clippy, wasm32, лицензии
+    name: Полная - тесты, clippy, wasm32, лицензии
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.ref_type == 'tag'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -91,14 +221,10 @@ jobs:
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
 
       - name: Clippy под wasm32
-        run: >
-          cargo clippy --locked --target wasm32-unknown-unknown
-          -p globe-core -p terrain -p data -p scene -p net -p render -p addin-api -p addin-host -p ui -p planetx-web -- -D warnings
+        run: cargo clippy --locked --target wasm32-unknown-unknown $(printf -- '-p %s ' $WASM_CRATES) -- -D warnings
 
       - name: Сборка под wasm32
-        run: >
-          cargo build --locked --target wasm32-unknown-unknown
-          -p globe-core -p terrain -p data -p scene -p net -p render -p addin-api -p addin-host -p ui -p planetx-web
+        run: cargo build --locked --target wasm32-unknown-unknown $(printf -- '-p %s ' $WASM_CRATES)
 
       - name: Лицензии зависимостей
         run: |
