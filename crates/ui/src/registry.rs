@@ -75,6 +75,11 @@ pub trait Entry: Sync {
     fn legend(&self) -> Option<Recipe> {
         None
     }
+    /// Место строки: из строк с одним местом включена только одна, новая
+    /// снимает прежнюю. None - строк сколько угодно.
+    fn slot(&self) -> Option<u8> {
+        None
+    }
     /// Новое состояние слоя: флажок включён. Второе - сообщение в строку
     /// состояния.
     fn make(&self, cx: &Make<'_>) -> (Box<dyn Layer>, Option<String>);
@@ -88,8 +93,13 @@ pub trait Layer {
     fn painter(&self) -> Option<Painter> {
         None
     }
-    /// Рисунок поверх глобуса в кадре.
-    fn paint(&self, _painter: &egui::Painter, _rect: egui::Rect, _ppp: f64, _camera: &Camera) {}
+    /// Рисунок поверх глобуса в кадре. view - широта, долгота точки
+    /// взгляда и ширина вида в метрах.
+    fn paint(&self, _painter: &egui::Painter, _rect: egui::Rect, _ppp: f64, _camera: &Camera, _view: (f64, f64, f64)) {}
+    /// Шкала в панели шкал вида: заголовок и цвета.
+    fn legend(&self, _lang: Lang) -> Option<(String, data::gibs::Colormap)> {
+        None
+    }
     /// Идёт загрузка: снимок окна ждёт.
     fn busy(&self) -> bool {
         false
@@ -105,7 +115,15 @@ pub trait Layer {
 }
 
 /// Слои реестра по порядку строк каталога. Новый слой - одна строка.
-pub static ALL: &[&dyn Entry] = &[&crate::mining::ENTRY, &crate::currents::ENTRY];
+pub static ALL: &[&dyn Entry] = &[
+    &crate::mining::ENTRY,
+    &crate::currents::ENTRY,
+    &crate::weather::ENTRIES[0],
+    &crate::weather::ENTRIES[1],
+    &crate::weather::ENTRIES[2],
+    &crate::weather::ENTRIES[3],
+    &crate::weather::ENTRIES[4],
+];
 
 /// Строка реестра номер n.
 pub fn get(n: usize) -> Option<&'static dyn Entry> {
@@ -135,7 +153,7 @@ mod tests {
             assert!(!e.source().is_empty());
         }
         // Ключи прежние: сохранённые флажки и сцены находят строки.
-        for key in ["mining", "currents"] {
+        for key in ["mining", "currents", "weather_temperature", "weather_wind", "weather_aurora"] {
             assert!(matches!(Extra::from_key(key), Some(Extra::Plugged(_))), "{key}");
         }
     }

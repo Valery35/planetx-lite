@@ -432,37 +432,6 @@ impl LiteApp {
         }
     }
 
-    /// Шаг течений: сутки по бегунку шкалы времени, загрузка, частицы.
-    /// Поле погоды: час по шкале времени, слой над картами.
-    pub(super) fn step_weather(&mut self, ctx: &egui::Context, now: f64) {
-        let moment = match self.timebar.window() {
-            Some((_, hi)) if hi.is_finite() => Some(hi),
-            _ => None,
-        };
-        let lang = self.lang;
-        let utc = crate::pointcalc::clock_now();
-        let altitude = self.nav.camera.ellipsoid.ecef_to_geodetic(self.nav.camera.eye).2;
-        let view = (self.nav.pose.lat, self.nav.pose.lon, altitude, self.view_width());
-        let Some((_, w)) = &mut self.weather else {
-            return;
-        };
-        let loaders = &self.loaders;
-        if let Some(message) = w.step(lang, utc, moment, &|limit: u64| (loaders.request)(limit)) {
-            self.open_message = Some(message);
-        }
-        if w.busy() {
-            ctx.request_repaint_after(std::time::Duration::from_millis(100));
-        }
-        if w.streaming() {
-            w.animate(now, view);
-            // Струйки бегут - кадры идут по такту частиц.
-            ctx.request_repaint_after(std::time::Duration::from_millis(u64::from(data::flow::TICK_MS)));
-        }
-        if std::mem::take(&mut w.changed) {
-            self.refresh_painters();
-        }
-    }
-
     /// Шаг кадра включённых слоёв реестра [`crate::registry`]: загрузка,
     /// движение, сообщение, картинки тайлов.
     pub(super) fn step_plugged(&mut self, ctx: &egui::Context, now: f64) {

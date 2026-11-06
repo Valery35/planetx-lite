@@ -486,8 +486,6 @@ pub struct LiteApp {
     parcels: Vec<data::cadastre::Parcel>,
     /// Включённые слои реестра [`crate::registry::ALL`] по номеру строки.
     plugged: BTreeMap<usize, Box<dyn crate::registry::Layer>>,
-    /// Поле погоды: строка [`crate::weather::ROWS`] и загрузчик.
-    weather: Option<(usize, crate::weather::Weather)>,
     /// Окно «Карты Рамсея».
     rumsey: Option<crate::rumsey::Rumsey>,
     /// Окно «Снимки OpenAerialMap».
@@ -1307,7 +1305,6 @@ impl LiteApp {
             parcel_ask: None,
             parcels: Vec::new(),
             plugged: BTreeMap::new(),
-            weather: None,
             rumsey: None,
             oam: None,
             sentinel: None,
@@ -3665,9 +3662,6 @@ impl LiteApp {
         if self.satellites.is_some() {
             parts.push(data::satellites::ATTRIBUTION);
         }
-        if let Some((_, w)) = &self.weather {
-            parts.push((if w.is_aurora() { data::weather::AURORA_ATTRIBUTION.0 } else { data::weather::ATTRIBUTION.0 }, ""));
-        }
         parts.extend(self.plugged.values().filter_map(|l| l.attribution()));
         if self.overture.is_some() {
             parts.push(crate::overture::ATTRIBUTION);
@@ -3871,7 +3865,6 @@ impl eframe::App for LiteApp {
             || self.wiki.as_ref().is_some_and(crate::wiki::Wiki::busy)
             || self.parcel_ask.is_some()
             || self.plugged.values().any(|l| l.busy())
-            || self.weather.as_ref().is_some_and(|(_, w)| w.busy())
             || self.rumsey.as_ref().is_some_and(crate::rumsey::Rumsey::busy)
             || self.oam.as_ref().is_some_and(crate::oam::Oam::busy)
             || self.wayback.as_ref().is_some_and(crate::wayback::Wayback::busy)
@@ -4140,7 +4133,6 @@ impl eframe::App for LiteApp {
         self.step_overpass(now);
         self.step_parcels();
         self.step_plugged(&ctx, now);
-        self.step_weather(&ctx, now);
         self.step_lidar(now);
         self.step_events(now);
         self.step_rumsey(&ctx, now);
@@ -4631,13 +4623,11 @@ impl eframe::App for LiteApp {
                 frame(&b, egui::Stroke::new(2.5, egui::Color32::from_rgb(255, 120, 30)));
             }
         }
-        // Струйки течений поверх глобуса.
+        // Рисунки слоёв реестра поверх глобуса: струйки течений и ветра,
+        // числа поля погоды.
+        let view = (self.nav.pose.lat, self.nav.pose.lon, self.view_width());
         for layer in self.plugged.values() {
-            layer.paint(&painter, rect, ppp, &self.nav.camera);
-        }
-        // Струйки ветра и числа поля погоды.
-        if let Some((_, w)) = &self.weather {
-            w.paint(&painter, rect, ppp, &self.nav.camera, (self.nav.pose.lat, self.nav.pose.lon, self.view_width()));
+            layer.paint(&painter, rect, ppp, &self.nav.camera, view);
         }
         // Контуры участков кадастра под щелчком.
         if !self.parcels.is_empty() {
@@ -4787,7 +4777,9 @@ impl eframe::App for LiteApp {
             }
             _ => None,
         });
-        let weather = self.weather.as_ref().and_then(|(n, w)| w.legend(self.lang, tr(self.lang, crate::weather::ROWS.get(*n)?.name)));
+        // Шкала слоя реестра - одна, первого слоя со шкалой.
+        let plugged_legend = self.plugged.iter().find_map(|(n, l)| Some((*n, l.legend(self.lang)?)));
+        let weather = plugged_legend.as_ref().map(|(_, legend)| legend.clone());
         let site = self.site_scale();
         match crate::legend::show(&ctx, self.lang, rect, self.credits.rect, crate::legend::Shown { maps: &maps, theme, dots: &dot_layers, contours, weather, site }) {
             Some(crate::legend::Closed::Site) => self.drop_site_owner(),
@@ -4798,8 +4790,8 @@ impl eframe::App for LiteApp {
             }
             Some(crate::legend::Closed::Dots(layer)) => self.set_extra(crate::layers::Extra::Dots(layer), false),
             Some(crate::legend::Closed::Weather) => {
-                if let Some((n, _)) = self.weather {
-                    self.set_extra(crate::layers::Extra::Weather(n), false);
+                if let Some((n, _)) = plugged_legend {
+                    self.set_extra(crate::layers::Extra::Plugged(n), false);
                 }
             }
             None => {}
@@ -4860,6 +4852,7 @@ fn extra_slot(extra: crate::layers::Extra) -> Option<u8> {
         crate::layers::Extra::Map(_) => extra.map().and_then(|e| crate::maps::kind(e.key)).and_then(|k| k.slot()),
         crate::layers::Extra::Dots(crate::dots::Layer::Fires) => Some(0),
         crate::layers::Extra::Buildings | crate::layers::Extra::Overture => Some(9),
+        crate::layers::Extra::Plugged(n) => crate::registry::get(n).and_then(|e| e.slot()),
         _ => None,
     }
 }

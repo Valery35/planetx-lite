@@ -258,3 +258,98 @@ impl Weather {
         message
     }
 }
+
+/// Место строк погоды: поле на глобусе одно, новое снимает прежнее.
+pub const SLOT: u8 = 10;
+
+/// Строка погоды номер n в [`ROWS`] - строка реестра слоёв каталога
+/// [`crate::registry`].
+pub struct Entry(pub usize);
+
+/// Строки погоды для [`crate::registry::ALL`], по одной на строку [`ROWS`].
+pub static ENTRIES: [Entry; 5] = [Entry(0), Entry(1), Entry(2), Entry(3), Entry(4)];
+
+impl Entry {
+    fn row(&self) -> Option<&'static Row> {
+        ROWS.get(self.0)
+    }
+}
+
+impl crate::registry::Entry for Entry {
+    fn key(&self) -> &'static str {
+        self.row().map_or("", |r| r.key)
+    }
+
+    fn name(&self) -> &'static str {
+        self.row().map_or("", |r| r.name)
+    }
+
+    fn tip(&self) -> &'static str {
+        self.row().map_or("", |r| r.tip)
+    }
+
+    fn category(&self) -> crate::layers::Category {
+        crate::layers::Category::Weather
+    }
+
+    fn source(&self) -> &'static str {
+        self.row().map_or("", |r| r.source)
+    }
+
+    fn words(&self) -> &'static [&'static str] {
+        &["погода", "прогноз", "температура", "ветер", "сияние", "weather", "forecast", "wind", "aurora"]
+    }
+
+    fn legend(&self) -> Option<crate::thumbs::Recipe> {
+        self.row().and_then(|r| weather::legend(r.field)).map(|m| crate::thumbs::Recipe::Ramp(m.colors))
+    }
+
+    fn slot(&self) -> Option<u8> {
+        Some(SLOT)
+    }
+
+    fn make(&self, _cx: &crate::registry::Make<'_>) -> (Box<dyn crate::registry::Layer>, Option<String>) {
+        let field = self.row().map_or(&weather::TEMPERATURE, |r| r.field);
+        (Box::new(Shown { row: self.0, weather: Weather::new(field) }), None)
+    }
+}
+
+/// Включённая строка погоды: номер строки и поле.
+struct Shown {
+    row: usize,
+    weather: Weather,
+}
+
+impl crate::registry::Layer for Shown {
+    fn step(&mut self, cx: &crate::registry::Ctx<'_>) -> crate::registry::Stepped {
+        let w = &mut self.weather;
+        let message = w.step(cx.lang, crate::pointcalc::clock_now(), cx.moment, cx.request);
+        let mut tick = w.busy().then_some(100);
+        if w.streaming() {
+            w.animate(cx.now, cx.view);
+            // Струйки бегут - кадры идут по такту частиц.
+            tick = Some(u64::from(flow::TICK_MS));
+        }
+        crate::registry::Stepped { message, painters: std::mem::take(&mut w.changed), tick }
+    }
+
+    fn painter(&self) -> Option<crate::vector::Painter> {
+        self.weather.painter()
+    }
+
+    fn paint(&self, p: &egui::Painter, rect: egui::Rect, ppp: f64, camera: &globe_core::camera::Camera, view: (f64, f64, f64)) {
+        self.weather.paint(p, rect, ppp, camera, view);
+    }
+
+    fn busy(&self) -> bool {
+        self.weather.busy()
+    }
+
+    fn attribution(&self) -> Option<(&'static str, &'static str)> {
+        Some((if self.weather.is_aurora() { weather::AURORA_ATTRIBUTION.0 } else { weather::ATTRIBUTION.0 }, ""))
+    }
+
+    fn legend(&self, lang: Lang) -> Option<(String, data::gibs::Colormap)> {
+        self.weather.legend(lang, tr(lang, ROWS.get(self.row)?.name))
+    }
+}

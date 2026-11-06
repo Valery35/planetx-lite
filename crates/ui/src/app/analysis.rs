@@ -467,9 +467,6 @@ impl LiteApp {
     /// контуры горных разработок.
     pub(super) fn refresh_painters(&mut self) {
         let mut painters: Vec<(&'static str, crate::vector::Painter)> = Vec::new();
-        if let Some(p) = self.weather.as_ref().and_then(|(_, w)| w.painter()) {
-            painters.push(("weather", p));
-        }
         for (n, layer) in &self.plugged {
             if let (Some(e), Some(p)) = (crate::registry::get(*n), layer.painter()) {
                 painters.push((e.key(), p));

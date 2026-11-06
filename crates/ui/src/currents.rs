@@ -368,7 +368,7 @@ impl crate::registry::Layer for Currents {
         self.grid().map(painter)
     }
 
-    fn paint(&self, p: &egui::Painter, rect: egui::Rect, ppp: f64, camera: &globe_core::camera::Camera) {
+    fn paint(&self, p: &egui::Painter, rect: egui::Rect, ppp: f64, camera: &globe_core::camera::Camera, _view: (f64, f64, f64)) {
         Currents::paint(self, p, rect, ppp, camera);
     }
 

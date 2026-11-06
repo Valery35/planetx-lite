@@ -51,8 +51,6 @@ pub enum Extra {
     Overture,
     /// Слой реестра [`crate::registry::ALL`], номер строки.
     Plugged(usize),
-    /// Поле погоды, номер строки [`crate::weather::ROWS`].
-    Weather(usize),
 }
 
 impl Extra {
@@ -73,7 +71,6 @@ impl Extra {
         out.push(Extra::Buildings);
         out.push(Extra::Overture);
         out.extend((0..crate::registry::ALL.len()).map(Extra::Plugged));
-        out.extend((0..crate::weather::ROWS.len()).map(Extra::Weather));
         out
     }
 
@@ -118,7 +115,6 @@ impl Extra {
             Extra::Buildings => "3D buildings",
             Extra::Overture => "3D buildings, Overture Maps",
             Extra::Plugged(n) => crate::registry::get(n).map_or("", |e| e.name()),
-            Extra::Weather(n) => crate::weather::ROWS.get(n).map_or("", |r| r.name),
         }
     }
 
@@ -137,7 +133,6 @@ impl Extra {
                 "Parallels and meridians with degree labels, the equator, the tropics and the polar circles. The step of the grid changes with the camera height."
             }
             Extra::Map(_) => self.map().map_or("", |e| e.tip),
-            Extra::Weather(n) => crate::weather::ROWS.get(n).map_or("", |r| r.tip),
             Extra::Dots(l) => l.tip(),
             Extra::Live(k) => k.tip(),
             Extra::Plugged(n) => crate::registry::get(n).map_or("", |e| e.tip()),
@@ -180,7 +175,6 @@ impl Extra {
             Extra::Satellites => Category::Sky,
             Extra::Buildings | Extra::Overture => Category::Map,
             Extra::Plugged(n) => crate::registry::get(n).map_or(Category::Map, |e| e.category()),
-            Extra::Weather(_) => Category::Weather,
         }
     }
 
@@ -202,7 +196,6 @@ impl Extra {
             Extra::Buildings => "buildings",
             Extra::Overture => "overture",
             Extra::Plugged(n) => crate::registry::get(n).map_or("", |e| e.key()),
-            Extra::Weather(n) => crate::weather::ROWS.get(n).map_or("", |r| r.key),
         }
     }
 
@@ -759,7 +752,6 @@ fn recipe(item: Item) -> crate::thumbs::Recipe {
         Item::Extra(e) => {
             use crate::dots::Layer;
             match e {
-                Extra::Weather(n) => crate::weather::ROWS.get(n).and_then(|r| data::weather::legend(r.field)).map_or(Recipe::Base, |m| Recipe::Ramp(m.colors)),
                 Extra::Dots(Layer::Fires) => Recipe::Ramp(data::fires::FRP_STOPS.iter().map(|s| s.1).collect()),
                 Extra::Dots(Layer::Quakes | Layer::Iscgem) => Recipe::Ramp(data::quakes::DEPTH_STOPS.iter().map(|s| s.1).collect()),
                 Extra::Dots(Layer::Deposits | Layer::OsmMines) => Recipe::Ramp(data::deposits::GROUPS.iter().map(|g| g.2).collect()),
@@ -853,7 +845,6 @@ impl Item {
             Item::Extra(Extra::Buildings) => "OpenFreeMap",
             Item::Extra(Extra::Overture) => "Overture Maps",
             Item::Extra(Extra::Plugged(n)) => crate::registry::get(n).map_or("", |e| e.source()),
-            Item::Extra(Extra::Weather(n)) => crate::weather::ROWS.get(n).map_or("", |r| r.source),
             Item::Extra(Extra::Cutaway) => "PREM, CRUST1.0, Slab2",
             Item::Extra(Extra::Paleo) => "PALEOMAP",
             Item::Extra(Extra::Geoid) => "EGM2008, NGA",
@@ -921,7 +912,6 @@ fn items() -> Vec<Item> {
     );
     // Порядок LAYERS витрины модуля.
     out.extend((0..crate::registry::ALL.len()).map(|n| Item::Extra(Extra::Plugged(n))));
-    out.extend((0..crate::weather::ROWS.len()).map(|n| Item::Extra(Extra::Weather(n))));
     out.push(Item::Extra(Extra::Geoid));
     out.extend(crate::live::Kind::ALL.map(|k| Item::Extra(Extra::Live(k))));
     out.push(Item::Extra(Extra::Cutaway));

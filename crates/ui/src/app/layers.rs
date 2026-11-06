@@ -151,20 +151,6 @@ impl LiteApp {
                     self.dots.dirty = true;
                 }
             }
-            Extra::Weather(n) => {
-                if on {
-                    // Поле погоды одно: новое занимает место прежнего.
-                    if let Some((old, _)) = self.weather.take().filter(|(old, _)| *old != n) {
-                        self.extras.remove(&Extra::Weather(old));
-                    }
-                    if let Some(row) = crate::weather::ROWS.get(n) {
-                        self.weather = Some((n, crate::weather::Weather::new(row.field)));
-                    }
-                } else if self.weather.as_ref().is_some_and(|(old, _)| *old == n) {
-                    self.weather = None;
-                    self.refresh_painters();
-                }
-            }
             Extra::Plugged(n) => {
                 if on {
                     if let Some(entry) = crate::registry::get(n).filter(|_| !self.plugged.contains_key(&n)) {
