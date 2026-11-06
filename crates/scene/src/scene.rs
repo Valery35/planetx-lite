@@ -106,6 +106,39 @@ impl Scene {
         self.view.get("extras").and_then(Value::as_object).map(|m| m.iter().filter_map(|(k, v)| v.as_bool().map(|b| (k.clone(), b))).collect()).unwrap_or_default()
     }
 
+    /// Промежуток шкалы времени сцены в секундах UTC, `scene_span` модуля.
+    /// Прежняя сцена хранила временной контроллер QGIS: выключенный -
+    /// без времени, анимация - промежуток текущего кадра, иначе весь
+    /// промежуток контроллера. None - времени нет.
+    pub fn span(&self) -> Option<(f64, f64)> {
+        let time = self.time.as_ref()?;
+        let at = |key: &str| time.get(key).and_then(Value::as_str).and_then(crate::when::parse);
+        let (lo, hi) = (at("start")?, at("end")?);
+        let Some(mode) = time.get("mode") else {
+            return Some((lo.min(hi), lo.max(hi)));
+        };
+        let mode = mode.as_i64().filter(|m| (1..=3).contains(m))?;
+        let step = time.get("step").and_then(Value::as_f64).filter(|s| *s > 0.0 && s.is_finite());
+        let frame = time.get("frame").and_then(Value::as_i64);
+        if let (1, Some(step), Some(frame)) = (mode, step, frame) {
+            #[allow(clippy::cast_precision_loss)]
+            let first = lo + frame as f64 * step;
+            return Some((first, first + step));
+        }
+        Some((lo.min(hi), lo.max(hi)))
+    }
+
+    /// Записать промежуток шкалы времени: строки времени KML, None -
+    /// времени нет.
+    pub fn set_span(&mut self, span: Option<(f64, f64)>) {
+        self.time = span.filter(|(a, b)| a.is_finite() && b.is_finite()).map(|(a, b)| {
+            let mut time = Map::new();
+            time.insert("start".into(), Value::String(crate::when::text(a)));
+            time.insert("end".into(), Value::String(crate::when::text(b)));
+            time
+        });
+    }
+
     /// Словарь для scene.json.
     pub fn to_dict(&self) -> Value {
         let [lat, lon, distance, heading, tilt] = self.camera;

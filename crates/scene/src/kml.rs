@@ -256,6 +256,11 @@ pub struct Place {
     pub kml_id: String,
     pub tour_extra: Option<TourExtra>,
     pub highlight: Option<Highlight>,
+    /// Своя картинка значка точки: байты PNG или JPEG из архива KMZ или
+    /// None. Цвет к ней не применяется.
+    pub picture: Option<Vec<u8>>,
+    /// Адрес своей картинки значка в файле, пустой - значок набора.
+    pub picture_href: String,
 }
 
 /// Рабочий номер метки: живёт, пока программа открыта, у копии Rust тот
@@ -313,8 +318,43 @@ impl Place {
             kml_id: String::new(),
             tour_extra: None,
             highlight: None,
+            picture: None,
+            picture_href: String::new(),
         }
     }
+}
+
+/// Адрес своей картинки значка, `_picture_href` модуля: файл, а не
+/// значок набора и не адрес в сети. Пустая строка - картинки нет.
+fn picture_href(href: Option<&str>) -> String {
+    let href = href.unwrap_or_default().trim();
+    if href.is_empty() || icons::known_href(href) || href.contains("://") { String::new() } else { href.to_string() }
+}
+
+/// Точечные метки дерева на любой глубине, для правки.
+fn point_places_mut(folder: &mut Folder) -> Vec<&mut Place> {
+    let mut out = Vec::new();
+    for child in &mut folder.children {
+        match child {
+            Item::Folder(f) => out.extend(point_places_mut(f)),
+            Item::Place(p) if p.kind == Kind::Point => out.push(p),
+            _ => {}
+        }
+    }
+    out
+}
+
+/// Нужен ли дереву архив KMZ, `needs_kmz` модуля: есть файл наложения
+/// или модели или своя картинка значка точки.
+pub fn needs_kmz(folder: &Folder) -> bool {
+    fn pictures(folder: &Folder) -> bool {
+        folder.children.iter().any(|c| match c {
+            Item::Folder(f) => pictures(f),
+            Item::Place(p) => p.picture.as_ref().is_some_and(|b| !b.is_empty()),
+            Item::Overlay(_) => false,
+        })
+    }
+    folder.overlays().iter().any(|o| o.image.as_ref().is_some_and(|i| !i.is_empty())) || pictures(folder)
 }
 
 /// Наложение KML: GroundOverlay, ScreenOverlay, PhotoOverlay или
@@ -1112,6 +1152,7 @@ fn placemark(node: &Node, styles: &HashMap<String, Style>, inherited: Option<&Ti
         place.balloon = style.balloon.clone().unwrap_or_default();
         place.kml_id = node.get("id").unwrap_or_default().to_string();
         place.highlight = if point { highlight_of(&style) } else { None };
+        place.picture_href = if point { picture_href(style.href.as_deref()) } else { String::new() };
         out.push(Item::Place(place));
     }
     out
@@ -1669,6 +1710,12 @@ pub fn read_kmz(data: &[u8], name: &str) -> Result<Folder, KmlError> {
     // Картинки наложений - файлы архива по href, путь от папки файла KML.
     let files: HashMap<String, String> = archive.names().iter().map(|n| (n.replace('\\', "/").to_lowercase(), n.clone())).collect();
     let base = first.rsplit_once('/').map_or(String::new(), |(dir, _)| format!("{dir}/"));
+    // Свои картинки значков точек - файлы архива по picture_href.
+    for place in point_places_mut(&mut tree) {
+        if let Some(found) = in_archive(&files, &base, &place.picture_href) {
+            place.picture = Some(archive.read(&found).map_err(error)?);
+        }
+    }
     let archive = RefCell::new(archive);
     for item in tree.overlays_mut() {
         let Some(found) = in_archive(&files, &base, &item.href) else {
@@ -1774,10 +1821,13 @@ fn placemark_kml(place: &Place, indent: usize) -> String {
     if place.kind == Kind::Point {
         let scale = if place.icon_scale != 1.0 { format!("<scale>{}</scale>", fmt_g(place.icon_scale)) } else { String::new() };
         let heading = if place.icon_heading != 0.0 { format!("<heading>{}</heading>", fmt_g(place.icon_heading)) } else { String::new() };
+        // Своя картинка значка - белым цветом, как у модуля: цвет
+        // к картинке не применяется.
+        let picture = !place.picture_href.is_empty();
         style = format!(
             "<IconStyle><color>{}</color>{scale}{heading}<Icon><href>{}</href></Icon></IconStyle>",
-            color_kml(place.color),
-            escape(&icons::href(&place.icon))
+            if picture { "ffffffff".to_string() } else { color_kml(place.color) },
+            escape(&if picture { place.picture_href.clone() } else { icons::href(&place.icon) })
         );
         if place.label_color.is_some() || place.label_scale != 1.0 {
             style += &format!(
@@ -2305,7 +2355,25 @@ pub fn write_kml_with(folder: &Folder, hrefs: &HashMap<usize, Href>) -> String {
 /// моделей в models/.
 pub fn write_kmz(folder: &Folder) -> Result<Vec<u8>, KmlError> {
     let mut hrefs = HashMap::new();
+    // Свои картинки значков, `picture_files` модуля: одинаковые - один
+    // файл files/iconN, метка получает его адрес.
+    let mut owned = folder.clone();
     let mut files: Vec<(String, Vec<u8>)> = Vec::new();
+    for place in point_places_mut(&mut owned) {
+        let Some(data) = place.picture.as_ref().filter(|d| !d.is_empty()) else {
+            continue;
+        };
+        let name = match files.iter().find(|(_, d)| d == data) {
+            Some((n, _)) => n.clone(),
+            None => {
+                let n = format!("files/icon{}.{}", files.len() + 1, image_ext(data));
+                files.push((n.clone(), data.clone()));
+                n
+            }
+        };
+        place.picture_href = name;
+    }
+    let folder = &owned;
     for (n, item) in folder.overlays().into_iter().enumerate() {
         let Some(image) = item.image.as_ref().filter(|i| !i.is_empty()) else {
             continue;

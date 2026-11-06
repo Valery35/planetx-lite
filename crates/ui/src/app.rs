@@ -556,6 +556,10 @@ pub struct LiteApp {
     /// Остановка тура прошлого кадра: на новой шкала встаёт на её время.
     tour_index: Option<usize>,
     timebar: TimeBar,
+    /// Слои хозяина открытых сцен `.planetx` по названию корня меток:
+    /// слои проекта QGIS или RustGIS. Lite их не открывает и при
+    /// сохранении сцены пишет обратно, контракт `planetx-scene`.
+    scene_layers: HashMap<String, Vec<serde_json::Map<String, serde_json::Value>>>,
     /// Картинки наложений открытой сцены.
     pictures: Pictures,
     /// Картинки наложений на экране в egui по ключу.
@@ -1328,6 +1332,7 @@ impl LiteApp {
             player: None,
             tour_index: None,
             timebar: TimeBar::default(),
+            scene_layers: HashMap::new(),
             pictures: Pictures::default(),
             screen_textures: HashMap::new(),
             keep_pose: false,
@@ -5193,6 +5198,11 @@ impl LiteApp {
         }
         match marks::open(bytes, name) {
             Ok(opened) => {
+                // Слои хозяина сцены Lite не открывает, но хранит для
+                // записи сцены обратно.
+                if let Some(s) = opened.scene.as_ref().filter(|s| !s.layers.is_empty()) {
+                    self.scene_layers.insert(opened.tree.name.clone(), s.layers.clone());
+                }
                 // Сцена ложится папкой в «Мои метки», прежние остаются.
                 self.marks.add(opened.tree, &opened.name, marks::root_name(self.lang));
                 self.player = None;
@@ -5225,6 +5235,9 @@ impl LiteApp {
                         self.extras.insert(extra);
                         self.set_extra(extra, *on);
                     }
+                }
+                if let Some(s) = &opened.scene {
+                    self.apply_scene_view(s);
                 }
                 // Поза, заданная при запуске, сильнее позы сцены.
                 if let Some(pose) = opened.pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
@@ -7979,13 +7992,74 @@ impl LiteApp {
         }
     }
 
+    /// Вид и время сцены, `apply` модуля: основа, рельеф и его
+    /// преувеличение, промежуток шкалы времени. Чего у Lite нет, то
+    /// пропускается, контракт `planetx-scene`.
+    fn apply_scene_view(&mut self, s: &scene::scene::Scene) {
+        if self.planet.earth
+            && let Some(name) = s.view.get("basemap").and_then(serde_json::Value::as_str)
+            && let Some(basemap) = Basemap::all().into_iter().find(|b| b.name(crate::i18n::Lang::EN) == name || b.key() == name)
+        {
+            self.set_basemap(basemap);
+        }
+        let relief = s.view.get("relief").and_then(serde_json::Value::as_bool);
+        let scale = s.view.get("scale").and_then(serde_json::Value::as_f64).filter(|v| v.is_finite());
+        if relief.is_some() || scale.is_some() {
+            if let Some(on) = relief {
+                self.settings.relief = on;
+            }
+            if let Some(v) = scale {
+                self.settings.scale = v.clamp(crate::settings::SCALE_RANGE.0, crate::settings::SCALE_RANGE.1);
+            }
+            self.settings_dirty = true;
+            // Геоид и палеогеография держат свою высоту.
+            if self.geoid.is_none() && self.paleo.is_none() {
+                self.heights.write().set_scale(if self.settings.relief { self.settings.scale } else { 0.0 });
+            }
+        }
+        // Шкала - после меток: их время входит в охват шкалы.
+        if let Some((lo, hi)) = s.span() {
+            self.timebar.point = lo == hi;
+            self.timebar.range = (lo, hi);
+            self.timebar.open = true;
+        }
+    }
+
+    /// Сцена с глобуса для записи, `capture` модуля: камера, тело, вид,
+    /// время и слои хозяина сцены с корнем меток root.
+    fn scene_now(&self, root: &str) -> scene::scene::Scene {
+        use serde_json::{Map, Value};
+        let globe_pose = self.sky.as_ref().map_or(&self.nav.pose, |sky| &sky.globe_pose);
+        let mut s = crate::export::scene_at(globe_pose);
+        s.body = if self.sky.is_some() { "sky".to_string() } else { self.planet.key().to_string() };
+        let mut view = Map::new();
+        if self.planet.earth {
+            view.insert("basemap".into(), Value::String(self.basemap.name(crate::i18n::Lang::EN).to_string()));
+        }
+        view.insert("relief".into(), Value::Bool(self.settings.relief));
+        view.insert("scale".into(), serde_json::json!(self.settings.scale));
+        let extras: Map<String, Value> =
+            self.extras.iter().chain(self.extras_on.iter()).map(|e| (e.key().to_string(), Value::Bool(self.extras_on.contains(e)))).collect();
+        view.insert("extras".into(), Value::Object(extras));
+        if let Some(sky) = &self.sky {
+            view.insert("sky".into(), serde_json::json!([sky.view.ra.to_degrees(), sky.view.dec.to_degrees(), sky.view.fov]));
+        }
+        s.view = view;
+        if self.timebar.open {
+            s.set_span(Some(self.timebar.range));
+        }
+        s.layers = self.scene_layers.get(root).cloned().unwrap_or_default();
+        s
+    }
+
     /// Сохранить строку «Моих меток» по пути: KML или KMZ, или сцену
     /// с текущей камерой. Итог - в строке сообщения.
     fn save_marks(&mut self, path: &[usize], kind: crate::export::Kind) {
         let Some(tree) = self.marks.export_tree(path) else {
             return;
         };
-        self.open_message = match crate::export::save(kind, &tree, &self.nav.pose) {
+        let base = self.scene_now(&tree.name);
+        self.open_message = match crate::export::save(kind, &tree, &base) {
             Ok(Some(to)) => Some(trf(self.lang, "Saved: {to}", &[("to", &to)])),
             Ok(None) => None,
             Err(e) => Some(trf(self.lang, "Not saved: {e}", &[("e", &e)])),

@@ -95,6 +95,14 @@ pub fn from_href(link: Option<&str>) -> &'static str {
     DEFAULT
 }
 
+/// Узнан ли адрес как значок набора, `known_href` модуля. Незнакомый
+/// файл архива KMZ - своя картинка значка.
+pub fn known_href(link: &str) -> bool {
+    let clean = link.trim().split('?').next().unwrap_or_default();
+    let name = basename(clean).to_lowercase();
+    ICONS.iter().any(|(_, _, ge)| basename(ge) == name) || name.ends_with("-pushpin.png")
+}
+
 /// Известный номер значка или кружок.
 pub fn normal(icon: &str) -> &'static str {
     ids().find(|id| *id == icon).unwrap_or(DEFAULT)

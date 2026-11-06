@@ -28,9 +28,10 @@ pub enum Kind {
     Scene,
 }
 
-/// Есть ли в дереве картинки или модели, которые KML не удержит.
+/// Есть ли в дереве картинки наложений, модели или свои картинки
+/// значков, которые KML не удержит.
 pub fn has_files(tree: &Folder) -> bool {
-    tree.overlays().iter().any(|o| o.image.as_ref().is_some_and(|i| !i.is_empty()))
+    kml::needs_kmz(tree)
 }
 
 /// Байты KML (kmz = false) или KMZ дерева.
@@ -38,9 +39,15 @@ pub fn tree_bytes(tree: &Folder, kmz: bool) -> Result<Vec<u8>, String> {
     if kmz { kml::write_kmz(tree).map_err(|e| format!("{e:?}")) } else { Ok(kml::write_kml(tree).into_bytes()) }
 }
 
-/// Байты сцены: камера pose, метки tree, название name.
-pub fn scene_bytes(tree: &Folder, pose: &Pose, name: &str) -> Result<Vec<u8>, String> {
-    let mut scene = Scene::new(&[pose.lat, pose.lon, pose.distance, pose.heading, pose.tilt]);
+/// Сцена Земли с камерой pose и пустыми видом, временем и слоями.
+pub fn scene_at(pose: &Pose) -> Scene {
+    Scene::new(&[pose.lat, pose.lon, pose.distance, pose.heading, pose.tilt])
+}
+
+/// Байты сцены: камера, тело, вид, время и слои хозяина из base, метки
+/// tree, название name.
+pub fn scene_bytes(tree: &Folder, base: &Scene, name: &str) -> Result<Vec<u8>, String> {
+    let mut scene = base.clone();
     scene.name = name.to_string();
     scene.places = tree.name.clone();
     let result = if has_files(tree) {
@@ -61,10 +68,12 @@ pub fn file_stem(name: &str) -> String {
     if clean.is_empty() { "PlanetX".to_string() } else { clean }
 }
 
-/// Сохранить дерево tree. pose - камера для сцены. Возвращает, куда
-/// сохранено: путь в программе, имя скачанного файла на странице. None -
-/// окно сохранения закрыли без выбора.
-pub fn save(kind: Kind, tree: &Folder, pose: &Pose) -> Result<Option<String>, String> {
+/// Сохранить дерево tree. base - камера, тело, вид, время и слои для
+/// сцены. Возвращает, куда сохранено: путь в программе, имя скачанного
+/// файла на странице. None - окно сохранения закрыли без выбора.
+///
+/// Название сцены - имя выбранного файла без расширения, как у модуля.
+pub fn save(kind: Kind, tree: &Folder, base: &Scene) -> Result<Option<String>, String> {
     let stem = file_stem(&tree.name);
     let kmz_default = has_files(tree);
     let default_ext = match kind {
@@ -84,9 +93,10 @@ pub fn save(kind: Kind, tree: &Folder, pose: &Pose) -> Result<Option<String>, St
             return Ok(None);
         };
         let lower = path.to_string_lossy().to_lowercase();
+        let chosen = path.file_stem().map_or_else(|| stem.clone(), |s| s.to_string_lossy().to_string());
         let bytes = match kind {
             Kind::Kml => tree_bytes(tree, lower.ends_with(".kmz"))?,
-            Kind::Scene => scene_bytes(tree, pose, &stem)?,
+            Kind::Scene => scene_bytes(tree, base, &chosen)?,
         };
         std::fs::write(&path, bytes).map_err(|e| format!("{}: {e}", path.display()))?;
         Ok(Some(path.display().to_string()))
@@ -95,7 +105,7 @@ pub fn save(kind: Kind, tree: &Folder, pose: &Pose) -> Result<Option<String>, St
     {
         let bytes = match kind {
             Kind::Kml => tree_bytes(tree, kmz_default)?,
-            Kind::Scene => scene_bytes(tree, pose, &stem)?,
+            Kind::Scene => scene_bytes(tree, base, &stem)?,
         };
         let name = format!("{stem}{default_ext}");
         download(&name, &bytes)?;
@@ -177,7 +187,7 @@ mod tests {
             assert_eq!(back.name, "Японский жёлоб");
         }
         let pose = Pose::new(35.0, 139.0, 120_000.0, 10.0, 45.0);
-        let bytes = scene_bytes(&t, &pose, "Япония").unwrap();
+        let bytes = scene_bytes(&t, &super::scene_at(&pose), "Япония").unwrap();
         let opened = crate::marks::open(&bytes, "Япония.planetx").unwrap();
         let p = opened.pose.unwrap();
         assert_eq!((p.lat, p.lon, p.distance, p.heading, p.tilt), (35.0, 139.0, 120_000.0, 10.0, 45.0));
@@ -196,7 +206,7 @@ mod tests {
         let before = opened.tree.overlays().iter().filter(|o| o.image.as_ref().is_some_and(|i| !i.is_empty())).count();
         assert!(before > 0);
         let pose = opened.pose.clone().unwrap();
-        let again = crate::marks::open(&scene_bytes(&opened.tree, &pose, "Модели").unwrap(), "Модели.planetx").unwrap();
+        let again = crate::marks::open(&scene_bytes(&opened.tree, &super::scene_at(&pose), "Модели").unwrap(), "Модели.planetx").unwrap();
         let after = again.tree.overlays().iter().filter(|o| o.image.as_ref().is_some_and(|i| !i.is_empty())).count();
         assert_eq!(before, after);
         let kmz = scene::kml::read_file(&tree_bytes(&opened.tree, true).unwrap(), "m.kmz").unwrap();
