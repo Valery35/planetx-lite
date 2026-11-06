@@ -405,6 +405,13 @@ impl Basemap {
         Self::all().into_iter().find(|b| b.key() == key)
     }
 
+    /// Основа сцены: сначала по ключу `view.basemap_key`, потом по названию
+    /// `view.basemap` на английском или ключу в нём - решение 7
+    /// `planetx-scene/DECISIONS.md`. Незнакомая основа - None.
+    pub fn from_scene(key: Option<&str>, name: Option<&str>) -> Option<Basemap> {
+        key.and_then(Self::from_key).or_else(|| name.and_then(|n| Self::all().into_iter().find(|b| b.name(Lang::EN) == n || b.key() == n)))
+    }
+
     /// Название в выборе основы.
     pub fn name(self, lang: Lang) -> &'static str {
         match self {
@@ -466,5 +473,20 @@ mod tests {
             assert!(b.source().url.starts_with("https://"));
         }
         assert!(Basemap::all().len() >= 2 + READY.len());
+    }
+
+    #[test]
+    fn scene_basemap_by_key_then_by_name() {
+        // Ключ сильнее названия: название могло смениться.
+        assert_eq!(Basemap::from_scene(Some("osm"), Some("Esri World Imagery")), Some(Basemap::Osm));
+        // Незнакомый ключ - по названию, как прежние сцены без ключа.
+        assert_eq!(Basemap::from_scene(Some("nonsense"), Some("Esri World Imagery")), Some(Basemap::Esri));
+        assert_eq!(Basemap::from_scene(None, Some("OpenStreetMap map")), Some(Basemap::Osm));
+        // Готовая подоснова - по ключу.
+        if let Some(b) = Basemap::all().into_iter().find(|b| matches!(b, Basemap::Ready(_))) {
+            assert_eq!(Basemap::from_scene(Some(b.key()), None), Some(b));
+        }
+        assert_eq!(Basemap::from_scene(None, Some("Неизвестная основа")), None);
+        assert_eq!(Basemap::from_scene(None, None), None);
     }
 }

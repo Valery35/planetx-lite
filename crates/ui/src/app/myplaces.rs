@@ -901,9 +901,11 @@ impl LiteApp {
     /// преувеличение, промежуток шкалы времени. Чего у Lite нет, то
     /// пропускается, контракт `planetx-scene`.
     pub(super) fn apply_scene_view(&mut self, s: &scene::scene::Scene) {
+        // Основа - сначала по ключу view.basemap_key, потом по названию
+        // view.basemap: решение 7 `planetx-scene/DECISIONS.md`.
+        let text = |key: &str| s.view.get(key).and_then(serde_json::Value::as_str);
         if self.planet.earth
-            && let Some(name) = s.view.get("basemap").and_then(serde_json::Value::as_str)
-            && let Some(basemap) = Basemap::all().into_iter().find(|b| b.name(crate::i18n::Lang::EN) == name || b.key() == name)
+            && let Some(basemap) = Basemap::from_scene(text("basemap_key"), text("basemap"))
         {
             self.set_basemap(basemap);
         }
@@ -940,6 +942,7 @@ impl LiteApp {
         let mut view = Map::new();
         if self.planet.earth {
             view.insert("basemap".into(), Value::String(self.basemap.name(crate::i18n::Lang::EN).to_string()));
+            view.insert("basemap_key".into(), Value::String(self.basemap.key().to_string()));
         }
         view.insert("relief".into(), Value::Bool(self.settings.relief));
         view.insert("scale".into(), serde_json::json!(self.settings.scale));

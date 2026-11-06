@@ -37,6 +37,9 @@ fn scene_keeps_body_view_time_layers() {
     let mut s = Scene::new(&[18.38, 77.58, 200_000.0, 0.0, 40.0]);
     s.body = "mars".into();
     s.view.insert("scale".into(), json!(3.0));
+    // Ключ основы рядом с названием, решение 7 DECISIONS.md.
+    s.view.insert("basemap".into(), json!("OpenStreetMap map"));
+    s.view.insert("basemap_key".into(), json!("osm"));
     s.set_span(Some((0.0, 60.0)));
     s.layers.push(json!({"name": "dem", "provider": "gdal", "source": "dem.tif", "kind": "raster"}).as_object().unwrap().clone());
     let (back, _) = read_scene(&write_scene(&s, Places::None).unwrap()).unwrap();
