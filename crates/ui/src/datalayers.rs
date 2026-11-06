@@ -1046,7 +1046,9 @@ impl DataLayers {
             l.title = title.to_string();
             l.data = data;
             l.colors = colors;
-            l.style = style;
+            // Прозрачность ставит пользователь глобуса, новый стиль её
+            // не сбрасывает.
+            l.style = Style { opacity: l.style.opacity, ..style };
             l.label = label;
         } else {
             self.next += 1;
@@ -1106,6 +1108,20 @@ impl DataLayers {
             && l.visible != on
         {
             l.visible = on;
+            self.changed();
+        }
+    }
+
+    /// Непрозрачность живого слоя RustGIS номер live, 0..1.
+    pub fn live_opacity(&self, live: i64) -> Option<f32> {
+        self.list.iter().find(|l| l.live == Some(live)).map(|l| l.style.opacity)
+    }
+
+    pub fn set_live_opacity(&mut self, live: i64, opacity: f32) {
+        if let Some(l) = self.list.iter_mut().find(|l| l.live == Some(live))
+            && l.style.opacity != opacity
+        {
+            l.style.opacity = opacity.clamp(0.05, 1.0);
             self.changed();
         }
     }

@@ -3202,8 +3202,18 @@ impl LiteApp {
                 News::State(state) => {
                     let order: Vec<i64> = state.layers.iter().filter(|l| l.drawn()).map(|l| l.id).collect();
                     self.data_layers.sync_live(&order);
+                    let follow = self.settings.rustgis_follows(&state.project);
+                    let saved = self.settings.rustgis_shown_of(&state.project).to_vec();
                     let moved = self.rustgis.as_mut().and_then(|sync| {
-                        sync.names = state.layers.iter().filter(|l| l.drawn()).map(|l| (l.id, l.name.clone())).collect();
+                        let other = sync.take_state(&state);
+                        // Режим карты - видимость с карты RustGIS на каждом
+                        // опросе, `_legend_changed` модуля. Другой проект -
+                        // его отметки из настроек глобуса.
+                        if follow || other {
+                            for id in &order {
+                                self.data_layers.show_live(*id, sync.wanted(*id, follow, &saved));
+                            }
+                        }
                         state.view.and_then(|v| sync.map_view(v))
                     });
                     // Карта ведёт глобус: перелёт к её охвату, наклон
@@ -3224,7 +3234,15 @@ impl LiteApp {
                     let name = self.rustgis.as_ref().map_or_else(|| format!("RustGIS {id}"), |s| s.name(id));
                     let n = self.data_layers.list.len();
                     let (colors, look, label) = crate::rustgislink::paint(&data, &style, n);
+                    let new = self.data_layers.live_shown(id).is_none();
                     self.data_layers.set_live(FOLDER, id, &name, (*data, colors), look, label);
+                    // Новый слой: на глобусе, если он включён на карте
+                    // в режиме карты или отмечен в настройках проекта.
+                    if new && let Some(sync) = &self.rustgis {
+                        let follow = self.settings.rustgis_follows(&sync.project);
+                        let on = sync.wanted(id, follow, self.settings.rustgis_shown_of(&sync.project));
+                        self.data_layers.show_live(id, on);
+                    }
                 }
                 News::Done(name) => self.open_message = Some(trf(self.lang, "The layer {name} is added to the RustGIS project.", &[("name", &name)])),
                 News::Added(group) => self.open_message = Some(trf(self.lang, "The calculation is added to the RustGIS project, group {group}.", &[("group", &group)])),
@@ -6459,8 +6477,14 @@ impl LiteApp {
         // RustPlanetX со связью: расчёт - в проект RustGIS своей группой,
         // как результаты инструментов модуля - в проект QGIS.
         #[cfg(not(target_arch = "wasm32"))]
-        if self.edition.linked() && self.rustgis.as_ref().is_some_and(|b| b.connected) {
-            self.analysis_to_rustgis(&saved, &files, failed, unix);
+        if self.edition.linked() {
+            if self.rustgis.as_ref().is_some_and(|b| b.connected) {
+                self.analysis_to_rustgis(&saved, &files, failed, unix);
+            } else {
+                // «Моих слоёв» у RustPlanetX нет: без связи расчёт
+                // остаётся файлами.
+                self.open_message = Some(tr(lang, "No link with RustGIS: the calculation is not added to the project. The GeoTIFF files are written to the results folder.").to_string());
+            }
             return;
         }
         // Расчёт той же сессии - в её папку, пока она есть, `Session.group_for`
@@ -7231,7 +7255,10 @@ impl LiteApp {
             // «Проект QGIS» модуля, решение автора от 5 ноября 2026 года.
             #[cfg(not(target_arch = "wasm32"))]
             self.rustgis_section(ui, lang);
-            self.my_layers_section(ui, lang, now);
+            // У RustPlanetX «Моих слоёв» нет: слои ведёт проект RustGIS.
+            if self.edition() == crate::edition::Edition::Lite {
+                self.my_layers_section(ui, lang, now);
+            }
             if crate::theme::section(ui, "layers", layers_title) {
                 let mut out = Vec::new();
                 let mut menu = self.layers_menu.take();
@@ -7272,11 +7299,30 @@ impl LiteApp {
             return;
         }
         let rows: Vec<(i64, String)> = sync.names.clone();
+        let project = sync.project.clone();
+        // Режим «Слои как на карте RustGIS», флажок «Слои как на карте QGIS»
+        // модуля: хранится по проекту.
+        let mut follow = self.settings.rustgis_follows(&project);
+        let follow_box = ui.checkbox(&mut follow, tr(lang, "Layers as on the RustGIS map")).on_hover_text(tr(
+            lang,
+            "With the check the globe shows the layers switched on in RustGIS, and a check in the list of the globe switches the layer on the map too, the opacity sets its transparency there. Without the check the checks of the globe are its own and do not change the map. The check is kept for the project.",
+        ));
+        if follow_box.changed() {
+            self.settings.set_rustgis_follow(&project, follow);
+            self.settings_dirty = true;
+            let saved = self.settings.rustgis_shown_of(&project).to_vec();
+            if let Some(sync) = &self.rustgis {
+                for (id, _) in &rows {
+                    self.data_layers.show_live(*id, sync.wanted(*id, follow, &saved));
+                }
+            }
+        }
         if rows.is_empty() {
             ui.label(egui::RichText::new(tr(lang, "The RustGIS project has no vector layers.")).color(muted));
             return;
         }
         let mut toggled = Vec::new();
+        let mut faded = Vec::new();
         // Не больше восьми строк: под разделом - «Слои».
         let room = (22.0 * RUSTGIS_ROWS).min(ui.available_height() - SECTION_MIN).max(22.0);
         egui::ScrollArea::vertical().id_salt("rustgis").max_height(room).auto_shrink([false, true]).show(ui, |ui| {
@@ -7286,15 +7332,55 @@ impl LiteApp {
                     Some(_) => tr(lang, "A layer of the open RustGIS project in its RustGIS colours. The check shows it on the globe."),
                     None => tr(lang, "The features of the layer are being read from RustGIS."),
                 };
-                let mut on = shown.unwrap_or(false);
-                let check = ui.add_enabled(shown.is_some(), egui::Checkbox::new(&mut on, name.as_str())).on_hover_text(tip);
-                if check.changed() {
-                    toggled.push((*id, on));
-                }
+                ui.horizontal(|ui| {
+                    let mut on = shown.unwrap_or(false);
+                    let check = ui.add_enabled(shown.is_some(), egui::Checkbox::new(&mut on, name.as_str())).on_hover_text(tip);
+                    if check.changed() {
+                        toggled.push((*id, name.clone(), on));
+                    }
+                    // Непрозрачность слоя на глобусе, в режиме карты - и на
+                    // карте, когда ползунок отпущен.
+                    if let Some(opacity) = self.data_layers.live_opacity(*id) {
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            let mut percent = (opacity * 100.0).round();
+                            let drag = ui.add(egui::DragValue::new(&mut percent).range(5.0..=100.0).speed(1.0).suffix(" %")).on_hover_text(tr(lang, "Opacity of the layer on the globe. In the mode Layers as on the RustGIS map - on the map too."));
+                            if drag.changed() || drag.drag_stopped() || drag.lost_focus() {
+                                faded.push((*id, percent / 100.0, !drag.dragged()));
+                            }
+                        });
+                    }
+                });
             }
         });
-        for (id, on) in toggled {
+        for (id, name, on) in toggled {
             self.data_layers.show_live(id, on);
+            if follow {
+                if let Some(sync) = &mut self.rustgis {
+                    sync.on_map.retain(|i| *i != id);
+                    if on {
+                        sync.on_map.push(id);
+                    }
+                    sync.link.ask(crate::rustgislink::Ask::Visibility { layer: id, visible: on });
+                }
+            } else {
+                let mut saved = self.settings.rustgis_shown_of(&project).to_vec();
+                saved.retain(|n| *n != name);
+                if on {
+                    saved.push(name);
+                }
+                self.settings.set_rustgis_shown(&project, saved);
+                self.settings_dirty = true;
+            }
+        }
+        for (id, opacity, settled) in faded {
+            self.data_layers.set_live_opacity(id, opacity);
+            if follow
+                && settled
+                && let Some(sync) = &self.rustgis
+            {
+                let percent = (100.0 - opacity * 100.0).round().clamp(0.0, 100.0) as u8;
+                sync.link.ask(crate::rustgislink::Ask::Transparency { layer: id, percent });
+            }
         }
     }
 

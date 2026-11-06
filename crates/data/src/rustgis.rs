@@ -83,6 +83,10 @@ impl Layer {
 pub struct State {
     pub view: Option<View>,
     pub layers: Vec<Layer>,
+    /// Ключ проекта для настроек глобуса: путь файла проекта, у ещё
+    /// не сохранённого - название. Настройки глобуса хранятся по нему,
+    /// как модуль хранит свои в записях проекта QGIS.
+    pub project: String,
 }
 
 fn num(v: &Value) -> Option<f64> {
@@ -122,7 +126,8 @@ pub fn parse_state(text: &str) -> Option<State> {
             })
         })
         .collect();
-    Some(State { view, layers })
+    let project = root["path"].as_str().filter(|p| !p.is_empty()).or_else(|| root["name"].as_str()).unwrap_or("").chars().filter(|c| !c.is_control()).collect();
+    Some(State { view, layers, project })
 }
 
 /// Цвет из строки CSS: #rgb, #rrggbb, #rrggbbaa, rgb() и rgba().
@@ -473,7 +478,7 @@ mod tests {
 
     #[test]
     fn state_of_list_layers() {
-        let s = parse_state(LIST).unwrap_or(State { view: None, layers: Vec::new() });
+        let s = parse_state(LIST).unwrap_or(State { view: None, layers: Vec::new(), project: String::new() });
         let v = s.view.unwrap_or(View { lat: 0.0, lon: 0.0, extent: [0.0; 4], scale: 0.0 });
         assert_eq!((v.lat, v.lon, v.scale), (18.0, 10.0, 88312391.0));
         assert_eq!(s.layers.len(), 3);
@@ -483,7 +488,10 @@ mod tests {
         assert_eq!(s.layers[2].labels, "name");
         assert_ne!(s.layers[0].style_key(), s.layers[2].style_key());
         assert!(parse_state("not json").is_none());
-        assert!(parse_state(r#"{"layers":[]}"#).is_some_and(|s| s.view.is_none()));
+        assert!(parse_state(r#"{"layers":[]}"#).is_some_and(|s| s.view.is_none() && s.project.is_empty()));
+        // Ключ проекта: путь файла, у несохранённого - название.
+        assert_eq!(parse_state(r#"{"name":"World Atlas","path":null,"layers":[]}"#).map(|s| s.project), Some("World Atlas".to_string()));
+        assert_eq!(parse_state(r#"{"name":"World Atlas","path":"C:/gis/atlas.rgis","layers":[]}"#).map(|s| s.project), Some("C:/gis/atlas.rgis".to_string()));
     }
 
     #[test]

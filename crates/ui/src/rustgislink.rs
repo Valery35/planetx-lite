@@ -89,6 +89,11 @@ pub enum Ask {
     /// текстом GeoJSON (название, текст), растры файлами GeoTIFF
     /// (название, путь). Сверху вниз - векторы, под ними растры.
     AddResult { top: String, group: String, vectors: Vec<(String, String)>, rasters: Vec<(String, String)> },
+    /// Видимость слоя на карте RustGIS: отметка глобуса в режиме «Слои как
+    /// на карте RustGIS», `set_visible_on_map` модуля.
+    Visibility { layer: i64, visible: bool },
+    /// Прозрачность слоя на карте RustGIS в процентах, 0 - непрозрачный.
+    Transparency { layer: i64, percent: u8 },
 }
 
 /// Весть потока окну.
@@ -267,6 +272,8 @@ fn perform(s: &mut Session, ask: Ask) -> Result<String, String> {
         }
         // Расчёт выполняет perform_result, весть у него своя.
         Ask::AddResult { top, group, vectors, rasters } => perform_result(s, &top, &group, &vectors, &rasters),
+        Ask::Visibility { layer, visible } => s.command("layer.visibility", serde_json::json!({"layer": layer, "visible": visible})).map(|_| String::new()),
+        Ask::Transparency { layer, percent } => s.command("layer.transparency", serde_json::json!({"layer": layer, "value": percent.min(100)})).map(|_| String::new()),
     }
 }
 
@@ -471,6 +478,10 @@ pub struct Bridge {
     pub view: Option<data::rustgis::View>,
     /// Слои проекта: номер и название.
     pub names: Vec<(i64, String)>,
+    /// Слои, включённые на карте RustGIS.
+    pub on_map: Vec<i64>,
+    /// Ключ открытого проекта, [`data::rustgis::State::project`].
+    pub project: String,
     /// Вид карты, уже показанный на глобусе.
     last_map: Option<Spot>,
     /// Вид глобуса, отправленный в RustGIS.
@@ -496,6 +507,8 @@ impl Bridge {
             status: String::new(),
             view: None,
             names: Vec::new(),
+            on_map: Vec::new(),
+            project: String::new(),
             last_map: None,
             last_sent: None,
             last_globe: None,
@@ -586,6 +599,29 @@ impl Bridge {
     /// Название слоя проекта номер id.
     pub fn name(&self, id: i64) -> String {
         self.names.iter().find(|(i, _)| *i == id).map_or_else(|| format!("RustGIS {id}"), |(_, n)| n.clone())
+    }
+
+    /// Состояние проекта пришло: слои, их видимость на карте и ключ
+    /// проекта. true - открыт другой проект, его настройки глобуса
+    /// читаются заново, `_project_reloaded` модуля.
+    pub fn take_state(&mut self, state: &data::rustgis::State) -> bool {
+        let drawn = || state.layers.iter().filter(|l| l.drawn());
+        self.names = drawn().map(|l| (l.id, l.name.clone())).collect();
+        self.on_map = drawn().filter(|l| l.visible).map(|l| l.id).collect();
+        let other = self.project != state.project;
+        self.project.clone_from(&state.project);
+        other
+    }
+
+    /// Должен ли слой id быть на глобусе: в режиме «Слои как на карте
+    /// RustGIS» (follow) - как на карте, иначе - отмечен ли он
+    /// в настройках проекта (saved - названия слоёв).
+    pub fn wanted(&self, id: i64, follow: bool, saved: &[String]) -> bool {
+        if follow {
+            self.on_map.contains(&id)
+        } else {
+            self.names.iter().any(|(i, n)| *i == id && saved.contains(n))
+        }
     }
 }
 
@@ -722,6 +758,29 @@ mod tests {
     fn bridge() -> Bridge {
         let (_news_tx, news) = channel::<News>();
         Bridge::new(Link { asks: channel::<Ask>().0, news, stop: Arc::new(AtomicBool::new(false)) })
+    }
+
+    /// Слои на глобусе как у модуля: в режиме карты - видимость с карты
+    /// RustGIS, без него - отметки проекта из настроек. Другой проект -
+    /// его отметки читаются заново.
+    #[test]
+    fn layers_follow_the_map_or_the_project() {
+        let mut s = bridge();
+        let state = data::rustgis::parse_state(
+            r#"{"name":"Atlas","path":null,"layers":[{"id":1,"name":"Cities","type":"Point","visible":true},{"id":2,"name":"Lakes","type":"Polygon","visible":false},{"id":3,"name":"DEM","type":"Raster","visible":true}]}"#,
+        )
+        .unwrap_or(data::rustgis::State { view: None, layers: Vec::new(), project: String::new() });
+        assert!(s.take_state(&state));
+        assert!(!s.take_state(&state));
+        assert_eq!(s.project, "Atlas");
+        // Растр на глобус не идёт.
+        assert_eq!(s.names.len(), 2);
+        assert!(s.wanted(1, true, &[]) && !s.wanted(2, true, &[]));
+        let saved = vec!["Lakes".to_string()];
+        assert!(!s.wanted(1, false, &saved) && s.wanted(2, false, &saved));
+        let mut other = state.clone();
+        other.project = "C:/gis/other.rgis".into();
+        assert!(s.take_state(&other));
     }
 
     /// Синхронизация как у модуля, `ui/sync.py`: без кнопки виды
