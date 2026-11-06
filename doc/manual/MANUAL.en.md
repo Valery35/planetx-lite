@@ -267,8 +267,10 @@ and B3DM pieces.
   stays in their place, there are no holes.
 - Pieces outside the view are not read. Pieces not seen for long leave
   the video memory above 512 MB.
-- Draco compressed meshes are unpacked. Pieces with meshopt compression
-  are not read, the tooltip of the row names the count of unread pieces.
+- Pieces with Draco and meshopt (gltfpack) compression and with
+  quantized vertices are unpacked. KTX2 and WebP pictures are not read,
+  such a piece lies in the material color. The tooltip of the row names the count of
+  unread pieces.
 
 The check of the row hides the set, the "⋯" menu has «Zoom to layer» and
 «Remove from the globe». Sets live between runs: at start a set opens

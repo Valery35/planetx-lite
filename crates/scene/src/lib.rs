@@ -48,6 +48,7 @@ pub mod kml;
 pub mod lookat;
 pub mod measure;
 pub mod measure3d;
+pub mod meshopt;
 pub mod models;
 pub mod obj;
 pub mod oldmaps;

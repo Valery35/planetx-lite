@@ -259,10 +259,19 @@ fn node_matrix_by_columns() {
 }
 
 #[test]
-fn meshopt_refused() {
-    let text = json!({"asset": {"version": "2.0"}, "extensionsRequired": ["EXT_meshopt_compression"]}).to_string();
-    let found = gltf::read(text.as_bytes(), &nothing);
-    assert!(found.unwrap_err().0.contains("EXT_meshopt_compression"));
+fn meshopt_unknown_mode_is_an_error() {
+    let doc = json!({
+        "asset": {"version": "2.0"},
+        "extensionsRequired": ["EXT_meshopt_compression"],
+        "buffers": [{"byteLength": 4}],
+        "bufferViews": [{"buffer": 0, "byteLength": 36,
+            "extensions": {"EXT_meshopt_compression": {"buffer": 0, "byteLength": 4, "byteStride": 12, "count": 3, "mode": "FANCY"}}}],
+        "accessors": [{"bufferView": 0, "componentType": 5126, "count": 3, "type": "VEC3"}],
+        "meshes": [{"primitives": [{"attributes": {"POSITION": 0}}]}],
+        "nodes": [{"mesh": 0}]
+    });
+    let found = gltf::read(&glb_of(&doc, &[0, 0, 0, 0]), &nothing);
+    assert!(found.unwrap_err().0.contains("meshopt"));
 }
 
 /// Сетка Draco из треугольников: вершины points, номера faces.

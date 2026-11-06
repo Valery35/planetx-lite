@@ -11,8 +11,10 @@
 //! материал pbrMetallicRoughness - baseColorFactor и картинка
 //! baseColorTexture. Узлы сцены - matrix или translation, rotation,
 //! scale. Сетки KHR_draco_mesh_compression распаковываются крейтом
-//! draco-core. Сжатие EXT_meshopt и квантование KHR_mesh_quantization
-//! не читаются - такой файл даёт ошибку с именем расширения.
+//! draco-core, bufferView EXT_meshopt_compression - [`crate::meshopt`].
+//! Квантование KHR_mesh_quantization - целые accessor, они читаются
+//! как есть. Сдвиг и масштаб картинки KHR_texture_transform ложатся на
+//! TEXCOORD_0: gltfpack так восстанавливает квантованные координаты.
 //!
 //! Ось Y glTF смотрит вверх, итог переводится в ось Z вверх
 //! ([`from_y_up`]): передняя сторона модели +Z смотрит на юг.
@@ -33,9 +35,37 @@ use crate::animation::{self, Animation, Mode};
 use crate::models::{GLB_MAGIC, GRAY, MAX_VERTICES, ModelError, Part, Pictures, error, from_y_up, rows, split_glb};
 
 /// Расширения сжатия, которые не читаются.
-pub const UNSUPPORTED: [&str; 2] = ["EXT_meshopt_compression", "KHR_mesh_quantization"];
+pub const UNSUPPORTED: [&str; 0] = [];
 /// Расширение сжатия сеток Draco.
 pub const DRACO: &str = "KHR_draco_mesh_compression";
+/// Расширение сжатия bufferView meshopt.
+pub const MESHOPT: &str = "EXT_meshopt_compression";
+/// Сдвиг, поворот и масштаб координат картинки.
+const TEXTURE_TRANSFORM: &str = "KHR_texture_transform";
+
+/// Пересчёт координат картинки KHR_texture_transform: сдвиг, поворот,
+/// масштаб - u' = offset + R(rotation) · (scale · u).
+#[derive(Clone, Copy)]
+struct UvTransform {
+    offset: [f64; 2],
+    rotation: f64,
+    scale: [f64; 2],
+}
+
+impl UvTransform {
+    const IDENTITY: UvTransform = UvTransform { offset: [0.0; 2], rotation: 0.0, scale: [1.0; 2] };
+
+    fn of(ext: &Value) -> Result<UvTransform, ModelError> {
+        let rotation = ext.get("rotation").and_then(Value::as_f64).filter(|r| r.is_finite()).unwrap_or(0.0);
+        Ok(UvTransform { offset: floats(ext.get("offset"), [0.0; 2])?, rotation, scale: floats(ext.get("scale"), [1.0; 2])? })
+    }
+
+    fn apply(&self, uv: DVec2) -> DVec2 {
+        let (s, c) = self.rotation.sin_cos();
+        let (u, v) = (uv.x * self.scale[0], uv.y * self.scale[1]);
+        DVec2::new(self.offset[0] + c * u + s * v, self.offset[1] - s * u + c * v)
+    }
+}
 
 /// Распакованный примитив Draco: значения атрибутов по именам glTF
 /// и номера вершин треугольников.
@@ -192,6 +222,8 @@ struct Doc<'a> {
     fetch: Fetch<'a>,
     /// Номер буфера - байты, None - двоичный кусок .glb.
     buffers: HashMap<usize, Option<Vec<u8>>>,
+    /// Распакованные bufferView meshopt по номерам.
+    unpacked: HashMap<usize, Vec<u8>>,
     visits: usize,
     vertices: usize,
     /// Узлы с ключами анимации.
@@ -254,9 +286,39 @@ impl<'a> Doc<'a> {
             None | Some(Value::Null) => None,
             found => Some(uint(found, 0)?).filter(|s| *s > 0),
         };
+        // Сжатый meshopt bufferView распаковывается один раз.
+        if let Some(ext) = view.get("extensions").and_then(|e| e.get(MESHOPT)) {
+            let at = uint(index, 0)?;
+            if !self.unpacked.contains_key(&at) {
+                let bytes = self.meshopt(ext)?;
+                if bytes.len() < length {
+                    return Err(error("meshopt: bufferView longer than its data"));
+                }
+                self.unpacked.insert(at, bytes);
+            }
+            let data = self.unpacked.get(&at).map_or(&[][..], Vec::as_slice);
+            return Ok((data, stride));
+        }
         let data = self.buffer(buffer)?;
         let data = start.checked_add(length).and_then(|end| data.get(start..end)).ok_or_else(|| error("bufferView out of buffer"))?;
         Ok((data, stride))
+    }
+
+    /// Распаковать сжатые байты расширения meshopt bufferView.
+    fn meshopt(&mut self, ext: &Value) -> Result<Vec<u8>, ModelError> {
+        let buffer = uint(ext.get("buffer"), 0)?;
+        let start = uint(ext.get("byteOffset"), 0)?;
+        let length = uint(ext.get("byteLength"), 0)?;
+        let stride = uint(ext.get("byteStride"), 0)?;
+        let count = uint(ext.get("count"), 0)?;
+        let mode = ext.get("mode").and_then(Value::as_str).and_then(crate::meshopt::Mode::of).ok_or_else(|| error("meshopt: bad mode"))?;
+        let filter = match ext.get("filter").and_then(Value::as_str) {
+            None => crate::meshopt::Filter::None,
+            Some(f) => crate::meshopt::Filter::of(f).ok_or_else(|| error(format!("meshopt: unknown filter {f}")))?,
+        };
+        let data = self.buffer(buffer)?;
+        let data = start.checked_add(length).and_then(|end| data.get(start..end)).ok_or_else(|| error("meshopt: data out of buffer"))?;
+        crate::meshopt::decode(data, count, stride, mode, filter)
     }
 
     fn accessor(&mut self, index: Option<&Value>) -> Result<Accessor, ModelError> {
@@ -308,19 +370,21 @@ impl<'a> Doc<'a> {
         Ok(Accessor { size, values })
     }
 
-    /// Номер картинки или None и RGBA 0-1 материала.
-    fn material(&self, index: Option<&Value>) -> Result<(Option<&'a Value>, [f64; 4]), ModelError> {
+    /// Номер картинки или None, RGBA 0-1 материала и пересчёт координат
+    /// картинки KHR_texture_transform.
+    fn material(&self, index: Option<&Value>) -> Result<(Option<&'a Value>, [f64; 4], UvTransform), ModelError> {
         let Some(index) = index else {
-            return Ok((None, GRAY));
+            return Ok((None, GRAY, UvTransform::IDENTITY));
         };
         let material = self.item("materials", Some(index))?;
         let pbr = material.get("pbrMetallicRoughness").and_then(Value::as_object);
         let rgba = floats(pbr.and_then(|p| p.get("baseColorFactor")), [1.0; 4])?;
-        let Some(texture) = pbr.and_then(|p| p.get("baseColorTexture")) else {
-            return Ok((None, rgba));
+        let Some(info) = pbr.and_then(|p| p.get("baseColorTexture")) else {
+            return Ok((None, rgba, UvTransform::IDENTITY));
         };
-        let texture = self.item("textures", texture.get("index"))?;
-        Ok((texture.get("source").filter(|s| !s.is_null()), rgba))
+        let transform = info.get("extensions").and_then(|e| e.get(TEXTURE_TRANSFORM)).map_or(Ok(UvTransform::IDENTITY), UvTransform::of)?;
+        let texture = self.item("textures", info.get("index"))?;
+        Ok((texture.get("source").filter(|s| !s.is_null()), rgba, transform))
     }
 
     fn picture(&mut self, index: &Value) -> Result<Vec<u8>, ModelError> {
@@ -431,7 +495,7 @@ impl<'a> Doc<'a> {
                 });
                 normals = Some(turned.collect());
             }
-            let (image, rgba) = self.material(prim.get("material"))?;
+            let (image, rgba, transform) = self.material(prim.get("material"))?;
             let mut uv = None;
             let mut name = None;
             if let Some(image) = image
@@ -440,7 +504,7 @@ impl<'a> Doc<'a> {
                 if found.size < 2 || order.iter().any(|i| *i >= found.count()) {
                     return Err(error("bad TEXCOORD_0"));
                 }
-                uv = Some(order.iter().map(|i| DVec2::from_slice(found.row(*i))).collect());
+                uv = Some(order.iter().map(|i| transform.apply(DVec2::from_slice(found.row(*i)))).collect());
                 let key = format!("gltf:{image}");
                 if !pictures.contains_key(&key) {
                     let bytes = self.picture(image)?;
@@ -661,6 +725,7 @@ pub fn read_animated(data: &[u8], fetch: Fetch<'_>) -> Result<(Vec<Part>, Pictur
         blob,
         fetch,
         buffers: HashMap::new(),
+        unpacked: HashMap::new(),
         visits: 0,
         vertices: 0,
         moving: BTreeSet::new(),
