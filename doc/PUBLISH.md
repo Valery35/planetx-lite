@@ -136,7 +136,7 @@
 Тексты - planetx/site/posts_1.41.md и posts_1.41_social.md, кадр - planetx/site/planetx_post_1.41.jpg.
 
 - GitHub: https://github.com/Valery35/planetx/releases/tag/v1.41.0
-- Каталог QGIS: https://plugins.qgis.org/plugins/planetx/version/1.41.0/ (загружена 6 ноября 2026 года, идут проверки безопасности каталога, итог - письмом автору)
+- Каталог QGIS: https://plugins.qgis.org/plugins/planetx/version/1.41.0/ (загружена 6 ноября 2026 года, не одобрена на 6 ноября, как и 1.40.0 от 4 ноября, итог проверок - после входа автора)
 - Dropbox - архив скопирован
 - Сайт informpp.ru - «Что нового» и главная, коммит fd9890b
 - Telegram: https://t.me/qgis_isolines/187
