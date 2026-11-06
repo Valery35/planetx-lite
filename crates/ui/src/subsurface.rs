@@ -117,7 +117,7 @@ impl Horizon {
         lats.iter()
             .zip(lons)
             .map(|(lat, lon)| {
-                let Ok((x, y)) = t.transform(*lon, *lat) else {
+                let Some((x, y)) = t.transform(*lon, *lat) else {
                     return f64::NAN;
                 };
                 self.grid.pixel_of(x, y).map_or(f64::NAN, |(c, r)| f64::from(self.grid.bilinear(c, r)))

@@ -54,3 +54,34 @@ fn layer_survives_geojson() {
     // Отметка точки сохранилась.
     assert_eq!(back.items[1].heights, [vec![-12.5]]);
 }
+
+/// Свой разбор GeoJSON сборки без terrio (RustPlanetX) читает тот же
+/// текст так же, как terrio: объекты, части, отметки, значения и признаки
+/// числовых полей. Порядок полей может отличаться - сверка по имени.
+#[test]
+fn own_geojson_matches_terrio() {
+    let text = r#"{"type":"FeatureCollection","name":"mix","features":[
+        {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[56,58],[56.1,58],[56.1,58.1],[56,58.1],[56,58]],[[56.02,58.02],[56.05,58.02],[56.05,58.05],[56.02,58.02]]]},"properties":{"name":"Пруд","h":3,"ok":true}},
+        {"type":"Feature","geometry":{"type":"MultiPoint","coordinates":[[50,60,-12.5],[51,60,-3]]},"properties":{"name":"Скважины","h":2.75,"ok":null}},
+        {"type":"Feature","geometry":{"type":"MultiLineString","coordinates":[[[50,61],[51,61]],[[50,62],[51,62]]]},"properties":{"name":"Дороги","h":null}},
+        {"type":"Feature","geometry":null,"properties":{"name":"без места","h":10}}]}"#;
+    let theirs = layers::read(text.as_bytes().to_vec(), "mix.geojson").expect("terrio");
+    let ours = layers::read_geojson(text, "mix").expect("свой разбор");
+    let (a, b) = (theirs.first().expect("слой"), ours.first().expect("слой"));
+    assert_eq!(a.items.len(), b.items.len());
+    let mut names = b.fields.clone();
+    names.sort();
+    let mut theirs_names = a.fields.clone();
+    theirs_names.sort();
+    assert_eq!(names, theirs_names);
+    for (x, y) in a.items.iter().zip(&b.items) {
+        assert_eq!(x.shape, y.shape);
+        assert!(close(&x.parts, &y.parts), "{:?}\n{:?}", x.parts, y.parts);
+        assert_eq!(x.heights, y.heights);
+        for (n, field) in a.fields.iter().enumerate() {
+            let m = b.fields.iter().position(|f| f == field).expect("поле");
+            assert_eq!(x.values.get(n), y.values.get(m), "поле {field}");
+            assert_eq!(a.numeric[n], b.numeric[m], "числовое {field}");
+        }
+    }
+}

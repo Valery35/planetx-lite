@@ -173,6 +173,8 @@ enum Method {
     /// параллелью обе равны широте начала).
     Lambert,
     Albers,
+    /// Web Mercator EPSG:3857: сфера радиусом большой полуоси.
+    WebMercator,
 }
 
 /// Система координат облака.
@@ -323,6 +325,8 @@ impl Crs {
                 // Одна параллель: широта начала, масштаб на ней k0.
                 _ => (crs.lat1, crs.lat2) = (crs.lat0, crs.lat0),
             }
+        } else if m.contains("pseudomercator") || m.contains("mercatorauxiliarysphere") {
+            crs.method = Method::WebMercator;
         } else if m.contains("albers") {
             crs.method = Method::Albers;
             crs.lat1 = lat1.ok_or("WKT: у проекции Альберса нет параллели")?;
@@ -346,11 +350,46 @@ impl Crs {
             Method::TransverseMercator => self.tm_inverse(x, y),
             Method::Lambert => self.lcc_inverse(x, y)?,
             Method::Albers => self.albers_inverse(x, y)?,
+            Method::WebMercator => (std::f64::consts::FRAC_PI_2 - 2.0 * (-y / self.a).exp().atan(), x / self.a),
         };
         let lon = (self.lon0 + lon).to_degrees();
         let lon = (lon + 180.0).rem_euclid(360.0) - 180.0;
         let lat = lat.to_degrees();
         (lat.is_finite() && lon.is_finite() && lat.abs() <= 90.0).then_some((lat, lon))
+    }
+
+    /// Точка (x, y) в единицах системы для широты и долготы в градусах.
+    /// None - точка вне области проекции.
+    pub fn from_lat_lon(&self, lat: f64, lon: f64) -> Option<(f64, f64)> {
+        if !(lat.is_finite() && lon.is_finite() && lat.abs() <= 90.0) {
+            return None;
+        }
+        if self.method == Method::Geographic {
+            return Some((lon, lat));
+        }
+        let phi = lat.to_radians();
+        // Разность долгот в пределах ±π.
+        let dlon = (lon.to_radians() - self.lon0 + std::f64::consts::PI).rem_euclid(std::f64::consts::TAU) - std::f64::consts::PI;
+        let (x, y) = match self.method {
+            Method::Geographic => return None,
+            Method::TransverseMercator => self.tm_forward(phi, dlon),
+            Method::Lambert => self.lcc_forward(phi, dlon)?,
+            Method::Albers => self.albers_forward(phi, dlon)?,
+            Method::WebMercator => {
+                // Полюс в Web Mercator уходит в бесконечность.
+                if lat.abs() >= 89.999 {
+                    return None;
+                }
+                (self.a * dlon, self.a * (std::f64::consts::FRAC_PI_4 + phi / 2.0).tan().ln())
+            }
+        };
+        let (x, y) = ((x + self.fe) / self.unit, (y + self.fn_) / self.unit);
+        (x.is_finite() && y.is_finite()).then_some((x, y))
+    }
+
+    /// Географическая система - координаты в градусах.
+    pub fn is_geographic(&self) -> bool {
+        self.method == Method::Geographic
     }
 
     /// Ряды Крюгера: n, a·(1 + n²/4 + ...)/(1 + n), α и β.
@@ -384,21 +423,35 @@ impl Crs {
         tau * 1f64.hypot(sigma) - sigma * 1f64.hypot(tau)
     }
 
+    /// Север начала проекции на сфере ξ: дуга меридиана до широты начала.
+    fn xi0(&self, alpha: &[f64; 6]) -> f64 {
+        let tp = self.tau_prime(self.lat0.tan());
+        let xi_p = tp.atan();
+        let mut xi = xi_p;
+        for (j, a) in alpha.iter().enumerate() {
+            xi += a * (2.0 * (j as f64 + 1.0) * xi_p).sin();
+        }
+        xi
+    }
+
+    /// Поперечная Меркатора вперёд: метры от начала без ложных сдвигов.
+    fn tm_forward(&self, phi: f64, dlon: f64) -> (f64, f64) {
+        let (ar, alpha, _) = self.kruger();
+        let tp = self.tau_prime(phi.tan());
+        let (xi_p, eta_p) = (tp.atan2(dlon.cos()), (dlon.sin() / tp.hypot(dlon.cos())).asinh());
+        let (mut xi, mut eta) = (xi_p, eta_p);
+        for (j, a) in alpha.iter().enumerate() {
+            let k = 2.0 * (j as f64 + 1.0);
+            xi += a * (k * xi_p).sin() * (k * eta_p).cosh();
+            eta += a * (k * xi_p).cos() * (k * eta_p).sinh();
+        }
+        (self.k0 * ar * eta, self.k0 * ar * (xi - self.xi0(&alpha)))
+    }
+
     /// Поперечная Меркатора обратно: широта и разность долгот в радианах.
     fn tm_inverse(&self, x: f64, y: f64) -> (f64, f64) {
         let (ar, alpha, beta) = self.kruger();
-        // Север начала: дуга меридиана до широты начала, ряды вперёд
-        // при нулевой разности долгот.
-        let xi0 = {
-            let tp = self.tau_prime(self.lat0.tan());
-            let xi_p = tp.atan();
-            let mut xi = xi_p;
-            for (j, a) in alpha.iter().enumerate() {
-                xi += a * (2.0 * (j as f64 + 1.0) * xi_p).sin();
-            }
-            xi
-        };
-        let xi = y / (self.k0 * ar) + xi0;
+        let xi = y / (self.k0 * ar) + self.xi0(&alpha);
         let eta = x / (self.k0 * ar);
         let (mut xi_p, mut eta_p) = (xi, eta);
         for (j, b) in beta.iter().enumerate() {
@@ -446,8 +499,8 @@ impl Crs {
         phi.is_finite().then_some(phi)
     }
 
-    /// Коническая Ламберта обратно (15-1 ... 15-11).
-    fn lcc_inverse(&self, x: f64, y: f64) -> Option<(f64, f64)> {
+    /// Постоянные конической Ламберта: n, F и ρ0 (15-8 ... 15-10).
+    fn lcc_constants(&self) -> Option<(f64, f64, f64)> {
         let (m1, m2) = (self.m(self.lat1), self.m(self.lat2));
         let (t0, t1, t2) = (self.t(self.lat0), self.t(self.lat1), self.t(self.lat2));
         let n = if (self.lat1 - self.lat2).abs() < 1e-10 { self.lat1.sin() } else { (m1.ln() - m2.ln()) / (t1.ln() - t2.ln()) };
@@ -455,7 +508,20 @@ impl Crs {
             return None;
         }
         let f = m1 / (n * t1.powf(n));
-        let rho0 = self.a * f * t0.powf(n) * self.k0;
+        Some((n, f, self.a * f * t0.powf(n) * self.k0))
+    }
+
+    /// Коническая Ламберта вперёд (15-1 ... 15-7).
+    fn lcc_forward(&self, phi: f64, dlon: f64) -> Option<(f64, f64)> {
+        let (n, f, rho0) = self.lcc_constants()?;
+        let rho = self.a * self.k0 * f * self.t(phi).powf(n);
+        let theta = n * dlon;
+        Some((rho * theta.sin(), rho0 - rho * theta.cos()))
+    }
+
+    /// Коническая Ламберта обратно (15-1 ... 15-11).
+    fn lcc_inverse(&self, x: f64, y: f64) -> Option<(f64, f64)> {
+        let (n, f, rho0) = self.lcc_constants()?;
         let dy = rho0 - y;
         let rho = n.signum() * x.hypot(dy);
         let theta = if n > 0.0 { x.atan2(dy) } else { (-x).atan2(-dy) };
@@ -476,9 +542,8 @@ impl Crs {
         (1.0 - e * e) * (s / (1.0 - (e * s).powi(2)) - (1.0 / (2.0 * e)) * ((1.0 - e * s) / (1.0 + e * s)).ln())
     }
 
-    /// Равновеликая Альберса обратно (14-1 ... 14-21).
-    fn albers_inverse(&self, x: f64, y: f64) -> Option<(f64, f64)> {
-        let e = self.e;
+    /// Постоянные равновеликой Альберса: n, C и ρ0 (14-12 ... 14-14).
+    fn albers_constants(&self) -> Option<(f64, f64, f64)> {
         let (m1, m2) = (self.m(self.lat1), self.m(self.lat2));
         let (q0, q1, q2) = (self.q(self.lat0), self.q(self.lat1), self.q(self.lat2));
         let n = if (self.lat1 - self.lat2).abs() < 1e-10 { self.lat1.sin() } else { (m1 * m1 - m2 * m2) / (q2 - q1) };
@@ -486,7 +551,21 @@ impl Crs {
             return None;
         }
         let c = m1 * m1 + n * q1;
-        let rho0 = self.a * (c - n * q0).max(0.0).sqrt() / n;
+        Some((n, c, self.a * (c - n * q0).max(0.0).sqrt() / n))
+    }
+
+    /// Равновеликая Альберса вперёд (14-1 ... 14-4).
+    fn albers_forward(&self, phi: f64, dlon: f64) -> Option<(f64, f64)> {
+        let (n, c, rho0) = self.albers_constants()?;
+        let rho = self.a * (c - n * self.q(phi)).max(0.0).sqrt() / n;
+        let theta = n * dlon;
+        Some((rho * theta.sin(), rho0 - rho * theta.cos()))
+    }
+
+    /// Равновеликая Альберса обратно (14-1 ... 14-21).
+    fn albers_inverse(&self, x: f64, y: f64) -> Option<(f64, f64)> {
+        let e = self.e;
+        let (n, c, rho0) = self.albers_constants()?;
         let dy = rho0 - y;
         let rho = x.hypot(dy);
         let theta = if n > 0.0 { x.atan2(dy) } else { (-x).atan2(-dy) };
@@ -510,7 +589,8 @@ impl Crs {
 }
 
 /// Система по коду EPSG без строки WKT - для старых файлов LAS с ключами
-/// GeoTIFF. Известны UTM на WGS84, NAD83 и ETRS89, Lambert-93 и широта
+/// GeoTIFF и для сборки без terrio ([`crate::crs`]). Известны UTM
+/// на WGS84, NAD83 и ETRS89, Lambert-93, Web Mercator и широта
 /// с долготой.
 pub fn from_epsg(code: u32) -> Option<Crs> {
     const WGS84: (f64, f64) = (6_378_137.0, 298.257_223_563);
@@ -526,6 +606,11 @@ pub fn from_epsg(code: u32) -> Option<Crs> {
     };
     let wkt = match code {
         4326 | 4269 | 4258 | 4171 => format!("GEOGCS[\"g\",DATUM[\"d\",SPHEROID[\"s\",{},{}]],AUTHORITY[\"EPSG\",\"{code}\"]]", WGS84.0, WGS84.1),
+        // Web Mercator и его старые коды.
+        3857 | 3785 | 900_913 | 102_100 => format!(
+            "PROJCS[\"WGS 84 / Pseudo-Mercator\",GEOGCS[\"g\",DATUM[\"d\",SPHEROID[\"s\",{},{}]]],PROJECTION[\"Popular_Visualisation_Pseudo_Mercator\"],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AUTHORITY[\"EPSG\",\"3857\"]]",
+            WGS84.0, WGS84.1
+        ),
         32601..=32660 => tm(WGS84, code - 32600, false),
         32701..=32760 => tm(WGS84, code - 32700, true),
         // NAD83, NAD83(CSRS), NAD83(2011), ETRS89, GDA94, GDA2020.

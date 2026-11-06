@@ -18,6 +18,7 @@ path = "src/main.rs"
 
 [dependencies]
 desktop.workspace = true
+# Без terrio и аддинов: данные приходят из RustGIS (doc/EDITIONS.md).
 ui.workspace = true
 
 # Значок и сведения о программе в exe под Windows.

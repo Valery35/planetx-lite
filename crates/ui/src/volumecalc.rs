@@ -181,7 +181,7 @@ impl VolumeCalc {
                 .iter()
                 .map(|&(lat, lon)| {
                     let at = match &from {
-                        Some(t) => t.transform(lon, lat).ok(),
+                        Some(t) => t.transform(lon, lat),
                         None => Some((lon, lat)),
                     };
                     let value = at.and_then(|(x, y)| new.pixel_of(x, y)).and_then(|(c, r)| {

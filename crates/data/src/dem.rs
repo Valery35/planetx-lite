@@ -6,7 +6,7 @@
 //!
 //! Модуль пересчитывает растр в EPSG:3857 файлом GDAL. Здесь растр
 //! остаётся в своей системе, а точки тайла пересчитываются в неё: узлы
-//! сетки [`NODES`] × [`NODES`] на тайл - движком terrio, точки между
+//! сетки [`NODES`] × [`NODES`] на тайл - [`crate::crs`], точки между
 //! ними - линейно. Отклонение от точного пересчёта внутри клетки тайла
 //! уровня 15 и глубже - доли миллиметра.
 //!
@@ -15,7 +15,7 @@
 //! по маске данных на сетке не крупнее [`MASK_SIDE`] по стороне,
 //! рамка растра - тоже край.
 
-use terrio::crs::Transformer;
+use crate::crs::Transformer;
 
 use crate::grid::Grid;
 
@@ -106,7 +106,7 @@ impl Dem {
         let mut b = (f64::INFINITY, f64::INFINITY, f64::NEG_INFINITY, f64::NEG_INFINITY);
         for (c, r) in edge {
             let (x, y) = grid.at(c, r);
-            let (mx, my) = to_mercator.transform(x, y).map_err(|e| e.to_string())?;
+            let (mx, my) = to_mercator.transform(x, y).ok_or("рамка растра вне Web Mercator")?;
             b = (b.0.min(mx), b.1.min(my), b.2.max(mx), b.3.max(my));
         }
         if !(b.0 < b.2 && b.1 < b.3) {
@@ -114,8 +114,8 @@ impl Dem {
         }
         let (cx, cy) = grid.at(w / 2.0, h / 2.0);
         let (nx, ny) = grid.at(w / 2.0 + 1.0, h / 2.0);
-        let p0 = to_mercator.transform(cx, cy).map_err(|e| e.to_string())?;
-        let p1 = to_mercator.transform(nx, ny).map_err(|e| e.to_string())?;
+        let p0 = to_mercator.transform(cx, cy).ok_or("середина растра вне Web Mercator")?;
+        let p1 = to_mercator.transform(nx, ny).ok_or("середина растра вне Web Mercator")?;
         let pixel = (p1.0 - p0.0).hypot(p1.1 - p0.1);
         let step = grid.width.max(grid.height).div_ceil(MASK_SIDE).max(1);
         let (mask_w, mask_h) = (grid.width.div_ceil(step), grid.height.div_ceil(step));
@@ -147,7 +147,7 @@ impl Dem {
             .map(|(i, j)| {
                 let mx = west + (east - west) * i as f64 / cells;
                 let my = north - (north - south) * j as f64 / cells;
-                let (x, y) = self.from_mercator.transform(mx, my).ok()?;
+                let (x, y) = self.from_mercator.transform(mx, my)?;
                 self.grid.pixel_of(x, y)
             })
             .collect();

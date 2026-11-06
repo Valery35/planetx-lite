@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Векторные слои из байтов файла, через terrio: GeoPackage, Shapefile,
-//! GeoJSON, GPX, TopoJSON, GML, MapInfo, FlatGeobuf, DXF и DWG.
+//! GeoJSON, GPX, TopoJSON, GML, MapInfo, FlatGeobuf, DXF и DWG. Без
+//! признака `import` (RustPlanetX) читается только GeoJSON в WGS84 -
+//! своим разбором [`read_geojson`], так слои отдаёт RustGIS.
 //!
 //! Объект слоя - части геометрии в широте и долготе WGS84 (точка - одна
 //! часть из одной точки, многоугольник - внешнее кольцо и дыры
@@ -18,7 +20,9 @@
 
 use std::io::Write;
 
+#[cfg(feature = "import")]
 use terrio::crs::{SpatialRef, Transformer};
+#[cfg(feature = "import")]
 use terrio::{FieldValue, Geometry};
 
 /// Расширения векторных файлов, которые открываются слоями.
@@ -118,6 +122,7 @@ pub struct LayerData {
     pub items: Vec<Item>,
 }
 
+#[cfg(feature = "import")]
 fn text(v: &FieldValue) -> String {
     match v {
         FieldValue::Integer(i) => i.to_string(),
@@ -133,6 +138,7 @@ fn text(v: &FieldValue) -> String {
 type RawParts = Vec<Vec<(f64, f64, Option<f64>)>>;
 
 /// Части и вид геометрии в системе слоя.
+#[cfg(feature = "import")]
 fn parts(g: &Geometry, out: &mut RawParts) -> Shape {
     macro_rules! line {
         ($c:expr) => {
@@ -289,9 +295,173 @@ pub fn to_geojson(layer: &LayerData) -> String {
     serde_json::json!({ "type": "FeatureCollection", "name": layer.name, "features": features }).to_string()
 }
 
+/// Слои из байтов файла без terrio: только GeoJSON.
+#[cfg(not(feature = "import"))]
+pub fn read(bytes: Vec<u8>, name: &str) -> Result<Vec<LayerData>, String> {
+    match extension(name).as_str() {
+        "geojson" | "json" => read_geojson(&String::from_utf8_lossy(&bytes), stem(name)),
+        _ => Err(format!("формат файла {name} читается через RustGIS")),
+    }
+}
+
+/// Значение свойства GeoJSON текстом, как его отдаёт terrio: число -
+/// своей записью Rust, null - пусто, массив и объект - текстом JSON.
+fn json_text(v: &serde_json::Value) -> String {
+    match v {
+        serde_json::Value::Null => String::new(),
+        serde_json::Value::Bool(b) => b.to_string(),
+        serde_json::Value::Number(n) => match n.as_i64() {
+            Some(i) => i.to_string(),
+            None => n.as_f64().map(|f| f.to_string()).unwrap_or_else(|| n.to_string()),
+        },
+        serde_json::Value::String(s) => s.clone(),
+        other => other.to_string(),
+    }
+}
+
+/// Наибольшая глубина вложения геометрий GeoJSON - защита стека.
+const MAX_GEOMETRY_DEPTH: usize = 16;
+
+/// Точка GeoJSON: [долгота, широта] или с отметкой Z.
+fn json_point(v: &serde_json::Value) -> Option<(f64, f64, Option<f64>)> {
+    let a = v.as_array()?;
+    let (x, y) = (a.first()?.as_f64()?, a.get(1)?.as_f64()?);
+    (x.is_finite() && y.is_finite()).then_some((x, y, a.get(2).and_then(serde_json::Value::as_f64).filter(|z| z.is_finite())))
+}
+
+/// Линия или кольцо GeoJSON. Кольцо - без замыкающей точки, как его
+/// отдаёт terrio.
+fn json_line(v: &serde_json::Value, ring: bool) -> Option<Vec<(f64, f64, Option<f64>)>> {
+    let mut out: Vec<_> = v.as_array()?.iter().map(json_point).collect::<Option<_>>()?;
+    if ring && out.len() > 1 && out.first().map(|p| (p.0, p.1)) == out.last().map(|p| (p.0, p.1)) {
+        out.pop();
+    }
+    Some(out)
+}
+
+/// Части и вид геометрии GeoJSON. None - геометрия испорчена.
+fn json_parts(g: &serde_json::Value, out: &mut RawParts, depth: usize) -> Option<Shape> {
+    if depth > MAX_GEOMETRY_DEPTH {
+        return None;
+    }
+    let c = &g["coordinates"];
+    let polygon = |p: &serde_json::Value, out: &mut RawParts| -> Option<()> {
+        for ring in p.as_array()? {
+            out.push(json_line(ring, true)?);
+        }
+        Some(())
+    };
+    match g["type"].as_str()? {
+        "Point" => {
+            out.push(vec![json_point(c)?]);
+            Some(Shape::Point)
+        }
+        "MultiPoint" => {
+            for p in c.as_array()? {
+                out.push(vec![json_point(p)?]);
+            }
+            Some(Shape::Point)
+        }
+        "LineString" => {
+            out.push(json_line(c, false)?);
+            Some(Shape::Line)
+        }
+        "MultiLineString" => {
+            for l in c.as_array()? {
+                out.push(json_line(l, false)?);
+            }
+            Some(Shape::Line)
+        }
+        "Polygon" => {
+            polygon(c, out)?;
+            Some(Shape::Polygon)
+        }
+        "MultiPolygon" => {
+            for p in c.as_array()? {
+                polygon(p, out)?;
+            }
+            Some(Shape::Polygon)
+        }
+        "GeometryCollection" => {
+            let mut shape = Shape::None;
+            for g in g["geometries"].as_array()? {
+                shape = json_parts(g, out, depth + 1)?;
+            }
+            Some(shape)
+        }
+        _ => None,
+    }
+}
+
+/// Слой из текста GeoJSON в WGS84: коллекция объектов, один объект или
+/// одна геометрия. name - имя слоя, если у коллекции нет своего. Объект
+/// с испорченной геометрией пропускается.
+pub fn read_geojson(text: &str, name: &str) -> Result<Vec<LayerData>, String> {
+    let root: serde_json::Value = serde_json::from_str(text).map_err(|e| format!("GeoJSON: {e}"))?;
+    let features: Vec<&serde_json::Value> = match root["type"].as_str() {
+        Some("FeatureCollection") => root["features"].as_array().ok_or("GeoJSON: нет объектов")?.iter().collect(),
+        Some("Feature") => vec![&root],
+        Some(_) => Vec::new(),
+        None => return Err("GeoJSON: нет типа".into()),
+    };
+    let lone = features.is_empty() && root["type"].as_str() != Some("FeatureCollection");
+    // Поля - в порядке первого появления.
+    let mut fields: Vec<String> = Vec::new();
+    for f in &features {
+        if let Some(props) = f["properties"].as_object() {
+            for key in props.keys() {
+                if !fields.contains(key) {
+                    fields.push(key.clone());
+                }
+            }
+        }
+    }
+    let (mut numeric, mut filled) = (vec![true; fields.len()], vec![false; fields.len()]);
+    let mut items = Vec::with_capacity(features.len());
+    let geometries: Vec<(&serde_json::Value, Option<&serde_json::Map<String, serde_json::Value>>)> =
+        if lone { vec![(&root, None)] } else { features.iter().map(|f| (&f["geometry"], f["properties"].as_object())).collect() };
+    for (geometry, props) in geometries {
+        let mut raw = Vec::new();
+        let shape = if geometry.is_null() {
+            Shape::None
+        } else {
+            match json_parts(geometry, &mut raw, 0) {
+                Some(s) => s,
+                None => continue,
+            }
+        };
+        let values: Vec<String> = fields
+            .iter()
+            .enumerate()
+            .map(|(n, key)| {
+                let v = props.and_then(|p| p.get(key)).unwrap_or(&serde_json::Value::Null);
+                match v {
+                    serde_json::Value::Null => {}
+                    serde_json::Value::Number(_) => filled[n] = true,
+                    _ => {
+                        filled[n] = true;
+                        numeric[n] = false;
+                    }
+                }
+                json_text(v)
+            })
+            .collect();
+        let heights = raw.iter().map(|part| part.iter().map(|p| p.2).collect::<Option<Vec<f64>>>().unwrap_or_default()).collect();
+        let parts: Vec<Vec<(f64, f64)>> = raw.into_iter().map(|part| part.into_iter().map(|(x, y, _)| (y, x)).collect()).collect();
+        if parts.iter().flatten().any(|(lat, lon)| !in_degrees(*lon, *lat)) {
+            return Err(NO_CRS.to_string());
+        }
+        items.push(Item { shape, parts, heights, values });
+    }
+    let numeric = numeric.iter().zip(&filled).map(|(n, f)| *n && *f).collect();
+    let layer_name = root["name"].as_str().filter(|n| !n.is_empty()).unwrap_or(name).to_string();
+    Ok(vec![LayerData { name: layer_name, epsg: Some(4326), fields, numeric, items }])
+}
+
 /// Слои из байтов файла. Точки пересчитываются в WGS84, объект, чья
 /// точка не пересчиталась, пропускается. Слой без системы координат
 /// с точкой вне градусов - ошибка [`NO_CRS`].
+#[cfg(feature = "import")]
 pub fn read(bytes: Vec<u8>, name: &str) -> Result<Vec<LayerData>, String> {
     let ds = terrio::memory::open_vector_bytes(bytes, name, &Default::default()).map_err(|e| e.to_string())?;
     let wgs = SpatialRef::from_epsg(4326).map_err(|e| e.to_string())?;

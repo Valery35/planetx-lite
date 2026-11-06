@@ -11,7 +11,7 @@
 //! объёмами - средняя высота. Открытые высоты несут ошибку в метры, поэтому
 //! объём на такой доле участка идёт с оценкой площадь × [`OPEN_ERROR`].
 
-use terrio::crs::Transformer;
+use crate::crs::Transformer;
 
 use crate::grid::Grid as Raster;
 use crate::hydro::{self, Grid};
@@ -150,8 +150,8 @@ impl Surveys {
         let (mut x, mut y) = self.new.at(col as f64 + 0.5, row as f64 + 0.5);
         if let Some(t) = &self.to_old {
             match t.transform(x, y) {
-                Ok(p) => (x, y) = p,
-                Err(_) => return f64::NAN,
+                Some(p) => (x, y) = p,
+                None => return f64::NAN,
             }
         }
         self.old.pixel_of(x, y).map_or(f64::NAN, |(c, r)| f64::from(self.old.bilinear(c, r)))

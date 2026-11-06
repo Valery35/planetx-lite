@@ -14,9 +14,13 @@
 //!   `core/places.py` модуля;
 //! - [`geocode`] - поиск места через Nominatim, перенос
 //!   `core/geocode.py` модуля;
-//! - [`grid`] - свой растр GeoTIFF или COG, через terrio;
+//! - [`grid`] - свой растр GeoTIFF или COG ([`rasterfile`]);
+//! - [`crs`], [`rasterfile`] - системы координат и чтение растра:
+//!   с признаком `import` через terrio, без него - свой разбор
+//!   (RustPlanetX, doc/EDITIONS.md);
 //! - [`dem`] - растр высот для врезки своего рельефа;
-//! - [`layers`] - слои GeoPackage, через terrio;
+//! - [`layers`] - слои GeoPackage и других форматов через terrio, без
+//!   признака `import` - только GeoJSON;
 //! - [`geology`] - геологическая карта Macrostrat, перенос `core/geology.py`;
 //! - [`gibs`] - темы NASA GIBS по датам, перенос `core/themes.py`;
 //! - [`events`] - снимки чрезвычайных событий Vantor и Planet, каталоги
@@ -86,6 +90,7 @@ pub mod cadastre;
 pub mod cloud;
 pub mod clouds;
 pub mod cog;
+pub mod crs;
 pub mod contours;
 pub mod crust;
 pub mod csv;
@@ -133,6 +138,7 @@ pub mod platemotion;
 pub mod plates;
 pub mod pmtiles;
 pub mod proj;
+pub mod rasterfile;
 pub mod quakes;
 pub mod rasterclass;
 pub mod rastermaps;

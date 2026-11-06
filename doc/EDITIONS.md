@@ -119,10 +119,19 @@ apps/
 
 Признаки Cargo у `ui` и `data`:
 
-- `import` - чтение векторных форматов для «Моих слоёв»
-  (`data::layers`). Есть у Lite и страницы, нет у RustPlanetX.
-- `rustgis` - связь с RustGIS (`ui::rustgislink`, `data::rustgis`).
-  Есть только у RustPlanetX.
+- `import` (`data/import`, `ui/import`) - terrio: векторные форматы
+  «Моих слоёв», растры, все коды EPSG. Есть у Lite и страницы, нет
+  у RustPlanetX. Без него `data::crs` и `data::rasterfile` - свой
+  пересчёт (`data::proj`: широта с долготой, Web Mercator, UTM, Ламберт,
+  Альберс) и своё чтение GeoTIFF с тайлами (`data::cog`),
+  `data::layers::read` - только GeoJSON (`read_geojson`).
+- `addins` (`ui/addins`) - аддины в песочнице wasmi. Есть у Lite
+  и страницы, нет у RustPlanetX.
+
+`data` и `ui` в рабочем пространстве - без признаков по умолчанию,
+их включает программа: `planetx-lite` и `planetx-web` - `import`
+и `addins`, `planetx-rustgis` - ни одного. Программа RustPlanetX без
+них - 38 МБ вместо 68.
 
 terrio у RustPlanetX нет, решение автора от 6 ноября 2026 года: «В Про
 Gdal используется, я его с собой не таскаю. Остальное на внутренних
@@ -286,11 +295,14 @@ commands`), 6 ноября 2026 года.
    (NAD83(CSRS) UTM 11N) по порядку файла - 10⁻⁹° после вычета сдвига
    датума 1 м, который terrio учитывает, а свой расчёт нет. Порча
    файла - ошибка, не падение (3000 испорченных файлов, сборка
-   release). Осталось: растры через RustGIS, признаки сборки.
-   Без terrio и без импорта у RustPlanetX: признаки `import`
-   и `rustgis`, свой разбор GRIB2 и COPC. Признак - в сборке RustPlanetX
-   нет terrio и `data::layers`, погода и облака точек работают, в сборке
-   Lite нет связи.
+   release). Признаки сборки `import` и `addins` - 6 ноября 2026 года:
+   в сборке RustPlanetX нет terrio и wasmi (`cargo tree`), clippy без
+   признаков чист. Свой прямой пересчёт сверен с terrio - тест
+   `forward_matches_terrio` (Web Mercator, UTM, Lambert-93 - до 1 мм,
+   NAD83 и ETRS89 - до 2 м без сдвига датума), своё чтение GeoJSON -
+   тест `own_geojson_matches_terrio`. Осталось: растры проекта RustGIS
+   через `share.exportRaster` (COG) вместо открытия файла, признак
+   `rustgis` - связь только у RustPlanetX.
 
 ## Решения автора
 

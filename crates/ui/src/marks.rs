@@ -59,6 +59,7 @@ pub struct Opened {
 /// файла, по нему различается сцена.
 pub fn open(bytes: &[u8], name: &str) -> Result<Opened, String> {
     let lower = name.to_lowercase();
+    #[cfg(feature = "addins")]
     if lower.ends_with(".csv") {
         // Точки CSV читает встроенный аддин в песочнице.
         let points = addin_host::Addin::load(addin_host::CSV_POINTS).and_then(|mut a| a.read_points(bytes))?;

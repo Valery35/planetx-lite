@@ -11,11 +11,19 @@ license.workspace = true
 authors.workspace = true
 repository.workspace = true
 
+[features]
+default = ["import", "addins"]
+# Чтение файлов пользователя через terrio (data/import). У RustPlanetX
+# его нет: данные приходят из RustGIS, doc/EDITIONS.md.
+import = ["data/import"]
+# Аддины в песочнице wasmi. У RustPlanetX их нет.
+addins = ["dep:addin-host"]
+
 [dependencies]
 globe-core.workspace = true
 terrain.workspace = true
 data.workspace = true
-addin-host.workspace = true
+addin-host = { workspace = true, optional = true }
 addin-api.workspace = true
 web-time.workspace = true
 scene.workspace = true

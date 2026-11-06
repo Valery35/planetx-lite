@@ -2,18 +2,18 @@
 // Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Свой растр: GeoTIFF или COG из байтов файла, через terrio.
+//! Свой растр: GeoTIFF или COG из байтов файла ([`crate::rasterfile`]).
 //!
 //! Растр - сетка значений первого канала в f32 по строкам сверху вниз,
 //! «нет данных» - NaN. Привязка - как у GDAL: `[x0, шаг x, поворот,
 //! y0, поворот, шаг y]`, координаты - в системе растра. Пересчёт
-//! в широту и долготу WGS84 - движок систем координат terrio, он сверен
-//! с GDAL (doc/PLAN.md, «Проверка terrio»).
+//! в широту и долготу WGS84 - [`crate::crs`].
 //!
 //! Файл считается враждебным: растр больше [`MAX_PIXELS`] точек
 //! не берётся.
 
-use terrio::crs::{SpatialRef, Transformer};
+use crate::crs::{SpatialRef, Transformer};
+use crate::rasterfile::RasterFile;
 
 /// Наибольшее количество точек растра.
 pub const MAX_PIXELS: usize = 64 << 20;
@@ -40,38 +40,27 @@ impl std::fmt::Debug for Grid {
     }
 }
 
-/// Транспонер в WGS84 (долгота, широта) из системы src.
+/// Пересчёт в WGS84 (долгота, широта) из системы src.
 fn wgs84_from(src: &SpatialRef) -> Option<Transformer> {
-    if src.is_unknown() {
-        return None;
-    }
-    let dst = SpatialRef::from_epsg(4326).ok()?;
-    Transformer::new(src, &dst).ok()
+    Transformer::new(src, &SpatialRef::from_epsg(4326)?)
 }
 
 impl Grid {
-    /// Растр из байтов файла. name - имя файла, по нему terrio узнаёт
-    /// формат.
+    /// Растр из байтов файла. name - имя файла, по нему узнаётся формат.
     pub fn read(bytes: Vec<u8>, name: &str) -> Result<Grid, String> {
-        let ds = terrio::memory::open_raster_bytes(bytes, name).map_err(|e| e.to_string())?;
-        let r = &ds.raster;
-        let (width, height) = (r.cols, r.rows);
-        if width == 0 || height == 0 || width.saturating_mul(height) > MAX_PIXELS {
-            return Err(format!("растр {width} × {height} не берётся"));
-        }
-        let nodata = ds.nodata();
+        let file = RasterFile::open(bytes, name)?;
+        let (width, height, nodata) = (file.cols, file.rows, file.nodata);
         let mut values = Vec::with_capacity(width * height);
-        for row in 0..height as isize {
-            for col in 0..width as isize {
-                let v = r.get(0, row, col);
+        for row in 0..height {
+            for col in 0..width {
+                let v = file.get(0, row, col);
                 let missing = !v.is_finite() || nodata.is_some_and(|n| v == n);
                 values.push(if missing { f32::NAN } else { v as f32 });
             }
         }
-        let crs = ds.crs();
-        let epsg = crs.authority().filter(|(a, _)| a.eq_ignore_ascii_case("EPSG")).map(|(_, c)| c);
-        let to_wgs84 = wgs84_from(&crs);
-        Ok(Grid { width, height, values, transform: ds.geo_transform(), epsg, to_wgs84, crs })
+        let epsg = file.crs.epsg();
+        let to_wgs84 = wgs84_from(&file.crs);
+        Ok(Grid { width, height, values, transform: file.transform, epsg, to_wgs84, crs: file.crs })
     }
 
     /// Значение в точке (столбец, строка) с долями, билинейно по центрам
@@ -88,27 +77,21 @@ impl Grid {
 
     /// Пересчёт из системы EPSG code в систему растра.
     pub fn transformer_from(&self, code: u32) -> Option<Transformer> {
-        if self.crs.is_unknown() {
-            return None;
-        }
-        Transformer::new(&SpatialRef::from_epsg(code).ok()?, &self.crs).ok()
+        Transformer::new(&SpatialRef::from_epsg(code)?, &self.crs)
     }
 
     /// Пересчёт из системы растра в систему EPSG code.
     pub fn transformer_to(&self, code: u32) -> Option<Transformer> {
-        if self.crs.is_unknown() {
-            return None;
-        }
-        Transformer::new(&self.crs, &SpatialRef::from_epsg(code).ok()?).ok()
+        Transformer::new(&self.crs, &SpatialRef::from_epsg(code)?)
     }
 
     /// Пересчёт из системы этого растра в систему растра other. None -
     /// системы те же или одна из них неизвестна.
     pub fn transformer_into(&self, other: &Grid) -> Option<Transformer> {
-        if self.crs.is_unknown() || other.crs.is_unknown() || (self.epsg.is_some() && self.epsg == other.epsg) {
+        if self.epsg.is_some() && self.epsg == other.epsg {
             return None;
         }
-        Transformer::new(&self.crs, &other.crs).ok()
+        Transformer::new(&self.crs, &other.crs)
     }
 
     /// Значение точки (столбец, строка), None - вне растра или нет данных.
@@ -142,8 +125,8 @@ impl Grid {
 
     /// Широта и долгота WGS84 точки (x, y) системы растра.
     pub fn lat_lon(&self, x: f64, y: f64) -> Option<(f64, f64)> {
-        let (lon, lat) = self.to_wgs84.as_ref()?.transform(x, y).ok()?;
-        (lat.is_finite() && lon.is_finite()).then_some((lat, lon))
+        let (lon, lat) = self.to_wgs84.as_ref()?.transform(x, y)?;
+        Some((lat, lon))
     }
 
     /// Широта и долгота углов растра: левый нижний, правый нижний,
@@ -162,10 +145,10 @@ impl Grid {
 /// Широты и долготы в метрах проекции EPSG code: x и y. None - система
 /// неизвестна.
 pub fn to_projected(code: u32, lats: &[f64], lons: &[f64]) -> Option<(Vec<f64>, Vec<f64>)> {
-    let t = Transformer::new(&SpatialRef::from_epsg(4326).ok()?, &SpatialRef::from_epsg(code).ok()?).ok()?;
+    let t = crate::crs::between(4326, code)?;
     let (mut xs, mut ys) = (Vec::with_capacity(lats.len()), Vec::with_capacity(lats.len()));
     for (lat, lon) in lats.iter().zip(lons) {
-        let (x, y) = t.transform(*lon, *lat).ok()?;
+        let (x, y) = t.transform(*lon, *lat)?;
         xs.push(x);
         ys.push(y);
     }
@@ -203,7 +186,6 @@ pub fn pixel_of(t: &[f64; 6], x: f64, y: f64) -> Option<(f64, f64)> {
 
 /// Широта и долгота точки (x, y) системы EPSG code.
 pub fn lat_lon_of(code: u32, x: f64, y: f64) -> Option<(f64, f64)> {
-    let src = SpatialRef::from_epsg(code).ok()?;
-    let (lon, lat) = wgs84_from(&src)?.transform(x, y).ok()?;
+    let (lon, lat) = crate::crs::between(code, 4326)?.transform(x, y)?;
     Some((lat, lon))
 }

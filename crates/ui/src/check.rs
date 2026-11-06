@@ -419,6 +419,7 @@ fn identity() -> String {
 /// Самопроверка аддина: встроенный аддин CSV читает образец, отпечаток
 /// результата - как у программы ([`addin_host::SAMPLE_DIGEST`]).
 /// Строки отчёта и итог.
+#[cfg(feature = "addins")]
 pub fn addin_check() -> (Vec<String>, bool) {
     let t0 = web_time::Instant::now();
     let read = addin_host::Addin::load(addin_host::CSV_POINTS)
@@ -440,6 +441,12 @@ pub fn addin_check() -> (Vec<String>, bool) {
         }
         Err(e) => (vec![format!("addin_error={e}")], false),
     }
+}
+
+/// Сборка без аддинов (RustPlanetX): проверять нечего.
+#[cfg(not(feature = "addins"))]
+pub fn addin_check() -> (Vec<String>, bool) {
+    (vec!["addin=off".to_string()], true)
 }
 
 /// Наименьшее количество кадров в окне 1 с, окна целиком внутри

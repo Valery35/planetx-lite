@@ -14,7 +14,8 @@ repository.workspace = true
 [dependencies]
 # Запуск и окно - общие с RustPlanetX.
 desktop.workspace = true
-ui.workspace = true
+# Чтение файлов через terrio и аддины - у Lite есть, у RustPlanetX нет.
+ui = { workspace = true, features = ["import", "addins"] }
 
 # Значок и сведения о программе в exe под Windows.
 [target.'cfg(windows)'.build-dependencies]

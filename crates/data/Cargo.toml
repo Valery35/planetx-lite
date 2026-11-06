@@ -4,17 +4,24 @@
 
 [package]
 name = "data"
-description = "Данные PlanetX Lite - пункты векторных тайлов OpenMapTiles, поиск места Nominatim, свои растры и слои через terrio"
+description = "Данные PlanetX Lite - пункты векторных тайлов OpenMapTiles, поиск места Nominatim, свои растры и слои"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
 
+[features]
+default = ["import"]
+# Чтение файлов пользователя через terrio: растры, слои всех форматов,
+# все коды EPSG. Без него (RustPlanetX, doc/EDITIONS.md) - свой разбор
+# GeoTIFF с тайлами и GeoJSON и свой пересчёт основных систем.
+import = ["dep:terrio"]
+
 [dependencies]
 flate2.workspace = true
 serde_json.workspace = true
-terrio.workspace = true
+terrio = { workspace = true, optional = true }
 tiny-skia.workspace = true
 zip.workspace = true
 # Триангуляция Делоне промеров (src/sounding.rs), MIT и Apache 2.0.
@@ -34,6 +41,8 @@ netcdf-reader = { version = "=0.10.1", default-features = false, features = ["ne
 laz = "0.13"
 
 [dev-dependencies]
+# Сверка своих разборов с terrio.
+terrio.workspace = true
 # Тайлы JPEG для проверок картинок COG, MIT и Apache 2.0, та же версия
 # у terrio.
 jpeg-encoder = "0.7"

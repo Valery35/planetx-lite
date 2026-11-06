@@ -31,11 +31,13 @@ repository = "https://github.com/Valery35/planetx-lite"
 [workspace.dependencies]
 globe-core = { path = "crates/globe-core" }
 terrain = { path = "crates/terrain" }
-data = { path = "crates/data" }
+# data и ui - без признаков по умолчанию: terrio и аддины включает
+# программа, которой они нужны (doc/EDITIONS.md).
+data = { path = "crates/data", default-features = false }
 scene = { path = "crates/scene" }
 net = { path = "crates/net" }
 render = { path = "crates/render" }
-ui = { path = "crates/ui" }
+ui = { path = "crates/ui", default-features = false }
 desktop = { path = "crates/desktop" }
 assistant = { path = "crates/assistant" }
 wgpu = "30"

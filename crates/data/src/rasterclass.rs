@@ -20,8 +20,8 @@
 //! участка проверяется до выделения памяти, разбор тегов идёт с проверкой
 //! границ.
 
-use terrio::RasterDataset;
-use terrio::crs::{SpatialRef, Transformer};
+use crate::crs::{SpatialRef, Transformer};
+use crate::rasterfile::RasterFile;
 
 use crate::aef::{self, Mosaic, ZoneIndex};
 use crate::grid;
@@ -300,8 +300,7 @@ pub fn ring_samples(grid: &Mosaic<f32>, inside: &[bool]) -> Vec<Vec<f32>> {
 
 /// Свой растр: все каналы, система координат, канал прозрачности.
 pub struct Source {
-    data: RasterDataset,
-    crs: SpatialRef,
+    data: RasterFile,
     transform: [f64; 6],
     nodata: Option<f64>,
     /// Каналы-признаки.
@@ -325,25 +324,19 @@ impl Warp {
 }
 
 impl Source {
-    /// Растр из байтов файла. name - имя файла, по нему terrio узнаёт
-    /// формат.
+    /// Растр из байтов файла. name - имя файла, по нему узнаётся формат.
     pub fn read(bytes: &[u8], name: &str) -> Result<Self, Problem> {
-        let data = terrio::memory::open_raster_bytes(bytes.to_vec(), name).map_err(|_| Problem::Unreadable)?;
-        let r = &data.raster;
-        if r.cols == 0 || r.rows == 0 || r.cols.saturating_mul(r.rows) > grid::MAX_PIXELS {
-            return Err(Problem::Unreadable);
-        }
-        let alpha = alpha_band(bytes, r.bands);
-        let bands: Vec<usize> = (0..r.bands).filter(|b| Some(*b) != alpha).collect();
+        let data = RasterFile::open(bytes.to_vec(), name).map_err(|_| Problem::Unreadable)?;
+        let alpha = alpha_band(bytes, data.bands);
+        let bands: Vec<usize> = (0..data.bands).filter(|b| Some(*b) != alpha).collect();
         if bands.is_empty() {
             return Err(Problem::Unreadable);
         }
-        let crs = data.crs();
-        if crs.is_unknown() {
+        if data.crs.is_unknown() {
             return Err(Problem::NoCrs);
         }
-        let (transform, nodata) = (data.geo_transform(), data.nodata());
-        Ok(Self { data, crs, transform, nodata, bands, alpha })
+        let (transform, nodata) = (data.transform, data.nodata);
+        Ok(Self { data, transform, nodata, bands, alpha })
     }
 
     /// Количество каналов-признаков.
@@ -354,23 +347,23 @@ impl Source {
     /// Подписи каналов-признаков по порядку: описание канала файла
     /// (у GeoTIFF - тег GDAL_METADATA), пусто - подписи нет.
     pub fn labels(&self) -> Vec<String> {
-        self.bands.iter().map(|b| self.data.band_metadata.get(*b).and_then(|m| m.description.clone()).unwrap_or_default()).collect()
+        self.bands.iter().map(|b| self.data.label(*b)).collect()
     }
 
     /// Значения каналов-признаков в точке (широта, долгота): пиксель под
     /// точкой, NaN - «нет данных». None - точка вне растра или прозрачна,
     /// как `pixel_values` модуля.
     pub fn values_at(&self, lat: f64, lon: f64) -> Option<Vec<f64>> {
-        let from_wgs84 = Transformer::new(&SpatialRef::from_epsg(4326).ok()?, &self.crs).ok()?;
-        let (x, y) = from_wgs84.transform(lon, lat).ok()?;
+        let from_wgs84 = Transformer::new(&SpatialRef::from_epsg(4326)?, &self.data.crs)?;
+        let (x, y) = from_wgs84.transform(lon, lat)?;
         let (col, row) = grid::pixel_of(&self.transform, x, y)?;
-        let r = &self.data.raster;
+        let r = &self.data;
         if !(col >= 0.0 && row >= 0.0 && col < r.cols as f64 && row < r.rows as f64) {
             return None;
         }
-        let (c, w) = (col.floor() as isize, row.floor() as isize);
+        let (c, w) = (col.floor() as usize, row.floor() as usize);
         let value = |band: usize| {
-            let v = r.get(band as isize, w, c);
+            let v = r.get(band, w, c);
             if !v.is_finite() || self.nodata.is_some_and(|n| v == n) { f64::NAN } else { v }
         };
         if self.alpha.map(value).is_some_and(|v| v.is_nan() || v <= 0.0) {
@@ -380,19 +373,19 @@ impl Source {
     }
 
     fn transformer(&self, index: &ZoneIndex, to_raster: bool) -> Result<Transformer, Problem> {
-        let utm = SpatialRef::from_epsg(utm_epsg(index)).map_err(|_| Problem::NoCrs)?;
-        let made = if to_raster { Transformer::new(&utm, &self.crs) } else { Transformer::new(&self.crs, &utm) };
-        made.map_err(|_| Problem::NoCrs)
+        let utm = SpatialRef::from_epsg(utm_epsg(index)).ok_or(Problem::NoCrs)?;
+        let made = if to_raster { Transformer::new(&utm, &self.data.crs) } else { Transformer::new(&self.data.crs, &utm) };
+        made.ok_or(Problem::NoCrs)
     }
 
     /// Широта и долгота углов растра, как [`crate::grid::Grid::corners`].
     pub fn corners(&self) -> Option<[(f64, f64); 4]> {
-        let to_wgs84 = Transformer::new(&self.crs, &SpatialRef::from_epsg(4326).ok()?).ok()?;
-        let (w, h) = (self.data.raster.cols as f64, self.data.raster.rows as f64);
+        let to_wgs84 = Transformer::new(&self.data.crs, &SpatialRef::from_epsg(4326)?)?;
+        let (w, h) = (self.data.cols as f64, self.data.rows as f64);
         let t = &self.transform;
         let mut out = [(0.0, 0.0); 4];
         for (slot, (c, r)) in out.iter_mut().zip([(0.0, h), (w, h), (w, 0.0), (0.0, 0.0)]) {
-            let (lon, lat) = to_wgs84.transform(t[0] + c * t[1] + r * t[2], t[3] + c * t[4] + r * t[5]).ok()?;
+            let (lon, lat) = to_wgs84.transform(t[0] + c * t[1] + r * t[2], t[3] + c * t[4] + r * t[5])?;
             *slot = (lat, lon);
         }
         Some(out)
@@ -403,10 +396,10 @@ impl Source {
     pub fn pixel(&self, index: &ZoneIndex, lat: f64, lon: f64) -> f64 {
         let found = || -> Option<f64> {
             let (x, y) = index.project(lat, lon);
-            let (sx, sy) = self.transformer(index, true).ok()?.transform(x, y).ok()?;
+            let (sx, sy) = self.transformer(index, true).ok()?.transform(x, y)?;
             let back = self.transformer(index, false).ok()?;
             let t = &self.transform;
-            let at = |dx: f64, dy: f64| back.transform(sx + dx, sy + dy).ok();
+            let at = |dx: f64, dy: f64| back.transform(sx + dx, sy + dy);
             let (a, b, c) = (at(0.0, 0.0)?, at(t[1], t[4])?, at(t[2], t[5])?);
             Some(((b.0 - a.0).hypot(b.1 - a.1) + (c.0 - a.0).hypot(c.1 - a.1)) / 2.0)
         };
@@ -427,9 +420,9 @@ impl Source {
     /// Значение канала band в точке (столбец, строка) с долями, «нет
     /// данных» канала - NaN. В смесь пустые соседи не входят.
     fn sample(&self, band: usize, col: f64, row: f64) -> f32 {
-        let r = &self.data.raster;
+        let r = &self.data;
         let at = |x: usize, y: usize| {
-            let v = r.get(band as isize, y as isize, x as isize);
+            let v = r.get(band, y, x);
             if !v.is_finite() || self.nodata.is_some_and(|n| v == n) { f32::NAN } else { v as f32 }
         };
         grid::blend(r.cols, r.rows, col, row, at)
@@ -444,7 +437,7 @@ impl Source {
             let y = y0 - (r as f64 + 0.5) * step;
             for c in 0..cols {
                 let x = x0 + (c as f64 + 0.5) * step;
-                let Some((col, row)) = warp.to_raster.transform(x, y).ok().and_then(|(sx, sy)| grid::pixel_of(&self.transform, sx, sy)) else {
+                let Some((col, row)) = warp.to_raster.transform(x, y).and_then(|(sx, sy)| grid::pixel_of(&self.transform, sx, sy)) else {
                     continue;
                 };
                 let clear = self.alpha.map(|a| self.sample(a, col, row)).is_some_and(|v| v.is_nan() || v <= 0.0);

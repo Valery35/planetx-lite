@@ -207,7 +207,34 @@ fn projections_match_terrio() {
                 // сотню метров, сверка - с той же системой без сдвига.
                 let tol = if code == 28410 { 3e-3 } else { 1e-8 };
                 assert!((la - lat).abs() < tol && (lo - lon).abs() < tol, "EPSG:{code} ({x}, {y}): {la}, {lo} против {lat}, {lon}");
+                // Прямой пересчёт возвращает точку с точностью до миллиметра.
+                let (bx, by) = crs.from_lat_lon(la, lo).unwrap();
+                assert!((bx - x).abs() < 1e-3 * crs.unit.recip().max(1.0) && (by - y).abs() < 1e-3 * crs.unit.recip().max(1.0), "EPSG:{code} обратно: {bx}, {by} против {x}, {y}");
             }
+        }
+    }
+}
+
+/// Прямой пересчёт сборки без terrio (`data::crs`) против terrio:
+/// Web Mercator, UTM и Lambert-93 по кодам EPSG.
+#[test]
+fn forward_matches_terrio() {
+    let wgs = SpatialRef::from_epsg(4326).unwrap();
+    let places = [(37.62, 55.75), (-122.68, 45.52), (2.35, 48.86), (151.21, -33.87), (-58.38, -34.6)];
+    for code in [3857, 32637, 32610, 32631, 32756, 32721, 26910, 25831, 2154] {
+        let crs = data::proj::from_epsg(code).unwrap_or_else(|| panic!("EPSG:{code}"));
+        let to = Transformer::new(&wgs, &SpatialRef::from_epsg(code).unwrap()).unwrap();
+        for (lon, lat) in places {
+            let (x, y) = to.transform(lon, lat).unwrap();
+            let Some((ox, oy)) = crs.from_lat_lon(lat, lon) else { continue };
+            // UTM далеко от своей зоны расходится с рядами GDAL, сверка -
+            // в пределах 10° от осевого меридиана.
+            if code != 3857 && code != 2154 && !(x - 500_000.0).abs().lt(&1_000_000.0) {
+                continue;
+            }
+            // Сдвиг датума NAD83 и ETRS89 не учитывается, он меньше 2 м.
+            let tol = if [26910, 25831].contains(&code) { 2.0 } else { 1e-3 };
+            assert!((ox - x).abs() < tol && (oy - y).abs() < tol, "EPSG:{code} ({lon}, {lat}): {ox}, {oy} против {x}, {y}");
         }
     }
 }
