@@ -167,3 +167,21 @@
 - Mastodon: https://en.osm.town/@Vaery35/117574519168610306
 - linux.org.ru: https://www.linux.org.ru/news/opensource/18415957, ждёт модератора
 - Reddit - публикует автор
+
+### PlanetX Lite 0.24.0, 7 ноября 2026 года
+
+Тексты - site/posts_0.24.0_social.md, описание выпуска - packaging/notes/0.24.0.md.
+
+- GitHub: https://github.com/Valery35/planetx-lite/releases/tag/v0.24.0
+- Dropbox - PlanetX-Lite.zip 0.24.0
+- Сайт informpp.ru - «Что нового» (блок 10699 при странице 10596) и главная, коммит 726912c
+- ВК: https://vk.ru/wall-241229428_52 (запись со снимком 3D-зданий Парижа, без статьи)
+- OSGeo Discourse: https://discourse.osgeo.org/t/155878/6
+- Mastodon: https://en.osm.town/@Vaery35/117574568530012193
+- X: https://x.com/Valery35/status/2119006840084459540
+- LinkedIn и Facebook - посты в лентах автора 7 ноября 2026 года
+- linux.org.ru: https://www.linux.org.ru/news/opensource/18415962, ждёт модератора
+- Telegram - текст в буфере обмена, публикует автор: окно Telegram не принимало щелчки помощника
+- Форум OSM - пишет автор своими словами, факты переданы в чате
+- Форум Rust - не публикуется, учётная запись заморожена
+- Reddit r/rust - публикует автор, текст в site/posts_0.24.0_social.md
