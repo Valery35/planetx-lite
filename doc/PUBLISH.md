@@ -36,7 +36,7 @@
 | Каталог QGIS (модуль) | Valery35 | plugins.qgis.org |
 | Telegram, @qgis_isolines | автор | Приложение Telegram, текст через буфер, пост один раз |
 | ВК, vk.ru/qgismodules | автор | Пост или статья через Claude in Chrome |
-| Форум OSM, community.openstreetmap.org | Valery35 | Не публиковать. Блокировку сняли 6 ноября 2026 года, но темы закрыты, писать в них нельзя |
+| Форум OSM, community.openstreetmap.org | Valery35 | Пишет только автор, своими словами. С 7 ноября 2026 года учётная запись без ограничений (уровень доверия 0), темы Lite 149678 и 149680 открыты для ответов, тема 149679 удалена |
 | Форум Rust, users.rust-lang.org | автор, вход через GitHub | Не публиковать: 6 ноября 2026 года учётная запись заморожена с причиной «slop», пост о 0.22.0 удалён |
 | OSGeo Discourse, discourse.osgeo.org | автор, вход через GitHub | Раздел General (id 4) |
 | LinkedIn | автор | Пост на английском с хештегами, без продвижения |
@@ -149,3 +149,21 @@
 - linux.org.ru: https://www.linux.org.ru/news/opensource/18415249 (прошла модерацию, в ленте новостей)
 - Форум OSM - не опубликовано, учётная запись отключена, тема 149679 удалена
 - Reddit - публикует автор, текст в posts_1.41_social.md
+
+### PlanetX 1.42.0, 7 ноября 2026 года
+
+Тексты - planetx/site/posts_1.42.md и posts_1.42_social.md, кадр - planetx/site/planetx_post_1.42.jpg.
+
+- GitHub: https://github.com/Valery35/planetx/releases/tag/v1.42.0
+- Каталог QGIS: https://plugins.qgis.org/plugins/planetx/version/1.42.0/
+- Dropbox - архив скопирован
+- Сайт informpp.ru - «Что нового» и главная, коммит a517034
+- Telegram: https://t.me/qgis_isolines/188
+- ВК: статья https://vk.ru/@qgismodules-planetx-142-podpisi-na-globuse-izdaleka-i-sceny-dlya-vsei, запись https://vk.ru/wall-241229428_51
+- Форум OSM: https://community.openstreetmap.org/t/149680/4 (ответ написал помощник модуля, правило «пишет только автор» он увидел после отправки, автору сказано)
+- OSGeo Discourse: https://discourse.osgeo.org/t/155878/5
+- LinkedIn и Facebook - посты в лентах автора
+- X: https://x.com/Valery35/status/2119003187101171984
+- Mastodon: https://en.osm.town/@Vaery35/117574519168610306
+- linux.org.ru: https://www.linux.org.ru/news/opensource/18415957, ждёт модератора
+- Reddit - публикует автор
