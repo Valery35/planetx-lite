@@ -199,3 +199,18 @@
 - Форум OSM - пишет автор своими словами, факты переданы в чате
 - Форум Rust - не публикуется, учётная запись заморожена
 - Reddit r/rust - публикует автор, текст в site/posts_0.24.0_social.md
+
+### PlanetX 1.42.1, 7 ноября 2026 года
+
+Тексты - planetx/site/posts_1.42.1_social.md, статьи нет, выпуск малый.
+
+- GitHub: https://github.com/Valery35/planetx/releases/tag/v1.42.1
+- Каталог QGIS: https://plugins.qgis.org/plugins/planetx/version/1.42.1/
+- Dropbox - архив скопирован
+- Сайт - «Что нового» и главная по новым адресам /главная-страница/planetx/qgis-planetx, коммит 2452c12
+- Telegram - бот выпуска отработал, пост в канале ждёт «Опубликовать» автора
+- ВК: https://vk.ru/wall-241229428_53
+- X: https://x.com/Valery35/status/2119088759341830218
+- Mastodon: https://en.osm.town/@Vaery35/117575854269869269
+- LinkedIn и Facebook - посты в лентах автора
+- Площадки группы «Иногда» (OSGeo, форум OSM, linux.org.ru, Reddit) - не публиковались, выпуск малый
