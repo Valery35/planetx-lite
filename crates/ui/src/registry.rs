@@ -14,6 +14,9 @@
 //! и не знает их по именам. Слой каталога - вариант
 //! [`crate::layers::Extra::Plugged`] с номером строки реестра.
 
+use std::sync::Arc;
+
+use data::buildings::TileKey;
 use eframe::egui;
 use globe_core::DVec3;
 use globe_core::camera::Camera;
@@ -23,6 +26,9 @@ use crate::identify::Feature;
 use crate::layers::Category;
 use crate::thumbs::Recipe;
 use crate::vector::Painter;
+
+/// Пришедший тайл зданий: ключ и байты MVT, None - пустой тайл.
+pub type Tile = (TileKey, Option<Arc<Vec<u8>>>);
 
 /// Что нужно слою в кадре.
 pub struct Ctx<'a> {
@@ -149,6 +155,20 @@ pub trait Layer {
     fn clicked(&mut self, _lang: Lang, _groups: &[(String, Vec<Feature>)], _request: &dyn Fn(u64) -> Box<dyn net::Request>) {}
     /// Дополнить группы открытого окна «Объекты» пришедшими сведениями.
     fn enrich(&self, _lang: Lang, _groups: &mut [(String, Vec<Feature>)]) {}
+    /// 3D-здания слоя: их строит, рисует, мерит линейкой и выгружает окно.
+    fn buildings(&self) -> Option<&crate::buildings::Buildings> {
+        None
+    }
+    fn buildings_mut(&mut self) -> Option<&mut crate::buildings::Buildings> {
+        None
+    }
+    /// Свои тайлы зданий: нужные ключи и пришедшие за кадр тайлы. None -
+    /// тайлы векторной основы общим загрузчиком окна.
+    fn building_tiles(&mut self, _keys: &[TileKey], _now: f64, _request: &dyn Fn(u64) -> Box<dyn net::Request>) -> Option<Vec<Tile>> {
+        None
+    }
+    /// Слой снят: убрать его сетки из видеокарты.
+    fn clear(&mut self, _globe: &mut render::Globe) {}
 }
 
 /// Слои реестра по порядку строк каталога. Новый слой - одна строка.
@@ -161,6 +181,8 @@ pub static ALL: &[&dyn Entry] = &[
     &crate::weather::ENTRIES[3],
     &crate::weather::ENTRIES[4],
     &crate::wiki::ENTRY,
+    &crate::buildings::ENTRY,
+    &crate::overture::ENTRY,
 ];
 
 /// Строка реестра номер n.
@@ -191,7 +213,7 @@ mod tests {
             assert!(!e.source().is_empty());
         }
         // Ключи прежние: сохранённые флажки и сцены находят строки.
-        for key in ["mining", "currents", "weather_temperature", "weather_wind", "weather_aurora", "wiki"] {
+        for key in ["mining", "currents", "weather_temperature", "weather_wind", "weather_aurora", "wiki", "buildings", "overture"] {
             assert!(matches!(Extra::from_key(key), Some(Extra::Plugged(_))), "{key}");
         }
     }

@@ -73,7 +73,7 @@ impl LiteApp {
     pub(super) fn view_items(&self) -> Vec<scene::sceneexport::Item> {
         let mut items = Vec::new();
         let store = self.heights.read();
-        if let Some(b) = &self.buildings {
+        if let Some(b) = self.plugged.values().find_map(|l| l.buildings()) {
             let heights = |lats: &[f64], lons: &[f64]| -> Vec<f64> {
                 let points: Vec<(f64, f64)> = lats.iter().copied().zip(lons.iter().copied()).collect();
                 store.heights_at(&points, true)

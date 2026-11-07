@@ -189,3 +189,61 @@ impl Buildings {
         self.wanted.clear();
     }
 }
+
+/// Место строк зданий: из строк «3D-здания» и «3D-здания, Overture Maps»
+/// включена одна.
+pub const SLOT: u8 = 9;
+
+/// Строка реестра «3D-здания».
+pub struct Entry;
+
+/// Строка «3D-здания» в [`crate::registry::ALL`].
+pub static ENTRY: Entry = Entry;
+
+impl crate::registry::Entry for Entry {
+    fn key(&self) -> &'static str {
+        "buildings"
+    }
+    fn name(&self) -> &'static str {
+        "3D buildings"
+    }
+    fn tip(&self) -> &'static str {
+        "Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m."
+    }
+    fn category(&self) -> crate::layers::Category {
+        crate::layers::Category::Map
+    }
+    fn source(&self) -> &'static str {
+        "OpenFreeMap"
+    }
+    fn words(&self) -> &'static [&'static str] {
+        &["здания", "дома", "3d", "buildings"]
+    }
+    fn legend(&self) -> Option<crate::thumbs::Recipe> {
+        data::thumbs::colors(self.key()).map(|c| crate::thumbs::Recipe::Ramp(c.to_vec()))
+    }
+    fn slot(&self) -> Option<u8> {
+        Some(SLOT)
+    }
+    fn make(&self, _cx: &crate::registry::Make<'_>) -> (Box<dyn crate::registry::Layer>, Option<String>) {
+        (Box::new(Shown(Buildings::default())), None)
+    }
+}
+
+/// Включённая строка: здания из тайлов векторной основы.
+struct Shown(Buildings);
+
+impl crate::registry::Layer for Shown {
+    fn step(&mut self, _cx: &crate::registry::Ctx<'_>) -> crate::registry::Stepped {
+        crate::registry::Stepped::default()
+    }
+    fn buildings(&self) -> Option<&Buildings> {
+        Some(&self.0)
+    }
+    fn buildings_mut(&mut self) -> Option<&mut Buildings> {
+        Some(&mut self.0)
+    }
+    fn clear(&mut self, globe: &mut render::Globe) {
+        self.0.clear(globe);
+    }
+}

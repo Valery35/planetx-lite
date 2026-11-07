@@ -179,6 +179,71 @@ impl Overture {
     }
 }
 
+/// Строка реестра «3D-здания, Overture Maps».
+pub struct Entry;
+
+/// Строка Overture в [`crate::registry::ALL`].
+pub static ENTRY: Entry = Entry;
+
+impl crate::registry::Entry for Entry {
+    fn key(&self) -> &'static str {
+        "overture"
+    }
+    fn name(&self) -> &'static str {
+        "3D buildings, Overture Maps"
+    }
+    fn tip(&self) -> &'static str {
+        "Volumetric buildings of Overture Maps - OpenStreetMap together with the open sets of Microsoft, Google Open Buildings and Esri in one PMTiles archive. Where OpenStreetMap is incomplete, for example in Africa and Asia, there are more buildings. They show when the camera is closer than 6 km to the ground. The height is the height field, otherwise the number of floors times 3.66 m. The row replaces the 3D buildings of the vector base."
+    }
+    fn category(&self) -> crate::layers::Category {
+        crate::layers::Category::Map
+    }
+    fn source(&self) -> &'static str {
+        "Overture Maps"
+    }
+    fn words(&self) -> &'static [&'static str] {
+        &["здания", "overture", "buildings", "3d"]
+    }
+    fn legend(&self) -> Option<crate::thumbs::Recipe> {
+        data::thumbs::colors(self.key()).map(|c| crate::thumbs::Recipe::Ramp(c.to_vec()))
+    }
+    fn slot(&self) -> Option<u8> {
+        Some(crate::buildings::SLOT)
+    }
+    fn make(&self, cx: &crate::registry::Make<'_>) -> (Box<dyn crate::registry::Layer>, Option<String>) {
+        (Box::new(Shown { buildings: crate::buildings::Buildings::default(), tiles: Overture::new(cx.request) }), None)
+    }
+}
+
+/// Включённая строка: здания из архива Overture своим загрузчиком.
+struct Shown {
+    buildings: crate::buildings::Buildings,
+    tiles: Overture,
+}
+
+impl crate::registry::Layer for Shown {
+    fn step(&mut self, _cx: &crate::registry::Ctx<'_>) -> crate::registry::Stepped {
+        crate::registry::Stepped::default()
+    }
+    fn busy(&self) -> bool {
+        self.tiles.busy()
+    }
+    fn attribution(&self) -> Option<(&'static str, &'static str)> {
+        Some(ATTRIBUTION)
+    }
+    fn buildings(&self) -> Option<&crate::buildings::Buildings> {
+        Some(&self.buildings)
+    }
+    fn buildings_mut(&mut self) -> Option<&mut crate::buildings::Buildings> {
+        Some(&mut self.buildings)
+    }
+    fn building_tiles(&mut self, keys: &[TileKey], now: f64, request: &dyn Fn(u64) -> Box<dyn net::Request>) -> Option<Vec<crate::registry::Tile>> {
+        Some(self.tiles.step(keys, now, request))
+    }
+    fn clear(&mut self, globe: &mut render::Globe) {
+        self.buildings.clear(globe);
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;

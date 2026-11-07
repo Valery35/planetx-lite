@@ -43,10 +43,6 @@ pub enum Extra {
     Live(crate::live::Kind),
     /// Спутники CelesTrak выбранных групп.
     Satellites,
-    /// 3D-здания OpenFreeMap.
-    Buildings,
-    /// 3D-здания Overture Maps архивом PMTiles.
-    Overture,
     /// Слой реестра [`crate::registry::ALL`], номер строки.
     Plugged(usize),
 }
@@ -65,8 +61,6 @@ impl Extra {
         out.push(Extra::Geoid);
         out.extend(crate::live::Kind::ALL.map(Extra::Live));
         out.push(Extra::Satellites);
-        out.push(Extra::Buildings);
-        out.push(Extra::Overture);
         out.extend((0..crate::registry::ALL.len()).map(Extra::Plugged));
         out
     }
@@ -108,8 +102,6 @@ impl Extra {
             Extra::Geoid => "Geoid",
             Extra::Live(k) => k.name(),
             Extra::Satellites => "Satellites",
-            Extra::Buildings => "3D buildings",
-            Extra::Overture => "3D buildings, Overture Maps",
             Extra::Plugged(n) => crate::registry::get(n).map_or("", |e| e.name()),
         }
     }
@@ -132,8 +124,6 @@ impl Extra {
             Extra::Dots(l) => l.tip(),
             Extra::Live(k) => k.tip(),
             Extra::Plugged(n) => crate::registry::get(n).map_or("", |e| e.tip()),
-            Extra::Buildings => "Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.",
-            Extra::Overture => "Volumetric buildings of Overture Maps - OpenStreetMap together with the open sets of Microsoft, Google Open Buildings and Esri in one PMTiles archive. Where OpenStreetMap is incomplete, for example in Africa and Asia, there are more buildings. They show when the camera is closer than 6 km to the ground. The height is the height field, otherwise the number of floors times 3.66 m. The row replaces the 3D buildings of the vector base.",
             Extra::Satellites => "Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.",
             Extra::Geoid => "The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.",
             Extra::Paleo => "Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.",
@@ -167,7 +157,6 @@ impl Extra {
             Extra::Dots(_) | Extra::Cutaway | Extra::Paleo | Extra::Geoid => Category::Depths,
             Extra::Live(_) => Category::Transport,
             Extra::Satellites => Category::Sky,
-            Extra::Buildings | Extra::Overture => Category::Map,
             Extra::Plugged(n) => crate::registry::get(n).map_or(Category::Map, |e| e.category()),
         }
     }
@@ -186,8 +175,6 @@ impl Extra {
             Extra::Geoid => "geoid",
             Extra::Live(k) => k.key(),
             Extra::Satellites => "satellites",
-            Extra::Buildings => "buildings",
-            Extra::Overture => "overture",
             Extra::Plugged(n) => crate::registry::get(n).map_or("", |e| e.key()),
         }
     }
@@ -834,8 +821,6 @@ impl Item {
             Item::Extra(Extra::Live(k)) => k.source(),
             Item::Extra(Extra::Satellites) | Item::Sat(_) => "CelesTrak",
             Item::Events => "Vantor, Planet",
-            Item::Extra(Extra::Buildings) => "OpenFreeMap",
-            Item::Extra(Extra::Overture) => "Overture Maps",
             Item::Extra(Extra::Plugged(n)) => crate::registry::get(n).map_or("", |e| e.source()),
             Item::Extra(Extra::Cutaway) => "PREM, CRUST1.0, Slab2",
             Item::Extra(Extra::Paleo) => "PALEOMAP",
@@ -888,8 +873,10 @@ fn items() -> Vec<Item> {
     let mut out: Vec<Item> = Basemap::all().into_iter().map(Item::Base).collect();
     out.extend((0..TREE.len()).map(Item::Group));
     out.push(Item::Extra(Extra::Grid));
-    out.push(Item::Extra(Extra::Buildings));
-    out.push(Item::Extra(Extra::Overture));
+    // Строки зданий реестра - сразу за сеткой, как прежде.
+    let building_rows = ["buildings", "overture"];
+    let plugged = |n: &usize| crate::registry::get(*n).is_some_and(|e| building_rows.contains(&e.key()));
+    out.extend((0..crate::registry::ALL.len()).filter(plugged).map(|n| Item::Extra(Extra::Plugged(n))));
     out.push(Item::Extra(Extra::Stars));
     out.push(Item::Extra(Extra::Air));
     out.push(Item::Extra(Extra::Sun));
@@ -903,7 +890,7 @@ fn items() -> Vec<Item> {
             .map(|l| Item::Extra(Extra::Dots(l))),
     );
     // Порядок LAYERS витрины модуля.
-    out.extend((0..crate::registry::ALL.len()).map(|n| Item::Extra(Extra::Plugged(n))));
+    out.extend((0..crate::registry::ALL.len()).filter(|n| !plugged(n)).map(|n| Item::Extra(Extra::Plugged(n))));
     out.push(Item::Extra(Extra::Geoid));
     out.extend(crate::live::Kind::ALL.map(|k| Item::Extra(Extra::Live(k))));
     out.push(Item::Extra(Extra::Cutaway));

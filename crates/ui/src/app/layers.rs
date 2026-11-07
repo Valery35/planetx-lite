@@ -164,30 +164,12 @@ impl LiteApp {
                             self.open_message = message;
                         }
                     }
-                } else if self.plugged.remove(&n).is_some() {
-                    self.refresh_painters();
-                }
-            }
-            // Здания основы и Overture - одно место: включение строки
-            // снимает другую (`extra_slot`), разобранные тайлы прежнего
-            // источника забываются.
-            Extra::Buildings | Extra::Overture => {
-                // Снятие строки, которая уже не на глобусе, ничего не трогает.
-                let active = self.buildings.is_some() && self.overture.is_some() == (extra == Extra::Overture);
-                if (on || active)
-                    && let Some(mut b) = self.buildings.take()
-                    && let Some(globe) = &mut self.globe
-                {
-                    b.clear(globe);
-                }
-                if on || active {
-                    self.overture = None;
-                }
-                if on {
-                    self.buildings = Some(crate::buildings::Buildings::default());
-                    if extra == Extra::Overture {
-                        self.overture = Some(crate::overture::Overture::new(&*self.loaders.request));
+                } else if let Some(mut layer) = self.plugged.remove(&n) {
+                    // Сетки снятого слоя уходят из видеокарты.
+                    if let Some(globe) = &mut self.globe {
+                        layer.clear(globe);
                     }
+                    self.refresh_painters();
                 }
             }
             Extra::Satellites => {

@@ -143,8 +143,6 @@ fn layer_words(extra: Extra) -> &'static [&'static str] {
         Extra::Paleo => &["палеогеография", "палеокарта", "древние материки", "пангея", "paleogeography", "paleomap", "pangaea"],
         Extra::Cutaway => &["разрез земли", "разрез", "ядро", "мантия", "кора", "cutaway", "core", "mantle", "crust"],
         Extra::Plugged(n) => crate::registry::get(n).map_or(&[], |e| e.words()),
-        Extra::Buildings => &["здания", "дома", "3d", "buildings"],
-        Extra::Overture => &["здания", "overture", "buildings", "3d"],
         Extra::Satellites => &["мкс", "спутники", "орбиты", "starlink", "iss", "satellites"],
         Extra::Map(_) | Extra::Dots(_) => key_words(extra.key()),
     }

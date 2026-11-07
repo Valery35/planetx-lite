@@ -462,15 +462,10 @@ pub struct LiteApp {
     osm_mines: Option<crate::overpass::Overpass<data::mining::Item>>,
     osm_infra: Option<crate::overpass::Overpass<data::infra::Item>>,
     overpass_mirrors: crate::overpass::Mirrors,
-    /// Строка «3D-здания», тайлы зданий загрузчика OpenFreeMap и те из них,
-    /// что нужны только зданиям.
-    buildings: Option<crate::buildings::Buildings>,
     /// Версия высот и кадр зданий, по которым собраны цели 3D-линейки.
     solid_stamp: Option<(u64, Vec<TileKey>)>,
     /// Неподвижные 3D-модели в видеокарте для выгрузки вида.
     export_models: Vec<render::ModelMesh>,
-    /// Загрузчик зданий Overture, когда здания из него.
-    overture: Option<crate::overture::Overture>,
     /// Картинки границ полей, когда строка включена.
     field_tiles: Option<crate::fieldmap::FieldTiles>,
     building_keys: HashSet<TileKey>,
@@ -1286,10 +1281,8 @@ impl LiteApp {
             osm_mines: None,
             osm_infra: None,
             overpass_mirrors: crate::overpass::Mirrors::default(),
-            buildings: None,
             solid_stamp: None,
             export_models: Vec::new(),
-            overture: None,
             field_tiles: None,
             building_keys: HashSet::new(),
             building_only: HashSet::new(),
@@ -3252,7 +3245,7 @@ impl LiteApp {
                 self.labels.add(loaded.key, bytes.clone());
             }
             if self.building_keys.contains(&loaded.key)
-                && let Some(b) = &mut self.buildings
+                && let Some(b) = self.plugged.values_mut().find_map(|l| l.buildings_mut())
             {
                 b.add(loaded.key, bytes.clone());
                 // Тайл только зданий в основу не идёт.
@@ -3631,9 +3624,6 @@ impl LiteApp {
             parts.push(data::satellites::ATTRIBUTION);
         }
         parts.extend(self.plugged.values().filter_map(|l| l.attribution()));
-        if self.overture.is_some() {
-            parts.push(crate::overture::ATTRIBUTION);
-        }
         if let Some(layer) = self.events.layer() {
             parts.push(layer.credit);
         }
@@ -3833,8 +3823,7 @@ impl eframe::App for LiteApp {
             || self.oam.as_ref().is_some_and(crate::oam::Oam::busy)
             || self.wayback.as_ref().is_some_and(crate::wayback::Wayback::busy)
             || self.sentinel.as_ref().is_some_and(crate::sentinel::Sentinel::busy)
-            || self.buildings.as_ref().is_some_and(|b| b.busy(self.heights.read().version()))
-            || self.overture.as_ref().is_some_and(crate::overture::Overture::busy)
+            || self.plugged.values().filter_map(|l| l.buildings()).any(|b| b.busy(self.heights.read().version()))
             || self.field_tiles.as_ref().is_some_and(crate::fieldmap::FieldTiles::busy)
             || self.gibs_catalog.is_some()
             || self.events.busy()
@@ -4223,37 +4212,44 @@ impl eframe::App for LiteApp {
         self.route_keys = self.route.wanted().into_iter().collect();
         self.route_only = self.route_keys.iter().copied().filter(|k| !vector_tiles.iter().any(|(v, _)| v == k)).collect();
         vector_tiles.extend(self.route_only.iter().map(|k| (*k, lod::INFINITE_PRIORITY)));
-        // Тайлы зданий у глаза - тем же загрузчиком, `render/buildings.py`
-        // модуля.
-        if let Some(b) = &mut self.buildings {
-            let cam = &self.nav.camera;
-            let (lat, lon, _) = cam.ellipsoid.ecef_to_geodetic(cam.eye);
-            let forward = -cam.rotation.z_axis;
-            let wanted = b.want(cam.eye.to_array(), forward.to_array(), store.height_at(lat, lon));
-            if let Some(overture) = &mut self.overture {
-                // Здания Overture - своим загрузчиком архива PMTiles.
-                self.building_keys.clear();
-                self.building_only.clear();
-                let keys: Vec<TileKey> = wanted.iter().map(|(k, _)| *k).collect();
-                for (key, bytes) in overture.step(&keys, now, &*self.loaders.request) {
-                    b.add(key, bytes);
-                }
-            } else {
-                self.building_keys = b.wanted.iter().copied().collect();
-                self.building_only = wanted.iter().map(|(k, _)| *k).filter(|k| !vector_tiles.iter().any(|(v, _)| v == k)).collect();
-                vector_tiles.extend(wanted.into_iter().filter(|(k, _)| self.building_only.contains(k)));
+        // Тайлы зданий у глаза - у слоя реестра, который строит здания,
+        // `render/buildings.py` модуля. Тайлы основы - тем же загрузчиком.
+        if let Some(layer) = self.plugged.values_mut().find(|l| l.buildings().is_some())
+            && let Some(wanted) = {
+                let cam = &self.nav.camera;
+                let (lat, lon, _) = cam.ellipsoid.ecef_to_geodetic(cam.eye);
+                let forward = -cam.rotation.z_axis;
+                let ground = store.height_at(lat, lon);
+                layer.buildings_mut().map(|b| b.want(cam.eye.to_array(), forward.to_array(), ground))
             }
-            let heights = |lats: &[f64], lons: &[f64]| -> Vec<f64> {
-                let points: Vec<(f64, f64)> = lats.iter().copied().zip(lons.iter().copied()).collect();
-                store.heights_at(&points, true)
-            };
-            b.step(globe, store.version(), &heights);
-            // Здания для луча 3D-линейки: только при смене кадра зданий.
-            if let Some(tool) = self.tool.as_mut().filter(|t| t.solid_on) {
-                let stamp = (store.version(), b.wanted.clone());
-                if self.solid_stamp.as_ref() != Some(&stamp) {
-                    tool.targets = b.meshes(&heights).iter().map(crate::viewexport::solid_tile).collect();
-                    self.solid_stamp = Some(stamp);
+        {
+            // Свои тайлы слоя, у Overture - загрузчиком архива PMTiles.
+            let keys: Vec<TileKey> = wanted.iter().map(|(k, _)| *k).collect();
+            let own = layer.building_tiles(&keys, now, &*self.loaders.request);
+            if let Some(b) = layer.buildings_mut() {
+                if let Some(own) = own {
+                    self.building_keys.clear();
+                    self.building_only.clear();
+                    for (key, bytes) in own {
+                        b.add(key, bytes);
+                    }
+                } else {
+                    self.building_keys = b.wanted.iter().copied().collect();
+                    self.building_only = wanted.iter().map(|(k, _)| *k).filter(|k| !vector_tiles.iter().any(|(v, _)| v == k)).collect();
+                    vector_tiles.extend(wanted.into_iter().filter(|(k, _)| self.building_only.contains(k)));
+                }
+                let heights = |lats: &[f64], lons: &[f64]| -> Vec<f64> {
+                    let points: Vec<(f64, f64)> = lats.iter().copied().zip(lons.iter().copied()).collect();
+                    store.heights_at(&points, true)
+                };
+                b.step(globe, store.version(), &heights);
+                // Здания для луча 3D-линейки: только при смене кадра зданий.
+                if let Some(tool) = self.tool.as_mut().filter(|t| t.solid_on) {
+                    let stamp = (store.version(), b.wanted.clone());
+                    if self.solid_stamp.as_ref() != Some(&stamp) {
+                        tool.targets = b.meshes(&heights).iter().map(crate::viewexport::solid_tile).collect();
+                        self.solid_stamp = Some(stamp);
+                    }
                 }
             }
         } else {
@@ -4807,7 +4803,6 @@ fn extra_slot(extra: crate::layers::Extra) -> Option<u8> {
     match extra {
         crate::layers::Extra::Map(_) => extra.map().and_then(|e| crate::maps::kind(e.key)).and_then(|k| k.slot()),
         crate::layers::Extra::Dots(crate::dots::Layer::Fires) => Some(0),
-        crate::layers::Extra::Buildings | crate::layers::Extra::Overture => Some(9),
         crate::layers::Extra::Plugged(n) => crate::registry::get(n).and_then(|e| e.slot()),
         _ => None,
     }
