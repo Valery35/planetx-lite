@@ -2020,7 +2020,6 @@ Total cloud cover by the NOAA GFS model, the share of the sky in percent. This i
 Aurora	Polarlicht
 The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	Wahrscheinlichkeit sichtbarer Polarlichter nach dem Modell OVATION von NOAA SWPC für die nächsten 30-90 Minuten, Gitter 1°. Es gibt eine Vorhersage für jetzt, der Zeitregler ändert sie nicht.
 Weather	Wetter
-NOAA GFS forecast fields by the time slider and the aurora forecast.	Vorhersagefelder NOAA GFS nach Zeitregler und die Polarlichtvorhersage.
 The forecast did not load, check the network and switch the row on again.	Die Vorhersage wurde nicht geladen, prüfen Sie das Netz und schalten Sie die Zeile erneut ein.
 Forecast: run {run}, hour {hour}.	Vorhersage: Lauf {run}, Stunde {hour}.
 On buildings	Auf Gebäuden

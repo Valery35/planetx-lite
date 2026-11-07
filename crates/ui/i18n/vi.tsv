@@ -2020,7 +2020,6 @@ Total cloud cover by the NOAA GFS model, the share of the sky in percent. This i
 Aurora	Cực quang
 The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	Xác suất thấy cực quang theo mô hình OVATION của NOAA SWPC trong 30-90 phút tới, lưới 1°. Chỉ có một dự báo cho hiện tại, thanh thời gian không đổi nó.
 Weather	Thời tiết
-NOAA GFS forecast fields by the time slider and the aurora forecast.	Các trường dự báo NOAA GFS theo thanh thời gian và dự báo cực quang.
 The forecast did not load, check the network and switch the row on again.	Dự báo không tải được, hãy kiểm tra mạng và bật lại dòng.
 Forecast: run {run}, hour {hour}.	Dự báo: lượt chạy {run}, giờ {hour}.
 On buildings	Trên tòa nhà

@@ -4436,7 +4436,10 @@ impl eframe::App for LiteApp {
         // уровень выше нынешнего.
         let sea_level = if self.planet.earth && self.geoid.is_none() { self.hydro.sea_level as f32 } else { 0.0 };
         let water = ((self.settings.sea || sea_level > 0.0) && self.geoid.is_none() && self.planet.earth).then(|| {
-            let under_field = if self.settings.maps.iter().any(|m| m == "emag") { WATER_UNDER_FIELD } else { 1.0 };
+            // Под картой аномалий поля и температурой поверхности вода почти
+            // прозрачна: у модуля их слои рисуются над водой, у Lite картинки
+            // карт лежат под ней, и синий воды менял цвета шкалы моря.
+            let under_field = if self.settings.maps.iter().any(|m| m == "emag" || m == crate::maps::TEMPERATURE) { WATER_UNDER_FIELD } else { 1.0 };
             [WATER_COLOR[0], WATER_COLOR[1], WATER_COLOR[2], WATER_COLOR[3] * under_field]
         });
         let count_holes = self.check.as_ref().is_some_and(Check::count_holes);

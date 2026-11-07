@@ -2021,7 +2021,7 @@ Total cloud cover by the NOAA GFS model, the share of the sky in percent. This i
 Aurora	Полярное сияние
 The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	Вероятность видимого полярного сияния по модели OVATION службы NOAA SWPC на ближайшие 30-90 минут, сетка 1°. Прогноз один - на сейчас, шкала времени его не меняет.
 Weather	Погода
-NOAA GFS forecast fields by the time slider and the aurora forecast.	Поля прогноза NOAA GFS по шкале времени и прогноз полярного сияния.
+NOAA GFS forecast fields by the time slider, the aurora forecast and the surface temperature of land and sea.	Поля прогноза NOAA GFS по шкале времени, прогноз полярного сияния и температура поверхности суши и моря.
 The forecast did not load, check the network and switch the row on again.	Прогноз не загрузился, проверьте сеть и включите строку снова.
 Forecast: run {run}, hour {hour}.	Прогноз: выпуск {run}, час {hour}.
 On buildings	По зданиям
@@ -2490,3 +2490,8 @@ PDOK Map (Netherlands)	PDOK Карта (Нидерланды)
 PDOK Map Grey (Netherlands)	PDOK Карта серая (Нидерланды)
 PDOK Map Pastel (Netherlands)	PDOK Карта пастель (Нидерланды)
 PDOK Aerial Photo (Netherlands)	PDOK Аэрофото (Нидерланды)
+Surface temperature	Температура поверхности
+Daytime land surface temperature from MODIS over 8 days and sea surface temperature from GHRSST MUR per day, NASA GIBS data. The latest ready day is shown. One of the NASA maps and the fires is on the globe.	Температура суши днём по MODIS за 8 суток и моря по GHRSST MUR за сутки, данные NASA GIBS. Показан последний готовый день. На глобусе одна из карт NASA и пожаров.
+NASA GIBS, land and sea	NASA GIBS, суша и море
+Land surface temperature, °C	Температура суши, °C
+Sea surface temperature, °C	Температура моря, °C

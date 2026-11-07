@@ -2020,7 +2020,6 @@ Total cloud cover by the NOAA GFS model, the share of the sky in percent. This i
 Aurora	Qütb parıltısı
 The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	NOAA SWPC OVATION modelinə görə növbəti 30-90 dəqiqə üçün görünən qütb parıltısı ehtimalı, şəbəkə 1°. Proqnoz birdir, indi üçündür, zaman şkalası dəyişmir.
 Weather	Hava
-NOAA GFS forecast fields by the time slider and the aurora forecast.	Zaman şkalasına görə NOAA GFS proqnoz sahələri və qütb parıltısı proqnozu.
 The forecast did not load, check the network and switch the row on again.	Proqnoz yüklənmədi, şəbəkəni yoxlayın və sətri yenidən açın.
 Forecast: run {run}, hour {hour}.	Proqnoz: buraxılış {run}, saat {hour}.
 On buildings	Binalar üzrə

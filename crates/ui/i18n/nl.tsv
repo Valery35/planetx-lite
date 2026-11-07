@@ -2020,7 +2020,6 @@ Total cloud cover by the NOAA GFS model, the share of the sky in percent. This i
 Aurora	Poollicht
 The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	Kans op zichtbaar poollicht volgens het model OVATION van NOAA SWPC voor de komende 30-90 minuten, raster 1°. De verwachting is er één, voor nu, de tijdschuif verandert haar niet.
 Weather	Weer
-NOAA GFS forecast fields by the time slider and the aurora forecast.	Verwachtingsvelden NOAA GFS volgens de tijdschuif en de poollichtverwachting.
 The forecast did not load, check the network and switch the row on again.	De verwachting is niet geladen, controleer het netwerk en zet de regel opnieuw aan.
 Forecast: run {run}, hour {hour}.	Verwachting: run {run}, uur {hour}.
 On buildings	Op gebouwen

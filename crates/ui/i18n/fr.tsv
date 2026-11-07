@@ -2020,7 +2020,6 @@ Total cloud cover by the NOAA GFS model, the share of the sky in percent. This i
 Aurora	Aurore polaire
 The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	Probabilité d'aurore visible selon le modèle OVATION de NOAA SWPC pour les 30-90 prochaines minutes, grille 1°. La prévision est unique, pour maintenant, le curseur de temps ne la change pas.
 Weather	Météo
-NOAA GFS forecast fields by the time slider and the aurora forecast.	Champs de prévision NOAA GFS selon le curseur de temps et prévision des aurores.
 The forecast did not load, check the network and switch the row on again.	La prévision n'a pas été chargée, vérifiez le réseau et réactivez la ligne.
 Forecast: run {run}, hour {hour}.	Prévision : run {run}, heure {hour}.
 On buildings	Sur les bâtiments

@@ -34,7 +34,24 @@ pub enum Kind {
     Wms(&'static WmsMap),
     /// Границы полей года: картинки рисует `crate::fieldmap`.
     Fields(i32),
+    /// Температура поверхности NASA GIBS, `core/temperature.py` модуля:
+    /// одна строка каталога, на глобусе море и над ним суша.
+    Temperature(Surface),
 }
+
+/// Слой температуры поверхности.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Surface {
+    /// Суша, MODIS за 8 дней. Ключ строки каталога.
+    Land,
+    /// Море, GHRSST MUR за сутки. Своей строки нет, ложится вместе с сушей.
+    Sea,
+}
+
+/// Ключ строки температуры поверхности.
+pub const TEMPERATURE: &str = "temperature";
+/// Ключ картинки моря той же строки.
+pub const TEMPERATURE_SEA: &str = "temperature_sea";
 
 /// Анализ рельефа: на глобусе одна из двух раскрасок, как у модуля.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -56,6 +73,8 @@ pub enum Group {
     Depths,
     Soil,
     Tiles,
+    /// Погода и температура поверхности.
+    Weather,
     /// Слой всего каталога NASA GIBS.
     Gibs,
     /// Служба WMS района или своя служба WMS.
@@ -76,7 +95,7 @@ pub struct Entry {
 /// Строки: темы GIBS в порядке `gallery_items` модуля, за ними слои
 /// в порядке `LAYERS`. «Повторяемости воды» в списке
 /// каталога модуля нет, её нет и здесь.
-pub const ALL: [Entry; 48] = [
+pub const ALL: [Entry; 49] = [
     Entry {
         key: "clouds",
         name: "Clouds",
@@ -358,6 +377,13 @@ pub const ALL: [Entry; 48] = [
         source: "Rosreestr NSPD",
     },
     Entry {
+        key: "temperature",
+        name: "Surface temperature",
+        tip: "Daytime land surface temperature from MODIS over 8 days and sea surface temperature from GHRSST MUR per day, NASA GIBS data. The latest ready day is shown. One of the NASA maps and the fires is on the globe.",
+        group: Group::Weather,
+        source: "NASA GIBS, land and sea",
+    },
+    Entry {
         key: "sea_marks",
         name: "Sea marks",
         tip: "OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.",
@@ -620,6 +646,12 @@ pub fn kind(key: &str) -> Option<Kind> {
     if key == "cadastre" {
         return Some(Kind::Cadastre);
     }
+    if key == TEMPERATURE {
+        return Some(Kind::Temperature(Surface::Land));
+    }
+    if key == TEMPERATURE_SEA {
+        return Some(Kind::Temperature(Surface::Sea));
+    }
     if let Some(year) = data::fieldmap::year_of(key) {
         return Some(Kind::Fields(year));
     }
@@ -644,7 +676,8 @@ impl Kind {
     /// одна карта слоя вида, наложений сколько угодно - None.
     pub fn slot(self) -> Option<u8> {
         match self {
-            Kind::Theme(_) => Some(0),
+            // Температура - одна из тем GIBS и пожаров, как EXCLUSIVE модуля.
+            Kind::Theme(_) | Kind::Temperature(_) => Some(0),
             Kind::Field(_) | Kind::Map(_) | Kind::Fields(_) => Some(1),
             Kind::Terrain(_) => Some(2),
             Kind::Overlay(_) | Kind::Contours(_) | Kind::Clouds | Kind::Cadastre | Kind::Wms(_) => None,
@@ -678,6 +711,7 @@ impl Kind {
             Kind::Cadastre => data::cadastre::MAX_LEVEL,
             Kind::Wms(w) => w.max_level,
             Kind::Fields(_) => data::fieldmap::PAINT_LEVEL,
+            Kind::Temperature(_) => data::temperature::MAX_LEVEL,
         }
     }
 
@@ -705,6 +739,7 @@ impl Kind {
             Kind::Cadastre => data::cadastre::ATTRIBUTION.0,
             Kind::Wms(w) => w.credit,
             Kind::Fields(_) => data::fieldmap::ATTRIBUTION,
+            Kind::Temperature(_) => data::temperature::ATTRIBUTION.0,
             // Подпись высот Terrarium и так стоит на экране.
             Kind::Contours(_) | Kind::Terrain(_) => "",
         }
@@ -720,6 +755,7 @@ impl Kind {
             Kind::Clouds => data::clouds::ATTRIBUTION.1,
             Kind::Cadastre => data::cadastre::ATTRIBUTION.1,
             Kind::Fields(_) => data::fieldmap::TERMS,
+            Kind::Temperature(_) => data::temperature::ATTRIBUTION.1,
             Kind::Contours(_) | Kind::Terrain(_) | Kind::Wms(_) => "",
         }
     }
@@ -732,6 +768,7 @@ impl Kind {
             Kind::Map(m) => rastermaps::map_rgba(m, rgba, m.opacity),
             Kind::Overlay(_) | Kind::Cadastre | Kind::Wms(_) => rastermaps::overlay_rgba(rgba),
             Kind::Theme(t) => gibs::overlay_rgba(rgba, gibs::OPACITY, t.clear),
+            Kind::Temperature(_) => data::temperature::overlay_rgba(rgba),
             // Картинка полей уже с премноженной альфой.
             Kind::Fields(_) => Some(rgba.to_vec()),
             // Картинку горизонталей рисует задание по тайлу высот.
@@ -767,6 +804,8 @@ impl Kind {
         match self {
             Kind::Field(f) => vec![(0, source(key, f.url, f.max_level))],
             Kind::Overlay(o) => vec![(0, source(key, o.url, o.max_level))],
+            Kind::Temperature(Surface::Land) => vec![(0, source(key, data::temperature::LAND_URL, data::temperature::MAX_LEVEL))],
+            Kind::Temperature(Surface::Sea) => vec![(0, source(key, data::temperature::SEA_URL, data::temperature::MAX_LEVEL))],
             // Служба отказывает на частые запросы: тайлы по одному.
             Kind::Cadastre => vec![(0, net::Source { max_requests: 1, ..source(key, data::cadastre::URL, data::cadastre::MAX_LEVEL) })],
             // Служба WMS рисует каждую картинку заново: запросов - два.

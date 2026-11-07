@@ -2020,7 +2020,6 @@ Total cloud cover by the NOAA GFS model, the share of the sky in percent. This i
 Aurora	Aurora
 The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	Peluang aurora terlihat menurut model OVATION NOAA SWPC untuk 30-90 menit ke depan, grid 1°. Prakiraan hanya satu, untuk sekarang, penggeser waktu tidak mengubahnya.
 Weather	Cuaca
-NOAA GFS forecast fields by the time slider and the aurora forecast.	Bidang prakiraan NOAA GFS menurut penggeser waktu dan prakiraan aurora.
 The forecast did not load, check the network and switch the row on again.	Prakiraan tidak dimuat, periksa jaringan dan aktifkan baris lagi.
 Forecast: run {run}, hour {hour}.	Prakiraan: rilis {run}, jam {hour}.
 On buildings	Pada bangunan

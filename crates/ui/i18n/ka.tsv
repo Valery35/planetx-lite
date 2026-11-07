@@ -2020,7 +2020,6 @@ Total cloud cover by the NOAA GFS model, the share of the sky in percent. This i
 Aurora	პოლარული ნათება
 The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	ხილული პოლარული ნათების ალბათობა NOAA SWPC-ის OVATION მოდელით მომდევნო 30-90 წუთისთვის, ბადე 1°. პროგნოზი ერთია, ახლანდელი, დროის შკალა მას არ ცვლის.
 Weather	ამინდი
-NOAA GFS forecast fields by the time slider and the aurora forecast.	NOAA GFS პროგნოზის ველები დროის შკალით და პოლარული ნათების პროგნოზი.
 The forecast did not load, check the network and switch the row on again.	პროგნოზი არ ჩაიტვირთა, შეამოწმეთ ქსელი და ხელახლა ჩართეთ სტრიქონი.
 Forecast: run {run}, hour {hour}.	პროგნოზი: გამოშვება {run}, საათი {hour}.
 On buildings	შენობებზე

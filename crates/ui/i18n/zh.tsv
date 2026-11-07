@@ -2020,7 +2020,6 @@ Total cloud cover by the NOAA GFS model, the share of the sky in percent. This i
 Aurora	极光
 The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	按 NOAA SWPC 的 OVATION 模式未来 30-90 分钟可见极光的概率,网格 1°。预报只有一个,针对当前,时间滑块不改变它。
 Weather	天气
-NOAA GFS forecast fields by the time slider and the aurora forecast.	按时间滑块的 NOAA GFS 预报场和极光预报。
 The forecast did not load, check the network and switch the row on again.	预报未加载,请检查网络并重新打开该行。
 Forecast: run {run}, hour {hour}.	预报:起报 {run},第 {hour} 小时。
 On buildings	沿建筑

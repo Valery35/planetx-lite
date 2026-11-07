@@ -278,6 +278,10 @@ impl LiteApp {
             .collect();
         // Слои каталога GIBS, который ещё не пришёл, остаются в настройках.
         self.settings.maps = on.iter().map(|(id, _)| id.to_string()).chain(self.gibs_pending.iter().cloned()).collect();
+        // Строка температуры поверхности - две картинки: море под сушей.
+        if let Some(n) = on.iter().position(|(id, _)| *id == crate::maps::TEMPERATURE) {
+            on.insert(n, (crate::maps::TEMPERATURE_SEA, crate::maps::Kind::Temperature(crate::maps::Surface::Sea)));
+        }
         // Тема GIBS ложится, когда известен день ряда: до ответа ряда
         // дат картинки тайлов ждали бы её и не рисовались. У слоя всего
         // каталога ряд пришёл с каталогом.

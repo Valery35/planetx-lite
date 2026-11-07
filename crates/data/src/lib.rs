@@ -157,6 +157,7 @@ pub mod classnames;
 pub mod emit;
 pub mod sounding;
 pub mod spectra;
+pub mod temperature;
 pub mod thumbs;
 pub mod tilemosaic;
 pub mod satellites;

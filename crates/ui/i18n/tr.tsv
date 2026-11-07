@@ -2020,7 +2020,6 @@ Total cloud cover by the NOAA GFS model, the share of the sky in percent. This i
 Aurora	Kutup ışığı
 The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	NOAA SWPC OVATION modeline göre önümüzdeki 30-90 dakika için görünür kutup ışığı olasılığı, ızgara 1°. Tahmin tektir, şimdi içindir, zaman çubuğu değiştirmez.
 Weather	Hava
-NOAA GFS forecast fields by the time slider and the aurora forecast.	Zaman çubuğuna göre NOAA GFS tahmin alanları ve kutup ışığı tahmini.
 The forecast did not load, check the network and switch the row on again.	Tahmin yüklenmedi, ağı denetleyin ve satırı yeniden açın.
 Forecast: run {run}, hour {hour}.	Tahmin: çalışma {run}, saat {hour}.
 On buildings	Binalar üzerinde

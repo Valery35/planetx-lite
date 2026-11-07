@@ -165,6 +165,7 @@ fn key_words(key: &str) -> &'static [&'static str] {
         "sea_marks" => &["морские знаки", "буи", "маяки", "фарватер", "openseamap", "sea marks", "buoys"],
         "hiking" => &["пешие маршруты", "тропы", "туризм", "походы", "hiking", "trails"],
         "cycling" => &["велосипед", "веломаршруты", "cycling", "bike routes"],
+        "temperature" => &["температура", "жара", "temperature"],
         "mtb" => &["горный велосипед", "маунтинбайк", "mtb", "mountain bike"],
         "slopes" => &["горные лыжи", "горнолыжные трассы", "лыжни", "лыжи", "ski slopes", "pistes"],
         "riding" => &["конные маршруты", "лошади", "riding", "horse"],

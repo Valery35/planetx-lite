@@ -2020,7 +2020,6 @@ Total cloud cover by the NOAA GFS model, the share of the sky in percent. This i
 Aurora	オーロラ
 The probability of a visible aurora by the OVATION model of NOAA SWPC for the next 30-90 minutes, grid 1°. The forecast is one, for now, the time slider does not change it.	NOAA SWPC の OVATION モデルによる今後 30-90 分のオーロラ視認確率で、格子は 1° です。予報は現在の 1 つだけで、時間スライダーでは変わりません。
 Weather	天気
-NOAA GFS forecast fields by the time slider and the aurora forecast.	時間スライダーによる NOAA GFS 予報場とオーロラ予報です。
 The forecast did not load, check the network and switch the row on again.	予報を読み込めませんでした。ネットワークを確認して行をもう一度オンにしてください。
 Forecast: run {run}, hour {hour}.	予報: 初期値 {run}、{hour} 時間目。
 On buildings	建物上

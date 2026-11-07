@@ -68,6 +68,9 @@ fn scale_of(key: &str, kind: Kind) -> Option<Scale> {
             }),
             _ => None,
         },
+        // Температура поверхности - шкала суши и шкала моря, как у модуля.
+        Kind::Temperature(crate::maps::Surface::Land) => Some(Scale::Bar { title: "Land surface temperature, °C", stops: &data::temperature::LAND_STOPS, ticks: &data::temperature::LAND_TICKS, log: false }),
+        Kind::Temperature(crate::maps::Surface::Sea) => Some(Scale::Bar { title: "Sea surface temperature, °C", stops: &data::temperature::SEA_STOPS, ticks: &data::temperature::SEA_TICKS, log: false }),
         Kind::Terrain(crate::maps::Analysis::Slope) => Some(Scale::Cells {
             title: "Slope, °",
             cells: data::slope::SLOPE_STOPS.iter().zip(["0", "2", "5", "10", "15", "25", "35"]).map(|(s, l)| (s.1, l)).collect(),
@@ -246,7 +249,9 @@ pub fn show(
         scales.push((Some(Closed::Weather), Scale::Theme { title, map: Some(map) }));
     }
     // У шкалы уклона крестика нет, как у модуля.
-    scales.extend(maps.iter().filter_map(|(k, kind)| scale_of(k, *kind).map(|s| ((!matches!(s, Scale::Cells { .. })).then_some(Closed::Map(k)), s))));
+    // Крестик шкалы моря снимает строку температуры поверхности.
+    let row = |k: &'static str, kind: Kind| if matches!(kind, Kind::Temperature(_)) { crate::maps::TEMPERATURE } else { k };
+    scales.extend(maps.iter().filter_map(|(k, kind)| scale_of(k, *kind).map(|s| ((!matches!(s, Scale::Cells { .. })).then_some(Closed::Map(row(k, *kind))), s))));
     if let Some((step, color)) = contours {
         scales.push((Some(Closed::Map("contours")), Scale::Contours { step, color }));
     }
