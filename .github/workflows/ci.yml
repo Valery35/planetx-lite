@@ -58,7 +58,7 @@ jobs:
       native: ${{ steps.pick.outputs.native }}
       wasm: ${{ steps.pick.outputs.wasm }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - id: pick
@@ -91,9 +91,9 @@ jobs:
     steps:
       - name: Место на диске
         run: sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Контракт сцены линейки
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: Valery35/planetx-scene
           path: planetx-scene
@@ -107,7 +107,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev libxrandr-dev libxi-dev libgl1-mesa-dev
       - name: Кэш Cargo
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry/index
@@ -140,13 +140,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Rust ${{ env.RUST_VERSION }}
         run: |
           rustup toolchain install "$RUST_VERSION" --profile minimal --component clippy --target wasm32-unknown-unknown
           rustup default "$RUST_VERSION"
       - name: Кэш Cargo
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry/index
@@ -174,12 +174,12 @@ jobs:
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
           df -h /
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Контракт сцены линейки
         # Формат сцены и проверочные сцены - хранилище planetx-scene,
         # тест crates/scene/tests/contract.rs.
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: Valery35/planetx-scene
           path: planetx-scene
@@ -197,7 +197,7 @@ jobs:
             libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev libxrandr-dev libxi-dev libgl1-mesa-dev
 
       - name: Кэш Cargo
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry/index
