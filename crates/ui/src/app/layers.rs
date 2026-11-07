@@ -181,7 +181,7 @@ impl LiteApp {
             }
             Extra::Geoid => {
                 if on && self.geoid.is_none() {
-                    let source = net::Source { name: "geoid", url: data::geoid::TILE_URL, max_requests: 4, max_level: data::geoid::MAX_LEVEL, ext: "png", placeholders: false, raw: false, tilejson: None };
+                    let source = net::Source { name: "geoid", url: data::geoid::TILE_URL, max_requests: 4, max_level: data::geoid::MAX_LEVEL, ext: "png", placeholders: false, raw: false, tilejson: None, region: None };
                     self.geoid = Some(GeoidState { loader: (self.loaders.make)(source), scale: self.settings.geoid_scale });
                     let mut store = self.heights.write();
                     store.clear();
@@ -322,7 +322,7 @@ impl LiteApp {
                     let name = lasting(&mut self.lasting, format!("gibs-{}-{day}", theme.key));
                     let max_level = theme.level;
                     let ext = if theme.ext == "jpeg" { "jpg" } else { "png" };
-                    sources = vec![(0, net::Source { name, url, max_requests: 4, max_level, ext, placeholders: false, raw: false, tilejson: None })];
+                    sources = vec![(0, net::Source { name, url, max_requests: 4, max_level, ext, placeholders: false, raw: false, tilejson: None, region: None })];
                     // Шкала темы - по её цветовой карте.
                     if !self.theme_scales.contains_key(id) {
                         let state = match theme.colormap_url() {

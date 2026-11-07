@@ -405,7 +405,6 @@ The geological and lithological maps, earthquakes, plate boundaries and faults, 
 Soils	土壌
 Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.	SoilGrids による表層土 0-5 cm の性質 - 粘土、砂、有機炭素、pH、250 m グリッド。
 Map overlays	地図のオーバーレイ
-Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.	背景地図の上に重ねる透明な地図 - 航路標識、ハイキングルート、サイクリングルート。複数を同時に表示できます。
 Sea marks	航路標識
 OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.	OpenSeaMap の航路標識 - ブイ、灯台、導標、航路、錨地。標識は近づくと表示され、地図の縮尺約 1:500 000 から見えます。この地図は海図の代わりにはなりません。
 Hiking routes	ハイキングルート

@@ -405,7 +405,6 @@ The geological and lithological maps, earthquakes, plate boundaries and faults, 
 Soils	토양
 Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.	SoilGrids에 따른 표토 0-5 cm의 특성 - 점토, 모래, 유기 탄소, pH, 250 m 격자.
 Map overlays	지도 오버레이
-Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.	배경 지도 위의 투명한 지도 - 항로 표지, 도보 경로, 자전거 경로. 여러 개를 동시에 켤 수 있습니다.
 Sea marks	항로 표지
 OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.	OpenSeaMap 항로 표지 - 부표, 등대, 도표, 항로, 정박지. 표지는 가까이에서 지도 축척 약 1:500 000부터 보입니다. 이 지도는 해도를 대신하지 않습니다.
 Hiking routes	도보 경로

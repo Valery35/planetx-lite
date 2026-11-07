@@ -828,6 +828,7 @@ const LIGHTS: net::Source = net::Source {
     placeholders: false,
     raw: false,
     tilejson: None,
+    region: None,
 };
 const LIGHTS_ATTRIBUTION: (&str, &str) = ("NASA Black Marble", "https://earthobservatory.nasa.gov/features/NightLights");
 

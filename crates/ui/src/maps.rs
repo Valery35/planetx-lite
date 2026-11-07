@@ -76,7 +76,7 @@ pub struct Entry {
 /// Строки: темы GIBS в порядке `gallery_items` модуля, за ними слои
 /// в порядке `LAYERS`. «Повторяемости воды» в списке
 /// каталога модуля нет, её нет и здесь.
-pub const ALL: [Entry; 45] = [
+pub const ALL: [Entry; 48] = [
     Entry {
         key: "clouds",
         name: "Clouds",
@@ -375,6 +375,27 @@ pub const ALL: [Entry; 45] = [
         key: "cycling",
         name: "Cycling routes",
         tip: "Waymarked cycling routes from OpenStreetMap by Waymarked Trails - from international cycle routes to local ones.",
+        group: Group::Tiles,
+        source: "Waymarked Trails",
+    },
+    Entry {
+        key: "mtb",
+        name: "Mountain bike routes",
+        tip: "Waymarked mountain bike routes from OpenStreetMap by Waymarked Trails.",
+        group: Group::Tiles,
+        source: "Waymarked Trails",
+    },
+    Entry {
+        key: "slopes",
+        name: "Ski slopes",
+        tip: "Ski slopes and ski routes from OpenStreetMap by Waymarked Trails - downhill runs in the colour of their difficulty and cross-country trails.",
+        group: Group::Tiles,
+        source: "Waymarked Trails",
+    },
+    Entry {
+        key: "riding",
+        name: "Riding routes",
+        tip: "Waymarked horse riding routes from OpenStreetMap by Waymarked Trails.",
         group: Group::Tiles,
         source: "Waymarked Trails",
     },
@@ -741,6 +762,7 @@ impl Kind {
             placeholders: false,
             raw: false,
             tilejson: None,
+            region: None,
         };
         match self {
             Kind::Field(f) => vec![(0, source(key, f.url, f.max_level))],

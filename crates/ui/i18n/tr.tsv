@@ -405,7 +405,6 @@ The geological and lithological maps, earthquakes, plate boundaries and faults, 
 Soils	Topraklar
 Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.	SoilGrids verilerine göre 0-5 cm üst toprak katmanının özellikleri - kil, kum, organik karbon ve pH, 250 m ızgara.
 Map overlays	Harita katmanları
-Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.	Altlık haritanın üzerinde saydam haritalar - deniz işaretleri, yürüyüş ve bisiklet rotaları. Birkaçı aynı anda açık olabilir.
 Sea marks	Deniz işaretleri
 OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.	OpenSeaMap seyir işaretleri - şamandıralar, deniz fenerleri, transit hatları, kanallar ve demirleme yerleri. İşaretler yakından, yaklaşık 1:500 000 harita ölçeğinden itibaren görünür. Harita seyir haritasının yerini tutmaz.
 Hiking routes	Yürüyüş rotaları

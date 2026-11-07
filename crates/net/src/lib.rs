@@ -127,6 +127,55 @@ pub struct Source {
     /// Адрес TileJSON. Шаблон адреса тайлов берётся из него, url тогда
     /// не нужен.
     pub tilejson: Option<&'static str>,
+    /// Охват районной карты: вне его тайлы берутся у подложки вокруг.
+    pub region: Option<Region>,
+}
+
+/// Охват районной карты, `RegionalXyz` модуля: в рамке и не мельче
+/// уровня min_level - свои тайлы, вокруг - тайлы base. Иначе мир вокруг
+/// страны был бы белым.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Region {
+    /// Запад, юг, восток, север, сотые доли градуса.
+    pub bbox: [i32; 4],
+    /// Уровень, с которого берётся сама карта.
+    pub min_level: u32,
+    /// Шаблон адреса подложки вокруг.
+    pub base: &'static str,
+}
+
+impl Region {
+    /// Рамка в метрах EPSG:3857: запад, юг, восток, север.
+    fn mercator(&self) -> [f64; 4] {
+        let deg = |v: i32| f64::from(v) / 100.0;
+        let x = |lon: f64| MERCATOR_HALF * lon / 180.0;
+        let y = |lat: f64| {
+            let lat = lat.clamp(-85.0511, 85.0511);
+            MERCATOR_HALF / std::f64::consts::PI * (std::f64::consts::FRAC_PI_4 + lat.to_radians() / 2.0).tan().ln()
+        };
+        let [w, s, e, n] = self.bbox.map(deg);
+        [x(w), y(s), x(e), y(n)]
+    }
+
+    /// Тайл key берётся у самой карты.
+    pub fn inside(&self, key: TileKey) -> bool {
+        if key.0 < self.min_level {
+            return false;
+        }
+        let [w, s, e, n] = tile_bbox(key);
+        let b = self.mercator();
+        w < b[2] && e > b[0] && s < b[3] && n > b[1]
+    }
+
+    /// Тайл уровня min_level в середине охвата - превью каталога.
+    pub fn preview(&self) -> TileKey {
+        let z = self.min_level.min(30);
+        let b = self.mercator();
+        let side = 2.0 * MERCATOR_HALF / f64::from(1u32 << z);
+        let x = (((b[0] + b[2]) / 2.0 + MERCATOR_HALF) / side).floor().max(0.0) as u32;
+        let y = ((MERCATOR_HALF - (b[1] + b[3]) / 2.0) / side).floor().max(0.0) as u32;
+        (z, x, y)
+    }
 }
 
 /// Подложка OpenStreetMap.
@@ -139,6 +188,7 @@ pub const OSM: Source = Source {
     placeholders: false,
     raw: false,
     tilejson: None,
+    region: None,
 };
 
 /// Космоснимки Esri World Imagery, как в модуле. Порядок y и x в адресе
@@ -152,6 +202,7 @@ pub const ESRI: Source = Source {
     placeholders: true,
     raw: false,
     tilejson: None,
+    region: None,
 };
 
 /// Высоты рельефа Mapzen Terrain Tiles в записи Terrarium, как в модуле.
@@ -164,6 +215,7 @@ pub const TERRARIUM: Source = Source {
     placeholders: false,
     raw: false,
     tilejson: None,
+    region: None,
 };
 
 /// Векторные тайлы OpenFreeMap, как в модуле. Адрес тайлов меняется
@@ -178,6 +230,7 @@ pub const OPENFREEMAP: Source = Source {
     placeholders: false,
     raw: true,
     tilejson: Some("https://tiles.openfreemap.org/planet"),
+    region: None,
 };
 
 /// Сколько тайл в кэше считается свежим.
@@ -242,7 +295,10 @@ pub fn host_rule(url: &str) -> Option<&'static HostRule> {
 
 /// Адрес тайла key у источника.
 pub fn tile_url(source: &Source, key: TileKey) -> String {
-    template_url(source.url, key)
+    match source.region {
+        Some(r) if !r.inside(key) => template_url(r.base, key),
+        _ => template_url(source.url, key),
+    }
 }
 
 /// Адрес тайла key по шаблону с местами {z}, {x}, {y} или {bbox} - рамкой

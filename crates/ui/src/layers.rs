@@ -706,7 +706,11 @@ fn recipe(item: Item) -> crate::thumbs::Recipe {
     use data::thumbs as th;
     let ramp = |c: &[[u8; 3]]| Recipe::Ramp(c.to_vec());
     match item {
-        Item::Base(b) => Recipe::Own(net::tile_url(&b.source(), th::TILE)),
+        // Районная карта - тайл середины своей страны, `preview_tile` модуля.
+        Item::Base(b) => {
+            let source = b.source();
+            Recipe::Own(net::tile_url(&source, source.region.map_or(th::TILE, |r| r.preview())))
+        }
         Item::Group(n) => Recipe::Flat(th::vector_colors(n).to_vec()),
         Item::Sat(n) => Recipe::Flat(data::satellites::GROUPS.get(n).map_or_else(Vec::new, |g| vec![[16, 20, 40], g.1, [16, 20, 40]])),
         Item::Events => Recipe::Base,
@@ -919,7 +923,7 @@ impl Catalog {
             (Category::Transport, tr(lang, "Transport"), tr(lang, "Trains of Finland, Baltic ships and aircraft in real time from Fintraffic open data and the adsb.lol ADS-B network.")),
             (Category::Soil, tr(lang, "Soils"), tr(lang, "Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.")),
             (Category::Terrain, tr(lang, "Terrain analysis"), tr(lang, "Colouring of the surface by slope or by the direction a slope faces, one of the two is on. Terrain contours lie over them.")),
-            (Category::Tiles, tr(lang, "Map overlays"), tr(lang, "Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.")),
+            (Category::Tiles, tr(lang, "Map overlays"), tr(lang, "Transparent maps over the base map - sea marks, hiking, cycling, mountain bike and riding routes, ski slopes. Several can be on at once.")),
             (Category::Satellites, tr(lang, "Satellites"), tr(lang, "Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.")),
             (Category::Wiki, tr(lang, "Encyclopedia"), tr(lang, "Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.")),
             (Category::Archive, tr(lang, "Imagery archive"), tr(lang, "Images of extraordinary events from the open catalogs of Vantor and Planet.")),

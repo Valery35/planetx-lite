@@ -173,10 +173,12 @@ pub enum ReadyGroup {
     Osm,
     Esri,
     NasaUsgs,
+    /// Открытые национальные карты, `national` модуля 1.41.
+    National,
 }
 
 impl ReadyGroup {
-    pub const ALL: [ReadyGroup; 3] = [ReadyGroup::Osm, ReadyGroup::Esri, ReadyGroup::NasaUsgs];
+    pub const ALL: [ReadyGroup; 4] = [ReadyGroup::Osm, ReadyGroup::Esri, ReadyGroup::NasaUsgs, ReadyGroup::National];
 
     /// Название подменю.
     pub fn name(self) -> &'static str {
@@ -184,6 +186,7 @@ impl ReadyGroup {
             ReadyGroup::Osm => "OpenStreetMap",
             ReadyGroup::Esri => "Esri",
             ReadyGroup::NasaUsgs => "NASA and USGS",
+            ReadyGroup::National => "National maps",
         }
     }
 }
@@ -199,6 +202,8 @@ pub struct Ready {
     pub credit: &'static str,
     pub terms: &'static str,
     pub group: ReadyGroup,
+    /// Охват районной карты, у мировой - None.
+    pub region: Option<net::Region>,
 }
 
 const ESRI_TERMS: &str = "https://www.esri.com/en-us/legal/terms/full-master-agreement";
@@ -231,12 +236,55 @@ const fn ready(
     terms: &'static str,
     group: ReadyGroup,
 ) -> Ready {
-    Ready { key, name, url, max_level, credit, terms, group }
+    Ready { key, name, url, max_level, credit, terms, group, region: None }
+}
+
+/// Районная карта страны, вид `regional` модуля: охват в сотых долях
+/// градуса (запад, юг, восток, север), уровень, с которого берётся сама
+/// карта, и подложка вокруг.
+const fn regional(key: &'static str, name: &'static str, url: &'static str, credit: &'static str, terms: &'static str, area: ([i32; 4], u32), base: &'static str) -> Ready {
+    Ready { key, name, url, max_level: 19, credit, terms, group: ReadyGroup::National, region: Some(net::Region { bbox: area.0, min_level: area.1, base }) }
+}
+
+const ESRI_TOPO: &str = esri!("World_Topo_Map");
+const ESRI_IMAGERY: &str = esri!("World_Imagery");
+const TOPPLUS_CREDIT: &str = "© BKG (2026) dl-de/by-2-0";
+const TOPPLUS_TERMS: &str = "https://gdz.bkg.bund.de/index.php/default/wmts-topplusopen-wmts-topplus-open.html";
+const BASEMAPDE_CREDIT: &str = "© GeoBasis-DE / BKG (2026) CC BY 4.0";
+const BASEMAPDE_TERMS: &str = "https://basemap.de/open-data/";
+const SWISS_CREDIT: &str = "© swisstopo";
+const SWISS_TERMS: &str = "https://www.geo.admin.ch/en/general-terms-of-use-fsdi";
+const PDOK_CREDIT: &str = "© Kadaster, PDOK, CC BY 4.0";
+const PDOK_TERMS: &str = "https://www.pdok.nl/copyright";
+/// Охваты стран с запасом и уровни, REGIONS модуля.
+const GERMANY: ([i32; 4], u32) = ([550, 4720, 1560, 5510], 7);
+const SWISS: ([i32; 4], u32) = ([590, 4580, 1050, 4785], 8);
+const HOLLAND: ([i32; 4], u32) = ([320, 5070, 730, 5360], 7);
+
+/// Слой basemap.de по стилю.
+macro_rules! basemapde {
+    ($style:literal) => {
+        concat!("https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/de_basemapde_web_raster_", $style, "/default/GLOBAL_WEBMERCATOR/{z}/{y}/{x}.png")
+    };
+}
+
+/// Слой swisstopo по имени.
+macro_rules! swiss {
+    ($layer:literal) => {
+        concat!("https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.", $layer, "/default/current/3857/{z}/{x}/{y}.jpeg")
+    };
+}
+
+/// Фоновая карта PDOK по стилю.
+macro_rules! pdok {
+    ($style:literal) => {
+        concat!("https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/", $style, "/EPSG:3857/{z}/{x}/{y}.png")
+    };
 }
 
 /// Готовые подосновы в порядке подменю модуля. Адреса проверены модулем
 /// тайлом у Перми (USGS - у Денвера) 13 и 18 октября 2026 года.
-pub const READY: [Ready; 19] = [
+pub const READY: [Ready; 30] = [
     ready(
         "opentopomap",
         "OpenTopoMap",
@@ -328,6 +376,28 @@ pub const READY: [Ready; 19] = [
     ready("usgs_imagery_topo", "USGS Imagery Topo (USA)", usgs!("USGSImageryTopo"), 16, USGS_CREDIT, USGS_TERMS, ReadyGroup::NasaUsgs),
     ready("usgs_topo", "USGS Topo (USA)", usgs!("USGSTopo"), 16, USGS_CREDIT, USGS_TERMS, ReadyGroup::NasaUsgs),
     ready("usgs_relief", "USGS Shaded Relief (USA)", usgs!("USGSShadedReliefOnly"), 16, USGS_CREDIT, USGS_TERMS, ReadyGroup::NasaUsgs),
+    // Открытые национальные карты модуля 1.41, список opengeos/qgis-basemaps
+    // (MIT). Адреса и уровни проверены модулем тайлами Берлина, Берна
+    // и Амстердама 6 ноября 2026 года. Сверка - planetx-scene/data/sources.json.
+    ready("topplus", "TopPlusOpen (BKG)", "https://sgx.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web/default/WEBMERCATOR/{z}/{y}/{x}.png", 18, TOPPLUS_CREDIT, TOPPLUS_TERMS, ReadyGroup::National),
+    ready("topplus_grey", "TopPlusOpen Grey (BKG)", "https://sgx.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png", 18, TOPPLUS_CREDIT, TOPPLUS_TERMS, ReadyGroup::National),
+    regional("basemapde", "basemap.de (Germany)", basemapde!("farbe"), BASEMAPDE_CREDIT, BASEMAPDE_TERMS, GERMANY, ESRI_TOPO),
+    regional("basemapde_grey", "basemap.de Grey (Germany)", basemapde!("grau"), BASEMAPDE_CREDIT, BASEMAPDE_TERMS, GERMANY, ESRI_TOPO),
+    regional("swiss_map", "swisstopo National Map (Switzerland)", swiss!("pixelkarte-farbe"), SWISS_CREDIT, SWISS_TERMS, SWISS, ESRI_TOPO),
+    regional("swiss_grey", "swisstopo National Map Grey (Switzerland)", swiss!("pixelkarte-grau"), SWISS_CREDIT, SWISS_TERMS, SWISS, ESRI_TOPO),
+    regional("swissimage", "SWISSIMAGE (Switzerland)", swiss!("swissimage"), SWISS_CREDIT, SWISS_TERMS, SWISS, ESRI_IMAGERY),
+    regional("pdok_map", "PDOK Map (Netherlands)", pdok!("standaard"), PDOK_CREDIT, PDOK_TERMS, HOLLAND, ESRI_TOPO),
+    regional("pdok_grey", "PDOK Map Grey (Netherlands)", pdok!("grijs"), PDOK_CREDIT, PDOK_TERMS, HOLLAND, ESRI_TOPO),
+    regional("pdok_pastel", "PDOK Map Pastel (Netherlands)", pdok!("pastel"), PDOK_CREDIT, PDOK_TERMS, HOLLAND, ESRI_TOPO),
+    regional(
+        "pdok_photo",
+        "PDOK Aerial Photo (Netherlands)",
+        "https://service.pdok.nl/hwh/luchtfotorgb/wmts/v1_0/Actueel_ortho25/EPSG:3857/{z}/{x}/{y}.jpeg",
+        "© Beeldmateriaal Nederland, PDOK, CC BY 4.0",
+        PDOK_TERMS,
+        HOLLAND,
+        ESRI_IMAGERY,
+    ),
 ];
 
 impl Basemap {
@@ -367,21 +437,21 @@ impl Basemap {
             Basemap::Esri => net::ESRI,
             Basemap::Osm => net::OSM,
             Basemap::Ready(_) => match self.ready() {
-                Some(r) => Source { name: r.key, url: r.url, max_requests: 4, max_level: r.max_level, ext: "png", placeholders: false, raw: false, tilejson: None },
+                Some(r) => Source { name: r.key, url: r.url, max_requests: 4, max_level: r.max_level, ext: "png", placeholders: false, raw: false, tilejson: None, region: r.region },
                 None => net::ESRI,
             },
             Basemap::Own(_) => match self.own() {
-                Some(e) => Source { name: e.key, url: e.url, max_requests: 2, max_level: e.max_level, ext: "png", placeholders: false, raw: false, tilejson: None },
+                Some(e) => Source { name: e.key, url: e.url, max_requests: 2, max_level: e.max_level, ext: "png", placeholders: false, raw: false, tilejson: None, region: None },
                 None => net::ESRI,
             },
             Basemap::Paleo(age) => {
                 let (name, url) = paleo_source(age);
-                Source { name, url, max_requests: 4, max_level: data::paleo::MAX_LEVEL, ext: "jpg", placeholders: false, raw: false, tilejson: None }
+                Source { name, url, max_requests: 4, max_level: data::paleo::MAX_LEVEL, ext: "jpg", placeholders: false, raw: false, tilejson: None, region: None }
             }
             Basemap::Body(key) => match body_entry(key) {
                 Some((_, name, url, _, _, _, max_level)) => {
                     let ext = if url.ends_with(".jpg") { "jpg" } else { "png" };
-                    Source { name, url, max_requests: 4, max_level, ext, placeholders: false, raw: false, tilejson: None }
+                    Source { name, url, max_requests: 4, max_level, ext, placeholders: false, raw: false, tilejson: None, region: None }
                 }
                 None => net::ESRI,
             },
@@ -464,6 +534,89 @@ mod tests {
         assert_eq!(b.name(crate::i18n::Lang::EN), "Topo map");
         assert_eq!(b.attribution(crate::i18n::Lang::EN).0, "Example");
         assert!(register(&Own { url: "nonsense".into(), ..own }).is_none());
+    }
+
+    /// Готовые подосновы и наложения Lite совпадают с каталогом источников
+    /// линейки `planetx-scene/data/sources.json`, его копия -
+    /// `crates/ui/data/sources.json`. Копия сверяется с хранилищем, если
+    /// оно лежит рядом с Lite или указано в `PLANETX_SCENE`.
+    #[test]
+    #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+    fn sources_match_line_catalog() {
+        let copy: serde_json::Value = serde_json::from_str(include_str!("../data/sources.json")).expect("копия sources.json");
+        let list = copy["sources"].as_array().expect("sources");
+        let find = |key: &str| list.iter().find(|s| s["key"] == key).unwrap_or_else(|| panic!("{key} нет в sources.json"));
+        let text = |s: &serde_json::Value, k: &str| s[k].as_str().unwrap_or_default().to_string();
+        for r in READY {
+            let s = find(r.key);
+            assert_eq!(text(s, "url"), r.url, "{}", r.key);
+            assert_eq!(s["max_level"].as_u64(), Some(u64::from(r.max_level)), "{}", r.key);
+            assert_eq!(text(s, "credit"), r.credit, "{}", r.key);
+            assert_eq!(text(s, "terms"), r.terms, "{}", r.key);
+            assert_eq!(text(s, "name_en"), r.name, "{}", r.key);
+            match r.region {
+                Some(region) => {
+                    let bbox: Vec<i32> = s["bbox"].as_array().expect("bbox").iter().map(|v| (v.as_f64().unwrap_or(f64::NAN) * 100.0).round() as i32).collect();
+                    assert_eq!(bbox, region.bbox.to_vec(), "{}", r.key);
+                    assert_eq!(s["from_level"].as_u64(), Some(u64::from(region.min_level)), "{}", r.key);
+                    assert_eq!(text(find(&text(s, "fallback")), "url"), region.base, "{}", r.key);
+                }
+                None => assert!(s.get("bbox").is_none(), "{} - районная карта в каталоге", r.key),
+            }
+        }
+        // Национальные карты каталога - все в Lite.
+        for s in list.iter().filter(|s| s["group"] == "national") {
+            let key = text(s, "key");
+            assert!(READY.iter().any(|r| r.key == key), "{key} нет в READY");
+        }
+        // Наложения каталога и Lite - одни и те же.
+        let overlays: Vec<&serde_json::Value> = list.iter().filter(|s| s["kind"] == "overlay").collect();
+        assert_eq!(overlays.len(), data::rastermaps::OVERLAYS.len());
+        for o in data::rastermaps::OVERLAYS {
+            let s = find(o.key);
+            assert_eq!(text(s, "url"), o.url, "{}", o.key);
+            assert_eq!(s["max_level"].as_u64(), Some(u64::from(o.max_level)), "{}", o.key);
+            assert_eq!(text(s, "credit"), o.attribution, "{}", o.key);
+            assert_eq!(text(s, "terms"), o.terms, "{}", o.key);
+            assert!(crate::maps::kind(o.key).is_some(), "{} нет в каталоге карт", o.key);
+        }
+        // Копия совпадает с хранилищем линейки.
+        let dir = std::env::var_os("PLANETX_SCENE").map_or_else(|| std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../planetx-scene"), std::path::PathBuf::from);
+        match std::fs::read_to_string(dir.join("data/sources.json")) {
+            Ok(original) => {
+                let original: serde_json::Value = serde_json::from_str(&original).expect("sources.json хранилища");
+                assert_eq!(original, copy, "копия crates/ui/data/sources.json отстала от planetx-scene");
+            }
+            Err(_) => eprintln!("хранилища planetx-scene нет, сверка копии пропущена"),
+        }
+    }
+
+    /// Районная карта вне своей страны и мельче своего уровня берёт тайл
+    /// подложки вокруг, `RegionalXyz` модуля.
+    #[test]
+    #[allow(clippy::panic)]
+    fn regional_map_falls_back_outside_its_country() {
+        let Some(b) = Basemap::from_key("swiss_map") else {
+            panic!("нет swiss_map");
+        };
+        let source = b.source();
+        let Some(region) = source.region else {
+            panic!("у swiss_map нет охвата");
+        };
+        // Берн, уровень 12 - тайл swisstopo.
+        let bern = |z: u32| {
+            let n = f64::from(1u32 << z);
+            let x = ((7.44 + 180.0) / 360.0 * n) as u32;
+            let lat = 46.95f64.to_radians();
+            let y = ((1.0 - (lat.tan() + 1.0 / lat.cos()).ln() / std::f64::consts::PI) / 2.0 * n) as u32;
+            (z, x, y)
+        };
+        assert!(net::tile_url(&source, bern(12)).contains("wmts.geo.admin.ch"));
+        // Мельче уровня 8 и вне Швейцарии - Esri.
+        assert!(net::tile_url(&source, bern(5)).contains("arcgisonline"));
+        assert!(net::tile_url(&source, (12, 0, 0)).contains("arcgisonline"));
+        // Превью каталога - тайл внутри страны.
+        assert!(net::tile_url(&source, region.preview()).contains("wmts.geo.admin.ch"));
     }
 
     #[test]

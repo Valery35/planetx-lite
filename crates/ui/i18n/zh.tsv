@@ -405,7 +405,6 @@ The geological and lithological maps, earthquakes, plate boundaries and faults, 
 Soils	土壤
 Properties of the topsoil 0-5 cm from SoilGrids - clay, sand, organic carbon and pH, a 250 m grid.	SoilGrids 表层土壤 0-5 cm 的属性 - 黏土、沙、有机碳和 pH，250 m 格网。
 Map overlays	地图叠加
-Transparent maps over the base map - sea marks, hiking and cycling routes. Several can be on at once.	叠加在底图上的透明地图 - 航标、徒步路线和骑行路线。可同时开启多个。
 Sea marks	航标
 OpenSeaMap navigation marks - buoys, lighthouses, leading lines, fairways and anchorages. The marks are seen close up, from map scale about 1:500 000. The map does not replace a nautical chart.	OpenSeaMap 航标 - 浮标、灯塔、导标、航道和锚地。航标在近处可见，从约 1:500 000 的地图比例尺开始显示。该地图不能代替海图。
 Hiking routes	徒步路线

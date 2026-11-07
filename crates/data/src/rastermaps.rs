@@ -601,7 +601,7 @@ const WAYMARKED_TERMS: &str = "https://hiking.waymarkedtrails.org/#help-legal";
 
 /// Наложения, `OVERLAYS` модуля. Адреса проверены модулем 18 октября
 /// 2026 года.
-pub const OVERLAYS: [Overlay; 3] = [
+pub const OVERLAYS: [Overlay; 6] = [
     Overlay {
         key: "sea_marks",
         url: "https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png",
@@ -619,6 +619,28 @@ pub const OVERLAYS: [Overlay; 3] = [
     Overlay {
         key: "cycling",
         url: "https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png",
+        max_level: 18,
+        attribution: "© OpenStreetMap contributors, © waymarkedtrails.org (CC-BY-SA)",
+        terms: WAYMARKED_TERMS,
+    },
+    // Модуль 1.41, core/tileoverlays.py.
+    Overlay {
+        key: "mtb",
+        url: "https://tile.waymarkedtrails.org/mtb/{z}/{x}/{y}.png",
+        max_level: 18,
+        attribution: "© OpenStreetMap contributors, © waymarkedtrails.org (CC-BY-SA)",
+        terms: WAYMARKED_TERMS,
+    },
+    Overlay {
+        key: "slopes",
+        url: "https://tile.waymarkedtrails.org/slopes/{z}/{x}/{y}.png",
+        max_level: 18,
+        attribution: "© OpenStreetMap contributors, © waymarkedtrails.org (CC-BY-SA)",
+        terms: WAYMARKED_TERMS,
+    },
+    Overlay {
+        key: "riding",
+        url: "https://tile.waymarkedtrails.org/riding/{z}/{x}/{y}.png",
         max_level: 18,
         attribution: "© OpenStreetMap contributors, © waymarkedtrails.org (CC-BY-SA)",
         terms: WAYMARKED_TERMS,
