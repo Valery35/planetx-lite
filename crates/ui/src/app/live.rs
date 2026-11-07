@@ -589,7 +589,7 @@ impl LiteApp {
     pub(super) fn step_satellites(&mut self, now: f64) {
         let moment = self.satellite_moment();
         let lang = self.lang;
-        let Some(sats) = &mut self.satellites else {
+        let Some(sats) = self.plugged.values_mut().find_map(|l| l.satellites_mut()) else {
             return;
         };
         {
@@ -634,7 +634,7 @@ impl LiteApp {
 
     /// Спутник под пикселем кадра: номер NORAD.
     pub(super) fn satellite_under(&self, px: f64, py: f64, ppp: f64) -> Option<i64> {
-        let sats = self.satellites.as_ref()?;
+        let sats = self.plugged.values().find_map(|l| l.satellites())?;
         let radius = crate::satellites::PICK_PIXELS * ppp;
         self.sat_shown
             .iter()
@@ -710,7 +710,7 @@ impl LiteApp {
     /// Шаг живых строк, `LiveManager` модуля: опрос служб, точки
     /// и подписи издалека, модели вблизи, камера следом.
     pub(super) fn step_live(&mut self, now: f64) {
-        if self.live.is_empty() {
+        if !self.plugged.values().any(|l| l.live().is_some()) {
             self.live_objects.clear();
             return;
         }
@@ -721,7 +721,7 @@ impl LiteApp {
         {
             let loaders = &self.loaders;
             let request = |limit: u64| (loaders.request)(limit);
-            for live in self.live.values_mut() {
+            for live in self.plugged.values_mut().filter_map(|l| l.live_mut()) {
                 live.step(now, view, &request);
                 rebuild |= live.dirty;
                 let kind = live.kind;
@@ -738,7 +738,7 @@ impl LiteApp {
             match all.iter().find(|(k, o)| *k == kind && o.key == key) {
                 Some((_, o)) => {
                     let heading = if o.heading.is_finite() { o.heading } else { pose.heading };
-                    let reach = self.live.get(&kind).map_or(crate::live::START_REACH, |l| l.reach);
+                    let reach = self.plugged.values().filter_map(|l| l.live()).find(|l| l.kind == kind).map_or(crate::live::START_REACH, |l| l.reach);
                     let (la, lo, look, distance) = data::movers::chase_on(o.lat, o.lon, heading, level(o), &ground, reach, pose.tilt);
                     self.nav.show(Pose::new(la, lo, distance, look, pose.tilt));
                 }
@@ -747,7 +747,7 @@ impl LiteApp {
         }
         // Модели вблизи и объект под камерой следом.
         let mut keys: Vec<(crate::live::Kind, String)> = Vec::new();
-        for live in self.live.values() {
+        for live in self.plugged.values().filter_map(|l| l.live()) {
             let objects: Vec<crate::live::Object> = all.iter().filter(|(k, _)| *k == live.kind).map(|(_, o)| o.clone()).collect();
             let followed = self.live_follow.as_ref().filter(|(k, _)| *k == live.kind).map(|(_, key)| key.as_str());
             keys.extend(crate::live::model_keys(live.kind, &objects, view, followed).into_iter().map(|k| (live.kind, k)));
@@ -756,7 +756,7 @@ impl LiteApp {
             if keys != self.live_keys {
                 let mut meshes = Vec::new();
                 for (kind, key) in &keys {
-                    if let (Some(live), Some((_, o))) = (self.live.get_mut(kind), all.iter().find(|(k, o)| k == kind && o.key == *key)) {
+                    if let (Some(live), Some((_, o))) = (self.plugged.values_mut().filter_map(|l| l.live_mut()).find(|l| l.kind == *kind), all.iter().find(|(k, o)| k == kind && o.key == *key)) {
                         meshes.extend(live.meshes(&[o]));
                     }
                 }
@@ -776,7 +776,7 @@ impl LiteApp {
             let mut points: Vec<DVec3> = Vec::new();
             let mut colors = Vec::new();
             let mut labels = Vec::new();
-            for live in self.live.values_mut() {
+            for live in self.plugged.values_mut().filter_map(|l| l.live_mut()) {
                 let objects: Vec<crate::live::Object> = all.iter().filter(|(k, _)| *k == live.kind).map(|(_, o)| o.clone()).collect();
                 let followed = self.live_follow.as_ref().filter(|(k, _)| *k == live.kind).map(|(_, key)| key.clone());
                 let near = crate::live::near(live.kind, view.2);

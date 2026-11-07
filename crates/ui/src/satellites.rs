@@ -270,3 +270,57 @@ impl Satellites {
         Some((info.name, values))
     }
 }
+
+/// Строка реестра «Спутники».
+pub struct Entry;
+
+/// Строка «Спутники» в [`crate::registry::ALL`].
+pub static ENTRY: Entry = Entry;
+
+impl crate::registry::Entry for Entry {
+    fn key(&self) -> &'static str {
+        "satellites"
+    }
+    fn name(&self) -> &'static str {
+        "Satellites"
+    }
+    fn tip(&self) -> &'static str {
+        "Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours."
+    }
+    fn category(&self) -> crate::layers::Category {
+        crate::layers::Category::Sky
+    }
+    fn source(&self) -> &'static str {
+        "CelesTrak"
+    }
+    fn words(&self) -> &'static [&'static str] {
+        &["мкс", "спутники", "орбиты", "starlink", "iss", "satellites"]
+    }
+    fn legend(&self) -> Option<crate::thumbs::Recipe> {
+        data::thumbs::colors(self.key()).map(|c| crate::thumbs::Recipe::Ramp(c.to_vec()))
+    }
+    /// Группы ставит окно по настройкам сразу после включения.
+    fn make(&self, cx: &crate::registry::Make<'_>) -> (Box<dyn crate::registry::Layer>, Option<String>) {
+        (Box::new(Satellites::new(&[], cx.data_dir.map(|d| d.join("satellites")))), None)
+    }
+}
+
+/// Загрузку групп, точки, выбор и камеру следом ведёт окно,
+/// `step_satellites`.
+impl crate::registry::Layer for Satellites {
+    fn step(&mut self, _cx: &crate::registry::Ctx<'_>) -> crate::registry::Stepped {
+        crate::registry::Stepped::default()
+    }
+    fn busy(&self) -> bool {
+        Satellites::busy(self)
+    }
+    fn attribution(&self) -> Option<(&'static str, &'static str)> {
+        Some(core::ATTRIBUTION)
+    }
+    fn satellites(&self) -> Option<&Satellites> {
+        Some(self)
+    }
+    fn satellites_mut(&mut self) -> Option<&mut Satellites> {
+        Some(self)
+    }
+}

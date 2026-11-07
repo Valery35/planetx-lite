@@ -100,6 +100,10 @@ pub trait Entry: Sync {
     fn slot(&self) -> Option<u8> {
         None
     }
+    /// Строки нет у страницы: служба не отдаёт данные браузеру.
+    fn desktop_only(&self) -> bool {
+        false
+    }
     /// Новое состояние слоя: флажок включён. Второе - сообщение в строку
     /// состояния.
     fn make(&self, cx: &Make<'_>) -> (Box<dyn Layer>, Option<String>);
@@ -169,6 +173,20 @@ pub trait Layer {
     }
     /// Слой снят: убрать его сетки из видеокарты.
     fn clear(&mut self, _globe: &mut render::Globe) {}
+    /// Живые объекты слоя: их точки, модели и камеру следом ведёт окно.
+    fn live(&self) -> Option<&crate::live::Live> {
+        None
+    }
+    fn live_mut(&mut self) -> Option<&mut crate::live::Live> {
+        None
+    }
+    /// Спутники слоя: их точки, выбор, виток и камеру следом ведёт окно.
+    fn satellites(&self) -> Option<&crate::satellites::Satellites> {
+        None
+    }
+    fn satellites_mut(&mut self) -> Option<&mut crate::satellites::Satellites> {
+        None
+    }
 }
 
 /// Слои реестра по порядку строк каталога. Новый слой - одна строка.
@@ -183,6 +201,10 @@ pub static ALL: &[&dyn Entry] = &[
     &crate::wiki::ENTRY,
     &crate::buildings::ENTRY,
     &crate::overture::ENTRY,
+    &crate::live::ENTRIES[0],
+    &crate::live::ENTRIES[1],
+    &crate::live::ENTRIES[2],
+    &crate::satellites::ENTRY,
 ];
 
 /// Строка реестра номер n.
@@ -213,7 +235,7 @@ mod tests {
             assert!(!e.source().is_empty());
         }
         // Ключи прежние: сохранённые флажки и сцены находят строки.
-        for key in ["mining", "currents", "weather_temperature", "weather_wind", "weather_aurora", "wiki", "buildings", "overture"] {
+        for key in ["mining", "currents", "weather_temperature", "weather_wind", "weather_aurora", "wiki", "buildings", "overture", "vessels", "aircraft", "trains", "satellites"] {
             assert!(matches!(Extra::from_key(key), Some(Extra::Plugged(_))), "{key}");
         }
     }

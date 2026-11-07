@@ -97,6 +97,25 @@ impl Kind {
         }
     }
 
+    /// Другие слова строки для поиска команд.
+    pub fn words(self) -> &'static [&'static str] {
+        match self {
+            Kind::Vessels => &["суда", "корабли", "ais", "балтика", "ships", "vessels"],
+            Kind::Aircraft => &["самолёты", "самолеты", "авиация", "ads-b", "aircraft", "planes", "flights"],
+            Kind::Trains => &["поезда", "железная дорога", "финляндия", "trains", "railway"],
+        }
+    }
+
+    /// Цвета групп для превью каталога.
+    fn colors(self) -> Vec<[u8; 3]> {
+        let unit = |c: [f64; 3]| c.map(|v| (v * 255.0).round().clamp(0.0, 255.0) as u8);
+        match self {
+            Kind::Trains => trains::CATEGORIES.iter().map(|c| unit(c.1)).collect(),
+            Kind::Vessels => vessels::GROUPS.iter().map(|g| unit(g.1)).collect(),
+            Kind::Aircraft => aircraft::GROUPS.iter().map(|g| unit(g.3)).collect(),
+        }
+    }
+
     /// Секунд между опросами.
     fn poll(self) -> f64 {
         match self {
@@ -549,6 +568,58 @@ pub fn by_key(objects: &[Object]) -> BTreeMap<&str, &Object> {
     objects.iter().map(|o| (o.key.as_str(), o)).collect()
 }
 
+/// Строка реестра живых объектов одного вида.
+pub struct Entry(pub Kind);
+
+/// Строки живых объектов в [`crate::registry::ALL`], по [`Kind::ALL`].
+pub static ENTRIES: [Entry; 3] = [Entry(Kind::Vessels), Entry(Kind::Aircraft), Entry(Kind::Trains)];
+
+impl crate::registry::Entry for Entry {
+    fn key(&self) -> &'static str {
+        self.0.key()
+    }
+    fn name(&self) -> &'static str {
+        self.0.name()
+    }
+    fn tip(&self) -> &'static str {
+        self.0.tip()
+    }
+    fn category(&self) -> crate::layers::Category {
+        crate::layers::Category::Transport
+    }
+    fn source(&self) -> &'static str {
+        self.0.source()
+    }
+    fn words(&self) -> &'static [&'static str] {
+        self.0.words()
+    }
+    fn legend(&self) -> Option<crate::thumbs::Recipe> {
+        Some(crate::thumbs::Recipe::Ramp(self.0.colors()))
+    }
+    /// Самолёты ADS-B не отдают данные странице.
+    fn desktop_only(&self) -> bool {
+        cfg!(target_arch = "wasm32") && self.0 == Kind::Aircraft
+    }
+    fn make(&self, _cx: &crate::registry::Make<'_>) -> (Box<dyn crate::registry::Layer>, Option<String>) {
+        (Box::new(Live::new(self.0)), None)
+    }
+}
+
+/// Опрос служб, точки, модели и камеру следом ведёт окно, `step_live`.
+impl crate::registry::Layer for Live {
+    fn step(&mut self, _cx: &crate::registry::Ctx<'_>) -> crate::registry::Stepped {
+        crate::registry::Stepped::default()
+    }
+    fn attribution(&self) -> Option<(&'static str, &'static str)> {
+        Some(self.kind.attribution())
+    }
+    fn live(&self) -> Option<&Live> {
+        Some(self)
+    }
+    fn live_mut(&mut self) -> Option<&mut Live> {
+        Some(self)
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;

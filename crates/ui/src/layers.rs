@@ -39,10 +39,6 @@ pub enum Extra {
     Paleo,
     /// Геоид: высоты Земли - геоид, растянутый.
     Geoid,
-    /// Живые объекты: суда, самолёты, поезда.
-    Live(crate::live::Kind),
-    /// Спутники CelesTrak выбранных групп.
-    Satellites,
     /// Слой реестра [`crate::registry::ALL`], номер строки.
     Plugged(usize),
 }
@@ -59,8 +55,6 @@ impl Extra {
         out.push(Extra::Cutaway);
         out.push(Extra::Paleo);
         out.push(Extra::Geoid);
-        out.extend(crate::live::Kind::ALL.map(Extra::Live));
-        out.push(Extra::Satellites);
         out.extend((0..crate::registry::ALL.len()).map(Extra::Plugged));
         out
     }
@@ -72,11 +66,12 @@ impl Extra {
     }
 
     /// Слоя нет у страницы: самолёты ADS-B и кадастр НСПД не отдают
-    /// данные браузеру. Страница их строк не показывает.
+    /// данные браузеру. Страница их строк не показывает. Строка реестра
+    /// говорит это сама, её проверка уже учитывает страницу.
     pub fn desktop_only(self) -> bool {
         cfg!(target_arch = "wasm32")
             && match self {
-                Extra::Live(crate::live::Kind::Aircraft) => true,
+                Extra::Plugged(n) => crate::registry::get(n).is_some_and(|e| e.desktop_only()),
                 e => e.map().is_some_and(|m| m.key == "cadastre"),
             }
     }
@@ -100,8 +95,6 @@ impl Extra {
             Extra::Cutaway => "Earth cutaway",
             Extra::Paleo => "Paleogeography",
             Extra::Geoid => "Geoid",
-            Extra::Live(k) => k.name(),
-            Extra::Satellites => "Satellites",
             Extra::Plugged(n) => crate::registry::get(n).map_or("", |e| e.name()),
         }
     }
@@ -122,9 +115,7 @@ impl Extra {
             }
             Extra::Map(_) => self.map().map_or("", |e| e.tip),
             Extra::Dots(l) => l.tip(),
-            Extra::Live(k) => k.tip(),
             Extra::Plugged(n) => crate::registry::get(n).map_or("", |e| e.tip()),
-            Extra::Satellites => "Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.",
             Extra::Geoid => "The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.",
             Extra::Paleo => "Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.",
             Extra::Cutaway => {
@@ -155,8 +146,6 @@ impl Extra {
             Extra::Dots(crate::dots::Layer::Fires) => Category::Fire,
             Extra::Dots(crate::dots::Layer::Cables | crate::dots::Layer::Plants | crate::dots::Layer::InfraOsm) => Category::Infra,
             Extra::Dots(_) | Extra::Cutaway | Extra::Paleo | Extra::Geoid => Category::Depths,
-            Extra::Live(_) => Category::Transport,
-            Extra::Satellites => Category::Sky,
             Extra::Plugged(n) => crate::registry::get(n).map_or(Category::Map, |e| e.category()),
         }
     }
@@ -173,8 +162,6 @@ impl Extra {
             Extra::Cutaway => "cutaway",
             Extra::Paleo => "paleo",
             Extra::Geoid => "geoid",
-            Extra::Live(k) => k.key(),
-            Extra::Satellites => "satellites",
             Extra::Plugged(n) => crate::registry::get(n).map_or("", |e| e.key()),
         }
     }
@@ -712,11 +699,6 @@ pub struct Catalog {
 /// Сторона превью строки в точках, `ICON` модуля.
 const ICON: f32 = 40.0;
 
-/// Цвета 0..1 в цвета 0..255.
-fn unit_colors(colors: impl Iterator<Item = [f64; 3]>) -> Vec<[u8; 3]> {
-    colors.map(|c| c.map(|v| (v * 255.0).round().clamp(0.0, 255.0) as u8)).collect()
-}
-
 /// Как собрать превью строки, `_base_done` и `_layer_thumb` модуля:
 /// слои с цветами шкалы - полоса цветов, карты и темы - их тайл поверх
 /// подложки, подоснова - свой тайл.
@@ -736,9 +718,6 @@ fn recipe(item: Item) -> crate::thumbs::Recipe {
                 Extra::Dots(Layer::Quakes | Layer::Iscgem) => Recipe::Ramp(data::quakes::DEPTH_STOPS.iter().map(|s| s.1).collect()),
                 Extra::Dots(Layer::Deposits | Layer::OsmMines) => Recipe::Ramp(data::deposits::GROUPS.iter().map(|g| g.2).collect()),
                 Extra::Dots(Layer::Plants) => Recipe::Ramp(data::plants::FUELS.iter().map(|f| f.2).collect()),
-                Extra::Live(crate::live::Kind::Trains) => Recipe::Ramp(unit_colors(data::trains::CATEGORIES.iter().map(|c| c.1))),
-                Extra::Live(crate::live::Kind::Vessels) => Recipe::Ramp(unit_colors(data::vessels::GROUPS.iter().map(|g| g.1))),
-                Extra::Live(crate::live::Kind::Aircraft) => Recipe::Ramp(unit_colors(data::aircraft::GROUPS.iter().map(|g| g.3))),
                 Extra::Plugged(n) => crate::registry::get(n).and_then(|e| e.legend()).unwrap_or(Recipe::Base),
                 _ if let Some(c) = th::colors(e.key()) => ramp(c),
                 Extra::Map(_) => match crate::maps::kind(e.key()) {
@@ -818,8 +797,7 @@ impl Item {
             Item::Base(b) => b.ready().map_or("", |r| r.group.name()),
             Item::Group(_) => "OpenFreeMap",
             Item::Extra(Extra::Dots(l)) => l.source(),
-            Item::Extra(Extra::Live(k)) => k.source(),
-            Item::Extra(Extra::Satellites) | Item::Sat(_) => "CelesTrak",
+            Item::Sat(_) => "CelesTrak",
             Item::Events => "Vantor, Planet",
             Item::Extra(Extra::Plugged(n)) => crate::registry::get(n).map_or("", |e| e.source()),
             Item::Extra(Extra::Cutaway) => "PREM, CRUST1.0, Slab2",
@@ -853,7 +831,7 @@ impl Item {
             Item::Base(b) => state.basemap == b,
             Item::Group(n) => TREE[n].2.iter().any(|(r, _, _)| state.vector.rows.contains(r)),
             Item::Extra(e) => state.on.contains(&e),
-            Item::Sat(n) => state.on.contains(&Extra::Satellites) && state.sat_groups.iter().any(|g| g == sat_key(n)),
+            Item::Sat(n) => satellites_row().is_some_and(|e| state.on.contains(&e)) && state.sat_groups.iter().any(|g| g == sat_key(n)),
             Item::Events => state.events,
         }
     }
@@ -869,18 +847,29 @@ fn sat_key(n: usize) -> &'static str {
     data::satellites::GROUPS.get(n).map_or("", |g| g.0)
 }
 
+/// Строки реестра со своим местом в каталоге, остальные идут общим списком.
+const PLACED: [&str; 3] = ["buildings", "overture", "satellites"];
+
+/// Строки реестра по ключам, по порядку ключей.
+fn placed(keys: &[&str]) -> Vec<Item> {
+    keys.iter().filter_map(|k| Extra::from_key(k)).map(Item::Extra).collect()
+}
+
+/// Строка «Спутники» реестра: ей подчинены строки групп спутников.
+pub fn satellites_row() -> Option<Extra> {
+    Extra::from_key("satellites")
+}
+
 fn items() -> Vec<Item> {
     let mut out: Vec<Item> = Basemap::all().into_iter().map(Item::Base).collect();
     out.extend((0..TREE.len()).map(Item::Group));
     out.push(Item::Extra(Extra::Grid));
     // Строки зданий реестра - сразу за сеткой, как прежде.
-    let building_rows = ["buildings", "overture"];
-    let plugged = |n: &usize| crate::registry::get(*n).is_some_and(|e| building_rows.contains(&e.key()));
-    out.extend((0..crate::registry::ALL.len()).filter(plugged).map(|n| Item::Extra(Extra::Plugged(n))));
+    out.extend(placed(&["buildings", "overture"]));
     out.push(Item::Extra(Extra::Stars));
     out.push(Item::Extra(Extra::Air));
     out.push(Item::Extra(Extra::Sun));
-    out.push(Item::Extra(Extra::Satellites));
+    out.extend(placed(&["satellites"]));
     // Пожары - карта витрины группы «Планета огня», перед темами огня.
     out.push(Item::Extra(Extra::Dots(crate::dots::Layer::Fires)));
     out.extend((0..crate::maps::count()).map(|n| Item::Extra(Extra::Map(n))));
@@ -890,9 +879,8 @@ fn items() -> Vec<Item> {
             .map(|l| Item::Extra(Extra::Dots(l))),
     );
     // Порядок LAYERS витрины модуля.
-    out.extend((0..crate::registry::ALL.len()).filter(|n| !plugged(n)).map(|n| Item::Extra(Extra::Plugged(n))));
+    out.extend((0..crate::registry::ALL.len()).filter(|n| crate::registry::get(*n).is_some_and(|e| !PLACED.contains(&e.key()))).map(|n| Item::Extra(Extra::Plugged(n))));
     out.push(Item::Extra(Extra::Geoid));
-    out.extend(crate::live::Kind::ALL.map(|k| Item::Extra(Extra::Live(k))));
     out.push(Item::Extra(Extra::Cutaway));
     out.push(Item::Extra(Extra::Paleo));
     out.extend((0..data::satellites::GROUPS.len()).map(Item::Sat));
@@ -1153,8 +1141,8 @@ fn click(item: Item, state: &State<'_>, out: &mut Vec<Action>) {
                 if !groups.contains(&key) {
                     groups.push(key);
                 }
-                if !state.on.contains(&Extra::Satellites) {
-                    out.push(Action::Extra(Extra::Satellites, true));
+                if let Some(row) = satellites_row().filter(|e| !state.on.contains(e)) {
+                    out.push(Action::Extra(row, true));
                 }
             }
             out.push(Action::SatGroups(groups));

@@ -446,15 +446,12 @@ pub struct LiteApp {
     calc_keys: Vec<TileKey>,
     /// Окно «Старые карты «Это Место»».
     etomesto: Option<crate::etomesto::EtomestoWindow>,
-    /// Живые объекты по строкам.
-    live: BTreeMap<crate::live::Kind, crate::live::Live>,
     /// Модели живых объектов в видеокарте: строка и ключ по порядку.
     live_keys: Vec<(crate::live::Kind, String)>,
     /// Точки и подписи живых объектов.
     live_points: Vec<render::PointsMesh>,
     live_labels: Vec<(String, DVec3)>,
-    /// Спутники: группы, точки кадра, показанные спутники с местом.
-    satellites: Option<crate::satellites::Satellites>,
+    /// Точки кадра и показанные спутники с местом, спутники - у слоя реестра.
     sat_points: Vec<render::PointsMesh>,
     sat_shown: Vec<(usize, DVec3)>,
     /// Загрузчики Overpass строк «Шахты и карьеры OSM» и «ЛЭП, кабели
@@ -1271,11 +1268,9 @@ impl LiteApp {
             earth_away: None,
             cog_base: None,
             geoid: None,
-            live: BTreeMap::new(),
             live_keys: Vec::new(),
             live_points: Vec::new(),
             live_labels: Vec::new(),
-            satellites: None,
             sat_points: Vec::new(),
             sat_shown: Vec::new(),
             osm_mines: None,
@@ -1854,7 +1849,7 @@ impl LiteApp {
         let sheets = point.map_or(Vec::new(), |(lat, lon)| crate::sheets::items(self.lang, lat, lon));
         let links = self.settings.links.clone();
         // Спутник под курсором, иначе выбранный.
-        let satellite = self.satellites.as_ref().and_then(|s| {
+        let satellite = self.plugged.values().find_map(|l| l.satellites()).and_then(|s| {
             let number = self.satellite_under(px, py, ppp).or(s.selected)?;
             let name = s.name_of(number).unwrap_or_else(|| number.to_string());
             Some((number, name, s.selected == Some(number), s.follow && s.selected == Some(number)))
@@ -1946,7 +1941,7 @@ impl LiteApp {
             }
             Choice::FollowLive(target) => {
                 if let Some((kind, _)) = &target
-                    && let Some(live) = self.live.get_mut(kind)
+                    && let Some(live) = self.plugged.values_mut().filter_map(|l| l.live_mut()).find(|l| l.kind == *kind)
                 {
                     live.reach = crate::live::START_REACH;
                     self.followed = None;
@@ -2114,12 +2109,12 @@ impl LiteApp {
             }
             Choice::Flood | Choice::Flow | Choice::SeaLevel | Choice::Earthwork => self.hydro_choice(choice, point, place),
             Choice::SatPath(number) => {
-                if let Some(s) = &mut self.satellites {
+                if let Some(s) = self.plugged.values_mut().find_map(|l| l.satellites_mut()) {
                     s.select(number);
                 }
             }
             Choice::SatFollow(number) => {
-                if let Some(s) = &mut self.satellites {
+                if let Some(s) = self.plugged.values_mut().find_map(|l| l.satellites_mut()) {
                     if let Some(n) = number {
                         s.select(Some(n));
                         s.follow = true;
@@ -2417,7 +2412,8 @@ impl LiteApp {
         if let Some((px, py, ppp)) = pixel {
             let store = self.heights.read();
             let e = self.nav.camera.ellipsoid;
-            for (kind, live) in &self.live {
+            for live in self.plugged.values().filter_map(|l| l.live()) {
+                let kind = &live.kind;
                 let mut near: Vec<(f64, &crate::live::Object)> = self
                     .live_objects
                     .iter()
@@ -2441,7 +2437,7 @@ impl LiteApp {
         // `_identify_mining` модуля, и другие.
         groups.extend(self.plugged.values().filter_map(|l| l.identify(self.lang, lat, lon)));
         // Спутник у пикселя, `SatelliteManager.identify` модуля.
-        if let (Some((px, py, ppp)), Some(sats)) = (pixel, &self.satellites)
+        if let (Some((px, py, ppp)), Some(sats)) = (pixel, self.plugged.values().find_map(|l| l.satellites()))
             && let Some(number) = self.satellite_under(px, py, ppp)
             && let Some(index) = sats.swarm.index_of(number)
             && let Some(feature) = sats.values(self.lang, index, self.satellite_moment())
@@ -3619,10 +3615,6 @@ impl LiteApp {
                 parts.push(data::stars::SKY_ATTRIBUTION);
             }
         }
-        parts.extend(self.live.keys().map(|k| k.attribution()));
-        if self.satellites.is_some() {
-            parts.push(data::satellites::ATTRIBUTION);
-        }
         parts.extend(self.plugged.values().filter_map(|l| l.attribution()));
         if let Some(layer) = self.events.layer() {
             parts.push(layer.credit);
@@ -3834,7 +3826,6 @@ impl eframe::App for LiteApp {
             || self.volumes.as_ref().is_some_and(crate::volumecalc::VolumeCalc::busy)
             || self.osm_mines.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
             || self.osm_infra.as_ref().is_some_and(|o| o.busy(now, &self.overpass_mirrors))
-            || self.satellites.as_ref().is_some_and(crate::satellites::Satellites::busy)
             || self.viewshed.as_ref().is_some_and(crate::pointcalc::Calc::busy)
             || self.insolation.as_ref().is_some_and(crate::pointcalc::Calc::busy)
             || self.shadows.as_ref().is_some_and(crate::pointcalc::Calc::busy)
@@ -3932,7 +3923,7 @@ impl eframe::App for LiteApp {
             {
                 let scroll = ctx.input(|i| i.smooth_scroll_delta.y);
                 if scroll != 0.0
-                    && let Some(live) = self.live.get_mut(&kind)
+                    && let Some(live) = self.plugged.values_mut().filter_map(|l| l.live_mut()).find(|l| l.kind == kind)
                 {
                     live.wheel(f64::from(scroll) / 50.0);
                     ctx.input_mut(|i| i.smooth_scroll_delta = egui::Vec2::ZERO);
@@ -3992,7 +3983,7 @@ impl eframe::App for LiteApp {
                     }
                     // Найденный щелчком спутник становится выбранным.
                     if let Some(number) = self.satellite_under(px, py, ppp)
-                        && let Some(s) = &mut self.satellites
+                        && let Some(s) = self.plugged.values_mut().find_map(|l| l.satellites_mut())
                     {
                         s.select(Some(number));
                     }
@@ -4604,7 +4595,7 @@ impl eframe::App for LiteApp {
         }
         // Виток орбиты и след выбранного спутника, цвет группы.
         let moment = self.satellite_moment();
-        if let Some(sats) = &mut self.satellites {
+        if let Some(sats) = self.plugged.values_mut().find_map(|l| l.satellites_mut()) {
             let color = sats.selected.and_then(|n| sats.swarm.index_of(n)).and_then(|i| sats.swarm.group_of.get(i)).map_or([255; 3], |g| data::satellites::color(g));
             if let Some(path) = sats.path(moment) {
                 let e = self.nav.camera.ellipsoid;

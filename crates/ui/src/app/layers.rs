@@ -111,7 +111,7 @@ impl LiteApp {
             Action::SatGroups(groups) => {
                 self.settings.sat_groups = groups.clone();
                 self.settings_dirty = true;
-                if let Some(s) = &mut self.satellites {
+                if let Some(s) = self.plugged.values_mut().find_map(|l| l.satellites_mut()) {
                     s.set_groups(groups.into_iter().collect());
                 }
             }
@@ -135,22 +135,6 @@ impl LiteApp {
             Extra::Sun => self.settings.sun = on,
             Extra::Grid => self.settings.grid = on,
             Extra::Map(_) => {}
-            Extra::Live(kind) => {
-                if on {
-                    self.live.entry(kind).or_insert_with(|| crate::live::Live::new(kind));
-                } else if self.live.remove(&kind).is_some() {
-                    if self.live_follow.as_ref().is_some_and(|(k, _)| *k == kind) {
-                        self.live_follow = None;
-                    }
-                    self.live_keys.clear();
-                    if let Some(globe) = &mut self.globe {
-                        globe.set_live_models(&[]);
-                    }
-                    self.live_points.clear();
-                    self.live_labels.clear();
-                    self.dots.dirty = true;
-                }
-            }
             Extra::Plugged(n) => {
                 if on {
                     if let Some(entry) = crate::registry::get(n).filter(|_| !self.plugged.contains_key(&n)) {
@@ -158,30 +142,41 @@ impl LiteApp {
                         let loaders = &self.loaders;
                         let request = |limit: u64| (loaders.request)(limit);
                         let cx = crate::registry::Make { lang: self.lang, data_dir: data_dir.as_deref(), request: &request };
-                        let (layer, message) = entry.make(&cx);
+                        let (mut layer, message) = entry.make(&cx);
+                        // Спутники - выбранных в настройках групп.
+                        if let Some(s) = layer.satellites_mut() {
+                            *s = crate::satellites::Satellites::new(&self.settings.sat_groups, self.satellite_dir());
+                        }
                         self.plugged.insert(n, layer);
                         if message.is_some() {
                             self.open_message = message;
                         }
                     }
                 } else if let Some(mut layer) = self.plugged.remove(&n) {
+                    // Живые объекты снятой строки: камера следом отпускает,
+                    // модели, точки и подписи собираются заново.
+                    if layer.satellites().is_some() {
+                        self.sat_points.clear();
+                        self.sat_shown.clear();
+                        self.dots.dirty = true;
+                    }
+                    if let Some(kind) = layer.live().map(|l| l.kind) {
+                        if self.live_follow.as_ref().is_some_and(|(k, _)| *k == kind) {
+                            self.live_follow = None;
+                        }
+                        self.live_keys.clear();
+                        if let Some(globe) = &mut self.globe {
+                            globe.set_live_models(&[]);
+                        }
+                        self.live_points.clear();
+                        self.live_labels.clear();
+                        self.dots.dirty = true;
+                    }
                     // Сетки снятого слоя уходят из видеокарты.
                     if let Some(globe) = &mut self.globe {
                         layer.clear(globe);
                     }
                     self.refresh_painters();
-                }
-            }
-            Extra::Satellites => {
-                if on {
-                    if self.satellites.is_none() {
-                        self.satellites = Some(crate::satellites::Satellites::new(&self.settings.sat_groups, self.satellite_dir()));
-                    }
-                } else {
-                    self.satellites = None;
-                    self.sat_points.clear();
-                    self.sat_shown.clear();
-                    self.dots.dirty = true;
                 }
             }
             Extra::Geoid => {

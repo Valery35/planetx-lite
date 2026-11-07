@@ -136,14 +136,10 @@ fn layer_words(extra: Extra) -> &'static [&'static str] {
         Extra::Air => &["атмосфера", "воздух", "дымка", "гало", "atmosphere", "haze", "air"],
         Extra::Sun => &["ночь", "день", "освещение", "тень", "огни городов", "sun", "night", "city lights"],
         Extra::Grid => &["сетка", "градусы", "экватор", "graticule", "grid"],
-        Extra::Live(crate::live::Kind::Vessels) => &["суда", "корабли", "ais", "балтика", "ships", "vessels"],
-        Extra::Live(crate::live::Kind::Aircraft) => &["самолёты", "самолеты", "авиация", "ads-b", "aircraft", "planes", "flights"],
-        Extra::Live(crate::live::Kind::Trains) => &["поезда", "железная дорога", "финляндия", "trains", "railway"],
         Extra::Geoid => &["геоид", "фигура земли", "egm2008", "geoid"],
         Extra::Paleo => &["палеогеография", "палеокарта", "древние материки", "пангея", "paleogeography", "paleomap", "pangaea"],
         Extra::Cutaway => &["разрез земли", "разрез", "ядро", "мантия", "кора", "cutaway", "core", "mantle", "crust"],
         Extra::Plugged(n) => crate::registry::get(n).map_or(&[], |e| e.words()),
-        Extra::Satellites => &["мкс", "спутники", "орбиты", "starlink", "iss", "satellites"],
         Extra::Map(_) | Extra::Dots(_) => key_words(extra.key()),
     }
 }
