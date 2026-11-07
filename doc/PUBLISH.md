@@ -181,7 +181,7 @@
 - X: https://x.com/Valery35/status/2119006840084459540
 - LinkedIn и Facebook - посты в лентах автора 7 ноября 2026 года
 - linux.org.ru: https://www.linux.org.ru/news/opensource/18415962, ждёт модератора
-- Telegram - текст в буфере обмена, публикует автор: окно Telegram не принимало щелчки помощника
+- Telegram: https://t.me/qgis_isolines/189
 - Форум OSM - пишет автор своими словами, факты переданы в чате
 - Форум Rust - не публикуется, учётная запись заморожена
 - Reddit r/rust - публикует автор, текст в site/posts_0.24.0_social.md
