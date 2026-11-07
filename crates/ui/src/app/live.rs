@@ -434,6 +434,18 @@ impl LiteApp {
 
     /// Шаг кадра включённых слоёв реестра [`crate::registry`]: загрузка,
     /// движение, сообщение, картинки тайлов.
+    /// Окно «Объекты» открыто щелчком: слои реестра дозапрашивают сведения.
+    pub(super) fn objects_clicked(&mut self) {
+        let Some(objects) = &self.objects else {
+            return;
+        };
+        let loaders = &self.loaders;
+        let request = |limit: u64| (loaders.request)(limit);
+        for layer in self.plugged.values_mut() {
+            layer.clicked(self.lang, &objects.groups, &request);
+        }
+    }
+
     pub(super) fn step_plugged(&mut self, ctx: &egui::Context, now: f64) {
         if self.plugged.is_empty() {
             return;
@@ -446,7 +458,9 @@ impl LiteApp {
         let view = (self.nav.pose.lat, self.nav.pose.lon, altitude, self.view_width());
         let loaders = &self.loaders;
         let request = |limit: u64| (loaders.request)(limit);
-        let cx = crate::registry::Ctx { lang: self.lang, now, moment, view, request: &request };
+        let heights = &self.heights;
+        let ground = |lat: f64, lon: f64| heights.read().height_at(lat, lon);
+        let cx = crate::registry::Ctx { lang: self.lang, now, moment, view, request: &request, camera: &self.nav.camera, ground: &ground };
         let mut painters = false;
         let mut message = None;
         for layer in self.plugged.values_mut() {
@@ -455,6 +469,10 @@ impl LiteApp {
             message = stepped.message.or(message);
             if let Some(ms) = stepped.tick {
                 ctx.request_repaint_after(std::time::Duration::from_millis(ms));
+            }
+            // Пришедшие сведения - в открытое окно «Объекты».
+            if let Some(objects) = &mut self.objects {
+                layer.enrich(self.lang, &mut objects.groups);
             }
         }
         if message.is_some() {
@@ -629,53 +647,6 @@ impl LiteApp {
             .and_then(|(_, i)| sats.swarm.numbers.get(i).copied())
     }
 
-    /// «Википедия рядом»: запросы тайлов у точки взгляда, точки и подписи
-    /// статей, первый абзац статьи в окне «Объекты».
-    pub(super) fn step_wiki(&mut self, now: f64) {
-        let Some(wiki) = &mut self.wiki else {
-            return;
-        };
-        let e = self.nav.camera.ellipsoid;
-        let altitude = e.ecef_to_geodetic(self.nav.camera.eye).2;
-        let (lat, lon) = (self.nav.pose.lat, self.nav.pose.lon);
-        {
-            let loaders = &self.loaders;
-            let request = |limit: u64| (loaders.request)(limit);
-            wiki.step(now, (lat, lon, altitude), self.lang.code(), &request);
-        }
-        if wiki.failed {
-            self.open_message = Some(tr(self.lang, "Wikipedia did not answer, retry in 30 s.").to_string());
-        }
-        // Первый абзац пришёл - в группу «Википедия» окна «Объекты».
-        if let Some(objects) = &mut self.objects {
-            let wiki_name = tr(self.lang, "Wikipedia");
-            let summary = tr(self.lang, "Summary");
-            for (group, features) in &mut objects.groups {
-                if group != wiki_name {
-                    continue;
-                }
-                for (title, fields) in features.iter_mut() {
-                    if let Some(text) = wiki.summary_of(title).filter(|t| !t.is_empty())
-                        && !fields.iter().any(|(k, _)| k == summary)
-                    {
-                        fields.insert(0, (summary.to_string(), text.to_string()));
-                    }
-                }
-            }
-        }
-        // Набор и порядок подписей - по приходу статей и движению вида.
-        if !wiki.dirty && now - self.wiki_built < 0.5 {
-            return;
-        }
-        wiki.dirty = false;
-        self.wiki_built = now;
-        let shown = altitude <= data::wikipedia::MAX_ALTITUDE;
-        let articles = if shown { wiki.articles(lat, lon) } else { Vec::new() };
-        let store = self.heights.read();
-        let points: Vec<DVec3> = articles.iter().take(crate::wiki::LABELS).map(|a| e.geodetic_to_ecef(a.lat, a.lon, store.height_at(a.lat, a.lon))).collect();
-        drop(store);
-        self.wiki_labels = articles.iter().zip(&points).take(crate::wiki::LABELS).map(|(a, p)| (a.title.clone(), *p)).collect();
-    }
 
     /// Шаг полёта, `FlightSim._tick` модуля: клавиши, физика, камера,
     /// модель. Касание земли - надпись, через END_SHOW секунд режим

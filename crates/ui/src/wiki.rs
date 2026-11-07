@@ -15,6 +15,14 @@
 use std::collections::{HashMap, VecDeque};
 
 use data::wikipedia::{self, Article};
+use globe_core::DVec3;
+use globe_core::camera::Camera;
+
+use crate::i18n::{Lang, tr};
+use crate::identify::Feature;
+use crate::layers::Category;
+use crate::registry;
+use crate::thumbs::Recipe;
 
 /// Пауза после отказа службы, секунды.
 pub const RETRY: f64 = 30.0;
@@ -151,5 +159,132 @@ impl Wiki {
     /// Первый абзац статьи title, если пришёл.
     pub fn summary_of(&self, title: &str) -> Option<&str> {
         self.summary.as_ref().filter(|(t, _, _)| t == title).and_then(|(_, _, text)| text.as_deref())
+    }
+}
+
+/// Пауза между сборками подписей без новых статей, секунды.
+const REBUILD: f64 = 0.5;
+
+/// Строка реестра «Википедия рядом».
+pub struct Entry;
+
+/// Строка «Википедия рядом» в [`crate::registry::ALL`].
+pub static ENTRY: Entry = Entry;
+
+impl registry::Entry for Entry {
+    fn key(&self) -> &'static str {
+        "wiki"
+    }
+    fn name(&self) -> &'static str {
+        "Wikipedia nearby"
+    }
+    fn tip(&self) -> &'static str {
+        "Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window."
+    }
+    fn category(&self) -> Category {
+        Category::Wiki
+    }
+    fn source(&self) -> &'static str {
+        "Wikipedia"
+    }
+    fn words(&self) -> &'static [&'static str] {
+        &["википедия", "энциклопедия", "статьи", "достопримечательности", "wikipedia", "encyclopedia", "articles", "landmarks"]
+    }
+    fn legend(&self) -> Option<Recipe> {
+        data::thumbs::colors(self.key()).map(|c| Recipe::Ramp(c.to_vec()))
+    }
+    fn make(&self, _cx: &registry::Make<'_>) -> (Box<dyn registry::Layer>, Option<String>) {
+        (Box::new(Shown { wiki: Wiki::default(), labels: Vec::new(), built: f64::NEG_INFINITY }), None)
+    }
+}
+
+/// Включённая строка: статьи и их подписи на глобусе.
+struct Shown {
+    wiki: Wiki,
+    /// Подписи статей: название и точка глобуса.
+    labels: Vec<(String, DVec3)>,
+    /// Время последней сборки подписей.
+    built: f64,
+}
+
+impl Shown {
+    /// Статьи у пикселя, ближние первыми: расстояние в пикселях и название.
+    fn near(&self, camera: &Camera, pixel: (f64, f64, f64)) -> Vec<(f64, &(String, DVec3))> {
+        let (px, py, ppp) = pixel;
+        let mut near: Vec<(f64, &(String, DVec3))> = self.labels.iter().filter_map(|l| registry::gap(camera, l.1, px, py, PICK_PIXELS * ppp).map(|g| (g, l))).collect();
+        near.sort_by(|a, b| a.0.total_cmp(&b.0));
+        near
+    }
+}
+
+impl registry::Layer for Shown {
+    fn step(&mut self, cx: &registry::Ctx<'_>) -> registry::Stepped {
+        let (lat, lon, altitude, _) = cx.view;
+        self.wiki.step(cx.now, (lat, lon, altitude), cx.lang.code(), cx.request);
+        let message = self.wiki.failed.then(|| tr(cx.lang, "Wikipedia did not answer, retry in 30 s.").to_string());
+        // Набор и порядок подписей - по приходу статей и движению вида.
+        if self.wiki.dirty || cx.now - self.built >= REBUILD {
+            self.wiki.dirty = false;
+            self.built = cx.now;
+            let articles = if altitude <= wikipedia::MAX_ALTITUDE { self.wiki.articles(lat, lon) } else { Vec::new() };
+            let e = cx.camera.ellipsoid;
+            self.labels = articles.into_iter().take(LABELS).map(|a| {
+                let p = e.geodetic_to_ecef(a.lat, a.lon, (cx.ground)(a.lat, a.lon));
+                (a.title, p)
+            }).collect();
+        }
+        registry::Stepped { message, ..Default::default() }
+    }
+    fn labels(&self) -> &[(String, DVec3)] {
+        &self.labels
+    }
+    fn dot(&self) -> Option<([u8; 3], f32)> {
+        Some((COLOR, POINT_SIZE))
+    }
+    fn busy(&self) -> bool {
+        self.wiki.busy()
+    }
+    fn attribution(&self) -> Option<(&'static str, &'static str)> {
+        (!self.labels.is_empty()).then_some(wikipedia::ATTRIBUTION)
+    }
+    /// Статьи у пикселя, `_identify_wiki` модуля.
+    fn pick(&self, lang: Lang, camera: &Camera, pixel: (f64, f64, f64)) -> Option<(String, Vec<Feature>)> {
+        let features: Vec<Feature> = self
+            .near(camera, pixel)
+            .iter()
+            .take(10)
+            .map(|(_, (title, _))| {
+                let mut fields = vec![(tr(lang, "Article").to_string(), wikipedia::page_url(self.wiki.lang(), title))];
+                if let Some(text) = self.wiki.summary_of(title).filter(|t| !t.is_empty()) {
+                    fields.insert(0, (tr(lang, "Summary").to_string(), text.to_string()));
+                }
+                (title.clone(), fields)
+            })
+            .collect();
+        (!features.is_empty()).then(|| (tr(lang, "Wikipedia").to_string(), features))
+    }
+    /// Щелчок по статье без инструмента, `open_article_card` модуля.
+    fn hit(&self, camera: &Camera, pixel: (f64, f64, f64)) -> Option<DVec3> {
+        self.near(camera, pixel).first().map(|(_, (_, p))| *p)
+    }
+    /// Первый абзац ближней статьи у щелчка.
+    fn clicked(&mut self, lang: Lang, groups: &[(String, Vec<Feature>)], request: &dyn Fn(u64) -> Box<dyn net::Request>) {
+        let name = tr(lang, "Wikipedia");
+        if let Some((title, _)) = groups.iter().find(|(g, _)| g == name).and_then(|(_, f)| f.first()) {
+            self.wiki.ask_summary(title, request);
+        }
+    }
+    /// Пришедший первый абзац - в группу «Википедия» окна «Объекты».
+    fn enrich(&self, lang: Lang, groups: &mut [(String, Vec<Feature>)]) {
+        let (name, summary) = (tr(lang, "Wikipedia"), tr(lang, "Summary"));
+        for (_, features) in groups.iter_mut().filter(|(g, _)| g == name) {
+            for (title, fields) in features.iter_mut() {
+                if let Some(text) = self.wiki.summary_of(title).filter(|t| !t.is_empty())
+                    && !fields.iter().any(|(k, _)| k == summary)
+                {
+                    fields.insert(0, (summary.to_string(), text.to_string()));
+                }
+            }
+        }
     }
 }

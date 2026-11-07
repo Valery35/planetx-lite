@@ -202,14 +202,6 @@ impl LiteApp {
                     self.dots.dirty = true;
                 }
             }
-            Extra::Wiki => {
-                if on {
-                    self.wiki.get_or_insert_with(crate::wiki::Wiki::default);
-                } else {
-                    self.wiki = None;
-                    self.wiki_labels.clear();
-                }
-            }
             Extra::Geoid => {
                 if on && self.geoid.is_none() {
                     let source = net::Source { name: "geoid", url: data::geoid::TILE_URL, max_requests: 4, max_level: data::geoid::MAX_LEVEL, ext: "png", placeholders: false, raw: false, tilejson: None };

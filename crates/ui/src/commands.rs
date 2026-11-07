@@ -146,7 +146,6 @@ fn layer_words(extra: Extra) -> &'static [&'static str] {
         Extra::Buildings => &["здания", "дома", "3d", "buildings"],
         Extra::Overture => &["здания", "overture", "buildings", "3d"],
         Extra::Satellites => &["мкс", "спутники", "орбиты", "starlink", "iss", "satellites"],
-        Extra::Wiki => &["википедия", "энциклопедия", "статьи", "достопримечательности", "wikipedia", "encyclopedia", "articles", "landmarks"],
         Extra::Map(_) | Extra::Dots(_) => key_words(extra.key()),
     }
 }

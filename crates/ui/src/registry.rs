@@ -15,9 +15,11 @@
 //! [`crate::layers::Extra::Plugged`] с номером строки реестра.
 
 use eframe::egui;
+use globe_core::DVec3;
 use globe_core::camera::Camera;
 
 use crate::i18n::Lang;
+use crate::identify::Feature;
 use crate::layers::Category;
 use crate::thumbs::Recipe;
 use crate::vector::Painter;
@@ -33,6 +35,18 @@ pub struct Ctx<'a> {
     pub view: (f64, f64, f64, f64),
     /// Запрос в сеть с пределом ответа в байтах.
     pub request: &'a dyn Fn(u64) -> Box<dyn net::Request>,
+    /// Камера кадра.
+    pub camera: &'a Camera,
+    /// Высота поверхности глобуса в точке (широта, долгота), метры.
+    pub ground: &'a dyn Fn(f64, f64) -> f64,
+}
+
+/// Расстояние в пикселях от пикселя (px, py) до точки глобуса p, если
+/// точка перед камерой и ближе radius.
+pub fn gap(camera: &Camera, p: DVec3, px: f64, py: f64, radius: f64) -> Option<f64> {
+    let (q, front) = camera.project(p);
+    let gap = (q.x - px).hypot(q.y - py);
+    (front && gap <= radius).then_some(gap)
 }
 
 /// Что нужно слою, когда его включают флажком.
@@ -109,9 +123,32 @@ pub trait Layer {
         None
     }
     /// Группа окна «Объекты» у точки щелчка (широта, долгота).
-    fn identify(&self, _lang: Lang, _lat: f64, _lon: f64) -> Option<(String, Vec<crate::identify::Feature>)> {
+    fn identify(&self, _lang: Lang, _lat: f64, _lon: f64) -> Option<(String, Vec<Feature>)> {
         None
     }
+    /// Подписи у точек глобуса: текст и точка. Окно рисует их без
+    /// наложения вместе с подписями живых объектов.
+    fn labels(&self) -> &[(String, DVec3)] {
+        &[]
+    }
+    /// Точка у подписи: цвет и сторона в пикселях. None - подпись без точки.
+    fn dot(&self) -> Option<([u8; 3], f32)> {
+        None
+    }
+    /// Группа окна «Объекты» у пикселя щелчка (x, y, пикселей на точку).
+    fn pick(&self, _lang: Lang, _camera: &Camera, _pixel: (f64, f64, f64)) -> Option<(String, Vec<Feature>)> {
+        None
+    }
+    /// Объект слоя у пикселя щелчка без инструмента: его точка глобуса.
+    /// Окно открывает «Объекты» у этой точки.
+    fn hit(&self, _camera: &Camera, _pixel: (f64, f64, f64)) -> Option<DVec3> {
+        None
+    }
+    /// Окно «Объекты» открыто щелчком: его группы. Слой может дозапросить
+    /// сведения.
+    fn clicked(&mut self, _lang: Lang, _groups: &[(String, Vec<Feature>)], _request: &dyn Fn(u64) -> Box<dyn net::Request>) {}
+    /// Дополнить группы открытого окна «Объекты» пришедшими сведениями.
+    fn enrich(&self, _lang: Lang, _groups: &mut [(String, Vec<Feature>)]) {}
 }
 
 /// Слои реестра по порядку строк каталога. Новый слой - одна строка.
@@ -123,6 +160,7 @@ pub static ALL: &[&dyn Entry] = &[
     &crate::weather::ENTRIES[2],
     &crate::weather::ENTRIES[3],
     &crate::weather::ENTRIES[4],
+    &crate::wiki::ENTRY,
 ];
 
 /// Строка реестра номер n.
@@ -153,7 +191,7 @@ mod tests {
             assert!(!e.source().is_empty());
         }
         // Ключи прежние: сохранённые флажки и сцены находят строки.
-        for key in ["mining", "currents", "weather_temperature", "weather_wind", "weather_aurora"] {
+        for key in ["mining", "currents", "weather_temperature", "weather_wind", "weather_aurora", "wiki"] {
             assert!(matches!(Extra::from_key(key), Some(Extra::Plugged(_))), "{key}");
         }
     }

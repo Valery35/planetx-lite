@@ -41,8 +41,6 @@ pub enum Extra {
     Geoid,
     /// Живые объекты: суда, самолёты, поезда.
     Live(crate::live::Kind),
-    /// Википедия рядом: статьи у точки взгляда.
-    Wiki,
     /// Спутники CelesTrak выбранных групп.
     Satellites,
     /// 3D-здания OpenFreeMap.
@@ -66,7 +64,6 @@ impl Extra {
         out.push(Extra::Paleo);
         out.push(Extra::Geoid);
         out.extend(crate::live::Kind::ALL.map(Extra::Live));
-        out.push(Extra::Wiki);
         out.push(Extra::Satellites);
         out.push(Extra::Buildings);
         out.push(Extra::Overture);
@@ -110,7 +107,6 @@ impl Extra {
             Extra::Paleo => "Paleogeography",
             Extra::Geoid => "Geoid",
             Extra::Live(k) => k.name(),
-            Extra::Wiki => "Wikipedia nearby",
             Extra::Satellites => "Satellites",
             Extra::Buildings => "3D buildings",
             Extra::Overture => "3D buildings, Overture Maps",
@@ -139,7 +135,6 @@ impl Extra {
             Extra::Buildings => "Volumetric buildings from OpenStreetMap by the OpenFreeMap vector tiles. They show when the camera is closer than 6 km to the ground. The height comes from OSM, otherwise from the number of floors. A building without these data gets a height of 5 m.",
             Extra::Overture => "Volumetric buildings of Overture Maps - OpenStreetMap together with the open sets of Microsoft, Google Open Buildings and Esri in one PMTiles archive. Where OpenStreetMap is incomplete, for example in Africa and Asia, there are more buildings. They show when the camera is closer than 6 km to the ground. The height is the height field, otherwise the number of floors times 3.66 m. The row replaces the 3D buildings of the vector base.",
             Extra::Satellites => "Artificial satellites from CelesTrak orbital elements, positions by the SGP4 model. The time is the right handle of the time slider, without the slider the computer clock. The Satellites tab of the gallery chooses the groups. The elements of a group update at most once in 2 hours.",
-            Extra::Wiki => "Wikipedia articles with coordinates near the look-at point, the important and the near ones first. They show below 40 km of camera height. A click on an article gives its link and first paragraph in the Objects window.",
             Extra::Geoid => "The shape of the Earth level surface - the geoid - after the NGA EGM2008 model. While the row is on, the globe heights are the geoid heights above the ellipsoid, from -107 to +86 m, stretched 10 000 times, and the Earth looks crumpled. Bulges are where gravity is stronger, for example near New Guinea, hollows where it is weaker, the deepest one in the Indian Ocean. Terrain and water are removed for this time, switching the row off brings them back.",
             Extra::Paleo => "Land relief and sea depths in the past, up to 540 million years ago, after the PALEOMAP PaleoDEM maps. The slider at the bottom of the view sets the age. The imagery, borders and labels are removed meanwhile.",
             Extra::Cutaway => {
@@ -171,7 +166,6 @@ impl Extra {
             Extra::Dots(crate::dots::Layer::Cables | crate::dots::Layer::Plants | crate::dots::Layer::InfraOsm) => Category::Infra,
             Extra::Dots(_) | Extra::Cutaway | Extra::Paleo | Extra::Geoid => Category::Depths,
             Extra::Live(_) => Category::Transport,
-            Extra::Wiki => Category::Wiki,
             Extra::Satellites => Category::Sky,
             Extra::Buildings | Extra::Overture => Category::Map,
             Extra::Plugged(n) => crate::registry::get(n).map_or(Category::Map, |e| e.category()),
@@ -191,7 +185,6 @@ impl Extra {
             Extra::Paleo => "paleo",
             Extra::Geoid => "geoid",
             Extra::Live(k) => k.key(),
-            Extra::Wiki => "wiki",
             Extra::Satellites => "satellites",
             Extra::Buildings => "buildings",
             Extra::Overture => "overture",
@@ -839,7 +832,6 @@ impl Item {
             Item::Group(_) => "OpenFreeMap",
             Item::Extra(Extra::Dots(l)) => l.source(),
             Item::Extra(Extra::Live(k)) => k.source(),
-            Item::Extra(Extra::Wiki) => "Wikipedia",
             Item::Extra(Extra::Satellites) | Item::Sat(_) => "CelesTrak",
             Item::Events => "Vantor, Planet",
             Item::Extra(Extra::Buildings) => "OpenFreeMap",
@@ -916,7 +908,6 @@ fn items() -> Vec<Item> {
     out.extend(crate::live::Kind::ALL.map(|k| Item::Extra(Extra::Live(k))));
     out.push(Item::Extra(Extra::Cutaway));
     out.push(Item::Extra(Extra::Paleo));
-    out.push(Item::Extra(Extra::Wiki));
     out.extend((0..data::satellites::GROUPS.len()).map(Item::Sat));
     out.push(Item::Events);
     // Строк, которых нет у страницы, она не показывает.
