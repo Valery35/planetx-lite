@@ -29,8 +29,10 @@ from PIL import Image
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "site", "pages")
 SHOTS = os.path.join(ROOT, "site", "shots")
-SITE = "https://www.informpp.ru/главная-страница/planetx-lite"
-PRO = "https://www.informpp.ru/главная-страница/qgis-planetx"
+# С 7 ноября 2026 года страницы Lite и модуля - в разделе «PlanetX»
+# сайта, просьба автора свести страницы линейки в один блок.
+SITE = "https://www.informpp.ru/главная-страница/planetx/planetx-lite"
+PRO = "https://www.informpp.ru/главная-страница/planetx/qgis-planetx"
 WEB = "https://valery35.github.io/planetx-lite/"
 REPO = "https://github.com/Valery35/planetx-lite"
 RELEASES = REPO + "/releases/latest"
