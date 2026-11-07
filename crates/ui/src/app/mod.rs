@@ -4793,7 +4793,7 @@ fn lasting(cache: &mut HashMap<String, &'static str>, text: String) -> &'static 
 fn extra_slot(extra: crate::layers::Extra) -> Option<u8> {
     match extra {
         crate::layers::Extra::Map(_) => extra.map().and_then(|e| crate::maps::kind(e.key)).and_then(|k| k.slot()),
-        crate::layers::Extra::Dots(crate::dots::Layer::Fires) => Some(0),
+        crate::layers::Extra::Dots(l) => l.slot(),
         crate::layers::Extra::Plugged(n) => crate::registry::get(n).and_then(|e| e.slot()),
         _ => None,
     }

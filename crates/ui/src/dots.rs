@@ -99,6 +99,39 @@ impl Layer {
         Self::ALL.into_iter().find(|l| l.key() == key)
     }
 
+    /// Строки каталога после карт, порядок `LAYERS` витрины модуля.
+    /// Пожары - карта витрины группы «Планета огня», они стоят перед
+    /// темами огня отдельно.
+    pub const CATALOG: [Layer; 13] = [Layer::Quakes, Layer::Iscgem, Layer::Plates, Layer::Faults, Layer::PlateMotion, Layer::Volcanoes, Layer::MagPoles, Layer::MagDecl, Layer::Deposits, Layer::OsmMines, Layer::Plants, Layer::InfraOsm, Layer::Cables];
+
+    /// Раздел каталога «Добавить данные».
+    pub fn category(self) -> crate::layers::Category {
+        use crate::layers::Category;
+        match self {
+            Layer::Fires => Category::Fire,
+            Layer::Cables | Layer::Plants | Layer::InfraOsm => Category::Infra,
+            _ => Category::Depths,
+        }
+    }
+
+    /// Превью карточки каталога: цвета шкалы слоя.
+    pub fn legend(self) -> Option<crate::thumbs::Recipe> {
+        use crate::thumbs::Recipe;
+        let ramp = |c: Vec<[u8; 3]>| Some(Recipe::Ramp(c));
+        match self {
+            Layer::Fires => ramp(data::fires::FRP_STOPS.iter().map(|s| s.1).collect()),
+            Layer::Quakes | Layer::Iscgem => ramp(data::quakes::DEPTH_STOPS.iter().map(|s| s.1).collect()),
+            Layer::Deposits | Layer::OsmMines => ramp(data::deposits::GROUPS.iter().map(|g| g.2).collect()),
+            Layer::Plants => ramp(data::plants::FUELS.iter().map(|f| f.2).collect()),
+            _ => data::thumbs::colors(self.key()).map(|c| Recipe::Ramp(c.to_vec())),
+        }
+    }
+
+    /// Место на глобусе: пожары - карта витрины, одна из карт места 0.
+    pub fn slot(self) -> Option<u8> {
+        (self == Layer::Fires).then_some(0)
+    }
+
     /// Адреса сводок слоя: у месторождений их три, у каталога ISC-GEM -
     /// по одному на отрезок лет до прошлого года, как `periods` модуля.
     pub fn urls(self) -> Vec<String> {
@@ -932,4 +965,23 @@ fn infra_feature(lang: Lang, item: &data::infra::Item) -> Feature {
     }
     values.push(row("OSM object", format!("https://www.openstreetmap.org/{}", item.osm)));
     (if item.name.is_empty() { tr(lang, "Untitled").to_string() } else { item.name.clone() }, values)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Каталог показывает каждый слой точек ровно раз: пожары отдельно,
+    /// остальные таблицей [`Layer::CATALOG`].
+    #[test]
+    fn catalog_rows_cover_every_layer_once() {
+        let mut rows: Vec<&str> = Layer::CATALOG.iter().map(|l| l.key()).collect();
+        rows.push(Layer::Fires.key());
+        rows.sort_unstable();
+        let mut all: Vec<&str> = Layer::ALL.iter().map(|l| l.key()).collect();
+        all.sort_unstable();
+        assert_eq!(rows, all);
+        // Место 0 - только у пожаров.
+        assert!(Layer::ALL.iter().all(|l| (l.slot() == Some(0)) == (*l == Layer::Fires)));
+    }
 }

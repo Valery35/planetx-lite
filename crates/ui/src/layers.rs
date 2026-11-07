@@ -143,9 +143,8 @@ impl Extra {
                 Some(crate::maps::Group::Local) => Category::Local,
                 _ => Category::Depths,
             },
-            Extra::Dots(crate::dots::Layer::Fires) => Category::Fire,
-            Extra::Dots(crate::dots::Layer::Cables | crate::dots::Layer::Plants | crate::dots::Layer::InfraOsm) => Category::Infra,
-            Extra::Dots(_) | Extra::Cutaway | Extra::Paleo | Extra::Geoid => Category::Depths,
+            Extra::Dots(l) => l.category(),
+            Extra::Cutaway | Extra::Paleo | Extra::Geoid => Category::Depths,
             Extra::Plugged(n) => crate::registry::get(n).map_or(Category::Map, |e| e.category()),
         }
     }
@@ -712,12 +711,8 @@ fn recipe(item: Item) -> crate::thumbs::Recipe {
         Item::Sat(n) => Recipe::Flat(data::satellites::GROUPS.get(n).map_or_else(Vec::new, |g| vec![[16, 20, 40], g.1, [16, 20, 40]])),
         Item::Events => Recipe::Base,
         Item::Extra(e) => {
-            use crate::dots::Layer;
             match e {
-                Extra::Dots(Layer::Fires) => Recipe::Ramp(data::fires::FRP_STOPS.iter().map(|s| s.1).collect()),
-                Extra::Dots(Layer::Quakes | Layer::Iscgem) => Recipe::Ramp(data::quakes::DEPTH_STOPS.iter().map(|s| s.1).collect()),
-                Extra::Dots(Layer::Deposits | Layer::OsmMines) => Recipe::Ramp(data::deposits::GROUPS.iter().map(|g| g.2).collect()),
-                Extra::Dots(Layer::Plants) => Recipe::Ramp(data::plants::FUELS.iter().map(|f| f.2).collect()),
+                Extra::Dots(l) => l.legend().unwrap_or(Recipe::Base),
                 Extra::Plugged(n) => crate::registry::get(n).and_then(|e| e.legend()).unwrap_or(Recipe::Base),
                 _ if let Some(c) = th::colors(e.key()) => ramp(c),
                 Extra::Map(_) => match crate::maps::kind(e.key()) {
@@ -873,11 +868,7 @@ fn items() -> Vec<Item> {
     // Пожары - карта витрины группы «Планета огня», перед темами огня.
     out.push(Item::Extra(Extra::Dots(crate::dots::Layer::Fires)));
     out.extend((0..crate::maps::count()).map(|n| Item::Extra(Extra::Map(n))));
-    use crate::dots::Layer;
-    out.extend(
-        [Layer::Quakes, Layer::Iscgem, Layer::Plates, Layer::Faults, Layer::PlateMotion, Layer::Volcanoes, Layer::MagPoles, Layer::MagDecl, Layer::Deposits, Layer::OsmMines, Layer::Plants, Layer::InfraOsm, Layer::Cables]
-            .map(|l| Item::Extra(Extra::Dots(l))),
-    );
+    out.extend(crate::dots::Layer::CATALOG.map(|l| Item::Extra(Extra::Dots(l))));
     // Порядок LAYERS витрины модуля.
     out.extend((0..crate::registry::ALL.len()).filter(|n| crate::registry::get(*n).is_some_and(|e| !PLACED.contains(&e.key()))).map(|n| Item::Extra(Extra::Plugged(n))));
     out.push(Item::Extra(Extra::Geoid));
