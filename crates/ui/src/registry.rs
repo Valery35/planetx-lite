@@ -207,6 +207,20 @@ pub static ALL: &[&dyn Entry] = &[
     &crate::weather::ENTRIES[3],
     #[cfg(feature = "live")]
     &crate::weather::ENTRIES[4],
+    #[cfg(feature = "earth")]
+    &crate::jaxa::ENTRIES[0],
+    #[cfg(feature = "earth")]
+    &crate::jaxa::ENTRIES[1],
+    #[cfg(feature = "earth")]
+    &crate::jaxa::ENTRIES[2],
+    #[cfg(feature = "earth")]
+    &crate::jaxa::ENTRIES[3],
+    #[cfg(feature = "earth")]
+    &crate::jaxa::ENTRIES[4],
+    #[cfg(feature = "earth")]
+    &crate::jaxa::ENTRIES[5],
+    #[cfg(feature = "earth")]
+    &crate::jaxa::ENTRIES[6],
     &crate::wiki::ENTRY,
     &crate::buildings::ENTRY,
     &crate::overture::ENTRY,
@@ -250,7 +264,7 @@ mod tests {
         // Ключи прежние: сохранённые флажки и сцены находят строки.
         let mut kept = vec!["wiki", "buildings", "overture"];
         if cfg!(feature = "earth") {
-            kept.push("mining");
+            kept.extend(["mining", "jaxa_lst", "jaxa_sst", "jaxa_ndvi", "jaxa_chla", "jaxa_precip", "jaxa_smc", "jaxa_aod"]);
         }
         if cfg!(feature = "live") {
             kept.extend(["currents", "weather_temperature", "weather_wind", "weather_aurora", "vessels", "aircraft", "trains", "satellites"]);

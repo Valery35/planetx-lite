@@ -56,6 +56,7 @@ pub mod earthwork;
 pub mod hydrocalc;
 pub mod i18n;
 pub mod identify;
+pub mod jaxa;
 pub mod globemenu;
 pub mod input;
 pub mod labels;

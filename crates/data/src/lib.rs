@@ -121,6 +121,7 @@ pub mod hydro_fill;
 pub mod infra;
 pub mod insolation;
 pub mod iscgem;
+pub mod jaxa;
 pub mod layers;
 pub mod lidarnet;
 pub mod linesets;

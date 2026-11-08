@@ -2497,3 +2497,20 @@ Land surface temperature, °C	Температура суши, °C
 Sea surface temperature, °C	Температура моря, °C
 The PlanetX globe for RustGIS.	Глобус PlanetX для RustGIS.
 A 3D globe linked with the RustGIS map: the layers of the project in their RustGIS look, terrain, imagery, scenes and KML. The globe is PlanetX Lite built for RustGIS.	Трёхмерный глобус, связанный с картой RustGIS: слои проекта в оформлении RustGIS, рельеф, снимки, сцены и KML. Глобус - PlanetX Lite, собранный для RustGIS.
+Land surface temperature, JAXA	Температура поверхности суши, JAXA
+Daytime land surface temperature by the GCOM-C SGLI satellite of JAXA, monthly mean, grid 0.1°. The month is set by the time slider. Without the slider the latest month is shown.	Дневная температура поверхности суши по спутнику GCOM-C SGLI агентства JAXA, среднее за месяц, сетка 0.1°. Месяц задаёт шкала времени. Без шкалы виден последний месяц.
+Sea surface temperature, JAXA	Температура поверхности моря, JAXA
+Daytime sea surface temperature by the GCOM-C SGLI satellite of JAXA, monthly mean, grid 0.1°. The month is set by the time slider.	Дневная температура поверхности моря по спутнику GCOM-C SGLI агентства JAXA, среднее за месяц, сетка 0.1°. Месяц задаёт шкала времени.
+Vegetation index NDVI, JAXA	Вегетационный индекс NDVI, JAXA
+Normalized difference vegetation index by the GCOM-C SGLI satellite of JAXA, monthly mean, grid 0.1°. Dense vegetation is dark green. The month is set by the time slider.	Нормализованный вегетационный индекс по спутнику GCOM-C SGLI агентства JAXA, среднее за месяц, сетка 0.1°. Густая растительность - тёмно-зелёная. Месяц задаёт шкала времени.
+Chlorophyll-a in the sea, JAXA	Хлорофилл-а в море, JAXA
+Chlorophyll-a concentration in the sea water by the GCOM-C SGLI satellite of JAXA, mg/m³, monthly mean. The scale goes by powers of ten. The month is set by the time slider.	Концентрация хлорофилла-а в морской воде по спутнику GCOM-C SGLI агентства JAXA, мг/м³, среднее за месяц. Шкала идёт по степеням десяти. Месяц задаёт шкала времени.
+Precipitation, JAXA GSMaP	Осадки, JAXA GSMaP
+Mean precipitation rate of the month by the GSMaP satellite mosaic of JAXA, mm/h. The series starts in March 2000. The month is set by the time slider.	Средняя интенсивность осадков за месяц по спутниковой мозаике GSMaP агентства JAXA, мм/ч. Ряд начинается в марте 2000 года. Месяц задаёт шкала времени.
+Soil moisture, JAXA	Влажность почвы, JAXA
+Soil moisture of the top layer by the GCOM-W AMSR2 satellite of JAXA, percent of the volume, monthly mean. The series starts in July 2012. The month is set by the time slider.	Влажность верхнего слоя почвы по спутнику GCOM-W AMSR2 агентства JAXA, процент объёма, среднее за месяц. Ряд начинается в июле 2012 года. Месяц задаёт шкала времени.
+Aerosol optical depth, JAXA	Оптическая толща аэрозоля, JAXA
+Aerosol optical depth at 500 nm by MODIS of the Terra and Aqua satellites, JAXA JASMES processing, monthly mean. Smoke, dust and haze raise the depth. The month is set by the time slider.	Оптическая толща аэрозоля на 500 нм по MODIS спутников Terra и Aqua, обработка JAXA JASMES, среднее за месяц. Дым, пыль и дымка повышают толщу. Месяц задаёт шкала времени.
+The JAXA data did not load, check the network and switch the row on again.	Данные JAXA не загрузились. Проверьте сеть и включите строку снова.
+JAXA Earth: {date}.	JAXA Earth - {date}.
+mg/m³	мг/м³
