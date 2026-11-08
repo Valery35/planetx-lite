@@ -3315,6 +3315,9 @@ fn pixel(nav: &Navigator, (lat, lon): (f64, f64)) -> ([f64; 2], bool) {
 
 #[cfg(test)]
 mod tests {
+    // Без признака import растры и GeoPackage не читаются, их тесты и
+    // помощники не собираются.
+    #![cfg_attr(not(feature = "import"), allow(dead_code, unused_imports))]
     use super::*;
 
     /// Запрос без сети: ответа нет никогда.
@@ -3374,6 +3377,7 @@ mod tests {
         out.textures_delta.clear();
     }
 
+    #[cfg(feature = "import")]
     #[test]
     fn objects_window_names_classes_and_saves() {
         // Окно «Выделение объектов» по снимку с подписями каналов: виды по
@@ -3434,6 +3438,7 @@ mod tests {
         assert_eq!(classes.classes.len(), pairs.len());
     }
 
+    #[cfg(feature = "import")]
     #[test]
     fn short_cover_is_refused() {
         // Снимок накрывает часть участка: «Построить» отказывает.
@@ -3474,6 +3479,7 @@ mod tests {
         (name.to_string(), Arc::new(bytes))
     }
 
+    #[cfg(feature = "import")]
     #[test]
     fn snow_of_second_image_splits_conifers() {
         // Летом хвоя и листва одной яркости ИК, в марте хвоя тёмная на
@@ -3500,6 +3506,7 @@ mod tests {
         assert!(names.contains(&"Coniferous forest".to_string()) && names.contains(&"Broadleaf forest and grass".to_string()), "{names:?}");
     }
 
+    #[cfg(feature = "import")]
     #[test]
     fn recognition_by_areas_takes_snow_image() {
         // Окно «Распознавание» модуля 1.38: без образцов отказ, снимки лета
@@ -3567,6 +3574,7 @@ mod tests {
         assert_eq!(picker.shots[0].cloud, None);
     }
 
+    #[cfg(feature = "import")]
     #[test]
     fn recognition_task_by_rules_and_fixed_by_sample() {
         // Список «Задача» модуля 1.39: «Леса и рубки» заводит свои классы
@@ -3729,6 +3737,7 @@ mod tests {
         (name.to_string(), Arc::new(bytes))
     }
 
+    #[cfg(feature = "import")]
     #[test]
     fn overgrown_fields_by_season_images() {
         // Два поля одного летнего вида: левое голое весной 2026 года -

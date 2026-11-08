@@ -643,6 +643,7 @@ mod tests {
     }
 
     /// Слой самосвалов демо модуля: поля time и truck угадываются.
+    #[cfg(feature = "import")]
     #[test]
     fn module_haul_layer_becomes_track() {
         let path = std::path::Path::new(r"C:\Dev\planetx\planetx\demo\haul\haul_kachkanar.gpkg");

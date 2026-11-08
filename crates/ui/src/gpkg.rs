@@ -104,6 +104,9 @@ pub fn folder(layers: Vec<LayerData>, name: &str) -> Folder {
 
 #[cfg(test)]
 mod tests {
+    // Без признака import растры и GeoPackage не читаются, их тесты и
+    // помощники не собираются.
+    #![cfg_attr(not(feature = "import"), allow(dead_code, unused_imports))]
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
     use super::{color_of, folder};
@@ -117,6 +120,7 @@ mod tests {
         assert_eq!(color_of("#фф8000"), None);
     }
 
+    #[cfg(feature = "import")]
     #[test]
     fn subsurface_gpkg_becomes_folders_without_tables() {
         let Ok(bytes) = std::fs::read(r"C:\Dev\planetx\planetx\demo\subsurface\perm_subsurface.gpkg") else {
@@ -141,6 +145,7 @@ mod tests {
         assert_eq!(collar.children.len(), 24);
     }
 
+    #[cfg(feature = "import")]
     #[test]
     fn big_layer_is_cut_with_note() {
         let Ok(bytes) = std::fs::read(r"C:\Dev\planetx\planetx\demo\haul\haul_kachkanar.gpkg") else {

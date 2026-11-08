@@ -397,6 +397,7 @@ mod tests {
         assert_eq!(list[2].height, 15.0);
     }
 
+    #[cfg(feature = "import")]
     #[test]
     fn soundings_of_a_folder_become_a_raster() {
         let mut folder = Folder::new("галсы");

@@ -332,6 +332,7 @@ mod tests {
         assert!(!relief.busy());
     }
 
+    #[cfg(feature = "import")]
     #[test]
     fn lake_bed_gets_water_at_level() {
         // Отметки дна Бриенцского озера из демо модуля, уровень 564 м.

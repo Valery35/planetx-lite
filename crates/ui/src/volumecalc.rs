@@ -200,6 +200,9 @@ impl VolumeCalc {
 
 #[cfg(test)]
 mod tests {
+    // Без признака import растры и GeoPackage не читаются, их тесты и
+    // помощники не собираются.
+    #![cfg_attr(not(feature = "import"), allow(dead_code, unused_imports))]
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
     use super::*;
 
@@ -209,6 +212,7 @@ mod tests {
         data::geotiff::write_float_mercator(&grid, &values).unwrap()
     }
 
+    #[cfg(feature = "import")]
     #[test]
     fn pit_and_dump_give_cut_fill_and_a_file() {
         let old = raster(|_, _| 100.0);
@@ -226,6 +230,7 @@ mod tests {
         assert!(saved.layers[0].rgba.iter().any(|p| p[3] > 0));
     }
 
+    #[cfg(feature = "import")]
     #[test]
     fn surveys_without_common_cells_say_so() {
         let empty = raster(|_, _| f64::NAN);
