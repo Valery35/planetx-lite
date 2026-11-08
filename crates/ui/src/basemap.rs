@@ -494,6 +494,14 @@ impl Basemap {
         }
     }
 
+    /// Подпись подложки вокруг районной карты: вне своей страны и издалека
+    /// на глобусе тайлы Esri. У мировой основы - None.
+    pub fn around_attribution(self, lang: Lang) -> Option<(&'static str, &'static str)> {
+        let region = self.ready()?.region?;
+        let around = READY.iter().find(|r| r.url == region.base).map(|r| (r.credit, r.terms));
+        Some(around.unwrap_or_else(|| Basemap::Esri.attribution(lang)))
+    }
+
     /// Подпись источника и ссылка на условия. Подпись Esri - как
     /// в описании слоя в ArcGIS Online, сверено модулем 26 сентября
     /// 2026 года, ссылка - Esri Master License Agreement.
@@ -617,6 +625,13 @@ mod tests {
         assert!(net::tile_url(&source, (12, 0, 0)).contains("arcgisonline"));
         // Превью каталога - тайл внутри страны.
         assert!(net::tile_url(&source, region.preview()).contains("wmts.geo.admin.ch"));
+        // Подпись подложки вокруг: карта - Esri Topo, аэрофото - снимки Esri,
+        // у мировой основы её нет.
+        let en = crate::i18n::Lang::EN;
+        assert_eq!(b.around_attribution(en).map(|a| a.0), Some("Esri and the GIS User Community"));
+        let photo = Basemap::from_key("swissimage").and_then(|b| b.around_attribution(en));
+        assert_eq!(photo, Some(Basemap::Esri.attribution(en)));
+        assert_eq!(Basemap::Osm.around_attribution(en), None);
     }
 
     #[test]

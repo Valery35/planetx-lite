@@ -3598,7 +3598,11 @@ impl LiteApp {
     fn attribution(&mut self, ctx: &egui::Context, view: egui::Rect) {
         // На другом теле - его снимки и высоты, земных подписей мест нет.
         let mut parts = if self.planet.earth {
-            vec![self.basemap.attribution(self.lang), credits::TERRAIN, labels::ATTRIBUTION]
+            let mut p = vec![self.basemap.attribution(self.lang)];
+            // Вокруг районной карты - тайлы Esri и их подпись.
+            p.extend(self.basemap.around_attribution(self.lang));
+            p.extend([credits::TERRAIN, labels::ATTRIBUTION]);
+            p
         } else {
             let mut p = vec![self.basemap.attribution(self.lang)];
             p.extend(self.planet.terrain.as_ref().map(|t| (t.credit, "")));

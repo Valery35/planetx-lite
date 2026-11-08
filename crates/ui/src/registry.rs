@@ -190,20 +190,33 @@ pub trait Layer {
 }
 
 /// Слои реестра по порядку строк каталога. Новый слой - одна строка.
+/// Строка стоит под признаком своей темы (`crates/ui/Cargo.toml`):
+/// сборка без темы её не показывает. Википедия и здания - ядро просмотра.
 pub static ALL: &[&dyn Entry] = &[
+    #[cfg(feature = "earth")]
     &crate::mining::ENTRY,
+    #[cfg(feature = "live")]
     &crate::currents::ENTRY,
+    #[cfg(feature = "live")]
     &crate::weather::ENTRIES[0],
+    #[cfg(feature = "live")]
     &crate::weather::ENTRIES[1],
+    #[cfg(feature = "live")]
     &crate::weather::ENTRIES[2],
+    #[cfg(feature = "live")]
     &crate::weather::ENTRIES[3],
+    #[cfg(feature = "live")]
     &crate::weather::ENTRIES[4],
     &crate::wiki::ENTRY,
     &crate::buildings::ENTRY,
     &crate::overture::ENTRY,
+    #[cfg(feature = "live")]
     &crate::live::ENTRIES[0],
+    #[cfg(feature = "live")]
     &crate::live::ENTRIES[1],
+    #[cfg(feature = "live")]
     &crate::live::ENTRIES[2],
+    #[cfg(feature = "live")]
     &crate::satellites::ENTRY,
 ];
 
@@ -235,7 +248,14 @@ mod tests {
             assert!(!e.source().is_empty());
         }
         // Ключи прежние: сохранённые флажки и сцены находят строки.
-        for key in ["mining", "currents", "weather_temperature", "weather_wind", "weather_aurora", "wiki", "buildings", "overture", "vessels", "aircraft", "trains", "satellites"] {
+        let mut kept = vec!["wiki", "buildings", "overture"];
+        if cfg!(feature = "earth") {
+            kept.push("mining");
+        }
+        if cfg!(feature = "live") {
+            kept.extend(["currents", "weather_temperature", "weather_wind", "weather_aurora", "vessels", "aircraft", "trains", "satellites"]);
+        }
+        for key in kept {
             assert!(matches!(Extra::from_key(key), Some(Extra::Plugged(_))), "{key}");
         }
     }
