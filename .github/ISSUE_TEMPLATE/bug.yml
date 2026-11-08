@@ -17,8 +17,8 @@ body:
     id: version
     attributes:
       label: Version / Версия
-      description: The «About» window or the file name, for example 0.24.0 / Окно «О программе» или имя файла, например 0.24.0
-      placeholder: "0.24.0"
+      description: The «About» window or the file name, for example 0.25.0 / Окно «О программе» или имя файла, например 0.25.0
+      placeholder: "0.25.0"
     validations:
       required: true
   - type: dropdown
