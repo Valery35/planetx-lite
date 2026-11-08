@@ -128,6 +128,8 @@ pub struct Credits {
     about_open: bool,
     /// Окно «О программе» попросила открыть панель инструментов.
     pub about_request: bool,
+    /// Издание: название, версия и хранилище окна «О программе».
+    pub edition: crate::Edition,
 }
 
 /// Текст со светлым цветом и тёмной тенью, как `_shadow_text` модуля.
@@ -241,6 +243,7 @@ impl Credits {
             }
         });
         let icon = self.icon(ctx);
+        let edition = self.edition;
         let mut about_open = self.about_open;
         let mut sources_request = false;
         egui::Window::new(about)
@@ -250,7 +253,7 @@ impl Credits {
             .pivot(egui::Align2::CENTER_CENTER)
             .default_pos(center)
             .show(ctx, |ui| {
-                about_body(ui, lang, icon);
+                about_body(ui, lang, icon, edition);
                 // Кнопки переносятся в ширине текста окна: длинные
                 // переводы не раздвигают окно и не налезают друг на друга.
                 let width = ui.min_rect().width();
@@ -266,10 +269,10 @@ impl Credits {
                         sources_request = true;
                     }
                     if ui.button(tr(lang, "Report a problem")).clicked() {
-                        open(ISSUES);
+                        open(&format!("{}/issues", edition.repository()));
                     }
                     if ui.button(tr(lang, "Source code")).clicked() {
-                        open(REPOSITORY);
+                        open(edition.repository());
                     }
                 });
             });
@@ -296,7 +299,7 @@ pub fn manual_url(lang: Lang) -> String {
 /// Текст окна «О программе», как окно «О модуле» модуля: слева знак,
 /// справа название с версией, описание, управление, разработчик
 /// и лицензия.
-fn about_body(ui: &mut egui::Ui, lang: Lang, icon: Option<egui::TextureId>) {
+fn about_body(ui: &mut egui::Ui, lang: Lang, icon: Option<egui::TextureId>, edition: crate::Edition) {
     let p = crate::theme::pal();
     ui.horizontal_top(|ui| {
         if let Some(id) = icon {
@@ -306,20 +309,15 @@ fn about_body(ui: &mut egui::Ui, lang: Lang, icon: Option<egui::TextureId>) {
         ui.vertical(|ui| {
             ui.set_max_width(420.0);
             ui.label(
-                egui::RichText::new("PlanetX Lite")
+                egui::RichText::new(edition.name())
                     .size(26.0)
                     .family(egui::FontFamily::Name(crate::fonts::SEMIBOLD.into()))
                     .color(p.text),
             );
-            ui.label(
-                egui::RichText::new(crate::i18n::trf(lang, "Version {v}", &[("v", env!("CARGO_PKG_VERSION"))])).color(p.muted),
-            );
+            ui.label(egui::RichText::new(crate::i18n::trf(lang, "Version {v}", &[("v", &edition.version())])).color(p.muted));
             ui.add_space(8.0);
-            ui.label(tr(lang, "The PlanetX globe without QGIS."));
-            ui.label(tr(
-                lang,
-                "A 3D globe for Windows, Linux, macOS and the web: terrain, imagery, scenes, KML and your own data.",
-            ));
+            ui.label(tr(lang, edition.tagline()));
+            ui.label(tr(lang, edition.about()));
             ui.add_space(8.0);
             ui.label(egui::RichText::new(tr(lang, "Controls")).strong());
             ui.label(tr(

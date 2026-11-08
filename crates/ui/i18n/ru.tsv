@@ -2495,3 +2495,5 @@ Daytime land surface temperature from MODIS over 8 days and sea surface temperat
 NASA GIBS, land and sea	NASA GIBS, суша и море
 Land surface temperature, °C	Температура суши, °C
 Sea surface temperature, °C	Температура моря, °C
+The PlanetX globe for RustGIS.	Глобус PlanetX для RustGIS.
+A 3D globe linked with the RustGIS map: the layers of the project in their RustGIS look, terrain, imagery, scenes and KML. The globe is PlanetX Lite built for RustGIS.	Трёхмерный глобус, связанный с картой RustGIS: слои проекта в оформлении RustGIS, рельеф, снимки, сцены и KML. Глобус - PlanetX Lite, собранный для RustGIS.

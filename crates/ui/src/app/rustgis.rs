@@ -254,6 +254,7 @@ impl LiteApp {
     /// Издание программы, `doc/EDITIONS.md`. По умолчанию PlanetX Lite.
     pub fn with_edition(mut self, edition: crate::Edition) -> Self {
         self.edition = edition;
+        self.credits.edition = edition;
         self
     }
 
