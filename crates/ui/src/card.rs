@@ -215,15 +215,17 @@ impl Card {
                             }
                         }
                     });
+                    // Поля - строками с переносом: в сетке длинное значение
+                    // не переносилось и держало ширину окна, карточка
+                    // не сужалась за угол.
                     if !data.is_empty() {
                         ui.add_space(6.0);
-                        egui::Grid::new("planetx-card-fields").num_columns(2).spacing([8.0, 2.0]).striped(true).show(ui, |ui| {
-                            for (name, value) in &data {
-                                ui.label(egui::RichText::new(name).strong());
-                                ui.label(value);
-                                ui.end_row();
-                            }
-                        });
+                        for (name, value) in &data {
+                            ui.horizontal_wrapped(|ui| {
+                                ui.label(egui::RichText::new(format!("{name}:")).strong());
+                                ui.add(egui::Label::new(value.as_str()).wrap());
+                            });
+                        }
                     }
                     if let Some(text) = answer {
                         ui.add_space(6.0);
@@ -239,7 +241,7 @@ impl Card {
                     }
                 });
                 ui.separator();
-                ui.horizontal(|ui| {
+                ui.horizontal_wrapped(|ui| {
                     if ui.button(tr(lang, "Explain this")).on_hover_text(tr(lang, "A question to the assistant about this placemark: its name, kind, point, description and fields go to the server of the chosen model.")).clicked() {
                         action = Some(Action::Explain(self.path.clone()));
                     }
@@ -273,6 +275,50 @@ mod tests {
         assert!(q.contains("Ла-Манш") && q.contains("50.50000") && q.contains("180.00000"), "{q}");
         assert!(q.contains("пролив") && !q.contains("<b>") && q.contains("ширина = 32 км"), "{q}");
         assert!((super::middle_lon(&[10.0, 20.0]) - 15.0).abs() < 1e-9);
+    }
+
+    /// Кадр с карточкой метки на экране 1200 × 800.
+    fn frame(ctx: &eframe::egui::Context, place: &Place, events: Vec<eframe::egui::Event>) {
+        use eframe::egui;
+        let raw = egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(1200.0, 800.0))), events, ..Default::default() };
+        let mut out = ctx.run_ui(raw, |ui| {
+            let mut open = true;
+            let _ = super::Card { path: vec![0] }.window(ui.ctx(), crate::i18n::Lang::RU, place, None, &mut open);
+        });
+        out.textures_delta.clear();
+    }
+
+    /// Карточка сужается за угол: длинные значения полей переносятся,
+    /// кнопки встают в несколько строк. Замечание автора от 8 ноября
+    /// 2026 года - окно метки не уменьшалось, мешала подпись.
+    #[test]
+    fn card_shrinks_by_its_corner() {
+        use eframe::egui;
+        let ctx = egui::Context::default();
+        let mut p = Place::new("Скважина", Kind::Point, vec![(58.0, 56.0)]);
+        p.description = "Керн отобран по всей глубине скважины, описание пород ведётся по интервалам.".into();
+        p.data = Some(vec![("описание интервала".into(), "аргиллит серый плотный с прослоями алевролита и известняка, трещиноватый".into())]);
+        for _ in 0..3 {
+            frame(&ctx, &p, Vec::new());
+        }
+        let id = egui::Id::unique("planetx-card");
+        let before = ctx.memory(|m| m.area_rect(id)).map_or(0.0, |r| r.width());
+        let Some(rect) = ctx.memory(|m| m.area_rect(id)) else {
+            unreachable!("карточка не нарисована");
+        };
+        let corner = rect.right_bottom() - egui::vec2(3.0, 3.0);
+        let to = corner - egui::vec2(220.0, 0.0);
+        frame(&ctx, &p, vec![egui::Event::PointerMoved(corner)]);
+        frame(&ctx, &p, vec![egui::Event::PointerButton { pos: corner, button: egui::PointerButton::Primary, pressed: true, modifiers: egui::Modifiers::NONE }]);
+        for k in 1..=10 {
+            frame(&ctx, &p, vec![egui::Event::PointerMoved(corner + (to - corner) * (k as f32 / 10.0))]);
+        }
+        frame(&ctx, &p, vec![egui::Event::PointerButton { pos: to, button: egui::PointerButton::Primary, pressed: false, modifiers: egui::Modifiers::NONE }]);
+        for _ in 0..3 {
+            frame(&ctx, &p, Vec::new());
+        }
+        let after = ctx.memory(|m| m.area_rect(id)).map_or(0.0, |r| r.width());
+        assert!(after < before - 150.0, "ширина {before} -> {after}");
     }
 
     #[test]

@@ -59,7 +59,7 @@ impl LiteApp {
                 News::State(state) => {
                     let order: Vec<i64> = state.layers.iter().filter(|l| l.drawn()).map(|l| l.id).collect();
                     self.data_layers.sync_live(&order);
-                    let follow = self.settings.rustgis_follows(&state.project);
+                    let follow = self.settings.rustgis_map;
                     let saved = self.settings.rustgis_shown_of(&state.project).to_vec();
                     let mut pictures = Vec::new();
                     let moved = self.rustgis.as_mut().and_then(|sync| {
@@ -123,8 +123,8 @@ impl LiteApp {
                     // Новый слой: на глобусе, если он включён на карте
                     // в режиме карты или отмечен в настройках проекта.
                     if new && let Some(sync) = &self.rustgis {
-                        let follow = self.settings.rustgis_follows(&sync.project);
-                        let on = sync.wanted(id, follow, self.settings.rustgis_shown_of(&sync.project));
+                        let follow = self.settings.rustgis_map;
+                        let on =sync.wanted(id, follow, self.settings.rustgis_shown_of(&sync.project));
                         self.data_layers.show_live(id, on);
                     }
                 }
@@ -154,6 +154,14 @@ impl LiteApp {
                 }
             }
         }
+        self.rustgis_follow_mode();
+        // Прозрачность для карты - когда ползунок отпущен.
+        if !ctx.input(|i| i.pointer.any_down())
+            && let Some(sync) = &mut self.rustgis
+            && let Some((layer, percent)) = sync.fade.take()
+        {
+            sync.link.ask(crate::rustgislink::Ask::Transparency { layer, percent });
+        }
         crate::datalayers::RUSTGIS_LINKED.store(self.rustgis.as_ref().is_some_and(|s| s.connected), std::sync::atomic::Ordering::Relaxed);
         // Вид глобуса - на карту, когда глобус постоял. На других телах
         // синхронизации нет, как у модуля.
@@ -168,6 +176,32 @@ impl LiteApp {
             }
             // Покой глобуса досчитывается и без движения мыши.
             ctx.request_repaint_after(std::time::Duration::from_secs_f64(crate::rustgislink::SETTLE_SECONDS));
+        }
+    }
+
+    /// Режим «Слои как на карте RustGIS» в свойствах вида сменился:
+    /// флажки глобуса - с карты RustGIS или отметки проекта из настроек.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn rustgis_follow_mode(&mut self) {
+        let follow = self.settings.rustgis_map;
+        let Some(sync) = &mut self.rustgis else {
+            return;
+        };
+        if !sync.connected || sync.follow == Some(follow) {
+            return;
+        }
+        sync.follow = Some(follow);
+        let saved = self.settings.rustgis_shown_of(&sync.project).to_vec();
+        let mut pictures = Vec::new();
+        for row in &sync.rows {
+            match row.key {
+                crate::rustgislink::RowKey::Layer(id) if !row.kind.is_picture() => self.data_layers.show_live(id, sync.wanted(id, follow, &saved)),
+                _ if row.kind.is_picture() => pictures.push((row.key.clone(), crate::rustgislink::Bridge::wanted_row(row, follow, &saved))),
+                _ => {}
+            }
+        }
+        for (key, on) in pictures {
+            self.rustgis_picture(&key, on);
         }
     }
 
@@ -329,44 +363,25 @@ impl LiteApp {
         let pictures_on = sync.pictures_on.clone();
         let cutting: Vec<crate::rustgislink::RowKey> = sync.cut.keys().map(|id| crate::rustgislink::RowKey::Layer(*id)).filter(|k| !sync.pictures.contains_key(k)).collect();
         let project = sync.project.clone();
-        // Режим «Слои как на карте RustGIS», флажок «Слои как на карте QGIS»
-        // модуля: хранится по проекту.
-        let mut follow = self.settings.rustgis_follows(&project);
-        let follow_box = ui.checkbox(&mut follow, tr(lang, "Layers as on the RustGIS map")).on_hover_text(tr(
-            lang,
-            "With the check the globe shows the layers switched on in RustGIS, and a check in the list of the globe switches the layer on the map too, the opacity sets its transparency there. Without the check the checks of the globe are its own and do not change the map. The check is kept for the project.",
-        ));
-        let mut pictures = Vec::new();
-        if follow_box.changed() {
-            self.settings.set_rustgis_follow(&project, follow);
-            self.settings_dirty = true;
-            let saved = self.settings.rustgis_shown_of(&project).to_vec();
-            if let Some(sync) = &self.rustgis {
-                for row in &rows {
-                    match row.key {
-                        crate::rustgislink::RowKey::Layer(id) if !row.kind.is_picture() => self.data_layers.show_live(id, sync.wanted(id, follow, &saved)),
-                        _ if row.kind.is_picture() => pictures.push((row.key.clone(), crate::rustgislink::Bridge::wanted_row(row, follow, &saved))),
-                        _ => {}
-                    }
-                }
-            }
-        }
-        for (key, on) in pictures.drain(..) {
-            self.rustgis_picture(&key, on);
-        }
+        // Режим «Слои как на карте RustGIS» - в свойствах вида, как
+        // «Слои как на карте QGIS» окна свойств модуля.
+        let follow = self.settings.rustgis_map;
         if rows.is_empty() {
             ui.label(egui::RichText::new(tr(lang, "The RustGIS project has no layers.")).color(muted));
             return;
         }
         let mut toggled = Vec::new();
-        let mut faded = Vec::new();
+        let mut acts: Vec<(u64, crate::datalayers::Act)> = Vec::new();
         let mut fly = None;
+        let mut menu = self.rustgis.as_mut().and_then(|s| s.menu.take());
         // Не больше восьми строк: под разделом - «Слои».
         let room = (22.0 * RUSTGIS_ROWS).min(ui.available_height() - SECTION_MIN).max(22.0);
         egui::ScrollArea::vertical().id_salt("rustgis").max_height(room).auto_shrink([false, true]).show(ui, |ui| {
+            ui.spacing_mut().item_spacing.y = 0.0;
             for row in &rows {
-                // Строка как у списка «Проект QGIS» модуля: «название · вид»,
-                // флажок - на глобусе, двойной щелчок - перелёт к слою.
+                // Строка как у списка «Проект QGIS» модуля и «Моих слоёв»:
+                // флажок, «название · вид», «⋯» и правая кнопка - меню,
+                // двойной щелчок - перелёт к слою.
                 let text = format!("{} · {}", row.name, tr(lang, row.kind.word()));
                 let picture = row.kind.is_picture();
                 let id = match row.key {
@@ -374,6 +389,7 @@ impl LiteApp {
                     crate::rustgislink::RowKey::Tiles(_) => None,
                 };
                 let shown = if picture { Some(pictures_on.contains(&row.key)) } else { id.and_then(|id| self.data_layers.live_shown(id)) };
+                let usable = shown.is_some() && row.kind != crate::rustgislink::RowKind::Table;
                 let tip = if row.kind == crate::rustgislink::RowKind::Table {
                     tr(lang, "A table without geometry does not go to the globe.")
                 } else if cutting.contains(&row.key) && pictures_on.contains(&row.key) {
@@ -381,38 +397,38 @@ impl LiteApp {
                 } else if picture {
                     tr(lang, crate::maps::RUSTGIS_TIP)
                 } else if shown.is_some() {
-                    tr(lang, "A layer of the open RustGIS project in its RustGIS colours. The check shows it on the globe.")
+                    tr(lang, "A layer of the open RustGIS project in its RustGIS colours. The check shows it on the globe, a double click flies to it, the «⋯» menu sets its opacity, labels and extrusion.")
                 } else {
                     tr(lang, "The features of the layer are being read from RustGIS.")
                 };
-                ui.horizontal(|ui| {
-                    let mut on = shown.unwrap_or(false);
-                    let usable = shown.is_some() && row.kind != crate::rustgislink::RowKind::Table;
-                    let check = ui.add_enabled(usable, egui::Checkbox::without_text(&mut on)).on_hover_text(tip);
-                    if check.changed() {
-                        toggled.push((row.key.clone(), row.name.clone(), on, picture));
-                    }
-                    // Надпись не выделяется: двойной щелчок - перелёт, а не
-                    // выделение слова.
-                    let label = ui.add(egui::Label::new(text.as_str()).truncate().selectable(false).sense(egui::Sense::click())).on_hover_text(tip);
-                    if label.double_clicked() {
-                        fly = row.extent;
-                    }
-                    // Непрозрачность слоя на глобусе, в режиме карты - и на
-                    // карте, когда ползунок отпущен.
-                    if let Some(opacity) = id.filter(|_| !picture).and_then(|id| self.data_layers.live_opacity(id)) {
-                        let id = id.unwrap_or_default();
-                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                            let mut percent = (opacity * 100.0).round();
-                            let drag = ui.add(egui::DragValue::new(&mut percent).range(5.0..=100.0).speed(1.0).suffix(" %")).on_hover_text(tr(lang, "Opacity of the layer on the globe. In the mode Layers as on the RustGIS map - on the map too."));
-                            if drag.changed() || drag.drag_stopped() || drag.lost_focus() {
-                                faded.push((id, percent / 100.0, !drag.dragged()));
-                            }
-                        });
+                let on = shown.unwrap_or(false);
+                let hit = crate::layers::row(ui, 4.0, Some(Some(on)), false, &text, if usable { "⋯" } else { "" }, tip);
+                if hit.check && usable {
+                    toggled.push((row.key.clone(), row.name.clone(), !on, picture));
+                }
+                if hit.response.double_clicked() {
+                    fly = row.extent;
+                }
+                let key = format!("rustgis:{:?}", row.key);
+                if hit.menu && usable {
+                    menu = Some(key.clone());
+                }
+                let live = id.filter(|_| !picture).and_then(|id| self.data_layers.live_layer(id));
+                crate::layers::popup(ui, &mut menu, &key, hit.rect, |ui| match live {
+                    Some(layer) => crate::datalayers::live_menu(ui, lang, layer, &mut acts),
+                    None => {
+                        let fly_here = ui.button(tr(lang, "Zoom to layer")).clicked();
+                        if fly_here {
+                            fly = row.extent;
+                        }
+                        fly_here
                     }
                 });
             }
         });
+        if let Some(sync) = &mut self.rustgis {
+            sync.menu = menu;
+        }
         // Перелёт к охвату слоя, камера смотрит вниз, как у модуля.
         if let Some([w, s, e, n]) = fly {
             let camera = &self.nav.camera;
@@ -455,15 +471,18 @@ impl LiteApp {
                 self.settings_dirty = true;
             }
         }
-        for (id, opacity, settled) in faded {
-            self.data_layers.set_live_opacity(id, opacity);
+        // Действия меню слоя. Непрозрачность в режиме карты - и на карту,
+        // когда ползунок отпущен.
+        let now = ui.ctx().input(|i| i.time);
+        for (id, act) in acts {
             if follow
-                && settled
-                && let Some(sync) = &self.rustgis
+                && let crate::datalayers::Act::Style(style) = &act
+                && let Some(live) = self.data_layers.get(id).and_then(|l| l.live)
+                && let Some(sync) = &mut self.rustgis
             {
-                let percent = (100.0 - opacity * 100.0).round().clamp(0.0, 100.0) as u8;
-                sync.link.ask(crate::rustgislink::Ask::Transparency { layer: id, percent });
+                sync.fade = Some((live, (100.0 - style.opacity * 100.0).round().clamp(0.0, 100.0) as u8));
             }
+            self.data_act(id, &act, now);
         }
     }
 }

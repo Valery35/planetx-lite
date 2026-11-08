@@ -1132,6 +1132,11 @@ impl DataLayers {
         self.list.iter().find(|l| l.live == Some(live)).map(|l| l.visible)
     }
 
+    /// Живой слой RustGIS номер live.
+    pub fn live_layer(&self, live: i64) -> Option<&DataLayer> {
+        self.list.iter().find(|l| l.live == Some(live))
+    }
+
     /// Убрать все живые слои: связь выключена.
     pub fn drop_live(&mut self) {
         let had = self.list.iter().any(|l| l.live.is_some());
@@ -1389,6 +1394,76 @@ fn menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], ne
         out.push((id, Act::Style(style)));
     }
     ui.separator();
+    let mut chosen = labels_extrude(ui, lang, layer, out);
+    ui.separator();
+    chosen |= folder_menu(ui, lang, layer, folders, new_folder, out);
+    if ui.button(tr(lang, "Up")).clicked() {
+        out.push((id, Act::Up));
+        chosen = true;
+    }
+    if ui.button(tr(lang, "Down")).clicked() {
+        out.push((id, Act::Down));
+        chosen = true;
+    }
+    chosen |= copy_save(ui, lang, id, out);
+    if RUSTGIS_LINKED.load(std::sync::atomic::Ordering::Relaxed)
+        && layer.live.is_none()
+        && ui.button(tr(lang, "To the RustGIS project")).on_hover_text(tr(lang, "The objects of the layer with all fields go to the open RustGIS project as a new layer.")).clicked()
+    {
+        out.push((id, Act::ToRustGis));
+        chosen = true;
+    }
+    if ui.button(tr(lang, "Remove from the globe")).clicked() {
+        out.push((id, Act::Remove));
+        chosen = true;
+    }
+    chosen
+}
+
+/// Пункты «Копия в Мои метки» и «Сохранить в GeoJSON…» меню слоя.
+fn copy_save(ui: &mut egui::Ui, lang: Lang, id: u64, out: &mut Vec<(u64, Act)>) -> bool {
+    if ui.button(tr(lang, "Copy to My Places")).on_hover_text(tr(lang, "The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.")).clicked() {
+        out.push((id, Act::ToPlaces));
+        return true;
+    }
+    if ui.button(tr(lang, "Save as GeoJSON…")).on_hover_text(tr(lang, "The objects of the layer go to a GeoJSON file in WGS84 with all fields. QGIS and other GIS open it.")).clicked() {
+        out.push((id, Act::Export));
+        return true;
+    }
+    false
+}
+
+/// Меню слоя проекта RustGIS в разделе «Проект RustGIS», как меню слоя
+/// раздела «Проект QGIS» модуля: перелёт, непрозрачность, подписи,
+/// выдавливание, копия в «Мои метки», файл GeoJSON. Цвета слоя - из
+/// RustGIS, их меню не меняет. true - пункт выбран, меню закрывается.
+pub fn live_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, out: &mut Vec<(u64, Act)>) -> bool {
+    let id = layer.id;
+    if ui.button(tr(lang, "Zoom to layer")).clicked() {
+        out.push((id, Act::Zoom));
+        return true;
+    }
+    ui.separator();
+    let mut percent = (layer.style.opacity * 100.0).round();
+    ui.horizontal(|ui| {
+        ui.label(tr(lang, "Opacity"));
+        let slider = ui.add(egui::Slider::new(&mut percent, 5.0..=100.0).fixed_decimals(0).suffix(" %"));
+        if slider.on_hover_text(tr(lang, "Opacity of the layer on the globe. In the mode Layers as on the RustGIS map - on the map too.")).changed() {
+            let mut style = layer.style;
+            style.opacity = percent / 100.0;
+            out.push((id, Act::Style(style)));
+        }
+    });
+    ui.separator();
+    let mut chosen = labels_extrude(ui, lang, layer, out);
+    ui.separator();
+    chosen |= copy_save(ui, lang, id, out);
+    chosen
+}
+
+/// Подменю подписей и выдавливания по полю, множитель высоты.
+fn labels_extrude(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, out: &mut Vec<(u64, Act)>) -> bool {
+    let id = layer.id;
     let mut chosen = false;
     let label_name = layer.label.and_then(|f| layer.data.fields.get(f)).map_or(tr(lang, "No"), String::as_str);
     ui.menu_button(trf(lang, "Labels: {field}", &[("field", label_name)]), |ui| {
@@ -1433,35 +1508,6 @@ fn menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], ne
                 out.push((id, Act::Extrude(Some((field, value)))));
             }
         });
-    }
-    ui.separator();
-    chosen |= folder_menu(ui, lang, layer, folders, new_folder, out);
-    if ui.button(tr(lang, "Up")).clicked() {
-        out.push((id, Act::Up));
-        chosen = true;
-    }
-    if ui.button(tr(lang, "Down")).clicked() {
-        out.push((id, Act::Down));
-        chosen = true;
-    }
-    if ui.button(tr(lang, "Copy to My Places")).on_hover_text(tr(lang, "The objects of the layer become placemarks of a folder in «My places»: they can be edited, measured and saved into a scene. A large layer is cut to its first objects.")).clicked() {
-        out.push((id, Act::ToPlaces));
-        chosen = true;
-    }
-    if ui.button(tr(lang, "Save as GeoJSON…")).on_hover_text(tr(lang, "The objects of the layer go to a GeoJSON file in WGS84 with all fields. QGIS and other GIS open it.")).clicked() {
-        out.push((id, Act::Export));
-        chosen = true;
-    }
-    if RUSTGIS_LINKED.load(std::sync::atomic::Ordering::Relaxed)
-        && layer.live.is_none()
-        && ui.button(tr(lang, "To the RustGIS project")).on_hover_text(tr(lang, "The objects of the layer with all fields go to the open RustGIS project as a new layer.")).clicked()
-    {
-        out.push((id, Act::ToRustGis));
-        chosen = true;
-    }
-    if ui.button(tr(lang, "Remove from the globe")).clicked() {
-        out.push((id, Act::Remove));
-        chosen = true;
     }
     chosen
 }

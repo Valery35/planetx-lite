@@ -993,6 +993,14 @@ pub struct Bridge {
     /// Синхронизацию только включили, глобус ведёт: его вид уходит
     /// на карту сразу, без ожидания покоя.
     push_now: bool,
+    /// Режим «Слои как на карте RustGIS», по которому расставлены флажки
+    /// глобуса. Другой в настройках - флажки расставляются заново.
+    pub follow: Option<bool>,
+    /// Открытое меню строки раздела «Проект RustGIS».
+    pub menu: Option<String>,
+    /// Прозрачность слоя для карты RustGIS, в процентах: уходит, когда
+    /// ползунок отпущен, а не на каждом кадре протяжки.
+    pub fade: Option<(i64, u8)>,
 }
 
 impl Bridge {
@@ -1018,6 +1026,9 @@ impl Bridge {
             sync: false,
             direction: Direction::Both,
             push_now: false,
+            follow: None,
+            menu: None,
+            fade: None,
         }
     }
 
