@@ -8,26 +8,40 @@
 //! выбранный на глобусе объект выделяется в RustGIS, слой Lite уходит
 //! в проект RustGIS.
 //!
-//! Путь - ретранслятор MCP RustGIS (команда «MCP Relay» или флажок «Let
-//! your Agents Control RustGIS» помощника RustGIS): 127.0.0.1, порт
-//! [`DEFAULT_PORT`] или `RUSTGIS_MCP_PORT`, ключ - файл [`token_path`],
-//! его пишет RustGIS. Первая строка - `rustgis/attach` с ключом, дальше -
-//! сообщения MCP JSON-RPC по строке, как у `rustgis-cli mcp --attach`.
+//! Путей два, канал [`Channel`].
 //!
-//! Поток опрашивает `list_layers` каждые [`POLL_SECONDS`]: событий
-//! изменения карты RustGIS не шлёт. Объекты слоя читаются заново, когда
-//! меняется их ключ ([`data::rustgis::Layer::data_key`]): `data.convert`
-//! пишет GeoJSON во временную папку, ответ команды длиной ограничен.
-//! Стиль - `share.webStyle` тем же путём, только при смене отрисовки.
-//! Только программа: у страницы нет ни сокетов, ни файлов.
+//! Сессия расширения ([`Pipe`]) - расширение-процесс RustGIS с ключом
+//! `"session": true` (opengeos/RustGIS#1553, запрос opengeos/RustGIS#1518).
+//! RustGIS держит программу запущенной, связь - её стандартные ввод
+//! и вывод, строками JSON. Ни порта, ни ключа: другая программа к связи
+//! не подключится. Состояние проекта - команда `info.project` (её
+//! отвечает и `list_layers`), объекты слоя - `host.features`, без
+//! временного файла. Перечитывается проект по событиям RustGIS (`view`,
+//! `layers`, `selection`, `project`), а не по опросу. Ввод закрылся -
+//! RustGIS закрыт, окно закрывается.
+//!
+//! Ретранслятор MCP ([`Relay`]) - для RustGIS без сессий и для
+//! `--rustgis` (команда «MCP Relay» или флажок «Let your Agents Control
+//! RustGIS» помощника RustGIS): 127.0.0.1, порт [`DEFAULT_PORT`] или
+//! `RUSTGIS_MCP_PORT`, ключ - файл [`token_path`], его пишет RustGIS.
+//! Первая строка - `rustgis/attach` с ключом, дальше - сообщения MCP
+//! JSON-RPC по строке, как у `rustgis-cli mcp --attach`. Поток опрашивает
+//! `list_layers` каждые [`POLL_SECONDS`]: событий ретранслятор не шлёт.
+//! Объекты слоя пишет `data.convert` GeoJSON во временную папку: ответ
+//! команды длиной ограничен.
+//!
+//! Объекты слоя читаются заново, когда меняется их ключ
+//! ([`data::rustgis::Layer::data_key`]). Стиль - `share.webStyle` файлом,
+//! только при смене отрисовки. Только программа: у страницы нет ни
+//! сокетов, ни файлов.
 
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::net::{SocketAddr, TcpStream};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc::{Receiver, Sender, TryRecvError, channel};
-use std::sync::Arc;
+use std::sync::mpsc::{Receiver, RecvTimeoutError, Sender, TryRecvError, channel};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use data::layers::LayerData;
@@ -124,6 +138,11 @@ pub enum News {
     CutFailed { layer: i64, error: String },
     /// Просьба или чтение слоя не удались.
     Failed(String),
+    /// Команда расширения пришла снова: окно - вперёд.
+    Raise,
+    /// Сессия расширения кончилась: RustGIS закрыт или остановил
+    /// расширение. Окно закрывается.
+    Gone(String),
 }
 
 /// Связь с RustGIS: поток и его каналы. Остановка - при удалении.
@@ -135,12 +154,18 @@ pub struct Link {
 
 impl Link {
     /// Запустить поток. wake будит окно, когда пришла весть.
+    /// Сессия расширения, заданная [`set_session`], - связь через неё,
+    /// иначе через ретранслятор MCP.
     pub fn start(wake: Arc<dyn Fn() + Send + Sync>) -> Link {
         let (asks, ask_rx) = channel();
         let (news_tx, news) = channel();
         let stop = Arc::new(AtomicBool::new(false));
         let flag = stop.clone();
-        std::thread::spawn(move || worker(&ask_rx, &news_tx, &flag, &*wake));
+        let session = SESSION.lock().ok().and_then(|mut s| s.take());
+        std::thread::spawn(move || match session {
+            Some((input, output)) => serve_session(Pipe::start(input, output), &ask_rx, &news_tx, &flag, &*wake),
+            None => worker(&ask_rx, &news_tx, &flag, &*wake),
+        });
         Link { asks, news, stop }
     }
 
@@ -160,22 +185,322 @@ impl Drop for Link {
     }
 }
 
+/// Ввод и вывод сессии расширения до запуска связи.
+type Streams = (Box<dyn BufRead + Send>, Box<dyn Write + Send>);
+
+/// Сессия расширения, которую возьмёт [`Link::start`].
+static SESSION: Mutex<Option<Streams>> = Mutex::new(None);
+
+/// Связь пойдёт через сессию расширения: input - строки RustGIS после
+/// первой, output - строки программы. Так `rustgis-plugin` открывает
+/// глобус в своём процессе.
+pub fn set_session(input: Box<dyn BufRead + Send>, output: Box<dyn Write + Send>) {
+    if let Ok(mut s) = SESSION.lock() {
+        *s = Some((input, output));
+    }
+}
+
+/// Первая строка RustGIS у `rustgis-plugin`: начало сессии
+/// `{"session": {"abi", "plugin", "rustgis", "lang"}}` или запрос
+/// команды одного запуска.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Hello {
+    /// Сессия, код языка RustGIS.
+    Session { lang: String },
+    /// Запрос одного запуска: RustGIS без сессий.
+    Request,
+}
+
+/// Разобрать первую строку RustGIS. Строка может начинаться с метки
+/// порядка байтов UTF-8.
+pub fn hello(line: &str) -> Hello {
+    let value: serde_json::Value = serde_json::from_str(line.trim_start_matches('\u{feff}').trim()).unwrap_or_default();
+    match value.get("session") {
+        Some(s) if s.is_object() => Hello::Session { lang: s["lang"].as_str().unwrap_or("en").to_string() },
+        _ => Hello::Request,
+    }
+}
+
+/// Канал связи с RustGIS: ретранслятор MCP или сессия расширения.
+trait Channel {
+    /// Команда RustGIS: текст ответа.
+    fn command(&mut self, command: &str, params: serde_json::Value) -> Result<String, String>;
+    /// Состояние проекта текстом ответа `list_layers`.
+    fn state(&mut self) -> Result<String, String>;
+    /// Объекты слоя id.
+    fn features(&mut self, id: i64) -> Result<LayerData, String>;
+    /// Нужно ли перечитать проект. У ретранслятора - всегда: событий нет.
+    fn changed(&mut self) -> bool;
+    /// Ждать до seconds секунд. false - поток остановлен.
+    fn wait(&mut self, seconds: f64, stop: &AtomicBool) -> bool;
+    /// Вести окну, накопленные каналом.
+    fn news(&mut self) -> Vec<News> {
+        Vec::new()
+    }
+    /// Связь оборвалась: причина.
+    fn broken(&self) -> Option<String> {
+        None
+    }
+}
+
 /// Соединение MCP с ретранслятором.
-struct Session {
+pub struct Relay {
     writer: TcpStream,
     reader: BufReader<TcpStream>,
     next: u64,
 }
 
-impl Session {
-    fn open(port: u16) -> Result<Session, String> {
+impl Channel for Relay {
+    fn command(&mut self, command: &str, params: serde_json::Value) -> Result<String, String> {
+        self.tool("run_command", serde_json::json!({"command": command, "params": params}))
+    }
+
+    fn state(&mut self) -> Result<String, String> {
+        self.tool("list_layers", serde_json::json!({"include_fields": false}))
+    }
+
+    /// `data.convert` пишет GeoJSON во временный файл: ответ команды
+    /// длиной ограничен.
+    fn features(&mut self, id: i64) -> Result<LayerData, String> {
+        let path = temp_dir().join(format!("layer-{id}.geojson"));
+        self.command("data.convert", serde_json::json!({"layer": id, "format": "geojson", "path": slash(&path)}))?;
+        first_layer(take_file(&path)?)
+    }
+
+    fn changed(&mut self) -> bool {
+        true
+    }
+
+    fn wait(&mut self, seconds: f64, stop: &AtomicBool) -> bool {
+        nap(seconds, stop)
+    }
+}
+
+/// Первый слой текста GeoJSON.
+fn first_layer(bytes: Vec<u8>) -> Result<LayerData, String> {
+    let mut layers = data::layers::read(bytes, "layer.geojson")?;
+    if layers.is_empty() {
+        return Err("no features".to_string());
+    }
+    Ok(layers.remove(0))
+}
+
+/// Что поток чтения сессии передаёт потоку связи.
+#[derive(Debug, Clone, PartialEq)]
+enum Signal {
+    /// Ответ RustGIS на запрос с номером id.
+    Reply { id: String, result: Result<serde_json::Value, String> },
+    /// Карта, слои, выделение или проект изменились.
+    Event,
+    /// Команда «globe» пришла снова.
+    Raise,
+    /// Ввод закрылся: RustGIS закрыт.
+    Gone,
+}
+
+/// Строка RustGIS в сессии: сигнал потоку связи и ответ RustGIS, если
+/// это команда. Строка считается враждебной: не JSON - пропуск.
+fn session_line(line: &str) -> (Option<Signal>, Option<serde_json::Value>) {
+    let Ok(serde_json::Value::Object(m)) = serde_json::from_str::<serde_json::Value>(line.trim_start_matches('\u{feff}').trim()) else {
+        return (None, None);
+    };
+    let id = m.get("id").cloned().unwrap_or(serde_json::Value::Null);
+    if let Some(request) = m.get("command") {
+        // Глобус уже открыт: команда выносит окно вперёд.
+        return match request["id"].as_str().unwrap_or("") {
+            "globe" => (Some(Signal::Raise), Some(serde_json::json!({"ok": {"started": true, "session": true}, "id": id}))),
+            other => (None, Some(serde_json::json!({"error": format!("PlanetX: no command '{other}'"), "id": id}))),
+        };
+    }
+    if m.contains_key("event") {
+        return (Some(Signal::Event), None);
+    }
+    let id = match id {
+        serde_json::Value::String(s) => s,
+        serde_json::Value::Null => return (None, None),
+        other => other.to_string(),
+    };
+    if let Some(e) = m.get("error") {
+        let text = e.as_str().map_or_else(|| e.to_string(), str::to_string);
+        return (Some(Signal::Reply { id, result: Err(text) }), None);
+    }
+    match m.get("ok") {
+        Some(v) => (Some(Signal::Reply { id, result: Ok(v.clone()) }), None),
+        None => (None, None),
+    }
+}
+
+/// Строку JSON - в вывод сессии.
+fn write_line(out: &Mutex<Box<dyn Write + Send>>, msg: &serde_json::Value) -> Result<(), String> {
+    let mut out = out.lock().map_err(|e| e.to_string())?;
+    writeln!(out, "{msg}").and_then(|()| out.flush()).map_err(|e| e.to_string())
+}
+
+/// Поток чтения сессии: строки RustGIS - сигналами, на команды - ответ.
+fn listen(mut input: Box<dyn BufRead + Send>, out: &Mutex<Box<dyn Write + Send>>, signals: &Sender<Signal>) {
+    loop {
+        let mut line = String::new();
+        match std::io::Read::take(&mut input, MAX_LINE as u64).read_line(&mut line) {
+            Ok(0) | Err(_) => {
+                let _ = signals.send(Signal::Gone);
+                return;
+            }
+            Ok(_) => {}
+        }
+        let (signal, answer) = session_line(&line);
+        if let Some(answer) = answer
+            && write_line(out, &answer).is_err()
+        {
+            let _ = signals.send(Signal::Gone);
+            return;
+        }
+        if let Some(signal) = signal
+            && signals.send(signal).is_err()
+        {
+            return;
+        }
+    }
+}
+
+/// Проект перечитывается и без событий раз в столько секунд: событие
+/// могло потеряться.
+const SESSION_REREAD_SECONDS: f64 = 30.0;
+/// Причина конца сессии.
+pub const SESSION_GONE: &str = "RustGIS closed the plugin session";
+
+/// Сессия расширения: запросы RustGIS строками на вывод, ответы
+/// и события - сигналами потока чтения.
+pub struct Pipe {
+    out: Arc<Mutex<Box<dyn Write + Send>>>,
+    signals: Receiver<Signal>,
+    next: u64,
+    /// Было событие или проект ещё не читался.
+    dirty: bool,
+    /// Когда проект читался.
+    read_at: Option<web_time::Instant>,
+    news: Vec<News>,
+    gone: bool,
+}
+
+impl Pipe {
+    /// Запустить поток чтения сессии.
+    fn start(input: Box<dyn BufRead + Send>, output: Box<dyn Write + Send>) -> Pipe {
+        let out = Arc::new(Mutex::new(output));
+        let (tx, signals) = channel();
+        let writer = out.clone();
+        std::thread::spawn(move || listen(input, &writer, &tx));
+        Pipe { out, signals, next: 1, dirty: true, read_at: None, news: Vec::new(), gone: false }
+    }
+
+    /// Сигнал не про ответ: событие, окно вперёд, конец сессии.
+    fn note(&mut self, signal: Signal) {
+        match signal {
+            Signal::Event => self.dirty = true,
+            Signal::Raise => self.news.push(News::Raise),
+            Signal::Gone => self.gone = true,
+            Signal::Reply { .. } => {}
+        }
+    }
+
+    /// Запрос RustGIS `{"call": …, "id": …}` и его ответ. События,
+    /// пришедшие до ответа, запоминаются.
+    fn call(&mut self, op: &str, params: serde_json::Value) -> Result<serde_json::Value, String> {
+        if self.gone {
+            return Err(SESSION_GONE.to_string());
+        }
+        let id = format!("px{}", self.next);
+        self.next += 1;
+        write_line(&self.out, &serde_json::json!({"call": {"op": op, "params": params}, "id": id}))?;
+        let until = web_time::Instant::now() + Duration::from_secs(REPLY_SECONDS);
+        loop {
+            let left = until.saturating_duration_since(web_time::Instant::now());
+            match self.signals.recv_timeout(left) {
+                Ok(Signal::Reply { id: got, result }) if got == id => return result,
+                Ok(signal) => {
+                    self.note(signal);
+                    if self.gone {
+                        return Err(SESSION_GONE.to_string());
+                    }
+                }
+                Err(RecvTimeoutError::Timeout) => return Err(format!("RustGIS did not answer {op}")),
+                Err(RecvTimeoutError::Disconnected) => {
+                    self.gone = true;
+                    return Err(SESSION_GONE.to_string());
+                }
+            }
+        }
+    }
+}
+
+/// Ответ RustGIS текстом: строка как есть, прочее - JSON.
+fn answer_text(value: serde_json::Value) -> String {
+    match value {
+        serde_json::Value::String(s) => s,
+        serde_json::Value::Null => String::new(),
+        other => other.to_string(),
+    }
+}
+
+impl Channel for Pipe {
+    fn command(&mut self, command: &str, params: serde_json::Value) -> Result<String, String> {
+        self.call(command, params).map(answer_text)
+    }
+
+    /// `info.project` - та же команда, что отвечает `list_layers`.
+    fn state(&mut self) -> Result<String, String> {
+        self.read_at = Some(web_time::Instant::now());
+        self.call("info.project", serde_json::json!({"includeFields": false})).map(answer_text)
+    }
+
+    /// `host.features` отвечает GeoJSON в WGS 84 сразу, без файла.
+    fn features(&mut self, id: i64) -> Result<LayerData, String> {
+        let geojson = self.call("host.features", serde_json::json!({"layer": id}))?;
+        first_layer(geojson.to_string().into_bytes())
+    }
+
+    fn changed(&mut self) -> bool {
+        let stale = self.read_at.is_none_or(|t| t.elapsed().as_secs_f64() >= SESSION_REREAD_SECONDS);
+        std::mem::take(&mut self.dirty) || stale
+    }
+
+    /// Ждать события до seconds секунд, просыпаясь на остановку.
+    fn wait(&mut self, seconds: f64, stop: &AtomicBool) -> bool {
+        let until = web_time::Instant::now() + Duration::from_secs_f64(seconds.max(0.0));
+        while !self.gone && !self.dirty && self.news.is_empty() {
+            if stop.load(Ordering::SeqCst) {
+                return false;
+            }
+            let left = until.saturating_duration_since(web_time::Instant::now());
+            if left.is_zero() {
+                break;
+            }
+            match self.signals.recv_timeout(left.min(Duration::from_millis(50))) {
+                Ok(signal) => self.note(signal),
+                Err(RecvTimeoutError::Timeout) => {}
+                Err(RecvTimeoutError::Disconnected) => self.gone = true,
+            }
+        }
+        !stop.load(Ordering::SeqCst)
+    }
+
+    fn news(&mut self) -> Vec<News> {
+        std::mem::take(&mut self.news)
+    }
+
+    fn broken(&self) -> Option<String> {
+        self.gone.then(|| SESSION_GONE.to_string())
+    }
+}
+
+impl Relay {
+    fn open(port: u16) -> Result<Relay, String> {
         let token = std::fs::read_to_string(token_path(port)).map_err(|_| RELAY_OFF.to_string())?;
         let address = SocketAddr::from(([127, 0, 0, 1], port));
         let stream = TcpStream::connect_timeout(&address, Duration::from_secs(2)).map_err(|e| e.to_string())?;
         stream.set_read_timeout(Some(Duration::from_secs(REPLY_SECONDS))).map_err(|e| e.to_string())?;
         let _ = stream.set_nodelay(true);
         let writer = stream.try_clone().map_err(|e| e.to_string())?;
-        let mut s = Session { writer, reader: BufReader::new(stream), next: 1 };
+        let mut s = Relay { writer, reader: BufReader::new(stream), next: 1 };
         // access - чтение и запись файлов: объекты слоя идут временным
         // файлом, ответ команды длиной ограничен.
         s.send(&serde_json::json!({"jsonrpc": "2.0", "method": "rustgis/attach", "params": {"access": true, "token": token.trim(), "timeout_s": REPLY_SECONDS}}))?;
@@ -220,10 +545,6 @@ impl Session {
         let text = result["content"].as_array().and_then(|c| c.iter().find_map(|p| p["text"].as_str())).unwrap_or("").to_string();
         if result["isError"] == true { Err(text) } else { Ok(text) }
     }
-
-    fn command(&mut self, command: &str, params: serde_json::Value) -> Result<String, String> {
-        self.tool("run_command", serde_json::json!({"command": command, "params": params}))
-    }
 }
 
 /// Папка временных файлов связи.
@@ -249,27 +570,15 @@ fn slash(path: &std::path::Path) -> String {
 }
 
 /// Прочесть стиль слоя id.
-fn read_style(s: &mut Session, id: i64) -> Result<Style, String> {
+fn read_style(s: &mut dyn Channel, id: i64) -> Result<Style, String> {
     let path = temp_dir().join(format!("style-{id}.json"));
     s.command("share.webStyle", serde_json::json!({"layer": id, "path": slash(&path)}))?;
     let bytes = take_file(&path)?;
     Ok(data::rustgis::parse_style(&String::from_utf8_lossy(&bytes)))
 }
 
-/// Прочесть объекты слоя id.
-fn read_layer(s: &mut Session, id: i64) -> Result<LayerData, String> {
-    let path = temp_dir().join(format!("layer-{id}.geojson"));
-    s.command("data.convert", serde_json::json!({"layer": id, "format": "geojson", "path": slash(&path)}))?;
-    let bytes = take_file(&path)?;
-    let mut layers = data::layers::read(bytes, "layer.geojson")?;
-    if layers.is_empty() {
-        return Err("no features".to_string());
-    }
-    Ok(layers.remove(0))
-}
-
 /// Выполнить просьбу окна. Ok - текст для строки сообщения.
-fn perform(s: &mut Session, ask: Ask) -> Result<String, String> {
+fn perform(s: &mut dyn Channel, ask: Ask) -> Result<String, String> {
     match ask {
         Ask::GoTo { lat, lon, scale } => s.command("map.goToXY", serde_json::json!({"lon": lon, "lat": lat, "scale": scale})).map(|_| String::new()),
         Ask::Select { layer, rows } => s.command("select.rows", serde_json::json!({"layer": layer, "rows": rows, "mode": "new"})).map(|_| String::new()),
@@ -299,7 +608,7 @@ static CUTS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0)
 /// `imagery.hostedImagery` распаковывается во временную папку, тайлы
 /// `z/x/y.png` берёт глобус. Ok - шаблон адреса file:/// и глубший
 /// уровень.
-fn cut_raster(s: &mut Session, layer: i64, name: &str, max_zoom: u32) -> Result<(String, u32), String> {
+fn cut_raster(s: &mut dyn Channel, layer: i64, name: &str, max_zoom: u32) -> Result<(String, u32), String> {
     let zip_path = temp_dir().join(format!("raster-{layer}.zip"));
     s.command("imagery.hostedImagery", serde_json::json!({"layer": name, "path": slash(&zip_path), "minZoom": 0, "maxZoom": max_zoom}))?;
     let bytes = take_file(&zip_path)?;
@@ -364,7 +673,7 @@ fn tile_name(name: &str) -> Option<(u32, u32, u32)> {
 }
 
 /// Слой текстом GeoJSON в проект RustGIS. Строка ретранслятора - до 64 МБ.
-fn add_text(s: &mut Session, name: &str, geojson: &str) -> Result<(), String> {
+fn add_text(s: &mut dyn Channel, name: &str, geojson: &str) -> Result<(), String> {
     if geojson.len() > MAX_OUT {
         return Err(format!("{name}: the layer is larger than {} MB", MAX_OUT >> 20));
     }
@@ -375,7 +684,7 @@ fn add_text(s: &mut Session, name: &str, geojson: &str) -> Result<(), String> {
 /// Расчёт - в проект RustGIS, `results.add_group` модуля: слои, затем
 /// подгруппа с ними в группе top. Группы top ещё нет - она заводится.
 /// Ok - название подгруппы.
-fn perform_result(s: &mut Session, top: &str, group: &str, vectors: &[(String, String)], rasters: &[(String, String)]) -> Result<String, String> {
+fn perform_result(s: &mut dyn Channel, top: &str, group: &str, vectors: &[(String, String)], rasters: &[(String, String)]) -> Result<String, String> {
     let mut names = Vec::new();
     for (name, geojson) in vectors {
         add_text(s, name, geojson)?;
@@ -406,6 +715,93 @@ fn nap(seconds: f64, stop: &AtomicBool) -> bool {
     !stop.load(Ordering::SeqCst)
 }
 
+/// Связь через канал s, пока он жив: просьбы окна, состояние проекта,
+/// объекты и стили слоёв. Ok - поток остановлен, Err - связь оборвалась.
+fn serve(s: &mut dyn Channel, asks: &Receiver<Ask>, stop: &AtomicBool, tell: &dyn Fn(News)) -> Result<(), String> {
+    let mut data_keys: HashMap<i64, String> = HashMap::new();
+    let mut styles: HashMap<i64, (String, Style)> = HashMap::new();
+    loop {
+        loop {
+            match asks.try_recv() {
+                Ok(Ask::AddResult { top, group, vectors, rasters }) => match perform_result(s, &top, &group, &vectors, &rasters) {
+                    Ok(name) => tell(News::Added(name)),
+                    Err(e) => tell(News::Failed(e)),
+                },
+                Ok(Ask::Raster { layer, name, max_zoom }) => match cut_raster(s, layer, &name, max_zoom) {
+                    Ok((template, max_zoom)) => tell(News::Tiles { layer, template, max_zoom }),
+                    Err(error) => tell(News::CutFailed { layer, error: format!("{name}: {error}") }),
+                },
+                Ok(ask) => match perform(s, ask) {
+                    Ok(text) => {
+                        if !text.is_empty() {
+                            tell(News::Done(text));
+                        }
+                    }
+                    Err(e) => tell(News::Failed(e)),
+                },
+                Err(TryRecvError::Empty) => break,
+                Err(TryRecvError::Disconnected) => return Ok(()),
+            }
+        }
+        for n in s.news() {
+            tell(n);
+        }
+        if let Some(e) = s.broken() {
+            return Err(e);
+        }
+        if s.changed() {
+            let text = s.state()?;
+            if let Some(state) = data::rustgis::parse_state(&text) {
+                let drawn: Vec<data::rustgis::Layer> = state.layers.iter().filter(|l| l.drawn()).cloned().collect();
+                data_keys.retain(|id, _| drawn.iter().any(|l| l.id == *id));
+                styles.retain(|id, _| drawn.iter().any(|l| l.id == *id));
+                tell(News::State(state));
+                for layer in drawn {
+                    let style_key = layer.style_key();
+                    let style_new = styles.get(&layer.id).is_none_or(|(k, _)| *k != style_key);
+                    let data_new = data_keys.get(&layer.id).is_none_or(|k| *k != layer.data_key());
+                    if !style_new && !data_new {
+                        continue;
+                    }
+                    if style_new {
+                        let style = read_style(s, layer.id).unwrap_or_default();
+                        styles.insert(layer.id, (style_key, style));
+                    }
+                    match s.features(layer.id) {
+                        Ok(data) => {
+                            let style = styles.get(&layer.id).map(|(_, st)| st.clone()).unwrap_or_default();
+                            tell(News::Layer { id: layer.id, data: Box::new(data), style: Box::new(style) });
+                        }
+                        Err(e) => tell(News::Failed(format!("{}: {e}", layer.name))),
+                    }
+                    // Слой, который не прочёлся, второй раз не просится,
+                    // пока не изменится.
+                    data_keys.insert(layer.id, layer.data_key());
+                }
+            }
+        }
+        if !s.wait(POLL_SECONDS, stop) {
+            return Ok(());
+        }
+    }
+}
+
+/// Связь через сессию расширения. Сессия кончилась - окну весть
+/// [`News::Gone`], второй сессии не будет.
+fn serve_session(mut pipe: Pipe, asks: &Receiver<Ask>, news: &Sender<News>, stop: &AtomicBool, wake: &(dyn Fn() + Send + Sync)) {
+    let tell = |n: News| {
+        let _ = news.send(n);
+        wake();
+    };
+    let _ = std::fs::create_dir_all(temp_dir());
+    tell(News::Connected);
+    if let Err(e) = serve(&mut pipe, asks, stop, &tell) {
+        tell(News::Gone(e));
+    }
+}
+
+/// Связь через ретранслятор MCP: подключение, пока он не включён,
+/// и снова после обрыва.
 fn worker(asks: &Receiver<Ask>, news: &Sender<News>, stop: &AtomicBool, wake: &(dyn Fn() + Send + Sync)) {
     let tell = |n: News| {
         let _ = news.send(n);
@@ -414,7 +810,7 @@ fn worker(asks: &Receiver<Ask>, news: &Sender<News>, stop: &AtomicBool, wake: &(
     let _ = std::fs::create_dir_all(temp_dir());
     let mut last_wait = String::new();
     while !stop.load(Ordering::SeqCst) {
-        let mut s = match Session::open(port()) {
+        let mut s = match Relay::open(port()) {
             Ok(s) => s,
             Err(e) => {
                 if e != last_wait {
@@ -431,72 +827,10 @@ fn worker(asks: &Receiver<Ask>, news: &Sender<News>, stop: &AtomicBool, wake: &(
         };
         last_wait.clear();
         tell(News::Connected);
-        let mut data_keys: HashMap<i64, String> = HashMap::new();
-        let mut styles: HashMap<i64, (String, Style)> = HashMap::new();
-        let failed = loop {
-            loop {
-                match asks.try_recv() {
-                    Ok(Ask::AddResult { top, group, vectors, rasters }) => match perform_result(&mut s, &top, &group, &vectors, &rasters) {
-                        Ok(name) => tell(News::Added(name)),
-                        Err(e) => tell(News::Failed(e)),
-                    },
-                    Ok(Ask::Raster { layer, name, max_zoom }) => match cut_raster(&mut s, layer, &name, max_zoom) {
-                        Ok((template, max_zoom)) => tell(News::Tiles { layer, template, max_zoom }),
-                        Err(error) => tell(News::CutFailed { layer, error: format!("{name}: {error}") }),
-                    },
-                    Ok(ask) => match perform(&mut s, ask) {
-                        Ok(text) => {
-                            if !text.is_empty() {
-                                tell(News::Done(text));
-                            }
-                        }
-                        Err(e) => tell(News::Failed(e)),
-                    },
-                    Err(TryRecvError::Empty) => break,
-                    Err(TryRecvError::Disconnected) => return,
-                }
-            }
-            let text = match s.tool("list_layers", serde_json::json!({"include_fields": false})) {
-                Ok(t) => t,
-                Err(e) => break e,
-            };
-            let Some(state) = data::rustgis::parse_state(&text) else {
-                if !nap(POLL_SECONDS, stop) {
-                    return;
-                }
-                continue;
-            };
-            let drawn: Vec<data::rustgis::Layer> = state.layers.iter().filter(|l| l.drawn()).cloned().collect();
-            data_keys.retain(|id, _| drawn.iter().any(|l| l.id == *id));
-            styles.retain(|id, _| drawn.iter().any(|l| l.id == *id));
-            tell(News::State(state));
-            for layer in drawn {
-                let style_key = layer.style_key();
-                let style_new = styles.get(&layer.id).is_none_or(|(k, _)| *k != style_key);
-                let data_new = data_keys.get(&layer.id).is_none_or(|k| *k != layer.data_key());
-                if !style_new && !data_new {
-                    continue;
-                }
-                if style_new {
-                    let style = read_style(&mut s, layer.id).unwrap_or_default();
-                    styles.insert(layer.id, (style_key, style));
-                }
-                match read_layer(&mut s, layer.id) {
-                    Ok(data) => {
-                        let style = styles.get(&layer.id).map(|(_, st)| st.clone()).unwrap_or_default();
-                        tell(News::Layer { id: layer.id, data: Box::new(data), style: Box::new(style) });
-                    }
-                    Err(e) => tell(News::Failed(format!("{}: {e}", layer.name))),
-                }
-                // Слой, который не прочёлся, второй раз не просится, пока
-                // не изменится.
-                data_keys.insert(layer.id, layer.data_key());
-            }
-            if !nap(POLL_SECONDS, stop) {
-                return;
-            }
-        };
-        tell(News::Waiting(failed));
+        match serve(&mut s, asks, stop, &tell) {
+            Ok(()) => return,
+            Err(failed) => tell(News::Waiting(failed)),
+        }
     }
 }
 
@@ -873,12 +1207,12 @@ pub fn paint(data: &LayerData, style: &Style, n: usize) -> (Vec<[u8; 3]>, crate:
 
 /// Команда расширения RustGIS «Глобус PlanetX» (`plugin.json` расширения
 /// RustPlanetX): программа - расширение-процесс RustGIS, `planetx-lite
-/// rustgis-plugin`. Строка запроса RustGIS - на input, ответ - строками
-/// JSON на output: сообщение строки состояния RustGIS запросом
-/// `host.notify` и итог. launch запускает глобус со связью.
-pub fn plugin(input: &mut dyn BufRead, output: &mut dyn Write, relay_on: bool, launch: &dyn Fn() -> Result<(), String>) -> Result<(), String> {
-    let mut line = String::new();
-    input.read_line(&mut line).map_err(|e| e.to_string())?;
+/// rustgis-plugin`, RustGIS без сессий ([`Hello::Request`]): программа
+/// запускается на каждую команду. line - строка запроса RustGIS, уже
+/// прочитанная, дальше строки RustGIS - на input, ответ - строками JSON
+/// на output: сообщение строки состояния RustGIS запросом `host.notify`
+/// и итог. launch запускает глобус со связью отдельным процессом.
+pub fn plugin(line: &str, input: &mut dyn BufRead, output: &mut dyn Write, relay_on: bool, launch: &dyn Fn() -> Result<(), String>) -> Result<(), String> {
     // Строка может начинаться с метки порядка байтов UTF-8.
     let request: serde_json::Value = serde_json::from_str(line.trim_start_matches('\u{feff}')).map_err(|e| e.to_string())?;
     let lang = request["lang"].as_str().and_then(crate::i18n::Lang::from_code).unwrap_or(crate::i18n::Lang::EN);
@@ -909,10 +1243,11 @@ mod tests {
     #[test]
     fn plugin_protocol() {
         let run = |request: &str, relay: bool, ok: bool| -> String {
-            let mut input = std::io::Cursor::new(format!("{request}\n{{\"ok\":null}}\n"));
+            assert_eq!(hello(request), Hello::Request);
+            let mut input = std::io::Cursor::new("{\"ok\":null}\n".to_string());
             let mut out = Vec::new();
             let launch = move || if ok { Ok(()) } else { Err("no file".to_string()) };
-            let _ = plugin(&mut input, &mut out, relay, &launch);
+            let _ = plugin(request, &mut input, &mut out, relay, &launch);
             String::from_utf8_lossy(&out).into_owned()
         };
         let started = run(r#"{"abi":1,"kind":"command","id":"globe","params":{},"lang":"ru"}"#, true, true);
@@ -923,6 +1258,156 @@ mod tests {
         assert!(run(r#"{"id":"globe","lang":"en"}"#, false, true).contains("MCP Relay"));
         assert!(run(r#"{"id":"globe"}"#, true, false).starts_with("{\"error\""));
         assert!(run(r#"{"id":"other"}"#, true, true).starts_with("{\"error\""));
+    }
+
+    /// Первая строка RustGIS: сессия или запрос одного запуска.
+    #[test]
+    fn hello_line() {
+        assert_eq!(hello("\u{feff}{\"session\":{\"abi\":1,\"plugin\":\"rustplanetx\",\"rustgis\":\"0.6.0\",\"lang\":\"ru\"}}\n"), Hello::Session { lang: "ru".into() });
+        assert_eq!(hello(r#"{"abi":1,"kind":"command","id":"globe","params":{}}"#), Hello::Request);
+        assert_eq!(hello(r#"{"session":true}"#), Hello::Request);
+        assert_eq!(hello("not json"), Hello::Request);
+    }
+
+    /// Строки RustGIS в сессии: команда получает ответ со своим номером,
+    /// событие и ответ на запрос - сигналы, прочее - пропуск.
+    #[test]
+    fn session_lines() {
+        let (signal, answer) = session_line(r#"{"command":{"abi":1,"kind":"command","id":"globe","params":{}},"id":7}"#);
+        assert_eq!(signal, Some(Signal::Raise));
+        assert_eq!(answer, Some(serde_json::json!({"ok": {"started": true, "session": true}, "id": 7})));
+        let (signal, answer) = session_line(r#"{"command":{"id":"other"},"id":8}"#);
+        assert_eq!(signal, None);
+        assert!(answer.is_some_and(|a| a["error"].is_string() && a["id"] == 8));
+        assert_eq!(session_line(r#"{"event":"layers"}"#), (Some(Signal::Event), None));
+        assert_eq!(session_line(r#"{"ok":{"a":1},"id":"px3"}"#), (Some(Signal::Reply { id: "px3".into(), result: Ok(serde_json::json!({"a": 1})) }), None));
+        assert_eq!(session_line(r#"{"error":"no edit","id":"px4"}"#), (Some(Signal::Reply { id: "px4".into(), result: Err("no edit".into()) }), None));
+        // Ответ без номера - не наш, строки библиотек - не протокол.
+        assert_eq!(session_line(r#"{"ok":1}"#), (None, None));
+        assert_eq!(session_line("loading tiles..."), (None, None));
+        assert_eq!(session_line("[1,2]"), (None, None));
+    }
+
+    /// Ввод сессии из канала строк: закрытый канал - конец ввода.
+    struct Lines {
+        rx: Receiver<String>,
+        buf: Vec<u8>,
+        pos: usize,
+    }
+
+    impl Read for Lines {
+        fn read(&mut self, out: &mut [u8]) -> std::io::Result<usize> {
+            if self.pos >= self.buf.len() {
+                match self.rx.recv() {
+                    Ok(s) => {
+                        self.buf = s.into_bytes();
+                        self.pos = 0;
+                    }
+                    Err(_) => return Ok(0),
+                }
+            }
+            let n = out.len().min(self.buf.len() - self.pos);
+            out[..n].copy_from_slice(&self.buf[self.pos..self.pos + n]);
+            self.pos += n;
+            Ok(n)
+        }
+    }
+
+    /// Вывод сессии в канал строк.
+    struct Out(Sender<String>, Vec<u8>);
+
+    impl Write for Out {
+        fn write(&mut self, data: &[u8]) -> std::io::Result<usize> {
+            self.1.extend_from_slice(data);
+            while let Some(i) = self.1.iter().position(|b| *b == b'\n') {
+                let line: Vec<u8> = self.1.drain(..=i).collect();
+                let _ = self.0.send(String::from_utf8_lossy(&line).into_owned());
+            }
+            Ok(data.len())
+        }
+
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+
+    /// Ответ имитации RustGIS на запрос программы.
+    fn fake_rustgis(line: &str) -> Option<serde_json::Value> {
+        let msg: serde_json::Value = serde_json::from_str(line).ok()?;
+        let id = msg["id"].clone();
+        Some(match msg["call"]["op"].as_str()? {
+            "info.project" => serde_json::json!({"ok": {
+                "name": "Atlas", "path": null,
+                "center": {"lat": 58.0, "lon": 56.0}, "extent": [55.0, 57.5, 57.0, 58.5], "scale": 1.0e6,
+                "layers": [{"id": 1, "name": "Cities", "type": "Point", "visible": true, "features": 1}]
+            }, "id": id}),
+            "host.features" => serde_json::json!({"ok": {"type": "FeatureCollection", "features": [
+                {"type": "Feature", "row": 0, "geometry": {"type": "Point", "coordinates": [56.2, 58.0]}, "properties": {"name": "Perm"}}
+            ]}, "id": id}),
+            // Стиль файлом без разрешения files - отказ, слой рисуется
+            // цветом по кругу.
+            _ => serde_json::json!({"error": "no permission", "id": id}),
+        })
+    }
+
+    /// Сессия расширения на имитации RustGIS: состояние и объекты слоя
+    /// без ретранслятора, проект перечитывается по событию, повторная
+    /// команда «globe» выносит окно вперёд, закрытый ввод закрывает окно.
+    #[test]
+    fn session_serves_the_map() {
+        let (to_program, program_in) = channel::<String>();
+        let (program_out, from_program) = channel::<String>();
+        let input: Box<dyn BufRead + Send> = Box::new(BufReader::new(Lines { rx: program_in, buf: Vec::new(), pos: 0 }));
+        let output: Box<dyn Write + Send> = Box::new(Out(program_out, Vec::new()));
+        let (asks_tx, asks) = channel::<Ask>();
+        let (news_tx, news) = channel::<News>();
+        let stop = Arc::new(AtomicBool::new(false));
+        let flag = stop.clone();
+        let worker = std::thread::spawn(move || serve_session(Pipe::start(input, output), &asks, &news_tx, &flag, &|| {}));
+        let wait = Duration::from_secs(10);
+        // Имитация RustGIS отвечает, пока не придёт весть what.
+        let answer_until = |to: Option<&Sender<String>>, what: &dyn Fn(&News) -> bool| -> (usize, bool) {
+            let mut states = 0;
+            loop {
+                while let Ok(line) = from_program.recv_timeout(Duration::from_millis(20)) {
+                    if let (Some(reply), Some(to)) = (fake_rustgis(&line), to) {
+                        let _ = to.send(format!("{reply}\n"));
+                    }
+                }
+                match news.recv_timeout(Duration::from_millis(20)) {
+                    Ok(n) => {
+                        states += usize::from(matches!(n, News::State(_)));
+                        if what(&n) {
+                            return (states, true);
+                        }
+                    }
+                    Err(RecvTimeoutError::Timeout) => {}
+                    Err(RecvTimeoutError::Disconnected) => return (states, false),
+                }
+            }
+        };
+        let started = web_time::Instant::now();
+        let (states, got) = answer_until(Some(&to_program), &|n| matches!(n, News::Layer { id: 1, data, .. } if data.items.len() == 1));
+        assert!(got && states == 1, "{states}");
+        assert!(started.elapsed() < wait);
+        // Событие - проект перечитывается.
+        let _ = to_program.send("{\"event\":\"layers\"}\n".into());
+        let (states, got) = answer_until(Some(&to_program), &|n| matches!(n, News::State(_)));
+        assert!(got && states == 1);
+        // Просьба окна - запрос RustGIS со своим номером.
+        asks_tx.send(Ask::Visibility { layer: 1, visible: false }).unwrap_or_default();
+        let call = from_program.recv_timeout(wait).unwrap_or_default();
+        assert!(call.contains("\"layer.visibility\"") && call.contains("\"id\":\"px"), "{call}");
+        let _ = to_program.send(format!("{}\n", serde_json::json!({"ok": null, "id": serde_json::from_str::<serde_json::Value>(&call).unwrap_or_default()["id"]})));
+        // Команда «globe» снова: ответ с её номером, окно вперёд.
+        let _ = to_program.send("{\"command\":{\"id\":\"globe\",\"params\":{}},\"id\":2}\n".into());
+        let (_, got) = answer_until(Some(&to_program), &|n| matches!(n, News::Raise));
+        assert!(got);
+        // RustGIS закрыт - сессия кончилась, окно закрывается.
+        drop(to_program);
+        let (_, got) = answer_until(None, &|n| matches!(n, News::Gone(_)));
+        assert!(got);
+        assert!(worker.join().is_ok());
     }
 
     fn view(lat: f64, lon: f64, half: f64) -> data::rustgis::View {

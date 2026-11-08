@@ -34,7 +34,8 @@
 //!
 //! `--rustgis` - открыть программу со связью с открытым RustGIS
 //! (`ui::rustgislink`), у RustPlanetX связь есть всегда. `rustgis-plugin` -
-//! команда расширения RustGIS, её запускает RustGIS.
+//! расширение RustGIS, его запускает RustGIS. В сессии расширения глобус
+//! открывается в этом же процессе, связь - его stdin и stdout.
 
 use std::process::ExitCode;
 use std::sync::{Arc, Mutex};
@@ -125,21 +126,35 @@ pub fn main(edition: Edition) -> ExitCode {
             }
         };
     }
-    // `rustgis-plugin` - команда расширения RustGIS: запрос RustGIS
-    // на stdin, ответ на stdout, глобус со связью - отдельным процессом
-    // (`ui::rustgislink::plugin`).
-    if args.get(1).is_some_and(|a| a == "rustgis-plugin") {
-        let relay_on = ui::rustgislink::token_path(ui::rustgislink::port()).is_file();
-        let stdin = std::io::stdin();
-        let mut input = stdin.lock();
-        let mut output = std::io::stdout();
-        return match ui::rustgislink::plugin(&mut input, &mut output, relay_on, &launch_linked) {
-            Ok(()) => ExitCode::SUCCESS,
-            Err(e) => {
-                eprintln!("{title} RustGIS: {e}");
-                ExitCode::FAILURE
+    // `rustgis-plugin` - расширение RustGIS. Сессия (`"session": true`,
+    // RustGIS с сессиями) - глобус в этом процессе, связь - его stdin
+    // и stdout. Иначе - команда одного запуска: запрос RustGIS на stdin,
+    // ответ на stdout, глобус со связью через ретранслятор - отдельным
+    // процессом (`ui::rustgislink::plugin`).
+    let plugin_session = args.get(1).is_some_and(|a| a == "rustgis-plugin");
+    if plugin_session {
+        let mut first = String::new();
+        if let Err(e) = std::io::BufRead::read_line(&mut std::io::stdin().lock(), &mut first) {
+            eprintln!("{title} RustGIS: {e}");
+            return ExitCode::FAILURE;
+        }
+        match ui::rustgislink::hello(&first) {
+            // Строки после первой читает поток связи: буфер stdin общий.
+            ui::rustgislink::Hello::Session { .. } => ui::rustgislink::set_session(Box::new(std::io::BufReader::new(std::io::stdin())), Box::new(std::io::stdout())),
+            ui::rustgislink::Hello::Request => {
+                let relay_on = ui::rustgislink::token_path(ui::rustgislink::port()).is_file();
+                let stdin = std::io::stdin();
+                let mut input = stdin.lock();
+                let mut output = std::io::stdout();
+                return match ui::rustgislink::plugin(&first, &mut input, &mut output, relay_on, &launch_linked) {
+                    Ok(()) => ExitCode::SUCCESS,
+                    Err(e) => {
+                        eprintln!("{title} RustGIS: {e}");
+                        ExitCode::FAILURE
+                    }
+                };
             }
-        };
+        }
     }
     let check_arg = args.windows(2).find(|w| w[0] == "--check").map(|w| w[1].clone());
     let scenario = check_arg.as_deref().and_then(Scenario::from_name);
@@ -179,7 +194,8 @@ pub fn main(edition: Edition) -> ExitCode {
     let plain: Vec<&String> = args
         .iter()
         .enumerate()
-        .skip(1)
+        // `rustgis-plugin` - не файл.
+        .skip(if plugin_session { 2 } else { 1 })
         .filter(|(i, a)| !a.starts_with("--") && !args.get(i - 1).is_some_and(|prev| VALUED.contains(&prev.as_str())))
         .map(|(_, a)| a)
         .collect();
@@ -267,7 +283,7 @@ pub fn main(edition: Edition) -> ExitCode {
                 app = app.with_mcp();
             }
             // У RustPlanetX связь с RustGIS есть всегда, у Lite - по ключу.
-            if edition.linked() || args.iter().any(|a| a == "--rustgis") {
+            if edition.linked() || plugin_session || args.iter().any(|a| a == "--rustgis") {
                 app = app.with_rustgis();
             }
             if let Some(path) = shot {

@@ -139,6 +139,19 @@ impl LiteApp {
                     self.open_message = Some(trf(self.lang, "RustGIS: {error}", &[("error", &error)]));
                 }
                 News::Failed(why) => self.open_message = Some(trf(self.lang, "RustGIS: {error}", &[("error", &why)])),
+                // Команда «Глобус PlanetX» при открытом глобусе.
+                News::Raise => {
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(false));
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+                }
+                // Сессия расширения кончилась: RustGIS закрыт или
+                // остановил расширение, глобус закрывается с ним.
+                News::Gone(_) => {
+                    if let Some(sync) = &mut self.rustgis {
+                        sync.connected = false;
+                    }
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                }
             }
         }
         crate::datalayers::RUSTGIS_LINKED.store(self.rustgis.as_ref().is_some_and(|s| s.connected), std::sync::atomic::Ordering::Relaxed);
