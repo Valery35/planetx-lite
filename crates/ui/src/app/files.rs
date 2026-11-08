@@ -82,6 +82,37 @@ impl LiteApp {
         false
     }
 
+    /// Слой сцены I3S по ссылке link в раздел «Слои», камера - к его
+    /// охвату. Узлы и куски приходят запросами по мере надобности.
+    pub(super) fn open_i3s(&mut self, bytes: &[u8], link: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
+        let layer = match scene::i3s::layer(bytes) {
+            Ok(l) => l,
+            Err(e) => {
+                self.open_message = Some(trf(self.lang, "The file did not open: {name}: {e}", &[("name", link), ("e", &e.0)]));
+                return Err(e.0);
+            }
+        };
+        let title = if layer.name.is_empty() { "I3S".to_string() } else { layer.name.clone() };
+        let spots = layer.extent.map(|[w, s, e, n]| vec![((s + n) / 2.0, (w + e) / 2.0), (s, w), (s, e), (n, w), (n, e)]).unwrap_or_default();
+        let index = scene::i3s::Index::new(layer, self.nav.camera.ellipsoid, crate::tilesets::THRESHOLD);
+        let origin = crate::tilesets::Origin::Link(link.to_string());
+        let restoring = self.tiles_restoring.remove(origin.text());
+        let id = self.tilesets.add_i3s(crate::tilesets::I3s::new(index), crate::tilesets::scene_server_source(link), &title, Some(origin), spots.clone());
+        if let Some(visible) = restoring {
+            self.tilesets.apply(id, crate::tilesets::Act::Visible(visible));
+        }
+        self.open_message = Some(trf(self.lang, "I3S scene layer: {title}.", &[("title", &title)]));
+        let camera = &self.nav.camera;
+        let pose = marks::fit_points(&spots, camera.fov_y, camera.aspect());
+        if let Some(pose) = pose.clone().filter(|_| restoring.is_none() && (fly.is_some() || !self.keep_pose)) {
+            match fly {
+                Some(now) => crate::input::fly(&mut self.nav, pose, now),
+                None => self.nav.show(pose),
+            }
+        }
+        Ok(pose)
+    }
+
     /// Набор 3D Tiles файла name в раздел «Слои», камера - к нему. Архив
     /// несёт куски в себе. У tileset.json куски берутся в программе из
     /// папки последнего открытия, у страницы их нет - нужен архив.
@@ -345,7 +376,7 @@ impl LiteApp {
     /// открывает `?scene=адрес`. Сцены из нескольких вызовов
     /// открываются по порядку.
     pub fn with_scene_url(mut self, url: &str) -> Self {
-        self.url_queue.push_back(url.to_string());
+        self.url_queue.push_back(crate::tilesets::scene_server_link(url));
         if self.fetching.is_none() {
             self.next_scene_url();
         }
@@ -367,7 +398,7 @@ impl LiteApp {
     /// Открыть файл по ссылке из строки поиска: сцену, KML, набор
     /// 3D Tiles. Ссылка встаёт в очередь сцен из ссылки.
     pub(super) fn open_link(&mut self, url: &str) {
-        self.url_queue.push_back(url.to_string());
+        self.url_queue.push_back(crate::tilesets::scene_server_link(url));
         if self.fetching.is_none() {
             self.next_scene_url();
         }
@@ -569,6 +600,17 @@ impl LiteApp {
         // слоёв: у них тоже .zip и .json.
         if (lower.ends_with(".zip") && scene::tiles3d::zip_has_tileset(bytes)) || (lower.ends_with(".json") && scene::tiles3d::is_tileset(bytes)) {
             return self.open_tiles(bytes, name, fly);
+        }
+        // Слой сцены I3S или сервис SceneServer по ссылке.
+        if let Some(link) = self.fetching_url.clone().filter(|u| u.contains("/SceneServer")) {
+            if scene::i3s::is_layer(bytes) {
+                return self.open_i3s(bytes, &link, fly);
+            }
+            if let Some(first) = scene::i3s::service_layers(bytes).first() {
+                let layer = crate::tilesets::scene_server_layer(&link, *first);
+                self.url_queue.push_front(layer);
+                return Ok(None);
+            }
         }
         if data::layers::is_vector(name) && !lower.ends_with(".kmz") {
             return self.open_vector_file(bytes, name, fly);

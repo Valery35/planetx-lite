@@ -91,6 +91,32 @@ impl Source {
     }
 }
 
+/// Ссылка на сервис или слой `SceneServer` с ответом в JSON: без `f=json`
+/// служба ArcGIS отдаёт страницу HTML. Прочие ссылки - как есть.
+pub fn scene_server_link(url: &str) -> String {
+    if !url.contains("/SceneServer") || url.contains("f=") || url.contains("/nodepages") {
+        return url.to_string();
+    }
+    let (path, query) = url.split_once('?').map_or((url, ""), |(p, q)| (p, q));
+    let path = path.trim_end_matches('/');
+    if query.is_empty() { format!("{path}?f=json") } else { format!("{path}?{query}&f=json") }
+}
+
+/// Ссылка на слой number сервиса `SceneServer` по ссылке на сервис.
+pub fn scene_server_layer(service: &str, number: usize) -> String {
+    let (path, query) = service.split_once('?').map_or((service, ""), |(p, q)| (p, q));
+    let link = format!("{}/layers/{number}", path.trim_end_matches('/'));
+    scene_server_link(&if query.is_empty() { link } else { format!("{link}?{query}") })
+}
+
+/// Источник файлов слоя I3S: папка слоя и запрос без `f=json`, ключ
+/// доступа `token` идёт с каждым файлом.
+pub fn scene_server_source(layer: &str) -> Source {
+    let layer = layer.split('#').next().unwrap_or(layer);
+    let (path, query) = layer.split_once('?').map_or((layer, ""), |(p, q)| (p, q));
+    let query: Vec<&str> = query.split('&').filter(|p| !p.is_empty() && !p.starts_with("f=")).collect();
+    Source::Url { base: format!("{}/", path.trim_end_matches('/')), query: query.join("&") }
+}
 /// Ключ списка наборов в хранилище программы.
 pub const KEY: &str = "tilesets";
 
@@ -151,6 +177,23 @@ struct Loaded {
     used: u64,
 }
 
+/// Слой сцены I3S: узлы страниц, запросы страниц и текстур. Геометрия
+/// узла приходит обычным запросом куска, текстура - вслед за ней.
+pub struct I3s {
+    index: scene::i3s::Index,
+    pages: Vec<(usize, Box<dyn net::Request>)>,
+    /// Тайл, байты его геометрии и запрос текстуры.
+    textures: Vec<(usize, Vec<u8>, Box<dyn net::Request>)>,
+    /// Страницы, которые не прочлись.
+    bad_pages: usize,
+}
+
+impl I3s {
+    pub fn new(index: scene::i3s::Index) -> Self {
+        Self { index, pages: Vec::new(), textures: Vec::new(), bad_pages: 0 }
+    }
+}
+
 /// Набор на глобусе.
 pub struct Set {
     pub id: u64,
@@ -169,6 +212,8 @@ pub struct Set {
     pub spots: Vec<(f64, f64)>,
     /// Откуда набор открыт. None - из памяти, при запуске не открывается.
     pub origin: Option<Origin>,
+    /// Слой I3S, у набора 3D Tiles - None.
+    i3s: Option<I3s>,
 }
 
 impl Set {
@@ -179,21 +224,12 @@ impl Set {
 
     /// Количество кусков и внешних наборов, которые не прочлись.
     pub fn skipped(&self) -> usize {
-        self.failed.len() + self.tree.skipped.len()
+        self.failed.len() + self.tree.skipped.len() + self.i3s.as_ref().map_or(0, |l| l.bad_pages)
     }
 
-    /// Разобрать байты файла тайла n: внешний набор подшивается к дереву,
-    /// кусок ложится в видеокарту. Не прочёлся - тайл в «не прочлись».
-    fn receive(&mut self, n: usize, bytes: &[u8], globe: &mut Globe, ellipsoid: &Ellipsoid, frame: u64) {
-        if self.tree.is_external(n) {
-            if self.tree.graft(n, bytes).is_err() {
-                self.failed.insert(n);
-            }
-            return;
-        }
-        let source = &self.source;
-        let piece = self.tree.piece(n, bytes, &|p| source.get(p));
-        match piece.ok().and_then(|p| mesh(&p.parts, &p.pictures, ellipsoid)) {
+    /// Кусок в видеокарту, не прочёлся - тайл в «не прочлись».
+    fn place(&mut self, n: usize, piece: Option<scene::tiles3d::Piece>, globe: &mut Globe, ellipsoid: &Ellipsoid, frame: u64) {
+        match piece.and_then(|p| mesh(&p.parts, &p.pictures, ellipsoid)) {
             Some(m) => {
                 globe.add_tile(key(self.id, n), &m);
                 self.loaded.insert(n, Loaded { bytes: mesh_bytes(&m), mesh: m, used: frame });
@@ -202,6 +238,85 @@ impl Set {
                 self.failed.insert(n);
             }
         }
+    }
+
+    /// Разобрать байты файла тайла n: внешний набор подшивается к дереву,
+    /// кусок ложится в видеокарту. Не прочёлся - тайл в «не прочлись».
+    /// У слоя I3S это геометрия: за ней просится текстура узла.
+    fn receive(&mut self, n: usize, bytes: &[u8], globe: &mut Globe, ellipsoid: &Ellipsoid, frame: u64, request: &dyn Fn(u64) -> Box<dyn net::Request>) {
+        if let Some(layer) = &mut self.i3s {
+            match layer.index.texture_path(n).and_then(|p| self.source.address(&p)) {
+                Some(address) => {
+                    let r = request(ANSWER_LIMIT);
+                    r.start(&address);
+                    layer.textures.push((n, bytes.to_vec(), r));
+                }
+                None => {
+                    let piece = layer.index.piece(n, bytes, None).ok();
+                    self.place(n, piece, globe, ellipsoid, frame);
+                }
+            }
+            return;
+        }
+        if self.tree.is_external(n) {
+            if self.tree.graft(n, bytes).is_err() {
+                self.failed.insert(n);
+            }
+            return;
+        }
+        let source = &self.source;
+        let piece = self.tree.piece(n, bytes, &|p| source.get(p)).ok();
+        self.place(n, piece, globe, ellipsoid, frame);
+    }
+
+    /// Шаг слоя I3S: пришедшие страницы ложатся в дерево, пришедшие
+    /// текстуры - в куски, нужные виду страницы просятся.
+    fn step_i3s(&mut self, view: &View<'_>, globe: &mut Globe, ellipsoid: &Ellipsoid, frame: u64, request: &dyn Fn(u64) -> Box<dyn net::Request>) {
+        let Some(layer) = &mut self.i3s else {
+            return;
+        };
+        let mut i = 0;
+        while i < layer.pages.len() {
+            let Some(answer) = layer.pages[i].1.take() else {
+                i += 1;
+                continue;
+            };
+            let (page, _) = layer.pages.swap_remove(i);
+            let added = answer.map_err(|_| ()).and_then(|bytes| layer.index.add_page(&mut self.tree, page, &bytes).map_err(|_| ()));
+            if added.is_err() {
+                layer.bad_pages += 1;
+            }
+        }
+        let mut done = Vec::new();
+        let mut i = 0;
+        while i < layer.textures.len() {
+            let Some(answer) = layer.textures[i].2.take() else {
+                i += 1;
+                continue;
+            };
+            let (n, geometry, _) = layer.textures.swap_remove(i);
+            // Текстура не пришла - сетка ложится цветом материала.
+            done.push((n, layer.index.piece(n, &geometry, answer.ok()).ok()));
+        }
+        let room = REQUESTS.saturating_sub(layer.pages.len());
+        for page in layer.index.wanted(&self.tree, view, room) {
+            match self.source.address(&scene::i3s::Index::page_path(page)) {
+                Some(address) => {
+                    let r = request(ANSWER_LIMIT);
+                    r.start(&address);
+                    layer.pages.push((page, r));
+                }
+                None => layer.bad_pages += 1,
+            }
+        }
+        for (n, piece) in done {
+            self.place(n, piece, globe, ellipsoid, frame);
+        }
+    }
+
+    /// Идут ли запросы набора.
+    fn waiting(&self) -> bool {
+        !self.pending.is_empty() || self.i3s.as_ref().is_some_and(|l| !l.pages.is_empty() || !l.textures.is_empty())
     }
 }
 
@@ -324,14 +439,44 @@ impl Tilesets {
                 pending: Vec::new(),
                 spots,
                 origin,
+                i3s: None,
             },
         );
         Some(self.next)
     }
 
+    /// Слой сцены I3S под названием title сверху списка. Дерево пусто,
+    /// узлы приходят страницами. spots - края охвата слоя. Возвращает
+    /// номер набора.
+    pub fn add_i3s(&mut self, layer: I3s, source: Source, title: &str, origin: Option<Origin>, spots: Vec<(f64, f64)>) -> u64 {
+        if let Some(o) = &origin {
+            self.list.retain(|s| s.origin.as_ref() != Some(o));
+        }
+        self.save_dirty = true;
+        self.next += 1;
+        self.list.insert(
+            0,
+            Set {
+                id: self.next,
+                title: title.to_string(),
+                visible: true,
+                tree: Tree::default(),
+                source,
+                loaded: HashMap::new(),
+                failed: HashSet::new(),
+                shown: HashSet::new(),
+                pending: Vec::new(),
+                spots,
+                origin,
+                i3s: Some(layer),
+            },
+        );
+        self.next
+    }
+
     /// Идут ли запросы кусков по ссылке.
     pub fn busy(&self) -> bool {
-        self.list.iter().any(|s| s.visible && !s.pending.is_empty())
+        self.list.iter().any(|s| s.visible && s.waiting())
     }
 
     pub fn get(&self, id: u64) -> Option<&Set> {
@@ -396,12 +541,13 @@ impl Tilesets {
                 let (n, _) = set.pending.swap_remove(i);
                 read += 1;
                 match answer {
-                    Ok(bytes) => set.receive(n, &bytes, globe, ellipsoid, frame),
+                    Ok(bytes) => set.receive(n, &bytes, globe, ellipsoid, frame, request),
                     Err(_) => {
                         set.failed.insert(n);
                     }
                 }
             }
+            set.step_i3s(&view, globe, ellipsoid, frame, request);
             let selection = set.tree.select(&view, THRESHOLD, &|n| set.loaded.contains_key(&n) || set.failed.contains(&n));
             for &(n, _) in &selection.load {
                 if let Source::Url { .. } = set.source {
@@ -430,17 +576,20 @@ impl Tilesets {
                 read += 1;
                 let uri = set.tree.nodes.get(n).and_then(|node| node.uri.clone()).unwrap_or_default();
                 match set.source.get(&uri) {
-                    Some(bytes) => set.receive(n, &bytes, globe, ellipsoid, frame),
+                    Some(bytes) => set.receive(n, &bytes, globe, ellipsoid, frame, request),
                     None => {
                         set.failed.insert(n);
                     }
                 }
             }
-            busy |= !set.pending.is_empty();
+            busy |= set.waiting();
             set.shown = selection.show.into_iter().collect();
+            // Готовые дети показанного тайла ждут соседей: вытесни их -
+            // и тяжёлый слой грузится по кругу, не дойдя до детей.
+            let waiting: HashSet<usize> = set.shown.iter().filter_map(|&n| set.tree.nodes.get(n)).flat_map(|node| node.children.iter().copied()).collect();
             for (&n, l) in &mut set.loaded {
                 let on = set.shown.contains(&n);
-                if on {
+                if on || waiting.contains(&n) {
                     l.used = frame;
                 }
                 globe.show_tile(key(set.id, n), on);
@@ -451,14 +600,16 @@ impl Tilesets {
     }
 
     /// Вытеснить куски сверх [`MEMORY`]: первыми - те, что дольше всего
-    /// не рисовались. Куски на экране остаются.
+    /// не рисовались. Куски на экране и готовые дети показанных тайлов
+    /// остаются.
     fn evict(&mut self, globe: &mut Globe) {
+        let frame = self.frame;
         let total: usize = self.list.iter().flat_map(|s| s.loaded.values()).map(|l| l.bytes).sum();
         if total <= MEMORY {
             return;
         }
         let mut idle: Vec<(u64, u64, usize, usize)> =
-            self.list.iter().flat_map(|s| s.loaded.iter().filter(|(n, _)| !s.shown.contains(n)).map(move |(&n, l)| (l.used, s.id, n, l.bytes))).collect();
+            self.list.iter().flat_map(|s| s.loaded.iter().filter(|(n, l)| !s.shown.contains(n) && l.used < frame).map(move |(&n, l)| (l.used, s.id, n, l.bytes))).collect();
         idle.sort_unstable();
         let mut over = total - MEMORY;
         for (_, id, n, bytes) in idle {
@@ -622,5 +773,74 @@ mod tests {
         let aside = camera.eye + camera.rotation.x_axis * 10_000.0 - camera.rotation.z_axis * 100.0;
         assert!(!visible(&camera, aside, 10.0));
         assert!(visible(&camera, aside, 20_000.0));
+    }
+
+    #[test]
+    fn scene_server_links_answer_json() {
+        let svc = "https://tiles.arcgis.com/tiles/x/arcgis/rest/services/SF/SceneServer";
+        assert_eq!(scene_server_link(svc), format!("{svc}?f=json"));
+        assert_eq!(scene_server_link(&format!("{svc}/?token=t")), format!("{svc}?token=t&f=json"));
+        assert_eq!(scene_server_link(&format!("{svc}/layers/0?f=json")), format!("{svc}/layers/0?f=json"));
+        assert_eq!(scene_server_link("https://h.org/tileset.json"), "https://h.org/tileset.json");
+        assert_eq!(scene_server_layer(&format!("{svc}?f=json"), 2), format!("{svc}/layers/2?f=json"));
+        let source = scene_server_source(&format!("{svc}/layers/0?token=t&f=json"));
+        assert_eq!(source.address("nodepages/3").as_deref(), Some(format!("{svc}/layers/0/nodepages/3?token=t").as_str()));
+        let plain = scene_server_source(&format!("{svc}/layers/0?f=json"));
+        assert_eq!(plain.address("nodes/5/geometries/1").as_deref(), Some(format!("{svc}/layers/0/nodes/5/geometries/1").as_str()));
+    }
+
+    /// Живая проверка слоя I3S Сан-Франциско: страницы до узлов с сеткой,
+    /// геометрия Draco и текстура одного узла.
+    /// cargo test -p ui live_i3s -- --ignored --nocapture
+    #[test]
+    #[ignore]
+    #[cfg(not(target_arch = "wasm32"))]
+    #[allow(clippy::panic, clippy::unwrap_used, clippy::expect_used)]
+    fn live_i3s() {
+        let get = |url: &str| -> Vec<u8> {
+            let r = net::native::Requests::with_limit(std::sync::Arc::new(|| {}), 64 << 20);
+            net::Request::start(&r, url);
+            let start = std::time::Instant::now();
+            loop {
+                if let Some(answer) = net::Request::take(&r) {
+                    return answer.unwrap_or_else(|e| panic!("{url}: {e}"));
+                }
+                assert!(start.elapsed().as_secs() < 60, "{url}: долго");
+                std::thread::sleep(std::time::Duration::from_millis(20));
+            }
+        };
+        let link = scene_server_link("https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0");
+        let layer = scene::i3s::layer(&get(&link)).unwrap();
+        let source = scene_server_source(&link);
+        let e = Ellipsoid::wgs84();
+        let mut index = scene::i3s::Index::new(layer, e, THRESHOLD);
+        let mut tree = Tree::default();
+        // Вид с 1.5 км над центром города.
+        let eye = e.geodetic_to_ecef(37.79, -122.40, 1500.0);
+        let always = |_: DVec3, _: f64| true;
+        let view = View { eye, pixels: 1000.0, visible: &always };
+        let mut pages = 0;
+        while pages < 40 {
+            let wanted = index.wanted(&tree, &view, 6);
+            if wanted.is_empty() {
+                break;
+            }
+            for p in wanted {
+                index.add_page(&mut tree, p, &get(&source.address(&scene::i3s::Index::page_path(p)).unwrap())).unwrap();
+                pages += 1;
+            }
+        }
+        let with_mesh = (0..tree.nodes.len()).filter(|&n| tree.nodes[n].uri.is_some()).count();
+        eprintln!("страниц {pages}, тайлов {}, с сеткой {with_mesh}", tree.nodes.len());
+        let n = (0..tree.nodes.len()).find(|&n| tree.nodes[n].uri.is_some()).expect("нет узла с сеткой");
+        let geometry = get(&source.address(tree.nodes[n].uri.as_deref().unwrap()).unwrap());
+        let texture = index.texture_path(n).map(|p| get(&source.address(&p).unwrap()));
+        let piece = index.piece(n, &geometry, texture).unwrap();
+        let part = &piece.parts[0];
+        let (lat, lon, h) = e.ecef_to_geodetic(part.positions[0]);
+        eprintln!("узел {n}: вершин {}, текстура {:?}, первая вершина {lat:.5} {lon:.5} {h:.1}", part.positions.len(), part.image);
+        assert!(part.positions.len() >= 3 && (37.6..37.9).contains(&lat) && (-122.6..-122.3).contains(&lon) && (-100.0..700.0).contains(&h));
+        assert!(part.uv.is_some() == part.image.is_some());
+        assert!(mesh(&piece.parts, &piece.pictures, &e).is_some_and(|m| m.images.len() == usize::from(part.image.is_some())));
     }
 }

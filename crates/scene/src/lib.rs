@@ -43,6 +43,7 @@ pub mod features;
 pub mod geodesic;
 pub mod gltf;
 pub mod graticule;
+pub mod i3s;
 pub mod icons;
 pub mod kml;
 pub mod lookat;

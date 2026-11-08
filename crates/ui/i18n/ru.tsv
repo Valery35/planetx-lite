@@ -2514,3 +2514,4 @@ Aerosol optical depth at 500 nm by MODIS of the Terra and Aqua satellites, JAXA 
 The JAXA data did not load, check the network and switch the row on again.	Данные JAXA не загрузились. Проверьте сеть и включите строку снова.
 JAXA Earth: {date}.	JAXA Earth - {date}.
 mg/m³	мг/м³
+I3S scene layer: {title}.	Слой сцены I3S - {title}.
