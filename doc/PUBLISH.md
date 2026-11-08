@@ -230,3 +230,12 @@
 - Telegram: https://t.me/qgis_isolines/191
 - linux.org.ru - не отправлялось, только по решению автора, новость о 0.24.0 ещё у модератора
 - Форум OSM и Reddit r/rust - пишет автор, текст для Reddit в файле постов
+
+### RustPlanetX 0.5.2, 8 ноября 2026 года
+
+Тексты - site/posts_rustplanetx_0.5.2_social.md. По слову автора - только Telegram.
+
+- GitHub: https://github.com/Valery35/rustplanetx/releases/tag/v0.5.2
+- Каталог расширений RustGIS - заявка opengeos/rustgis-plugins#47 на 0.5.2, ждёт сопровождающих
+- Dropbox - RustPlanetX.rgplugin 0.5.2
+- Telegram: https://t.me/qgis_isolines/192
