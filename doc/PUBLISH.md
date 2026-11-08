@@ -227,6 +227,6 @@
 - Mastodon: https://en.osm.town/@Vaery35/117581306652913116
 - X: https://x.com/Valery35/status/2119438056155447707
 - LinkedIn и Facebook - посты в лентах автора 8 ноября 2026 года
-- Telegram - окно Telegram не вышло на передний план, публикует автор, текст в файле постов
+- Telegram: https://t.me/qgis_isolines/191
 - linux.org.ru - не отправлялось, только по решению автора, новость о 0.24.0 ещё у модератора
 - Форум OSM и Reddit r/rust - пишет автор, текст для Reddit в файле постов
