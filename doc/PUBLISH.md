@@ -214,3 +214,19 @@
 - Mastodon: https://en.osm.town/@Vaery35/117575854269869269
 - LinkedIn и Facebook - посты в лентах автора
 - Площадки группы «Иногда» (OSGeo, форум OSM, linux.org.ru, Reddit) - не публиковались, выпуск малый
+
+### PlanetX Lite 0.25.0, 8 ноября 2026 года
+
+Тексты - site/posts_0.25.0_social.md, описание выпуска - packaging/notes/0.25.0.md. По слову автора «публикуй всюду».
+
+- GitHub: https://github.com/Valery35/planetx-lite/releases/tag/v0.25.0
+- Dropbox - PlanetX-Lite.zip 0.25.0
+- Сайт informpp.ru - «Что нового» (блок 11308 при странице 11203) и главная, коммит bb27ca5
+- ВК: https://vk.ru/wall-241229428_54 (запись со снимком Швейцарии в карте swisstopo, без статьи)
+- OSGeo Discourse: https://discourse.osgeo.org/t/155878/7
+- Mastodon: https://en.osm.town/@Vaery35/117581306652913116
+- X: https://x.com/Valery35/status/2119438056155447707
+- LinkedIn и Facebook - посты в лентах автора 8 ноября 2026 года
+- Telegram - окно Telegram не вышло на передний план, публикует автор, текст в файле постов
+- linux.org.ru - не отправлялось, только по решению автора, новость о 0.24.0 ещё у модератора
+- Форум OSM и Reddit r/rust - пишет автор, текст для Reddit в файле постов
