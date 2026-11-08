@@ -233,9 +233,15 @@
 
 ### RustPlanetX 0.5.2, 8 ноября 2026 года
 
-Тексты - site/posts_rustplanetx_0.5.2_social.md. По слову автора - только Telegram.
+Тексты - site/posts_rustplanetx_0.5.2_social.md. Первые публикации RustPlanetX. Сначала по слову автора вышел пост в Telegram, затем выпуск разослан по площадкам группы «всегда».
 
 - GitHub: https://github.com/Valery35/rustplanetx/releases/tag/v0.5.2
 - Каталог расширений RustGIS - заявка opengeos/rustgis-plugins#47 на 0.5.2, ждёт сопровождающих
 - Dropbox - RustPlanetX.rgplugin 0.5.2
 - Telegram: https://t.me/qgis_isolines/192
+- Mastodon: https://en.osm.town/@Vaery35/117582299254472511
+- X: https://x.com/Valery35/status/2119501622321848723
+- ВК: https://vk.ru/wall-241229428_55 (запись без снимка, с карточкой выпуска GitHub)
+- LinkedIn и Facebook - посты в лентах автора 8 ноября 2026 года
+- Сайт informpp.ru - страница линейки `главная-страница/planetx`, в ленте обновлений RustPlanetX 0.5.2, Lite 0.25.0 и модуль 1.42.1 (planetx-scene, site/feed.json). Своей страницы у RustPlanetX нет, главная не менялась
+- Площадки группы «Иногда» (OSGeo, форум OSM, linux.org.ru, Reddit) - не публиковались, нужно слово автора
