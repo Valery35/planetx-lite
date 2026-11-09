@@ -273,7 +273,17 @@
 - GitHub: https://github.com/Valery35/rustplanetx/releases/tag/v0.5.5 (коммит 18fb0c2, Lite baabee5)
 - Каталог расширений RustGIS - 0.5.3 влит opengeos/rustgis-plugins#47 9 ноября, заявка opengeos/rustgis-plugins#55 переведена на 0.5.5 (заголовок ещё «0.5.4», меняет автор)
 - Dropbox - RustPlanetX.rgplugin 0.5.5
-- Предложено автору: всегда - Telegram, ВК, Mastodon, X, LinkedIn, Facebook, лента страницы линейки informpp.ru; иногда - OSGeo Discourse и Reddit r/rust с флером Project (пишет автор). Не берутся - форум OSM, linux.org.ru, форум Rust
+- Список площадок автор подтвердил 10 ноября («Да, публикуй»)
+- Mastodon: https://en.osm.town/@Vaery35/117588234495791999
+- X: https://x.com/Valery35/status/2119881468084138163 (вышел и второй такой же пост 2119881653179027933 - повторное нажатие, удаление - по слову автора)
+- LinkedIn: https://www.linkedin.com/feed/update/urn:li:activity:7525648164750651392/
+- Facebook - пост в ленте автора 10 ноября 2026 года
+- ВК: https://vk.ru/wall-241229428_58 (запись с карточкой выпуска GitHub)
+- OSGeo Discourse: https://discourse.osgeo.org/t/155878/11
+- Сайт informpp.ru - страница линейки `главная-страница/planetx`, в ленте RustPlanetX 0.5.5 (planetx-scene 9dd2f06), опубликовано
+- Telegram - не опубликовано: доступ помощника к приложению Telegram не дан, Telegram Web без входа. Текст в файле постов, раздел RU
+- Reddit r/rust - пишет автор, флер Project, текст в файле постов
+- Не берутся - форум OSM, linux.org.ru, форум Rust
 
 ### RustPlanetX 0.5.2, 8 ноября 2026 года
 
