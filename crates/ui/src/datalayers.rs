@@ -133,7 +133,12 @@ pub struct DataLayer {
     pub time: Option<(usize, Option<usize>)>,
     /// Объект вне окна шкалы времени: не рисуется и не выбирается.
     off: Vec<bool>,
+    /// Выделенные объекты, «Выделить на глобусе» окна «Объекты».
+    pub selected: Vec<usize>,
 }
+
+/// Цвет выделения объектов на глобусе, жёлтый, как выделение QGIS.
+pub const SELECTION: [u8; 3] = [255, 230, 0];
 
 /// Сторона шторки словом для списка слоёв: left, right или пусто.
 fn side_word(side: render::Side) -> &'static str {
@@ -566,6 +571,45 @@ impl DataLayer {
         out
     }
 
+    /// Выделенные линии и контуры многоугольников - жёлтыми линиями
+    /// на рельефе поверх слоя.
+    pub fn selection_shapes(&self) -> Vec<Shape> {
+        let mut out = Vec::new();
+        let [r, g, b] = SELECTION;
+        for &n in &self.selected {
+            let Some(item) = self.data.items.get(n).filter(|_| self.on(n)) else {
+                continue;
+            };
+            let mut push = |points: Vec<(f64, f64)>| {
+                let mut s = Shape::new(Kind::Line, points);
+                s.color = [r, g, b, 255];
+                s.width = f64::from(self.style.width.max(1.0)) + 3.0;
+                out.push(s);
+            };
+            match item.shape {
+                Geom::Line => item.parts.iter().filter(|p| p.len() > 1).for_each(|p| push(p.clone())),
+                Geom::Polygon => {
+                    for part in item.parts.iter().filter(|p| p.len() > 2) {
+                        let mut ring = part.clone();
+                        if ring.first() != ring.last()
+                            && let Some(first) = ring.first().copied()
+                        {
+                            ring.push(first);
+                        }
+                        push(ring);
+                    }
+                }
+                Geom::Point | Geom::None => {}
+            }
+        }
+        out
+    }
+
+    /// Выделенные точки слоя.
+    fn selected_dots(&self) -> Vec<(f64, f64)> {
+        self.selected.iter().filter(|n| self.on(**n)).filter_map(|n| self.data.items.get(*n)).filter(|i| i.shape == Geom::Point).filter_map(|i| i.parts.first().and_then(|p| p.first()).copied()).collect()
+    }
+
     /// Все точки слоя без отбора выдавленных - для радиуса столбика.
     fn dots_all(&self) -> Vec<(f64, f64)> {
         self.data.items.iter().filter(|i| i.shape == Geom::Point).flat_map(|i| i.parts.iter().filter_map(|p| p.first().copied())).collect()
@@ -811,6 +855,7 @@ impl DataLayers {
                 side: render::Side::Both,
                 time: None,
                 off: Vec::new(),
+                selected: Vec::new(),
             };
             self.list.insert(k, layer);
         }
@@ -851,6 +896,7 @@ impl DataLayers {
             side: render::Side::Both,
             time: None,
             off: Vec::new(),
+            selected: Vec::new(),
             picture: Some(overlay),
         };
         self.list.insert(at, layer);
@@ -1219,6 +1265,7 @@ impl DataLayers {
                 side: side_of(&text_of("side")),
                 time: time_of(v),
                 off: Vec::new(),
+                selected: Vec::new(),
             });
         }
         out.collapsed = root.get("collapsed").and_then(serde_json::Value::as_array).into_iter().flatten().filter_map(|f| f.as_str().map(str::to_string)).collect();
@@ -1298,7 +1345,8 @@ impl DataLayers {
             .iter()
             .rev()
             .filter(|l| l.visible)
-            .map(|l| ((l.dots(), l.style.color, l.style.size, l.style.opacity), l.side))
+            // Выделенные точки - жёлтым кругом крупнее под точкой слоя.
+            .flat_map(|l| [((l.selected_dots(), SELECTION, l.style.size + 6.0, 1.0), l.side), ((l.dots(), l.style.color, l.style.size, l.style.opacity), l.side)])
             .filter(|((d, _, _, _), _)| !d.is_empty())
             .collect()
     }
@@ -1326,7 +1374,7 @@ impl DataLayers {
             .filter(|l| l.visible)
             .flat_map(|l| {
                 let flat = if l.side == render::Side::Both { Vec::new() } else { l.flat_shapes() };
-                l.extruded(radius).into_iter().chain(flat).map(move |s| (s, l.side))
+                l.extruded(radius).into_iter().chain(flat).chain(l.selection_shapes()).map(move |s| (s, l.side))
             })
             .collect()
     }
@@ -1342,6 +1390,22 @@ impl DataLayers {
                 (!features.is_empty()).then(|| (l.title.clone(), features))
             })
             .collect()
+    }
+
+    /// Найденные у точки объекты, как [`DataLayers::identify`]: номер
+    /// слоя и номера объектов.
+    pub fn hits_at(&self, lat: f64, lon: f64, metres: f64, gap: &dyn Fn(f64, f64) -> Option<f64>) -> Vec<(u64, Vec<usize>)> {
+        self.list.iter().filter(|l| l.visible && l.picture.is_none()).map(|l| (l.id, l.hits(lat, lon, metres, gap))).filter(|(_, n)| !n.is_empty()).collect()
+    }
+
+    /// Выделить объекты hits (слой и номера объектов), прежнее выделение
+    /// снимается, как `selectByIds` слоёв модуля. Пусто - снять выделение.
+    pub fn select(&mut self, hits: &[(u64, Vec<usize>)]) {
+        for l in &mut self.list {
+            l.selected = hits.iter().find(|(id, _)| *id == l.id).map(|(_, n)| n.clone()).unwrap_or_default();
+        }
+        self.dots_dirty = true;
+        self.shapes_dirty = true;
     }
 
     /// Живой слой RustGIS номер live в папке folder: заменяется на месте,
@@ -1381,6 +1445,7 @@ impl DataLayers {
                 side: render::Side::Both,
                 time: None,
                 off: Vec::new(),
+                selected: Vec::new(),
             };
             self.list.insert(at, layer);
         }
@@ -2233,6 +2298,30 @@ mod tests {
         assert_eq!(row_count(&layers), 6);
         layers.apply(0, &Act::FolderCollapse("F".into()));
         assert_eq!(row_count(&layers), 3);
+    }
+
+    #[test]
+    fn selection_highlights_found_objects_until_cleared() {
+        let mut layers = DataLayers::default();
+        layers.add(vec![layer()], "a.gpkg");
+        let id = layers.list[0].id;
+        let kinds: Vec<Geom> = layers.list[0].data.items.iter().map(|i| i.shape).collect();
+        let all: Vec<usize> = (0..kinds.len()).collect();
+        assert!(layers.shapes(6_371_000.0).is_empty());
+        layers.select(&[(id, all.clone())]);
+        // Линии и контуры - жёлтыми линиями, точки - жёлтым кругом крупнее.
+        let shapes = layers.shapes(6_371_000.0);
+        let lines = kinds.iter().filter(|k| matches!(k, Geom::Line | Geom::Polygon)).count();
+        assert!(shapes.len() >= lines && shapes.iter().all(|(s, _)| s.color[..3] == SELECTION && s.kind == Kind::Line));
+        let sets = layers.dot_sets();
+        assert_eq!(sets[0].0.1, SELECTION);
+        assert!(sets[0].0.2 > sets[1].0.2);
+        // Снять выделение - подсветки нет.
+        layers.select(&[]);
+        assert!(layers.shapes(6_371_000.0).is_empty() && layers.dot_sets().iter().all(|s| s.0.1 != SELECTION));
+        // Найденные у точки - номера объектов слоя.
+        let found = layers.hits_at(60.0, 50.0, 100.0, &|_, _| Some(0.0));
+        assert!(found.iter().all(|(l, n)| *l == id && !n.is_empty()));
     }
 
     #[test]

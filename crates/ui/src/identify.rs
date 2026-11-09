@@ -26,6 +26,12 @@ pub struct Objects {
     pub groups: Vec<(String, Vec<Feature>)>,
     /// Точка для адреса «Сведения о точке».
     pub at: (f64, f64),
+    /// Найденные объекты «Моих слоёв»: номер слоя и номера объектов, для
+    /// «Выделить на глобусе».
+    pub hits: Vec<(u64, Vec<usize>)>,
+    /// Нажата «Выделить на глобусе» (Some(true)) или «Снять выделение»
+    /// (Some(false)), забирает программа.
+    pub select: Option<bool>,
 }
 
 /// Расстояние словами, `distance_text` модуля: до 10 км - в метрах,
@@ -134,6 +140,18 @@ impl Objects {
                             });
                         }
                     });
+                }
+            });
+            // «Выделить на карте» модуля: найденные объекты слоёв видны
+            // выделенными на глобусе.
+            ui.separator();
+            ui.horizontal(|ui| {
+                let can = !self.hits.is_empty();
+                if ui.add_enabled(can, egui::Button::new(tr(lang, "Select on the globe"))).on_hover_text(tr(lang, "The found objects of «My layers» are highlighted on the globe until the next selection.")).clicked() {
+                    self.select = Some(true);
+                }
+                if ui.button(tr(lang, "Clear selection")).clicked() {
+                    self.select = Some(false);
                 }
             });
         });

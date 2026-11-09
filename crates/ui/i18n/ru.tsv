@@ -2418,6 +2418,9 @@ Points and lines of the layer in the frame of the view become layers of «My lay
 Globe layers	Слои глобуса
 View picture to My layers	Картинка вида в «Мои слои»
 Map year	Год карты
+Select on the globe	Выделить на глобусе
+The found objects of «My layers» are highlighted on the globe until the next selection.	Найденные объекты «Моих слоёв» подсвечиваются на глобусе до следующего выделения.
+Clear selection	Снять выделение
 The year is a whole number, for example 1890.	Год - целое число, например 1890.
 The year of the map. The map goes on the time slider and replaces the maps of its folder by years. An empty field - a map without a year, a year BCE - with a minus sign. Enter applies.	Год карты. Карта встаёт на шкалу времени и сменяет карты своей папки по годам. Пустое поле - карта без года, год до н. э. - со знаком минус. Enter применяет.
 The map in the frame of the view, as the globe draws it, becomes a picture layer of «My layers». It can be saved as GeoTIFF.	Карта в рамке вида, как её рисует глобус, ложится слоем-картинкой «Моих слоёв». Её можно сохранить в GeoTIFF.

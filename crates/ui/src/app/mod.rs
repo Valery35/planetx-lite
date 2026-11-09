@@ -2408,6 +2408,7 @@ impl LiteApp {
     fn make_objects(&self, lat: f64, lon: f64, pixel: Option<(f64, f64, f64)>, address: Option<String>) -> crate::identify::Objects {
         let height = (self.true_heights())(&[(lat, lon)]).first().copied();
         let mut groups = Vec::new();
+        let mut hits = Vec::new();
         let paths = match (pixel, self.marks.tree.as_ref()) {
             (Some((px, py, ppp)), Some(tree)) => crate::card::pick_all(tree, &self.nav, px, py, crate::card::PICK_PIXELS * ppp),
             _ => Vec::new(),
@@ -2429,6 +2430,7 @@ impl LiteApp {
                 (front && gap <= radius).then_some(gap / radius.max(1e-9))
             };
             groups.extend(self.data_layers.identify(self.lang, lat, lon, metres, &gap));
+            hits = self.data_layers.hits_at(lat, lon, metres, &gap);
             // Объект слоя RustGIS выделяется и на карте RustGIS, как
             // определение объектов слоёв проекта QGIS модулем.
             #[cfg(not(target_arch = "wasm32"))]
@@ -2490,7 +2492,7 @@ impl LiteApp {
             groups.extend(crate::mapvalue::group(self.lang, ask.key, answer, ask.at));
         }
         groups.extend(self.field_tiles.as_ref().and_then(|f| f.group(self.lang, lat, lon)));
-        crate::identify::Objects { point: self.point_text(lat, lon, height, 6), groups, at: (lat, lon) }
+        crate::identify::Objects { point: self.point_text(lat, lon, height, 6), groups, at: (lat, lon), hits, select: None }
     }
 
     /// Год с дробью для геофизики: правый бегунок открытой шкалы времени,
@@ -2624,10 +2626,17 @@ impl LiteApp {
             }
             self.water = None;
         }
-        if let Some(objects) = &mut self.objects
-            && !objects.window(ctx, lang)
-        {
-            self.objects = None;
+        if let Some(objects) = &mut self.objects {
+            let open = objects.window(ctx, lang);
+            // «Выделить на глобусе» и «Снять выделение».
+            match objects.select.take() {
+                Some(true) => self.data_layers.select(&objects.hits),
+                Some(false) => self.data_layers.select(&[]),
+                None => {}
+            }
+            if !open {
+                self.objects = None;
+            }
         }
         if let Some((title, text, _)) = &self.confirm {
             let mut answer = None;
