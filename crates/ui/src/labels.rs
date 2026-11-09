@@ -38,6 +38,18 @@ pub const RAY_STEPS: usize = 48;
 pub const HEIGHTS_PER_FRAME: usize = 80;
 /// Пунктов в окне, которые спорят за место.
 pub const MAX_CANDIDATES: usize = 600;
+/// Номер первой подписи слоя, дальше - вниз по порядку подписей.
+const LAYER_ID: u64 = u64::MAX - 3_000_000;
+
+/// Подпись стороны side видна в точке кадра x при линии шторки swipe
+/// (пиксели кадра). Без шторки видны все.
+fn on_side(side: render::Side, swipe: Option<f32>, x: f64) -> bool {
+    match (side, swipe) {
+        (render::Side::Left, Some(line)) => x < f64::from(line),
+        (render::Side::Right, Some(line)) => x >= f64::from(line),
+        _ => true,
+    }
+}
 /// Зазор между надписями, логических пикселей. При 3 пикселях надписи
 /// из космоса шли сплошным ковром, модуль, 26 сентября 2026 года.
 pub const PADDING: f32 = 10.0;
@@ -296,6 +308,10 @@ pub struct Labels {
     geo: Vec<Place>,
     /// Подписи слоёв «Моих данных» по полю.
     layers: Vec<Place>,
+    /// Сторона шторки слоя каждой подписи слоя, по порядку.
+    layer_sides: Vec<render::Side>,
+    /// Линия шторки слоёв в пикселях кадра, None - шторка снята.
+    pub swipe: Option<f32>,
     /// Цвет значка метки по номеру пункта.
     mark_colors: HashMap<u64, egui::Color32>,
     /// Классы подписей по включённым строкам векторной основы, как
@@ -326,6 +342,8 @@ impl Labels {
             plates: Vec::new(),
             geo: Vec::new(),
             layers: Vec::new(),
+            layer_sides: Vec::new(),
+            swipe: None,
             mark_colors: HashMap::new(),
             kinds: crate::vector::VectorBase::default().label_kinds(),
             queue: std::collections::VecDeque::new(),
@@ -362,7 +380,22 @@ impl Labels {
     /// Подписи слоёв «Моих данных»: текст, широта, долгота, без значка,
     /// как подписи слоёв проекта модуля.
     pub fn set_layers(&mut self, labels: &[(String, f64, f64)]) {
-        self.layers = labels.iter().enumerate().map(|(n, (text, lat, lon))| Place::new(u64::MAX - 3_000_000 - n as u64, text, Kind::Layer, 1, *lat, *lon)).collect();
+        self.set_layers_sided(labels, &[]);
+    }
+
+    /// Подписи слоёв со стороной шторки каждой: подпись слоя «Слева»
+    /// не рисуется правее линии [`Labels::swipe`], «Справа» - левее.
+    pub fn set_layers_sided(&mut self, labels: &[(String, f64, f64)], sides: &[render::Side]) {
+        self.layers = labels.iter().enumerate().map(|(n, (text, lat, lon))| Place::new(LAYER_ID - n as u64, text, Kind::Layer, 1, *lat, *lon)).collect();
+        self.layer_sides = sides.to_vec();
+    }
+
+    /// Сторона шторки подписи слоя place, у остальных подписей - обе.
+    fn side_of(&self, place: &Place) -> render::Side {
+        if place.kind != Kind::Layer {
+            return render::Side::Both;
+        }
+        LAYER_ID.checked_sub(place.id).and_then(|n| usize::try_from(n).ok()).and_then(|n| self.layer_sides.get(n)).copied().unwrap_or_default()
     }
 
     /// Метка найденного места, одна на окно. None - метки нет.
@@ -460,6 +493,10 @@ impl Labels {
             }
             let (px, front) = camera.project(point);
             if !front || px.x < -50.0 || px.x > w + 50.0 || px.y < -50.0 || px.y > h + 50.0 {
+                continue;
+            }
+            // Подпись слоя со стороной шторки - только на своей стороне.
+            if !on_side(self.side_of(place), self.swipe, px.x) {
                 continue;
             }
             candidates.push((place, id, point, normal, dist, rise, px));
@@ -804,6 +841,18 @@ mod tests {
     use super::{Kind, Marker, OCCLUSION_MARGIN, occluded, style};
     use globe_core::camera::Camera;
     use globe_core::ellipsoid::Ellipsoid;
+
+    #[test]
+    fn layer_labels_keep_to_their_swipe_side() {
+        use render::Side;
+        let mut labels = super::Labels::new(crate::i18n::Lang::RU, data::places::AS_INTERFACE);
+        labels.set_layers_sided(&[("Л".into(), 58.0, 56.0), ("П".into(), 58.0, 56.1), ("О".into(), 58.0, 56.2)], &[Side::Left, Side::Right, Side::Both]);
+        let sides: Vec<Side> = labels.layers.iter().map(|p| labels.side_of(p)).collect();
+        assert_eq!(sides, [Side::Left, Side::Right, Side::Both]);
+        assert!(super::on_side(Side::Left, Some(400.0), 100.0) && !super::on_side(Side::Left, Some(400.0), 500.0));
+        assert!(super::on_side(Side::Right, Some(400.0), 500.0) && !super::on_side(Side::Right, Some(400.0), 100.0));
+        assert!(super::on_side(Side::Left, None, 900.0) && super::on_side(Side::Both, Some(1.0), 900.0));
+    }
 
     #[test]
     fn base_labels_shrink_with_altitude() {

@@ -2417,6 +2417,9 @@ View objects to My layers	Объекты вида в «Мои слои»
 Points and lines of the layer in the frame of the view become layers of «My layers» with the fields of the Objects window and the colours of the globe.	Точки и линии слоя в рамке вида ложатся слоями «Моих слоёв» с полями окна «Объекты» и цветами глобуса.
 Globe layers	Слои глобуса
 View picture to My layers	Картинка вида в «Мои слои»
+Map year	Год карты
+The year is a whole number, for example 1890.	Год - целое число, например 1890.
+The year of the map. The map goes on the time slider and replaces the maps of its folder by years. An empty field - a map without a year, a year BCE - with a minus sign. Enter applies.	Год карты. Карта встаёт на шкалу времени и сменяет карты своей папки по годам. Пустое поле - карта без года, год до н. э. - со знаком минус. Enter применяет.
 The map in the frame of the view, as the globe draws it, becomes a picture layer of «My layers». It can be saved as GeoTIFF.	Карта в рамке вида, как её рисует глобус, ложится слоем-картинкой «Моих слоёв». Её можно сохранить в GeoTIFF.
 The map {title} is not drawn in the view yet.	Карта «{title}» в виде ещё не нарисована.
 Added to «My layers» as a picture: {title}.	В «Мои слои» добавлена картинка: {title}.

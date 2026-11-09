@@ -641,6 +641,8 @@ pub enum Act {
     Side(render::Side),
     /// Поля времени объектов: начало и конец, None - слой без времени.
     Time(Option<(usize, Option<usize>)>),
+    /// «Год карты» слоя-картинки, None - карта без года.
+    Year(Option<i64>),
     Up,
     Down,
     /// Перетаскивание: слой - перед слоем before в папку folder, None -
@@ -883,8 +885,12 @@ impl DataLayers {
         for l in &self.list {
             if let Some(p) = &l.picture {
                 any = true;
-                (l.id, l.visible, p.overlay.color[3], in_window(p, window), side_word(l.side)).hash(&mut h);
+                (l.id, l.visible, p.overlay.color[3], side_word(l.side)).hash(&mut h);
             }
+        }
+        // Видимые в окне шкалы картинки - по месту в памяти: слои те же.
+        for (p, _) in self.picture_sides(window) {
+            (std::ptr::from_ref(p) as usize).hash(&mut h);
         }
         if any { h.finish() | 1 } else { 0 }
     }
@@ -897,8 +903,31 @@ impl DataLayers {
     }
 
     /// Картинки, как [`DataLayers::pictures`], со стороной шторки слоя.
+    ///
+    /// Картинка-момент (год карты, день снимка) подчиняется правилу карт
+    /// по годам, как наложения «Моих меток» и карты модуля
+    /// (`core/oldmaps.py`): в папке видна картинка с наибольшим моментом
+    /// не позже правого бегунка шкалы. Прочие видны в окне шкалы.
     pub fn picture_sides(&self, window: Option<(f64, f64)>) -> Vec<(&scene::kml::Overlay, render::Side)> {
-        self.list.iter().rev().filter(|l| l.visible).filter_map(|l| l.picture.as_ref().map(|p| (p, l.side))).filter(|(p, _)| in_window(p, window)).collect()
+        let all: Vec<(&DataLayer, &scene::kml::Overlay)> = self.list.iter().rev().filter(|l| l.visible).filter_map(|l| l.picture.as_ref().map(|p| (l, p))).collect();
+        let moments: Vec<Option<f64>> = all.iter().map(|(_, p)| scene::oldmaps::start(p.time.as_ref())).collect();
+        let entries: Vec<(&str, f64)> = all.iter().zip(&moments).filter_map(|((l, _), m)| m.map(|m| (l.folder.as_str(), m))).collect();
+        let current = scene::oldmaps::shown(&entries, window.map(|w| w.1));
+        let mut map = 0;
+        let mut out = Vec::new();
+        for ((l, p), moment) in all.iter().zip(&moments) {
+            let seen = match moment {
+                Some(_) => {
+                    map += 1;
+                    current.contains(&(map - 1))
+                }
+                None => in_window(p, window),
+            };
+            if seen {
+                out.push((*p, l.side));
+            }
+        }
+        out
     }
 
     /// Охват шкалы времени по временам слоёв-картинок и объектов слоёв
@@ -969,6 +998,11 @@ impl DataLayers {
                     Act::Extrude(e) => self.list[at].extrude = *e,
                     Act::Side(s) => self.list[at].side = *s,
                     Act::Time(t) => self.list[at].time = *t,
+                    Act::Year(y) => {
+                        if let Some(p) = &mut self.list[at].picture {
+                            p.time = y.map(scene::oldmaps::year_time);
+                        }
+                    }
                     Act::Folder(f) => self.list[at].folder = f.trim().to_string(),
                     // Вверх и вниз - через соседнюю строку раздела: чужая
                     // папка проходится целиком.
@@ -1276,7 +1310,12 @@ impl DataLayers {
 
     /// Подписи видимых слоёв у точки взгляда (lat, lon).
     pub fn labels(&self, lat: f64, lon: f64) -> Vec<(String, f64, f64)> {
-        self.list.iter().filter(|l| l.visible).flat_map(|l| nearest(l.label_spots(), lat, lon, MAX_LABELS)).collect()
+        self.labels_with_sides(lat, lon).0
+    }
+
+    /// Подписи, как [`DataLayers::labels`], и сторона шторки слоя каждой.
+    pub fn labels_with_sides(&self, lat: f64, lon: f64) -> (Vec<(String, f64, f64)>, Vec<render::Side>) {
+        self.list.iter().filter(|l| l.visible).flat_map(|l| nearest(l.label_spots(), lat, lon, MAX_LABELS).into_iter().map(move |s| (s, l.side))).unzip()
     }
 
     /// Объекты видимых слоёв на рельефе со стороной шторки: выдавленные
@@ -1796,6 +1835,39 @@ fn time_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, out: &mut Vec<(u6
     chosen
 }
 
+/// Поле «Год карты» слоя-картинки, «Год карты…» меню растра модуля:
+/// карта встаёт на шкалу времени и сменяет карты папки по годам. Пустое
+/// поле - карта без года. true - год принят Enter.
+fn year_row(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, out: &mut Vec<(u64, Act)>) -> bool {
+    let current = layer.picture.as_ref().and_then(|p| scene::oldmaps::start(p.time.as_ref())).map(scene::oldmaps::year_label).unwrap_or_default();
+    let key = egui::Id::unique(("map-year", layer.id));
+    let mut text: String = ui.data_mut(|d| d.get_temp(key)).unwrap_or(current);
+    let mut chosen = false;
+    ui.horizontal(|ui| {
+        ui.label(tr(lang, "Map year"));
+        let edit = ui
+            .add(egui::TextEdit::singleline(&mut text).desired_width(60.0))
+            .on_hover_text(tr(lang, "The year of the map. The map goes on the time slider and replaces the maps of its folder by years. An empty field - a map without a year, a year BCE - with a minus sign. Enter applies."));
+        if edit.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+            match scene::oldmaps::parse_year(&text) {
+                Ok(year) => {
+                    out.push((layer.id, Act::Year(year)));
+                    chosen = true;
+                }
+                Err(_) => {
+                    ui.label(egui::RichText::new(tr(lang, "The year is a whole number, for example 1890.")).color(crate::theme::pal().muted));
+                }
+            }
+        }
+    });
+    if chosen {
+        ui.data_mut(|d| d.remove::<String>(key));
+    } else {
+        ui.data_mut(|d| d.insert_temp(key, text));
+    }
+    chosen
+}
+
 /// Подменю подписей и выдавливания по полю, множитель высоты.
 fn labels_extrude(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, out: &mut Vec<(u64, Act)>) -> bool {
     let id = layer.id;
@@ -1883,7 +1955,8 @@ fn picture_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[Str
         }
     });
     ui.separator();
-    let mut chosen = folder_menu(ui, lang, layer, folders, new_folder, out);
+    let mut chosen = year_row(ui, lang, layer, out);
+    chosen |= folder_menu(ui, lang, layer, folders, new_folder, out);
     chosen |= side_menu(ui, lang, layer, out);
     for (name, act) in [("Up", Act::Up), ("Down", Act::Down)] {
         if ui.button(tr(lang, name)).clicked() {
@@ -2160,6 +2233,34 @@ mod tests {
         assert_eq!(row_count(&layers), 6);
         layers.apply(0, &Act::FolderCollapse("F".into()));
         assert_eq!(row_count(&layers), 3);
+    }
+
+    #[test]
+    fn map_years_replace_each_other_in_a_folder() {
+        let map = |name: &str| {
+            let mut ground = scene::overlays::Overlay::new(scene::overlays::Kind::Ground);
+            ground.set_box([58.1, 58.0, 56.3, 56.2, 0.0]);
+            let mut o = scene::kml::Overlay::new(name, ground);
+            o.image = Some(b"\x89PNG".to_vec());
+            o
+        };
+        let mut layers = DataLayers::default();
+        let old = layers.add_picture(map("1890"), "Карты");
+        let new = layers.add_picture(map("1950"), "Карты");
+        layers.apply(old, &Act::Year(Some(1890)));
+        layers.apply(new, &Act::Year(Some(1950)));
+        assert_eq!(layers.get(old).and_then(|l| l.picture.as_ref()).and_then(|p| p.time.clone()), Some(("1890".into(), "1890".into())));
+        let year = |y: i64| scene::oldmaps::start(Some(&scene::oldmaps::year_time(y))).unwrap();
+        let names = |l: &DataLayers, w: Option<(f64, f64)>| l.pictures(w).iter().map(|p| p.name.clone()).collect::<Vec<_>>();
+        // Шкала на 1920 году - видна карта 1890, на 1960 - только 1950,
+        // до 1890 - ни одной, без шкалы - обе.
+        assert_eq!(names(&layers, Some((year(1800), year(1920)))), ["1890"]);
+        assert_eq!(names(&layers, Some((year(1800), year(1960)))), ["1950"]);
+        assert!(names(&layers, Some((year(1700), year(1800)))).is_empty());
+        assert_eq!(names(&layers, None).len(), 2);
+        // Без года - снова картинка без времени, видна всегда.
+        layers.apply(old, &Act::Year(None));
+        assert_eq!(names(&layers, Some((year(1700), year(1800)))), ["1890"]);
     }
 
     #[test]

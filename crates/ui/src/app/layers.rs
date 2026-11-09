@@ -610,6 +610,16 @@ impl LiteApp {
                     self.marks_changed();
                 }
             }
+            // Год карты: охват шкалы заново, шкала открывается на годе
+            // карты, как `edit_map_year` модуля.
+            Act::Year(year) => {
+                self.data_layers.apply(id, act);
+                self.data_extent_seen = self.data_layers.extent();
+                self.time_extent();
+                if let Some(y) = year {
+                    self.timebar.show_time(&scene::oldmaps::year_time(*y));
+                }
+            }
             _ => {
                 self.data_layers.apply(id, act);
             }

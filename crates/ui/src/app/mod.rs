@@ -3357,7 +3357,8 @@ impl LiteApp {
         let key = crate::datalayers::label_key(self.nav.pose.lat, self.nav.pose.lon, self.view_width());
         if std::mem::take(&mut self.data_layers.labels_dirty) || self.data_layers.labels_key != Some(key) {
             self.data_layers.labels_key = Some(key);
-            self.labels.set_layers(&self.data_layers.labels(self.nav.pose.lat, self.nav.pose.lon));
+            let (labels, sides) = self.data_layers.labels_with_sides(self.nav.pose.lat, self.nav.pose.lon);
+            self.labels.set_layers_sided(&labels, &sides);
         }
         let data_lines = std::mem::take(&mut self.data_layers.lines_dirty);
         if self.dots.dirty || self.geo.lines_dirty || data_lines {
@@ -4326,7 +4327,9 @@ impl eframe::App for LiteApp {
         }
         globe.set_split(self.events.swipe().map(|f| f * self.globe_width_px));
         // Шторка слоёв - пока у слоёв есть стороны.
-        globe.set_swipe(self.layer_swipe.filter(|_| self.data_layers.has_sides()).map(|f| f * self.globe_width_px));
+        let swipe = self.layer_swipe.filter(|_| self.data_layers.has_sides()).map(|f| f * self.globe_width_px);
+        globe.set_swipe(swipe);
+        self.labels.swipe = swipe;
         // Снимки полюсов - при подложке-снимке на Земле, как у модуля.
         let imagery = self.planet.earth && data::contours::is_imagery(self.basemap.key(), self.basemap.source().url, false);
         if imagery {
