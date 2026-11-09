@@ -266,6 +266,15 @@
 - LinkedIn и Facebook - посты в лентах автора 9 ноября 2026 года
 - Reddit - пишет автор, тексты в файле постов. Пост RustPlanetX 0.5.2 в r/rust снят автомодератором по правилу 7, повторить с флером Project
 
+### RustPlanetX 0.5.5, 10 ноября 2026 года
+
+Тексты - site/posts_rustplanetx_0.5.5_social.md. Выпуск собирает 0.5.3-0.5.5 (Lite 0.26.0 внутри, вид в макет RustGIS, команды и навык для помощника RustGIS, оформление расчётов). 0.5.3 и 0.5.4 отдельно не анонсировались. Ночью, пока автор спал, сделаны GitHub, Dropbox и заявка в каталог. Площадки соцсетей ждут подтверждения списка автором.
+
+- GitHub: https://github.com/Valery35/rustplanetx/releases/tag/v0.5.5 (коммит 18fb0c2, Lite baabee5)
+- Каталог расширений RustGIS - 0.5.3 влит opengeos/rustgis-plugins#47 9 ноября, заявка opengeos/rustgis-plugins#55 переведена на 0.5.5 (заголовок ещё «0.5.4», меняет автор)
+- Dropbox - RustPlanetX.rgplugin 0.5.5
+- Предложено автору: всегда - Telegram, ВК, Mastodon, X, LinkedIn, Facebook, лента страницы линейки informpp.ru; иногда - OSGeo Discourse и Reddit r/rust с флером Project (пишет автор). Не берутся - форум OSM, linux.org.ru, форум Rust
+
 ### RustPlanetX 0.5.2, 8 ноября 2026 года
 
 Тексты - site/posts_rustplanetx_0.5.2_social.md. Первые публикации RustPlanetX. Сначала по слову автора вышел пост в Telegram, затем выпуск разослан по площадкам группы «всегда».
