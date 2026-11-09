@@ -35,6 +35,8 @@ pub struct FeatureMesh {
     pub line_color: [u8; 4],
     pub fill_color: Option<[u8; 4]>,
     pub width: f32,
+    /// Сторона шторки слоёв.
+    pub side: crate::Side,
 }
 
 #[repr(C)]
@@ -56,6 +58,7 @@ struct GpuFeature {
     line_color: [u8; 4],
     fill_color: Option<[u8; 4]>,
     width: f32,
+    side: crate::Side,
 }
 
 /// Что рисуется: стена, заливка, линия.
@@ -260,6 +263,7 @@ impl Features {
                     line_color: m.line_color,
                     fill_color: m.fill_color,
                     width: m.width,
+                    side: m.side,
                 }
             })
             .collect();
@@ -317,6 +321,7 @@ impl Features {
         pass: &mut wgpu::RenderPass<'_>,
         camera: &Camera,
         ratio: f32,
+        swipe: crate::Swipe,
     ) -> usize {
         if self.items.is_empty() {
             return 0;
@@ -327,6 +332,9 @@ impl Features {
             let Some(item) = self.items.get(*i) else {
                 continue;
             };
+            if !swipe.clip(pass, item.side) {
+                continue;
+            }
             let Ok(offset) = u32::try_from(slot as u64 * self.stride) else {
                 continue;
             };

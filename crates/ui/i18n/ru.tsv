@@ -2405,6 +2405,15 @@ The raster has no spread of values.	У растра нет перепада зн
 The coordinate system of the raster is unknown.	Система координат растра неизвестна.
 Placemarks to My layers	Метки в «Мои слои»
 Copy to My layers	Копия в «Мои слои»
+Swipe	Шторка
+Left	Слева
+Right	Справа
+Both sides	С обеих сторон
+The layer is seen only left of the swipe line. Right of it - layers «Right» and layers without a side.	Слой виден только левее шторки. Правее - слои «Справа» и слои без стороны.
+The layer is seen only right of the swipe line.	Слой виден только правее шторки.
+The layer is seen on both sides of the swipe line.	Слой виден по обе стороны шторки.
+⇆ Layer swipe	⇆ Шторка слоёв
+Comparing layers with a swipe. Layers «Left» are seen left of the line, layers «Right» - right of it, the others on both sides. The side of a layer is the Swipe submenu of the layer menu, the line is dragged with the mouse.	Сравнение слоёв шторкой. Слои «Слева» видны левее шторки, «Справа» - правее, остальные по обе стороны. Сторона слоя - подменю «Шторка» меню слоя, шторка тянется мышью.
 Only a picture on the surface goes to «My layers».	В «Мои слои» идёт только картинка на поверхности.
 Pictures on the surface	Картинки на поверхности
 Copied to «My layers»: {name}	Скопировано в «Мои слои»: {name}

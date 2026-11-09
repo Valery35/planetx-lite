@@ -33,6 +33,8 @@ pub struct PointsMesh {
     pub sizes: Vec<f32>,
     /// Круг с тёмным ободком и непрозрачность вместо квадрата.
     pub dot: Option<Dot>,
+    /// Сторона шторки слоёв.
+    pub side: crate::Side,
 }
 
 /// Вид точек слоя: непрозрачность от 0 до 1 и сдвиг глубины к глазу
@@ -69,6 +71,7 @@ struct GpuCloud {
     instances: wgpu::Buffer,
     count: u32,
     dot: Option<Dot>,
+    side: crate::Side,
 }
 
 /// Облака и их конвейер.
@@ -194,6 +197,7 @@ impl Points {
                     }),
                     count,
                     dot: c.dot,
+                    side: c.side,
                 })
             })
             .collect();
@@ -201,7 +205,7 @@ impl Points {
 
     /// Нарисовать облака в открытом проходе кадра. ratio - пикселей
     /// кадра на логический пиксель. Возвращает количество отрисовок.
-    pub fn draw(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, pass: &mut wgpu::RenderPass<'_>, camera: &Camera, ratio: f32) -> usize {
+    pub fn draw(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, pass: &mut wgpu::RenderPass<'_>, camera: &Camera, ratio: f32, swipe: crate::Swipe) -> usize {
         if self.items.is_empty() {
             return 0;
         }
@@ -230,6 +234,9 @@ impl Points {
             let Ok(offset) = u32::try_from(slot as u64 * self.stride) else {
                 continue;
             };
+            if !swipe.clip(pass, item.side) {
+                continue;
+            }
             pass.set_bind_group(0, &self.bind, &[offset]);
             pass.set_vertex_buffer(0, item.instances.slice(..));
             pass.draw(0..6, 0..item.count);

@@ -266,6 +266,7 @@ fn picture_lies_with_west_left_and_waits_for_image() {
         tint: [255, 255, 255, 255],
         pull: render::PULL,
         order: 0,
+        side: render::Side::Both,
     };
     globe.set_pictures(&[mesh]);
     // Точки кадра в серединах половин картинки, u = 0.25 и 0.75.

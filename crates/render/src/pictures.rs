@@ -34,6 +34,8 @@ pub struct PictureMesh {
     pub tint: [u8; 4],
     pub pull: f32,
     pub order: i64,
+    /// Сторона шторки слоёв.
+    pub side: crate::Side,
 }
 
 #[repr(C)]
@@ -60,6 +62,7 @@ struct GpuPicture {
     count: u32,
     tint: [u8; 4],
     pull: f32,
+    side: crate::Side,
 }
 
 /// Картинки, их сетки и конвейер.
@@ -328,6 +331,7 @@ impl Pictures {
                     count,
                     tint: m.tint,
                     pull: m.pull,
+                    side: m.side,
                 })
             })
             .collect();
@@ -335,7 +339,7 @@ impl Pictures {
 
     /// Нарисовать картинки в открытом проходе кадра. Возвращает
     /// количество отрисовок.
-    pub fn draw(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, pass: &mut wgpu::RenderPass<'_>, camera: &Camera) -> usize {
+    pub fn draw(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, pass: &mut wgpu::RenderPass<'_>, camera: &Camera, swipe: crate::Swipe) -> usize {
         let ready: Vec<usize> = (0..self.items.len()).filter(|i| self.items.get(*i).is_some_and(|p| self.textures.contains_key(&p.key))).collect();
         if ready.is_empty() {
             return 0;
@@ -371,6 +375,9 @@ impl Pictures {
             let Some(texture) = self.textures.get(&item.key) else {
                 continue;
             };
+            if !swipe.clip(pass, item.side) {
+                continue;
+            }
             pass.set_bind_group(0, &self.bind, &[offset]);
             pass.set_bind_group(1, texture, &[]);
             pass.set_vertex_buffer(0, item.vertices.slice(..));

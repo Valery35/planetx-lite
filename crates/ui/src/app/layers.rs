@@ -597,6 +597,15 @@ impl LiteApp {
         });
         self.layers_menu = menu;
         self.new_folder = folder;
+        // «Шторка слоёв» модуля: кнопка видна, пока у слоёв есть стороны.
+        if self.data_layers.has_sides() {
+            let mut on = self.layer_swipe.is_some();
+            if ui.toggle_value(&mut on, tr(lang, "⇆ Layer swipe")).on_hover_text(tr(lang, "Comparing layers with a swipe. Layers «Left» are seen left of the line, layers «Right» - right of it, the others on both sides. The side of a layer is the Swipe submenu of the layer menu, the line is dragged with the mouse.")).changed() {
+                self.layer_swipe = on.then_some(0.5);
+            }
+        } else {
+            self.layer_swipe = None;
+        }
         for (id, act) in data {
             self.data_act(id, &act, now);
         }

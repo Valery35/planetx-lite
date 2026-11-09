@@ -126,6 +126,26 @@ pub struct DataLayer {
     /// Описание слоя - у результата анализа источник, настройки, классы.
     /// Идёт в подсказку строки.
     pub about: String,
+    /// Сторона шторки слоёв, подменю «Шторка» меню слоя модуля.
+    pub side: render::Side,
+}
+
+/// Сторона шторки словом для списка слоёв: left, right или пусто.
+fn side_word(side: render::Side) -> &'static str {
+    match side {
+        render::Side::Left => "left",
+        render::Side::Right => "right",
+        render::Side::Both => "",
+    }
+}
+
+/// Сторона шторки по слову списка слоёв.
+fn side_of(word: &str) -> render::Side {
+    match word {
+        "left" => render::Side::Left,
+        "right" => render::Side::Right,
+        _ => render::Side::Both,
+    }
 }
 
 /// Картинка слоя файлом GeoTIFF в EPSG:4326, `Картинки на поверхности
@@ -471,6 +491,37 @@ impl DataLayer {
         out
     }
 
+    /// Линии и многоугольники слоя, кроме выдавленных, - объектами на
+    /// рельефе. Так рисуется слой со стороной шторки: картинка наложения
+    /// общая у всех слоёв и шторкой не делится. Не больше
+    /// [`MAX_EXTRUDED`] объектов.
+    pub fn flat_shapes(&self) -> Vec<Shape> {
+        let mut out = Vec::new();
+        for (n, item) in self.data.items.iter().enumerate().take(MAX_EXTRUDED) {
+            if self.raised(n).is_some() {
+                continue;
+            }
+            let style = Style { color: self.item_color(n), ..self.style };
+            let (color, fill) = (style.line_rgba(), style.fill_rgba());
+            let mut push = |kind: Kind, points: Vec<(f64, f64)>, holes: Vec<Vec<(f64, f64)>>| {
+                let mut s = Shape::new(kind, points);
+                s.color = color;
+                s.width = f64::from(self.style.width);
+                if kind == Kind::Polygon && fill[3] > 0 {
+                    s.fill = Some(fill);
+                }
+                s.holes = (!holes.is_empty()).then_some(holes);
+                out.push(s);
+            };
+            match item.shape {
+                Geom::Line => item.parts.iter().filter(|p| p.len() > 1).for_each(|p| push(Kind::Line, p.clone(), Vec::new())),
+                Geom::Polygon => polygons(&item.parts).into_iter().filter(|(outer, _)| outer.len() > 2).for_each(|(outer, holes)| push(Kind::Polygon, outer, holes)),
+                Geom::Point | Geom::None => {}
+            }
+        }
+        out
+    }
+
     /// Все точки слоя без отбора выдавленных - для радиуса столбика.
     fn dots_all(&self) -> Vec<(f64, f64)> {
         self.data.items.iter().filter(|i| i.shape == Geom::Point).flat_map(|i| i.parts.iter().filter_map(|p| p.first().copied())).collect()
@@ -542,6 +593,8 @@ pub enum Act {
     ExportPicture,
     /// Слой - в проект открытого RustGIS.
     ToRustGis,
+    /// Сторона шторки слоёв.
+    Side(render::Side),
     Up,
     Down,
     /// Перетаскивание: слой - перед слоем before в папку folder, None -
@@ -674,6 +727,7 @@ impl DataLayers {
                 stale: false,
                 picture: None,
                 about: String::new(),
+                side: render::Side::Both,
             };
             self.list.insert(k, layer);
         }
@@ -711,6 +765,7 @@ impl DataLayers {
             source: None,
             stale: false,
             about: overlay.description.clone(),
+            side: render::Side::Both,
             picture: Some(overlay),
         };
         self.list.insert(at, layer);
@@ -745,7 +800,7 @@ impl DataLayers {
         for l in &self.list {
             if let Some(p) = &l.picture {
                 any = true;
-                (l.id, l.visible, p.overlay.color[3], in_window(p, window)).hash(&mut h);
+                (l.id, l.visible, p.overlay.color[3], in_window(p, window), side_word(l.side)).hash(&mut h);
             }
         }
         if any { h.finish() | 1 } else { 0 }
@@ -755,7 +810,12 @@ impl DataLayers {
     /// окна - все, нижняя строка - первой. Картинка без времени видна
     /// всегда, как метка.
     pub fn pictures(&self, window: Option<(f64, f64)>) -> Vec<&scene::kml::Overlay> {
-        self.list.iter().rev().filter(|l| l.visible).filter_map(|l| l.picture.as_ref()).filter(|p| in_window(p, window)).collect()
+        self.picture_sides(window).into_iter().map(|(p, _)| p).collect()
+    }
+
+    /// Картинки, как [`DataLayers::pictures`], со стороной шторки слоя.
+    pub fn picture_sides(&self, window: Option<(f64, f64)>) -> Vec<(&scene::kml::Overlay, render::Side)> {
+        self.list.iter().rev().filter(|l| l.visible).filter_map(|l| l.picture.as_ref().map(|p| (p, l.side))).filter(|(p, _)| in_window(p, window)).collect()
     }
 
     /// Охват шкалы времени по временам слоёв-картинок, как у меток.
@@ -822,6 +882,7 @@ impl DataLayers {
                     }
                     Act::Label(f) => self.list[at].label = *f,
                     Act::Extrude(e) => self.list[at].extrude = *e,
+                    Act::Side(s) => self.list[at].side = *s,
                     Act::Folder(f) => self.list[at].folder = f.trim().to_string(),
                     // Вверх и вниз - через соседнюю строку раздела: чужая
                     // папка проходится целиком.
@@ -877,6 +938,9 @@ impl DataLayers {
                 });
                 if !l.about.is_empty() {
                     v["about"] = serde_json::Value::String(l.about.clone());
+                }
+                if l.side != render::Side::Both {
+                    v["side"] = serde_json::Value::String(side_word(l.side).to_string());
                 }
                 if let Some(p) = &l.picture {
                     v["picture"] = serde_json::json!({ "corners": p.overlay.corners, "box": p.overlay.latlon_box, "description": p.description });
@@ -1029,6 +1093,7 @@ impl DataLayers {
                     p
                 }),
                 about: text_of("about"),
+                side: side_of(&text_of("side")),
             });
         }
         out.collapsed = root.get("collapsed").and_then(serde_json::Value::as_array).into_iter().flatten().filter_map(|f| f.as_str().map(str::to_string)).collect();
@@ -1096,19 +1161,26 @@ impl DataLayers {
     /// Линии видимых слоёв для картинки наложения: нижняя строка
     /// списка - внизу стопки.
     pub fn line_set(&self) -> Option<Arc<Vec<Line>>> {
-        let lines: Vec<Line> = self.list.iter().rev().filter(|l| l.visible).flat_map(DataLayer::lines).collect();
+        // Слой со стороной шторки - объектами на рельефе (`shapes`).
+        let lines: Vec<Line> = self.list.iter().rev().filter(|l| l.visible && l.side == render::Side::Both).flat_map(DataLayer::lines).collect();
         (!lines.is_empty()).then(|| Arc::new(lines))
     }
 
-    /// Точки видимых слоёв: точки, цвет, размер, непрозрачность.
-    pub fn dot_sets(&self) -> Vec<DotSet> {
+    /// Точки видимых слоёв: точки, цвет, размер, непрозрачность, сторона
+    /// шторки.
+    pub fn dot_sets(&self) -> Vec<(DotSet, render::Side)> {
         self.list
             .iter()
             .rev()
             .filter(|l| l.visible)
-            .map(|l| (l.dots(), l.style.color, l.style.size, l.style.opacity))
-            .filter(|(d, _, _, _)| !d.is_empty())
+            .map(|l| ((l.dots(), l.style.color, l.style.size, l.style.opacity), l.side))
+            .filter(|((d, _, _, _), _)| !d.is_empty())
             .collect()
+    }
+
+    /// Есть слой со стороной шторки: видна кнопка «Шторка слоёв».
+    pub fn has_sides(&self) -> bool {
+        self.list.iter().any(|l| l.side != render::Side::Both)
     }
 
     /// Подписи видимых слоёв у точки взгляда (lat, lon).
@@ -1116,9 +1188,17 @@ impl DataLayers {
         self.list.iter().filter(|l| l.visible).flat_map(|l| nearest(l.label_spots(), lat, lon, MAX_LABELS)).collect()
     }
 
-    /// Выдавленные объекты видимых слоёв.
-    pub fn shapes(&self, radius: f64) -> Vec<Shape> {
-        self.list.iter().filter(|l| l.visible).flat_map(|l| l.extruded(radius)).collect()
+    /// Объекты видимых слоёв на рельефе со стороной шторки: выдавленные
+    /// и все линии и многоугольники слоя со стороной.
+    pub fn shapes(&self, radius: f64) -> Vec<(Shape, render::Side)> {
+        self.list
+            .iter()
+            .filter(|l| l.visible)
+            .flat_map(|l| {
+                let flat = if l.side == render::Side::Both { Vec::new() } else { l.flat_shapes() };
+                l.extruded(radius).into_iter().chain(flat).map(move |s| (s, l.side))
+            })
+            .collect()
     }
 
     /// Группы окна «Объекты» у точки (lat, lon): название слоя и его
@@ -1168,6 +1248,7 @@ impl DataLayers {
                 stale: false,
                 picture: None,
                 about: String::new(),
+                side: render::Side::Both,
             };
             self.list.insert(at, layer);
         }
@@ -1501,6 +1582,7 @@ fn menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], ne
     let mut chosen = labels_extrude(ui, lang, layer, out);
     ui.separator();
     chosen |= folder_menu(ui, lang, layer, folders, new_folder, out);
+    chosen |= side_menu(ui, lang, layer, out);
     if ui.button(tr(lang, "Up")).clicked() {
         out.push((id, Act::Up));
         chosen = true;
@@ -1624,6 +1706,25 @@ fn labels_extrude(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, out: &mut Ve
 
 /// Меню слоя-картинки: объектов, подписей и стиля линий у неё нет.
 /// Остаются непрозрачность, папка, порядок, копия в «Мои метки».
+/// Подменю «Шторка» меню слоя, как у модуля: слой слева, справа или
+/// по обе стороны линии шторки. true - сторона выбрана.
+fn side_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, out: &mut Vec<(u64, Act)>) -> bool {
+    let mut chosen = false;
+    ui.menu_button(tr(lang, "Swipe"), |ui| {
+        for (side, name, tip) in [
+            (render::Side::Left, "Left", "The layer is seen only left of the swipe line. Right of it - layers «Right» and layers without a side."),
+            (render::Side::Right, "Right", "The layer is seen only right of the swipe line."),
+            (render::Side::Both, "Both sides", "The layer is seen on both sides of the swipe line."),
+        ] {
+            if ui.radio(layer.side == side, tr(lang, name)).on_hover_text(tr(lang, tip)).clicked() {
+                out.push((layer.id, Act::Side(side)));
+                chosen = true;
+            }
+        }
+    });
+    chosen
+}
+
 fn picture_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], new_folder: &mut String, out: &mut Vec<(u64, Act)>) -> bool {
     let id = layer.id;
     if let Some(text) = layer.picture.as_ref().map(|p| p.description.as_str()).filter(|d| !d.is_empty()) {
@@ -1640,6 +1741,7 @@ fn picture_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[Str
     });
     ui.separator();
     let mut chosen = folder_menu(ui, lang, layer, folders, new_folder, out);
+    chosen |= side_menu(ui, lang, layer, out);
     for (name, act) in [("Up", Act::Up), ("Down", Act::Down)] {
         if ui.button(tr(lang, name)).clicked() {
             out.push((id, act));
@@ -2105,7 +2207,7 @@ mod tests {
         assert_eq!(set.len(), 2);
         assert_eq!(set[0].holes.len(), 1);
         assert!(set[0].fill.is_some() && set[1].fill.is_none());
-        assert_eq!(layers.dot_sets()[0].0, vec![(60.0, 50.0)]);
+        assert_eq!(layers.dot_sets()[0].0.0, vec![(60.0, 50.0)]);
         let id = layers.list[0].id;
         layers.apply(id, &Act::Visible(false));
         assert!(layers.line_set().is_none() && layers.dot_sets().is_empty());
@@ -2120,10 +2222,35 @@ mod tests {
         let shapes = layers.shapes(6_371_000.0);
         // Пруд - призма 6 м с дырой, у точки пусто, у линии высота меньше нуля.
         assert_eq!(shapes.len(), 1);
-        assert!((shapes[0].height - 6.0).abs() < 1e-9 && shapes[0].extrude);
-        assert_eq!(shapes[0].holes.as_ref().map(Vec::len), Some(1));
+        assert!((shapes[0].0.height - 6.0).abs() < 1e-9 && shapes[0].0.extrude);
+        assert_eq!(shapes[0].0.holes.as_ref().map(Vec::len), Some(1));
         // В картинке наложения осталась только линия.
         assert_eq!(layers.line_set().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn side_layer_leaves_the_overlay_for_shapes_and_keeps_its_side() {
+        let mut layers = DataLayers::default();
+        layers.add(vec![layer()], "a.gpkg");
+        let id = layers.list[0].id;
+        assert!(!layers.has_sides() && layers.shapes(6_371_000.0).is_empty());
+        layers.apply(id, &Act::Side(render::Side::Left));
+        assert!(layers.has_sides());
+        // Линии и многоугольники - объектами на рельефе со стороной,
+        // картинка наложения пуста, точки - со стороной.
+        assert!(layers.line_set().is_none());
+        let shapes = layers.shapes(6_371_000.0);
+        assert_eq!(shapes.len(), 2);
+        assert!(shapes.iter().all(|(s, side)| *side == render::Side::Left && !s.extrude));
+        assert!(shapes.iter().any(|(s, _)| s.kind == Kind::Polygon && s.fill.is_some() && s.holes.as_ref().map(Vec::len) == Some(1)));
+        assert_eq!(layers.dot_sets()[0].1, render::Side::Left);
+        // Сторона - в списке хранилища и обратно.
+        let text = layers.index(true);
+        assert!(text.contains("\"side\":\"left\""));
+        let (back, _) = DataLayers::from_index(&text, &|_| None);
+        assert_eq!(back.list[0].side, render::Side::Left);
+        layers.apply(id, &Act::Side(render::Side::Both));
+        assert!(!layers.has_sides() && layers.line_set().is_some());
     }
 
     #[test]

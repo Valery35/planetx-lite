@@ -219,14 +219,14 @@ pub fn ground_mesh(overlay: &Overlay, key: &str, heights: &HeightStore) -> Optio
             indices.extend_from_slice(&[a, a + 1, a + row + 1, a, a + row + 1, a + row]);
         }
     }
-    Some(PictureMesh { key: key.to_string(), center, offsets, uv, indices, tint: overlay.overlay.color, pull: PULL, order: overlay.overlay.order })
+    Some(PictureMesh { side: render::Side::Both, key: key.to_string(), center, offsets, uv, indices, tint: overlay.overlay.color, pull: PULL, order: overlay.overlay.order })
 }
 
 /// Плоскость фото перед его камерой. None - камеры нет.
 pub fn photo_mesh(overlay: &Overlay, key: &str) -> Option<PictureMesh> {
     let o = &overlay.overlay;
     let mesh = overlays::photo_mesh(&o.camera?, o.fov, o.near);
-    Some(PictureMesh {
+    Some(PictureMesh { side: render::Side::Both,
         key: key.to_string(),
         center: mesh.center,
         offsets: mesh.positions.to_vec(),

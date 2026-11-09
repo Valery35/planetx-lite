@@ -884,7 +884,7 @@ impl Dots {
                 }
                 let points: Vec<DVec3> = dots.iter().map(|d| ellipsoid.geodetic_to_ecef(d.lat, d.lon, height(d.lat, d.lon))).collect();
                 let center = points.iter().fold(DVec3::ZERO, |a, p| a + *p) / points.len() as f64;
-                Some(render::PointsMesh {
+                Some(render::PointsMesh { side: render::Side::Both,
                     center,
                     offsets: points.iter().map(|p| (*p - center).as_vec3().to_array()).collect(),
                     colors: dots.iter().map(|d| d.color).collect(),

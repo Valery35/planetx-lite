@@ -54,6 +54,50 @@ use points::Points;
 pub use pictures::{PictureMesh, mip_levels};
 use pictures::Pictures;
 
+/// Сторона шторки слоёв, подменю «Шторка» меню слоя модуля: объект виден
+/// по обе стороны линии, только левее или только правее неё.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Side {
+    #[default]
+    Both,
+    Left,
+    Right,
+}
+
+/// Шторка слоёв кадра: линия в пикселях кадра и размер кадра.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct Swipe {
+    pub line: Option<f32>,
+    pub width: u32,
+    pub height: u32,
+}
+
+impl Swipe {
+    /// Отсечь проход по стороне side. false - объект не виден.
+    pub fn clip(self, pass: &mut wgpu::RenderPass<'_>, side: Side) -> bool {
+        match side_rect(side, self.line, self.width, self.height) {
+            Some((x, y, w, h)) => {
+                pass.set_scissor_rect(x, y, w, h);
+                true
+            }
+            None => false,
+        }
+    }
+}
+
+/// Прямоугольник отсечения (x, y, ширина, высота) объекта стороны side
+/// при линии шторки swipe (пиксели кадра) в кадре width × height. None -
+/// объект не виден: его сторона пуста.
+pub fn side_rect(side: Side, swipe: Option<f32>, width: u32, height: u32) -> Option<(u32, u32, u32, u32)> {
+    let line = swipe.filter(|x| x.is_finite()).map(|x| x.clamp(0.0, width as f32).round() as u32);
+    let (x, w) = match (side, line) {
+        (Side::Both, _) | (_, None) => (0, width),
+        (Side::Left, Some(at)) => (0, at),
+        (Side::Right, Some(at)) => (at, width - at),
+    };
+    (w > 0 && height > 0).then_some((x, 0, w, height))
+}
+
 /// Формат кадра глобуса - без sRGB: перевод в sRGB делает шейдер, egui
 /// показывает значения как есть.
 pub const COLOR_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba8Unorm;
@@ -409,6 +453,9 @@ pub struct Globe {
     events: [HashMap<TileKey, GpuView>; 2],
     /// Линия шторки в пикселях кадра, None - шторки нет.
     split: Option<f32>,
+    /// Линия шторки слоёв в пикселях кадра, None - шторка снята: объекты
+    /// со стороной видны целиком.
+    swipe: Option<f32>,
     /// Группа 3 тайла: наложение, огни и снимки события.
     over_layout: wgpu::BindGroupLayout,
     over_binds: HashMap<OverPair, wgpu::BindGroup>,
@@ -962,6 +1009,7 @@ impl Globe {
             water_masks: HashMap::new(),
             events: [HashMap::new(), HashMap::new()],
             split: None,
+            swipe: None,
             lights: HashMap::new(),
             over_layout,
             over_binds: HashMap::new(),
@@ -1273,6 +1321,12 @@ impl Globe {
     /// None - шторки нет, видны снимки «после».
     pub fn set_split(&mut self, split: Option<f32>) {
         self.split = split.filter(|x| x.is_finite());
+    }
+
+    /// Линия шторки слоёв в пикселях кадра: объекты стороны Left видны
+    /// левее, Right - правее. None - шторка снята.
+    pub fn set_swipe(&mut self, swipe: Option<f32>) {
+        self.swipe = swipe.filter(|x| x.is_finite());
     }
 
     /// Наложение линий для тайла: своё или доля наложения предка, пока
@@ -2267,9 +2321,12 @@ impl Globe {
                 draws += self.live.draw(&mut pass, &self.shadow.model_bind);
                 draws += self.flight.draw(&mut pass, &self.shadow.model_bind);
                 draws += self.tiles.draw(&mut pass, &self.shadow.model_bind);
-                draws += self.points.draw(&self.device, &self.queue, &mut pass, camera, ratio);
-                draws += self.pictures.draw(&self.device, &self.queue, &mut pass, camera);
-                draws += self.features.draw(&self.device, &self.queue, &mut pass, camera, ratio);
+                let swipe = Swipe { line: self.swipe, width: target.width, height: target.height };
+                draws += self.points.draw(&self.device, &self.queue, &mut pass, camera, ratio, swipe);
+                draws += self.pictures.draw(&self.device, &self.queue, &mut pass, camera, swipe);
+                draws += self.features.draw(&self.device, &self.queue, &mut pass, camera, ratio, swipe);
+                // Дальше рисуется без отсечения шторкой.
+                pass.set_scissor_rect(0, 0, target.width, target.height);
             }
             if counting {
                 let paint = options.show_holes || !USE_QUERIES;

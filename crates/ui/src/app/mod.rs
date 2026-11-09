@@ -660,6 +660,8 @@ pub struct LiteApp {
     globe_width_px: f32,
     /// Линию шторки тянут мышью.
     swipe_drag: bool,
+    /// Шторка слоёв «Моих слоёв»: линия в доле ширины вида, None - снята.
+    layer_swipe: Option<f32>,
     /// Поиск и чтение облаков лидара у точки.
     lidar: Option<crate::lidarnet::Lidar>,
     /// Подписи облаков лидара на глобусе.
@@ -1379,6 +1381,7 @@ impl LiteApp {
             event_empty: Default::default(),
             globe_width_px: 0.0,
             swipe_drag: false,
+            layer_swipe: None,
             lidar: None,
             lidar_credits: Vec::new(),
             gibs_pending,
@@ -3024,7 +3027,9 @@ impl LiteApp {
     /// Линия шторки снимков события на виде rect: рисуется поверх глобуса,
     /// тянется мышью. Истина - мышь у линии, глобус её не получает.
     fn swipe_input(&mut self, ctx: &egui::Context, rect: egui::Rect) -> bool {
-        let Some(share) = self.events.swipe() else {
+        // Шторка снимков события важнее шторки слоёв: ручка у неё одна.
+        let events = self.events.swipe().is_some();
+        let Some(share) = self.events.swipe().or(self.layer_swipe) else {
             self.swipe_drag = false;
             return false;
         };
@@ -3041,7 +3046,12 @@ impl LiteApp {
         if self.swipe_drag
             && let Some(p) = pos
         {
-            self.events.split = ((p.x - rect.left()) / rect.width().max(1.0)).clamp(0.02, 0.98);
+            let share = ((p.x - rect.left()) / rect.width().max(1.0)).clamp(0.02, 0.98);
+            if events {
+                self.events.split = share;
+            } else {
+                self.layer_swipe = Some(share);
+            }
         }
         if near || self.swipe_drag {
             ctx.set_cursor_icon(egui::CursorIcon::ResizeHorizontal);
@@ -3051,16 +3061,16 @@ impl LiteApp {
 
     /// Линия шторки и ручка с днями сторон поверх кадра глобуса.
     fn draw_swipe(&self, painter: &egui::Painter, rect: egui::Rect) {
-        if self.events.swipe().is_none() {
+        let Some(share) = self.events.swipe().or(self.layer_swipe) else {
             return;
-        }
-        let x = rect.left() + self.events.split * rect.width();
+        };
+        let x = rect.left() + share * rect.width();
         let p = crate::theme::pal();
         painter.line_segment([egui::pos2(x, rect.top()), egui::pos2(x, rect.bottom())], egui::Stroke::new(2.0, egui::Color32::WHITE));
         let mid = egui::pos2(x, rect.center().y);
         painter.circle(mid, 11.0, p.plate, egui::Stroke::new(2.0, egui::Color32::WHITE));
         painter.text(mid, egui::Align2::CENTER_CENTER, "⇆", egui::FontId::proportional(14.0), p.plate_text);
-        if let Some(s) = &self.events.shown {
+        if let Some(s) = self.events.shown.as_ref().filter(|_| self.events.swipe().is_some()) {
             let font = egui::FontId::proportional(13.0);
             let shadow = egui::Color32::from_black_alpha(160);
             for (text, anchor, at) in [(s.before.clone().unwrap_or_default(), egui::Align2::RIGHT_TOP, egui::pos2(x - 8.0, rect.top() + 8.0)), (s.day.clone(), egui::Align2::LEFT_TOP, egui::pos2(x + 8.0, rect.top() + 8.0))] {
@@ -3371,10 +3381,11 @@ impl LiteApp {
 
             all.extend(self.dots.meshes(&self.nav.camera.ellipsoid, &height, window));
             // Точки слоёв «Моих данных» - кругами на рельефе.
-            for (dots, color, size, alpha) in self.data_layers.dot_sets() {
+            for ((dots, color, size, alpha), side) in self.data_layers.dot_sets() {
                 let points: Vec<DVec3> = dots.iter().map(|(lat, lon)| self.nav.camera.ellipsoid.geodetic_to_ecef(*lat, *lon, height(*lat, *lon))).collect();
                 let center = points.iter().fold(DVec3::ZERO, |a, p| a + *p) / points.len() as f64;
                 all.push(render::PointsMesh {
+                    side,
                     center,
                     offsets: points.iter().map(|p| (*p - center).as_vec3().to_array()).collect(),
                     colors: vec![color; points.len()],
@@ -3405,7 +3416,7 @@ impl LiteApp {
             if !dots.is_empty() {
                 let points: Vec<DVec3> = dots.iter().map(|d| e.geodetic_to_ecef(d.lat, d.lon, level(d))).collect();
                 let center = points.iter().fold(DVec3::ZERO, |a, p| a + *p) / points.len() as f64;
-                all.push(render::PointsMesh {
+                all.push(render::PointsMesh { side: render::Side::Both,
                     center,
                     offsets: points.iter().map(|p| (*p - center).as_vec3().to_array()).collect(),
                     colors: dots.iter().map(|d| [d.color[0], d.color[1], d.color[2]]).collect(),
@@ -3418,7 +3429,7 @@ impl LiteApp {
             if !poles.is_empty() {
                 let points: Vec<globe_core::DVec3> = poles.iter().map(|(lat, lon, _)| self.nav.camera.ellipsoid.geodetic_to_ecef(*lat, *lon, height(*lat, *lon))).collect();
                 let center = points.iter().fold(globe_core::DVec3::ZERO, |a, p| a + *p) / points.len() as f64;
-                all.push(render::PointsMesh {
+                all.push(render::PointsMesh { side: render::Side::Both,
                     center,
                     offsets: points.iter().map(|p| (*p - center).as_vec3().to_array()).collect(),
                     colors: poles.iter().map(|p| p.2).collect(),
@@ -4307,6 +4318,8 @@ impl eframe::App for LiteApp {
             }
         }
         globe.set_split(self.events.swipe().map(|f| f * self.globe_width_px));
+        // Шторка слоёв - пока у слоёв есть стороны.
+        globe.set_swipe(self.layer_swipe.filter(|_| self.data_layers.has_sides()).map(|f| f * self.globe_width_px));
         // Снимки полюсов - при подложке-снимке на Земле, как у модуля.
         let imagery = self.planet.earth && data::contours::is_imagery(self.basemap.key(), self.basemap.source().url, false);
         if imagery {
@@ -4381,7 +4394,7 @@ impl eframe::App for LiteApp {
             // строятся заново и с новыми высотами.
             if data_stale || fresh.is_some() {
                 let radius = self.nav.camera.ellipsoid.a;
-                self.data_meshes = self.data_layers.shapes(radius).iter().filter_map(|s| crate::marks::mesh(s, &store)).collect();
+                self.data_meshes = self.data_layers.shapes(radius).iter().filter_map(|(s, side)| crate::marks::mesh(s, &store).map(|m| render::FeatureMesh { side: *side, ..m })).collect();
             }
             if let Some(meshes) = &fresh {
                 self.marks_meshes = meshes.clone();
@@ -4413,7 +4426,7 @@ impl eframe::App for LiteApp {
         if listed && (fresh.is_some() || tracks_models || preview_dirty) && self.overlays_built != Some(self.marks.overlays_version()) {
             self.overlays_built = Some(self.marks.overlays_version());
             let mut meshes = self.marks.picture_meshes(&store);
-            meshes.extend(self.data_layers.pictures(self.timebar.window()).into_iter().filter_map(|o| crate::pictures::ground_mesh(o, &crate::pictures::key_of(o), &store)));
+            meshes.extend(self.data_layers.picture_sides(self.timebar.window()).into_iter().filter_map(|(o, side)| crate::pictures::ground_mesh(o, &crate::pictures::key_of(o), &store).map(|m| render::PictureMesh { side, ..m })));
             meshes.extend(self.preview.as_ref().and_then(|o| crate::pictures::ground_mesh(o, &crate::pictures::key_of(o), &store)));
             globe.set_pictures(&meshes);
             let built = self.models.meshes(&model_list, &store, now);

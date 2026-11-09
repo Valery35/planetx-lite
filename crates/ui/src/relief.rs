@@ -170,7 +170,7 @@ impl Relief {
             };
             let ecef: Vec<globe_core::DVec3> = points.iter().map(|(lat, lon)| ellipsoid.geodetic_to_ecef(*lat, *lon, level * scale)).collect();
             let center = ecef.iter().fold(globe_core::DVec3::ZERO, |a, p| a + *p) / ecef.len().max(1) as f64;
-            out.push(render::FeatureMesh {
+            out.push(render::FeatureMesh { side: render::Side::Both,
                 center,
                 offsets: ecef.iter().map(|p| (*p - center).as_vec3().to_array()).collect(),
                 lines: Vec::new(),

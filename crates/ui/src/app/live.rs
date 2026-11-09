@@ -610,7 +610,7 @@ impl LiteApp {
         self.sat_points.clear();
         if !self.sat_shown.is_empty() {
             let center = self.sat_shown.iter().fold(DVec3::ZERO, |a, (_, p)| a + *p) / self.sat_shown.len() as f64;
-            self.sat_points.push(render::PointsMesh {
+            self.sat_points.push(render::PointsMesh { side: render::Side::Both,
                 center,
                 offsets: self.sat_shown.iter().map(|(_, p)| (*p - center).as_vec3().to_array()).collect(),
                 colors,
@@ -797,7 +797,7 @@ impl LiteApp {
             self.live_points.clear();
             if !points.is_empty() {
                 let center = points.iter().fold(DVec3::ZERO, |a, p| a + *p) / points.len() as f64;
-                self.live_points.push(render::PointsMesh {
+                self.live_points.push(render::PointsMesh { side: render::Side::Both,
                     center,
                     offsets: points.iter().map(|p| (*p - center).as_vec3().to_array()).collect(),
                     colors,

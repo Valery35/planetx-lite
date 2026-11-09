@@ -186,7 +186,7 @@ pub fn mesh(shape: &Shape, heights: &HeightStore) -> Option<FeatureMesh> {
     };
     let xyz = features::vertices(&geo, shape.height, Some(&heights_at), features::altitude_mode(shape), None, 1.0);
     let (center, offsets) = features::centered(&xyz);
-    Some(FeatureMesh {
+    Some(FeatureMesh { side: render::Side::Both,
         center,
         offsets,
         lines: geo.lines,
