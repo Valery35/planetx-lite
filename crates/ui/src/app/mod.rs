@@ -972,6 +972,8 @@ enum SnapshotTo {
     Mcp,
     /// Кадр записи тура.
     Frame,
+    /// Картинка в макет RustGIS, «Вид в макет QGIS» модуля.
+    RustgisLayout,
 }
 
 /// Наибольшая сторона снимка вида для агента MCP, пикселей.
@@ -1531,7 +1533,10 @@ impl LiteApp {
         #[cfg(target_arch = "wasm32")]
         let sync_button: Option<(bool, bool)> = None;
         let mut sync_toggle = false;
-        let current = if self.sky.is_some() { "sky" } else { self.planet.key() };
+        // «Вид в макет RustGIS» - пока есть связь, как «Вид в макет QGIS»
+        // модуля при открытом проекте.
+        let layout_button = sync_button.is_some_and(|(_, ready)| ready);
+        let current =if self.sky.is_some() { "sky" } else { self.planet.key() };
         // Узкий экран, телефон: все значки панели в ширину вида не входят.
         // На панели остаются частые, прочие - строками с названиями
         // в меню «…».
@@ -1563,6 +1568,9 @@ impl LiteApp {
                     }
                     if tool_item(ui, rows, Tool::Copy, false, true, tr(lang, "Copy the view to the clipboard"), tr(lang, "Copy of the view to the clipboard - the globe with labels, without the toolbar, the navigation controls and the time slider.")).clicked() {
                         snapshot = Some(SnapshotTo::Clipboard);
+                    }
+                    if layout_button && tool_item(ui, rows, Tool::Layout, false, true, tr(lang, "View to the RustGIS layout"), tr(lang, "View to a RustGIS layout as a fixed picture stored in the project. The picture goes to the only layout, otherwise to the open one, otherwise to a new A4 layout.")).clicked() {
+                        snapshot = Some(SnapshotTo::RustgisLayout);
                     }
                     let scene_tip = tr(lang, "Scene - the camera and the selected folder of My Places with its tour. It is saved to a file and opens on another computer.");
                     let demo_tip = tr(lang, "Demo: prepared scenes with placemarks and tours on the Earth, Mars, the Moon and in the sky. The placemarks go to a new folder of My Places, the ▶ button under the list plays the tour.");

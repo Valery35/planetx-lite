@@ -2470,6 +2470,11 @@ RustPlanetX - area analysis	RustPlanetX - анализ участка
 The calculation goes to the RustGIS project, group {group}.	Расчёт уходит в проект RustGIS, группа {group}.
 The calculation goes to the RustGIS project, group {group}. The GeoTIFF file is not written: {e}	Расчёт уходит в проект RustGIS, группа {group}. Файл GeoTIFF не записан: {e}
 Layers as on the RustGIS map	Слои как на карте RustGIS
+View to the RustGIS layout	Вид в макет RustGIS
+View to a RustGIS layout as a fixed picture stored in the project. The picture goes to the only layout, otherwise to the open one, otherwise to a new A4 layout.	Вид в макет RustGIS неизменной картинкой, сохранённой в проекте. Картинка ложится в единственный макет, иначе в открытый, иначе в новый макет A4.
+The view goes to a RustGIS layout.	Вид уходит в макет RustGIS.
+The view is in the RustGIS layout {layout}.	Вид лёг в макет RustGIS «{layout}».
+The view is in the layout open in RustGIS.	Вид лёг в макет, открытый в RustGIS.
 With the check the globe shows the layers switched on in RustGIS, a check in the RustGIS project section switches the layer on the map too, and the opacity sets its transparency there. Without the check the checks of the globe are its own, kept for each project, and do not change the map.	С флажком глобус показывает слои, включённые в RustGIS, отметка в разделе «Проект RustGIS» включает слой и на карте, а непрозрачность задаёт его прозрачность там. Без флажка отметки глобуса свои, хранятся для каждого проекта и карту не меняют.
 Opacity of the layer on the globe. In the mode Layers as on the RustGIS map - on the map too.	Непрозрачность слоя на глобусе. В режиме «Слои как на карте RustGIS» - и на карте.
 No link with RustGIS: the calculation is not added to the project. The GeoTIFF files are written to the results folder.	Нет связи с RustGIS: расчёт не добавлен в проект. Файлы GeoTIFF записаны в папку результатов.

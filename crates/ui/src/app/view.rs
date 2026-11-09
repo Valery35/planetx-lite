@@ -137,6 +137,11 @@ impl LiteApp {
             self.film_frame(result);
             return;
         }
+        #[cfg(not(target_arch = "wasm32"))]
+        if to == SnapshotTo::RustgisLayout {
+            self.view_to_rustgis(result);
+            return;
+        }
         if to == SnapshotTo::Mcp {
             let shot = result.ok().and_then(|image| {
                 let png = to_png(&image).ok()?;
@@ -169,7 +174,7 @@ impl LiteApp {
                 Err(e) => Some(trf(self.lang, "Not saved: {e}", &[("e", &e)])),
             },
             (_, Err(e)) => Some(trf(self.lang, "Not saved: {e}", &[("e", &e)])),
-            (SnapshotTo::Mcp | SnapshotTo::Frame, Ok(_)) => None,
+            (SnapshotTo::Mcp | SnapshotTo::Frame | SnapshotTo::RustgisLayout, Ok(_)) => None,
         };
     }
 

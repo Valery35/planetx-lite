@@ -129,7 +129,9 @@ impl LiteApp {
                     }
                 }
                 News::Done(name) => self.open_message = Some(trf(self.lang, "The layer {name} is added to the RustGIS project.", &[("name", &name)])),
-                News::Added(group) => self.open_message = Some(trf(self.lang, "The calculation is added to the RustGIS project, group {group}.", &[("group", &group)])),
+                News::InLayout(Some(layout)) => self.open_message = Some(trf(self.lang, "The view is in the RustGIS layout {layout}.", &[("layout", &layout)])),
+                News::InLayout(None) => self.open_message = Some(tr(self.lang, "The view is in the layout open in RustGIS.").to_string()),
+                News::Added(group) =>self.open_message = Some(trf(self.lang, "The calculation is added to the RustGIS project, group {group}.", &[("group", &group)])),
                 News::Tiles { layer, template, max_zoom } => self.rustgis_tiles(layer, &template, max_zoom),
                 News::CutFailed { layer, error } => {
                     if let Some(sync) = &mut self.rustgis {
@@ -248,6 +250,28 @@ impl LiteApp {
         self.open_message = Some(match failed {
             Some(e) => trf(lang, "The calculation goes to the RustGIS project, group {group}. The GeoTIFF file is not written: {e}", &[("group", &group), ("e", &e)]),
             None => trf(lang, "The calculation goes to the RustGIS project, group {group}.", &[("group", &group)]),
+        });
+    }
+
+    /// Снимок вида пришёл - картинкой в макет RustGIS, «Вид в макет QGIS»
+    /// модуля. Картинка - снимок окна глобуса без панелей, с подписью
+    /// источников, PNG или JPEG до 16 МБ.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(super) fn view_to_rustgis(&mut self, result: Result<egui::ColorImage, String>) {
+        let lang = self.lang;
+        let picture = result.and_then(|image| {
+            let [w, h] = image.size;
+            let aspect = w as f64 / h.max(1) as f64;
+            let (bytes, ext) = crate::rustgislink::layout_picture(to_png(&image)?)?;
+            Ok((bytes, ext, aspect))
+        });
+        self.open_message = Some(match (picture, &self.rustgis) {
+            (Ok((image, ext, aspect)), Some(b)) if b.connected => {
+                b.link.ask(crate::rustgislink::Ask::ToLayout { image, ext: ext.to_string(), aspect });
+                tr(lang, "The view goes to a RustGIS layout.").to_string()
+            }
+            (Ok(_), _) => trf(lang, "No link with RustGIS: {error}. In RustGIS start the MCP Relay command.", &[("error", tr(lang, crate::rustgislink::RELAY_OFF))]),
+            (Err(e), _) => trf(lang, "RustGIS: {error}", &[("error", &e)]),
         });
     }
 

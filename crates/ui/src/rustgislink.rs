@@ -114,6 +114,10 @@ pub enum Ask {
     Raster { layer: i64, name: String, max_zoom: u32 },
     /// Видимость тайлового слоя на карте RustGIS (`map.setTiles`).
     TilesVisibility { id: String, visible: bool },
+    /// Вид глобуса - картинкой в макет RustGIS, как «Вид в макет QGIS»
+    /// модуля (`ui/snapshot.py`): байты PNG или JPEG, расширение файла
+    /// и ширина картинки к высоте.
+    ToLayout { image: Vec<u8>, ext: String, aspect: f64 },
 }
 
 /// Весть потока окну.
@@ -131,6 +135,9 @@ pub enum News {
     Done(String),
     /// Расчёт лёг в проект RustGIS группой с этим названием.
     Added(String),
+    /// Вид лёг картинкой в макет RustGIS с этим названием. None - в макет,
+    /// открытый в RustGIS.
+    InLayout(Option<String>),
     /// Тайлы растра слоя layer нарезаны: шаблон адреса file:/// с {z},
     /// {x} и {y} и глубший уровень.
     Tiles { layer: i64, template: String, max_zoom: u32 },
@@ -595,9 +602,117 @@ fn perform(s: &mut dyn Channel, ask: Ask) -> Result<String, String> {
         Ask::Visibility { layer, visible } => s.command("layer.visibility", serde_json::json!({"layer": layer, "visible": visible})).map(|_| String::new()),
         Ask::Transparency { layer, percent } => s.command("layer.transparency", serde_json::json!({"layer": layer, "value": percent.min(100)})).map(|_| String::new()),
         Ask::TilesVisibility { id, visible } => s.command("map.setTiles", serde_json::json!({"id": id, "visible": visible})).map(|_| String::new()),
-        // Нарезку выполняет cut_raster, весть у него своя.
-        Ask::Raster { .. } => Ok(String::new()),
+        // Нарезку выполняет cut_raster, вид в макет - to_layout, вести
+        // у них свои.
+        Ask::Raster { .. } | Ask::ToLayout { .. } => Ok(String::new()),
     }
+}
+
+/// Поле листа макета до картинки вида, мм, `PAGE_MARGIN` модуля.
+pub const PAGE_MARGIN: f64 = 10.0;
+/// Картинка элемента макета RustGIS не больше, байт (`MAX_PICTURE`
+/// RustGIS).
+pub const MAX_PICTURE: usize = 16 << 20;
+/// Название нового макета для вида. RustGIS добавит номер, если такой
+/// макет уже есть.
+const LAYOUT_NAME: &str = "PlanetX";
+
+/// Размер картинки вида на листе page_w × page_h мм, `fit_on_page` модуля:
+/// вся ширина листа без полей [`PAGE_MARGIN`], пропорции aspect = ширина
+/// к высоте. По высоте не входит - вся высота.
+pub fn fit_on_page(page_w: f64, page_h: f64, aspect: f64) -> (f64, f64) {
+    let width = (page_w - 2.0 * PAGE_MARGIN).max(1.0);
+    let height = (page_h - 2.0 * PAGE_MARGIN).max(1.0);
+    let aspect = if aspect.is_finite() && aspect > 0.0 { aspect } else { 1.0 };
+    if width / aspect <= height { (width, width / aspect) } else { (height * aspect, height) }
+}
+
+/// Названия макетов из ответа `info.project`. Ответ считается враждебным:
+/// не JSON - макетов нет.
+pub fn layout_names(info: &str) -> Vec<String> {
+    serde_json::from_str::<serde_json::Value>(info)
+        .ok()
+        .and_then(|v| v["layouts"].as_array().map(|a| a.iter().filter_map(|l| l["name"].as_str().map(str::to_string)).collect()))
+        .unwrap_or_default()
+}
+
+/// Размер листа в мм из ответа `layout.page`.
+fn page_of(answer: &str) -> Option<(f64, f64)> {
+    let v: serde_json::Value = serde_json::from_str(answer).ok()?;
+    let (w, h) = (v["width"].as_f64()?, v["height"].as_f64()?);
+    (w.is_finite() && h.is_finite() && w > 0.0 && h > 0.0).then_some((w, h))
+}
+
+/// Картинка вида для макета: PNG, а больше [`MAX_PICTURE`] - JPEG.
+/// Ok - байты и расширение файла.
+pub fn layout_picture(png: Vec<u8>) -> Result<(Vec<u8>, &'static str), String> {
+    if png.len() <= MAX_PICTURE {
+        return Ok((png, "png"));
+    }
+    let img = image::load_from_memory(&png).map_err(|e| e.to_string())?;
+    let mut out = Vec::new();
+    image::codecs::jpeg::JpegEncoder::new_with_quality(&mut out, 90).encode_image(&img.to_rgb8()).map_err(|e| e.to_string())?;
+    if out.len() > MAX_PICTURE {
+        return Err(format!("the picture is larger than {} MB", MAX_PICTURE >> 20));
+    }
+    Ok((out, "jpg"))
+}
+
+/// Параметры команды макета: с названием макета или без него - тогда
+/// RustGIS берёт открытый макет.
+fn with_layout(mut params: serde_json::Value, layout: Option<&str>) -> serde_json::Value {
+    if let Some(name) = layout {
+        params["layout"] = name.into();
+    }
+    params
+}
+
+/// Вид картинкой в макет RustGIS, `insert_picture` модуля. Картинка
+/// идёт временным файлом: строка запроса не раздувается. RustGIS хранит
+/// её в проекте, файл после команды не нужен. Ok - название макета,
+/// None - открытый макет.
+fn to_layout(s: &mut dyn Channel, image: &[u8], ext: &str, aspect: f64) -> Result<Option<String>, String> {
+    std::fs::create_dir_all(temp_dir()).map_err(|e| e.to_string())?;
+    let n = CUTS.fetch_add(1, Ordering::SeqCst);
+    let path = temp_dir().join(format!("view-{}-{n}.{ext}", std::process::id()));
+    std::fs::write(&path, image).map_err(|e| e.to_string())?;
+    let placed = place_view(s, &path, aspect);
+    let _ = std::fs::remove_file(&path);
+    placed
+}
+
+/// Картинка файла path - на первый лист макета: единственного, иначе
+/// открытого в RustGIS, иначе нового макета [`LAYOUT_NAME`] с листом A4
+/// по форме вида. Место - в поле [`PAGE_MARGIN`], размер - [`fit_on_page`].
+/// Макет с картинкой открывается в RustGIS.
+fn place_view(s: &mut dyn Channel, path: &std::path::Path, aspect: f64) -> Result<Option<String>, String> {
+    let info = s.command("info.project", serde_json::json!({"includeFields": false}))?;
+    let names = layout_names(&info);
+    let mut layout = if names.len() == 1 { names.first().cloned() } else { None };
+    // У нескольких макетов без названия - открытый. Открытого нет -
+    // RustGIS отказывает, вид идёт в новый макет.
+    let page = if names.is_empty() { None } else { s.command("layout.page", with_layout(serde_json::json!({}), layout.as_deref())).ok().and_then(|a| page_of(&a)) };
+    let (page_w, page_h) = match page {
+        Some(size) => size,
+        None => {
+            let orientation = if aspect >= 1.0 { "landscape" } else { "portrait" };
+            let made = s.command("layout.new", serde_json::json!({"name": LAYOUT_NAME, "page": "a4", "orientation": orientation, "template": "blank"}))?;
+            let name = serde_json::from_str::<serde_json::Value>(&made)
+                .ok()
+                .and_then(|v| v["name"].as_str().map(str::to_string))
+                .ok_or_else(|| "RustGIS did not name the new layout".to_string())?;
+            let answer = s.command("layout.page", serde_json::json!({"layout": name}))?;
+            layout = Some(name);
+            page_of(&answer).ok_or_else(|| "RustGIS did not give the page size".to_string())?
+        }
+    };
+    let (w, h) = fit_on_page(page_w, page_h, aspect);
+    let picture = serde_json::json!({"kind": "picture", "path": slash(path), "x": PAGE_MARGIN, "y": PAGE_MARGIN, "w": w, "h": h});
+    s.command("layout.addElement", with_layout(picture, layout.as_deref()))?;
+    if let Some(name) = &layout {
+        let _ = s.command("layout.activate", serde_json::json!({"layout": name}));
+    }
+    Ok(layout)
 }
 
 /// Номер нарезки: у каждой своя папка, кэш тайлов глобуса не путает
@@ -730,6 +845,10 @@ fn serve(s: &mut dyn Channel, asks: &Receiver<Ask>, stop: &AtomicBool, tell: &dy
                 Ok(Ask::Raster { layer, name, max_zoom }) => match cut_raster(s, layer, &name, max_zoom) {
                     Ok((template, max_zoom)) => tell(News::Tiles { layer, template, max_zoom }),
                     Err(error) => tell(News::CutFailed { layer, error: format!("{name}: {error}") }),
+                },
+                Ok(Ask::ToLayout { image, ext, aspect }) => match to_layout(s, &image, &ext, aspect) {
+                    Ok(name) => tell(News::InLayout(name)),
+                    Err(e) => tell(News::Failed(e)),
                 },
                 Ok(ask) => match perform(s, ask) {
                     Ok(text) => {
@@ -1419,6 +1538,105 @@ mod tests {
         let (_, got) = answer_until(None, &|n| matches!(n, News::Gone(_)));
         assert!(got);
         assert!(worker.join().is_ok());
+    }
+
+    /// Картинка вида на листе, тесты `fit_on_page` модуля: широкий вид -
+    /// вся ширина листа без полей, квадратный - вся высота.
+    #[test]
+    fn view_fits_the_page() {
+        let (w, h) = fit_on_page(297.0, 210.0, 16.0 / 9.0);
+        assert!((w - 277.0).abs() < 1e-9 && (h - 277.0 * 9.0 / 16.0).abs() < 1e-9);
+        assert_eq!(fit_on_page(297.0, 210.0, 1.0), (190.0, 190.0));
+        // Пропорции без смысла - квадрат, лист меньше полей - не меньше 1 мм.
+        assert_eq!(fit_on_page(297.0, 210.0, f64::NAN), (190.0, 190.0));
+        assert_eq!(fit_on_page(15.0, 15.0, 2.0), (1.0, 0.5));
+    }
+
+    #[test]
+    fn layouts_of_the_project() {
+        let info = r#"{"name":"Atlas","layouts":[{"name":"Wall map","mapFrames":[{"map":"World"}]},{"name":"A4"},{"title":"no name"}]}"#;
+        assert_eq!(layout_names(info), ["Wall map", "A4"]);
+        assert!(layout_names("{\"layers\":[]}").is_empty());
+        assert!(layout_names("not json").is_empty());
+        assert_eq!(page_of(r#"{"width":297.0,"height":210.0,"decimal":"."}"#), Some((297.0, 210.0)));
+        assert_eq!(page_of(r#"{"width":-1,"height":210}"#), None);
+        assert_eq!(page_of("null"), None);
+    }
+
+    /// Имитация RustGIS для вида в макет: макеты проекта, открыт ли один
+    /// из них, команды по порядку.
+    struct Desk {
+        layouts: Vec<&'static str>,
+        open: bool,
+        calls: Vec<(String, serde_json::Value)>,
+    }
+
+    impl Channel for Desk {
+        fn command(&mut self, command: &str, params: serde_json::Value) -> Result<String, String> {
+            self.calls.push((command.to_string(), params.clone()));
+            match command {
+                "info.project" => Ok(serde_json::json!({"layouts": self.layouts.iter().map(|n| serde_json::json!({"name": n})).collect::<Vec<_>>()}).to_string()),
+                "layout.page" if params.get("layout").is_some() || self.open => Ok(serde_json::json!({"width": 297.0, "height": 210.0, "decimal": "."}).to_string()),
+                "layout.page" => Err("open a layout first".to_string()),
+                "layout.new" => Ok(serde_json::json!({"layout": self.layouts.len(), "name": "PlanetX 2"}).to_string()),
+                _ => Ok("null".to_string()),
+            }
+        }
+        fn state(&mut self) -> Result<String, String> {
+            Err("no state".to_string())
+        }
+        fn features(&mut self, _: i64) -> Result<LayerData, String> {
+            Err("no features".to_string())
+        }
+        fn changed(&mut self) -> bool {
+            false
+        }
+        fn wait(&mut self, _: f64, _: &AtomicBool) -> bool {
+            false
+        }
+    }
+
+    impl Desk {
+        fn sent(&self, command: &str) -> Option<&serde_json::Value> {
+            self.calls.iter().find(|(c, _)| c == command).map(|(_, p)| p)
+        }
+    }
+
+    /// Вид в макет: единственный макет, открытый из нескольких или новый
+    /// лист A4 по форме вида. Временный файл картинки удаляется.
+    #[test]
+    fn view_goes_to_a_layout() {
+        let png = [0x89u8, b'P', b'N', b'G'];
+        // Один макет - в него, картинка во всю ширину листа.
+        let mut one = Desk { layouts: vec!["Wall map"], open: false, calls: Vec::new() };
+        assert_eq!(to_layout(&mut one, &png, "png", 2.0), Ok(Some("Wall map".to_string())));
+        let added = one.sent("layout.addElement").cloned().unwrap_or_default();
+        assert_eq!((added["layout"].as_str(), added["kind"].as_str()), (Some("Wall map"), Some("picture")));
+        assert_eq!((added["x"].as_f64(), added["w"].as_f64(), added["h"].as_f64()), (Some(PAGE_MARGIN), Some(277.0), Some(138.5)));
+        let path = added["path"].as_str().unwrap_or_default().to_string();
+        assert!(path.ends_with(".png") && !std::path::Path::new(&path).exists(), "{path}");
+        assert!(one.sent("layout.new").is_none() && one.sent("layout.activate").is_some());
+        // Макетов нет - новый лист A4, книжный для высокого вида.
+        let mut none = Desk { layouts: Vec::new(), open: false, calls: Vec::new() };
+        assert_eq!(to_layout(&mut none, &png, "jpg", 0.5), Ok(Some("PlanetX 2".to_string())));
+        let made = none.sent("layout.new").cloned().unwrap_or_default();
+        assert_eq!((made["page"].as_str(), made["orientation"].as_str(), made["template"].as_str()), (Some("a4"), Some("portrait"), Some("blank")));
+        assert_eq!(none.sent("layout.addElement").and_then(|p| p["layout"].as_str()), Some("PlanetX 2"));
+        // Несколько макетов, один открыт - в открытый, без названия.
+        let mut open = Desk { layouts: vec!["A", "B"], open: true, calls: Vec::new() };
+        assert_eq!(to_layout(&mut open, &png, "png", 1.0), Ok(None));
+        assert!(open.sent("layout.new").is_none());
+        assert!(open.sent("layout.addElement").is_some_and(|p| p.get("layout").is_none()));
+        // Несколько, ни один не открыт - новый макет.
+        let mut closed = Desk { layouts: vec!["A", "B"], open: false, calls: Vec::new() };
+        assert_eq!(to_layout(&mut closed, &png, "png", 1.0), Ok(Some("PlanetX 2".to_string())));
+    }
+
+    #[test]
+    fn small_view_stays_png() {
+        let png = vec![1u8; 100];
+        assert_eq!(layout_picture(png.clone()), Ok((png, "png")));
+        assert!(layout_picture(vec![0u8; MAX_PICTURE + 1]).is_err());
     }
 
     fn view(lat: f64, lon: f64, half: f64) -> data::rustgis::View {
