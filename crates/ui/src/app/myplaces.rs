@@ -886,6 +886,7 @@ impl LiteApp {
                 crate::marks::Action::CancelRename => self.tree_state.renaming = None,
                 crate::marks::Action::SaveKml(path) => self.save_marks(&path, crate::export::Kind::Kml),
                 crate::marks::Action::SaveScene(path) => self.save_marks(&path, crate::export::Kind::Scene),
+                crate::marks::Action::ToLayers(path) => self.places_to_layers(&path),
                 crate::marks::Action::Move(from, to, into) => {
                     if self.marks.move_many(&from, &to, into) {
                         self.reset_selection();
@@ -962,6 +963,24 @@ impl LiteApp {
 
     /// Сохранить строку «Моих меток» по пути: KML или KMZ, или сцену
     /// с текущей камерой. Итог - в строке сообщения.
+    /// Метки папки по пути - тремя слоями «Моих слоёв» в папку с её
+    /// именем, «Добавить слои меток в проект» модуля. Слои - копии: правка
+    /// меток их не меняет.
+    pub(super) fn places_to_layers(&mut self, path: &[usize]) {
+        let lang = self.lang;
+        let Some(tree) = self.marks.export_tree(path) else {
+            return;
+        };
+        let names = [tr(lang, "Placemarks - points"), tr(lang, "Placemarks - lines"), tr(lang, "Placemarks - polygons")];
+        let layers = crate::datalayers::places_layers(&tree, names);
+        let count = layers.len();
+        for layer in layers.into_iter().rev() {
+            let title = layer.name.clone();
+            self.data_layers.add_to(vec![layer], &title, &tree.name);
+        }
+        self.open_message = Some(if count == 0 { tr(lang, "The folder has no placemarks with points.").to_string() } else { trf(lang, "Placemark layers added to «My layers», folder {folder}: {count}.", &[("folder", &tree.name), ("count", &count.to_string())]) });
+    }
+
     pub(super) fn save_marks(&mut self, path: &[usize], kind: crate::export::Kind) {
         let Some(tree) = self.marks.export_tree(path) else {
             return;

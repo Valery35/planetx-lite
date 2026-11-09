@@ -2403,6 +2403,12 @@ Isolines to My layers	Изолинии в «Мои слои»
 Isolines of the raster values become a layer of «My layers» with the elev field, about 12 lines over the range of values.	Изолинии значений растра ложатся слоем «Моих слоёв» с полем elev, около 12 линий на размах значений.
 The raster has no spread of values.	У растра нет перепада значений.
 The coordinate system of the raster is unknown.	Система координат растра неизвестна.
+Placemarks to My layers	Метки в «Мои слои»
+Placemarks - points	Метки - точки
+Placemarks - lines	Метки - линии
+Placemarks - polygons	Метки - многоугольники
+The folder has no placemarks with points.	В папке нет меток с точками.
+Placemark layers added to «My layers», folder {folder}: {count}.	Слои меток добавлены в «Мои слои», папка {folder}: {count}.
 My layers: the objects of these layers were not found: {names}	Мои слои: не найдены объекты слоёв {names}
 My layers exceed 1 MB, the page keeps them until it is closed	«Мои слои» больше 1 МБ, страница держит их до закрытия
 Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the My layers section.	Откройте или перетащите в окно сцену .planetx, KML, KMZ, растр высот GeoTIFF или облако точек LAS, LAZ, COPC. Слои GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf и DXF ложатся в раздел «Мои слои».

@@ -213,6 +213,52 @@ pub fn nearest(mut items: Vec<(String, f64, f64)>, lat: f64, lon: f64, count: us
     items
 }
 
+/// Поля слоёв меток, часть полей `FIELDS` слоёв «Моих меток» модуля:
+/// название, описание, цвет «#rrggbb» и папка - путь через « / ».
+pub const PLACE_FIELDS: [&str; 4] = ["name", "description", "color", "folder"];
+
+/// Метки папки на любой глубине - тремя слоями по виду, как «Добавить
+/// слои меток в проект» модуля (`add_to_project`, таблицы points, lines,
+/// polygons): точки, линии, многоугольники с названиями names. Слой без
+/// меток не идёт. Метки без точек пропускаются.
+pub fn places_layers(folder: &scene::kml::Folder, names: [&str; 3]) -> Vec<LayerData> {
+    fn walk<'a>(f: &'a scene::kml::Folder, path: &str, out: &mut Vec<(&'a scene::kml::Place, String)>) {
+        for child in &f.children {
+            match child {
+                scene::kml::Item::Folder(sub) => {
+                    let inner = if path.is_empty() { sub.name.clone() } else { format!("{path} / {}", sub.name) };
+                    walk(sub, &inner, out);
+                }
+                scene::kml::Item::Place(p) if !p.points.is_empty() => out.push((p, path.to_string())),
+                _ => {}
+            }
+        }
+    }
+    let mut places = Vec::new();
+    walk(folder, "", &mut places);
+    let mut out = Vec::new();
+    for (kind, name) in [Kind::Point, Kind::Line, Kind::Polygon].into_iter().zip(names) {
+        let items: Vec<data::layers::Item> = places
+            .iter()
+            .filter(|(p, _)| p.kind == kind)
+            .map(|(p, path)| {
+                let [r, g, b, _] = p.color;
+                let (shape, parts) = match kind {
+                    Kind::Polygon => (Geom::Polygon, std::iter::once(p.points.clone()).chain(p.holes.iter().flatten().cloned()).collect()),
+                    Kind::Point => (Geom::Point, vec![p.points.iter().take(1).copied().collect()]),
+                    Kind::Line => (Geom::Line, vec![p.points.clone()]),
+                };
+                let values = vec![p.name.clone(), p.description.clone(), format!("#{r:02x}{g:02x}{b:02x}"), path.clone()];
+                data::layers::Item { shape, parts, heights: Vec::new(), values }
+            })
+            .collect();
+        if !items.is_empty() {
+            out.push(LayerData { name: name.to_string(), epsg: Some(4326), fields: PLACE_FIELDS.iter().map(|f| f.to_string()).collect(), numeric: vec![false; PLACE_FIELDS.len()], items });
+        }
+    }
+    out
+}
+
 /// Слой из папки меток расчёта: многоугольники, линии и точки на любой
 /// глубине, поля - name и поля меток по порядку первого появления. Цвет
 /// метки - поле color «#rrggbb», если его нет: так слой рисует классы
@@ -1852,6 +1898,29 @@ mod tests {
         assert_eq!(row_count(&layers), 6);
         layers.apply(0, &Act::FolderCollapse("F".into()));
         assert_eq!(row_count(&layers), 3);
+    }
+
+    #[test]
+    fn places_become_three_layers_by_kind() {
+        use scene::kml::{Folder, Item as KmlItem, Place};
+        let mut lake = Place::new("Озеро", Kind::Polygon, square(58.0, 56.0, 0.1));
+        lake.color = [30, 60, 220, 255];
+        lake.description = "Пресное".into();
+        let road = Place::new("Дорога", Kind::Line, vec![(58.0, 56.0), (58.1, 56.1)]);
+        let well = Place::new("Колодец", Kind::Point, vec![(58.05, 56.05)]);
+        let empty = Place::new("Пусто", Kind::Line, Vec::new());
+        let inner = Folder::with("Север", vec![KmlItem::Folder(Folder::with("Озёра", vec![KmlItem::Place(lake)])), KmlItem::Place(well)]);
+        let root = Folder::with("Мои метки", vec![KmlItem::Folder(inner), KmlItem::Place(road), KmlItem::Place(empty)]);
+        let layers = places_layers(&root, ["точки", "линии", "многоугольники"]);
+        let names: Vec<&str> = layers.iter().map(|l| l.name.as_str()).collect();
+        assert_eq!(names, ["точки", "линии", "многоугольники"]);
+        assert!(layers.iter().all(|l| l.fields == PLACE_FIELDS && l.items.len() == 1));
+        assert_eq!(layers[0].items[0].values, ["Колодец", "", "#ffff00", "Север"]);
+        assert_eq!(layers[1].items[0].shape, Geom::Line);
+        assert_eq!(layers[2].items[0].values, ["Озеро", "Пресное", "#1e3cdc", "Север / Озёра"]);
+        // Папка без многоугольников - без их слоя.
+        let only = Folder::with("Путь", vec![KmlItem::Place(Place::new("Дорога", Kind::Line, vec![(58.0, 56.0), (58.1, 56.1)]))]);
+        assert_eq!(places_layers(&only, ["т", "л", "м"]).len(), 1);
     }
 
     #[test]
