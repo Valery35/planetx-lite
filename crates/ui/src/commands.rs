@@ -52,6 +52,8 @@ pub enum Command {
     MyLocation,
     /// Демо: раздел и номер в разделе `crate::demos::MENU`.
     Demo(usize, usize),
+    /// «Горизонтали вида в Мои слои», `here:contours` модуля.
+    ViewContours,
 }
 
 impl Command {
@@ -82,6 +84,7 @@ impl Command {
             Self::Assistant => "tool:assistant".into(),
             Self::MyLocation => "tool:my_location".into(),
             Self::Demo(s, d) => format!("demo:{s}:{d}"),
+            Self::ViewContours => "here:contours".into(),
         }
     }
 
@@ -111,6 +114,7 @@ impl Command {
             Command::Tracks,
             Command::Assistant,
             Command::MyLocation,
+            Command::ViewContours,
         ]);
         for (s, section) in crate::demos::MENU.iter().enumerate() {
             all.extend((0..section.demos.len()).map(|d| Command::Demo(s, d)));
@@ -127,6 +131,8 @@ pub struct Now {
     /// Шкала времени доступна и открыта.
     pub time: Option<bool>,
     pub identify: bool,
+    /// Горизонтали включены: команда «Горизонтали вида в Мои слои».
+    pub contours: bool,
 }
 
 /// Другие слова слоёв, `WORDS` модуля.
@@ -273,6 +279,9 @@ pub fn actions(lang: Lang, now: &Now) -> Vec<Suggestion> {
             run,
             &["моё место", "мое место", "где я", "gps", "геолокация", "трек", "my location", "where am i", "gps", "location"],
         );
+    }
+    if now.contours {
+        add(Command::ViewContours, tr(lang, "Contours of the view to My layers"), run, &["горизонтали", "изолинии", "рельеф", "contours", "isolines"]);
     }
     add(Command::SceneSave, tr(lang, "Save Scene"), open, &["сцена", "scene"]);
     add(Command::SceneOpen, tr(lang, "Open Scene"), open, &["сцена", "scene"]);

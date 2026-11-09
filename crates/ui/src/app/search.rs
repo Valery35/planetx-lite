@@ -270,6 +270,7 @@ impl LiteApp {
             recording: self.recording.is_some(),
             time: self.timebar.extent.is_some().then_some(self.timebar.open),
             identify: self.identify,
+            contours: self.planet.earth && self.vector.contours_on(),
         }
     }
 
@@ -325,6 +326,7 @@ impl LiteApp {
             Command::MyLocation => self.gps.start(ctx),
             Command::ExportGltf => self.export_view(false),
             Command::ExportTiles => self.export_view(true),
+            Command::ViewContours => self.globe_menu_choice(ctx, crate::globemenu::Choice::ViewContours, None, None, now),
             Command::SceneSave => {
                 let folder = self.tree_state.selected.clone().unwrap_or_default();
                 self.save_marks(&folder, crate::export::Kind::Scene);
