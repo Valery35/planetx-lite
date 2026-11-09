@@ -4141,13 +4141,15 @@ impl eframe::App for LiteApp {
             self.data_pictures_seen = pictures_version;
             self.preview_dirty = true;
             self.pictures_changed();
-            // Снимки по датам: охват шкалы - заново, только если он
-            // сменился, иначе шкала сбрасывалась бы при каждом шаге.
-            let extent = self.data_layers.extent();
-            if extent != self.data_extent_seen {
-                self.data_extent_seen = extent;
-                self.time_extent();
-            }
+        }
+        // Слои со временем идут за шкалой. Охват шкалы по снимкам и слоям
+        // со временем - заново, только если он сменился, иначе шкала
+        // сбрасывалась бы при каждом шаге.
+        self.data_layers.set_window(self.timebar.window());
+        let extent = self.data_layers.extent();
+        if extent != self.data_extent_seen {
+            self.data_extent_seen = extent;
+            self.time_extent();
         }
         let preview_dirty = std::mem::take(&mut self.preview_dirty);
         if tracks_models || preview_dirty {

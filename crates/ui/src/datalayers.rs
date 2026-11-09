@@ -128,6 +128,11 @@ pub struct DataLayer {
     pub about: String,
     /// Сторона шторки слоёв, подменю «Шторка» меню слоя модуля.
     pub side: render::Side,
+    /// Время объектов: номер поля начала и поля конца, как временные
+    /// свойства слоя QGIS у модуля. None - слой без времени, виден всегда.
+    pub time: Option<(usize, Option<usize>)>,
+    /// Объект вне окна шкалы времени: не рисуется и не выбирается.
+    off: Vec<bool>,
 }
 
 /// Сторона шторки словом для списка слоёв: left, right или пусто.
@@ -137,6 +142,13 @@ fn side_word(side: render::Side) -> &'static str {
         render::Side::Right => "right",
         render::Side::Both => "",
     }
+}
+
+/// Поля времени слоя из записи списка слоёв: [начало, конец или null].
+fn time_of(v: &serde_json::Value) -> Option<(usize, Option<usize>)> {
+    let t = v.get("time")?.as_array()?;
+    let field = |x: &serde_json::Value| x.as_u64().and_then(|n| usize::try_from(n).ok());
+    Some((field(t.first()?)?, t.get(1).and_then(field)))
 }
 
 /// Сторона шторки по слову списка слоёв.
@@ -337,6 +349,36 @@ pub fn folder_layer(folder: &scene::kml::Folder) -> Option<LayerData> {
 }
 
 impl DataLayer {
+    /// Время объекта n по полям времени слоя: пара строк начала и конца,
+    /// без поля конца - момент. None - у слоя или объекта времени нет.
+    pub fn item_time(&self, n: usize) -> Option<scene::when::Time> {
+        let (start, end) = self.time?;
+        let values = &self.data.items.get(n)?.values;
+        let begin = values.get(start).map(|v| v.trim().to_string()).unwrap_or_default();
+        let finish = end.and_then(|e| values.get(e)).map(|v| v.trim().to_string()).unwrap_or_else(|| begin.clone());
+        (!begin.is_empty() || !finish.is_empty()).then_some((begin, finish))
+    }
+
+    /// Объекты вне окна шкалы времени window - заново.
+    fn refresh_off(&mut self, window: Option<(f64, f64)>) {
+        self.off = match (self.time, window) {
+            (Some(_), Some((lo, hi))) => (0..self.data.items.len()).map(|n| !scene::when::visible(self.item_time(n).as_ref(), lo, hi)).collect(),
+            _ => Vec::new(),
+        };
+    }
+
+    /// Объект n в окне шкалы времени или слой без времени.
+    fn on(&self, n: usize) -> bool {
+        !self.off.get(n).copied().unwrap_or(false)
+    }
+
+    /// Охват шкалы по временам объектов слоя.
+    fn time_extent(&self) -> Option<(f64, f64)> {
+        self.time?;
+        let times: Vec<Option<scene::when::Time>> = (0..self.data.items.len()).map(|n| self.item_time(n)).collect();
+        scene::when::extent(times.iter().map(Option::as_ref))
+    }
+
     /// Цвет объекта n: цвет отрисовки RustGIS, поле color «#rrggbb» слоя,
     /// иначе цвет стиля.
     fn item_color(&self, n: usize) -> [u8; 3] {
@@ -364,7 +406,7 @@ impl DataLayer {
     pub fn lines(&self) -> Vec<Line> {
         let mut out = Vec::new();
         for (n, item) in self.data.items.iter().enumerate() {
-            if self.raised(n).is_some() {
+            if self.raised(n).is_some() || !self.on(n) {
                 continue;
             }
             let style = Style { color: self.item_color(n), ..self.style };
@@ -394,7 +436,7 @@ impl DataLayer {
             .items
             .iter()
             .enumerate()
-            .filter(|(n, i)| i.shape == Geom::Point && self.raised(*n).is_none())
+            .filter(|(n, i)| i.shape == Geom::Point && self.raised(*n).is_none() && self.on(*n))
             .flat_map(|(_, i)| i.parts.iter().filter_map(|p| p.first().copied()))
             .collect()
     }
@@ -431,7 +473,9 @@ impl DataLayer {
         self.data
             .items
             .iter()
-            .filter_map(|i| {
+            .enumerate()
+            .filter(|(n, _)| self.on(*n))
+            .filter_map(|(_, i)| {
                 let text = i.values.get(field)?.trim();
                 if text.is_empty() {
                     return None;
@@ -453,10 +497,10 @@ impl DataLayer {
         let color = self.style.line_rgba();
         let mut out = Vec::new();
         for (n, item) in self.data.items.iter().enumerate().take(MAX_EXTRUDED) {
-            let Some(height) = self.raised(n) else {
+            let Some(height) = self.raised(n).filter(|_| self.on(n)) else {
                 continue;
             };
-            let mut raise = |kind: Kind, points: Vec<(f64, f64)>, holes: Vec<Vec<(f64, f64)>>| {
+            let mut raise =|kind: Kind, points: Vec<(f64, f64)>, holes: Vec<Vec<(f64, f64)>>| {
                 let mut s = Shape::new(kind, points);
                 s.color = color;
                 s.width = f64::from(self.style.width);
@@ -498,7 +542,7 @@ impl DataLayer {
     pub fn flat_shapes(&self) -> Vec<Shape> {
         let mut out = Vec::new();
         for (n, item) in self.data.items.iter().enumerate().take(MAX_EXTRUDED) {
-            if self.raised(n).is_some() {
+            if self.raised(n).is_some() || !self.on(n) {
                 continue;
             }
             let style = Style { color: self.item_color(n), ..self.style };
@@ -546,7 +590,7 @@ impl DataLayer {
         let metres = metres.max(1e-9);
         let outline = |parts: &[Vec<(f64, f64)>]| parts.iter().filter(|p| !p.is_empty()).map(|p| data::linesets::distance(p, lat, lon) / metres).reduce(f64::min).filter(|d| *d <= 1.0);
         let mut near: Vec<(f64, usize)> = Vec::new();
-        for (n, item) in self.data.items.iter().enumerate() {
+        for (n, item) in self.data.items.iter().enumerate().filter(|(n, _)| self.on(*n)) {
             let score = match item.shape {
                 Geom::Point => item.parts.iter().filter_map(|p| p.first()).filter_map(|p| gap(p.0, p.1)).reduce(f64::min),
                 Geom::Line => outline(&item.parts),
@@ -595,6 +639,8 @@ pub enum Act {
     ToRustGis,
     /// Сторона шторки слоёв.
     Side(render::Side),
+    /// Поля времени объектов: начало и конец, None - слой без времени.
+    Time(Option<(usize, Option<usize>)>),
     Up,
     Down,
     /// Перетаскивание: слой - перед слоем before в папку folder, None -
@@ -639,9 +685,31 @@ pub struct DataLayers {
     pub selected: Option<u64>,
     /// Когда последний раз сверялись файлы слоёв, секунды кадра.
     checked_at: Option<f64>,
+    /// Окно шкалы времени, по нему слои со временем прячут объекты.
+    window: Option<(f64, f64)>,
+    /// Охват шкалы по временам объектов слоёв, считается при смене слоёв.
+    times: Option<(f64, f64)>,
 }
 
 impl DataLayers {
+    /// Новое окно шкалы времени. У слоёв со временем объекты вне окна
+    /// прячутся, картинки и надписи собираются заново.
+    pub fn set_window(&mut self, window: Option<(f64, f64)>) {
+        if window == self.window {
+            return;
+        }
+        self.window = window;
+        if self.list.iter().any(|l| l.time.is_some()) {
+            for l in &mut self.list {
+                l.refresh_off(window);
+            }
+            self.lines_dirty = true;
+            self.dots_dirty = true;
+            self.labels_dirty = true;
+            self.shapes_dirty = true;
+        }
+    }
+
     /// Слои одной папки - подряд, папка стоит на месте своего первого
     /// слоя. Тогда порядок строк раздела - порядок отрисовки, как у слоёв
     /// проекта QGIS: верхняя строка поверх.
@@ -677,6 +745,11 @@ impl DataLayers {
 
     fn changed(&mut self) {
         self.normalize();
+        let window = self.window;
+        for l in &mut self.list {
+            l.refresh_off(window);
+        }
+        self.times = self.list.iter().filter(|l| l.visible).filter_map(DataLayer::time_extent).reduce(|a, b| (a.0.min(b.0), a.1.max(b.1)));
         self.lines_dirty = true;
         self.dots_dirty = true;
         self.labels_dirty = true;
@@ -728,6 +801,8 @@ impl DataLayers {
                 picture: None,
                 about: String::new(),
                 side: render::Side::Both,
+                time: None,
+                off: Vec::new(),
             };
             self.list.insert(k, layer);
         }
@@ -766,6 +841,8 @@ impl DataLayers {
             stale: false,
             about: overlay.description.clone(),
             side: render::Side::Both,
+            time: None,
+            off: Vec::new(),
             picture: Some(overlay),
         };
         self.list.insert(at, layer);
@@ -818,9 +895,11 @@ impl DataLayers {
         self.list.iter().rev().filter(|l| l.visible).filter_map(|l| l.picture.as_ref().map(|p| (p, l.side))).filter(|(p, _)| in_window(p, window)).collect()
     }
 
-    /// Охват шкалы времени по временам слоёв-картинок, как у меток.
+    /// Охват шкалы времени по временам слоёв-картинок и объектов слоёв
+    /// со временем, как у меток.
     pub fn extent(&self) -> Option<(f64, f64)> {
-        scene::when::extent(self.list.iter().filter(|l| l.visible).filter_map(|l| l.picture.as_ref()).map(|p| p.time.as_ref()))
+        let pictures = scene::when::extent(self.list.iter().filter(|l| l.visible).filter_map(|l| l.picture.as_ref()).map(|p| p.time.as_ref()));
+        [pictures, self.times].into_iter().flatten().reduce(|a, b| (a.0.min(b.0), a.1.max(b.1)))
     }
 
     /// Папки в порядке первого слоя каждой, без пустой. Живые слои RustGIS
@@ -883,6 +962,7 @@ impl DataLayers {
                     Act::Label(f) => self.list[at].label = *f,
                     Act::Extrude(e) => self.list[at].extrude = *e,
                     Act::Side(s) => self.list[at].side = *s,
+                    Act::Time(t) => self.list[at].time = *t,
                     Act::Folder(f) => self.list[at].folder = f.trim().to_string(),
                     // Вверх и вниз - через соседнюю строку раздела: чужая
                     // папка проходится целиком.
@@ -941,6 +1021,9 @@ impl DataLayers {
                 }
                 if l.side != render::Side::Both {
                     v["side"] = serde_json::Value::String(side_word(l.side).to_string());
+                }
+                if let Some((start, end)) = l.time {
+                    v["time"] = serde_json::json!([start, end]);
                 }
                 if let Some(p) = &l.picture {
                     v["picture"] = serde_json::json!({ "corners": p.overlay.corners, "box": p.overlay.latlon_box, "description": p.description });
@@ -1094,6 +1177,8 @@ impl DataLayers {
                 }),
                 about: text_of("about"),
                 side: side_of(&text_of("side")),
+                time: time_of(v),
+                off: Vec::new(),
             });
         }
         out.collapsed = root.get("collapsed").and_then(serde_json::Value::as_array).into_iter().flatten().filter_map(|f| f.as_str().map(str::to_string)).collect();
@@ -1249,6 +1334,8 @@ impl DataLayers {
                 picture: None,
                 about: String::new(),
                 side: render::Side::Both,
+                time: None,
+                off: Vec::new(),
             };
             self.list.insert(at, layer);
         }
@@ -1580,6 +1667,7 @@ fn menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], ne
     }
     ui.separator();
     let mut chosen = labels_extrude(ui, lang, layer, out);
+    chosen |= time_menu(ui, lang, layer, out);
     ui.separator();
     chosen |= folder_menu(ui, lang, layer, folders, new_folder, out);
     chosen |= side_menu(ui, lang, layer, out);
@@ -1649,6 +1737,47 @@ pub fn live_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, out: &mut Vec
     if ui.button(tr(lang, "Re-read the look from RustGIS")).on_hover_text(tr(lang, "The features and the colours of the layer are read from RustGIS again. Needed after colours change in RustGIS without a change of the renderer.")).clicked() {
         out.push((id, Act::Reload));
         chosen = true;
+    }
+    chosen
+}
+
+/// Подменю «Время» и «Конец времени» по полям объектов, как временные
+/// свойства слоя QGIS у модуля: объекты вне окна шкалы времени
+/// прячутся. true - поле выбрано.
+fn time_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, out: &mut Vec<(u64, Act)>) -> bool {
+    let id = layer.id;
+    let mut chosen = false;
+    let name = |n: Option<usize>| n.and_then(|n| layer.data.fields.get(n)).map_or_else(|| tr(lang, "No").to_string(), String::clone);
+    let start = layer.time.map(|t| t.0);
+    ui.menu_button(trf(lang, "Time: {field}", &[("field", &name(start))]), |ui| {
+        if ui.radio(start.is_none(), tr(lang, "No")).clicked() {
+            out.push((id, Act::Time(None)));
+            chosen = true;
+        }
+        for (n, f) in layer.data.fields.iter().enumerate() {
+            if ui.radio(start == Some(n), f.as_str()).clicked() {
+                out.push((id, Act::Time(Some((n, layer.time.and_then(|t| t.1))))));
+                chosen = true;
+            }
+        }
+    })
+    .response
+    .on_hover_text(tr(lang, "A field with the date or time of the objects. The objects follow the time slider: outside its window they are hidden. A date - like 2025-06-01, a year - like 1890."));
+    if let Some((start, end)) = layer.time {
+        ui.menu_button(trf(lang, "End of time: {field}", &[("field", &name(end))]), |ui| {
+            if ui.radio(end.is_none(), tr(lang, "No")).clicked() {
+                out.push((id, Act::Time(Some((start, None)))));
+                chosen = true;
+            }
+            for (n, f) in layer.data.fields.iter().enumerate() {
+                if ui.radio(end == Some(n), f.as_str()).clicked() {
+                    out.push((id, Act::Time(Some((start, Some(n))))));
+                    chosen = true;
+                }
+            }
+        })
+        .response
+        .on_hover_text(tr(lang, "A field with the end of the time of the objects. Without it an object is a moment."));
     }
     chosen
 }
@@ -2226,6 +2355,46 @@ mod tests {
         assert_eq!(shapes[0].0.holes.as_ref().map(Vec::len), Some(1));
         // В картинке наложения осталась только линия.
         assert_eq!(layers.line_set().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn timed_layer_hides_objects_outside_the_slider_window() {
+        let point = |lat: f64, day: &str, end: &str| data::layers::Item { shape: Geom::Point, parts: vec![vec![(lat, 56.0)]], heights: Vec::new(), values: vec![format!("п{lat}"), day.into(), end.into()] };
+        let data = LayerData {
+            name: "Съёмки".into(),
+            epsg: Some(4326),
+            fields: vec!["name".into(), "day".into(), "till".into()],
+            numeric: vec![false; 3],
+            items: vec![point(58.0, "2020-05-01", ""), point(58.1, "2024-05-01", ""), point(58.2, "", "")],
+        };
+        let mut layers = DataLayers::default();
+        layers.add(vec![data], "s.gpkg");
+        let id = layers.list[0].id;
+        assert_eq!(layers.extent(), None);
+        layers.apply(id, &Act::Time(Some((1, None))));
+        let (lo, hi) = layers.extent().unwrap();
+        assert!(lo < hi);
+        // Окно вокруг 2020 года: точка 2024 года спрятана, точка без
+        // времени видна всегда.
+        let year = 365.25 * 86400.0;
+        layers.set_window(Some((lo - year / 2.0, lo + year / 2.0)));
+        assert!(layers.dots_dirty);
+        let dots = &layers.dot_sets()[0].0.0;
+        assert_eq!(dots.len(), 2);
+        assert!(!dots.contains(&(58.1, 56.0)));
+        assert!(layers.list[0].hits(58.1, 56.0, 100.0, &|_, _| Some(0.0)).iter().all(|n| *n != 1));
+        // Конец времени: точка 2020 года до 2025 года видна в окне 2024.
+        layers.list[0].data.items[0].values[2] = "2025-01-01".into();
+        layers.apply(id, &Act::Time(Some((1, Some(2)))));
+        layers.set_window(Some((hi - 10.0, hi + 10.0)));
+        assert_eq!(layers.dot_sets()[0].0.0.len(), 3);
+        // Поля времени - в списке хранилища и обратно.
+        let text = layers.index(true);
+        let (back, _) = DataLayers::from_index(&text, &|_| None);
+        assert_eq!(back.list[0].time, Some((1, Some(2))));
+        // Без окна шкалы видно всё.
+        layers.set_window(None);
+        assert_eq!(layers.dot_sets()[0].0.0.len(), 3);
     }
 
     #[test]
