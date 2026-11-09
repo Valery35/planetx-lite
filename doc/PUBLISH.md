@@ -215,6 +215,23 @@
 - LinkedIn и Facebook - посты в лентах автора
 - Площадки группы «Иногда» (OSGeo, форум OSM, linux.org.ru, Reddit) - не публиковались, выпуск малый
 
+### PlanetX 1.43.0, 9 ноября 2026 года
+
+Тексты - planetx/site/posts_1.43_social.md, статьи нет. По слову автора «доделывай и публикуй».
+
+- Коммиты a73faa4 (окно «Данные JAXA»), 954bcce (выпуск), 6919532 (страница «Что нового»)
+- GitHub: https://github.com/Valery35/planetx/releases/tag/v1.43.0
+- Каталог QGIS: https://plugins.qgis.org/plugins/planetx/version/1.43.0/ (загружена, ждёт проверки и одобрения)
+- Dropbox - planetx-1.43.0.zip в Dropbox\ИИ\PlanetX
+- Сайт informpp.ru - «Что нового» и главная модуля, коммит 6919532, опубликовано. Блок «Что нового» 1154 × 7320 короче страницы (20706), прокрутка внутри блока была и до выпуска
+- Telegram: https://t.me/qgis_isolines/195 (бот выпуска)
+- ВК: https://vk.ru/wall-241229428_57 (запись без снимка)
+- Mastodon: https://en.osm.town/@Vaery35/117587763411210814
+- X: https://x.com/Valery35/status/2119851293954941257
+- LinkedIn и Facebook - посты в лентах автора 9 ноября 2026 года
+- Площадки группы «Иногда» (OSGeo, форум OSM, linux.org.ru, Reddit) - не публиковались, ждут слова автора
+- Лента страницы линейки planetx (planetx-scene/site/feed.json) - не обновлялась
+
 ### PlanetX Lite 0.25.0, 8 ноября 2026 года
 
 Тексты - site/posts_0.25.0_social.md, описание выпуска - packaging/notes/0.25.0.md. По слову автора «публикуй всюду».
