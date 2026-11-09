@@ -3070,39 +3070,6 @@ impl LiteApp {
         }
     }
 
-    /// Картинка на поверхности в «Мои метки», в папку folder_name: у
-    /// программы - файлом file в папке данных, у страницы - в метках.
-    #[allow(clippy::too_many_arguments)]
-    fn add_picture(&mut self, folder_name: &str, name: &str, file: &str, png: Vec<u8>, bbox: [f64; 4], time: Option<scene::when::Time>, description: String) {
-        let [west, south, east, north] = bbox;
-        let mut o = scene::overlays::Overlay::new(scene::overlays::Kind::Ground);
-        o.set_box([north, south, east, west, 0.0]);
-        let mut overlay = scene::kml::Overlay::new(name, o);
-        overlay.time = time;
-        overlay.description = description;
-        let path = self.data_dir().map(|d| d.join(file));
-        match path.filter(|p| p.parent().is_some_and(|d| std::fs::create_dir_all(d).is_ok()) && std::fs::write(p, &png).is_ok()) {
-            Some(p) => overlay.href = p.to_string_lossy().into_owned(),
-            None => {
-                overlay.href = file.replace('/', "-");
-                overlay.image = Some(png);
-            }
-        }
-        let root = marks::root_name(self.lang);
-        let first = self.marks.first_index();
-        let tree = self.marks.root(root);
-        let at = tree.children.iter().position(|i| matches!(i, scene::kml::Item::Folder(f) if f.name == folder_name));
-        let at = match at {
-            Some(n) => n,
-            None => {
-                tree.children.insert(first, scene::kml::Item::Folder(scene::kml::Folder::new(folder_name)));
-                first
-            }
-        };
-        self.marks.insert(&[at], scene::kml::Item::Overlay(overlay), root);
-        self.marks_changed();
-    }
-
     /// Картинка на поверхности - слоем-картинкой «Моих слоёв» в папку
     /// folder_name, как слой проекта у модуля: снимки «Космоснимков»
     /// и карты тренда. Время снимка идёт по шкале. bbox - запад, юг,

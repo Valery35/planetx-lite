@@ -1233,7 +1233,6 @@ Maps at the view: {count}, by year. A click on a column header changes the order
 The map was not built.	O mapa não foi construído.
 The map is on the globe: {title}.	O mapa está no globo: {title}.
 On the globe	Para o globo
-The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	O mapa é construído a partir da imagem da coleção, georreferenciado e colocado como imagem na superfície em «Os meus lugares», pasta «Mapas de Rumsey», com o ano do mapa. O ano coloca o mapa na barra de tempo.
 The bands were not read: {error}	As bandas não foram lidas: {error}
 Satellite images…	Imagens de satélite…
 Reading the bands: {done} of {total}	A ler as bandas: {done} de {total}

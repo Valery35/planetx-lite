@@ -1233,7 +1233,6 @@ Maps at the view: {count}, by year. A click on a column header changes the order
 The map was not built.	Die Karte wurde nicht erstellt.
 The map is on the globe: {title}.	Die Karte ist auf dem Globus: {title}.
 On the globe	Auf den Globus
-The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Die Karte wird aus dem Bild der Sammlung erstellt, georeferenziert und als Bild auf der Oberfläche in „Meine Orte“ gelegt, Ordner „Rumsey-Karten“, mit dem Jahr der Karte. Das Jahr setzt die Karte auf die Zeitleiste.
 The bands were not read: {error}	Die Kanäle wurden nicht gelesen: {error}
 Satellite images…	Satellitenbilder…
 Reading the bands: {done} of {total}	Kanäle werden gelesen: {done} von {total}

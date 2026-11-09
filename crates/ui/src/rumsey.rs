@@ -10,10 +10,9 @@
 //! список карт у вида. Каталог берётся из planetx-terrain через зеркала.
 //! Выбранная карта собирается из кусков IIIF не больше
 //! `rumsey::MAX_SIDE` пикселей, поле вне обрезки становится прозрачным,
-//! привязка - по опорным точкам способом Рамсея. Итог - картинка
-//! на поверхности в «Моих метках», папка «Карты Рамсея», с годом карты:
-//! год ставит карту на шкалу времени. У программы картинка лежит файлом
-//! в папке данных (`rumsey/<номер>.png`), у страницы - в файле меток.
+//! привязка - по опорным точкам способом Рамсея. Итог - слой-картинка
+//! «Моих слоёв», папка «Карты Рамсея», с годом карты, как слой проекта
+//! модуля: год ставит карту на шкалу времени.
 
 use std::collections::HashMap;
 
@@ -386,7 +385,7 @@ impl Rumsey {
             ui.label(&self.status);
             ui.horizontal(|ui| {
                 let enabled = self.selected.is_some() && self.job.is_none();
-                if ui.add_enabled(enabled, egui::Button::new(tr(lang, "On the globe"))).on_hover_text(tr(lang, "The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.")).clicked() {
+                if ui.add_enabled(enabled, egui::Button::new(tr(lang, "On the globe"))).on_hover_text(tr(lang, "The map is built from the collection image, georeferenced and laid as a picture layer of My layers, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.")).clicked() {
                     build = self.selected;
                 }
                 if ui.add_enabled(self.selected.is_some(), egui::Button::new(tr(lang, "Show on the globe"))).on_hover_text(tr(lang, "Flight to the frame of the chosen map.")).clicked() {

@@ -454,6 +454,9 @@ pub enum Action {
     FolderProperties(Vec<usize>),
     /// Окно свойств наложения: картинки, фото, картинки на экране, модели.
     OverlayProperties(Vec<usize>),
+    /// Картинка на поверхности - копией слоем-картинкой «Моих слоёв»,
+    /// «Картинки на поверхности в проект QGIS» модуля.
+    OverlayToLayers(Vec<usize>),
     /// Окно «Сетевая ссылка» папки-ссылки.
     LinkProperties(Vec<usize>),
     /// «Загрузить заново» папки-ссылки.
@@ -616,6 +619,9 @@ fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[
             item(ui, tr(lang, "Flow lines from the placemark…"), Action::FlowLines(p()), actions);
         }
         item(ui, tr(lang, "Snapshot view"), Action::ViewSnapshot(p()), actions);
+        if kind == RowKind::Overlay {
+            item(ui, tr(lang, "Copy to My layers"), Action::OverlayToLayers(p()), actions);
+        }
         let props = if kind == RowKind::Overlay { Action::OverlayProperties(p()) } else { Action::Properties(p()) };
         item(ui, tr(lang, "Properties…"), props, actions);
         item(ui, tr(lang, "New folder"), Action::NewFolderAfter(p()), actions);

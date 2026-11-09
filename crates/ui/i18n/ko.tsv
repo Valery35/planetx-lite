@@ -1233,7 +1233,6 @@ Maps at the view: {count}, by year. A click on a column header changes the order
 The map was not built.	지도를 만들지 못했습니다.
 The map is on the globe: {title}.	지도가 지구본에 있습니다: {title}.
 On the globe	지구본으로
-The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	지도는 컬렉션 이미지로 만들어지고 좌표를 맞춘 뒤 지도 연도와 함께 ‘내 장소’의 ‘Rumsey 지도’ 폴더에 지표면 이미지로 놓입니다. 연도에 따라 지도가 시간 막대에 놓입니다.
 The bands were not read: {error}	밴드를 읽지 못했습니다: {error}
 Satellite images…	위성 영상…
 Reading the bands: {done} of {total}	밴드를 읽는 중: {done} / {total}

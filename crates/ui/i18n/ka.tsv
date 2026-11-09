@@ -1233,7 +1233,6 @@ Maps at the view: {count}, by year. A click on a column header changes the order
 The map was not built.	რუკა არ აიწყო.
 The map is on the globe: {title}.	რუკა გლობუსზეა: {title}.
 On the globe	გლობუსზე
-The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	რუკა იწყობა კოლექციის გამოსახულებიდან, მიებმება და რუკის წლით ზედაპირზე სურათად ჯდება „ჩემ ნიშნებში“, საქაღალდეში „Rumsey-ის რუკები“. წელი რუკას დროის ზოლზე სვამს.
 The bands were not read: {error}	არხები არ წაიკითხა: {error}
 Satellite images…	კოსმოსური სურათები…
 Reading the bands: {done} of {total}	არხების წაკითხვა: {done} / {total}

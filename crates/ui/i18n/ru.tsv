@@ -1234,7 +1234,7 @@ Maps at the view: {count}, by year. A click on a column header changes the order
 The map was not built.	Карта не собрана.
 The map is on the globe: {title}.	Карта на глобусе: {title}.
 On the globe	На глобус
-The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Карта собирается из изображения коллекции, привязывается и ложится картинкой на поверхность в «Мои метки», папку «Карты Рамсея», с годом карты. Год ставит карту на шкалу времени.
+The map is built from the collection image, georeferenced and laid as a picture layer of My layers, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Карта собирается из снимка коллекции, привязывается и ложится слоем-картинкой «Моих слоёв», папка «Карты Рамсея», с годом карты. Год ставит карту на шкалу времени.
 The bands were not read: {error}	Каналы не прочитаны: {error}
 Satellite images…	Космоснимки…
 Reading the bands: {done} of {total}	Чтение каналов: {done} из {total}
@@ -2404,6 +2404,10 @@ Isolines of the raster values become a layer of «My layers» with the elev fiel
 The raster has no spread of values.	У растра нет перепада значений.
 The coordinate system of the raster is unknown.	Система координат растра неизвестна.
 Placemarks to My layers	Метки в «Мои слои»
+Copy to My layers	Копия в «Мои слои»
+Only a picture on the surface goes to «My layers».	В «Мои слои» идёт только картинка на поверхности.
+Pictures on the surface	Картинки на поверхности
+Copied to «My layers»: {name}	Скопировано в «Мои слои»: {name}
 Placemarks - points	Метки - точки
 Placemarks - lines	Метки - линии
 Placemarks - polygons	Метки - многоугольники

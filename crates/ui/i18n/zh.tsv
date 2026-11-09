@@ -1233,7 +1233,6 @@ Maps at the view: {count}, by year. A click on a column header changes the order
 The map was not built.	未能生成地图。
 The map is on the globe: {title}.	地图已在地球上：{title}。
 On the globe	到地球上
-The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	地图由收藏图像生成，经配准后连同地图年份作为地表图片放入“我的地点”的“Rumsey 地图”文件夹。年份把地图放到时间条上。
 The bands were not read: {error}	未能读取波段：{error}
 Satellite images…	卫星影像…
 Reading the bands: {done} of {total}	正在读取波段：{done} / {total}

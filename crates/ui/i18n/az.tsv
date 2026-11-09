@@ -1233,7 +1233,6 @@ Maps at the view: {count}, by year. A click on a column header changes the order
 The map was not built.	Xəritə qurulmadı.
 The map is on the globe: {title}.	Xəritə qlobusdadır: {title}.
 On the globe	Qlobusa
-The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Xəritə kolleksiyanın təsvirindən qurulur, bağlanır və xəritənin ili ilə "Mənim yerlərim"də "Rumsey xəritələri" qovluğuna səthdə şəkil kimi qoyulur. İl xəritəni zaman şkalasına qoyur.
 The bands were not read: {error}	Kanallar oxunmadı: {error}
 Satellite images…	Peyk şəkilləri…
 Reading the bands: {done} of {total}	Kanallar oxunur: {done} / {total}

@@ -887,6 +887,7 @@ impl LiteApp {
                 crate::marks::Action::SaveKml(path) => self.save_marks(&path, crate::export::Kind::Kml),
                 crate::marks::Action::SaveScene(path) => self.save_marks(&path, crate::export::Kind::Scene),
                 crate::marks::Action::ToLayers(path) => self.places_to_layers(&path),
+                crate::marks::Action::OverlayToLayers(path) => self.overlay_to_layers(&path),
                 crate::marks::Action::Move(from, to, into) => {
                     if self.marks.move_many(&from, &to, into) {
                         self.reset_selection();
@@ -979,6 +980,34 @@ impl LiteApp {
             self.data_layers.add_to(vec![layer], &title, &tree.name);
         }
         self.open_message = Some(if count == 0 { tr(lang, "The folder has no placemarks with points.").to_string() } else { trf(lang, "Placemark layers added to «My layers», folder {folder}: {count}.", &[("folder", &tree.name), ("count", &count.to_string())]) });
+    }
+
+    /// Картинка на поверхности по пути - копией слоем-картинкой «Моих
+    /// слоёв», папка «Картинки на поверхности», как «Картинки на
+    /// поверхности в проект QGIS» модуля. Картинка - из архива KMZ или
+    /// файлом с диска, по адресу в сети не берётся.
+    pub(super) fn overlay_to_layers(&mut self, path: &[usize]) {
+        let lang = self.lang;
+        let Some(mut overlay) = self.marks.overlay(path).cloned() else {
+            return;
+        };
+        if overlay.kind() != scene::overlays::Kind::Ground {
+            self.open_message = Some(tr(lang, "Only a picture on the surface goes to «My layers».").to_string());
+            return;
+        }
+        if overlay.image.as_ref().is_none_or(Vec::is_empty) {
+            let local = !overlay.href.contains("://");
+            overlay.image = if local { std::fs::read(&overlay.href).ok() } else { None };
+        }
+        if overlay.image.as_ref().is_none_or(Vec::is_empty) {
+            self.open_message = Some(tr(lang, "The picture of the layer is not loaded").to_string());
+            return;
+        }
+        // Слой несёт картинку сам, ссылка на файл ему не нужна.
+        overlay.href.clear();
+        let name = overlay.name.clone();
+        self.data_layers.add_picture(overlay, tr(lang, "Pictures on the surface"));
+        self.open_message = Some(trf(lang, "Copied to «My layers»: {name}", &[("name", &name)]));
     }
 
     pub(super) fn save_marks(&mut self, path: &[usize], kind: crate::export::Kind) {

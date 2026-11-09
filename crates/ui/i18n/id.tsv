@@ -1233,7 +1233,6 @@ Maps at the view: {count}, by year. A click on a column header changes the order
 The map was not built.	Peta tidak dibuat.
 The map is on the globe: {title}.	Peta ada di globe: {title}.
 On the globe	Ke globe
-The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Peta dibuat dari gambar koleksi, digeoreferensikan, dan diletakkan sebagai gambar di permukaan dalam "Tempat Saya", folder "Peta Rumsey", dengan tahun peta. Tahun menempatkan peta pada bilah waktu.
 The bands were not read: {error}	Kanal tidak terbaca: {error}
 Satellite images…	Citra satelit…
 Reading the bands: {done} of {total}	Membaca kanal: {done} dari {total}

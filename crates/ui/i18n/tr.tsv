@@ -1233,7 +1233,6 @@ Maps at the view: {count}, by year. A click on a column header changes the order
 The map was not built.	Harita oluşturulmadı.
 The map is on the globe: {title}.	Harita kürede: {title}.
 On the globe	Küreye
-The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Harita koleksiyon görüntüsünden oluşturulur, koordinatlandırılır ve haritanın yılıyla "Yerlerim" içinde "Rumsey haritaları" klasörüne yüzeydeki resim olarak yerleşir. Yıl haritayı zaman çubuğuna koyar.
 The bands were not read: {error}	Bantlar okunmadı: {error}
 Satellite images…	Uydu görüntüleri…
 Reading the bands: {done} of {total}	Bantlar okunuyor: {done} / {total}

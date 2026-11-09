@@ -307,8 +307,8 @@ impl LiteApp {
         }
     }
 
-    /// Окно «Карты Рамсея»: каталог, сборка, готовая карта - картинкой
-    /// на поверхности в «Мои метки», папка «Карты Рамсея».
+    /// Окно «Карты Рамсея»: каталог, сборка, готовая карта - слоем-картинкой
+    /// «Моих слоёв», папка «Карты Рамсея», как слой проекта модуля.
     pub(super) fn step_rumsey(&mut self, ctx: &egui::Context, now: f64) {
         let lang = self.lang;
         let Some(r) = &mut self.rumsey else {
@@ -336,7 +336,8 @@ impl LiteApp {
         };
         let year = b.year.map_or(String::new(), |y| y.to_string());
         let name = if year.is_empty() { b.title.clone() } else { format!("{year} {}", b.title) };
-        self.add_picture(tr(lang, "Rumsey maps"), &name, &format!("rumsey/{}.png", b.number), b.png, b.bbox, (!year.is_empty()).then(|| (year.clone(), year)), String::new());
+        // Год карты идёт по шкале времени, как «Год карты» модуля.
+        self.picture_to_layers(tr(lang, "Rumsey maps"), &name, b.png, b.bbox, (!year.is_empty()).then(|| (year.clone(), year)), String::new());
     }
 
     /// Окно «Космоснимки»: поиск, чтение каналов, готовый снимок -

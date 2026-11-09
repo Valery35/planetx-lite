@@ -1233,7 +1233,6 @@ Maps at the view: {count}, by year. A click on a column header changes the order
 The map was not built.	De kaart is niet gemaakt.
 The map is on the globe: {title}.	De kaart staat op de globe: {title}.
 On the globe	Naar de globe
-The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	De kaart wordt gemaakt uit de afbeelding van de collectie, gegeorefereerd en als afbeelding op het oppervlak in ‘Mijn plaatsen’ gelegd, map ‘Rumsey-kaarten’, met het jaar van de kaart. Het jaar zet de kaart op de tijdbalk.
 The bands were not read: {error}	De banden zijn niet gelezen: {error}
 Satellite images…	Satellietbeelden…
 Reading the bands: {done} of {total}	Banden lezen: {done} van {total}

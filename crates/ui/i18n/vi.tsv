@@ -1233,7 +1233,6 @@ Maps at the view: {count}, by year. A click on a column header changes the order
 The map was not built.	Chưa dựng được bản đồ.
 The map is on the globe: {title}.	Bản đồ đã ở trên quả địa cầu: {title}.
 On the globe	Lên quả địa cầu
-The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	Bản đồ được dựng từ ảnh của bộ sưu tập, được định vị và đặt làm hình ảnh trên bề mặt trong "Địa điểm của tôi", thư mục "Bản đồ Rumsey", kèm năm của bản đồ. Năm đặt bản đồ lên thanh thời gian.
 The bands were not read: {error}	Chưa đọc được các kênh: {error}
 Satellite images…	Ảnh vệ tinh…
 Reading the bands: {done} of {total}	Đang đọc các kênh: {done} / {total}

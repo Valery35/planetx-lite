@@ -1233,7 +1233,6 @@ Maps at the view: {count}, by year. A click on a column header changes the order
 The map was not built.	地図を作成できませんでした。
 The map is on the globe: {title}.	地図は地球儀上にあります：{title}。
 On the globe	地球儀へ
-The map is built from the collection image, georeferenced and laid as a picture on the surface in My Places, folder Rumsey maps, with the year of the map. The year puts the map on the time slider.	地図はコレクションの画像から作成され、ジオリファレンスされて、地図の年とともに「マイプレイス」の「Rumsey の地図」フォルダーに地表の画像として置かれます。年によって地図はタイムバーに載ります。
 The bands were not read: {error}	バンドを読み込めませんでした：{error}
 Satellite images…	衛星画像…
 Reading the bands: {done} of {total}	バンドを読み込み中：{done} / {total}
