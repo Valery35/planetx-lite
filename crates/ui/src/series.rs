@@ -15,8 +15,8 @@
 //! так они совпадают для карты тренда. Модуль пересчитывает окна сцен
 //! другой зоны в неё, Lite такие сцены пропускает. Карта тренда -
 //! наклон Тейла-Сена за год в каждом пикселе (`data::trend::Job`
-//! частями по кадрам), картинкой на поверхности в «Мои метки», папка
-//! «Карты тренда»: красный - убыль, синий - рост, у температуры наоборот,
+//! частями по кадрам), слоем-картинкой «Моих слоёв», папка «Карты
+//! тренда»: красный - убыль, синий - рост, у температуры наоборот,
 //! шкала симметричная по 98-му процентилю модулей. У модуля - GeoTIFF
 //! из трёх полос в проекте QGIS.
 
@@ -423,7 +423,7 @@ impl Series {
         self.built = Some(Built { png, bbox, name, day: run.last.clone(), credit: format!("{scale} {credit}") });
         self.status = trf(
             lang,
-            "The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.",
+            "The trend map is in My layers: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.",
             &[("total", &total.to_string()), ("p", &trend::SIGNIFICANT.to_string()), ("share", &format!("{:.0}", 100.0 * significant as f64 / total.max(1) as f64)), ("median", &median)],
         );
     }
@@ -481,7 +481,7 @@ impl Series {
                 }
                 let tip = trf(
                     lang,
-                    "The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.",
+                    "The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture layer of My layers. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.",
                     &[("count", &trend::MIN_SCENES.to_string())],
                 );
                 if ui.add_enabled(ready, egui::Button::new(tr(lang, "Trend map"))).on_hover_text(tip).clicked() {

@@ -1253,7 +1253,6 @@ Scene	シーン
 Product	プロダクト
 Scenes found: {count}	見つかったシーン：{count}
 Area side	区域の一辺
-The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	選んだシーンの区域のプロダクトを、撮影日とともに「マイプレイス」の「衛星画像」フォルダーに地表の画像として置きます。
 Tile	タイル
 Reading the bands…	バンドを読み込み中…
 to	～
@@ -1593,7 +1592,6 @@ Computing the trend map from {count} scenes…	{count} シーンからトレン�
 Trend «{name}» {first} - {last}, per year	トレンド「{name}」{first} - {last}、年あたり
 The trend map was not built.	トレンドマップを作成できませんでした。
 Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	{count} シーンからの年あたりの Theil-Sen 傾き、スケールは年あたり {low} から {high}。晴天シーンが {min} 未満のピクセルにはトレンドがありません。
-The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	トレンドマップは「マイプレイス」にあります：トレンドのあるピクセル {total}、有意 (p < {p}) {share} %、傾きの中央値 年あたり {median}。
 The series is saved: {path}	系列を保存しました：{path}
 The file was not written: {error}	ファイルを書き込めません：{error}
 Series by dates	日付別系列
@@ -1601,7 +1599,6 @@ Area: {name}, scenes {count}	区域：{name}、シーン {count}
 The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	系列の値。点は雲と影のない区域の中央値、線分は 10 から 90 パーセンタイルまで。値を変えると系列を再計算します。
 CSV table…	CSV 表…
 The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	系列を CSV ファイルへ - 日付とシーン、中央値、10 および 90 パーセンタイル、雲のない区域の割合。値のないシーンは空の行になります。
-The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	系列のシーンにわたる区域の各ピクセルの値のトレンド - 年あたりの Theil-Sen 傾きを、「マイプレイス」に地表の画像として置きます。晴天シーンが {count} 未満のピクセルにはトレンドが付きません。1 つの季節の系列は年ごとのトレンドを示し、全月の系列は季節とトレンドが混ざります。
 Trend map	トレンドマップ
 No points of the series	系列のポイントがありません
 {when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}：中央値 {median}、10-90 % {low} - {high}、雲のない区域 {share} %

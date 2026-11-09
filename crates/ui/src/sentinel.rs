@@ -13,7 +13,8 @@
 //! участка в системе UTM сцены с шагом `step_for`, отражение, продукт
 //! `sentinel::product`, раскраска - растяжение 2-98 % у сочетаний, шкала
 //! индекса у индексов. Картинка пересчитывается на широту и долготу
-//! и ложится в «Мои метки», папку «Космоснимки», с днём снимка.
+//! и ложится слоем-картинкой «Моих слоёв» в папку «Космоснимки» с днём
+//! снимка, как слой проекта модуля. День снимка идёт по шкале времени.
 //!
 //! Ряд по датам и карта тренда - окно [`crate::series::Series`]. Чего
 //! у Lite пока нет: ASTER, MODIS и Landsat MSS, облачности над участком
@@ -450,7 +451,7 @@ impl Sentinel {
                 ui.checkbox(&mut self.clear, tr(lang, "Clouds and shadows empty"));
             });
             ui.horizontal(|ui| {
-                if ui.add_enabled(self.selected.is_some() && self.job.is_none(), egui::Button::new(tr(lang, "On the globe"))).on_hover_text(tr(lang, "The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.")).clicked() {
+                if ui.add_enabled(self.selected.is_some() && self.job.is_none(), egui::Button::new(tr(lang, "On the globe"))).on_hover_text(tr(lang, "The product of the chosen scene over the area as a picture layer of My layers, folder Satellite images. The day of the image goes along the time slider.")).clicked() {
                     build = true;
                 }
                 if ui.add_enabled(!self.scenes.is_empty() && !data::series::products(self.mission).is_empty(), egui::Button::new(tr(lang, "Series by dates…"))).on_hover_text(tr(lang, "A chart of the value over the area by the found scenes and the trend map.")).clicked() {

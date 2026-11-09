@@ -1253,7 +1253,6 @@ Scene	Cảnh
 Product	Sản phẩm
 Scenes found: {count}	Số cảnh tìm thấy: {count}
 Area side	Cạnh vùng
-The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	Sản phẩm của cảnh đã chọn trên vùng, dưới dạng hình ảnh trên bề mặt trong "Địa điểm của tôi", thư mục "Ảnh vệ tinh", kèm ngày chụp.
 Tile	Ô
 Reading the bands…	Đang đọc các kênh…
 to	đến
@@ -1593,7 +1592,6 @@ Computing the trend map from {count} scenes…	Đang tính bản đồ xu hướ
 Trend «{name}» {first} - {last}, per year	Xu hướng "{name}" {first} - {last}, mỗi năm
 The trend map was not built.	Chưa dựng được bản đồ xu hướng.
 Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	Độ dốc Theil-Sen mỗi năm từ {count} cảnh, thang từ {low} đến {high} mỗi năm. Điểm ảnh không có {min} cảnh quang mây thì không có xu hướng.
-The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	Bản đồ xu hướng nằm trong "Địa điểm của tôi": điểm ảnh có xu hướng {total}, có ý nghĩa (p < {p}) {share} %, trung vị độ dốc {median} mỗi năm.
 The series is saved: {path}	Đã lưu chuỗi: {path}
 The file was not written: {error}	Chưa ghi được tệp: {error}
 Series by dates	Chuỗi theo ngày
@@ -1601,7 +1599,6 @@ Area: {name}, scenes {count}	Vùng: {name}, cảnh {count}
 The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	Giá trị của chuỗi. Điểm là trung vị trên vùng không có mây và bóng, đoạn - từ phân vị thứ 10 đến thứ 90. Thay đổi giá trị sẽ tính lại chuỗi.
 CSV table…	Bảng CSV…
 The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	Chuỗi vào tệp CSV - ngày và cảnh, trung vị, phân vị thứ 10 và thứ 90, tỷ lệ vùng không có mây. Cảnh không có giá trị thành dòng trống.
-The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	Xu hướng của giá trị tại mỗi điểm ảnh của vùng qua các cảnh của chuỗi - độ dốc Theil-Sen mỗi năm, dưới dạng hình ảnh trên bề mặt trong "Địa điểm của tôi". Điểm ảnh không có {count} cảnh quang mây thì không nhận xu hướng. Chuỗi của một mùa cho xu hướng giữa các năm, chuỗi của tất cả các tháng trộn lẫn mùa và xu hướng.
 Trend map	Bản đồ xu hướng
 No points of the series	Không có điểm của chuỗi
 {when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: trung vị {median}, 10-90 % {low} - {high}, không mây {share} % vùng

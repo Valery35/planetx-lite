@@ -340,7 +340,7 @@ impl LiteApp {
     }
 
     /// Окно «Космоснимки»: поиск, чтение каналов, готовый снимок -
-    /// картинкой на поверхности в «Мои метки», папка «Космоснимки».
+    /// слоем-картинкой «Моих слоёв», папка «Космоснимки».
     pub(super) fn step_sentinel(&mut self, ctx: &egui::Context, now: f64) {
         let lang = self.lang;
         let Some(s) = &mut self.sentinel else {
@@ -360,15 +360,15 @@ impl LiteApp {
         if !s.shown() && !s.busy() {
             self.sentinel = None;
         }
-        let stem = |name: &str| name.chars().map(|c| if c.is_alphanumeric() || c == '-' { c } else { '_' }).collect::<String>();
-        // Карта тренда - без времени: она о всём ряде.
+        // Снимки и карты тренда - слоями-картинками «Моих слоёв», как слои
+        // проекта модуля. Карта тренда - без времени: она о всём ряде.
         if let Some(b) = trend {
-            self.add_picture(tr(lang, "Trend maps"), &b.name, &format!("trend/{}.png", stem(&b.name)), b.png, b.bbox, None, b.credit);
+            self.picture_to_layers(tr(lang, "Trend maps"), &b.name, b.png, b.bbox, None, b.credit);
         }
         let Some(b) = built else {
             return;
         };
-        self.add_picture(tr(lang, "Satellite images"), &b.name, &format!("images/{}.png", stem(&b.name)), b.png, b.bbox, Some((b.day.clone(), b.day.clone())), b.credit);
+        self.picture_to_layers(tr(lang, "Satellite images"), &b.name, b.png, b.bbox, Some((b.day.clone(), b.day.clone())), b.credit);
     }
 
     /// Окно «Треки»: смена охвата времени треков - новый охват шкалы,

@@ -420,6 +420,8 @@ pub struct LiteApp {
     preview_dirty: bool,
     /// Отпечаток слоёв-картинок «Моих слоёв» в прошлом кадре.
     data_pictures_seen: u64,
+    /// Охват шкалы по слоям-картинкам в прошлый раз.
+    data_extent_seen: Option<(f64, f64)>,
     /// Хозяин общего слоя вида окон анализа.
     site_layer: crate::analysis::SiteLayer,
     /// Многоканальные растры: рельеф они не меняют, ждут классификации.
@@ -1255,6 +1257,7 @@ impl LiteApp {
             preview: None,
             preview_dirty: false,
             data_pictures_seen: 0,
+            data_extent_seen: None,
             site_layer: crate::analysis::SiteLayer::default(),
             band_rasters: Vec::new(),
             area_site: None,
@@ -3100,6 +3103,22 @@ impl LiteApp {
         self.marks_changed();
     }
 
+    /// Картинка на поверхности - слоем-картинкой «Моих слоёв» в папку
+    /// folder_name, как слой проекта у модуля: снимки «Космоснимков»
+    /// и карты тренда. Время снимка идёт по шкале. bbox - запад, юг,
+    /// восток, север.
+    #[allow(clippy::too_many_arguments)]
+    fn picture_to_layers(&mut self, folder_name: &str, name: &str, png: Vec<u8>, bbox: [f64; 4], time: Option<scene::when::Time>, description: String) {
+        let [west, south, east, north] = bbox;
+        let mut o = scene::overlays::Overlay::new(scene::overlays::Kind::Ground);
+        o.set_box([north, south, east, west, 0.0]);
+        let mut overlay = scene::kml::Overlay::new(name, o);
+        overlay.time = time;
+        overlay.description = description;
+        overlay.image = Some(png);
+        self.data_layers.add_picture(overlay, folder_name);
+    }
+
     /// Новый инструмент: открытая правка метки закрывается «Отменой».
     fn set_tool(&mut self, tool: crate::tool::Tool) {
         self.close_side();
@@ -4139,11 +4158,18 @@ impl eframe::App for LiteApp {
         self.tracks.step(self.timebar.window().map(|w| w.1));
         let tracks_models = std::mem::take(&mut self.tracks.models_dirty);
         // Слои-картинки «Моих слоёв» сменились - сетки картинок заново.
-        let pictures_version = self.data_layers.pictures_version();
+        let pictures_version = self.data_layers.pictures_version(self.timebar.window());
         if pictures_version != self.data_pictures_seen {
             self.data_pictures_seen = pictures_version;
             self.preview_dirty = true;
             self.pictures_changed();
+            // Снимки по датам: охват шкалы - заново, только если он
+            // сменился, иначе шкала сбрасывалась бы при каждом шаге.
+            let extent = self.data_layers.extent();
+            if extent != self.data_extent_seen {
+                self.data_extent_seen = extent;
+                self.time_extent();
+            }
         }
         let preview_dirty = std::mem::take(&mut self.preview_dirty);
         if tracks_models || preview_dirty {
@@ -4420,7 +4446,7 @@ impl eframe::App for LiteApp {
         if listed && (fresh.is_some() || tracks_models || preview_dirty) && self.overlays_built != Some(self.marks.overlays_version()) {
             self.overlays_built = Some(self.marks.overlays_version());
             let mut meshes = self.marks.picture_meshes(&store);
-            meshes.extend(self.data_layers.pictures().into_iter().filter_map(|o| crate::pictures::ground_mesh(o, &crate::pictures::key_of(o), &store)));
+            meshes.extend(self.data_layers.pictures(self.timebar.window()).into_iter().filter_map(|o| crate::pictures::ground_mesh(o, &crate::pictures::key_of(o), &store)));
             meshes.extend(self.preview.as_ref().and_then(|o| crate::pictures::ground_mesh(o, &crate::pictures::key_of(o), &store)));
             globe.set_pictures(&meshes);
             let built = self.models.meshes(&model_list, &store, now);

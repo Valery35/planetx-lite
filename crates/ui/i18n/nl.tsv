@@ -1253,7 +1253,6 @@ Scene	Scène
 Product	Product
 Scenes found: {count}	Gevonden scènes: {count}
 Area side	Zijde van het gebied
-The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	Het product van de gekozen scène over het gebied als afbeelding op het oppervlak in ‘Mijn plaatsen’, map ‘Satellietbeelden’, met de dag van de opname.
 Tile	Tegel
 Reading the bands…	Banden lezen…
 to	tot
@@ -1593,7 +1592,6 @@ Computing the trend map from {count} scenes…	Trendkaart wordt berekend uit {co
 Trend «{name}» {first} - {last}, per year	Trend ‘{name}’ {first} - {last}, per jaar
 The trend map was not built.	De trendkaart is niet gemaakt.
 Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	Theil-Sen-helling per jaar uit {count} scènes, de schaal van {low} tot {high} per jaar. Pixels zonder {min} heldere scènes hebben geen trend.
-The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	De trendkaart staat in ‘Mijn plaatsen’: pixels met trend {total}, significant (p < {p}) {share} %, mediane helling {median} per jaar.
 The series is saved: {path}	De reeks is opgeslagen: {path}
 The file was not written: {error}	Het bestand is niet weggeschreven: {error}
 Series by dates	Reeks per datum
@@ -1601,7 +1599,6 @@ Area: {name}, scenes {count}	Gebied: {name}, scènes {count}
 The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	De waarde van de reeks. Het punt is de mediaan over het gebied zonder wolken en schaduwen, het segment - van het 10e tot het 90e percentiel. Een wijziging van de waarde berekent de reeks opnieuw.
 CSV table…	CSV-tabel…
 The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	De reeks naar een CSV-bestand - datum en scène, mediaan, 10e en 90e percentiel, aandeel van het gebied zonder wolken. Scènes zonder waarde worden lege rijen.
-The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	De trend van de waarde in elke pixel van het gebied over de scènes van de reeks - de Theil-Sen-helling per jaar, als afbeelding op het oppervlak in ‘Mijn plaatsen’. Een pixel zonder {count} heldere scènes krijgt geen trend. Een reeks uit één seizoen geeft de trend tussen jaren, een reeks uit alle maanden mengt seizoen en trend.
 Trend map	Trendkaart
 No points of the series	Geen punten van de reeks
 {when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: mediaan {median}, 10-90 % {low} - {high}, zonder wolken {share} % van het gebied

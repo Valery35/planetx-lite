@@ -1253,7 +1253,6 @@ Scene	Sahne
 Product	Ürün
 Scenes found: {count}	Bulunan sahneler: {count}
 Area side	Alanın kenarı
-The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	Seçilen sahnenin alan üzerindeki ürünü, görüntü günüyle "Yerlerim" içinde "Uydu görüntüleri" klasörüne yüzeydeki resim olarak.
 Tile	Karo
 Reading the bands…	Bantlar okunuyor…
 to	ile
@@ -1593,7 +1592,6 @@ Computing the trend map from {count} scenes…	{count} sahneden eğilim haritas�
 Trend «{name}» {first} - {last}, per year	Eğilim "{name}" {first} - {last}, yıllık
 The trend map was not built.	Eğilim haritası oluşturulmadı.
 Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	{count} sahneden yıllık Theil-Sen eğimi, ölçek yıllık {low} ile {high} arasında. {min} açık sahnesi olmayan piksellerin eğilimi yoktur.
-The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	Eğilim haritası "Yerlerim" içinde: eğilimli piksel {total}, anlamlı (p < {p}) {share} %, medyan eğim yıllık {median}.
 The series is saved: {path}	Seri kaydedildi: {path}
 The file was not written: {error}	Dosya yazılmadı: {error}
 Series by dates	Tarihlere göre seri
@@ -1601,7 +1599,6 @@ Area: {name}, scenes {count}	Alan: {name}, sahne {count}
 The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	Serinin değeri. Nokta, bulutsuz ve gölgesiz alan üzerindeki medyandır, çizgi - 10. ile 90. yüzdelik arası. Değerin değişmesi seriyi yeniden hesaplar.
 CSV table…	CSV tablosu…
 The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	Seri bir CSV dosyasına - tarih ve sahne, medyan, 10. ve 90. yüzdelikler, alanın bulutsuz payı. Değeri olmayan sahneler boş satır olarak gider.
-The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	Serinin sahneleri boyunca alanın her pikselindeki değer eğilimi - yıllık Theil-Sen eğimi, "Yerlerim" içinde yüzeydeki resim olarak. {count} açık sahnesi olmayan piksel eğilim almaz. Tek mevsimlik seri yıllar arası eğilimi verir, tüm ayların serisi mevsimi ve eğilimi karıştırır.
 Trend map	Eğilim haritası
 No points of the series	Serinin noktası yok
 {when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: medyan {median}, 10-90 % {low} - {high}, bulutsuz alan {share} %

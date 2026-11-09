@@ -536,7 +536,7 @@ impl LiteApp {
     /// и предпросмотр окна анализа.
     pub(super) fn picture_overlays(&self) -> Vec<&scene::kml::Overlay> {
         let mut list = self.marks.all_overlays();
-        list.extend(self.data_layers.pictures());
+        list.extend(self.data_layers.pictures(None));
         list.extend(self.preview.as_ref());
         list
     }

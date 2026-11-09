@@ -727,12 +727,8 @@ impl LiteApp {
 
     /// Охват шкалы времени - время меток и треков.
     pub(super) fn time_extent(&mut self) {
-        let marks = self.marks.extent();
-        let tracks = self.tracks.span();
-        let extent = match (marks, tracks) {
-            (Some(a), Some(b)) => Some((a.0.min(b.0), a.1.max(b.1))),
-            (a, b) => a.or(b),
-        };
+        // Метки, треки и слои-картинки со временем - снимки по датам.
+        let extent = [self.marks.extent(), self.tracks.span(), self.data_layers.extent()].into_iter().flatten().reduce(|a, b| (a.0.min(b.0), a.1.max(b.1)));
         self.timebar.set_extent(extent);
     }
 

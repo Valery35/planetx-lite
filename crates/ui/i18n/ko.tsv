@@ -1253,7 +1253,6 @@ Scene	장면
 Product	결과물
 Scenes found: {count}	찾은 장면: {count}
 Area side	구역 한 변
-The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	선택한 장면의 구역 결과물을 촬영일과 함께 ‘내 장소’의 ‘위성 영상’ 폴더에 지표면 이미지로 넣습니다.
 Tile	타일
 Reading the bands…	밴드를 읽는 중…
 to	~
@@ -1593,7 +1592,6 @@ Computing the trend map from {count} scenes…	장면 {count}개로 추세 지�
 Trend «{name}» {first} - {last}, per year	추세 "{name}" {first} - {last}, 연간
 The trend map was not built.	추세 지도를 만들지 못했습니다.
 Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	장면 {count}개에서 구한 연간 Theil-Sen 기울기, 범례는 연간 {low}부터 {high}까지. 맑은 장면이 {min}개 미만인 픽셀은 추세가 없습니다.
-The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	추세 지도가 "내 장소"에 있습니다: 추세가 있는 픽셀 {total}, 유의 (p < {p}) {share} %, 기울기 중앙값 연간 {median}.
 The series is saved: {path}	계열을 저장했습니다: {path}
 The file was not written: {error}	파일을 기록하지 못했습니다: {error}
 Series by dates	날짜별 계열
@@ -1601,7 +1599,6 @@ Area: {name}, scenes {count}	구역: {name}, 장면 {count}
 The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	계열의 값. 점은 구름과 그림자가 없는 구역의 중앙값, 선분은 10번째부터 90번째 백분위수까지입니다. 값을 바꾸면 계열을 다시 계산합니다.
 CSV table…	CSV 표…
 The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	계열을 CSV 파일로 - 날짜와 장면, 중앙값, 10번째와 90번째 백분위수, 구름 없는 구역의 비율. 값이 없는 장면은 빈 행이 됩니다.
-The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	계열의 장면들에 걸친 구역 각 픽셀의 값 추세 - 연간 Theil-Sen 기울기를 "내 장소"에 지표면 이미지로 넣습니다. 맑은 장면이 {count}개 미만인 픽셀은 추세를 받지 않습니다. 한 계절의 계열은 연도 간 추세를, 모든 달의 계열은 계절과 추세가 섞인 결과를 줍니다.
 Trend map	추세 지도
 No points of the series	계열의 점이 없습니다
 {when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: 중앙값 {median}, 10-90 % {low} - {high}, 구름 없는 구역 {share} %

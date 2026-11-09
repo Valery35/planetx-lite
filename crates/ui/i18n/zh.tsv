@@ -1253,7 +1253,6 @@ Scene	场景
 Product	产品
 Scenes found: {count}	找到的场景：{count}
 Area side	区域边长
-The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	所选场景在该区域上的产品，连同成像日期作为地表图片放入“我的地点”的“卫星影像”文件夹。
 Tile	瓦片
 Reading the bands…	正在读取波段…
 to	至
@@ -1593,7 +1592,6 @@ Computing the trend map from {count} scenes…	正在根据 {count} 个场景计
 Trend «{name}» {first} - {last}, per year	趋势“{name}” {first} - {last}，每年
 The trend map was not built.	未能生成趋势图。
 Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	根据 {count} 个场景计算的每年 Theil-Sen 斜率，色标从每年 {low} 到 {high}。晴空场景少于 {min} 个的像素没有趋势。
-The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	趋势图已放入“我的地点”：有趋势的像素 {total}，显著 (p < {p}) {share} %，斜率中位数每年 {median}。
 The series is saved: {path}	序列已保存：{path}
 The file was not written: {error}	未能写入文件：{error}
 Series by dates	按日期序列
@@ -1601,7 +1599,6 @@ Area: {name}, scenes {count}	区域：{name}，场景 {count}
 The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	序列的值。点为该区域无云无阴影部分的中位数，线段 - 从第 10 到第 90 百分位数。更改该值会重新计算序列。
 CSV table…	CSV 表格…
 The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	将序列写入 CSV 文件 - 日期和场景、中位数、第 10 和第 90 百分位数、区域无云比例。无值的场景为空行。
-The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	按序列各场景计算区域内每个像素的值趋势 - 每年 Theil-Sen 斜率，作为地表图片放入“我的地点”。晴空场景少于 {count} 个的像素不计算趋势。单一季节的序列给出年际趋势，全部月份的序列会混合季节与趋势。
 Trend map	趋势图
 No points of the series	没有序列点
 {when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}：中位数 {median}，10-90 % {low} - {high}，区域无云 {share} %

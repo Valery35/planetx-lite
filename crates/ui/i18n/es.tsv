@@ -1253,7 +1253,6 @@ Scene	Escena
 Product	Producto
 Scenes found: {count}	Escenas encontradas: {count}
 Area side	Lado de la zona
-The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	El producto de la escena elegida sobre la zona como imagen sobre la superficie en «Mis lugares», carpeta «Imágenes de satélite», con el día de la imagen.
 Tile	Tesela
 Reading the bands…	Leyendo las bandas…
 to	hasta
@@ -1593,7 +1592,6 @@ Computing the trend map from {count} scenes…	Calculando el mapa de tendencia a
 Trend «{name}» {first} - {last}, per year	Tendencia «{name}» {first} - {last}, por año
 The trend map was not built.	El mapa de tendencia no se construyó.
 Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	Pendiente de Theil-Sen por año a partir de {count} escenas, la escala de {low} a {high} por año. Los píxeles sin {min} escenas despejadas no tienen tendencia.
-The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	El mapa de tendencia está en «Mis lugares»: píxeles con tendencia {total}, significativos (p < {p}) {share} %, pendiente mediana {median} por año.
 The series is saved: {path}	La serie está guardada: {path}
 The file was not written: {error}	El archivo no se escribió: {error}
 Series by dates	Serie por fechas
@@ -1601,7 +1599,6 @@ Area: {name}, scenes {count}	Zona: {name}, escenas {count}
 The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	El valor de la serie. El punto es la mediana sobre la zona sin nubes ni sombras, el segmento - del percentil 10 al 90. Un cambio del valor calcula la serie de nuevo.
 CSV table…	Tabla CSV…
 The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	La serie en un archivo CSV - fecha y escena, mediana, percentiles 10 y 90, proporción de la zona sin nubes. Las escenas sin valor quedan como filas vacías.
-The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	La tendencia del valor en cada píxel de la zona a lo largo de las escenas de la serie - la pendiente de Theil-Sen por año, como imagen sobre la superficie en «Mis lugares». Un píxel sin {count} escenas despejadas no recibe tendencia. Una serie de una sola estación da la tendencia entre años, una serie de todos los meses mezcla la estación y la tendencia.
 Trend map	Mapa de tendencia
 No points of the series	No hay puntos de la serie
 {when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: mediana {median}, 10-90 % {low} - {high}, sin nubes {share} % de la zona

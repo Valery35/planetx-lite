@@ -1253,7 +1253,6 @@ Scene	Səhnə
 Product	Məhsul
 Scenes found: {count}	Tapılan səhnələr: {count}
 Area side	Sahənin tərəfi
-The product of the chosen scene over the area as a picture on the surface in My Places, folder Satellite images, with the day of the image.	Seçilmiş səhnənin sahə üzrə məhsulu - şəklin günü ilə "Mənim yerlərim"də "Peyk şəkilləri" qovluğuna səthdə şəkil kimi.
 Tile	Kafel
 Reading the bands…	Kanallar oxunur…
 to	qədər
@@ -1593,7 +1592,6 @@ Computing the trend map from {count} scenes…	Trend xəritəsi {count} səhnə 
 Trend «{name}» {first} - {last}, per year	Trend "{name}" {first} - {last}, ildə
 The trend map was not built.	Trend xəritəsi qurulmadı.
 Theil-Sen slope per year from {count} scenes, the scale from {low} to {high} per year. Pixels without {min} clear scenes have no trend.	{count} səhnə üzrə ildə Theil-Sen meyli, şkala ildə {low} ilə {high} arasında. {min} təmiz səhnəsi olmayan piksellərin trendi yoxdur.
-The trend map is in My Places: pixels with a trend {total}, significant (p < {p}) {share} %, median slope {median} per year.	Trend xəritəsi "Mənim yerlərim"dədir: trendli piksellər {total}, əhəmiyyətli (p < {p}) {share} %, meylin medianı ildə {median}.
 The series is saved: {path}	Sıra yadda saxlanıldı: {path}
 The file was not written: {error}	Fayl yazılmadı: {error}
 Series by dates	Tarixlər üzrə sıra
@@ -1601,7 +1599,6 @@ Area: {name}, scenes {count}	Sahə: {name}, səhnələr {count}
 The value of the series. The point is the median over the area without clouds and shadows, the segment - from the 10th to the 90th percentile. A change of the value computes the series again.	Sıranın dəyəri. Nöqtə buludsuz və kölgəsiz sahə üzrə mediandır, parça - 10-cu ilə 90-cı persentil arasında. Dəyərin dəyişməsi sıranı yenidən hesablayır.
 CSV table…	CSV cədvəli…
 The series into a CSV file - date and scene, median, 10th and 90th percentiles, share of the area without clouds. Scenes without a value go as empty rows.	Sıra CSV faylına - tarix və səhnə, median, 10-cu və 90-cı persentillər, sahənin buludsuz payı. Dəyəri olmayan səhnələr boş sətir kimi gedir.
-The trend of the value in each pixel of the area over the scenes of the series - the Theil-Sen slope per year, as a picture on the surface in My Places. A pixel without {count} clear scenes gets no trend. A series of one season gives the trend between years, a series of all months mixes the season and the trend.	Sıranın səhnələri üzrə sahənin hər pikselində dəyərin trendi - ildə Theil-Sen meyli, "Mənim yerlərim"də səthdə şəkil kimi. {count} təmiz səhnəsi olmayan piksel trend almır. Bir fəslin səhnələrindən olan sıra illər arasındakı trendi verir, bütün ayların sırası fəsli və trendi qarışdırır.
 Trend map	Trend xəritəsi
 No points of the series	Sıranın nöqtələri yoxdur
 {when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area	{when}: median {median}, 10-90 % {low} - {high}, buludsuz sahə {share} %

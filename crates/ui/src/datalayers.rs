@@ -213,6 +213,11 @@ pub fn nearest(mut items: Vec<(String, f64, f64)>, lat: f64, lon: f64, count: us
     items
 }
 
+/// Картинка видна в окне шкалы времени window, без окна - всегда.
+fn in_window(p: &scene::kml::Overlay, window: Option<(f64, f64)>) -> bool {
+    window.is_none_or(|(lo, hi)| scene::when::visible(p.time.as_ref(), lo, hi))
+}
+
 /// Поля слоёв меток, часть полей `FIELDS` слоёв «Моих меток» модуля:
 /// название, описание, цвет «#rrggbb» и папка - путь через « / ».
 pub const PLACE_FIELDS: [&str; 4] = ["name", "description", "color", "folder"];
@@ -730,24 +735,32 @@ impl DataLayers {
         }
     }
 
-    /// Отпечаток слоёв-картинок: номера, флажки, непрозрачность и порядок.
-    /// Сменился - сетки картинок собираются заново. Без картинок - 0.
-    pub fn pictures_version(&self) -> u64 {
+    /// Отпечаток слоёв-картинок: номера, флажки, непрозрачность, порядок
+    /// и видимость в окне шкалы времени window. Сменился - сетки картинок
+    /// собираются заново. Без картинок - 0.
+    pub fn pictures_version(&self, window: Option<(f64, f64)>) -> u64 {
         use std::hash::{Hash, Hasher};
         let mut h = std::collections::hash_map::DefaultHasher::new();
         let mut any = false;
         for l in &self.list {
             if let Some(p) = &l.picture {
                 any = true;
-                (l.id, l.visible, p.overlay.color[3]).hash(&mut h);
+                (l.id, l.visible, p.overlay.color[3], in_window(p, window)).hash(&mut h);
             }
         }
         if any { h.finish() | 1 } else { 0 }
     }
 
-    /// Картинки видимых слоёв-картинок, нижняя строка - первой.
-    pub fn pictures(&self) -> Vec<&scene::kml::Overlay> {
-        self.list.iter().rev().filter(|l| l.visible).filter_map(|l| l.picture.as_ref()).collect()
+    /// Картинки видимых слоёв-картинок в окне шкалы времени window, без
+    /// окна - все, нижняя строка - первой. Картинка без времени видна
+    /// всегда, как метка.
+    pub fn pictures(&self, window: Option<(f64, f64)>) -> Vec<&scene::kml::Overlay> {
+        self.list.iter().rev().filter(|l| l.visible).filter_map(|l| l.picture.as_ref()).filter(|p| in_window(p, window)).collect()
+    }
+
+    /// Охват шкалы времени по временам слоёв-картинок, как у меток.
+    pub fn extent(&self) -> Option<(f64, f64)> {
+        scene::when::extent(self.list.iter().filter(|l| l.visible).filter_map(|l| l.picture.as_ref()).map(|p| p.time.as_ref()))
     }
 
     /// Папки в порядке первого слоя каждой, без пустой. Живые слои RustGIS
@@ -867,6 +880,9 @@ impl DataLayers {
                 }
                 if let Some(p) = &l.picture {
                     v["picture"] = serde_json::json!({ "corners": p.overlay.corners, "box": p.overlay.latlon_box, "description": p.description });
+                    if let Some((begin, end)) = &p.time {
+                        v["picture"]["time"] = serde_json::json!([begin, end]);
+                    }
                     if let Some(store) = &l.store {
                         v["store"] = serde_json::Value::String(store.clone());
                     }
@@ -958,6 +974,7 @@ impl DataLayers {
                     let mut overlay = scene::kml::Overlay::new(&title, ground);
                     overlay.image = Some(image);
                     overlay.description = p.get("description").and_then(serde_json::Value::as_str).unwrap_or_default().to_string();
+                    overlay.time = p.get("time").and_then(serde_json::Value::as_array).and_then(|t| Some((t.first()?.as_str()?.to_string(), t.get(1)?.as_str()?.to_string())));
                     Some(overlay)
                 }
                 None => None,
@@ -1811,15 +1828,15 @@ mod tests {
         assert_eq!(layers.get(pid).unwrap().extent_points().len(), 4);
         assert!(layers.get(pid).unwrap().lines().is_empty());
         // Непрозрачность - в оттенке картинки, отпечаток меняется.
-        let before = layers.pictures_version();
+        let before = layers.pictures_version(None);
         assert_ne!(before, 0);
         layers.apply(pid, &Act::Style(Style { opacity: 0.5, ..Style::new(0) }));
         assert_eq!(layers.get(pid).unwrap().picture.as_ref().unwrap().overlay.color[3], 128);
-        assert_ne!(layers.pictures_version(), before);
+        assert_ne!(layers.pictures_version(None), before);
         layers.apply(pid, &Act::Visible(false));
-        assert!(layers.pictures().is_empty());
+        assert!(layers.pictures(None).is_empty());
         layers.apply(pid, &Act::Visible(true));
-        assert_eq!(layers.pictures().len(), 1);
+        assert_eq!(layers.pictures(None).len(), 1);
         // В папку данных - картинкой, в списке - рамка, обратно - тот же слой.
         let stored: Vec<(u64, String)> = layers.unstored();
         let name = stored.iter().find(|(id, _)| *id == pid).map(|(_, n)| n.clone()).unwrap();
@@ -1898,6 +1915,35 @@ mod tests {
         assert_eq!(row_count(&layers), 6);
         layers.apply(0, &Act::FolderCollapse("F".into()));
         assert_eq!(row_count(&layers), 3);
+    }
+
+    #[test]
+    fn dated_picture_follows_the_time_slider_and_keeps_its_day() {
+        let mut ground = scene::overlays::Overlay::new(scene::overlays::Kind::Ground);
+        ground.set_box([58.1, 58.0, 56.3, 56.2, 0.0]);
+        let mut image = scene::kml::Overlay::new("Снимок", ground.clone());
+        image.image = Some(b"\x89PNG".to_vec());
+        image.time = Some(("2025-06-01".into(), "2025-06-01".into()));
+        let mut trend = scene::kml::Overlay::new("Тренд", ground);
+        trend.image = Some(b"\x89PNG".to_vec());
+        let mut layers = DataLayers::default();
+        layers.add_picture(image, "Космоснимки");
+        layers.add_picture(trend, "Карты тренда");
+        // Охват шкалы - день снимка, карта без времени видна всегда.
+        let (lo, hi) = layers.extent().unwrap();
+        assert!(hi >= lo);
+        let before = (lo - 400.0 * 86400.0, lo - 300.0 * 86400.0);
+        assert_eq!(layers.pictures(Some(before)).iter().map(|p| p.name.as_str()).collect::<Vec<_>>(), ["Тренд"]);
+        assert_eq!(layers.pictures(Some((lo, hi))).len(), 2);
+        assert_ne!(layers.pictures_version(Some(before)), layers.pictures_version(Some((lo, hi))));
+        // День снимка - в списке хранилища и обратно.
+        for (id, n) in layers.unstored() {
+            layers.stored(id, n);
+        }
+        let files: std::collections::HashMap<String, Vec<u8>> = layers.list.iter().map(|l| (l.store.clone().unwrap(), DataLayers::stored_bytes(l))).collect();
+        let (back, _) = DataLayers::from_index(&layers.index(false), &|n| files.get(n).cloned());
+        let times: Vec<Option<scene::when::Time>> = back.list.iter().map(|l| l.picture.as_ref().unwrap().time.clone()).collect();
+        assert!(times.contains(&Some(("2025-06-01".into(), "2025-06-01".into()))) && times.contains(&None));
     }
 
     #[test]
