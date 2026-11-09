@@ -58,9 +58,16 @@ impl GridHeights {
     /// Квадрат со стороной 2 radius_m у точки. max_level - самый
     /// подробный уровень тайлов высот тела.
     pub fn new(lat: f64, lon: f64, radius_m: f64, radius: f64, max_level: u32, now: f64) -> Self {
+        Self::with_side(lat, lon, radius_m, 0.0, data::hydro::SIDE, radius, max_level, now)
+    }
+
+    /// Квадрат, как [`GridHeights::new`], с шагом не мельче cell метров
+    /// и не больше side узлов поперёк.
+    #[allow(clippy::too_many_arguments)]
+    pub fn with_side(lat: f64, lon: f64, radius_m: f64, cell: f64, side: usize, radius: f64, max_level: u32, now: f64) -> Self {
         // Шаг не мельче пикселя высот самого подробного уровня.
         let pixel = 2.0 * std::f64::consts::PI * radius * lat.to_radians().cos().abs().max(1e-6) / (256.0 * f64::from(1u32 << max_level.min(30)));
-        let grid = data::hydro::make_grid(lat, lon, radius_m, pixel, radius);
+        let grid = data::hydro::make_grid_up_to(lat, lon, radius_m, pixel.max(cell), radius, side);
         // Тайлы под кругом, описанным около квадрата.
         let (_, keys) = data::viewshed::height_tiles(lat, lon, radius_m * std::f64::consts::SQRT_2, grid.cell, radius, max_level);
         Self { grid, radius, keys, started: now, partial: false, points: Vec::new(), got: Vec::new(), waiting: true }

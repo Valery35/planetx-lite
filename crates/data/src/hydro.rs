@@ -80,9 +80,16 @@ pub struct Grid {
 /// местности не мельче cell и не больше SIDE узлов поперёк, количество
 /// узлов нечётное. radius - радиус тела, метры.
 pub fn make_grid(lat: f64, lon: f64, radius_m: f64, cell: f64, radius: f64) -> Grid {
-    let cell = cell.max(2.0 * radius_m / SIDE as f64);
+    make_grid_up_to(lat, lon, radius_m, cell, radius, SIDE)
+}
+
+/// Сетка, как [`make_grid`], но не больше side узлов поперёк: горизонтали
+/// вида берут сетку подробнее, чем окна анализа.
+pub fn make_grid_up_to(lat: f64, lon: f64, radius_m: f64, cell: f64, radius: f64, side: usize) -> Grid {
+    let side = side.max(2);
+    let cell = cell.max(2.0 * radius_m / side as f64);
     let span = (2.0 * radius_m / cell).ceil();
-    let n = (if span.is_finite() && span > 0.0 { (span as usize).min(SIDE + 1) } else { 0 }) | 1;
+    let n = (if span.is_finite() && span > 0.0 { (span as usize).min(side + 1) } else { 0 }) | 1;
     let scale = 1.0 / lat.to_radians().cos().max(1e-6);
     let step = cell * scale;
     let (x, y) = mercator(lat, lon, radius);

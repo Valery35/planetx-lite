@@ -653,49 +653,72 @@ pub type Segment = [[f64; 2]; 2];
 /// Отрезки изолинии level по сетке z, NaN - пусто. Ячейка с пустым углом
 /// пропускается. Седло делится по среднему значению ячейки.
 pub fn segments(z: &Grid, level: f64) -> Vec<Segment> {
-    let mut two = Vec::new();
-    let mut saddles = Vec::new();
+    let mut found = Found::default();
     for r in 0..z.rows.saturating_sub(1) {
         for c in 0..z.cols.saturating_sub(1) {
-            let (va, vb, vc, vd) = (z.at(r, c), z.at(r, c + 1), z.at(r + 1, c), z.at(r + 1, c + 1));
-            if ![va, vb, vc, vd].iter().all(|v| v.is_finite()) {
-                continue;
-            }
-            // Рёбра ячейки: верх a-b, право b-d, низ c-d, лево a-c.
-            let edges = [(va, vb, 0.0, 0.0, 0.0, 1.0), (vb, vd, 0.0, 1.0, 1.0, 1.0), (vc, vd, 1.0, 0.0, 1.0, 1.0), (va, vc, 0.0, 0.0, 1.0, 0.0)];
-            let mut points = [[0.0; 2]; 4];
-            let mut hits = [false; 4];
-            for (k, (v0, v1, r0, c0, r1, c1)) in edges.into_iter().enumerate() {
-                // Узел ровно на уровне считается выше: линия не пропадает.
-                let cross = (v0 >= level) != (v1 >= level);
-                let t = if cross { (level - v0) / if v1 != v0 { v1 - v0 } else { 1.0 } } else { 0.0 };
-                points[k] = [r as f64 + r0 + (r1 - r0) * t, c as f64 + c0 + (c1 - c0) * t];
-                hits[k] = cross;
-            }
-            match hits.iter().filter(|h| **h).count() {
-                2 => {
-                    let found: Vec<[f64; 2]> = (0..4).filter(|k| hits[*k]).map(|k| points[k]).collect();
-                    two.push([found[0], found[1]]);
-                }
-                4 => {
-                    let mid = (va + vb + vc + vd) / 4.0;
-                    let high = (mid > level) == (va > level);
-                    if high {
-                        saddles.push(([points[0], points[1]], [points[2], points[3]]));
-                    } else {
-                        saddles.push(([points[0], points[3]], [points[1], points[2]]));
-                    }
-                }
-                _ => {}
+            if let Some(corners) = cell(z, r, c) {
+                cell_segments(r, c, corners, level, &mut found);
             }
         }
     }
-    // Порядок как у модуля: сначала ячейки с двумя пересечениями, потом
-    // первые и вторые пары сёдел.
-    let (first, second): (Vec<Segment>, Vec<Segment>) = saddles.into_iter().unzip();
-    two.extend(first);
-    two.extend(second);
-    two
+    found.ordered()
+}
+
+/// Отрезки одной отметки: ячейки с двумя пересечениями и сёдла парами.
+#[derive(Default)]
+struct Found {
+    two: Vec<Segment>,
+    saddles: Vec<(Segment, Segment)>,
+}
+
+impl Found {
+    /// Порядок как у модуля: сначала ячейки с двумя пересечениями, потом
+    /// первые и вторые пары сёдел.
+    fn ordered(self) -> Vec<Segment> {
+        let mut out = self.two;
+        let (first, second): (Vec<Segment>, Vec<Segment>) = self.saddles.into_iter().unzip();
+        out.extend(first);
+        out.extend(second);
+        out
+    }
+}
+
+/// Углы ячейки (r, c): a, b сверху, c, d снизу. None - есть пустой угол.
+fn cell(z: &Grid, r: usize, c: usize) -> Option<[f64; 4]> {
+    let corners = [z.at(r, c), z.at(r, c + 1), z.at(r + 1, c), z.at(r + 1, c + 1)];
+    corners.iter().all(|v| v.is_finite()).then_some(corners)
+}
+
+/// Отрезки отметки level в ячейке (r, c) с углами corners.
+fn cell_segments(r: usize, c: usize, corners: [f64; 4], level: f64, found: &mut Found) {
+    let [va, vb, vc, vd] = corners;
+    // Рёбра ячейки: верх a-b, право b-d, низ c-d, лево a-c.
+    let edges = [(va, vb, 0.0, 0.0, 0.0, 1.0), (vb, vd, 0.0, 1.0, 1.0, 1.0), (vc, vd, 1.0, 0.0, 1.0, 1.0), (va, vc, 0.0, 0.0, 1.0, 0.0)];
+    let mut points = [[0.0; 2]; 4];
+    let mut hits = [false; 4];
+    for (k, (v0, v1, r0, c0, r1, c1)) in edges.into_iter().enumerate() {
+        // Узел ровно на уровне считается выше: линия не пропадает.
+        let cross = (v0 >= level) != (v1 >= level);
+        let t = if cross { (level - v0) / if v1 != v0 { v1 - v0 } else { 1.0 } } else { 0.0 };
+        points[k] = [r as f64 + r0 + (r1 - r0) * t, c as f64 + c0 + (c1 - c0) * t];
+        hits[k] = cross;
+    }
+    match hits.iter().filter(|h| **h).count() {
+        2 => {
+            let pair: Vec<[f64; 2]> = (0..4).filter(|k| hits[*k]).map(|k| points[k]).collect();
+            found.two.push([pair[0], pair[1]]);
+        }
+        4 => {
+            let mid = (va + vb + vc + vd) / 4.0;
+            let high = (mid > level) == (va > level);
+            if high {
+                found.saddles.push(([points[0], points[1]], [points[2], points[3]]));
+            } else {
+                found.saddles.push(([points[0], points[3]], [points[1], points[2]]));
+            }
+        }
+        _ => {}
+    }
 }
 
 /// Отрезки в ломаные. Концы соседних ячеек на общем ребре совпадают,
@@ -747,10 +770,34 @@ pub fn chain(pieces: &[Segment], digits: i32) -> Vec<Vec<[f64; 2]>> {
 /// Изолинии сетки z через step: отметка и ломаная (строка, столбец)
 /// в долях узлов, как `ContourGenerateEx` у горизонталей модуля
 /// в проект. NaN - пусто, линия обходит его.
+///
+/// Один проход по ячейкам: у ячейки берутся только отметки между её
+/// наименьшим и наибольшим углом. Так сетка в миллионы узлов с сотнями
+/// отметок в горах считается быстро, а не проходом на каждую отметку.
 pub fn lines(z: &Grid, step: f64) -> Vec<(f64, Vec<[f64; 2]>)> {
+    if !(step > 0.0 && step.is_finite()) {
+        return Vec::new();
+    }
+    let mut by_level: std::collections::BTreeMap<i64, Found> = std::collections::BTreeMap::new();
+    for r in 0..z.rows.saturating_sub(1) {
+        for c in 0..z.cols.saturating_sub(1) {
+            let Some(corners) = cell(z, r, c) else {
+                continue;
+            };
+            let lo = corners.iter().copied().fold(f64::INFINITY, f64::min);
+            let hi = corners.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+            // Отметка пересекает ячейку, когда она выше наименьшего угла
+            // и не выше наибольшего: узел на отметке считается выше.
+            let (first, last) = ((lo / step).floor() as i64 + 1, (hi / step).floor() as i64);
+            for k in first..=last {
+                cell_segments(r, c, corners, k as f64 * step, by_level.entry(k).or_default());
+            }
+        }
+    }
     let mut out = Vec::new();
-    for level in levels(&z.data, step) {
-        for line in chain(&segments(z, level), 6) {
+    for (k, found) in by_level {
+        let level = k as f64 * step;
+        for line in chain(&found.ordered(), 6) {
             if line.len() >= 2 {
                 out.push((level, line));
             }

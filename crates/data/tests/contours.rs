@@ -290,6 +290,27 @@ fn cone_levels_and_nan() {
 }
 
 #[test]
+fn one_pass_lines_match_level_by_level_lines() {
+    // Волнистая поверхность с пустым углом: проход по ячейкам даёт те же
+    // ломаные, что прежний проход по каждой отметке.
+    let mut z = Grid::from_fn(60, 70, |r, c| 40.0 * ((r as f64) * 0.21).sin() * ((c as f64) * 0.17).cos() + 0.3 * c as f64);
+    z.data[5 * 70 + 9] = f64::NAN;
+    let step = 5.0;
+    let fast = ct::lines(&z, step);
+    let mut slow = Vec::new();
+    for level in ct::levels(&z.data, step) {
+        for line in ct::chain(&ct::segments(&z, level), 6) {
+            if line.len() >= 2 {
+                slow.push((level, line));
+            }
+        }
+    }
+    assert!(fast.len() > 20);
+    assert_eq!(fast, slow);
+    assert!(ct::lines(&z, 0.0).is_empty() && ct::lines(&z, f64::NAN).is_empty());
+}
+
+#[test]
 fn lines_of_a_cone_are_closed_rings_by_level() {
     // Конус высотой 100 м в середине сетки 21 x 21: через 25 м внутри
     // сетки - по одному замкнутому кольцу 25, 50, 75, вершина 100 -

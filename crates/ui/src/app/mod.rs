@@ -1992,10 +1992,15 @@ impl LiteApp {
                 // Квадрат по большей стороне вида у точки взгляда, как
                 // участок `export_tiles` модуля.
                 let width = self.view_width();
-                let side = width.max(width / self.nav.camera.aspect().max(0.1));
+                let aspect = self.nav.camera.aspect().max(0.1);
+                let side = width.max(width / aspect);
                 let max_level = terrain_source(&self.planet).map_or(terrain::MAX_LEVEL, |s| s.max_level);
-                let (lat, lon) = (self.nav.pose.lat, self.nav.pose.lon);
-                self.view_contours = Some(crate::isolines::ViewJob::new(self.lang, lat, lon, side, self.nav.camera.ellipsoid.a, max_level, now));
+                let pose = &self.nav.pose;
+                let (lat, lon, radius) = (pose.lat, pose.lon, self.nav.camera.ellipsoid.a);
+                // Сечение - как у горизонталей на глобусе и в их легенде.
+                let height_px = f64::from(self.globe_width_px) / aspect;
+                let step = data::contours::view_step(pose.distance, lat, self.nav.camera.fov_y.to_radians(), height_px, radius, data::contours::LEVEL);
+                self.view_contours = Some(crate::isolines::ViewJob::new(self.lang, lat, lon, side, step, radius, max_level, now));
                 self.open_message = Some(tr(self.lang, "Contours of the view are built: the heights are loaded first.").to_string());
             }
             Choice::Viewshed | Choice::Insolation | Choice::Shadows => {

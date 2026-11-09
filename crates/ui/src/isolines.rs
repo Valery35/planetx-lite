@@ -25,6 +25,9 @@ pub const FIELD: &str = "elev";
 pub const RASTER_LINES: f64 = 12.0;
 /// Узлов растра по стороне не больше: крупный растр прореживается.
 pub const RASTER_SIDE: usize = 1024;
+/// Узлов сетки горизонталей вида по стороне не больше: около двух узлов
+/// на пиксель окна, как сетка горизонталей глобуса на экране.
+pub const VIEW_SIDE: usize = 2048;
 /// Толщина линий слоя, пиксели.
 pub const WIDTH: f32 = 1.2;
 
@@ -95,10 +98,14 @@ pub struct ViewJob {
 }
 
 impl ViewJob {
-    /// Квадрат со стороной side метров у точки взгляда.
-    pub fn new(lang: Lang, lat: f64, lon: f64, side: f64, radius: f64, max_level: u32, now: f64) -> Self {
-        let heights = GridHeights::new(lat, lon, side / 2.0, radius, max_level, now);
-        let step = data::contours::cell_step(heights.grid.cell);
+    /// Квадрат со стороной side метров у точки взгляда, сечение step - как
+    /// у горизонталей на глобусе в этом виде (`contours::view_step`).
+    /// Шаг сетки - пиксель уровня, с которого глобус рисует горизонтали,
+    /// не больше [`VIEW_SIDE`] узлов поперёк.
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(lang: Lang, lat: f64, lon: f64, side: f64, step: f64, radius: f64, max_level: u32, now: f64) -> Self {
+        let cell = step / data::contours::STEP_PIXELS;
+        let heights = GridHeights::with_side(lat, lon, side / 2.0, cell, VIEW_SIDE, radius, max_level, now);
         let name = trf(lang, "Contours {step} m", &[("step", &data::contours::label_text(step))]);
         Self { heights, step, name, status: String::new() }
     }
