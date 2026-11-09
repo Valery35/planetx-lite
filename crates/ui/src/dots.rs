@@ -896,6 +896,37 @@ impl Dots {
             .collect()
     }
 
+    /// Объекты строки layer в рамке bbox (запад, юг, восток, север) и в окне
+    /// шкалы span - слоями «Моих слоёв», «В проект QGIS…» строки витрины
+    /// модуля (`active_export`): линии и точки с полями окна «Объекты»,
+    /// цвет - полем color, как на глобусе. Пусто - строка не загружена или
+    /// в рамке объектов нет.
+    pub fn export(&self, lang: Lang, layer: Layer, bbox: [f64; 4], span: Option<(f64, f64)>) -> Vec<data::layers::LayerData> {
+        let Some(data) = self.layers.iter().find(|(l, _)| *l == layer).and_then(|(_, s)| if let State::Ready(d) = s { Some(d) } else { None }) else {
+            return Vec::new();
+        };
+        let hex = |c: [u8; 3]| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]);
+        let mut out = Vec::new();
+        if let Some(lines) = data.lines() {
+            let items: Vec<Exported> = lines
+                .iter()
+                .enumerate()
+                .filter(|(_, l)| l.points.len() >= 2 && l.points.iter().any(|p| in_box(*p, bbox)))
+                .filter_map(|(n, l)| Some((data.line_feature(lang, n)?, l.points.clone(), hex([l.color[0], l.color[1], l.color[2]]))))
+                .collect();
+            out.extend(feature_layer(tr(lang, "Lines"), data::layers::Shape::Line, items));
+        }
+        let dots = data.dots();
+        let items: Vec<Exported> = dots
+            .iter()
+            .enumerate()
+            .filter(|(_, d)| in_box((d.lat, d.lon), bbox) && quakes::in_window(d.time, span))
+            .filter_map(|(n, d)| Some((data.feature(lang, n)?, vec![(d.lat, d.lon)], hex(d.color))))
+            .collect();
+        out.extend(feature_layer(tr(lang, "Points"), data::layers::Shape::Point, items));
+        out
+    }
+
     /// Точки у пикселя (px, py) кадра в радиусе radius пикселей кадра -
     /// группы окна «Объекты», не больше NEAR ближайших в группе. Линия -
     /// ближайшая к точке at под пикселем в том же радиусе.
@@ -943,6 +974,51 @@ impl Dots {
     }
 }
 
+/// Объект для выгрузки: название и поля, точки, цвет «#rrggbb».
+type Exported = (Feature, Vec<(f64, f64)>, String);
+
+/// Точка (широта, долгота) в рамке (запад, юг, восток, север). Восток
+/// меньше запада - рамка через линию перемены дат.
+fn in_box((lat, lon): (f64, f64), bbox: [f64; 4]) -> bool {
+    let [west, south, east, north] = bbox;
+    let lon_in = if west <= east { (west..=east).contains(&lon) } else { lon >= west || lon <= east };
+    (south..=north).contains(&lat) && lon_in
+}
+
+/// Слой name объектов вида shape: название и поля окна «Объекты»,
+/// геометрия, цвет «#rrggbb». Поля - name, поля объектов по первому
+/// появлению и color. None - объектов нет.
+fn feature_layer(name: &str, shape: data::layers::Shape, items: Vec<Exported>) -> Option<data::layers::LayerData> {
+    if items.is_empty() {
+        return None;
+    }
+    let mut fields = vec!["name".to_string()];
+    for ((_, values), _, _) in &items {
+        for (key, _) in values {
+            if !fields.contains(key) {
+                fields.push(key.clone());
+            }
+        }
+    }
+    fields.push("color".to_string());
+    let rows = items
+        .into_iter()
+        .map(|((title, values), points, color)| {
+            let row: Vec<String> = fields
+                .iter()
+                .map(|f| match f.as_str() {
+                    "name" => title.clone(),
+                    "color" => color.clone(),
+                    _ => values.iter().find(|(k, _)| k == f).map(|(_, v)| v.clone()).unwrap_or_default(),
+                })
+                .collect();
+            data::layers::Item { shape, parts: vec![points], heights: Vec::new(), values: row }
+        })
+        .collect::<Vec<_>>();
+    let numeric = (0..fields.len()).map(|n| rows.iter().map(|i: &data::layers::Item| i.values[n].trim()).filter(|v| !v.is_empty()).all(|v| v.parse::<f64>().is_ok()) && rows.iter().any(|i| !i.values[n].trim().is_empty())).collect();
+    Some(data::layers::LayerData { name: name.to_string(), epsg: Some(4326), fields, numeric, items: rows })
+}
+
 /// Поля ЛЭП, трубопровода или подстанции OSM, `nearest_infra` модуля.
 fn infra_feature(lang: Lang, item: &data::infra::Item) -> Feature {
     use data::infra::Kind;
@@ -970,6 +1046,33 @@ fn infra_feature(lang: Lang, item: &data::infra::Item) -> Feature {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn export_takes_objects_in_the_view_frame_and_time_window() {
+        let quake = |lat: f64, lon: f64, mag: f64, time: f64| Quake { lat, lon, depth: 10.0, mag, time: Some(time), place: format!("M{mag}"), url: String::new() };
+        let quakes = vec![quake(58.0, 56.2, 4.5, 1000.0), quake(58.1, 56.3, 5.0, 5000.0), quake(10.0, 10.0, 6.0, 1000.0)];
+        let fault = |name: &str| Fault { kind: "other", name: name.into(), slip_type: String::new(), rate: None, dip: None, dip_dir: String::new(), catalog: String::new() };
+        let lines = vec![Line::new(vec![(57.9, 56.0), (58.2, 56.4)], [200, 40, 40, 255], 2.0), Line::new(vec![(0.0, 0.0), (1.0, 1.0)], [0; 4], 2.0)];
+        let dots = Dots { layers: vec![(Layer::Quakes, State::Ready(Data::Quakes(quakes))), (Layer::Faults, State::Ready(Data::Faults(vec![fault("Пермский"), fault("Далёкий")], Arc::new(lines))))], dirty: false };
+        let bbox = [55.0, 57.0, 57.0, 59.0];
+        // В рамке две точки, в окне шкалы до 2000 с - одна.
+        let all = dots.export(Lang::RU, Layer::Quakes, bbox, None);
+        assert_eq!(all.len(), 1);
+        assert_eq!(all[0].items.len(), 2);
+        assert_eq!(all[0].fields.first().map(String::as_str), Some("name"));
+        assert_eq!(all[0].fields.last().map(String::as_str), Some("color"));
+        assert_eq!(dots.export(Lang::RU, Layer::Quakes, bbox, Some((0.0, 2000.0)))[0].items.len(), 1);
+        // Разломы - линией с полями разлома и цветом.
+        let faults = dots.export(Lang::RU, Layer::Faults, bbox, None);
+        assert_eq!(faults.len(), 1);
+        assert_eq!(faults[0].items.len(), 1);
+        assert_eq!(faults[0].items[0].shape, data::layers::Shape::Line);
+        assert_eq!(faults[0].items[0].values[0], "Пермский");
+        assert_eq!(faults[0].items[0].values.last().map(String::as_str), Some("#c82828"));
+        // Рамка через линию перемены дат и незагруженная строка.
+        assert!(in_box((0.0, 179.5), [170.0, -1.0, -170.0, 1.0]) && !in_box((0.0, 0.0), [170.0, -1.0, -170.0, 1.0]));
+        assert!(dots.export(Lang::RU, Layer::Volcanoes, bbox, None).is_empty());
+    }
 
     /// Каталог показывает каждый слой точек ровно раз: пожары отдельно,
     /// остальные таблицей [`Layer::CATALOG`].

@@ -214,6 +214,8 @@ pub enum Action {
     Extra(Extra, bool),
     /// Строку слоя каталога убрать с глобуса.
     RemoveExtra(Extra),
+    /// Объекты строки в рамке вида - слоями «Моих слоёв».
+    ExtraToLayers(Extra),
     /// Новые строки векторной основы.
     Rows(BTreeSet<Row>),
     /// Группу векторной основы убрать с глобуса: её строки снимаются,
@@ -529,6 +531,15 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
                     out.push(Action::Stretch(stretch));
                     return true;
                 }
+            }
+            // «В проект QGIS…» строки витрины модуля: точки и линии в рамке
+            // вида - слоями «Моих слоёв».
+            if matches!(extra, Extra::Dots(_))
+                && on
+                && ui.button(tr(lang, "View objects to My layers")).on_hover_text(tr(lang, "Points and lines of the layer in the frame of the view become layers of «My layers» with the fields of the Objects window and the colours of the globe.")).clicked()
+            {
+                out.push(Action::ExtraToLayers(extra));
+                return true;
             }
             if ui.button(tr(lang, "Remove from the globe")).clicked() {
                 out.push(Action::RemoveExtra(extra));

@@ -2413,6 +2413,11 @@ The layer is seen only left of the swipe line. Right of it - layers «Right» an
 The layer is seen only right of the swipe line.	Слой виден только правее шторки.
 The layer is seen on both sides of the swipe line.	Слой виден по обе стороны шторки.
 ⇆ Layer swipe	⇆ Шторка слоёв
+View objects to My layers	Объекты вида в «Мои слои»
+Points and lines of the layer in the frame of the view become layers of «My layers» with the fields of the Objects window and the colours of the globe.	Точки и линии слоя в рамке вида ложатся слоями «Моих слоёв» с полями окна «Объекты» и цветами глобуса.
+Globe layers	Слои глобуса
+No objects of the layer {title} in the view.	В виде нет объектов слоя «{title}».
+Added to «My layers», objects {count}: {title}.	В «Мои слои» добавлено объектов {count}: {title}.
 Time: {field}	Время: {field}
 End of time: {field}	Конец времени: {field}
 A field with the date or time of the objects. The objects follow the time slider: outside its window they are hidden. A date - like 2025-06-01, a year - like 1890.	Поле с датой или временем объектов. Объекты идут за шкалой времени: вне её окна они прячутся. Дата - вида 2025-06-01, год - вида 1890.

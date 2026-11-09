@@ -118,6 +118,7 @@ impl LiteApp {
                 Action::Catalog => self.catalog.open = !self.catalog.open,
                 Action::Volumes(name) => self.volumes = Some(crate::volumecalc::VolumeCalc::new(name)),
                 Action::Isolines(name) => self.raster_isolines(&name),
+                Action::ExtraToLayers(extra) => self.extra_to_layers(extra),
                 Action::Bathymetry(name) => {
                     self.close_side();
                     let level = self.shore_level(&name);
@@ -446,6 +447,25 @@ impl LiteApp {
             self.data_layers.apply(id, &crate::datalayers::Act::Style(style));
         }
         trf(self.lang, "Contours added to «My layers»: {count}, interval {step} m.", &[("count", &count.to_string()), ("step", &data::contours::label_text(step))])
+    }
+
+    /// Объекты строки витрины в рамке вида - слоями «Моих слоёв» в папку
+    /// «Слои глобуса», как «В проект QGIS…» строки модуля в группу
+    /// «PlanetX - слои глобуса». Землетрясения и пожары - в окне шкалы.
+    pub(super) fn extra_to_layers(&mut self, extra: crate::layers::Extra) {
+        let lang = self.lang;
+        let crate::layers::Extra::Dots(layer) = extra else {
+            return;
+        };
+        let found = self.dots.export(lang, layer, self.view_box(), self.timebar.window());
+        let count: usize = found.iter().map(|l| l.items.len()).sum();
+        let title = tr(lang, layer.name()).to_string();
+        self.open_message = Some(if count == 0 {
+            trf(lang, "No objects of the layer {title} in the view.", &[("title", &title)])
+        } else {
+            self.data_layers.add_to(found, &title, tr(lang, "Globe layers"));
+            trf(lang, "Added to «My layers», objects {count}: {title}.", &[("count", &count.to_string()), ("title", &title)])
+        });
     }
 
     /// Изолинии своего растра name - слоем «Моих слоёв», «Изолинии
