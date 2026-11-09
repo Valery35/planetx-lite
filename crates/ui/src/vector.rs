@@ -460,6 +460,38 @@ impl VectorBase {
         self.rows.iter().flat_map(|r| r.kinds().iter().copied()).collect()
     }
 
+    /// Цвета карты id в точках (широта, долгота) с премноженной альфой,
+    /// как их рисует глобус: по самому подробному готовому тайлу карты
+    /// у точки. Нет тайла - прозрачно. Так строка карты витрины ложится
+    /// картинкой рамки вида в «Мои слои».
+    pub fn sample_map(&self, id: &str, points: &[(f64, f64)]) -> Vec<[u8; 4]> {
+        let mut levels: Vec<u32> = self.rasters.iter().filter(|((k, _), r)| *k == id && matches!(r, Raster::Ready(Some(_)))).map(|((_, key), _)| key.0).collect();
+        levels.sort_unstable_by(|a, b| b.cmp(a));
+        levels.dedup();
+        let side = lines::TILE_SIZE as usize;
+        points
+            .iter()
+            .map(|&(lat, lon)| {
+                let (u, v) = mercator_share(lat, lon);
+                levels
+                    .iter()
+                    .find_map(|&z| {
+                        let n = f64::from(1u32 << z.min(30));
+                        let (fx, fy) = (u * n, v * n);
+                        let key = (z, (fx.floor() as u32).min((n as u32).saturating_sub(1)), (fy.floor() as u32).min((n as u32).saturating_sub(1)));
+                        let Some(Raster::Ready(Some(rgba))) = self.rasters.get(&(id, key)) else {
+                            return None;
+                        };
+                        let col = (((fx - fx.floor()) * side as f64) as usize).min(side - 1);
+                        let row = (((fy - fy.floor()) * side as f64) as usize).min(side - 1);
+                        let at = (row * side + col) * 4;
+                        rgba.get(at..at + 4).map(|p| [p[0], p[1], p[2], p[3]])
+                    })
+                    .unwrap_or([0; 4])
+            })
+            .collect()
+    }
+
     /// Горизонтали включены: меню глобуса предлагает горизонтали вида
     /// слоем, как пункт модуля при включённых горизонталях.
     pub fn contours_on(&self) -> bool {
@@ -833,6 +865,16 @@ fn job_sources(key: TileKey, groups: &HashSet<Group>) -> Vec<TileKey> {
 }
 
 /// Восемь соседей тайла key того же уровня, по долготе через край.
+/// Доли Web Mercator (u слева направо, v сверху вниз) точки (широта,
+/// долгота), долгота приводится к -180..180.
+fn mercator_share(lat: f64, lon: f64) -> (f64, f64) {
+    let lon = (lon + 180.0).rem_euclid(360.0) - 180.0;
+    let lat = lat.clamp(-85.0511, 85.0511).to_radians();
+    let u = (lon + 180.0) / 360.0;
+    let v = (1.0 - (lat.tan() + 1.0 / lat.cos()).ln() / std::f64::consts::PI) / 2.0;
+    (u.clamp(0.0, 1.0), v.clamp(0.0, 1.0))
+}
+
 fn neighbours(key: TileKey) -> impl Iterator<Item = TileKey> {
     let (z, x, y) = key;
     let n = 1i64 << z.min(30);
@@ -857,6 +899,26 @@ mod tests {
         assert!(job_sources((12, 3000, 1200), &v.line_groups()).is_empty());
         let w = VectorBase::default();
         assert!(!job_sources((12, 3000, 1200), &w.line_groups()).is_empty());
+    }
+
+    #[test]
+    fn map_colours_come_from_the_deepest_ready_tile() {
+        use super::{Raster, mercator_share};
+        use std::sync::Arc;
+        let mut v = VectorBase::default();
+        let side = (data::lines::TILE_SIZE * data::lines::TILE_SIZE) as usize;
+        // Тайл уровня 0 - весь мир синий, тайл уровня 1 с Пермью - красный.
+        v.rasters.insert(("temperature", (0, 0, 0)), Raster::Ready(Some(Arc::new([0, 0, 200, 255].repeat(side)))));
+        let (u, w) = mercator_share(58.0, 56.25);
+        let key = (1, (u * 2.0) as u32, (w * 2.0) as u32);
+        v.rasters.insert(("temperature", key), Raster::Ready(Some(Arc::new([200, 0, 0, 255].repeat(side)))));
+        v.rasters.insert(("other", (0, 0, 0)), Raster::Ready(None));
+        let got = v.sample_map("temperature", &[(58.0, 56.25), (-40.0, -120.0)]);
+        assert_eq!(got, [[200, 0, 0, 255], [0, 0, 200, 255]]);
+        // Карта без готовых тайлов - прозрачно.
+        assert_eq!(v.sample_map("other", &[(58.0, 56.25)]), [[0; 4]]);
+        // Долгота за 180 приводится к своей.
+        assert_eq!(v.sample_map("temperature", &[(58.0, 56.25 + 360.0)]), [[200, 0, 0, 255]]);
     }
 
     #[test]

@@ -454,6 +454,10 @@ impl LiteApp {
     /// «PlanetX - слои глобуса». Землетрясения и пожары - в окне шкалы.
     pub(super) fn extra_to_layers(&mut self, extra: crate::layers::Extra) {
         let lang = self.lang;
+        if let Some(entry) = extra.map() {
+            self.map_to_layers(entry.key, tr(lang, extra.name()));
+            return;
+        }
         let crate::layers::Extra::Dots(layer) = extra else {
             return;
         };
@@ -466,6 +470,30 @@ impl LiteApp {
             self.data_layers.add_to(found, &title, tr(lang, "Globe layers"));
             trf(lang, "Added to «My layers», objects {count}: {title}.", &[("count", &count.to_string()), ("title", &title)])
         });
+    }
+
+    /// Карта key в рамке вида, как её рисует глобус, - слоем-картинкой
+    /// «Моих слоёв» в папку «Слои глобуса», раскраска вида строки модуля
+    /// в проект. Сторона картинки - не больше `analysis::PICTURE_SIDE`.
+    fn map_to_layers(&mut self, key: &'static str, title: &str) {
+        let lang = self.lang;
+        let [west, south, east, north] = self.view_box();
+        // Рамка через линию перемены дат - долготы за 180.
+        let east = if east < west { east + 360.0 } else { east };
+        let vector = &self.vector;
+        let sample = |points: &[(f64, f64)]| vector.sample_map(key, points);
+        let layer = crate::analysis::picture(title.to_string(), key, (south, north, west, east), 1.0, &sample, Vec::new());
+        let png = layer.rgba.iter().any(|p| p[3] > 0).then(|| layer.png()).flatten();
+        let Some(png) = png else {
+            self.open_message = Some(trf(lang, "The map {title} is not drawn in the view yet.", &[("title", title)]));
+            return;
+        };
+        let mut ground = scene::overlays::Overlay::new(scene::overlays::Kind::Ground);
+        ground.set_box(layer.frame());
+        let mut overlay = scene::kml::Overlay::new(title, ground);
+        overlay.image = Some(png);
+        self.data_layers.add_picture(overlay, tr(lang, "Globe layers"));
+        self.open_message = Some(trf(lang, "Added to «My layers» as a picture: {title}.", &[("title", title)]));
     }
 
     /// Изолинии своего растра name - слоем «Моих слоёв», «Изолинии

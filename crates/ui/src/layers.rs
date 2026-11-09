@@ -541,6 +541,15 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
                 out.push(Action::ExtraToLayers(extra));
                 return true;
             }
+            // Карта картинками - картинкой рамки вида, как раскраска вида
+            // строки модуля в проект.
+            if matches!(extra, Extra::Map(_))
+                && on
+                && ui.button(tr(lang, "View picture to My layers")).on_hover_text(tr(lang, "The map in the frame of the view, as the globe draws it, becomes a picture layer of «My layers». It can be saved as GeoTIFF.")).clicked()
+            {
+                out.push(Action::ExtraToLayers(extra));
+                return true;
+            }
             if ui.button(tr(lang, "Remove from the globe")).clicked() {
                 out.push(Action::RemoveExtra(extra));
                 return true;

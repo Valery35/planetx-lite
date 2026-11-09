@@ -2416,6 +2416,10 @@ The layer is seen on both sides of the swipe line.	Слой виден по об
 View objects to My layers	Объекты вида в «Мои слои»
 Points and lines of the layer in the frame of the view become layers of «My layers» with the fields of the Objects window and the colours of the globe.	Точки и линии слоя в рамке вида ложатся слоями «Моих слоёв» с полями окна «Объекты» и цветами глобуса.
 Globe layers	Слои глобуса
+View picture to My layers	Картинка вида в «Мои слои»
+The map in the frame of the view, as the globe draws it, becomes a picture layer of «My layers». It can be saved as GeoTIFF.	Карта в рамке вида, как её рисует глобус, ложится слоем-картинкой «Моих слоёв». Её можно сохранить в GeoTIFF.
+The map {title} is not drawn in the view yet.	Карта «{title}» в виде ещё не нарисована.
+Added to «My layers» as a picture: {title}.	В «Мои слои» добавлена картинка: {title}.
 No objects of the layer {title} in the view.	В виде нет объектов слоя «{title}».
 Added to «My layers», objects {count}: {title}.	В «Мои слои» добавлено объектов {count}: {title}.
 Time: {field}	Время: {field}
