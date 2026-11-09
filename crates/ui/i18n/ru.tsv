@@ -2420,6 +2420,8 @@ View picture to My layers	Картинка вида в «Мои слои»
 Map year	Год карты
 Select on the globe	Выделить на глобусе
 Track from the layer	Трек по слою
+Solid by Z values	Объёмом по отметкам Z
+The vertices of the layer stand at their Z values - polygons as planes, lines in space, under the ground or above it, for example a vertical fence of a section. Without the check the objects lie on the terrain.	Вершины слоя стоят на своих отметках Z - многоугольники плоскостями, линии в пространстве, под землёй или над ней, например вертикальный забор разреза. Без флажка объекты лежат на рельефе.
 The points of the layer become a track of the Tracks window: by the time field of the layer, without it - by a field with dates found by itself. The time slider grows the path.	Точки слоя становятся треком окна «Треки»: по полю времени слоя, без него - по найденному полю с датами. Шкала времени растит путь.
 Track added: {title}. The time slider grows the path.	Трек добавлен: {title}. Шкала времени растит путь.
 The layer has no field with dates: choose it in the Time submenu.	У слоя нет поля с датами: выберите его в подменю «Время».

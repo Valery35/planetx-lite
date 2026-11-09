@@ -135,6 +135,9 @@ pub struct DataLayer {
     off: Vec<bool>,
     /// Выделенные объекты, «Выделить на глобусе» окна «Объекты».
     pub selected: Vec<usize>,
+    /// «Объёмом по отметкам Z»: линии и многоугольники стоят на своих
+    /// отметках Z, под землёй или над ней.
+    pub z_solid: bool,
 }
 
 /// Цвет выделения объектов на глобусе, жёлтый, как выделение QGIS.
@@ -411,7 +414,8 @@ impl DataLayer {
     pub fn lines(&self) -> Vec<Line> {
         let mut out = Vec::new();
         for (n, item) in self.data.items.iter().enumerate() {
-            if self.raised(n).is_some() || !self.on(n) {
+            // Объект по отметкам Z рисуется в пространстве (`z_shapes`).
+            if self.raised(n).is_some() || !self.on(n) || self.on_z(n) {
                 continue;
             }
             let style = Style { color: self.item_color(n), ..self.style };
@@ -547,7 +551,7 @@ impl DataLayer {
     pub fn flat_shapes(&self) -> Vec<Shape> {
         let mut out = Vec::new();
         for (n, item) in self.data.items.iter().enumerate().take(MAX_EXTRUDED) {
-            if self.raised(n).is_some() || !self.on(n) {
+            if self.raised(n).is_some() || !self.on(n) || self.on_z(n) {
                 continue;
             }
             let style = Style { color: self.item_color(n), ..self.style };
@@ -566,6 +570,51 @@ impl DataLayer {
                 Geom::Line => item.parts.iter().filter(|p| p.len() > 1).for_each(|p| push(Kind::Line, p.clone(), Vec::new())),
                 Geom::Polygon => polygons(&item.parts).into_iter().filter(|(outer, _)| outer.len() > 2).for_each(|(outer, holes)| push(Kind::Polygon, outer, holes)),
                 Geom::Point | Geom::None => {}
+            }
+        }
+        out
+    }
+
+    /// Есть ли у линий и многоугольников слоя отметки Z вершин.
+    pub fn has_z(&self) -> bool {
+        self.data.items.iter().any(|i| matches!(i.shape, Geom::Line | Geom::Polygon) && i.heights.iter().zip(&i.parts).any(|(h, p)| !h.is_empty() && h.len() == p.len()))
+    }
+
+    /// Рисуется ли объект n по отметкам Z, а не на рельефе.
+    fn on_z(&self, n: usize) -> bool {
+        self.z_solid && self.data.items.get(n).is_some_and(|i| matches!(i.shape, Geom::Line | Geom::Polygon) && i.heights.iter().zip(&i.parts).any(|(h, p)| !h.is_empty() && h.len() == p.len()))
+    }
+
+    /// Линии и многоугольники по отметкам Z вершин - объектами
+    /// в пространстве, «Объёмом по отметкам Z» модуля: многоугольник -
+    /// плоскостью по внешнему кольцу, дыры и линии - линиями. Часть без
+    /// отметок не рисуется. Не больше `subsurface::ZLAYER_MAX` объектов.
+    pub fn z_shapes(&self) -> Vec<Shape> {
+        if !self.z_solid {
+            return Vec::new();
+        }
+        let mut out = Vec::new();
+        for (n, item) in self.data.items.iter().enumerate().take(crate::subsurface::ZLAYER_MAX) {
+            if !self.on(n) || !self.on_z(n) {
+                continue;
+            }
+            let style = Style { color: self.item_color(n), ..self.style };
+            let (color, fill) = (style.line_rgba(), style.fill_rgba());
+            // Внешние кольца многоугольника - первые точки его частей.
+            let outers: Vec<(f64, f64)> = if item.shape == Geom::Polygon { polygons(&item.parts).iter().filter_map(|(o, _)| o.first().copied()).collect() } else { Vec::new() };
+            for (part, z) in item.parts.iter().zip(&item.heights) {
+                if part.len() < 2 || z.len() != part.len() {
+                    continue;
+                }
+                let outer = part.first().is_some_and(|p| outers.contains(p));
+                let mut s = Shape::new(if outer { Kind::Polygon } else { Kind::Line }, part.clone());
+                s.color = color;
+                s.width = f64::from(self.style.width.max(1.0));
+                s.alts = Some(z.clone());
+                if outer && fill[3] > 0 {
+                    s.fill = Some(fill);
+                }
+                out.push(s);
             }
         }
         out
@@ -689,6 +738,8 @@ pub enum Act {
     Year(Option<i64>),
     /// Трек по точечному слою, окно «Треки».
     Track,
+    /// «Объёмом по отметкам Z».
+    ZSolid(bool),
     Up,
     Down,
     /// Перетаскивание: слой - перед слоем before в папку folder, None -
@@ -858,6 +909,7 @@ impl DataLayers {
                 time: None,
                 off: Vec::new(),
                 selected: Vec::new(),
+                z_solid: false,
             };
             self.list.insert(k, layer);
         }
@@ -899,6 +951,7 @@ impl DataLayers {
             time: None,
             off: Vec::new(),
             selected: Vec::new(),
+            z_solid: false,
             picture: Some(overlay),
         };
         self.list.insert(at, layer);
@@ -1046,6 +1099,7 @@ impl DataLayers {
                     Act::Extrude(e) => self.list[at].extrude = *e,
                     Act::Side(s) => self.list[at].side = *s,
                     Act::Time(t) => self.list[at].time = *t,
+                    Act::ZSolid(on) => self.list[at].z_solid = *on,
                     Act::Year(y) => {
                         if let Some(p) = &mut self.list[at].picture {
                             p.time = y.map(scene::oldmaps::year_time);
@@ -1112,6 +1166,9 @@ impl DataLayers {
                 }
                 if let Some((start, end)) = l.time {
                     v["time"] = serde_json::json!([start, end]);
+                }
+                if l.z_solid {
+                    v["z"] = serde_json::Value::Bool(true);
                 }
                 if let Some(p) = &l.picture {
                     v["picture"] = serde_json::json!({ "corners": p.overlay.corners, "box": p.overlay.latlon_box, "description": p.description });
@@ -1268,6 +1325,7 @@ impl DataLayers {
                 time: time_of(v),
                 off: Vec::new(),
                 selected: Vec::new(),
+                z_solid: v.get("z").and_then(serde_json::Value::as_bool).unwrap_or(false),
             });
         }
         out.collapsed = root.get("collapsed").and_then(serde_json::Value::as_array).into_iter().flatten().filter_map(|f| f.as_str().map(str::to_string)).collect();
@@ -1376,7 +1434,7 @@ impl DataLayers {
             .filter(|l| l.visible)
             .flat_map(|l| {
                 let flat = if l.side == render::Side::Both { Vec::new() } else { l.flat_shapes() };
-                l.extruded(radius).into_iter().chain(flat).chain(l.selection_shapes()).map(move |s| (s, l.side))
+                l.extruded(radius).into_iter().chain(flat).chain(l.z_shapes()).chain(l.selection_shapes()).map(move |s| (s, l.side))
             })
             .collect()
     }
@@ -1448,6 +1506,7 @@ impl DataLayers {
                 time: None,
                 off: Vec::new(),
                 selected: Vec::new(),
+                z_solid: false,
             };
             self.list.insert(at, layer);
         }
@@ -1788,6 +1847,14 @@ fn menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], ne
     ui.separator();
     let mut chosen = labels_extrude(ui, lang, layer, out);
     chosen |= time_menu(ui, lang, layer, out);
+    // «Объёмом по отметкам Z» модуля - у линий и многоугольников с Z.
+    if layer.has_z() {
+        let mut on = layer.z_solid;
+        if ui.checkbox(&mut on, tr(lang, "Solid by Z values")).on_hover_text(tr(lang, "The vertices of the layer stand at their Z values - polygons as planes, lines in space, under the ground or above it, for example a vertical fence of a section. Without the check the objects lie on the terrain.")).changed() {
+            out.push((layer.id, Act::ZSolid(on)));
+            chosen = true;
+        }
+    }
     // Трек по точечному слою, как у слоя проекта модуля.
     let points = !layer.data.items.is_empty() && layer.data.items.iter().all(|i| i.shape == Geom::Point);
     if points && ui.button(tr(lang, "Track from the layer")).on_hover_text(tr(lang, "The points of the layer become a track of the Tracks window: by the time field of the layer, without it - by a field with dates found by itself. The time slider grows the path.")).clicked() {
@@ -2306,6 +2373,32 @@ mod tests {
         assert_eq!(row_count(&layers), 6);
         layers.apply(0, &Act::FolderCollapse("F".into()));
         assert_eq!(row_count(&layers), 3);
+    }
+
+    #[test]
+    fn z_layer_stands_at_its_heights() {
+        let line = data::layers::Item { shape: Geom::Line, parts: vec![vec![(58.0, 56.0), (58.0, 56.01)]], heights: vec![vec![-120.0, -80.0]], values: vec!["забор".into()] };
+        let ring = vec![(58.0, 56.0), (58.0, 56.01), (58.01, 56.01), (58.0, 56.0)];
+        let roof = data::layers::Item { shape: Geom::Polygon, parts: vec![ring.clone()], heights: vec![vec![-50.0; ring.len()]], values: vec!["кровля".into()] };
+        let flat = data::layers::Item { shape: Geom::Line, parts: vec![vec![(58.1, 56.0), (58.1, 56.01)]], heights: Vec::new(), values: vec!["дорога".into()] };
+        let data = LayerData { name: "разрез".into(), epsg: Some(4326), fields: vec!["name".into()], numeric: vec![false], items: vec![line, roof, flat] };
+        let mut layers = DataLayers::default();
+        layers.add(vec![data], "z.gpkg");
+        let id = layers.list[0].id;
+        assert!(layers.list[0].has_z());
+        assert!(layers.shapes(6_371_000.0).is_empty());
+        assert_eq!(layers.line_set().map(|s| s.len()), Some(3));
+        layers.apply(id, &Act::ZSolid(true));
+        // Линия и кровля - в пространстве на своих отметках, линия без
+        // отметок - на рельефе, в картинке наложения.
+        let shapes = layers.shapes(6_371_000.0);
+        assert_eq!(shapes.len(), 2);
+        assert_eq!(shapes[0].0.alts.as_deref(), Some(&[-120.0, -80.0][..]));
+        assert!(shapes[1].0.kind == Kind::Polygon && shapes[1].0.fill.is_some());
+        assert_eq!(layers.line_set().map(|s| s.len()), Some(1));
+        // Флажок - в списке хранилища и обратно.
+        let (back, _) = DataLayers::from_index(&layers.index(true), &|_| None);
+        assert!(back.list[0].z_solid);
     }
 
     #[test]
