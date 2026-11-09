@@ -749,6 +749,10 @@ impl Hydro {
         let name = trf(lang, "Flooding {level} m - depth", &[("level", &format!("{level:.1}"))]);
         let mut layer = analysis::picture(name, "flood", (south, north, west, east), state.grid.cell, &sample, tiff);
         layer.summary = analysis::stats_text(lang, tr(lang, "Depth"), &depth, tr(lang, " m"));
+        // Глубина от светлой у берега к тёмной на наибольшей, как вода
+        // на глобусе (`depth_color`).
+        let [a, b] = hydro::DEPTH_COLORS;
+        layer.look = Some((analysis::ramp_of(&[(0.0, a), (1.0, b)], 0.0, result.depth.max(0.1)), hydro::FLOOD_OPACITY));
         let rings = hydro::outline(&result.mask, state.grid.rows, state.grid.cols, 0.5);
         let text = trf(lang, "Level {level} m, flooded {area} km², water volume {volume} million m³, the largest depth {depth} m.", &[("level", &format!("{level:.1}")), ("area", &number(result.area / 1e6)), ("volume", &number(result.volume / 1e6)), ("depth", &number(result.depth))]);
         let mut body = String::new();

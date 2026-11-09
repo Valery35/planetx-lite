@@ -517,11 +517,13 @@ impl Spectral {
         let values: Vec<String> = done.ids.iter().enumerate().map(|(n, id)| format!("{n} - {}", lib.entry(*id).map_or("", |e| e.name.as_str()))).collect();
         let mut classes = analysis::picture(trf(lang, "Minerals by spectrum {name}", &[("name", &done.label)]), "spectral_classes", layer.bbox(), layer.step, &sample, classes_tiff);
         classes.summary = trf(lang, "Values of the GeoTIFF file: {list}.", &[("list", &values.join(", "))]);
+        classes.look = Some(layer.look(""));
         let angle_layer = AngleLayer { done_index: done.index.clone(), grid: done.grid.clone(), angles: done.angles.clone() };
         let sample_angle = move |points: &[(f64, f64)]| angle_layer.sample(points);
         let mut angle = analysis::picture(tr(lang, "Angle to the reference, °").to_string(), "spectral_angle", layer.bbox(), layer.step, &sample_angle, angle_tiff);
         let finite: Vec<f64> = done.angles.iter().filter(|a| a.is_finite()).map(|a| f64::from(*a)).collect();
         angle.summary = analysis::stats_text(lang, tr(lang, "Angle to the reference"), &finite, "°");
+        angle.look = Some((analysis::Look::Ramp(ANGLE_STOPS.iter().map(|(v, [r, g, b])| (*v, [*r, *g, *b, 255])).collect()), 1.0));
         if !lib.source.is_empty() {
             angle.summary = format!("{} {}", angle.summary, lib.source).trim().to_string();
         }

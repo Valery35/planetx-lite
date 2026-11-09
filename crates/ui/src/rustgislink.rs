@@ -101,8 +101,9 @@ pub enum Ask {
     /// Расчёт окна анализа - в проект RustGIS подгруппой group группы top,
     /// как результаты инструментов модуля - в проект QGIS: векторы
     /// текстом GeoJSON (название, текст), растры файлами GeoTIFF
-    /// (название, путь). Сверху вниз - векторы, под ними растры.
-    AddResult { top: String, group: String, vectors: Vec<(String, String)>, rasters: Vec<(String, String)> },
+    /// (название, путь, стиль QML или None). Сверху вниз - векторы, под
+    /// ними растры.
+    AddResult { top: String, group: String, vectors: Vec<(String, String)>, rasters: Vec<(String, String, Option<String>)> },
     /// Видимость слоя на карте RustGIS: отметка глобуса в режиме «Слои как
     /// на карте RustGIS», `set_visible_on_map` модуля.
     Visibility { layer: i64, visible: bool },
@@ -117,7 +118,16 @@ pub enum Ask {
     /// Вид глобуса - картинкой в макет RustGIS, как «Вид в макет QGIS»
     /// модуля (`ui/snapshot.py`): байты PNG или JPEG, расширение файла
     /// и ширина картинки к высоте.
-    ToLayout { image: Vec<u8>, ext: String, aspect: f64 },
+    /// reply - номер команды RustGIS «layout», которой ответить итогом.
+    ToLayout { image: Vec<u8>, ext: String, aspect: f64, reply: Option<serde_json::Value> },
+    /// Ответ на команду RustGIS с номером id: значение `ok` или текст
+    /// ошибки.
+    Answer { id: serde_json::Value, result: Result<serde_json::Value, String> },
+    /// Окно приняло команду RustGIS с номером id: ответ будет от него.
+    Took { id: serde_json::Value },
+    /// Перечитать объекты и оформление слоя: смену цветов без смены
+    /// отрисовщика `info.project` не показывает.
+    Restyle { layer: i64 },
 }
 
 /// Весть потока окну.
@@ -147,6 +157,11 @@ pub enum News {
     Failed(String),
     /// Команда расширения пришла снова: окно - вперёд.
     Raise,
+    /// Команда расширения для глобуса ([`GlobeCommand`]): номер, по
+    /// которому ей отвечают ([`Ask::Answer`]), её id, параметры и когда
+    /// она пришла. Пришедшей раньше [`ACK_SECONDS`] назад уже ответили
+    /// [`GLOBE_HIDDEN`]: окно её пропускает.
+    Command { id: serde_json::Value, name: String, params: serde_json::Value, at: web_time::Instant },
     /// Сессия расширения кончилась: RustGIS закрыт или остановил
     /// расширение. Окно закрывается.
     Gone(String),
@@ -248,6 +263,8 @@ trait Channel {
     fn broken(&self) -> Option<String> {
         None
     }
+    /// Ответ на команду RustGIS с номером id.
+    fn answer(&mut self, id: &serde_json::Value, result: Result<serde_json::Value, String>) -> Result<(), String>;
 }
 
 /// Соединение MCP с ретранслятором.
@@ -281,6 +298,199 @@ impl Channel for Relay {
     fn wait(&mut self, seconds: f64, stop: &AtomicBool) -> bool {
         nap(seconds, stop)
     }
+
+    /// Команды глобусу у RustGIS без сессий приносит программа одного
+    /// запуска ([`forward`]) файлами папки [`inbox`]. Отметка
+    /// [`alive_path`] говорит ей, что глобус открыт и связан.
+    fn news(&mut self) -> Vec<News> {
+        let _ = std::fs::create_dir_all(inbox());
+        // Отметка - текущее время: пустой файл, записанный пустым снова,
+        // Windows оставляет с прежним временем записи.
+        let now = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or_default();
+        let _ = std::fs::write(alive_path(), now.to_string());
+        take_commands(&inbox())
+    }
+
+    fn answer(&mut self, id: &serde_json::Value, result: Result<serde_json::Value, String>) -> Result<(), String> {
+        let name = id.as_str().filter(|n| command_name_ok(n)).ok_or_else(|| "bad command id".to_string())?;
+        let _ = std::fs::create_dir_all(outbox());
+        let reply = match result {
+            Ok(v) => serde_json::json!({"ok": v}),
+            Err(e) => serde_json::json!({"error": e}),
+        };
+        std::fs::write(outbox().join(format!("{name}.json")), reply.to_string()).map_err(|e| e.to_string())
+    }
+}
+
+/// Папка команд глобусу от программы одного запуска.
+fn inbox() -> PathBuf {
+    temp_dir().join("inbox")
+}
+
+/// Папка ответов глобуса на команды.
+fn outbox() -> PathBuf {
+    temp_dir().join("outbox")
+}
+
+/// Отметка «глобус открыт и связан с ретранслятором»: время её записи.
+fn alive_path() -> PathBuf {
+    temp_dir().join("globe.alive")
+}
+
+/// Отметка старше стольких секунд - глобуса нет: поток связи пишет её
+/// каждые [`POLL_SECONDS`].
+const ALIVE_SECONDS: u64 = 5;
+/// Файл команды старше стольких секунд не выполняется: её программа
+/// уже не ждёт ответа.
+const COMMAND_SECONDS: u64 = 120;
+/// Файл команды не больше, байт.
+const MAX_COMMAND: u64 = 1 << 20;
+
+/// Имя файла команды: буквы, цифры и дефис, иначе путь мог бы уйти из
+/// папки.
+fn command_name_ok(name: &str) -> bool {
+    !name.is_empty() && name.len() <= 64 && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
+}
+
+/// Команды из папки dir: файл `<номер>.json` с `{"id", "params"}`.
+/// Прочитанный файл удаляется. Файлы считаются враждебными: чужое имя,
+/// большой, старый или не JSON - пропуск и удаление.
+fn take_commands(dir: &std::path::Path) -> Vec<News> {
+    let mut out = Vec::new();
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return out;
+    };
+    for e in entries.flatten() {
+        let path = e.path();
+        let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("").to_string();
+        let fresh = e.metadata().ok().filter(|m| m.len() <= MAX_COMMAND).and_then(|m| m.modified().ok()).and_then(|t| t.elapsed().ok()).is_some_and(|age| age.as_secs() <= COMMAND_SECONDS);
+        let text = if fresh && path.extension().is_some_and(|x| x == "json") && command_name_ok(&stem) { std::fs::read_to_string(&path).ok() } else { None };
+        let _ = std::fs::remove_file(&path);
+        let Some(value) = text.and_then(|t| serde_json::from_str::<serde_json::Value>(&t).ok()) else {
+            continue;
+        };
+        if let Some(name) = value["id"].as_str() {
+            out.push(News::Command { id: serde_json::Value::String(stem), name: name.to_string(), params: value["params"].clone(), at: web_time::Instant::now() });
+        }
+    }
+    out
+}
+
+/// Ждать ответа на команду дольше нельзя: RustGIS останавливает
+/// команду через 2 минуты.
+const FORWARD_SECONDS: u64 = 110;
+
+/// Команда глобусу из программы одного запуска (RustGIS без сессий):
+/// файлом в папку inbox открытого глобуса, ответ - файлом из outbox.
+/// Глобус не открыт или не связан - ошибка сразу. Итог - строка `ok`
+/// или `error` для RustGIS.
+fn forward(request: &serde_json::Value, dirs: (&std::path::Path, &std::path::Path, &std::path::Path), wait: Duration) -> serde_json::Value {
+    let (inbox, outbox, alive) = dirs;
+    let open = std::fs::metadata(alive).and_then(|m| m.modified()).ok().and_then(|t| t.elapsed().ok()).is_some_and(|age| age.as_secs() <= ALIVE_SECONDS);
+    if !open {
+        return serde_json::json!({"error": GLOBE_CLOSED});
+    }
+    let nanos = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or_default();
+    let name = format!("{}-{nanos}", std::process::id());
+    let command = serde_json::json!({"id": request["id"], "params": request["params"]});
+    let written = std::fs::create_dir_all(inbox).and_then(|()| std::fs::write(inbox.join(format!("{name}.json")), command.to_string()));
+    if let Err(e) = written {
+        return serde_json::json!({"error": e.to_string()});
+    }
+    let answer = outbox.join(format!("{name}.json"));
+    let until = web_time::Instant::now() + wait;
+    while web_time::Instant::now() < until {
+        if let Ok(text) = std::fs::read_to_string(&answer) {
+            let _ = std::fs::remove_file(&answer);
+            return match serde_json::from_str::<serde_json::Value>(&text) {
+                Ok(v) if v.get("ok").is_some() => serde_json::json!({"ok": v["ok"]}),
+                Ok(v) => serde_json::json!({"error": v["error"].as_str().unwrap_or("PlanetX: no answer")}),
+                Err(e) => serde_json::json!({"error": e.to_string()}),
+            };
+        }
+        std::thread::sleep(Duration::from_millis(100));
+    }
+    let _ = std::fs::remove_file(inbox.join(format!("{name}.json")));
+    serde_json::json!({"error": "PlanetX: the globe did not answer"})
+}
+
+/// Ошибка команды, когда глобус не открыт. Ключ перевода.
+pub const GLOBE_CLOSED: &str = "The PlanetX globe is not open or not linked. Open it with the PlanetX Globe command first.";
+/// Ошибка команды, когда окно не приняло её за [`ACK_SECONDS`]: свёрнутое
+/// окно Windows не получает кадров. Ключ перевода.
+pub const GLOBE_HIDDEN: &str = "The PlanetX globe window is minimized. Restore it and run the command again.";
+/// Окно принимает команду за столько секунд, иначе оно свёрнуто.
+pub const ACK_SECONDS: u64 = 5;
+
+/// Команды, которые окно не приняло за ack: их номера, они убираются
+/// из waiting.
+fn overdue(waiting: &mut Vec<(serde_json::Value, web_time::Instant)>, now: web_time::Instant, ack: Duration) -> Vec<serde_json::Value> {
+    let (late, fresh): (Vec<_>, Vec<_>) = std::mem::take(waiting).into_iter().partition(|(_, at)| now.saturating_duration_since(*at) >= ack);
+    *waiting = fresh;
+    late.into_iter().map(|(id, _)| id).collect()
+}
+
+/// Наклон глобуса по умолчанию у «Вида в 3D» к виду карты, градусов.
+pub const MAP_TILT: f64 = 60.0;
+
+/// Куда лететь по команде «fly».
+#[derive(Debug, Clone, PartialEq)]
+pub enum FlyTarget {
+    /// Вид карты RustGIS.
+    Map,
+    /// Точка; расстояние от глаза, м, или прежнее.
+    Point { lat: f64, lon: f64, distance: Option<f64> },
+    /// Охват: запад, юг, восток, север.
+    Extent([f64; 4]),
+}
+
+/// Команда расширения для глобуса.
+#[derive(Debug, Clone, PartialEq)]
+pub enum GlobeCommand {
+    /// «Вид в 3D»: перелёт; азимут и наклон или прежние (у вида карты
+    /// наклон по умолчанию [`MAP_TILT`]).
+    Fly { target: FlyTarget, heading: Option<f64>, tilt: Option<f64> },
+    /// «Вид в макет».
+    Layout,
+}
+
+/// Разобрать команду расширения. Параметры считаются враждебными:
+/// числа проверяются на смысл.
+pub fn parse_command(name: &str, params: &serde_json::Value) -> Result<GlobeCommand, String> {
+    let num = |key: &str| -> Result<Option<f64>, String> {
+        match params.get(key) {
+            None | Some(serde_json::Value::Null) => Ok(None),
+            Some(v) => v.as_f64().filter(|x| x.is_finite()).map(Some).ok_or_else(|| format!("{key} must be a number")),
+        }
+    };
+    match name {
+        "layout" => Ok(GlobeCommand::Layout),
+        "fly" => {
+            let heading = num("heading")?.map(|h| h.rem_euclid(360.0));
+            let tilt = num("tilt")?;
+            if tilt.is_some_and(|t| !(0.0..=90.0).contains(&t)) {
+                return Err("tilt is 0 to 90 degrees".to_string());
+            }
+            let (lat, lon, distance) = (num("lat")?, num("lon")?, num("distance")?);
+            if distance.is_some_and(|d| d <= 0.0 || d > 1.0e8) {
+                return Err("distance is more than 0 and up to 100,000 km".to_string());
+            }
+            let target = match (params.get("extent").filter(|v| !v.is_null()), lat, lon) {
+                (Some(e), None, None) => {
+                    let e: Vec<f64> = e.as_array().map(|a| a.iter().filter_map(serde_json::Value::as_f64).filter(|x| x.is_finite()).collect()).unwrap_or_default();
+                    match e[..] {
+                        [w, s, east, n] if (-180.0..=180.0).contains(&w) && (-180.0..=180.0).contains(&east) && (-90.0..=90.0).contains(&s) && (-90.0..=90.0).contains(&n) && s < n && w != east => FlyTarget::Extent([w, s, east, n]),
+                        _ => return Err("extent is [west, south, east, north] in degrees".to_string()),
+                    }
+                }
+                (None, Some(lat), Some(lon)) if (-90.0..=90.0).contains(&lat) && (-180.0..=180.0).contains(&lon) => FlyTarget::Point { lat, lon, distance },
+                (None, None, None) => FlyTarget::Map,
+                _ => return Err("give lat and lon in degrees, or an extent, or neither for the map's view".to_string()),
+            };
+            Ok(GlobeCommand::Fly { target, heading, tilt })
+        }
+        other => Err(format!("PlanetX: no command '{other}'")),
+    }
 }
 
 /// Первый слой текста GeoJSON.
@@ -301,6 +511,8 @@ enum Signal {
     Event,
     /// Команда «globe» пришла снова.
     Raise,
+    /// Команда глобусу: номер для ответа, id, параметры.
+    Command { id: serde_json::Value, name: String, params: serde_json::Value },
     /// Ввод закрылся: RustGIS закрыт.
     Gone,
 }
@@ -316,6 +528,8 @@ fn session_line(line: &str) -> (Option<Signal>, Option<serde_json::Value>) {
         // Глобус уже открыт: команда выносит окно вперёд.
         return match request["id"].as_str().unwrap_or("") {
             "globe" => (Some(Signal::Raise), Some(serde_json::json!({"ok": {"started": true, "session": true}, "id": id}))),
+            // Команды глобусу отвечает окно, когда выполнит их.
+            name @ ("fly" | "layout") => (Some(Signal::Command { id, name: name.to_string(), params: request["params"].clone() }), None),
             other => (None, Some(serde_json::json!({"error": format!("PlanetX: no command '{other}'"), "id": id}))),
         };
     }
@@ -404,6 +618,7 @@ impl Pipe {
         match signal {
             Signal::Event => self.dirty = true,
             Signal::Raise => self.news.push(News::Raise),
+            Signal::Command { id, name, params } => self.news.push(News::Command { id, name, params, at: web_time::Instant::now() }),
             Signal::Gone => self.gone = true,
             Signal::Reply { .. } => {}
         }
@@ -496,6 +711,14 @@ impl Channel for Pipe {
 
     fn broken(&self) -> Option<String> {
         self.gone.then(|| SESSION_GONE.to_string())
+    }
+
+    fn answer(&mut self, id: &serde_json::Value, result: Result<serde_json::Value, String>) -> Result<(), String> {
+        let line = match result {
+            Ok(v) => serde_json::json!({"ok": v, "id": id}),
+            Err(e) => serde_json::json!({"error": e, "id": id}),
+        };
+        write_line(&self.out, &line)
     }
 }
 
@@ -604,7 +827,7 @@ fn perform(s: &mut dyn Channel, ask: Ask) -> Result<String, String> {
         Ask::TilesVisibility { id, visible } => s.command("map.setTiles", serde_json::json!({"id": id, "visible": visible})).map(|_| String::new()),
         // Нарезку выполняет cut_raster, вид в макет - to_layout, вести
         // у них свои.
-        Ask::Raster { .. } | Ask::ToLayout { .. } => Ok(String::new()),
+        Ask::Raster { .. } | Ask::ToLayout { .. } | Ask::Answer { .. } | Ask::Took { .. } | Ask::Restyle { .. } => Ok(String::new()),
     }
 }
 
@@ -799,14 +1022,19 @@ fn add_text(s: &mut dyn Channel, name: &str, geojson: &str) -> Result<(), String
 /// Расчёт - в проект RustGIS, `results.add_group` модуля: слои, затем
 /// подгруппа с ними в группе top. Группы top ещё нет - она заводится.
 /// Ok - название подгруппы.
-fn perform_result(s: &mut dyn Channel, top: &str, group: &str, vectors: &[(String, String)], rasters: &[(String, String)]) -> Result<String, String> {
+fn perform_result(s: &mut dyn Channel, top: &str, group: &str, vectors: &[(String, String)], rasters: &[(String, String, Option<String>)]) -> Result<String, String> {
     let mut names = Vec::new();
     for (name, geojson) in vectors {
         add_text(s, name, geojson)?;
         names.push(name.clone());
     }
-    for (name, path) in rasters {
+    for (name, path, qml) in rasters {
         s.command("layer.addData", serde_json::json!({"path": path.replace('\\', "/"), "name": name}))?;
+        // Оформление, как на глобусе. Не легло - растр остаётся в своём
+        // виде RustGIS, расчёт всё равно в проекте.
+        if let Some(text) = qml {
+            let _ = s.command("style.importQgis", serde_json::json!({"layer": name, "text": text}));
+        }
         names.push(name.clone());
     }
     let sub = serde_json::json!({"name": group, "parent": top, "layers": names});
@@ -835,6 +1063,8 @@ fn nap(seconds: f64, stop: &AtomicBool) -> bool {
 fn serve(s: &mut dyn Channel, asks: &Receiver<Ask>, stop: &AtomicBool, tell: &dyn Fn(News)) -> Result<(), String> {
     let mut data_keys: HashMap<i64, String> = HashMap::new();
     let mut styles: HashMap<i64, (String, Style)> = HashMap::new();
+    // Команды, переданные окну и ещё не принятые им.
+    let mut waiting: Vec<(serde_json::Value, web_time::Instant)> = Vec::new();
     loop {
         loop {
             match asks.try_recv() {
@@ -846,8 +1076,29 @@ fn serve(s: &mut dyn Channel, asks: &Receiver<Ask>, stop: &AtomicBool, tell: &dy
                     Ok((template, max_zoom)) => tell(News::Tiles { layer, template, max_zoom }),
                     Err(error) => tell(News::CutFailed { layer, error: format!("{name}: {error}") }),
                 },
-                Ok(Ask::ToLayout { image, ext, aspect }) => match to_layout(s, &image, &ext, aspect) {
-                    Ok(name) => tell(News::InLayout(name)),
+                Ok(Ask::ToLayout { image, ext, aspect, reply }) => {
+                    let placed = to_layout(s, &image, &ext, aspect);
+                    if let Some(id) = &reply {
+                        let _ = s.answer(id, placed.clone().map(|name| serde_json::json!({"layout": name})));
+                    }
+                    match placed {
+                        Ok(name) => tell(News::InLayout(name)),
+                        Err(e) => tell(News::Failed(e)),
+                    }
+                }
+                Ok(Ask::Answer { id, result }) => {
+                    if let Err(e) = s.answer(&id, result) {
+                        tell(News::Failed(e));
+                    }
+                }
+                Ok(Ask::Took { id }) => waiting.retain(|(w, _)| *w != id),
+                Ok(Ask::Restyle { layer }) => match read_style(s, layer).and_then(|style| s.features(layer).map(|data| (data, style))) {
+                    Ok((data, style)) => {
+                        if let Some(kept) = styles.get_mut(&layer) {
+                            kept.1 = style.clone();
+                        }
+                        tell(News::Layer { id: layer, data: Box::new(data), style: Box::new(style) });
+                    }
                     Err(e) => tell(News::Failed(e)),
                 },
                 Ok(ask) => match perform(s, ask) {
@@ -863,7 +1114,13 @@ fn serve(s: &mut dyn Channel, asks: &Receiver<Ask>, stop: &AtomicBool, tell: &dy
             }
         }
         for n in s.news() {
+            if let News::Command { id, .. } = &n {
+                waiting.push((id.clone(), web_time::Instant::now()));
+            }
             tell(n);
+        }
+        for id in overdue(&mut waiting, web_time::Instant::now(), Duration::from_secs(ACK_SECONDS)) {
+            let _ = s.answer(&id, Err(GLOBE_HIDDEN.to_string()));
         }
         if let Some(e) = s.broken() {
             return Err(e);
@@ -1120,6 +1377,14 @@ pub struct Bridge {
     /// Прозрачность слоя для карты RustGIS, в процентах: уходит, когда
     /// ползунок отпущен, а не на каждом кадре протяжки.
     pub fade: Option<(i64, u8)>,
+    /// Команда «layout» ждёт снимка: её номер и когда пришла. Снимок -
+    /// когда перелёт кончился и место загрузилось.
+    pub layout_reply: Option<(serde_json::Value, f64)>,
+    /// Номер команды «layout», чей снимок уже снимается.
+    pub shooting: Option<serde_json::Value>,
+    /// Поле подписей слоя, какое пришло из RustGIS в прошлый раз: пока
+    /// RustGIS его не меняет, остаётся поле, выбранное на глобусе.
+    pub labels: HashMap<i64, Option<usize>>,
 }
 
 impl Bridge {
@@ -1148,6 +1413,9 @@ impl Bridge {
             follow: None,
             menu: None,
             fade: None,
+            layout_reply: None,
+            shooting: None,
+            labels: HashMap::new(),
         }
     }
 
@@ -1293,6 +1561,17 @@ impl Bridge {
 
 /// Раскраска слоя RustGIS для «Моих слоёв»: цвета объектов, стиль слоя
 /// и номер поля подписей.
+/// Поле подписей живого слоя после обновления: before - поле из RustGIS
+/// в прошлый раз, chosen - поле слоя на глобусе (None - слоя ещё нет),
+/// from_rustgis - поле, пришедшее сейчас. RustGIS подписи не менял -
+/// остаётся выбор пользователя глобуса.
+pub fn kept_label(before: Option<Option<usize>>, chosen: Option<Option<usize>>, from_rustgis: Option<usize>) -> Option<usize> {
+    match (before, chosen) {
+        (Some(old), Some(chosen)) if old == from_rustgis => chosen,
+        _ => from_rustgis,
+    }
+}
+
 pub fn paint(data: &LayerData, style: &Style, n: usize) -> (Vec<[u8; 3]>, crate::datalayers::Style, Option<usize>) {
     let mut colors = Vec::with_capacity(data.items.len());
     let mut first = None;
@@ -1348,6 +1627,16 @@ pub fn plugin(line: &str, input: &mut dyn BufRead, output: &mut dyn Write, relay
     let lang = request["lang"].as_str().and_then(crate::i18n::Lang::from_code).unwrap_or(crate::i18n::Lang::EN);
     let id = request["id"].as_str().unwrap_or("");
     let mut say = |msg: serde_json::Value| -> Result<(), String> { writeln!(output, "{msg}").map_err(|e| e.to_string()) };
+    // Команды глобусу - открытому глобусу файлами, ответ - его итог.
+    if matches!(id, "fly" | "layout") {
+        let reply = forward(&request, (&inbox(), &outbox(), &alive_path()), Duration::from_secs(FORWARD_SECONDS));
+        let known = [GLOBE_CLOSED, GLOBE_HIDDEN].into_iter().find(|key| reply["error"].as_str() == Some(*key));
+        let reply = match known {
+            Some(key) => serde_json::json!({"error": crate::i18n::tr(lang, key)}),
+            None => reply,
+        };
+        return say(reply);
+    }
     if id != "globe" {
         return say(serde_json::json!({"error": format!("PlanetX: no command '{id}'")}));
     }
@@ -1409,6 +1698,10 @@ mod tests {
         let (signal, answer) = session_line(r#"{"command":{"id":"other"},"id":8}"#);
         assert_eq!(signal, None);
         assert!(answer.is_some_and(|a| a["error"].is_string() && a["id"] == 8));
+        // Команда глобусу - сигнал окну, ответ будет, когда окно выполнит её.
+        let (signal, answer) = session_line(r#"{"command":{"abi":1,"kind":"command","id":"fly","params":{"tilt":60}},"id":9}"#);
+        assert_eq!(signal, Some(Signal::Command { id: serde_json::json!(9), name: "fly".into(), params: serde_json::json!({"tilt": 60}) }));
+        assert_eq!(answer, None);
         assert_eq!(session_line(r#"{"event":"layers"}"#), (Some(Signal::Event), None));
         assert_eq!(session_line(r#"{"ok":{"a":1},"id":"px3"}"#), (Some(Signal::Reply { id: "px3".into(), result: Ok(serde_json::json!({"a": 1})) }), None));
         assert_eq!(session_line(r#"{"error":"no edit","id":"px4"}"#), (Some(Signal::Reply { id: "px4".into(), result: Err("no edit".into()) }), None));
@@ -1594,6 +1887,9 @@ mod tests {
         fn wait(&mut self, _: f64, _: &AtomicBool) -> bool {
             false
         }
+        fn answer(&mut self, _: &serde_json::Value, _: Result<serde_json::Value, String>) -> Result<(), String> {
+            Ok(())
+        }
     }
 
     impl Desk {
@@ -1630,6 +1926,98 @@ mod tests {
         // Несколько, ни один не открыт - новый макет.
         let mut closed = Desk { layouts: vec!["A", "B"], open: false, calls: Vec::new() };
         assert_eq!(to_layout(&mut closed, &png, "png", 1.0), Ok(Some("PlanetX 2".to_string())));
+    }
+
+    /// Команды глобусу: перелёт к виду карты, точке или охвату, вид
+    /// в макет. Параметры без смысла - отказ с объяснением.
+    #[test]
+    fn globe_commands() {
+        use serde_json::json;
+        assert_eq!(parse_command("fly", &json!({})), Ok(GlobeCommand::Fly { target: FlyTarget::Map, heading: None, tilt: None }));
+        assert_eq!(
+            parse_command("fly", &json!({"lat": 43.35, "lon": 42.44, "distance": 12000, "heading": -90, "tilt": 70})),
+            Ok(GlobeCommand::Fly { target: FlyTarget::Point { lat: 43.35, lon: 42.44, distance: Some(12000.0) }, heading: Some(270.0), tilt: Some(70.0) })
+        );
+        assert_eq!(parse_command("fly", &json!({"extent": [56.0, 57.9, 56.5, 58.1]})), Ok(GlobeCommand::Fly { target: FlyTarget::Extent([56.0, 57.9, 56.5, 58.1]), heading: None, tilt: None }));
+        assert_eq!(parse_command("layout", &json!({})), Ok(GlobeCommand::Layout));
+        for bad in [
+            json!({"lat": 95, "lon": 0}),
+            json!({"lat": 10}),
+            json!({"lat": 10, "lon": 20, "extent": [0, 0, 1, 1]}),
+            json!({"extent": [0, 5, 1, 1]}),
+            json!({"extent": "Perm"}),
+            json!({"tilt": 120}),
+            json!({"tilt": "high"}),
+            json!({"lat": 1, "lon": 2, "distance": -5}),
+        ] {
+            assert!(parse_command("fly", &bad).is_err(), "{bad}");
+        }
+        assert!(parse_command("erase", &json!({})).is_err());
+    }
+
+    /// Команда глобусу у RustGIS без сессий: программа одного запуска
+    /// кладёт файл, поток связи глобуса берёт его вестью и отвечает
+    /// файлом. Глобус не открыт - ошибка сразу.
+    #[test]
+    fn commands_through_files() {
+        let root = std::env::temp_dir().join(format!("planetx-rustgis-test-{}", std::process::id()));
+        let (inbox, outbox, alive) = (root.join("inbox"), root.join("outbox"), root.join("globe.alive"));
+        let _ = std::fs::remove_dir_all(&root);
+        let request = serde_json::json!({"abi": 1, "kind": "command", "id": "fly", "params": {"lat": 58.0, "lon": 56.2}});
+        assert_eq!(forward(&request, (&inbox, &outbox, &alive), Duration::from_millis(50))["error"], GLOBE_CLOSED);
+        assert!(std::fs::create_dir_all(&root).is_ok() && std::fs::write(&alive, b"").is_ok());
+        // Глобус: берёт команду и отвечает, как Relay::news и Relay::answer.
+        let (inbox2, outbox2) = (inbox.clone(), outbox.clone());
+        let globe = std::thread::spawn(move || {
+            for _ in 0..200 {
+                if let Some(News::Command { id, name, params, .. }) = take_commands(&inbox2).into_iter().next() {
+                    let name_ok = id.as_str().is_some_and(command_name_ok);
+                    let _ = std::fs::create_dir_all(&outbox2);
+                    let _ = std::fs::write(outbox2.join(format!("{}.json", id.as_str().unwrap_or_default())), serde_json::json!({"ok": {"name": name, "lat": params["lat"]}}).to_string());
+                    return name_ok;
+                }
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            false
+        });
+        let reply = forward(&request, (&inbox, &outbox, &alive), Duration::from_secs(10));
+        assert_eq!(reply, serde_json::json!({"ok": {"name": "fly", "lat": 58.0}}));
+        assert!(globe.join().unwrap_or(false));
+        // Чужие файлы в папке команд - не команды, их не остаётся.
+        assert!(std::fs::write(inbox.join("..evil.json"), "{\"id\":\"fly\"}").is_ok());
+        assert!(std::fs::write(inbox.join("a-1.json"), "not json").is_ok());
+        assert!(take_commands(&inbox).is_empty());
+        assert_eq!(std::fs::read_dir(&inbox).map(Iterator::count).unwrap_or(1), 0);
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    /// Окно не приняло команду за положенное время - она просрочена
+    /// (окно свёрнуто), принятые и свежие остаются ждать.
+    #[test]
+    fn untaken_commands_expire() {
+        let t0 = web_time::Instant::now();
+        let ack = Duration::from_secs(5);
+        let mut waiting = vec![(serde_json::json!(1), t0), (serde_json::json!("a-2"), t0 + Duration::from_secs(3))];
+        assert!(overdue(&mut waiting, t0 + Duration::from_secs(4), ack).is_empty());
+        assert_eq!(overdue(&mut waiting, t0 + Duration::from_secs(6), ack), [serde_json::json!(1)]);
+        assert_eq!(waiting.len(), 1);
+        assert_eq!(overdue(&mut waiting, t0 + Duration::from_secs(9), ack), [serde_json::json!("a-2")]);
+        assert!(waiting.is_empty());
+    }
+
+    /// Поле подписей, выбранное на глобусе, переживает обновление слоя,
+    /// пока RustGIS подписи не меняет (прежде оно сбрасывалось на каждом
+    /// обновлении).
+    #[test]
+    fn chosen_labels_survive_updates() {
+        // Первый приход слоя - поле RustGIS.
+        assert_eq!(kept_label(None, None, Some(2)), Some(2));
+        // Пользователь выбрал поле 5, RustGIS по-прежнему подписывает полем 2.
+        assert_eq!(kept_label(Some(Some(2)), Some(Some(5)), Some(2)), Some(5));
+        // Пользователь убрал подписи - их нет и после обновления.
+        assert_eq!(kept_label(Some(Some(2)), Some(None), Some(2)), None);
+        // В RustGIS подписи сменили - берётся новое поле.
+        assert_eq!(kept_label(Some(Some(2)), Some(Some(5)), Some(3)), Some(3));
     }
 
     #[test]

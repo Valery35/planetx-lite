@@ -276,7 +276,15 @@ impl ReliefCalc {
         };
         shown_layer.tiff = first.0;
         shown_layer.summary = analysis::stats_text(lang, tr(lang, "Slope"), &result.slope, "°");
-        let other = ResultLayer { name: String::new(), grid: shown_layer.grid, rgba: Vec::new(), tiff: second.0, stem: second.1.to_string(), summary: String::new() };
+        // Оформление файлов, как раскраска глобуса: уклон - классами,
+        // экспозиция - цветами сторон света.
+        let look_of = |stem: &str| {
+            let opaque = |stops: &[(f64, [u8; 3])]| stops.iter().map(|(v, [r, g, b])| (*v, [*r, *g, *b, 255])).collect::<Vec<_>>();
+            let look = if stem == "slope" { analysis::Look::Steps(opaque(&data::slope::SLOPE_STOPS)) } else { analysis::Look::Ramp(opaque(&data::slope::ASPECT_STOPS)) };
+            Some((look, data::slope::OPACITY))
+        };
+        shown_layer.look = look_of(first.1);
+        let other = ResultLayer { name: String::new(), grid: shown_layer.grid, rgba: Vec::new(), tiff: second.0, stem: second.1.to_string(), summary: String::new(), look: look_of(second.1) };
         self.saved = Some(Saved { title: tr(lang, "Slope and aspect").to_string(), ring: ring.clone(), layers: vec![shown_layer, other], extra: std::mem::take(&mut self.peaks), session: None });
     }
 

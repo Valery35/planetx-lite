@@ -373,6 +373,15 @@ impl Layer {
             .collect()
     }
 
+    /// Оформление файла классов для проекта ГИС: номер класса, его цвет
+    /// и название (без названий - unnamed, пустое - номер), непрозрачность
+    /// слоя.
+    pub fn look(&self, unnamed: &str) -> (crate::analysis::Look, f64) {
+        let name = |i: usize| self.names.get(i).cloned().unwrap_or_else(|| if unnamed.is_empty() { i.to_string() } else { unnamed.to_string() });
+        let classes = self.colors.iter().enumerate().map(|(i, [r, g, b])| (i as f64, [*r, *g, *b, 255], name(i))).collect();
+        (crate::analysis::Look::Classes(classes), self.opacity)
+    }
+
     /// Рамка в градусах (юг, север, запад, восток).
     pub fn bbox(&self) -> (f64, f64, f64, f64) {
         let (w, h) = (self.step * self.cols as f64, self.step * self.rows as f64);
@@ -2241,6 +2250,7 @@ impl ClassCalc {
             }
             let mut picture = analysis::picture(name, "aef_class", layer.bbox(), layer.step, &sample, tiff);
             picture.summary.clone_from(&credit);
+            picture.look = Some(layer.look(tr(lang, "Similar areas")));
             vec![picture]
         };
         for (n, class) in self.classes.iter().filter(|c| self.uses(c)).enumerate() {
@@ -2323,6 +2333,7 @@ impl ClassCalc {
                 let sample = move |points: &[(f64, f64)]| shown.sample(points);
                 let mut picture = analysis::picture(name, "tracing", layer.bbox(), layer.step, &sample, class_tiff(layer));
                 picture.summary = about;
+                picture.look = Some(layer.look(""));
                 (vec![picture], Vec::new())
             }
         };

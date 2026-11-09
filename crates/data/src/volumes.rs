@@ -27,7 +27,7 @@ pub const OWN_ENOUGH: f64 = 0.99;
 /// Наибольшая непрозрачность раскраски на глобусе.
 pub const ALPHA: u8 = 200;
 /// Непрозрачность у отметки площадки.
-const LEAST_ALPHA: f64 = 50.0;
+pub const LEAST_ALPHA: f64 = 50.0;
 pub const CUT_RGB: [u8; 3] = [200, 40, 30];
 pub const FILL_RGB: [u8; 3] = [30, 90, 200];
 

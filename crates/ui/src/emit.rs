@@ -389,6 +389,7 @@ impl Emit {
         let mut minerals = analysis::picture(trf(lang, "EMIT minerals {name}", &[("name", &done.label)]), "emit_minerals", layer.bbox(), layer.step, &sample, classes_tiff);
         let values: Vec<String> = done.names.iter().enumerate().map(|(n, name)| format!("{n} - {name}")).collect();
         minerals.summary = format!("{} {}", trf(lang, "Values of the GeoTIFF file: {list}.", &[("list", &values.join(", "))]), emit::CREDIT);
+        minerals.look = Some(layer.look(""));
         let (index, grid, values) = (done.index.clone(), done.grid.clone(), done.depth.clone());
         let sample_depth = move |points: &[(f64, f64)]| -> Vec<[u8; 4]> {
             points
@@ -408,6 +409,7 @@ impl Emit {
         };
         let mut depth_layer = analysis::picture(tr(lang, "EMIT absorption band depth").to_string(), "emit_depth", layer.bbox(), layer.step, &sample_depth, depth_tiff);
         let finite: Vec<f64> = done.depth.iter().filter(|d| d.is_finite()).map(|d| f64::from(*d)).collect();
+        depth_layer.look = Some((analysis::Look::Ramp(DEPTH_STOPS.iter().map(|(v, [r, g, b])| (*v, [*r, *g, *b, 255])).collect()), 1.0));
         depth_layer.summary = format!("{} {}", analysis::stats_text(lang, tr(lang, "Band depth"), &finite, ""), emit::CREDIT).trim().to_string();
         self.saved = Some(Saved { title: tr(lang, "EMIT minerals").to_string(), ring: self.site.site.ring.clone(), layers: vec![minerals, depth_layer], extra: Vec::new(), session: None });
     }

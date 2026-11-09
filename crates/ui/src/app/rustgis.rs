@@ -100,6 +100,7 @@ impl LiteApp {
                     for (key, on) in pictures {
                         self.rustgis_picture(&key, on);
                     }
+                    self.rustgis_tile_opacity();
                     // Карта ведёт глобус: перелёт к её охвату, наклон
                     // и азимут глобуса остаются, `fly_view` модуля.
                     if let Some((lat, lon, w, h)) = moved.filter(|_| self.planet.earth) {
@@ -118,6 +119,10 @@ impl LiteApp {
                     let name = self.rustgis.as_ref().map_or_else(|| format!("RustGIS {id}"), |s| s.name(id));
                     let n = self.data_layers.list.len();
                     let (colors, look, label) = crate::rustgislink::paint(&data, &style, n);
+                    // Подписи из RustGIS прежние - остаётся поле, выбранное
+                    // на глобусе меню «Подписи».
+                    let before = self.rustgis.as_mut().and_then(|s| s.labels.insert(id, label));
+                    let label = crate::rustgislink::kept_label(before, self.data_layers.live_label(id), label);
                     let new = self.data_layers.live_shown(id).is_none();
                     self.data_layers.set_live(FOLDER, id, &name, (*data, colors), look, label);
                     // Новый слой: на глобусе, если он включён на карте
@@ -129,6 +134,23 @@ impl LiteApp {
                     }
                 }
                 News::Done(name) => self.open_message = Some(trf(self.lang, "The layer {name} is added to the RustGIS project.", &[("name", &name)])),
+                News::Command { id, name, params, at } => {
+                    // Команде, пролежавшей дольше ACK_SECONDS, поток связи
+                    // уже ответил «окно свёрнуто»: окно было свёрнуто.
+                    if at.elapsed().as_secs() >= crate::rustgislink::ACK_SECONDS {
+                        continue;
+                    }
+                    // Окно приняло команду: ответ будет от него, а не
+                    // «окно свёрнуто» потока связи.
+                    if let Some(sync) = &self.rustgis {
+                        sync.link.ask(crate::rustgislink::Ask::Took { id: id.clone() });
+                    }
+                    let result = self.rustgis_run(&id, &name, &params, now);
+                    // None - ответ позже: «Вид в макет» ждёт снимка.
+                    if let (Some(sync), Some(result)) = (&self.rustgis, result.transpose()) {
+                        sync.link.ask(crate::rustgislink::Ask::Answer { id, result });
+                    }
+                }
                 News::InLayout(Some(layout)) => self.open_message = Some(trf(self.lang, "The view is in the RustGIS layout {layout}.", &[("layout", &layout)])),
                 News::InLayout(None) => self.open_message = Some(tr(self.lang, "The view is in the layout open in RustGIS.").to_string()),
                 News::Added(group) =>self.open_message = Some(trf(self.lang, "The calculation is added to the RustGIS project, group {group}.", &[("group", &group)])),
@@ -154,6 +176,20 @@ impl LiteApp {
                     }
                     ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                 }
+            }
+        }
+        // «Вид в макет» по команде RustGIS: снимок - когда перелёт кончился
+        // и место загрузилось, но не позже MCP_SHOT_WAIT, как снимок для
+        // агента MCP.
+        let waiting = self.rustgis.as_ref().and_then(|s| s.layout_reply.as_ref()).map(|(_, since)| *since);
+        if let Some(since) = waiting {
+            if self.snapshot.is_none() && (self.idle_frames >= SHOT_IDLE_FRAMES || now - since > MCP_SHOT_WAIT) {
+                if let Some(sync) = &mut self.rustgis {
+                    sync.shooting = sync.layout_reply.take().map(|(id, _)| id);
+                }
+                self.snapshot = Some(Snapshot::Hide(SnapshotTo::RustgisLayout));
+            } else {
+                ctx.request_repaint();
             }
         }
         self.rustgis_follow_mode();
@@ -236,12 +272,14 @@ impl LiteApp {
             }
         }
         vectors.extend(as_layer(&loose).map(|g| (format!("{} {stamp}", saved.title), g)));
-        let rasters: Vec<(String, String)> = saved
+        // Растры - с оформлением, как на глобусе: стиль QML для
+        // `style.importQgis`, как стили результатов модуля.
+        let rasters: Vec<(String, String, Option<String>)> = saved
             .layers
             .iter()
             .zip(files)
             .filter(|(_, f)| !f.is_empty())
-            .map(|(l, f)| (format!("{} {stamp}", if l.name.is_empty() { l.stem.as_str() } else { l.name.as_str() }), f.clone()))
+            .map(|(l, f)| (format!("{} {stamp}", if l.name.is_empty() { l.stem.as_str() } else { l.name.as_str() }), f.clone(), l.look.as_ref().map(|(look, opacity)| crate::analysis::qml(look, *opacity))))
             .collect();
         let top = tr(lang, "RustPlanetX - area analysis").to_string();
         if let Some(b) = &self.rustgis {
@@ -258,21 +296,76 @@ impl LiteApp {
     /// источников, PNG или JPEG до 16 МБ.
     #[cfg(not(target_arch = "wasm32"))]
     pub(super) fn view_to_rustgis(&mut self, result: Result<egui::ColorImage, String>) {
+        use crate::rustgislink::Ask;
         let lang = self.lang;
+        // Снимок по команде RustGIS «layout» - ей и ответ.
+        let reply = self.rustgis.as_mut().and_then(|s| s.shooting.take());
         let picture = result.and_then(|image| {
             let [w, h] = image.size;
             let aspect = w as f64 / h.max(1) as f64;
             let (bytes, ext) = crate::rustgislink::layout_picture(to_png(&image)?)?;
             Ok((bytes, ext, aspect))
         });
-        self.open_message = Some(match (picture, &self.rustgis) {
+        let (message, failed) = match (picture, &self.rustgis) {
             (Ok((image, ext, aspect)), Some(b)) if b.connected => {
-                b.link.ask(crate::rustgislink::Ask::ToLayout { image, ext: ext.to_string(), aspect });
-                tr(lang, "The view goes to a RustGIS layout.").to_string()
+                b.link.ask(Ask::ToLayout { image, ext: ext.to_string(), aspect, reply: reply.clone() });
+                (tr(lang, "The view goes to a RustGIS layout.").to_string(), None)
             }
-            (Ok(_), _) => trf(lang, "No link with RustGIS: {error}. In RustGIS start the MCP Relay command.", &[("error", tr(lang, crate::rustgislink::RELAY_OFF))]),
-            (Err(e), _) => trf(lang, "RustGIS: {error}", &[("error", &e)]),
-        });
+            (Ok(_), _) => (trf(lang, "No link with RustGIS: {error}. In RustGIS start the MCP Relay command.", &[("error", tr(lang, crate::rustgislink::RELAY_OFF))]), None),
+            (Err(e), _) => (trf(lang, "RustGIS: {error}", &[("error", &e)]), Some(e)),
+        };
+        if let (Some(id), Some(e), Some(b)) = (reply, failed, &self.rustgis) {
+            b.link.ask(Ask::Answer { id, result: Err(e) });
+        }
+        self.open_message = Some(message);
+    }
+
+    /// Команда расширения RustGIS для глобуса, [`crate::rustgislink::GlobeCommand`]:
+    /// «Вид в 3D» - перелёт, ответ - поза глобуса; «Вид в макет» - снимок
+    /// ждёт покоя глобуса, ответ - после вставки картинки (Ok(None)).
+    #[cfg(not(target_arch = "wasm32"))]
+    fn rustgis_run(&mut self, id: &serde_json::Value, name: &str, params: &serde_json::Value, now: f64) -> Result<Option<serde_json::Value>, String> {
+        use crate::rustgislink::{FlyTarget, GlobeCommand, MAP_TILT};
+        let lang = self.lang;
+        let command = crate::rustgislink::parse_command(name, params)?;
+        if !self.planet.earth {
+            return Err(tr(lang, "The globe shows another body, not the Earth.").to_string());
+        }
+        match command {
+            GlobeCommand::Layout => {
+                let Some(sync) = &mut self.rustgis else {
+                    return Err(tr(lang, crate::rustgislink::GLOBE_CLOSED).to_string());
+                };
+                if sync.layout_reply.is_some() || sync.shooting.is_some() {
+                    return Err(tr(lang, "The globe is already putting its view in a layout.").to_string());
+                }
+                sync.layout_reply = Some((id.clone(), now));
+                self.idle_frames = 0;
+                Ok(None)
+            }
+            GlobeCommand::Fly { target, heading, tilt } => {
+                let (fov_y, aspect) = (self.nav.camera.fov_y, self.nav.camera.aspect());
+                let pose = self.nav.pose.clone();
+                let (lat, lon, distance, default_tilt) = match target {
+                    FlyTarget::Point { lat, lon, distance } => (lat, lon, distance.unwrap_or(pose.distance), pose.tilt),
+                    FlyTarget::Extent([w, s, e, n]) => {
+                        let (lat, lon, distance) = globe_core::flight::fit_view(w, s, e, n, fov_y, aspect);
+                        (lat, lon, distance, pose.tilt)
+                    }
+                    FlyTarget::Map => {
+                        let view = self.rustgis.as_ref().and_then(|s| s.view).ok_or_else(|| tr(lang, "RustGIS has not sent the map view yet.").to_string())?;
+                        let (w, h) = data::rustgis::ground_size(&view);
+                        (view.lat, view.lon, data::rustgis::distance_for(w, h, fov_y, aspect), MAP_TILT)
+                    }
+                };
+                if !(lat.is_finite() && lon.is_finite() && distance.is_finite() && distance > 0.0) {
+                    return Err(tr(lang, "The globe cannot show this place.").to_string());
+                }
+                let (heading, tilt) = (heading.unwrap_or(pose.heading), tilt.unwrap_or(default_tilt));
+                crate::input::fly(&mut self.nav, Pose::new(lat, lon, distance, heading, tilt), now);
+                Ok(Some(serde_json::json!({"lat": lat, "lon": lon, "distance": distance, "heading": heading, "tilt": tilt})))
+            }
+        }
     }
 
     /// Издание программы, `doc/EDITIONS.md`. По умолчанию PlanetX Lite.
@@ -338,6 +431,30 @@ impl LiteApp {
                 self.extras.insert(crate::layers::Extra::Map(n));
             }
             self.set_extra(crate::layers::Extra::Map(n), on);
+        }
+        self.rustgis_tile_opacity();
+    }
+
+    /// Непрозрачность тайловых слоёв RustGIS - на глобус, как на карте
+    /// RustGIS: строкам карт, заведённым по ним.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn rustgis_tile_opacity(&mut self) {
+        let Some(sync) = &self.rustgis else {
+            return;
+        };
+        let alphas: Vec<(&'static str, f32)> = sync
+            .tiles
+            .iter()
+            .filter_map(|(id, t)| {
+                let n = *sync.pictures.get(&crate::rustgislink::RowKey::Tiles(id.clone()))?;
+                Some((crate::maps::entry(n)?.key, t.opacity as f32))
+            })
+            .collect();
+        for (key, alpha) in alphas {
+            if self.map_opacity.get(key) != Some(&alpha) {
+                self.map_opacity.insert(key.to_string(), alpha);
+                self.vector.set_opacity(key, alpha);
+            }
         }
     }
 

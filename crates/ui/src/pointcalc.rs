@@ -270,7 +270,10 @@ impl Calc {
                     .collect();
                 let tiff = data::geotiff::write_byte(&grid, &values).unwrap_or_default();
                 let name = trf(lang, "Viewshed {time}", &[("time", &analysis::clock(stamp))]);
-                (tr(lang, "Viewshed"), circle(v.lat, v.lon, v.radius_m), ResultLayer { name, grid, rgba, tiff, stem: "viewshed".into(), summary: String::new() })
+                let [hr, hg, hb] = viewshed::HIDDEN;
+                let [vr, vg, vb] = viewshed::VISIBLE;
+                let look = analysis::Look::Classes(vec![(0.0, [hr, hg, hb, 255], tr(lang, "Hidden").to_string()), (1.0, [vr, vg, vb, 255], tr(lang, "Visible").to_string())]);
+                (tr(lang, "Viewshed"), circle(v.lat, v.lon, v.radius_m), ResultLayer { name, grid, rgba, tiff, stem: "viewshed".into(), summary: String::new(), look: Some((look, viewshed::OPACITY)) })
             }
             Layer::Insolation(r) => {
                 let (grid, hours) = r.raster(insolation::EARTH_RADIUS);
@@ -279,7 +282,8 @@ impl Calc {
                 let tiff = data::geotiff::write_float(&grid, &hours).unwrap_or_default();
                 let name = trf(lang, "Insolation {time}, h per day", &[("time", &analysis::clock(stamp))]);
                 let summary = analysis::stats_text(lang, tr(lang, "Sun hours"), &hours, tr(lang, " h"));
-                (tr(lang, "Insolation"), r.ring.clone().unwrap_or_default(), ResultLayer { name, grid, rgba, tiff, stem: "insolation".into(), summary })
+                let look = analysis::ramp_of(&insolation::STOPS, 0.0, top);
+                (tr(lang, "Insolation"), r.ring.clone().unwrap_or_default(), ResultLayer { name, grid, rgba, tiff, stem: "insolation".into(), summary, look: Some((look, insolation::OPACITY)) })
             }
             Layer::Shadows(s) => {
                 let (grid, values) = s.raster();
@@ -293,7 +297,8 @@ impl Calc {
                     .collect();
                 let tiff = data::geotiff::write_byte(&grid, &values).unwrap_or_default();
                 let name = trf(lang, "Shadows {moment} UTC", &[("moment", &moment_text(s.moment))]);
-                (tr(lang, "Shadows"), s.horizon.ring.clone().unwrap_or_default(), ResultLayer { name, grid, rgba, tiff, stem: "shadows".into(), summary: String::new() })
+                let look = analysis::Look::Classes(vec![(f64::from(shadows::SHADE), shadows::SHADE_RGBA, tr(lang, "Shade").to_string()), (f64::from(shadows::SUN), shadows::SUN_RGBA, tr(lang, "Sun").to_string())]);
+                (tr(lang, "Shadows"), s.horizon.ring.clone().unwrap_or_default(), ResultLayer { name, grid, rgba, tiff, stem: "shadows".into(), summary: String::new(), look: Some((look, 1.0)) })
             }
         };
         self.saved = Some(Saved { title: title.to_string(), ring, layers: vec![result], extra: Vec::new(), session: None });

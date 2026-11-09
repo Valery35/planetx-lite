@@ -369,7 +369,15 @@ impl LiteApp {
             }
             let name = crate::analysis::file_name(&layer.stem, unix);
             match self.write_result(&name, &layer.tiff) {
-                Ok(path) => files.push(path),
+                Ok(path) => {
+                    // Стиль QML рядом с файлом: QGIS берёт его сам, когда
+                    // открывает GeoTIFF.
+                    #[cfg(not(target_arch = "wasm32"))]
+                    if let Some((look, opacity)) = &layer.look {
+                        let _ = std::fs::write(std::path::Path::new(&path).with_extension("qml"), crate::analysis::qml(look, *opacity));
+                    }
+                    files.push(path);
+                }
                 Err(e) => {
                     files.push(String::new());
                     failed = Some(e);

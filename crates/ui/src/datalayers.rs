@@ -1076,6 +1076,12 @@ impl DataLayers {
         self.changed();
     }
 
+    /// Поле подписей живого слоя RustGIS номер live: Some(None) - без
+    /// подписей, None - слоя нет.
+    pub fn live_label(&self, live: i64) -> Option<Option<usize>> {
+        self.list.iter().find(|l| l.live == Some(live)).map(|l| l.label)
+    }
+
     /// Живые слои - по проекту RustGIS: order - номера слоёв сверху вниз.
     /// Слоя нет в order - он убирается, порядок - как в RustGIS. Флажки
     /// ставит пользователь в разделе «Проект RustGIS». Возвращает true,
@@ -1458,6 +1464,12 @@ pub fn live_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, out: &mut Vec
     let mut chosen = labels_extrude(ui, lang, layer, out);
     ui.separator();
     chosen |= copy_save(ui, lang, id, out);
+    // Смену цветов без смены отрисовщика RustGIS не сообщает: оформление
+    // перечитывается по просьбе.
+    if ui.button(tr(lang, "Re-read the look from RustGIS")).on_hover_text(tr(lang, "The features and the colours of the layer are read from RustGIS again. Needed after colours change in RustGIS without a change of the renderer.")).clicked() {
+        out.push((id, Act::Reload));
+        chosen = true;
+    }
     chosen
 }
 

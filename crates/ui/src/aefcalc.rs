@@ -440,6 +440,7 @@ impl ChangeCalc {
         let name = trf(lang, "Changes {before}-{after}", &[("before", &self.before.to_string()), ("after", &self.after.to_string())]);
         let mut picture = analysis::picture(name, "aef_change", layer.bbox(), m.step, &sample, tiff);
         picture.summary = analysis::stats_text(lang, tr(lang, "Degree of change"), &values, "");
+        picture.look = Some((analysis::ramp_of(&aef::STOPS, 0.0, 1.0), aef::OPACITY));
         self.saved = Some(Saved { title: tr(lang, "Changes of the terrain").to_string(), ring: self.ring.clone(), layers: vec![picture], extra: std::mem::take(&mut self.spots), session: None });
     }
 

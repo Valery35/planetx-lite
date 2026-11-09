@@ -445,15 +445,35 @@ impl LiteApp {
             Act::FolderToRustGis(folder) => {
                 #[cfg(not(target_arch = "wasm32"))]
                 if let Some(sync) = self.rustgis.as_ref().filter(|s| s.connected) {
+                    // Картинки (растры расчётов) объектов не несут: пустыми
+                    // слоями они не уходят.
+                    let mut pictures = 0;
                     for layer in self.data_layers.list.iter().filter(|l| &l.folder == folder && l.live.is_none()) {
+                        if layer.picture.is_some() {
+                            pictures += 1;
+                            continue;
+                        }
                         let name = format!("{folder} · {}", data::layers::stem(&layer.title));
                         sync.link.ask(crate::rustgislink::Ask::AddLayer { name, geojson: data::layers::to_geojson(&layer.data) });
+                    }
+                    if pictures > 0 {
+                        self.open_message = Some(trf(self.lang, "Pictures of the folder do not go to the RustGIS project: {n}.", &[("n", &pictures.to_string())]));
                     }
                 }
                 #[cfg(target_arch = "wasm32")]
                 let _ = folder;
             }
-            Act::Reload => self.reload_layer(id),
+            // Живой слой RustGIS перечитывается из RustGIS: объекты
+            // и оформление, файл - с диска.
+            Act::Reload => match self.data_layers.get(id).and_then(|l| l.live) {
+                #[cfg(not(target_arch = "wasm32"))]
+                Some(live) => {
+                    if let Some(sync) = self.rustgis.as_ref().filter(|s| s.connected) {
+                        sync.link.ask(crate::rustgislink::Ask::Restyle { layer: live });
+                    }
+                }
+                _ => self.reload_layer(id),
+            },
             Act::Export => {
                 if let Some(layer) = self.data_layers.get(id) {
                     let name = format!("{}.geojson", data::layers::stem(&layer.title));

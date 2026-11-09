@@ -194,6 +194,7 @@ impl VolumeCalc {
         let cell = job.cell_area().sqrt();
         let mut layer = analysis::picture(tr(lang, "Cut and fill").to_string(), "volumes", (south, north, west, east), cell, &sample, tiff_of(new, &job.diff));
         layer.summary = summary_text(lang, out);
+        layer.look = Some((analysis::cut_fill_look(reach), 1.0));
         Some(Saved { title: tr(lang, "Cut and fill").to_string(), ring: vec![(south, west), (north, west), (north, east), (south, east)], layers: vec![layer], extra: Vec::new(), session: None })
     }
 }

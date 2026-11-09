@@ -330,6 +330,7 @@ impl Earthwork {
         let sample = |points: &[(f64, f64)]| volumes::points_rgba(work, points, radius);
         let name = trf(lang, "Cut and fill to the elevation {level} m", &[("level", &format!("{:.2}", work.level))]);
         let mut layer = analysis::picture(name, "earthwork", (south, north, west, east), g.cell, &sample, tiff);
+        layer.look = Some((analysis::cut_fill_look(work.reach), 1.0));
         let warning = warning_text(lang, work, state.share);
         layer.summary = [summary_text(lang, &state.out), warning].into_iter().filter(|p| !p.is_empty()).collect::<Vec<_>>().join(" ");
         let ring = self.site.as_ref().map(|s| s.site.ring.clone()).unwrap_or_default();

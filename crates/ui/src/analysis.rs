@@ -669,6 +669,94 @@ pub struct ResultLayer {
     pub stem: String,
     /// Сводка значений для описания слоя или пусто.
     pub summary: String,
+    /// Оформление значений файла для проекта ГИС и непрозрачность слоя,
+    /// как стили растров результатов модуля. None - без оформления.
+    pub look: Option<(Look, f64)>,
+}
+
+/// Оформление растра расчёта: значения файла GeoTIFF и их цвета RGBA без
+/// премножения, как `add_paletted` и `add_raster` модуля.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Look {
+    /// Классы: значение, цвет, подпись. Стиль QGIS `paletted`.
+    Classes(Vec<(f64, [u8; 4], String)>),
+    /// Ступени: нижняя граница класса и цвет, класс - до следующей
+    /// границы. Стиль QGIS `singlebandpseudocolor`, шкала DISCRETE.
+    Steps(Vec<(f64, [u8; 4])>),
+    /// Плавная шкала: значение и цвет. Стиль QGIS `singlebandpseudocolor`,
+    /// шкала INTERPOLATED.
+    Ramp(Vec<(f64, [u8; 4])>),
+}
+
+/// Плавная шкала из узлов доли 0..1 и цвета, растянутая на значения
+/// low..high, с непрозрачными цветами.
+pub fn ramp_of(stops: &[(f64, [u8; 3])], low: f64, high: f64) -> Look {
+    Look::Ramp(stops.iter().map(|(t, [r, g, b])| (low + t * (high - low), [*r, *g, *b, 255])).collect())
+}
+
+/// Оформление разности высот, как [`data::volumes::color`]: выемка (минус)
+/// красная, насыпь (плюс) синяя, у отметки прозрачно, к reach метрам
+/// непрозрачнее.
+pub fn cut_fill_look(reach: f64) -> Look {
+    use data::volumes::{ALPHA, CUT_RGB, FILL_RGB, LEAST_ALPHA, THRESHOLD};
+    let reach = reach.max(THRESHOLD * 2.0);
+    let least = LEAST_ALPHA.floor() as u8;
+    let ([cr, cg, cb], [fr, fg, fb]) = (CUT_RGB, FILL_RGB);
+    Look::Ramp(vec![
+        (-reach, [cr, cg, cb, ALPHA]),
+        (-THRESHOLD, [cr, cg, cb, least]),
+        (0.0, [255, 255, 255, 0]),
+        (THRESHOLD, [fr, fg, fb, least]),
+        (reach, [fr, fg, fb, ALPHA]),
+    ])
+}
+
+/// Текст XML с заменой пяти особых знаков.
+fn xml_text(s: &str) -> String {
+    s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;").replace('\'', "&apos;")
+}
+
+/// Число для QML: целое без дробной части, бесконечность - `inf`.
+fn qml_number(v: f64) -> String {
+    if v.is_infinite() {
+        return if v > 0.0 { "inf".into() } else { "-inf".into() };
+    }
+    if v.fract() == 0.0 && v.abs() < 1e15 { format!("{v:.0}") } else { format!("{v}") }
+}
+
+/// Стиль QGIS (QML) растра с оформлением look и непрозрачностью opacity:
+/// его принимают QGIS и `style.importQgis` RustGIS.
+pub fn qml(look: &Look, opacity: f64) -> String {
+    let hex = |c: [u8; 4]| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]);
+    let opacity = if opacity.is_finite() { opacity.clamp(0.0, 1.0) } else { 1.0 };
+    let renderer = match look {
+        Look::Classes(classes) => {
+            let entries: String = classes.iter().map(|(v, c, label)| format!("<paletteEntry value=\"{}\" color=\"{}\" alpha=\"{}\" label=\"{}\"/>", qml_number(*v), hex(*c), c[3], xml_text(label))).collect();
+            format!("<rasterrenderer type=\"paletted\" band=\"1\" opacity=\"{opacity}\" alphaBand=\"-1\"><colorPalette>{entries}</colorPalette></rasterrenderer>")
+        }
+        Look::Steps(stops) | Look::Ramp(stops) => {
+            let discrete = matches!(look, Look::Steps(_));
+            // У ступеней QGIS значение пункта - верхняя граница класса.
+            let items: String = stops
+                .iter()
+                .enumerate()
+                .map(|(i, (v, c))| {
+                    let value = if discrete { stops.get(i + 1).map_or(f64::INFINITY, |n| n.0) } else { *v };
+                    format!("<item value=\"{}\" color=\"{}\" alpha=\"{}\" label=\"{}\"/>", qml_number(value), hex(*c), c[3], qml_number(*v))
+                })
+                .collect();
+            let (low, high) = (stops.first().map_or(0.0, |s| s.0), stops.last().map_or(1.0, |s| s.0));
+            let kind = if discrete { "DISCRETE" } else { "INTERPOLATED" };
+            format!(
+                "<rasterrenderer type=\"singlebandpseudocolor\" band=\"1\" opacity=\"{opacity}\" alphaBand=\"-1\" classificationMin=\"{}\" classificationMax=\"{}\"><rastershader><colorrampshader colorRampType=\"{kind}\" classificationMode=\"1\" clip=\"0\" minimumValue=\"{}\" maximumValue=\"{}\">{items}</colorrampshader></rastershader></rasterrenderer>",
+                qml_number(low),
+                qml_number(high),
+                qml_number(low),
+                qml_number(high)
+            )
+        }
+    };
+    format!("<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>\n<qgis version=\"3.34.0\" styleCategories=\"Symbology\"><pipe>{renderer}</pipe></qgis>\n")
 }
 
 impl ResultLayer {
@@ -714,7 +802,7 @@ pub fn picture(name: String, stem: &str, bbox: (f64, f64, f64, f64), cell: f64, 
     let grid = LatLonGrid { north: north - dlat / 2.0, west: west + dlon / 2.0, dlat, dlon, cols, rows };
     let points: Vec<(f64, f64)> = (0..rows).flat_map(|r| (0..cols).map(move |c| (grid.north - r as f64 * dlat, grid.west + c as f64 * dlon))).collect();
     let rgba = sample(&points).into_iter().map(unpremultiply).collect();
-    ResultLayer { name, grid, rgba, tiff, stem: stem.to_string(), summary: String::new() }
+    ResultLayer { name, grid, rgba, tiff, stem: stem.to_string(), summary: String::new(), look: None }
 }
 
 /// Цвет без премножения альфы - для картинки PNG.
@@ -790,9 +878,28 @@ pub fn file_name(stem: &str, unix: f64) -> String {
 mod tests {
     use super::*;
 
+    /// Стиль QML классов, ступеней и шкалы: значения, цвета, прозрачность
+    /// и подписи, особые знаки подписей экранированы.
+    #[test]
+    fn qml_styles() {
+        let classes = qml(&Look::Classes(vec![(0.0, [200, 40, 40, 255], "Скрыто".into()), (1.0, [40, 200, 60, 128], "A & <B>".into())]), 0.45);
+        assert!(classes.contains("type=\"paletted\"") && classes.contains("opacity=\"0.45\""), "{classes}");
+        assert!(classes.contains("<paletteEntry value=\"0\" color=\"#c82828\" alpha=\"255\" label=\"Скрыто\"/>"), "{classes}");
+        assert!(classes.contains("value=\"1\" color=\"#28c83c\" alpha=\"128\" label=\"A &amp; &lt;B&gt;\""), "{classes}");
+        // Ступени: значение пункта - верхняя граница класса, последний - до бесконечности.
+        let steps = qml(&Look::Steps(vec![(0.0, [1, 2, 3, 255]), (2.0, [4, 5, 6, 255]), (5.0, [7, 8, 9, 255])]), 0.7);
+        assert!(steps.contains("colorRampType=\"DISCRETE\""), "{steps}");
+        assert!(steps.contains("<item value=\"2\" color=\"#010203\" alpha=\"255\" label=\"0\"/>") && steps.contains("<item value=\"inf\" color=\"#070809\""), "{steps}");
+        let ramp = qml(&ramp_of(&[(0.0, [0, 0, 0]), (1.0, [255, 255, 255])], 0.0, 7.5), 1.0);
+        assert!(ramp.contains("colorRampType=\"INTERPOLATED\"") && ramp.contains("classificationMax=\"7.5\"") && ramp.contains("<item value=\"7.5\" color=\"#ffffff\""), "{ramp}");
+        // Выемка и насыпь: от красной к синей через прозрачный ноль.
+        let cut = qml(&cut_fill_look(4.0), 1.0);
+        assert!(cut.contains("value=\"-4\" color=\"#c8281e\" alpha=\"200\"") && cut.contains("value=\"0\" color=\"#ffffff\" alpha=\"0\""), "{cut}");
+    }
+
     fn layer() -> ResultLayer {
         let grid = LatLonGrid { north: 58.01, west: 56.24, dlat: 0.001, dlon: 0.002, cols: 3, rows: 2 };
-        ResultLayer { name: "Тени".into(), grid, rgba: vec![[10, 20, 30, 255]; 6], tiff: Vec::new(), stem: "shadows".into(), summary: "Тени - сводка.".into() }
+        ResultLayer { name: "Тени".into(), grid, rgba: vec![[10, 20, 30, 255]; 6], tiff: Vec::new(), stem: "shadows".into(), summary: "Тени - сводка.".into(), look: None }
     }
 
     /// Инструмент проверки общего слоя.
