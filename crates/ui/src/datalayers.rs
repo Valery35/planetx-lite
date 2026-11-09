@@ -128,6 +128,31 @@ pub struct DataLayer {
     pub about: String,
 }
 
+/// Картинка слоя файлом GeoTIFF в EPSG:4326, `Картинки на поверхности
+/// в проект QGIS` модуля: цвета и прозрачность, как на глобусе, без
+/// оттенка слоя. Узел сетки - центр пикселя, края крайних пикселей -
+/// рамка LatLonBox. Ошибка - ключ перевода: картинки нет, рамка
+/// повёрнута или задана углами, картинка не читается.
+pub fn picture_geotiff(overlay: &scene::kml::Overlay) -> Result<Vec<u8>, &'static str> {
+    let (grid, image) = picture_grid(overlay)?;
+    data::geotiff::write_rgba(&grid, image.as_raw()).ok_or("The picture of the layer is not loaded")
+}
+
+/// Сетка узлов картинки слоя по её рамке и сама картинка RGBA, ошибки -
+/// как у [`picture_geotiff`].
+fn picture_grid(overlay: &scene::kml::Overlay) -> Result<(data::geotiff::LatLonGrid, image::RgbaImage), &'static str> {
+    let bytes = overlay.image.as_deref().filter(|b| !b.is_empty()).ok_or("The picture of the layer is not loaded")?;
+    let [north, south, east, west, _] = overlay.overlay.latlon_box.filter(|b| b[4] == 0.0 && b[0] > b[1]).ok_or("The picture is turned: GeoTIFF needs a frame along parallels and meridians")?;
+    let east = if east < west { east + 360.0 } else { east };
+    let image = image::load_from_memory(bytes).map_err(|_| "The picture of the layer is not loaded")?.to_rgba8();
+    let (cols, rows) = (image.width() as usize, image.height() as usize);
+    if cols == 0 || rows == 0 {
+        return Err("The picture of the layer is not loaded");
+    }
+    let (dlat, dlon) = ((north - south) / rows as f64, (east - west) / cols as f64);
+    Ok((data::geotiff::LatLonGrid { north: north - dlat / 2.0, west: west + dlon / 2.0, dlat, dlon, cols, rows }, image))
+}
+
 /// Файл слоя на диске и время его изменения, секунды Unix.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Source {
@@ -462,6 +487,8 @@ pub enum Act {
     ToPlaces,
     /// Сохранить объекты слоя файлом GeoJSON.
     Export,
+    /// Сохранить картинку слоя-картинки файлом GeoTIFF.
+    ExportPicture,
     /// Слой - в проект открытого RustGIS.
     ToRustGis,
     Up,
@@ -639,6 +666,14 @@ impl DataLayers {
         self.collapsed.remove(folder);
         self.changed();
         self.next
+    }
+
+    /// Слой-картинка id файлом GeoTIFF: имя файла и байты. Ошибка - ключ
+    /// перевода.
+    pub fn picture_geotiff(&self, id: u64) -> Result<(String, Vec<u8>), &'static str> {
+        let layer = self.get(id).ok_or("The picture of the layer is not loaded")?;
+        let overlay = layer.picture.as_ref().ok_or("The picture of the layer is not loaded")?;
+        Ok((format!("{}.tif", data::layers::stem(&layer.title)), picture_geotiff(overlay)?))
     }
 
     /// Описание about слою title папки folder - подсказка его строки.
@@ -1552,6 +1587,10 @@ fn picture_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[Str
         out.push((id, Act::ToPlaces));
         chosen = true;
     }
+    if ui.button(tr(lang, "Save as GeoTIFF…")).on_hover_text(tr(lang, "The picture of the layer goes to a GeoTIFF file in WGS84 with the colours and the transparency of the globe. QGIS and other GIS open it in its place.")).clicked() {
+        out.push((id, Act::ExportPicture));
+        chosen = true;
+    }
     if ui.button(tr(lang, "Remove from the globe")).clicked() {
         out.push((id, Act::Remove));
         chosen = true;
@@ -1678,6 +1717,37 @@ mod tests {
         let mut other = layer();
         other.name = "other".into();
         assert!(!layers.reload(id, vec![other.clone(), other], 300));
+    }
+
+    #[test]
+    fn picture_layer_saves_as_geotiff_in_its_frame() {
+        // Картинка 4 x 2: левый верхний пиксель красный, правый нижний
+        // прозрачный. Рамка - края крайних пикселей.
+        let mut img = image::RgbaImage::from_pixel(4, 2, image::Rgba([10, 20, 30, 255]));
+        img.put_pixel(0, 0, image::Rgba([250, 0, 0, 255]));
+        img.put_pixel(3, 1, image::Rgba([0, 0, 0, 0]));
+        let mut png = std::io::Cursor::new(Vec::new());
+        assert!(img.write_to(&mut png, image::ImageFormat::Png).is_ok());
+        let mut ground = scene::overlays::Overlay::new(scene::overlays::Kind::Ground);
+        ground.set_box([58.2, 58.0, 56.4, 56.0, 0.0]);
+        let mut picture = scene::kml::Overlay::new("Тени", ground.clone());
+        picture.image = Some(png.into_inner());
+        let mut layers = DataLayers::default();
+        let pid = layers.add_picture(picture.clone(), "");
+        let saved = layers.picture_geotiff(pid);
+        assert!(saved.as_ref().is_ok_and(|(name, bytes)| name == "Тени.tif" && bytes.starts_with(b"II*\0")), "{saved:?}");
+        // Узлы - центры пикселей: первый на полшага от северо-западного угла.
+        let (g, img) = picture_grid(&picture).unwrap();
+        let close = |a: f64, b: f64| (a - b).abs() < 1e-9;
+        assert!(close(g.north, 58.15) && close(g.west, 56.05) && close(g.dlat, 0.1) && close(g.dlon, 0.1) && (g.cols, g.rows) == (4, 2), "{g:?}");
+        assert_eq!(img.get_pixel(0, 0).0, [250, 0, 0, 255]);
+        assert_eq!(img.get_pixel(3, 1).0[3], 0);
+        // Повёрнутая рамка и пустая картинка - ошибка с ключом перевода.
+        ground.set_box([58.2, 58.0, 56.4, 56.0, 15.0]);
+        picture.overlay = ground;
+        assert!(picture_geotiff(&picture).is_err());
+        picture.image = None;
+        assert_eq!(picture_geotiff(&picture), Err("The picture of the layer is not loaded"));
     }
 
     #[test]

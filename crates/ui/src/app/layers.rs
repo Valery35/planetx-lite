@@ -484,6 +484,17 @@ impl LiteApp {
                     }
                 }
             }
+            Act::ExportPicture => {
+                let lang = self.lang;
+                self.open_message = match self.data_layers.picture_geotiff(id) {
+                    Ok((name, bytes)) => match crate::export::save_bytes(&name, ("GeoTIFF", "tif"), &bytes) {
+                        Ok(Some(path)) => Some(trf(lang, "Saved: {to}", &[("to", &path)])),
+                        Ok(None) => None,
+                        Err(e) => Some(e),
+                    },
+                    Err(key) => Some(tr(lang, key).to_string()),
+                };
+            }
             Act::Zoom => {
                 let points = self.data_layers.get(id).map(crate::datalayers::DataLayer::extent_points).unwrap_or_default();
                 let camera = &self.nav.camera;

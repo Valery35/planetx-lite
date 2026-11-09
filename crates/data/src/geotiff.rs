@@ -235,6 +235,19 @@ pub fn write_bands_projected(grid: &MercatorGrid, epsg: u16, bands: &[(String, V
     Some(out)
 }
 
+/// Цветной растр RGBA в градусах - картинка слоя, как её видно на
+/// глобусе: pixels - по четыре байта на узел (красный, зелёный, синий,
+/// непрозрачность без премножения), строки с севера. Четвёртый канал
+/// помечен прозрачностью (ExtraSamples 2), QGIS и GDAL берут его сами.
+/// None - сетка не годится или байтов не вчетверо больше узлов.
+pub fn write_rgba(grid: &LatLonGrid, pixels: &[u8]) -> Option<Vec<u8>> {
+    let frame = Frame::from(grid);
+    if !frame.valid() || pixels.len() != frame.size().checked_mul(4)? {
+        return None;
+    }
+    write::<colortype::RGBA8>(&frame, pixels, "")
+}
+
 fn floats(frame: &Frame, values: &[f64]) -> Option<Vec<u8>> {
     if !frame.valid() || values.len() != frame.size() {
         return None;
@@ -243,6 +256,8 @@ fn floats(frame: &Frame, values: &[f64]) -> Option<Vec<u8>> {
     write::<colortype::Gray32Float>(frame, &data, &format!("{NODATA}"))
 }
 
+/// Запись растра. Пустой nodata - тега GDAL_NODATA нет, у цветного
+/// растра RGBA вместо него четвёртый канал прозрачности.
 fn write<C: colortype::ColorType>(frame: &Frame, data: &[C::Inner], nodata: &str) -> Option<Vec<u8>>
 where
     [C::Inner]: tiff::encoder::TiffValue,
@@ -257,7 +272,12 @@ where
         dir.write_tag(Tag::ModelPixelScaleTag, &[frame.dx, frame.dy, 0.0][..]).ok()?;
         dir.write_tag(Tag::ModelTiepointTag, &[0.0, 0.0, 0.0, frame.left, frame.top, 0.0][..]).ok()?;
         dir.write_tag(Tag::GeoKeyDirectoryTag, &frame.keys[..]).ok()?;
-        dir.write_tag(Tag::Unknown(GDAL_NODATA), nodata).ok()?;
+        if nodata.is_empty() {
+            // Четвёртый канал - непрозрачность без премножения.
+            dir.write_tag(Tag::ExtraSamples, 2u16).ok()?;
+        } else {
+            dir.write_tag(Tag::Unknown(GDAL_NODATA), nodata).ok()?;
+        }
         image.write_data(data).ok()?;
     }
     Some(out.into_inner())

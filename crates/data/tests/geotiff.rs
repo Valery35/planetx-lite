@@ -104,6 +104,28 @@ fn bands_raster_reads_back_with_labels() {
 }
 
 #[test]
+fn rgba_raster_reads_back_with_alpha() {
+    // Картинка слоя «Моих слоёв»: четыре канала, четвёртый - прозрачность.
+    let pixels: Vec<u8> = (0..15u8).flat_map(|i| [i, 100 + i, 200, if i == 4 { 0 } else { 255 }]).collect();
+    let bytes = geotiff::write_rgba(&grid(), &pixels);
+    assert!(bytes.is_some());
+    let Some(bytes) = bytes else { return };
+    let ds = terrio::memory::open_raster_bytes(bytes, "picture.tif");
+    assert!(ds.is_ok());
+    let Ok(ds) = ds else { return };
+    assert_eq!((ds.raster.cols, ds.raster.rows, ds.raster.bands), (5, 3, 4));
+    assert_eq!(ds.crs().authority().map(|(_, c)| c), Some(4326));
+    close(ds.geo_transform()[0], 56.24 - 0.001);
+    assert_eq!(ds.nodata(), None);
+    close(ds.raster.get(0, 1, 2), 7.0);
+    close(ds.raster.get(1, 1, 2), 107.0);
+    close(ds.raster.get(2, 2, 4), 200.0);
+    close(ds.raster.get(3, 0, 4), 0.0);
+    close(ds.raster.get(3, 0, 3), 255.0);
+    assert!(geotiff::write_rgba(&grid(), &pixels[..59]).is_none());
+}
+
+#[test]
 fn bad_grid_gives_nothing() {
     let mut g = grid();
     assert!(geotiff::write_float(&g, &[0.0; 14]).is_none());

@@ -2387,6 +2387,10 @@ The layer moves to a new folder with this name.	Слой переносится 
 Folders of one level gather layers: a check of the folder shows or hides them all.	Папки одного уровня собирают слои. Флажок папки показывает или прячет их все.
 Save as GeoJSON…	Сохранить как GeoJSON…
 The objects of the layer go to a GeoJSON file in WGS84 with all fields. QGIS and other GIS open it.	Объекты слоя записываются файлом GeoJSON в WGS84 со всеми полями. Его открывают QGIS и другие ГИС.
+Save as GeoTIFF…	Сохранить как GeoTIFF…
+The picture of the layer goes to a GeoTIFF file in WGS84 with the colours and the transparency of the globe. QGIS and other GIS open it in its place.	Картинка слоя записывается файлом GeoTIFF в WGS84 с цветами и прозрачностью, как на глобусе. QGIS и другие ГИС открывают его на своём месте.
+The picture of the layer is not loaded	Картинка слоя не загружена
+The picture is turned: GeoTIFF needs a frame along parallels and meridians	Картинка повёрнута. Для GeoTIFF нужна рамка по параллелям и меридианам
 My layers: the objects of these layers were not found: {names}	Мои слои: не найдены объекты слоёв {names}
 My layers exceed 1 MB, the page keeps them until it is closed	«Мои слои» больше 1 МБ, страница держит их до закрытия
 Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the My layers section.	Откройте или перетащите в окно сцену .planetx, KML, KMZ, растр высот GeoTIFF или облако точек LAS, LAZ, COPC. Слои GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf и DXF ложатся в раздел «Мои слои».
