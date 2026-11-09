@@ -229,7 +229,8 @@
 - Mastodon: https://en.osm.town/@Vaery35/117587763411210814
 - X: https://x.com/Valery35/status/2119851293954941257
 - LinkedIn и Facebook - посты в лентах автора 9 ноября 2026 года
-- Площадки группы «Иногда» (OSGeo, форум OSM, linux.org.ru, Reddit) - не публиковались, ждут слова автора
+- OSGeo Discourse: https://discourse.osgeo.org/t/155878/10 (по слову автора «Да, в OSGeo»)
+- Форум OSM, linux.org.ru, Reddit - не публиковались, ждут слова автора
 - Лента страницы линейки planetx (planetx-scene/site/feed.json) - не обновлялась
 
 ### PlanetX Lite 0.25.0, 8 ноября 2026 года
