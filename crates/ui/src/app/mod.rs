@@ -3107,6 +3107,13 @@ impl LiteApp {
         overlay.time = time;
         overlay.description = description;
         overlay.image = Some(png);
+        // RustPlanetX: «Моих слоёв» нет, снимок - в проект RustGIS.
+        if self.edition.linked()
+            && let Some(text) = self.layers_to_rustgis(folder_name, Vec::new(), vec![overlay.clone()])
+        {
+            self.open_message = Some(text);
+            return;
+        }
         self.data_layers.add_picture(overlay, folder_name);
     }
 

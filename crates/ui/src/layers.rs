@@ -536,7 +536,7 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
             // вида - слоями «Моих слоёв».
             if matches!(extra, Extra::Dots(_))
                 && on
-                && ui.button(tr(lang, "View objects to My layers")).on_hover_text(tr(lang, "Points and lines of the layer in the frame of the view become layers of «My layers» with the fields of the Objects window and the colours of the globe.")).clicked()
+                && ui.button(tr(lang, crate::edition::to_layers("View objects to My layers"))).on_hover_text(tr(lang, crate::edition::to_layers_tip("Points and lines of the layer in the frame of the view become layers of «My layers» with the fields of the Objects window and the colours of the globe."))).clicked()
             {
                 out.push(Action::ExtraToLayers(extra));
                 return true;
@@ -545,7 +545,7 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
             // строки модуля в проект.
             if matches!(extra, Extra::Map(_))
                 && on
-                && ui.button(tr(lang, "View picture to My layers")).on_hover_text(tr(lang, "The map in the frame of the view, as the globe draws it, becomes a picture layer of «My layers». It can be saved as GeoTIFF.")).clicked()
+                && ui.button(tr(lang, crate::edition::to_layers("View picture to My layers"))).on_hover_text(tr(lang, crate::edition::to_layers_tip("The map in the frame of the view, as the globe draws it, becomes a picture layer of «My layers». It can be saved as GeoTIFF."))).clicked()
             {
                 out.push(Action::ExtraToLayers(extra));
                 return true;

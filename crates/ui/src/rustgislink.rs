@@ -98,6 +98,8 @@ pub enum Ask {
     Select { layer: i64, rows: Vec<usize> },
     /// Слой Lite - в проект RustGIS текстом GeoJSON.
     AddLayer { name: String, geojson: String },
+    /// Растр - в проект RustGIS файлом GeoTIFF (название, путь).
+    AddRaster { name: String, path: String },
     /// Расчёт окна анализа - в проект RustGIS подгруппой group группы top,
     /// как результаты инструментов модуля - в проект QGIS: векторы
     /// текстом GeoJSON (название, текст), растры файлами GeoTIFF
@@ -820,6 +822,7 @@ fn perform(s: &mut dyn Channel, ask: Ask) -> Result<String, String> {
             }
             add_text(s, &name, &geojson).map(|_| name)
         }
+        Ask::AddRaster { name, path } => s.command("layer.addData", serde_json::json!({"path": path.replace('\\', "/"), "name": name})).map(|_| name),
         // Расчёт выполняет perform_result, весть у него своя.
         Ask::AddResult { top, group, vectors, rasters } => perform_result(s, &top, &group, &vectors, &rasters),
         Ask::Visibility { layer, visible } => s.command("layer.visibility", serde_json::json!({"layer": layer, "visible": visible})).map(|_| String::new()),

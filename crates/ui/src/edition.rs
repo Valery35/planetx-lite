@@ -79,9 +79,55 @@ impl Edition {
     }
 }
 
+/// Издание запущенной программы - RustPlanetX. Ставит окно при запуске:
+/// подписи меню знают издание без доступа к окну.
+static RUSTPLANETX: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Издание запущенной программы.
+pub fn set_current(edition: Edition) {
+    RUSTPLANETX.store(edition.linked(), std::sync::atomic::Ordering::Relaxed);
+}
+
+/// Подсказка пунктов «… в проект RustGIS» у RustPlanetX, ключ перевода.
+pub const TO_PROJECT_TIP: &str = "It goes to the open RustGIS project into the group RustPlanetX - globe layers, as the PlanetX plugin puts it into the QGIS project.";
+
+/// Подпись пункта «… в Мои слои» по изданию: у RustPlanetX «Моих
+/// слоёв» нет, слой уходит в проект RustGIS. Ключ перевода.
+pub fn to_layers(key: &'static str) -> &'static str {
+    to_layers_of(RUSTPLANETX.load(std::sync::atomic::Ordering::Relaxed), key)
+}
+
+/// Подсказка пункта «… в Мои слои» по изданию, ключ перевода.
+pub fn to_layers_tip(key: &'static str) -> &'static str {
+    if RUSTPLANETX.load(std::sync::atomic::Ordering::Relaxed) { TO_PROJECT_TIP } else { key }
+}
+
+fn to_layers_of(rust: bool, key: &'static str) -> &'static str {
+    if !rust {
+        return key;
+    }
+    match key {
+        "View objects to My layers" => "View objects to the RustGIS project",
+        "View picture to My layers" => "View picture to the RustGIS project",
+        "Contours of the view to My layers" => "Contours of the view to the RustGIS project",
+        "Placemarks to My layers" => "Placemarks to the RustGIS project",
+        "Copy to My layers" => "Copy to the RustGIS project",
+        other => other,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::Edition;
+
+    /// У RustPlanetX пункты «… в Мои слои» называют проект RustGIS.
+    #[test]
+    fn layer_items_name_the_rustgis_project() {
+        assert_eq!(super::to_layers_of(false, "Placemarks to My layers"), "Placemarks to My layers");
+        assert_eq!(super::to_layers_of(true, "Placemarks to My layers"), "Placemarks to the RustGIS project");
+        assert_eq!(super::to_layers_of(true, "Contours of the view to My layers"), "Contours of the view to the RustGIS project");
+        assert_eq!(super::to_layers_of(true, "Save as KML…"), "Save as KML…");
+    }
 
     #[test]
     fn editions_differ() {

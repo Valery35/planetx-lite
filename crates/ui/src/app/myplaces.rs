@@ -975,6 +975,14 @@ impl LiteApp {
         let names = [tr(lang, "Placemarks - points"), tr(lang, "Placemarks - lines"), tr(lang, "Placemarks - polygons")];
         let layers = crate::datalayers::places_layers(&tree, names);
         let count = layers.len();
+        // RustPlanetX: «Моих слоёв» нет, слои меток - в проект RustGIS.
+        if count > 0
+            && self.edition.linked()
+            && let Some(text) = self.layers_to_rustgis(&tree.name, layers.clone(), Vec::new())
+        {
+            self.open_message = Some(text);
+            return;
+        }
         for layer in layers.into_iter().rev() {
             let title = layer.name.clone();
             self.data_layers.add_to(vec![layer], &title, &tree.name);
@@ -1006,6 +1014,12 @@ impl LiteApp {
         // Слой несёт картинку сам, ссылка на файл ему не нужна.
         overlay.href.clear();
         let name = overlay.name.clone();
+        if self.edition.linked()
+            && let Some(text) = self.layers_to_rustgis(tr(lang, "Pictures on the surface"), Vec::new(), vec![overlay.clone()])
+        {
+            self.open_message = Some(text);
+            return;
+        }
         self.data_layers.add_picture(overlay, tr(lang, "Pictures on the surface"));
         self.open_message = Some(trf(lang, "Copied to «My layers»: {name}", &[("name", &name)]));
     }

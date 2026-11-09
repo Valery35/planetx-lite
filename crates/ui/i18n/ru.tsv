@@ -2537,7 +2537,17 @@ The view is in the RustGIS layout {layout}.	Вид лёг в макет RustGIS 
 The view is in the layout open in RustGIS.	Вид лёг в макет, открытый в RustGIS.
 The PlanetX globe is not open or not linked. Open it with the PlanetX Globe command first.	Глобус PlanetX не открыт или не связан. Сначала нужна команда «Глобус PlanetX».
 The PlanetX globe window is minimized. Restore it and run the command again.	Окно глобуса PlanetX свёрнуто. Нужно развернуть его и повторить команду.
-Pictures of the folder do not go to the RustGIS project: {n}.	Картинки папки в проект RustGIS не уходят, их количество - {n}.
+The picture goes to the open RustGIS project as a GeoTIFF raster with the colours and the transparency of the globe.	Картинка уходит в открытый проект RustGIS растром GeoTIFF в цветах и прозрачности глобуса.
+Nothing goes to the RustGIS project: the view has no objects of the layer.	В проект RustGIS ничего не ушло: в виде нет объектов слоя.
+RustPlanetX - globe layers	RustPlanetX - слои глобуса
+Goes to the RustGIS project, group {group}.	Уходит в проект RustGIS, группа {group}.
+Goes to the RustGIS project, group {group}. A picture is not written: {e}	Уходит в проект RustGIS, группа {group}. Картинка не записана: {e}
+View objects to the RustGIS project	Объекты вида в проект RustGIS
+View picture to the RustGIS project	Картинка вида в проект RustGIS
+Contours of the view to the RustGIS project	Горизонтали вида в проект RustGIS
+Placemarks to the RustGIS project	Метки в проект RustGIS
+Copy to the RustGIS project	Копия в проект RustGIS
+It goes to the open RustGIS project into the group RustPlanetX - globe layers, as the PlanetX plugin puts it into the QGIS project.	Уходит в открытый проект RustGIS, в группу «RustPlanetX - слои глобуса», как модуль PlanetX кладёт его в проект QGIS.
 Re-read the look from RustGIS	Перечитать оформление из RustGIS
 The features and the colours of the layer are read from RustGIS again. Needed after colours change in RustGIS without a change of the renderer.	Объекты и цвета слоя читаются из RustGIS заново. Это нужно после смены цветов в RustGIS без смены отрисовщика.
 The globe shows another body, not the Earth.	Глобус показывает другое тело, а не Землю.

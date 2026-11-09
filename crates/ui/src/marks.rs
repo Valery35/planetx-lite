@@ -588,7 +588,7 @@ fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[
             ui.separator();
             item(ui, tr(lang, "Open KML or KMZ…"), Action::Open, actions);
             item(ui, tr(lang, "Save as KML…"), Action::SaveKml(p()), actions);
-            item(ui, tr(lang, "Placemarks to My layers"), Action::ToLayers(p()), actions);
+            item(ui, tr(lang, crate::edition::to_layers("Placemarks to My layers")), Action::ToLayers(p()), actions);
             ui.separator();
             item(ui, tr(lang, "Snapshot folder view"), Action::ViewSnapshot(p()), actions);
             item(ui, tr(lang, "Sort A-Z"), Action::Sort(p()), actions);
@@ -620,7 +620,7 @@ fn row_menu(response: &eframe::egui::Response, lang: crate::i18n::Lang, path: &[
         }
         item(ui, tr(lang, "Snapshot view"), Action::ViewSnapshot(p()), actions);
         if kind == RowKind::Overlay {
-            item(ui, tr(lang, "Copy to My layers"), Action::OverlayToLayers(p()), actions);
+            item(ui, tr(lang, crate::edition::to_layers("Copy to My layers")), Action::OverlayToLayers(p()), actions);
         }
         let props = if kind == RowKind::Overlay { Action::OverlayProperties(p()) } else { Action::Properties(p()) };
         item(ui, tr(lang, "Properties…"), props, actions);
@@ -868,7 +868,7 @@ pub fn root_ui(
                 item(ui, tr(lang, "Sort A-Z"), Action::Sort(Vec::new()), actions);
                 item(ui, tr(lang, "Open KML or KMZ…"), Action::Open, actions);
                 item(ui, tr(lang, "Save as KML…"), Action::SaveKml(Vec::new()), actions);
-                item(ui, tr(lang, "Placemarks to My layers"), Action::ToLayers(Vec::new()), actions);
+                item(ui, tr(lang, crate::edition::to_layers("Placemarks to My layers")), Action::ToLayers(Vec::new()), actions);
                 item(ui, tr(lang, "Copy"), Action::Copy(Vec::new()), actions);
                 item(ui, tr(lang, "Paste"), Action::Paste(Vec::new()), actions);
                 ui.separator();

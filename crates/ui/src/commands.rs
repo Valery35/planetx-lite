@@ -281,7 +281,7 @@ pub fn actions(lang: Lang, now: &Now) -> Vec<Suggestion> {
         );
     }
     if now.contours {
-        add(Command::ViewContours, tr(lang, "Contours of the view to My layers"), run, &["горизонтали", "изолинии", "рельеф", "contours", "isolines"]);
+        add(Command::ViewContours, tr(lang, crate::edition::to_layers("Contours of the view to My layers")), run, &["горизонтали", "изолинии", "рельеф", "contours", "isolines"]);
     }
     add(Command::SceneSave, tr(lang, "Save Scene"), open, &["сцена", "scene"]);
     add(Command::SceneOpen, tr(lang, "Open Scene"), open, &["сцена", "scene"]);

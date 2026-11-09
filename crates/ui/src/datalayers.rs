@@ -2112,6 +2112,10 @@ fn picture_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[Str
         out.push((id, Act::ExportPicture));
         chosen = true;
     }
+    if RUSTGIS_LINKED.load(std::sync::atomic::Ordering::Relaxed) && ui.button(tr(lang, "To the RustGIS project")).on_hover_text(tr(lang, "The picture goes to the open RustGIS project as a GeoTIFF raster with the colours and the transparency of the globe.")).clicked() {
+        out.push((id, Act::ToRustGis));
+        chosen = true;
+    }
     if ui.button(tr(lang, "Remove from the globe")).clicked() {
         out.push((id, Act::Remove));
         chosen = true;
@@ -2256,8 +2260,7 @@ mod tests {
         let mut layers = DataLayers::default();
         let pid = layers.add_picture(picture.clone(), "");
         let saved = layers.picture_geotiff(pid);
-        assert!(saved.as_ref().is_ok_and(|(name, bytes)| name == "Тени.tif" && bytes.starts_with(b"II*\0")), "{saved:?}");
-        // Узлы - центры пикселей: первый на полшага от северо-западного угла.
+        assert!(saved.as_ref().is_ok_and(|(name, bytes)| name == "Тени.tif" && bytes.starts_with(b"II*\0")), "{saved:?}");        // Узлы - центры пикселей: первый на полшага от северо-западного угла.
         let (g, img) = picture_grid(&picture).unwrap();
         let close = |a: f64, b: f64| (a - b).abs() < 1e-9;
         assert!(close(g.north, 58.15) && close(g.west, 56.05) && close(g.dlat, 0.1) && close(g.dlon, 0.1) && (g.cols, g.rows) == (4, 2), "{g:?}");

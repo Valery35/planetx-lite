@@ -438,6 +438,13 @@ impl LiteApp {
     /// горизонтали модуля в проекте. Возвращает текст сообщения.
     pub(super) fn isolines_to_layers(&mut self, data: data::layers::LayerData, step: f64) -> String {
         let (name, count) = (data.name.clone(), data.items.len());
+        // RustPlanetX: «Моих слоёв» нет, изолинии - в проект RustGIS.
+        if count > 0
+            && self.edition.linked()
+            && let Some(text) = self.layers_to_rustgis(&name, vec![data.clone()], Vec::new())
+        {
+            return text;
+        }
         if self.data_layers.add(vec![data], &name) == 0 {
             return tr(self.lang, "The view has no contours: the terrain is flat or the heights are not loaded.").to_string();
         }
@@ -464,6 +471,13 @@ impl LiteApp {
         let found = self.dots.export(lang, layer, self.view_box(), self.timebar.window());
         let count: usize = found.iter().map(|l| l.items.len()).sum();
         let title = tr(lang, layer.name()).to_string();
+        if count > 0
+            && self.edition.linked()
+            && let Some(text) = self.layers_to_rustgis(&title, found.clone(), Vec::new())
+        {
+            self.open_message = Some(text);
+            return;
+        }
         self.open_message = Some(if count == 0 {
             trf(lang, "No objects of the layer {title} in the view.", &[("title", &title)])
         } else {
@@ -504,6 +518,12 @@ impl LiteApp {
         ground.set_box(layer.frame());
         let mut overlay = scene::kml::Overlay::new(title, ground);
         overlay.image = Some(png);
+        if self.edition.linked()
+            && let Some(text) = self.layers_to_rustgis(title, Vec::new(), vec![overlay.clone()])
+        {
+            self.open_message = Some(text);
+            return;
+        }
         self.data_layers.add_picture(overlay, tr(lang, "Globe layers"));
         self.open_message = Some(trf(lang, "Added to «My layers» as a picture: {title}.", &[("title", title)]));
     }
@@ -530,26 +550,37 @@ impl LiteApp {
         match act {
             Act::ToRustGis => {
                 #[cfg(not(target_arch = "wasm32"))]
-                if let (Some(sync), Some(layer)) = (self.rustgis.as_ref().filter(|s| s.connected), self.data_layers.get(id)) {
-                    sync.link.ask(crate::rustgislink::Ask::AddLayer { name: data::layers::stem(&layer.title).to_string(), geojson: data::layers::to_geojson(&layer.data) });
+                if self.rustgis.as_ref().is_some_and(|s| s.connected)
+                    && let Some(layer) = self.data_layers.get(id)
+                {
+                    // Слой-картинка - растром GeoTIFF, остальные - объектами.
+                    let name = data::layers::stem(&layer.title).to_string();
+                    if layer.picture.is_some() {
+                        if let Err(e) = self.picture_to_rustgis(id, &name) {
+                            self.open_message = Some(trf(self.lang, "Not saved: {e}", &[("e", &e)]));
+                        }
+                    } else if let Some(sync) = &self.rustgis {
+                        sync.link.ask(crate::rustgislink::Ask::AddLayer { name, geojson: data::layers::to_geojson(&layer.data) });
+                    }
                 }
             }
             Act::FolderToRustGis(folder) => {
                 #[cfg(not(target_arch = "wasm32"))]
-                if let Some(sync) = self.rustgis.as_ref().filter(|s| s.connected) {
-                    // Картинки (растры расчётов) объектов не несут: пустыми
-                    // слоями они не уходят.
-                    let mut pictures = 0;
-                    for layer in self.data_layers.list.iter().filter(|l| &l.folder == folder && l.live.is_none()) {
-                        if layer.picture.is_some() {
-                            pictures += 1;
-                            continue;
+                if self.rustgis.as_ref().is_some_and(|s| s.connected) {
+                    // Картинки - растрами GeoTIFF, остальные слои - объектами.
+                    let layers: Vec<(u64, String, bool)> = self.data_layers.list.iter().filter(|l| &l.folder == folder && l.live.is_none()).map(|l| (l.id, format!("{folder} · {}", data::layers::stem(&l.title)), l.picture.is_some())).collect();
+                    let mut failed = None;
+                    for (layer_id, name, picture) in layers {
+                        if picture {
+                            if let Err(e) = self.picture_to_rustgis(layer_id, &name) {
+                                failed = Some(e);
+                            }
+                        } else if let (Some(sync), Some(layer)) = (&self.rustgis, self.data_layers.get(layer_id)) {
+                            sync.link.ask(crate::rustgislink::Ask::AddLayer { name, geojson: data::layers::to_geojson(&layer.data) });
                         }
-                        let name = format!("{folder} · {}", data::layers::stem(&layer.title));
-                        sync.link.ask(crate::rustgislink::Ask::AddLayer { name, geojson: data::layers::to_geojson(&layer.data) });
                     }
-                    if pictures > 0 {
-                        self.open_message = Some(trf(self.lang, "Pictures of the folder do not go to the RustGIS project: {n}.", &[("n", &pictures.to_string())]));
+                    if let Some(e) = failed {
+                        self.open_message = Some(trf(self.lang, "Not saved: {e}", &[("e", &e)]));
                     }
                 }
                 #[cfg(target_arch = "wasm32")]

@@ -291,6 +291,70 @@ impl LiteApp {
         });
     }
 
+    /// Слои глобуса в издании RustPlanetX: «Моих слоёв» у него нет, слои
+    /// уходят в проект RustGIS, как у модуля в проект QGIS группу
+    /// «PlanetX - слои глобуса». Подгруппа «folder ЧЧ:ММ:СС UTC» группы
+    /// «RustPlanetX - слои глобуса»: векторы текстом GeoJSON, картинки -
+    /// файлами GeoTIFF из папки результатов. None - издание не RustPlanetX,
+    /// слои кладутся в «Мои слои»; Some - текст сообщения.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(super) fn layers_to_rustgis(&mut self, folder: &str, vectors: Vec<data::layers::LayerData>, pictures: Vec<scene::kml::Overlay>) -> Option<String> {
+        if !self.edition.linked() {
+            return None;
+        }
+        let lang = self.lang;
+        if !self.rustgis.as_ref().is_some_and(|b| b.connected) {
+            return Some(trf(lang, "No link with RustGIS: {error}. In RustGIS start the MCP Relay command.", &[("error", tr(lang, crate::rustgislink::RELAY_OFF))]));
+        }
+        let unix = crate::pointcalc::clock_now();
+        let stamp = crate::analysis::clock(unix);
+        let vectors: Vec<(String, String)> = vectors.iter().filter(|l| !l.items.is_empty()).map(|l| (format!("{} {stamp}", data::layers::stem(&l.name)), data::layers::to_geojson(l))).collect();
+        let mut rasters = Vec::new();
+        let mut failed = None;
+        for picture in &pictures {
+            let written = crate::datalayers::picture_geotiff(picture).map_err(|key| tr(lang, key).to_string()).and_then(|bytes| self.write_result(&crate::analysis::file_name("picture", unix), &bytes));
+            match written {
+                Ok(path) => rasters.push((format!("{} {stamp}", picture.name), path, None)),
+                Err(e) => failed = Some(e),
+            }
+        }
+        if vectors.is_empty() && rasters.is_empty() {
+            return Some(match failed {
+                Some(e) => trf(lang, "Not saved: {e}", &[("e", &e)]),
+                None => tr(lang, "Nothing goes to the RustGIS project: the view has no objects of the layer.").to_string(),
+            });
+        }
+        let group = format!("{folder} {stamp} UTC");
+        let top = tr(lang, "RustPlanetX - globe layers").to_string();
+        if let Some(b) = &self.rustgis {
+            b.link.ask(crate::rustgislink::Ask::AddResult { top, group: group.clone(), vectors, rasters });
+        }
+        Some(match failed {
+            Some(e) => trf(lang, "Goes to the RustGIS project, group {group}. A picture is not written: {e}", &[("group", &group), ("e", &e)]),
+            None => trf(lang, "Goes to the RustGIS project, group {group}.", &[("group", &group)]),
+        })
+    }
+
+    /// Слой-картинка id «Моих слоёв» - в проект RustGIS растром GeoTIFF
+    /// под названием name: файл в папке результатов, `layer.addData`.
+    /// Ошибка - текст для сообщения.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(super) fn picture_to_rustgis(&mut self, id: u64, name: &str) -> Result<(), String> {
+        let lang = self.lang;
+        let (_, bytes) = self.data_layers.picture_geotiff(id).map_err(|key| tr(lang, key).to_string())?;
+        let path = self.write_result(&crate::analysis::file_name("picture", crate::pointcalc::clock_now()), &bytes)?;
+        if let Some(b) = &self.rustgis {
+            b.link.ask(crate::rustgislink::Ask::AddRaster { name: name.to_string(), path });
+        }
+        Ok(())
+    }
+
+    /// Страница - не RustPlanetX: слои - в «Мои слои».
+    #[cfg(target_arch = "wasm32")]
+    pub(super) fn layers_to_rustgis(&mut self, _folder: &str, _vectors: Vec<data::layers::LayerData>, _pictures: Vec<scene::kml::Overlay>) -> Option<String> {
+        None
+    }
+
     /// Снимок вида пришёл - картинкой в макет RustGIS, «Вид в макет QGIS»
     /// модуля. Картинка - снимок окна глобуса без панелей, с подписью
     /// источников, PNG или JPEG до 16 МБ.
@@ -372,6 +436,7 @@ impl LiteApp {
     pub fn with_edition(mut self, edition: crate::Edition) -> Self {
         self.edition = edition;
         self.credits.edition = edition;
+        crate::edition::set_current(edition);
         self
     }
 

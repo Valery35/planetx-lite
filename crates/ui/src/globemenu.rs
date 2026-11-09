@@ -289,7 +289,7 @@ impl GlobeMenu {
                                     item(ui, "Sea level…", "Raising and lowering the sea level over the whole globe.", Choice::SeaLevel);
                                 });
                             }
-                            if self.earth && self.contours && ui.button(tr(lang, "Contours of the view to My layers")).on_hover_text(tr(lang, "Contour lines of the visible area become a layer of «My layers» with the elev field of heights. The heights are loaded first.")).clicked() {
+                            if self.earth && self.contours && ui.button(tr(lang, crate::edition::to_layers("Contours of the view to My layers"))).on_hover_text(tr(lang, crate::edition::to_layers_tip("Contour lines of the visible area become a layer of «My layers» with the elev field of heights. The heights are loaded first."))).clicked() {
                                 follow = Some(Choice::ViewContours);
                             }
                             if self.earth {
