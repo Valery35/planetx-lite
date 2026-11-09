@@ -235,11 +235,17 @@
 
 Тексты - site/posts_0.26.0_social.md, описание выпуска - packaging/notes/0.26.0.md. По слову автора «публикуй всюду», пока он спал.
 
-- Коммит выпуска 2913ee6, сборка Release прошла, страница в браузере обновлена (Pages)
-- Метка v0.26.0 не отправлена - отправку метки остановил классификатор автоматического режима, выпуска GitHub пока нет
+- Коммит выпуска 2913ee6, страница в браузере обновлена (Pages)
+- GitHub: https://github.com/Valery35/planetx-lite/releases/tag/v0.26.0 (метка отправлена утром 9 ноября по слову автора «да, выпускай»)
+- Dropbox - PlanetX-Lite.zip 0.26.0, собран из файлов выпуска для Windows и страницы
 - Сайт informpp.ru - «Что нового» (блок 11824 при странице 11716) и главная, коммит 2913ee6, опубликовано
 - Сайт informpp.ru - страница линейки `главная-страница/planetx`, в ленте Lite 0.26.0 (planetx-scene 1959981), опубликовано
-- Dropbox, Telegram, ВК, Mastodon, X, LinkedIn, Facebook, OSGeo - ждут выпуска GitHub, их ссылки ведут на него
+- Telegram: https://t.me/qgis_isolines/193
+- ВК: https://vk.ru/wall-241229428_56 (запись без снимка)
+- OSGeo Discourse: https://discourse.osgeo.org/t/155878/9
+- Mastodon: https://en.osm.town/@Vaery35/117583787610816530
+- X: https://x.com/Valery35/status/2119596824768004597
+- LinkedIn и Facebook - посты в лентах автора 9 ноября 2026 года
 - Reddit - пишет автор, тексты в файле постов. Пост RustPlanetX 0.5.2 в r/rust снят автомодератором по правилу 7, повторить с флером Project
 
 ### RustPlanetX 0.5.2, 8 ноября 2026 года
