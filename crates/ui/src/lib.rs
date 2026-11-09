@@ -52,6 +52,7 @@ pub mod glyphs;
 pub mod gps;
 pub mod grid;
 pub mod gridheights;
+pub mod isolines;
 pub mod earthwork;
 pub mod hydrocalc;
 pub mod i18n;

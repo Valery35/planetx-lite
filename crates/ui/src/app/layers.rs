@@ -117,6 +117,7 @@ impl LiteApp {
             }
                 Action::Catalog => self.catalog.open = !self.catalog.open,
                 Action::Volumes(name) => self.volumes = Some(crate::volumecalc::VolumeCalc::new(name)),
+                Action::Isolines(name) => self.raster_isolines(&name),
                 Action::Bathymetry(name) => {
                     self.close_side();
                     let level = self.shore_level(&name);
@@ -430,6 +431,37 @@ impl LiteApp {
             }
         }
         self.data_layers.save_dirty = false;
+    }
+
+    /// Изолинии слоем «Моих слоёв» сверху списка: коричневые линии, как
+    /// горизонтали модуля в проекте. Возвращает текст сообщения.
+    pub(super) fn isolines_to_layers(&mut self, data: data::layers::LayerData, step: f64) -> String {
+        let (name, count) = (data.name.clone(), data.items.len());
+        if self.data_layers.add(vec![data], &name) == 0 {
+            return tr(self.lang, "The view has no contours: the terrain is flat or the heights are not loaded.").to_string();
+        }
+        if let Some(id) = self.data_layers.list.first().map(|l| l.id) {
+            let [r, g, b] = data::contours::LAND;
+            let style = crate::datalayers::Style { color: [r, g, b], width: crate::isolines::WIDTH, ..crate::datalayers::Style::new(0) };
+            self.data_layers.apply(id, &crate::datalayers::Act::Style(style));
+        }
+        trf(self.lang, "Contours added to «My layers»: {count}, interval {step} m.", &[("count", &count.to_string()), ("step", &data::contours::label_text(step))])
+    }
+
+    /// Изолинии своего растра name - слоем «Моих слоёв», «Изолинии
+    /// в проект QGIS…» меню растра модуля.
+    pub(super) fn raster_isolines(&mut self, name: &str) {
+        let lang = self.lang;
+        let Some((_, bytes)) = self.relief.files().into_iter().find(|(n, _)| n == name) else {
+            return;
+        };
+        self.open_message = Some(match data::grid::Grid::read(bytes.to_vec(), name).and_then(|grid| crate::isolines::raster(&grid).map_err(|key| tr(lang, key).to_string())) {
+            Ok((step, lines)) => {
+                let title = trf(lang, "{name} · isolines {step}", &[("name", name), ("step", &data::contours::label_text(step))]);
+                self.isolines_to_layers(crate::isolines::layer(&title, lines), step)
+            }
+            Err(e) => e,
+        });
     }
 
     /// Действие меню слоя «Моих слоёв».

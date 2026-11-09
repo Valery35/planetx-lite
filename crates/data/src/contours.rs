@@ -142,7 +142,13 @@ pub fn tile_step(z: u32, y: u32, radius: f64) -> f64 {
     let t = (f64::from(y) + 0.5) / n;
     let lat = (std::f64::consts::PI * (1.0 - 2.0 * t)).sinh().atan();
     let pixel = 2.0 * std::f64::consts::PI * radius * lat.cos() / (SIZE as f64 * n);
-    nice(pixel * STEP_PIXELS).max(MIN_STEP)
+    cell_step(pixel)
+}
+
+/// Сечение рельефа сетки с шагом cell метров на местности, тем же
+/// правилом, что у тайла: STEP_PIXELS шагов, не меньше MIN_STEP.
+pub fn cell_step(cell: f64) -> f64 {
+    nice(cell * STEP_PIXELS).max(MIN_STEP)
 }
 
 /// Подложка - снимок, а не карта: снимки тел или слова IMAGERY_WORDS
@@ -736,6 +742,21 @@ pub fn chain(pieces: &[Segment], digits: i32) -> Vec<Vec<[f64; 2]>> {
         lines.push(backward);
     }
     lines
+}
+
+/// Изолинии сетки z через step: отметка и ломаная (строка, столбец)
+/// в долях узлов, как `ContourGenerateEx` у горизонталей модуля
+/// в проект. NaN - пусто, линия обходит его.
+pub fn lines(z: &Grid, step: f64) -> Vec<(f64, Vec<[f64; 2]>)> {
+    let mut out = Vec::new();
+    for level in levels(&z.data, step) {
+        for line in chain(&segments(z, level), 6) {
+            if line.len() >= 2 {
+                out.push((level, line));
+            }
+        }
+    }
+    out
 }
 
 /// Высоты тайла Terrarium из RGBA: R·256 + G + B/256 - 32768 метров.

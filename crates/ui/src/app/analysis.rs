@@ -67,6 +67,7 @@ impl LiteApp {
         }
         let mut keys = Vec::new();
         let mut changed = false;
+        let mut contours_done = None;
         {
             let store = self.heights.clone();
             let has = |k: TileKey| store.read().tile(k).is_some();
@@ -91,6 +92,14 @@ impl LiteApp {
                 calc.step(lang, now, &has, &heights);
                 keys.extend(calc.wanted(&has));
                 changed |= std::mem::take(&mut calc.changed);
+            }
+            // Горизонтали вида: высоты квадрата вида, потом слой.
+            if let Some(job) = &mut self.view_contours {
+                keys.extend(job.wanted(&has));
+                if let Some(done) = job.step(lang, now, &has, &heights) {
+                    self.view_contours = None;
+                    contours_done = Some(done);
+                }
             }
             keys.extend(self.hydro.step(ctx, lang, now, radius, max_level, &has, &heights));
             let boxes = self.relief.boxes();
@@ -227,6 +236,17 @@ impl LiteApp {
         self.calc_keys = keys;
         if let Some(text) = self.hydro.message.take() {
             self.open_message = Some(text);
+        }
+        match contours_done {
+            Some(crate::isolines::Done::Layer(data, step, partial)) => {
+                let mut text = self.isolines_to_layers(data, step);
+                if partial {
+                    text = format!("{text} {}", tr(lang, "Not all heights are loaded, some contours are built by less detailed ones."));
+                }
+                self.open_message = Some(text);
+            }
+            Some(crate::isolines::Done::Failed(text)) => self.open_message = Some(text),
+            None => {}
         }
         // Уровень ниже нынешнего открывает шельф: нужны глубины морей,
         // они включаются, как `set_sea_level` модуля.

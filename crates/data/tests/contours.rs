@@ -290,6 +290,29 @@ fn cone_levels_and_nan() {
 }
 
 #[test]
+fn lines_of_a_cone_are_closed_rings_by_level() {
+    // Конус высотой 100 м в середине сетки 21 x 21: через 25 м внутри
+    // сетки - по одному замкнутому кольцу 25, 50, 75, вершина 100 -
+    // точка, линии из неё нет.
+    let z = Grid::from_fn(21, 21, |r, c| 100.0 - 10.0 * (r as f64 - 10.0).hypot(c as f64 - 10.0));
+    let lines = ct::lines(&z, 25.0);
+    for level in [25.0, 50.0, 75.0] {
+        assert_eq!(lines.iter().filter(|(l, _)| *l == level).count(), 1, "отметка {level}");
+    }
+    assert!(lines.iter().all(|(l, _)| *l < 100.0));
+    for (level, line) in lines.iter().filter(|(l, _)| *l > 0.0) {
+        let (a, b) = (line[0], line[line.len() - 1]);
+        assert!(line.len() > 8 && (a[0] - b[0]).hypot(a[1] - b[1]) < 1e-6, "кольцо {level} не замкнуто");
+        let radius = (100.0 - level) / 10.0;
+        assert!(line.iter().all(|p| ((p[0] - 10.0).hypot(p[1] - 10.0) - radius).abs() < 0.3));
+    }
+    // Сечение 5 м у тайла с пикселем 2 м, у сетки с шагом 40 м - 100 м.
+    assert_eq!(ct::cell_step(2.0), ct::MIN_STEP);
+    assert_eq!(ct::cell_step(40.0), 100.0);
+    assert!(ct::lines(&Grid::new(5, 5, 3.0), 1.0).is_empty());
+}
+
+#[test]
 fn grid_step_and_levels() {
     let z = [-306.0, 69.0, f64::NAN, 0.0];
     let step = ct::grid_step(&z, 12.0);

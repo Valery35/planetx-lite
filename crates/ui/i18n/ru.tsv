@@ -2391,6 +2391,18 @@ Save as GeoTIFF…	Сохранить как GeoTIFF…
 The picture of the layer goes to a GeoTIFF file in WGS84 with the colours and the transparency of the globe. QGIS and other GIS open it in its place.	Картинка слоя записывается файлом GeoTIFF в WGS84 с цветами и прозрачностью, как на глобусе. QGIS и другие ГИС открывают его на своём месте.
 The picture of the layer is not loaded	Картинка слоя не загружена
 The picture is turned: GeoTIFF needs a frame along parallels and meridians	Картинка повёрнута. Для GeoTIFF нужна рамка по параллелям и меридианам
+Contours of the view to My layers	Горизонтали вида в «Мои слои»
+Contour lines of the visible area become a layer of «My layers» with the elev field of heights. The heights are loaded first.	Горизонтали видимого участка ложатся слоем «Моих слоёв» с полем высот elev. Сначала загружаются высоты.
+Contours of the view are built: the heights are loaded first.	Горизонтали вида строятся. Сначала загружаются высоты.
+Contours {step} m	Горизонтали {step} м
+The view has no contours: the terrain is flat or the heights are not loaded.	Горизонталей в виде нет. Рельеф ровный, или высоты не загружены.
+Not all heights are loaded, some contours are built by less detailed ones.	Загружены не все высоты, часть горизонталей построена по менее подробным.
+Contours added to «My layers»: {count}, interval {step} m.	В «Мои слои» добавлено горизонталей: {count}, сечение {step} м.
+{name} · isolines {step}	{name} · изолинии {step}
+Isolines to My layers	Изолинии в «Мои слои»
+Isolines of the raster values become a layer of «My layers» with the elev field, about 12 lines over the range of values.	Изолинии значений растра ложатся слоем «Моих слоёв» с полем elev, около 12 линий на размах значений.
+The raster has no spread of values.	У растра нет перепада значений.
+The coordinate system of the raster is unknown.	Система координат растра неизвестна.
 My layers: the objects of these layers were not found: {names}	Мои слои: не найдены объекты слоёв {names}
 My layers exceed 1 MB, the page keeps them until it is closed	«Мои слои» больше 1 МБ, страница держит их до закрытия
 Open or drop a .planetx scene, KML, KMZ, a GeoTIFF elevation raster or a LAS, LAZ, COPC point cloud into the window. GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf and DXF layers go to the My layers section.	Откройте или перетащите в окно сцену .planetx, KML, KMZ, растр высот GeoTIFF или облако точек LAS, LAZ, COPC. Слои GeoPackage, Shapefile, GeoJSON, GPX, MapInfo, FlatGeobuf и DXF ложатся в раздел «Мои слои».

@@ -90,6 +90,8 @@ pub enum Choice {
     SatPath(Option<i64>),
     /// «Камера следом» за спутником: номер NORAD или None - отпустить.
     SatFollow(Option<i64>),
+    /// «Горизонтали вида в Мои слои», `view_contours` модуля.
+    ViewContours,
 }
 
 /// Рисование под меню: вершина под курсором, завершено ли, можно ли
@@ -131,6 +133,9 @@ pub struct GlobeMenu {
     pub relief: bool,
     /// В программе открыт свой растр: классы по его каналам есть и у страницы.
     pub rasters: bool,
+    /// Горизонтали включены: пункт «Горизонтали вида в Мои слои», как
+    /// у модуля при включённых горизонталях.
+    pub contours: bool,
 }
 
 impl GlobeMenu {
@@ -283,6 +288,9 @@ impl GlobeMenu {
                                     item(ui, "Water flow…", "Flow line, catchment and river network around the point.", Choice::Flow);
                                     item(ui, "Sea level…", "Raising and lowering the sea level over the whole globe.", Choice::SeaLevel);
                                 });
+                            }
+                            if self.earth && self.contours && ui.button(tr(lang, "Contours of the view to My layers")).on_hover_text(tr(lang, "Contour lines of the visible area become a layer of «My layers» with the elev field of heights. The heights are loaded first.")).clicked() {
+                                follow = Some(Choice::ViewContours);
                             }
                             if self.earth {
                                 pick(ui, tr(lang, "Satellite images…"), Choice::Sentinel);

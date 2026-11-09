@@ -229,6 +229,8 @@ pub enum Action {
     Bathymetry(String),
     /// Окно «Выемка и насыпь»: растр - новая съёмка.
     Volumes(String),
+    /// Изолинии растра слоем «Моих слоёв».
+    Isolines(String),
     /// Глубины морей и океанов включить или снять.
     Sea(bool),
     /// Непрозрачность земли над подземной моделью.
@@ -438,6 +440,10 @@ pub fn panel(ui: &mut egui::Ui, lang: Lang, state: &State<'_>, menu_open: &mut O
                 }
                 if ui.button(tr(lang, "Cut and fill…")).on_hover_text(tr(lang, "The raster is a new terrain survey, for example of a pit with dumps. The difference with an earlier survey gives cut and fill, their volumes and a difference raster.")).clicked() {
                     out.push(Action::Volumes(name.clone()));
+                    chosen = true;
+                }
+                if ui.button(tr(lang, "Isolines to My layers")).on_hover_text(tr(lang, "Isolines of the raster values become a layer of «My layers» with the elev field, about 12 lines over the range of values.")).clicked() {
+                    out.push(Action::Isolines(name.clone()));
                     chosen = true;
                 }
             });

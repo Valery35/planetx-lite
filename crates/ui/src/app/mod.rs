@@ -428,6 +428,8 @@ pub struct LiteApp {
     area_site: Option<Vec<(f64, f64)>>,
     /// Окно «Уклон и экспозиция» и его квадрат.
     relief_calc: Option<crate::reliefcalc::ReliefCalc>,
+    /// Горизонтали вида в «Мои слои»: ждут высоты квадрата вида.
+    view_contours: Option<crate::isolines::ViewJob>,
     /// Сессии окон анализа: номер - название папки расчёта в «Анализе
     /// участка».
     analysis_sessions: HashMap<u64, String>,
@@ -1257,6 +1259,7 @@ impl LiteApp {
             band_rasters: Vec::new(),
             area_site: None,
             relief_calc: None,
+            view_contours: None,
             analysis_sessions: HashMap::new(),
             hydro: crate::hydrocalc::Hydro::new(),
             earthwork: crate::earthwork::Earthwork::default(),
@@ -1866,7 +1869,8 @@ impl LiteApp {
         let earth = self.planet.earth;
         let relief = earth || self.planet.terrain.is_some();
         let rasters = !self.open_rasters().is_empty();
-        crate::globemenu::GlobeMenu { at: pos, point, coords, place, drawing, mover, live, sheets, links, satellite, earth, relief, rasters }
+        let contours = self.vector.contours_on();
+        crate::globemenu::GlobeMenu { at: pos, point, coords, place, drawing, mover, live, sheets, links, satellite, earth, relief, rasters, contours }
     }
 
     /// Выбор в меню на глобусе.
@@ -1978,6 +1982,16 @@ impl LiteApp {
                 }
             }
             Choice::EditLinks => self.links_window = Some(crate::menulinks::LinksWindow::new(self.settings.links.clone())),
+            Choice::ViewContours => {
+                // Квадрат по большей стороне вида у точки взгляда, как
+                // участок `export_tiles` модуля.
+                let width = self.view_width();
+                let side = width.max(width / self.nav.camera.aspect().max(0.1));
+                let max_level = terrain_source(&self.planet).map_or(terrain::MAX_LEVEL, |s| s.max_level);
+                let (lat, lon) = (self.nav.pose.lat, self.nav.pose.lon);
+                self.view_contours = Some(crate::isolines::ViewJob::new(self.lang, lat, lon, side, self.nav.camera.ellipsoid.a, max_level, now));
+                self.open_message = Some(tr(self.lang, "Contours of the view are built: the heights are loaded first.").to_string());
+            }
             Choice::Viewshed | Choice::Insolation | Choice::Shadows => {
                 let Some((lat, lon)) = point else {
                     return;
