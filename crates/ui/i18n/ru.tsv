@@ -2419,6 +2419,10 @@ Globe layers	Слои глобуса
 View picture to My layers	Картинка вида в «Мои слои»
 Map year	Год карты
 Select on the globe	Выделить на глобусе
+Track from the layer	Трек по слою
+The points of the layer become a track of the Tracks window: by the time field of the layer, without it - by a field with dates found by itself. The time slider grows the path.	Точки слоя становятся треком окна «Треки»: по полю времени слоя, без него - по найденному полю с датами. Шкала времени растит путь.
+Track added: {title}. The time slider grows the path.	Трек добавлен: {title}. Шкала времени растит путь.
+The layer has no field with dates: choose it in the Time submenu.	У слоя нет поля с датами: выберите его в подменю «Время».
 The found objects of «My layers» are highlighted on the globe until the next selection.	Найденные объекты «Моих слоёв» подсвечиваются на глобусе до следующего выделения.
 Clear selection	Снять выделение
 The year is a whole number, for example 1890.	Год - целое число, например 1890.

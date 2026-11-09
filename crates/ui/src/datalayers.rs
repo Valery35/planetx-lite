@@ -687,6 +687,8 @@ pub enum Act {
     Time(Option<(usize, Option<usize>)>),
     /// «Год карты» слоя-картинки, None - карта без года.
     Year(Option<i64>),
+    /// Трек по точечному слою, окно «Треки».
+    Track,
     Up,
     Down,
     /// Перетаскивание: слой - перед слоем before в папку folder, None -
@@ -1786,6 +1788,12 @@ fn menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], ne
     ui.separator();
     let mut chosen = labels_extrude(ui, lang, layer, out);
     chosen |= time_menu(ui, lang, layer, out);
+    // Трек по точечному слою, как у слоя проекта модуля.
+    let points = !layer.data.items.is_empty() && layer.data.items.iter().all(|i| i.shape == Geom::Point);
+    if points && ui.button(tr(lang, "Track from the layer")).on_hover_text(tr(lang, "The points of the layer become a track of the Tracks window: by the time field of the layer, without it - by a field with dates found by itself. The time slider grows the path.")).clicked() {
+        out.push((layer.id, Act::Track));
+        chosen = true;
+    }
     ui.separator();
     chosen |= folder_menu(ui, lang, layer, folders, new_folder, out);
     chosen |= side_menu(ui, lang, layer, out);

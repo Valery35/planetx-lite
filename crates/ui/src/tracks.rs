@@ -151,6 +151,13 @@ pub fn object_field(fields: &[String], numeric: &[bool], points: &[(f64, f64, Ve
 impl Layer {
     /// Слой-трек из точечного слоя или None, если поля времени нет.
     pub fn from_layer(layer: &LayerData, file: &str) -> Option<Self> {
+        Self::from_layer_with(layer, file, None)
+    }
+
+    /// Слой-трек, как [`Layer::from_layer`], с полем времени time, None -
+    /// поле ищется само. Так «Трек по слою» меню слоя берёт поле времени
+    /// слоя, как трек по точечному слою проекта у модуля.
+    pub fn from_layer_with(layer: &LayerData, file: &str, time: Option<usize>) -> Option<Self> {
         if layer.items.is_empty() || layer.items.iter().any(|i| i.shape != LayerShape::Point) {
             return None;
         }
@@ -159,7 +166,10 @@ impl Layer {
             .iter()
             .flat_map(|i| i.parts.iter().filter_map(|p| p.first()).map(|(lat, lon)| (*lat, *lon, i.values.clone())))
             .collect();
-        let time = time_field(&layer.fields, &layer.numeric, &points)?;
+        let time = match time {
+            Some(t) if t < layer.fields.len() => t,
+            _ => time_field(&layer.fields, &layer.numeric, &points)?,
+        };
         let object = object_field(&layer.fields, &layer.numeric, &points, time);
         let settings = Settings {
             time,
@@ -592,6 +602,23 @@ mod tests {
             i.values[1] = "дорога".into();
         }
         assert!(Layer::from_layer(&plain, "x.gpkg").is_none());
+    }
+
+    #[test]
+    fn given_time_field_makes_a_track() {
+        // Время - числом секунд в поле speed: само оно не находится
+        // (числовое поле годится только по названию), заданное - берётся.
+        let mut data = trucks();
+        for (n, i) in data.items.iter_mut().enumerate() {
+            i.values[1] = "дорога".into();
+            i.values[2] = format!("{}", 1_792_483_200 + 60 * n);
+        }
+        assert!(Layer::from_layer(&data, "x.gpkg").is_none());
+        let made = Layer::from_layer_with(&data, "x.gpkg", Some(2)).unwrap();
+        assert_eq!(made.settings.time, 2);
+        assert!(!made.track.objects.is_empty());
+        // Поле за пределами полей - ищется само.
+        assert!(Layer::from_layer_with(&trucks(), "h.gpkg", Some(99)).is_some_and(|l| l.settings.time == 1));
     }
 
     #[test]

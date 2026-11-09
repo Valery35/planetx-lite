@@ -610,6 +610,21 @@ impl LiteApp {
                     self.marks_changed();
                 }
             }
+            // Трек по точечному слою - в окно «Треки», шкала растит путь.
+            Act::Track => {
+                let lang = self.lang;
+                let made = self.data_layers.get(id).and_then(|l| crate::tracks::Layer::from_layer_with(&l.data, &l.title, l.time.map(|t| t.0)));
+                self.open_message = Some(match made {
+                    Some(track) => {
+                        let title = track.title.clone();
+                        self.tracks.add(vec![track], &title);
+                        self.tracks.open = true;
+                        self.time_extent();
+                        trf(lang, "Track added: {title}. The time slider grows the path.", &[("title", &title)])
+                    }
+                    None => tr(lang, "The layer has no field with dates: choose it in the Time submenu.").to_string(),
+                });
+            }
             // Год карты: охват шкалы заново, шкала открывается на годе
             // карты, как `edit_map_year` модуля.
             Act::Year(year) => {
