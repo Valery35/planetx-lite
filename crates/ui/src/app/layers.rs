@@ -474,14 +474,26 @@ impl LiteApp {
 
     /// Карта key в рамке вида, как её рисует глобус, - слоем-картинкой
     /// «Моих слоёв» в папку «Слои глобуса», раскраска вида строки модуля
-    /// в проект. Сторона картинки - не больше `analysis::PICTURE_SIDE`.
+    /// в проект. Карты строки сводятся одна на другую. Сторона картинки -
+    /// не больше `analysis::PICTURE_SIDE`.
     fn map_to_layers(&mut self, key: &'static str, title: &str) {
         let lang = self.lang;
         let [west, south, east, north] = self.view_box();
         // Рамка через линию перемены дат - долготы за 180.
         let east = if east < west { east + 360.0 } else { east };
         let vector = &self.vector;
-        let sample = |points: &[(f64, f64)]| vector.sample_map(key, points);
+        // Температура поверхности - две карты под одной строкой: море снизу,
+        // суша сверху, как их рисует глобус.
+        let ids: &[&str] = if key == crate::maps::TEMPERATURE { &[crate::maps::TEMPERATURE_SEA, crate::maps::TEMPERATURE] } else { &[key] };
+        let sample = |points: &[(f64, f64)]| {
+            let mut out = vec![[0u8; 4]; points.len()];
+            for id in ids {
+                for (low, top) in out.iter_mut().zip(vector.sample_map(id, points)) {
+                    *low = crate::vector::over(top, *low);
+                }
+            }
+            out
+        };
         let layer = crate::analysis::picture(title.to_string(), key, (south, north, west, east), 1.0, &sample, Vec::new());
         let png = layer.rgba.iter().any(|p| p[3] > 0).then(|| layer.png()).flatten();
         let Some(png) = png else {

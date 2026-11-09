@@ -865,6 +865,12 @@ fn job_sources(key: TileKey, groups: &HashSet<Group>) -> Vec<TileKey> {
 }
 
 /// Восемь соседей тайла key того же уровня, по долготе через край.
+/// Цвет top поверх low, оба с премноженной альфой.
+pub fn over(top: [u8; 4], low: [u8; 4]) -> [u8; 4] {
+    let keep = 255 - u16::from(top[3]);
+    std::array::from_fn(|i| (u16::from(top[i]) + (u16::from(low[i]) * keep + 127) / 255).min(255) as u8)
+}
+
 /// Доли Web Mercator (u слева направо, v сверху вниз) точки (широта,
 /// долгота), долгота приводится к -180..180.
 fn mercator_share(lat: f64, lon: f64) -> (f64, f64) {
@@ -919,6 +925,10 @@ mod tests {
         assert_eq!(v.sample_map("other", &[(58.0, 56.25)]), [[0; 4]]);
         // Долгота за 180 приводится к своей.
         assert_eq!(v.sample_map("temperature", &[(58.0, 56.25 + 360.0)]), [[200, 0, 0, 255]]);
+        // Сведение: прозрачное сверху не закрывает нижнее, плотное закрывает.
+        assert_eq!(super::over([0; 4], [10, 20, 30, 255]), [10, 20, 30, 255]);
+        assert_eq!(super::over([200, 0, 0, 255], [10, 20, 30, 255]), [200, 0, 0, 255]);
+        assert_eq!(super::over([100, 0, 0, 128], [0, 0, 200, 255]), [100, 0, 100, 255]);
     }
 
     #[test]
