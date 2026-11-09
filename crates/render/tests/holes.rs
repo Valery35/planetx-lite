@@ -241,6 +241,61 @@ fn feature_line_and_fill_are_drawn() {
 }
 
 #[test]
+fn swipe_shows_left_and_right_layers_on_their_sides() {
+    // Шторка слоёв: красная заливка - слой «Слева», синяя - «Справа»,
+    // обе на всём середине кадра. Со шторкой посередине левее линии
+    // красное, правее синее. Без шторки синяя, нарисованная позже, видна
+    // по обе стороны. Картинка и точки слоя «Слева» правее линии не видны.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 500.0, 0.0, 0.0);
+    let e = Ellipsoid::wgs84();
+    let center = e.geodetic_to_ecef(PERM.0, PERM.1, 0.0);
+    let at = |dlat: f64, dlon: f64| {
+        let p = e.geodetic_to_ecef(PERM.0 + dlat, PERM.1 + dlon, 0.0) - center;
+        [p.x as f32, p.y as f32, p.z as f32]
+    };
+    let square = vec![at(-0.01, -0.02), at(-0.01, 0.02), at(0.01, 0.02), at(0.01, -0.02)];
+    let fill = |color: [u8; 4], side: render::Side| render::FeatureMesh { center, offsets: square.clone(), fill: vec![0, 1, 2, 0, 2, 3], fill_color: Some(color), side, ..Default::default() };
+    globe.set_features(&[fill([255, 0, 0, 255], render::Side::Left), fill([0, 0, 255, 255], render::Side::Right)]);
+    let (w, h) = (f64::from(cam.width), f64::from(cam.height));
+    let (left_x, right_x, y) = (w * 0.3, w * 0.7, h / 2.0);
+    let frame = grab(&mut globe, &cam, false);
+    assert!(rgb(&frame, left_x, y)[2] > 200 && rgb(&frame, right_x, y)[2] > 200, "без шторки синее везде");
+    globe.set_swipe(Some((w / 2.0) as f32));
+    let frame = grab(&mut globe, &cam, false);
+    let (l, r) = (rgb(&frame, left_x, y), rgb(&frame, right_x, y));
+    assert!(l[0] > 200 && l[2] < 60, "левее шторки красное: {l:?}");
+    assert!(r[2] > 200 && r[0] < 60, "правее шторки синее: {r:?}");
+    // Картинка «Слева» поверх: правее линии её нет, левее она есть.
+    globe.set_features(&[]);
+    let picture = render::PictureMesh { key: "p".into(), center, offsets: square.clone(), uv: vec![[0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]], indices: vec![0, 1, 2, 0, 2, 3], tint: [255; 4], pull: render::PULL, order: 0, side: render::Side::Left };
+    globe.set_pictures(&[picture]);
+    assert!(globe.set_picture_image("p", 1, 1, &[0, 255, 0, 255]));
+    let frame = grab(&mut globe, &cam, false);
+    let (l, r) = (rgb(&frame, left_x, y), rgb(&frame, right_x, y));
+    assert!(l[1] > 200 && l[0] < 60, "картинка левее шторки: {l:?}");
+    assert!(!(r[1] > 200 && r[0] < 60 && r[2] < 60), "картинки правее шторки нет: {r:?}");
+    // Точки «Справа»: левее линии их нет.
+    globe.set_pictures(&[]);
+    let mut offsets = Vec::new();
+    for i in -20..=20 {
+        for j in -40..=40 {
+            offsets.push(at(f64::from(i) * 0.0005, f64::from(j) * 0.0005));
+        }
+    }
+    let colors = vec![[255, 0, 255]; offsets.len()];
+    globe.set_points(&[render::PointsMesh { center, offsets, colors, size: 30.0, side: render::Side::Right, ..Default::default() }]);
+    let frame = grab(&mut globe, &cam, false);
+    let (l, r) = (rgb(&frame, left_x, y), rgb(&frame, right_x, y));
+    assert!(r[0] > 200 && r[2] > 200 && r[1] < 60, "точки правее шторки: {r:?}");
+    assert!(!(l[0] > 200 && l[2] > 200 && l[1] < 60), "точек левее шторки нет: {l:?}");
+}
+
+#[test]
 fn picture_lies_with_west_left_and_waits_for_image() {
     // Картинка 2x1: левая половина красная, правая синяя, на квадрате
     // вокруг середины кадра. Камера отвесно, север вверху: слева
