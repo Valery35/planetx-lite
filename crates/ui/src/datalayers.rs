@@ -699,10 +699,16 @@ impl DataLayers {
             return;
         }
         self.window = window;
-        if self.list.iter().any(|l| l.time.is_some()) {
-            for l in &mut self.list {
-                l.refresh_off(window);
-            }
+        // Пересборка - только когда набор видимых объектов сменился:
+        // шкала при проигрывании двигается каждый кадр, а сброс картинок
+        // наложения каждый кадр не давал им собраться, слой пропадал.
+        let mut moved = false;
+        for l in self.list.iter_mut().filter(|l| l.time.is_some()) {
+            let before = std::mem::take(&mut l.off);
+            l.refresh_off(window);
+            moved |= before != l.off;
+        }
+        if moved {
             self.lines_dirty = true;
             self.dots_dirty = true;
             self.labels_dirty = true;
@@ -1527,13 +1533,21 @@ fn opacity_row(ui: &mut egui::Ui, lang: Lang, layers: &DataLayers, out: &mut Vec
     let selected = layers.selected.and_then(|id| layers.get(id)).filter(|l| l.live.is_none());
     ui.horizontal(|ui| {
         let mut value = selected.map_or(100.0, |l| (l.style.opacity * 100.0).round());
-        ui.spacing_mut().slider_width = (ui.available_width() - 60.0).max(40.0);
+        // Ширина ползунка - доступная без подписи значения, измеренной
+        // по шрифту. Строка шире панели раздвигала панель каждый кадр,
+        // пока та не занимала всё окно.
+        let text = format!("{value:.0} %");
+        let font = egui::TextStyle::Body.resolve(ui.style());
+        let label_width = ui.painter().layout_no_wrap(text.clone(), font, egui::Color32::WHITE).size().x;
+        let gap = ui.spacing().item_spacing.x;
+        ui.spacing_mut().slider_width = (ui.available_width() - label_width - 2.0 * gap - 4.0).max(40.0);
         let tip = match selected {
             Some(l) => trf(lang, "Opacity of the layer {layer}. To the right the layer is opaque.", &[("layer", &l.title)]),
             None => tr(lang, "A click on the name of a layer selects it, the slider sets its opacity.").to_string(),
         };
-        let slider = egui::Slider::new(&mut value, 5.0..=100.0).fixed_decimals(0).suffix(" %");
+        let slider = egui::Slider::new(&mut value, 5.0..=100.0).show_value(false);
         let changed = ui.add_enabled(selected.is_some(), slider).on_hover_text(tip).changed();
+        ui.label(text);
         if let (true, Some(l)) = (changed, selected) {
             let mut style = l.style;
             style.opacity = value / 100.0;
@@ -2383,6 +2397,12 @@ mod tests {
         assert_eq!(dots.len(), 2);
         assert!(!dots.contains(&(58.1, 56.0)));
         assert!(layers.list[0].hits(58.1, 56.0, 100.0, &|_, _| Some(0.0)).iter().all(|n| *n != 1));
+        // Сдвиг окна без смены видимых объектов картинки не пересобирает:
+        // при проигрывании шкалы слой иначе пропадал.
+        layers.dots_dirty = false;
+        layers.lines_dirty = false;
+        layers.set_window(Some((lo - year / 2.0 + 10.0, lo + year / 2.0 + 10.0)));
+        assert!(!layers.dots_dirty && !layers.lines_dirty);
         // Конец времени: точка 2020 года до 2025 года видна в окне 2024.
         layers.list[0].data.items[0].values[2] = "2025-01-01".into();
         layers.apply(id, &Act::Time(Some((1, Some(2)))));
