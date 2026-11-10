@@ -266,6 +266,24 @@
 - LinkedIn и Facebook - посты в лентах автора 9 ноября 2026 года
 - Reddit - пишет автор, тексты в файле постов. Пост RustPlanetX 0.5.2 в r/rust снят автомодератором по правилу 7, повторить с флером Project
 
+### PlanetX Lite 0.27.0, 10 ноября 2026 года
+
+Тексты - site/posts_0.27.0_social.md, описание выпуска - packaging/notes/0.27.0.md. По слову автора «потом всюду публикуй».
+
+- Коммит выпуска abee928, страница в браузере обновлена (Pages)
+- GitHub: https://github.com/Valery35/planetx-lite/releases/tag/v0.27.0
+- Dropbox - PlanetX-Lite.zip 0.27.0, собран из файлов выпуска для Windows и страницы
+- Сайт informpp.ru - «Что нового» (блок 12486 при странице 12381) и главная, коммит abee928, опубликовано
+- Telegram: https://t.me/qgis_isolines/197
+- ВК: https://vk.ru/wall-241229428_59 (запись с карточкой выпуска GitHub)
+- OSGeo Discourse: https://discourse.osgeo.org/t/155878/12
+- Mastodon: https://en.osm.town/@Vaery35/117589159888527448
+- X: https://x.com/Valery35/status/2119940763559850225
+- LinkedIn и Facebook - посты в лентах автора 10 ноября 2026 года
+- Reddit r/rust и r/gis - пишет автор, тексты в файле постов
+- Форум OSM, linux.org.ru - не публиковались, ждут слова автора
+- Лента страницы линейки planetx (planetx-scene/site/feed.json) - не обновлялась
+
 ### RustPlanetX 0.5.5, 10 ноября 2026 года
 
 Тексты - site/posts_rustplanetx_0.5.5_social.md. Выпуск собирает 0.5.3-0.5.5 (Lite 0.26.0 внутри, вид в макет RustGIS, команды и навык для помощника RustGIS, оформление расчётов). 0.5.3 и 0.5.4 отдельно не анонсировались. Ночью, пока автор спал, сделаны GitHub, Dropbox и заявка в каталог. Площадки соцсетей ждут подтверждения списка автором.
