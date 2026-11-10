@@ -36,7 +36,7 @@ ai = []
 # его нет: данные приходят из RustGIS, doc/EDITIONS.md.
 import = ["data/import"]
 # Аддины в песочнице wasmi. У RustPlanetX их нет.
-addins = ["dep:addin-host", "dep:sha2"]
+addins = ["dep:addin-host", "dep:addin-api", "dep:sha2"]
 
 [dependencies]
 globe-core.workspace = true
@@ -45,7 +45,7 @@ data.workspace = true
 addin-host = { workspace = true, optional = true }
 # Сумма пакета аддина из каталога, MIT и Apache 2.0.
 sha2 = { version = "0.10", optional = true }
-addin-api.workspace = true
+addin-api = { workspace = true, optional = true }
 web-time.workspace = true
 scene.workspace = true
 assistant.workspace = true
