@@ -45,6 +45,8 @@ use net::native::{Loader, Requests, default_cache_dir};
 use net::{ESRI, OPENFREEMAP, OSM, TERRARIUM};
 use ui::{Edition, Scenario};
 
+mod window;
+
 /// Предел файла сцены по ссылке, байт.
 const SCENE_BYTES: u64 = 64 << 20;
 
@@ -215,6 +217,10 @@ pub fn main(edition: Edition) -> ExitCode {
         }
     }
     let result = Arc::new(Mutex::new(None));
+    // Окно, закрытое свёрнутым, eframe восстановил бы крошечным.
+    if let Some(dir) = eframe::storage_dir(STORAGE) {
+        window::fix_saved_window(&dir);
+    }
     let mut viewport = egui::ViewportBuilder::default().with_title(title).with_inner_size(WINDOW);
     if let Some(icon) = ui::credits::window_icon() {
         viewport = viewport.with_icon(icon);
