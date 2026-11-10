@@ -187,6 +187,9 @@ struct DrawUniform {
     split: [f32; 4],
     /// Матрица света тайла, нули - тайл теней не принимает.
     light: [f32; 16],
+    /// Окно карты рельефа тайла высот: u0, v0, сторона, признак (1 -
+    /// есть), `terrain::relief`.
+    relief: [f32; 4],
 }
 
 /// Окно всего снимка.
@@ -229,8 +232,35 @@ struct GpuView {
 }
 
 /// Текстуры группы 3 тайла: ключи тайлов наложения, огней, снимков
-/// события «после» и «до».
-type OverPair = (Option<TileKey>, Option<TileKey>, Option<TileKey>, Option<TileKey>);
+/// события «после» и «до» и тайла высот карты рельефа.
+type OverPair = (Option<TileKey>, Option<TileKey>, Option<TileKey>, Option<TileKey>, Option<TileKey>);
+
+/// Карта рельефа тайла высот в видеокарте, `terrain::relief`.
+struct GpuRelief {
+    view: wgpu::TextureView,
+    /// Вертикальный масштаб, с которым карта посчитана.
+    scale: f64,
+    /// Какие из девяти тайлов окрестности были при счёте, по битам
+    /// `строка · 3 + столбец`.
+    around: u16,
+    last_used: u64,
+}
+
+/// Карт рельефа, считаемых за кадр. Карта считается несколько
+/// миллисекунд, остальные тайлы до своей очереди рисуются с отмывкой
+/// по вершинам.
+pub const RELIEFS_PER_FRAME: u32 = 2;
+/// Карт рельефа в видеокарте не больше стольких. Тайл высот на два
+/// уровня грубее подложки и покрывает 16 её тайлов.
+pub const RELIEFS_KEPT: usize = 300;
+
+/// Свет отмывки по умолчанию: азимут, градусы по часовой от севера, как
+/// у `gdaldem hillshade`, отмывки QGIS и ArcGIS.
+pub const RELIEF_AZIMUTH: f32 = 315.0;
+/// Высота света отмывки над горизонтом, градусы, как там же.
+pub const RELIEF_ALTITUDE: f32 = 45.0;
+/// Сила отмывки по умолчанию, `hillshade-exaggeration` MapLibre и Mapbox.
+pub const RELIEF_STRENGTH: f32 = 0.5;
 
 /// Наибольший уровень тайлов огней городов, `LIGHTS_LEVEL` модуля.
 pub const LIGHTS_LEVEL: u32 = 8;
@@ -285,6 +315,9 @@ pub struct FrameOptions {
     /// Точка взгляда в ECEF и расстояние до неё, м: при свете солнца
     /// вблизи нее ложатся тени в кадре. None - теней нет.
     pub focus: Option<([f64; 3], f64)>,
+    /// Отмывка рельефа: азимут света в градусах по часовой от севера
+    /// и сила 0..1, [`RELIEF_STRENGTH`] - обычная. None - без отмывки.
+    pub relief: Option<[f32; 2]>,
 }
 
 /// Глубина полной воды в метрах, мельче вода прозрачнее, `SHALLOW`
@@ -305,6 +338,21 @@ struct AirUniform {
     sun: [f32; 4],
     /// Значения карты теней, `LightFrame::shader_params`.
     shadow: [f32; 4],
+    /// Свет отмывки в местных осях восток, север, верх и сила отмывки,
+    /// 0 - без отмывки.
+    relief: [f32; 4],
+}
+
+/// Свет отмывки для шейдера: направление на свет в местных осях восток,
+/// север, верх при высоте [`RELIEF_ALTITUDE`] и сила, 0 - без отмывки.
+/// Азимут - градусы по часовой от севера.
+pub fn relief_light(relief: Option<[f32; 2]>) -> [f32; 4] {
+    let Some([azimuth, strength]) = relief else {
+        return [0.0, 0.0, 1.0, 0.0];
+    };
+    let (sa, ca) = azimuth.to_radians().sin_cos();
+    let (se, ce) = RELIEF_ALTITUDE.to_radians().sin_cos();
+    [sa * ce, ca * ce, se, strength.clamp(0.0, 1.0)]
 }
 
 /// Снятый кадр глобуса, RGBA по 8 бит, строки сверху вниз.
@@ -446,6 +494,8 @@ pub struct Globe {
     overlays: HashMap<TileKey, GpuView>,
     /// Огни городов на ночной стороне по тайлам, core/sun.py модуля.
     lights: HashMap<TileKey, GpuView>,
+    /// Карты рельефа для отмывки в пикселе по тайлам высот.
+    reliefs: HashMap<TileKey, GpuRelief>,
     /// Маски воды прохода воды по тайлам, `GlobeView._water_mask`
     /// модуля: белое - вода, чёрное - суша ниже нуля.
     water_masks: HashMap<TileKey, GpuMask>,
@@ -705,7 +755,7 @@ impl Globe {
         };
         let over_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("overlay and lights"),
-            entries: &[texture_entry(0), sampler_entry(1), texture_entry(2), sampler_entry(3), texture_entry(4), texture_entry(5)],
+            entries: &[texture_entry(0), sampler_entry(1), texture_entry(2), sampler_entry(3), texture_entry(4), texture_entry(5), texture_entry(6)],
         });
         let rays_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("rays"),
@@ -943,6 +993,7 @@ impl Globe {
                 wgpu::BindGroupEntry { binding: 3, resource: wgpu::BindingResource::Sampler(&sampler) },
                 wgpu::BindGroupEntry { binding: 4, resource: wgpu::BindingResource::TextureView(&clear) },
                 wgpu::BindGroupEntry { binding: 5, resource: wgpu::BindingResource::TextureView(&clear) },
+                wgpu::BindGroupEntry { binding: 6, resource: wgpu::BindingResource::TextureView(&clear) },
             ],
         });
         let query_set = device.create_query_set(&wgpu::QuerySetDescriptor {
@@ -1011,6 +1062,7 @@ impl Globe {
             split: None,
             swipe: None,
             lights: HashMap::new(),
+            reliefs: HashMap::new(),
             over_layout,
             over_binds: HashMap::new(),
             clear_bind,
@@ -1127,13 +1179,14 @@ impl Globe {
 
     /// Группа 3 тайла по паре текстур: собирается один раз.
     fn ensure_over(&mut self, pair: OverPair) {
-        if pair == (None, None, None, None) || self.over_binds.contains_key(&pair) {
+        if pair == (None, None, None, None, None) || self.over_binds.contains_key(&pair) {
             return;
         }
         let over = pair.0.and_then(|k| self.overlays.get(&k)).map_or(&self.clear, |t| &t.view);
         let lights = pair.1.and_then(|k| self.lights.get(&k)).map_or(&self.clear, |t| &t.view);
         let after = pair.2.and_then(|k| self.events[0].get(&k)).map_or(&self.clear, |t| &t.view);
         let before = pair.3.and_then(|k| self.events[1].get(&k)).map_or(&self.clear, |t| &t.view);
+        let relief = pair.4.and_then(|k| self.reliefs.get(&k)).map_or(&self.clear, |t| &t.view);
         let bind = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("overlay and lights"),
             layout: &self.over_layout,
@@ -1144,6 +1197,7 @@ impl Globe {
                 wgpu::BindGroupEntry { binding: 3, resource: wgpu::BindingResource::Sampler(&self.sampler) },
                 wgpu::BindGroupEntry { binding: 4, resource: wgpu::BindingResource::TextureView(after) },
                 wgpu::BindGroupEntry { binding: 5, resource: wgpu::BindingResource::TextureView(before) },
+                wgpu::BindGroupEntry { binding: 6, resource: wgpu::BindingResource::TextureView(relief) },
             ],
         });
         // Пар не бывает много больше тайлов кадра, на случай сбоя - предел.
@@ -1151,6 +1205,71 @@ impl Globe {
             self.over_binds.clear();
         }
         self.over_binds.insert(pair, bind);
+    }
+
+    /// Карта рельефа для тайла key: ключ тайла высот, по которому
+    /// собирается сетка, и окно тайла в нём. Карты нет или она посчитана
+    /// с другим масштабом - она считается, пока не кончился budget кадра.
+    /// До своей очереди тайл рисуется прежней картой или без неё.
+    fn relief_of(&mut self, key: TileKey, store: &HeightStore, radius: f64, budget: &mut u32) -> Option<(TileKey, [f32; 4])> {
+        let scale = store.scale();
+        if scale <= 0.0 {
+            return None;
+        }
+        let tile = store.for_mesh(key).0?;
+        let hkey = tile.key();
+        let (z, x, y) = key;
+        let depth = z.checked_sub(hkey.0)?;
+        // Соседи того же уровня: с ними у краёв тайла нет полос. Пришёл
+        // новый сосед - карта считается заново.
+        let keys = terrain::relief::around_keys(hkey.0, hkey.1, hkey.2);
+        let mut around: terrain::relief::Around<'_> = [[None; 3]; 3];
+        let mut mask = 0u16;
+        for (r, row) in keys.iter().enumerate() {
+            for (c, key) in row.iter().enumerate() {
+                around[r][c] = key.and_then(|k| store.tile(k)).map(|t| t.as_ref());
+                if around[r][c].is_some() {
+                    mask |= 1 << (r * 3 + c);
+                }
+            }
+        }
+        let fresh = self.reliefs.get(&hkey).is_some_and(|r| r.scale == scale && r.around == mask);
+        if !fresh && *budget > 0 {
+            *budget -= 1;
+            around[1][1] = Some(&tile);
+            // Где соседа нет, высоты за краем - у грубого тайла: иначе
+            // горизонт и склон обрываются на краю и по границе тайлов
+            // идёт светлая полоса.
+            let coarser = hkey.0.saturating_sub(1);
+            let fallback = |u: f64, v: f64| store.raw_share(u, v, coarser);
+            let rgba = terrain::relief::relief_rgba(&around, Some(&fallback), radius, scale);
+            let side = terrain::SIZE as u32;
+            if rgba.len() == (side * side * 4) as usize {
+                let view = Self::upload_view(&self.device, &self.queue, side, side, &rgba, OVERLAY_FORMAT);
+                self.reliefs.insert(hkey, GpuRelief { view, scale, around: mask, last_used: self.frame });
+                self.over_binds.retain(|(_, _, _, _, r), _| *r != Some(hkey));
+            }
+        }
+        let found = self.reliefs.get_mut(&hkey)?;
+        found.last_used = self.frame;
+        let cells = 1u32 << depth.min(31);
+        let side = 1.0 / cells as f32;
+        Some((hkey, [(x % cells) as f32 * side, (y % cells) as f32 * side, side, 1.0]))
+    }
+
+    /// Убрать давно не нужные карты рельефа сверх [`RELIEFS_KEPT`].
+    fn evict_reliefs(&mut self) {
+        if self.reliefs.len() <= RELIEFS_KEPT {
+            return;
+        }
+        let mut old: Vec<(u64, TileKey)> = self.reliefs.iter().map(|(k, r)| (r.last_used, *k)).collect();
+        old.sort_unstable();
+        let extra = self.reliefs.len() - RELIEFS_KEPT;
+        for (_, key) in old.into_iter().take(extra) {
+            self.reliefs.remove(&key);
+        }
+        let reliefs = &self.reliefs;
+        self.over_binds.retain(|(_, _, _, _, r), _| r.is_none_or(|k| reliefs.contains_key(&k)));
     }
 
     /// Огни городов для тайла: свои или доля огней предка уровня не
@@ -1176,7 +1295,7 @@ impl Globe {
         }
         let view = Self::upload_view(&self.device, &self.queue, width, height, rgba, OVERLAY_FORMAT);
         self.lights.insert(key, GpuView { view });
-        self.over_binds.retain(|(_, l, _, _), _| *l != Some(key));
+        self.over_binds.retain(|(_, l, _, _, _), _| *l != Some(key));
     }
 
     /// Есть ли огни тайла key.
@@ -1253,7 +1372,7 @@ impl Globe {
 
     pub fn clear_lights(&mut self) {
         self.lights.clear();
-        self.over_binds.retain(|(_, l, _, _), _| l.is_none());
+        self.over_binds.retain(|(_, l, _, _, _), _| l.is_none());
     }
 
     /// Снимок для тайла: свой или доля снимка предка, если тайла нет
@@ -1301,7 +1420,7 @@ impl Globe {
         }
         let view = Self::upload_view(&self.device, &self.queue, width, height, rgba, OVERLAY_FORMAT);
         self.events[side].insert(key, GpuView { view });
-        self.over_binds.retain(|(_, _, a, b), _| if side == 0 { *a != Some(key) } else { *b != Some(key) });
+        self.over_binds.retain(|(_, _, a, b, _), _| if side == 0 { *a != Some(key) } else { *b != Some(key) });
     }
 
     /// Есть ли свои снимки события стороны side у тайла.
@@ -1314,7 +1433,7 @@ impl Globe {
         if let Some(e) = self.events.get_mut(side) {
             e.clear();
         }
-        self.over_binds.retain(|(_, _, a, b), _| if side == 0 { a.is_none() } else { b.is_none() });
+        self.over_binds.retain(|(_, _, a, b, _), _| if side == 0 { a.is_none() } else { b.is_none() });
     }
 
     /// Линия шторки в пикселях кадра: слева снимки «до», справа «после».
@@ -1352,7 +1471,7 @@ impl Globe {
         }
         let view = Self::upload_view(&self.device, &self.queue, width, height, rgba, OVERLAY_FORMAT);
         self.overlays.insert(key, GpuView { view });
-        self.over_binds.retain(|(o, _, _, _), _| *o != Some(key));
+        self.over_binds.retain(|(o, _, _, _, _), _| *o != Some(key));
     }
 
     /// Есть ли своё наложение у тайла.
@@ -1405,7 +1524,7 @@ impl Globe {
     /// Забыть все наложения: сменились группы векторной основы.
     pub fn clear_overlays(&mut self) {
         self.overlays.clear();
-        self.over_binds.retain(|(o, _, _, _), _| o.is_none());
+        self.over_binds.retain(|(o, _, _, _, _), _| o.is_none());
     }
 
     /// Тайл готов к рисованию: свой снимок или доля снимка предка.
@@ -1519,6 +1638,7 @@ impl Globe {
     /// budget - у Эльбруса на кадре страницы 3840 × 1726, 22 октября
     /// 2026 года.
     pub fn evict(&mut self, keep: &HashSet<TileKey>, budget: usize) {
+        self.evict_reliefs();
         if self.textures.len() > budget {
             let mut old: Vec<(u64, TileKey)> = self
                 .textures
@@ -1537,7 +1657,7 @@ impl Globe {
                 side.retain(|k, _| keep.contains(k) || textures.contains_key(k) || k.0 <= UNDERLAY_LEVEL);
             }
             let (overlays, lights, events) = (&self.overlays, &self.lights, &self.events);
-            self.over_binds.retain(|(o, l, a, b), _| {
+            self.over_binds.retain(|(o, l, a, b, _), _| {
                 o.is_none_or(|k| overlays.contains_key(&k)) && l.is_none_or(|k| lights.contains_key(&k)) && a.is_none_or(|k| events[0].contains_key(&k)) && b.is_none_or(|k| events[1].contains_key(&k))
             });
             for edges in &mut self.edges {
@@ -1742,12 +1862,14 @@ impl Globe {
         heights: Option<&HeightStore>,
         projection: DMat4,
         (water, sea_level): (Option<[f32; 4]>, f32),
-        light: Option<&LightFrame>,
+        (light, relief_on): (Option<&LightFrame>, bool),
     ) -> Vec<Item> {
         self.update_caps(selection);
         let mut out = Vec::new();
         let placeholder = display(PLACEHOLDER);
         let mut rebuilds = REBUILDS_PER_FRAME;
+        let mut reliefs = RELIEFS_PER_FRAME;
+        let radius = camera.ellipsoid.a;
         let mut push = |me: &mut Self,
                         kind: Kind,
                         mesh: MeshId,
@@ -1764,11 +1886,15 @@ impl Globe {
                     (Kind::Tile, MeshId::Tile { z, x, y }) => (some(me.overlay_of((z, x, y))), some(me.lights_of((z, x, y))), some(me.event_of(0, (z, x, y))), some(me.event_of(1, (z, x, y)))),
                     _ => (none, none, none, none),
                 };
+                let (height_key, relief) = match (kind, mesh, heights) {
+                    (Kind::Tile, MeshId::Tile { z, x, y }, Some(store)) if relief_on => some(me.relief_of((z, x, y), store, radius, &mut reliefs)),
+                    _ => none,
+                };
                 let split = me.split.map_or([0.0; 4], |x| [x, 1.0, 0.0, 0.0]);
                 let shadow = light.filter(|_| kind == Kind::Tile).map_or([0.0; 16], |f| f.matrix(center).as_mat4().to_cols_array());
-                let pair = (overlay, lights, after, before);
+                let pair = (overlay, lights, after, before, height_key);
                 me.ensure_over(pair);
-                out.push(Item { kind, mesh, texture, over_pair: pair, cap: None, mask: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow, water: [0.0; 4], sea: [0.0; 4], cut: [0.0; 4], glass: [1.0, 0.0, 0.0, 0.0], wedge: [0.0; 4], wedge_lat: [0.0; 4], event, event_before, split, light: shadow } });
+                out.push(Item { kind, mesh, texture, over_pair: pair, cap: None, mask: None, uniform: DrawUniform { mvp, hole, color, window, over, lights: glow, water: [0.0; 4], sea: [0.0; 4], cut: [0.0; 4], glass: [1.0, 0.0, 0.0, 0.0], wedge: [0.0; 4], wedge_lat: [0.0; 4], event, event_before, split, light: shadow, relief } });
             }
         };
         let flat = |rgb: [f32; 3]| [rgb[0], rgb[1], rgb[2], 1.0];
@@ -1892,7 +2018,8 @@ impl Globe {
 
     /// Воздух кадра: глаз в долях полуосей, оси камеры в ECEF. Разности
     /// квадратов считаются в f64.
-    fn air_uniform(camera: &Camera, width: u32, height: u32, on: bool, sun: Option<[f64; 3]>, tint: Option<[f32; 3]>, light: Option<&LightFrame>) -> AirUniform {
+    #[allow(clippy::too_many_arguments)]
+    fn air_uniform(camera: &Camera, width: u32, height: u32, on: bool, sun: Option<[f64; 3]>, tint: Option<[f32; 3]>, light: Option<&LightFrame>, relief: Option<[f32; 2]>) -> AirUniform {
         let [tr, tg, tb] = tint.unwrap_or([1.0; 3]);
         let e = &camera.ellipsoid;
         let axes = DVec3::new(1.0 / e.a, 1.0 / e.a, 1.0 / e.b);
@@ -1911,6 +2038,7 @@ impl Globe {
             flags: [if on { 1.0 } else { 0.0 }, tr, tg, tb],
             sun: sun.map_or([0.0, 0.0, 1.0, 0.0], |s| [s[0] as f32, s[1] as f32, s[2] as f32, 1.0]),
             shadow: light.map_or([0.0; 4], LightFrame::shader_params),
+            relief: relief_light(relief),
         }
     }
 
@@ -2142,7 +2270,8 @@ impl Globe {
             let radius = shadowmap::radius_for(distance)?;
             Some(LightFrame::new(DVec3::from_array(center), DVec3::from_array(sun), radius, shadowmap::MAP_SIZE)).filter(LightFrame::active)
         });
-        let items = if options.sky { Vec::new() } else { self.items(camera, selection, heights, projection, (options.water, options.sea_level), light.as_ref()) };
+        let relief_on = options.relief.is_some_and(|[_, strength]| strength > 0.0);
+        let items = if options.sky { Vec::new() } else { self.items(camera, selection, heights, projection, (options.water, options.sea_level), (light.as_ref(), relief_on)) };
         let count = items.len() as u64;
         if count > self.uniform_capacity {
             let capacity = count.next_power_of_two();
@@ -2182,7 +2311,7 @@ impl Globe {
         }
         // Пурпурные дыры видны только без воздуха, как в модуле.
         let air_on = options.air && !options.show_holes;
-        let air = Self::air_uniform(camera, target.width, target.height, air_on, options.sun, options.tint, light.as_ref());
+        let air = Self::air_uniform(camera, target.width, target.height, air_on, options.sun, options.tint, light.as_ref(), options.relief);
         self.queue.write_buffer(&self.air, 0, bytemuck::bytes_of(&air));
         let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("globe") });
         let mut draws = 0;

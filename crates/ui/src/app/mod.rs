@@ -2321,7 +2321,7 @@ impl LiteApp {
                 globe.set_sky_bodies(&points);
             }
             let recreated = globe.resize(width, height);
-            globe.render(&camera, &globe_core::lod::Selection::default(), None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: ppp as f32, sun: None, water: None, tint: None, sky: true, sea_level: 0.0, focus: None });
+            globe.render(&camera, &globe_core::lod::Selection::default(), None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: ppp as f32, sun: None, water: None, tint: None, sky: true, sea_level: 0.0, focus: None, relief: None });
             self.show_target(recreated || self.texture.is_none());
         }
         if let Some(id) = self.texture {
@@ -4533,7 +4533,7 @@ impl eframe::App for LiteApp {
         let focus = self.nav.camera.ellipsoid.geodetic_to_ecef(pose.lat, pose.lon, store.height_at(pose.lat, pose.lon)).to_array();
         let focus = Some((focus, pose.distance));
         let stats =
-            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air && self.planet.air.is_some(), ratio: ppp as f32, sun, water, tint: self.planet.air, sky: false, sea_level, focus });
+            globe.render(&self.nav.camera, &selection, Some(&store), FrameOptions { count_holes, show_holes: false, air: self.settings.air && self.planet.air.is_some(), ratio: ppp as f32, sun, water, tint: self.planet.air, sky: false, sea_level, focus, relief: Some([self.settings.light_azimuth as f32, self.settings.shading as f32]) });
         drop(store);
         if let Some(check) = &mut self.check
             && check.waits_frame()

@@ -70,7 +70,7 @@ fn half_ready(key: TileKey) -> bool {
 
 /// Дыры и видимая подстилка.
 fn holes(globe: &mut Globe, camera: &Camera, selection: &lod::Selection) -> (u64, u64) {
-    let stats = globe.render(camera, selection, None, FrameOptions { count_holes: true, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: false, sea_level: 0.0, focus: None });
+    let stats = globe.render(camera, selection, None, FrameOptions { count_holes: true, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: false, sea_level: 0.0, focus: None, relief: None });
     assert!(stats.draws > 0);
     (stats.holes.unwrap(), stats.underlay.unwrap())
 }
@@ -163,7 +163,7 @@ fn picture_keeps_its_brightness() {
     for key in &sel.draw {
         globe.upload(*key, 256, 256, &rgba);
     }
-    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: false, sea_level: 0.0, focus: None });
+    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: false, sea_level: 0.0, focus: None, relief: None });
     let pixel = center_pixel(&device, &queue, &globe);
     eprintln!("пиксель в середине кадра: {pixel:?}");
     for c in &pixel[..3] {
@@ -472,7 +472,7 @@ fn shadow_frame_cost() {
 fn grab(globe: &mut Globe, cam: &Camera, air: bool) -> render::Frame {
     let sel = lod::select(cam, &|_| true, Options::default());
     globe.grab();
-    globe.render(cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air, ratio: 1.0, sun: None, water: None, tint: None, sky: false, sea_level: 0.0, focus: None });
+    globe.render(cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air, ratio: 1.0, sun: None, water: None, tint: None, sky: false, sea_level: 0.0, focus: None, relief: None });
     globe.take_grab().unwrap()
 }
 
@@ -632,7 +632,7 @@ fn sky_frame_draws_bodies_without_globe() {
     globe.set_sky_bodies(&[render::StarPoint { dir: forward, size: 16.0, color: [1.0, 0.0, 0.0, 1.0] }]);
     let sel = lod::select(&cam, &|_| true, Options::default());
     globe.grab();
-    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: true, sea_level: 0.0, focus: None });
+    globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: None, water: None, tint: None, sky: true, sea_level: 0.0, focus: None, relief: None });
     let frame = globe.take_grab().unwrap();
     let (cx, cy) = (f64::from(cam.width) / 2.0, f64::from(cam.height) / 2.0);
     let centre = rgb(&frame, cx, cy);

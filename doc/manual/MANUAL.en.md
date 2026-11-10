@@ -714,7 +714,7 @@ The View properties window - the gear button, as in the plugin:
 | Group | What it sets |
 |---|---|
 | Base map | The basemap and the Data sources… button |
-| Terrain | Vertical exaggeration from 0.5 to 10 |
+| Terrain | Vertical exaggeration from 0.5 to 10. «Hillshade» 0-100 % - shading of slopes and hollows in every pixel, 50 % - usual, 0 % - flat imagery. «Light azimuth» - where the hillshade light comes from, 315° - from the north-west, as on maps |
 | Labels | Language of names on the globe: as the interface, local names or a chosen language |
 | Coordinates | Format: decimal degrees, degrees-minutes-seconds, UTM, MGRS |
 | Appearance | Light or dark, the interface language - as in the system or one of 16 languages |

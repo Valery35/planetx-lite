@@ -22,6 +22,7 @@ use globe_core::lod::TileKey;
 
 pub mod inset;
 pub mod mesh;
+pub mod relief;
 
 pub const MAX_LEVEL: u32 = 15;
 pub const SIZE: usize = 256;
@@ -103,13 +104,67 @@ impl HeightTile {
     }
 }
 
+/// Во сколько раз перепад одиночного выброса больше разброса соседей.
+const SPIKE_RATIO: f32 = 6.0;
+/// Наименьший разброс соседей, метры: шаг высот SRTM и MOLA - метр.
+const SPIKE_QUANTUM: f32 = 1.0;
+
+/// Убрать одиночные выбросы: у Terrarium бывают пиксели на тысячи метров
+/// выше или ниже соседей, у рек и на ровном месте (у Перми +2600
+/// и -2600 м среди высот около 100 м). Сетка поднимала их пиками,
+/// отмывка ещё и обводила тенью. Пиксель, который отличается от медианы
+/// соседей больше чем в SPIKE_RATIO раз против их разброса, получает
+/// медиану. У настоящей вершины соседи - склоны, их разброс велик,
+/// и она остаётся. heights - SIZE × SIZE по строкам.
+pub fn despike(heights: &mut [f32]) {
+    if heights.len() != SIZE * SIZE {
+        return;
+    }
+    let source = heights.to_vec();
+    let mut near = Vec::with_capacity(8);
+    for row in 0..SIZE {
+        for col in 0..SIZE {
+            near.clear();
+            for dr in [-1i64, 0, 1] {
+                for dc in [-1i64, 0, 1] {
+                    let (r, c) = (row as i64 + dr, col as i64 + dc);
+                    if (dr != 0 || dc != 0)
+                        && (0..SIZE as i64).contains(&r)
+                        && (0..SIZE as i64).contains(&c)
+                        && let Some(h) = source.get(r as usize * SIZE + c as usize)
+                    {
+                        near.push(*h);
+                    }
+                }
+            }
+            if near.len() < 5 || near.iter().any(|h| !h.is_finite()) {
+                continue;
+            }
+            near.sort_unstable_by(f32::total_cmp);
+            let n = near.len();
+            let median = if n % 2 == 0 { (near[n / 2 - 1] + near[n / 2]) / 2.0 } else { near[n / 2] };
+            // Разброс без крайних соседей: один из них может быть таким
+            // же выбросом рядом.
+            let spread = (near[n - 2] - near[1]).max(SPIKE_QUANTUM);
+            let Some(here) = heights.get_mut(row * SIZE + col) else {
+                continue;
+            };
+            if (*here - median).abs() > SPIKE_RATIO * spread {
+                *here = median;
+            }
+        }
+    }
+}
+
 /// Тайл высот из картинки RGBA SIZE × SIZE. None - картинка не того
 /// размера.
 pub fn make_tile(z: u32, x: u32, y: u32, rgba: &[u8], floor: Option<f32>, encoding: Encoding) -> Option<HeightTile> {
     if rgba.len() != SIZE * SIZE * 4 {
         return None;
     }
-    HeightTile::new(z, x, y, decode(rgba, 4, floor, encoding))
+    let mut heights = decode(rgba, 4, floor, encoding);
+    despike(&mut heights);
+    HeightTile::new(z, x, y, heights)
 }
 
 /// Уровень высот для тайла подложки уровня z, не глубже top.
@@ -135,7 +190,9 @@ pub fn make_tile_depths(z: u32, x: u32, y: u32, rgba: &[u8], floor: f32, encodin
     if rgba.len() != SIZE * SIZE * 4 {
         return None;
     }
-    tile_depths(z, x, y, decode(rgba, 4, None, encoding), floor)
+    let mut raw = decode(rgba, 4, None, encoding);
+    despike(&mut raw);
+    tile_depths(z, x, y, raw, floor)
 }
 
 /// То же, что [`make_tile_depths`], для уже прочитанных высот raw.
@@ -430,6 +487,21 @@ impl HeightStore {
     }
 
     /// Высота без масштаба по самому точному готовому тайлу.
+    /// Высота без масштаба в доле мира Mercator (u, v) по самому точному
+    /// загруженному тайлу уровня не глубже level. None - такого тайла нет.
+    pub fn raw_share(&self, u: f64, v: f64, level: u32) -> Option<f64> {
+        let u = u.rem_euclid(1.0);
+        if !(0.0..1.0).contains(&v) {
+            return None;
+        }
+        (0..=level.min(DEEP_LEVEL)).rev().find_map(|zh| {
+            let n = 1u32 << zh;
+            let nf = f64::from(n);
+            let key = (zh, ((u * nf) as u32).min(n - 1), ((v * nf) as u32).min(n - 1));
+            self.tiles.get(&key).map(|tile| sample(tile, u, v))
+        })
+    }
+
     fn raw_height(&self, lat: f64, lon: f64) -> f64 {
         let (u, v) = mercator_share(lat, lon);
         for zh in (0..=DEEP_LEVEL).rev() {

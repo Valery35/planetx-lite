@@ -2613,6 +2613,10 @@ Install	Установить
 Install an add-in from a .pxaddin file. Such an add-in is not checked by the catalogue.	Установка аддина из файла .pxaddin. Такой аддин каталог не проверял.
 Install the add-in?	Установить аддин?
 installed	установлен
+Hillshade	Отмывка
+Strength of the shading of slopes and hollows of the terrain in every pixel. 0 % - flat imagery, 50 % - usual, 100 % - twice as sharp. With the Sun on, slopes take the light of the Sun.	Сила затенения склонов и впадин рельефа в каждом пикселе. 0 % - ровный снимок, 50 % - обычная, 100 % - вдвое резче. При включённом солнце склоны освещает солнце.
+Light azimuth	Азимут света
+Direction the hillshade light comes from, degrees clockwise from north. 315° - from the north-west, as on maps.	Откуда падает свет отмывки, градусы по часовой стрелке от севера. 315° - с северо-запада, как на картах.
 Installed	Установленные
 Layer {layer}, objects: {count}.	Слой {layer}, объектов - {count}.
 Loading the catalogue…	Каталог загружается…

@@ -49,6 +49,8 @@ struct Draw {
     // Матрица света: точка от центра тайла в координаты отсечения карты
     // теней, нули - тайл теней не принимает.
     light: mat4x4<f32>,
+    // Окно карты рельефа тайла высот: u0, v0, сторона, признак.
+    relief: vec4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> draw: Draw;
@@ -72,6 +74,22 @@ struct Draw {
 // цвет. Ложатся на снимок под линиями основы.
 @group(3) @binding(4) var event_texture: texture_2d<f32>;
 @group(3) @binding(5) var before_texture: texture_2d<f32>;
+// Карта рельефа тайла высот, `terrain::relief`: rg - нормаль склона
+// в осях восток и север, b - открытость неба.
+@group(3) @binding(6) var relief_texture: texture_2d<f32>;
+
+// Отмывка в пикселе: тот же ламбертов свет, что у отмывки по вершинам
+// (`terrain::mesh`), ровная местность даёт 1.
+const RELIEF_AMBIENT: f32 = 0.35;
+// Отмывка на снимке в основном затемняет: освещённый склон светлеет
+// слабее, чем темнеет теневой, иначе снег и облака уходят в белое.
+// Пределы яркости не дают теням провалиться в черноту.
+const RELIEF_HIGHLIGHT: f32 = 0.7;
+const RELIEF_DARKEST: f32 = 0.55;
+const RELIEF_BRIGHTEST: f32 = 1.15;
+// Доля затенения впадин при обычной силе отмывки. Высоты грубее снимка,
+// сильное затенение ложится пятнами.
+const RELIEF_OCCLUSION: f32 = 0.35;
 
 struct VertexOut {
     @builtin(position) position: vec4<f32>,
@@ -178,6 +196,7 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
     let mask = textureSample(cut_texture, cut_sampler, draw.cut.xy + in.uv * draw.cut.zw);
     let after = textureSample(event_texture, over_sampler, draw.event.xy + in.uv * draw.event.z) * draw.event.w;
     let before = textureSample(before_texture, over_sampler, draw.event_before.xy + in.uv * draw.event_before.z) * draw.event_before.w;
+    let relief = textureSample(relief_texture, over_sampler, draw.relief.xy + in.uv * draw.relief.z);
     var event = after;
     if draw.split.y > 0.5 && in.position.x < draw.split.x {
         event = before;
@@ -203,7 +222,31 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
             discard;
         }
     }
+    // Отмывка. Сила 0.5 даёт глубину прежней отмывки по вершинам, 0 -
+    // ровный снимок, 1 - вдвое резче. С картой рельефа склон берётся
+    // в каждом пикселе, без неё - по вершинам сетки.
+    let strength = air_frame.relief.w * 2.0;
+    let have_relief = draw.relief.w > 0.5;
+    var pixel = vec3<f32>(0.0, 0.0, 1.0);
     var shade = in.shade;
+    if have_relief {
+        let east = relief.r * 2.0 - 1.0;
+        let north = relief.g * 2.0 - 1.0;
+        pixel = vec3<f32>(east, north, sqrt(max(1.0 - east * east - north * north, 0.0)));
+        let l = air_frame.relief.xyz;
+        let lambert = clamp(dot(pixel, l), 0.0, 1.0);
+        shade = (RELIEF_AMBIENT + (1.0 - RELIEF_AMBIENT) * lambert) / (RELIEF_AMBIENT + (1.0 - RELIEF_AMBIENT) * l.z);
+    }
+    var change = shade - 1.0;
+    if change > 0.0 {
+        change = change * RELIEF_HIGHLIGHT;
+    }
+    shade = clamp(1.0 + change * strength, RELIEF_DARKEST, RELIEF_BRIGHTEST);
+    var occlusion = 1.0;
+    if have_relief {
+        occlusion = clamp(1.0 - (1.0 - relief.b) * RELIEF_OCCLUSION * strength, 0.6, 1.0);
+    }
+    shade = shade * occlusion;
     var alpha = 1.0;
     if draw.glass.y > 0.5 {
         if mask.a > 0.5 {
@@ -229,15 +272,26 @@ fn tile_fs(in: VertexOut) -> @location(0) vec4<f32> {
         base = draw.water.rgb;
         alpha = alpha * draw.water.a * clamp((draw.sea.z - in.height) / draw.sea.y, 0.25, 1.0);
         shade = 1.0;
+        occlusion = 1.0;
     }
-    // Со светом солнца отмывка не нужна: тени даёт само солнце.
+    // Со светом солнца отмывка не нужна: тени даёт само солнце. Склон
+    // при карте рельефа - в пикселе, из осей восток, север, верх.
     let n = in.normal;
     if air_frame.sun.w > 0.5 && dot(n, n) > 0.0 {
         var lit = 1.0;
         if !water {
             lit = shadow_lit(in.light);
         }
-        shade = sun_brightness(dot(normalize(n), air_frame.sun.xyz), lit);
+        var normal = normalize(n);
+        let up_length = length(in.up);
+        let east_axis = vec3<f32>(-in.up.y, in.up.x, 0.0);
+        if have_relief && !water && up_length > 0.0 && dot(east_axis, east_axis) > 1e-12 * up_length * up_length {
+            let up = in.up / up_length;
+            let east = normalize(east_axis);
+            let north = cross(up, east);
+            normal = normalize(east * pixel.x + north * pixel.y + up * pixel.z);
+        }
+        shade = sun_brightness(dot(normal, air_frame.sun.xyz), lit) * occlusion;
     }
     var ground = clamp(base * shade, vec3<f32>(0.0), vec3<f32>(1.0));
     // Огни городов: ночью по высоте солнца над горизонтом, к дню гаснут,

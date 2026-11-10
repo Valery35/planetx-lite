@@ -170,6 +170,14 @@ impl Sky {
                 moved = true;
             }
         }
+        // Щипок двумя пальцами на телефоне и тачпаде: у касания нет
+        // наведения, поэтому оно проверяется по центру пальцев.
+        let pinch = ctx.multi_touch().filter(|t| response.rect.contains(t.center_pos)).map(|t| t.zoom_delta);
+        let pinch = pinch.or_else(|| response.hovered().then(|| ctx.input(|i| i.zoom_delta())));
+        if let Some(zoom) = pinch.filter(|z| z.is_finite() && *z > 0.0 && (*z - 1.0).abs() > 1e-6) {
+            self.view.zoom(1.0 / f64::from(zoom));
+            moved = true;
+        }
         if response.double_clicked() {
             self.view.zoom(0.5);
             moved = true;

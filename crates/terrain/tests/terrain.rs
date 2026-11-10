@@ -136,9 +136,11 @@ fn mapbox_encoding() {
 #[test]
 fn body_keeps_depressions() {
     // Марс и Луна: впадины ниже нуля остаются, равнина Эллада -8 км.
-    let values = [-8206.0, -28.0, 21181.0];
-    let tile = tile_of(0, 0, 0, &full(&values, 0.0), None);
-    assert_eq!(&tile.heights[..3], &[-8206.0, -28.0, 21181.0]);
+    // Высоты - полосами: одиночный пиксель среди других высот теперь
+    // выброс, `despike`.
+    let values: Vec<f64> = (0..SIZE * SIZE).map(|i| [-8206.0, -28.0, 21181.0][(i % SIZE) * 3 / SIZE]).collect();
+    let tile = tile_of(0, 0, 0, &values, None);
+    assert_eq!([tile.heights[40], tile.heights[128], tile.heights[210]], [-8206.0, -28.0, 21181.0]);
     assert_eq!(tile.low, -8206.0);
 }
 
