@@ -109,51 +109,110 @@ const SPIKE_RATIO: f32 = 6.0;
 /// Наименьший разброс соседей, метры: шаг высот SRTM и MOLA - метр.
 const SPIKE_QUANTUM: f32 = 1.0;
 
-/// Убрать одиночные выбросы: у Terrarium бывают пиксели на тысячи метров
-/// выше или ниже соседей, у рек и на ровном месте (у Перми +2600
-/// и -2600 м среди высот около 100 м). Сетка поднимала их пиками,
-/// отмывка ещё и обводила тенью. Пиксель, который отличается от медианы
-/// соседей больше чем в SPIKE_RATIO раз против их разброса, получает
-/// медиану. У настоящей вершины соседи - склоны, их разброс велик,
-/// и она остаётся. heights - SIZE × SIZE по строкам.
+/// Окно поиска выбросов: соседи на SPIKE_REACH пикселей, 7 × 7. В окне
+/// 5 × 5 полоса выбросов в 2 × 8 пикселей у Перми занимала 9 соседей из
+/// 24 и сдвигала четверти.
+const SPIKE_REACH: i64 = 3;
+/// Соседей в окне у края тайла не меньше стольких: у углового пикселя
+/// их 15.
+const SPIKE_NEAR_MIN: usize = 15;
+/// Проходов: следующий добирает ореол скоплений.
+const SPIKE_PASSES: usize = 3;
+
+/// Убрать выбросы: у Terrarium бывают пиксели на тысячи метров выше или
+/// ниже соседей, у рек и на ровном месте (у Перми +2600 и -2600 м среди
+/// высот около 100 м), поодиночке и столбиками по 2-5 пикселей (тайл
+/// 10/673/308, строки 101-106: 619-1174 м при медиане около 105 м).
+/// Сетка поднимала их пиками, отмывка ещё и обводила тенью.
+///
+/// Соседи - окно 7 × 7. Пиксель, который отличается от медианы соседей
+/// больше чем в SPIKE_RATIO раз против разброса между их четвертями,
+/// получает медиану. Четверти не замечают до 12 выбросов в окне,
+/// поэтому полоса выбросов не прячет сама себя. Окно разбирается только
+/// у пикселей, далёких от среднего окна, - остальные выбросами быть
+/// не могут, а счёт так короче в десятки раз. У настоящей вершины,
+/// гребня и обрыва соседи - склоны, их разброс велик, и они остаются.
+/// heights - SIZE × SIZE по строкам.
 pub fn despike(heights: &mut [f32]) {
     if heights.len() != SIZE * SIZE {
         return;
     }
+    for _ in 0..SPIKE_PASSES {
+        if !despike_pass(heights) {
+            break;
+        }
+    }
+}
+
+/// Один проход [`despike`]. true - что-то заменено.
+fn despike_pass(heights: &mut [f32]) -> bool {
     let source = heights.to_vec();
-    let mut near = Vec::with_capacity(8);
+    let side = SIZE as i64;
+    if source.iter().any(|h| !h.is_finite()) {
+        return false;
+    }
+    // Накопленные суммы: среднее окна за четыре сложения.
+    let wide = SIZE + 1;
+    let mut sums = vec![0.0f64; wide * wide];
     for row in 0..SIZE {
+        let mut line = 0.0;
         for col in 0..SIZE {
+            line += f64::from(source.get(row * SIZE + col).copied().unwrap_or(0.0));
+            let above = sums.get(row * wide + col + 1).copied().unwrap_or(0.0);
+            if let Some(s) = sums.get_mut((row + 1) * wide + col + 1) {
+                *s = above + line;
+            }
+        }
+    }
+    let sum = |r0: i64, c0: i64, r1: i64, c1: i64| -> f64 {
+        let at = |r: i64, c: i64| sums.get((r * wide as i64 + c) as usize).copied().unwrap_or(0.0);
+        at(r1, c1) - at(r0, c1) - at(r1, c0) + at(r0, c0)
+    };
+    let mut near = Vec::with_capacity(48);
+    let mut changed = false;
+    for row in 0..side {
+        for col in 0..side {
+            let (r0, c0) = ((row - SPIKE_REACH).max(0), (col - SPIKE_REACH).max(0));
+            let (r1, c1) = ((row + SPIKE_REACH + 1).min(side), (col + SPIKE_REACH + 1).min(side));
+            let mean = sum(r0, c0, r1, c1) / ((r1 - r0) * (c1 - c0)) as f64;
+            let here = f64::from(source.get((row * side + col) as usize).copied().unwrap_or(0.0));
+            // Выброс уводит и среднее, но не дальше чем на долю своего
+            // перепада: пиксель у среднего окна выбросом быть не может.
+            if (here - mean).abs() <= f64::from(SPIKE_RATIO * SPIKE_QUANTUM) / 2.0 {
+                continue;
+            }
             near.clear();
-            for dr in [-1i64, 0, 1] {
-                for dc in [-1i64, 0, 1] {
-                    let (r, c) = (row as i64 + dr, col as i64 + dc);
+            for dr in -SPIKE_REACH..=SPIKE_REACH {
+                for dc in -SPIKE_REACH..=SPIKE_REACH {
+                    let (r, c) = (row + dr, col + dc);
                     if (dr != 0 || dc != 0)
-                        && (0..SIZE as i64).contains(&r)
-                        && (0..SIZE as i64).contains(&c)
-                        && let Some(h) = source.get(r as usize * SIZE + c as usize)
+                        && (0..side).contains(&r)
+                        && (0..side).contains(&c)
+                        && let Some(h) = source.get((r * side + c) as usize)
                     {
                         near.push(*h);
                     }
                 }
             }
-            if near.len() < 5 || near.iter().any(|h| !h.is_finite()) {
+            if near.len() < SPIKE_NEAR_MIN {
                 continue;
             }
             near.sort_unstable_by(f32::total_cmp);
             let n = near.len();
-            let median = if n % 2 == 0 { (near[n / 2 - 1] + near[n / 2]) / 2.0 } else { near[n / 2] };
-            // Разброс без крайних соседей: один из них может быть таким
-            // же выбросом рядом.
-            let spread = (near[n - 2] - near[1]).max(SPIKE_QUANTUM);
-            let Some(here) = heights.get_mut(row * SIZE + col) else {
+            let (Some(low), Some(mid), Some(high)) = (near.get(n / 4), near.get(n / 2), near.get(n * 3 / 4)) else {
+                continue;
+            };
+            let (median, spread) = (*mid, (high - low).max(SPIKE_QUANTUM));
+            let Some(here) = heights.get_mut((row * side + col) as usize) else {
                 continue;
             };
             if (*here - median).abs() > SPIKE_RATIO * spread {
                 *here = median;
+                changed = true;
             }
         }
     }
+    changed
 }
 
 /// Тайл высот из картинки RGBA SIZE × SIZE. None - картинка не того

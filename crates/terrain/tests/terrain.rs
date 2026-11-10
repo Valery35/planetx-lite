@@ -150,7 +150,8 @@ fn store_depth_follows_lowest_and_scale() {
     // -3.3 км при масштабе 3 закрывалась подстилкой на 3 км.
     let mut store = HeightStore::new();
     assert_eq!(store.depth(), 0.0);
-    store.add(tile_of(0, 0, 0, &full(&[-3300.0, 50.0], 0.0), None));
+    // Впадина - полоса строк: одиночный пиксель был бы выбросом.
+    store.add(tile_of(0, 0, 0, &full(&vec![-3300.0; 3 * SIZE], 0.0), None));
     store.set_scale(3.0);
     assert_eq!(store.depth(), 9900.0);
     store.set_scale(0.0);

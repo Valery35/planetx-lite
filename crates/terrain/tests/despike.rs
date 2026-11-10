@@ -18,13 +18,23 @@ fn single_spikes_go_peaks_and_slopes_stay() {
     h[100 * SIZE + 100] = 2594.0;
     h[150 * SIZE + 40] = -1371.0;
     h[SIZE + 255] = 860.0;
+    // Столбик выбросов, как у тайла 10/673/308: строки 101-106.
+    let column: Vec<usize> = (101..=105).map(|r| r * SIZE + 143).collect();
+    for (i, v) in column.iter().zip([619.0, 1024.0, 1121.0, 1174.0, 726.0]) {
+        h[*i] = v;
+    }
+    // Пятно 2 × 2 вниз.
+    for i in [200 * SIZE + 200, 200 * SIZE + 201, 201 * SIZE + 200, 201 * SIZE + 201] {
+        h[i] = -800.0;
+    }
     despike(&mut h);
-    for i in [100 * SIZE + 100, 150 * SIZE + 40, SIZE + 255] {
+    let spikes: Vec<usize> = [100 * SIZE + 100, 150 * SIZE + 40, SIZE + 255, 200 * SIZE + 200, 200 * SIZE + 201, 201 * SIZE + 200, 201 * SIZE + 201].into_iter().chain(column).collect();
+    for &i in &spikes {
         assert!((h[i] - slope[i]).abs() <= 1.0, "{i}: {} vs {}", h[i], slope[i]);
     }
     // Склон без выбросов не меняется.
-    let changed = h.iter().zip(&slope).filter(|(a, b)| a != b).count();
-    assert_eq!(changed, 0);
+    let changed: Vec<(usize, usize, f32, f32)> = h.iter().zip(&slope).enumerate().filter(|(i, (a, b))| a != b && !spikes.contains(i)).map(|(i, (a, b))| (i / SIZE, i % SIZE, *a, *b)).collect();
+    assert!(changed.is_empty(), "{changed:?}");
     // Вершина конуса крутизной в пиксель на пиксель остаётся.
     let mut cone: Vec<f32> = (0..SIZE * SIZE)
         .map(|i| {
