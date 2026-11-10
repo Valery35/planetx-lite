@@ -1,0 +1,6 @@
+{"id":"buffer","version":"0.1.0","author":"OOO Inform++","license":"Apache-2.0",
+"title":{"ru":"Буфер","en":"Buffer"},
+"description":{"ru":"Полигон на заданном расстоянии вокруг точки, линии или полигона. Пример аддина команды.","en":"A polygon at a given distance around a point, line or polygon. An example of a command add-in."},
+"permissions":["features","layers"],
+"commands":[{"id":"buffer","title":{"ru":"Буфер…","en":"Buffer…"},"places":["object","layer"],"kinds":["point","line","polygon"],
+"params":[{"id":"distance","type":"number","unit":"m","title":{"ru":"Расстояние","en":"Distance"},"default":100,"min":-1000000,"max":1000000}]}]}

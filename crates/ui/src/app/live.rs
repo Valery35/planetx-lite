@@ -377,6 +377,7 @@ impl LiteApp {
     pub(super) fn step_tracks(&mut self, ctx: &egui::Context) {
         let before = self.tracks.span();
         self.tracks.show(ctx, self.lang);
+        self.show_addins(ctx);
         if self.tracks.span() != before {
             self.time_extent();
         }

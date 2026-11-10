@@ -2599,3 +2599,38 @@ The JAXA data did not load, check the network and switch the row on again.	Да�
 JAXA Earth: {date}.	JAXA Earth - {date}.
 mg/m³	мг/м³
 I3S scene layer: {title}.	Слой сцены I3S - {title}.
+A command of an add-in over all objects of the layer. The result goes to «My layers» as a new layer.	Команда аддина над всеми объектами слоя. Результат ложится в «Мои слои» новым слоем.
+A command of an add-in over the selected objects of the layer: {count}. The result goes to «My layers» as a new layer.	Команда аддина над выделенными объектами слоя, их {count}. Результат ложится в «Мои слои» новым слоем.
+add layers to «My layers»	добавлять слои в «Мои слои»
+Add-ins	Аддины
+Catalogue address	Адрес каталога
+Downloading the add-in…	Аддин скачивается…
+from a file, not checked by the catalogue	из файла, каталог его не проверял
+From file…	Из файла…
+from the catalogue	из каталога
+get the objects chosen for a command	получать объекты, выбранные для команды
+Install	Установить
+Install an add-in from a .pxaddin file. Such an add-in is not checked by the catalogue.	Установка аддина из файла .pxaddin. Такой аддин каталог не проверял.
+Install the add-in?	Установить аддин?
+installed	установлен
+Installed	Установленные
+Layer {layer}, objects: {count}.	Слой {layer}, объектов - {count}.
+Loading the catalogue…	Каталог загружается…
+No add-ins installed. The catalogue tab lists the checked add-ins.	Аддинов нет. Проверенные аддины - на вкладке «Каталог».
+Refresh|catalogue	Обновить
+Remove|add-in	Удалить
+Rights: {rights}	Права - {rights}
+Rights: none	Прав нет
+Run|add-in	Выполнить
+The add-in {name} is installed.	Аддин {name} установлен.
+The add-in {name} is not installed: {e}	Аддин {name} не установлен. Причина - {e}
+The add-in {name} is withdrawn by the catalogue and turned off.	Каталог снял аддин {name}, аддин выключен.
+The add-in comes from a file, the catalogue did not check it. Install add-ins only from authors you trust.	Аддин взят из файла, каталог его не проверял. Аддины ставятся только от авторов, которым есть доверие.
+The add-in failed: {e}	Ошибка аддина - {e}
+The add-in gave no objects: {name}.	Аддин не дал объектов - {name}.
+The catalogue is empty.	Каталог пуст.
+The catalogue is not loaded: {e}	Каталог не загружен. Причина - {e}
+The check turns the add-in on or off.	Флажок включает и выключает аддин.
+Update to {version}	Обновить до {version}
+Update|add-in	Обновить
+Add-ins not loaded: {names}	Аддины не загружены - {names}

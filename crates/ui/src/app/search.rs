@@ -322,6 +322,10 @@ impl LiteApp {
             Command::About => self.credits.about_request = true,
             Command::Events => self.events.open(&*self.loaders.request),
             Command::Tracks => self.tracks.open = true,
+            #[cfg(feature = "addins")]
+            Command::Addins => self.addins.open = true,
+            #[cfg(not(feature = "addins"))]
+            Command::Addins => {}
             Command::Assistant => self.ai.open = true,
             Command::MyLocation => self.gps.start(ctx),
             Command::ExportGltf => self.export_view(false),

@@ -18,6 +18,10 @@ addin-api.workspace = true
 # с переполнением стека, 23 октября 2026 года.
 wasmi = { workspace = true, features = ["portable-dispatch"] }
 web-time.workspace = true
+# Описание аддина - JSON.
+serde_json.workspace = true
+# Пакет аддина .pxaddin - ZIP.
+zip.workspace = true
 
 [lints]
 workspace = true

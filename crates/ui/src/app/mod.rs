@@ -34,6 +34,10 @@ use crate::tours::Player;
 use crate::search::{Search, place_pose};
 
 mod rustgis;
+mod addins;
+use addins::ADDINS_KEY;
+#[cfg(target_arch = "wasm32")]
+use addins::addins_from_storage;
 mod files;
 mod layers;
 mod analysis;
@@ -526,6 +530,14 @@ pub struct LiteApp {
     tilesets: crate::tilesets::Tilesets,
     /// Список «Моих слоёв» прошлого запуска, ждёт папки данных программы.
     my_layers_saved: Option<String>,
+    /// Список аддинов прошлого запуска: пакеты лежат в папке данных,
+    /// она известна первым кадром.
+    addins_saved: Option<String>,
+    /// Страница: пакеты аддинов из хранилища до первого кадра.
+    #[cfg(target_arch = "wasm32")]
+    addins_store: Vec<(String, Vec<u8>)>,
+    #[cfg(feature = "addins")]
+    addins: crate::addins::Addins,
     /// Список наборов 3D Tiles прошлого запуска, открывается первым кадром.
     tilesets_saved: Option<String>,
     /// Наборы, которые открываются снова при запуске: путь или адрес -
@@ -1314,6 +1326,11 @@ impl LiteApp {
             data_layers: crate::datalayers::DataLayers::default(),
             tilesets: crate::tilesets::Tilesets::default(),
             my_layers_saved: None,
+            addins_saved: None,
+            #[cfg(target_arch = "wasm32")]
+            addins_store: Vec::new(),
+            #[cfg(feature = "addins")]
+            addins: crate::addins::Addins::default(),
             tilesets_saved: None,
             tiles_restoring: HashMap::new(),
             opening_path: None,
@@ -1459,6 +1476,11 @@ impl LiteApp {
         // данных, она известна после запуска - слои читаются первым кадром.
         if app.check.is_none() {
             app.my_layers_saved = cc.storage.and_then(|s| s.get_string(crate::datalayers::KEY));
+            app.addins_saved = cc.storage.and_then(|s| s.get_string(ADDINS_KEY));
+            #[cfg(target_arch = "wasm32")]
+            {
+                app.addins_store = addins_from_storage(cc.storage, app.addins_saved.as_deref());
+            }
             app.tilesets_saved = cc.storage.and_then(|s| s.get_string(crate::tilesets::KEY));
         }
         // «Временные метки» прошлого запуска, строка выделена: новое
@@ -3758,6 +3780,7 @@ impl eframe::App for LiteApp {
             self.settings_dirty = false;
         }
         self.save_my_layers(storage);
+        self.save_addins(storage);
         // Список наборов прошлого запуска ещё не открыт - не затирать его.
         if self.tilesets.save_dirty && self.tilesets_saved.is_none() {
             storage.set_string(crate::tilesets::KEY, self.tilesets.index());
@@ -3791,6 +3814,7 @@ impl eframe::App for LiteApp {
         let ctx = ui.ctx().clone();
         let now = ctx.input(|i| i.time);
         self.restore_my_layers();
+        self.restore_addins();
         // Файлы «Моих слоёв» на диске изменились - строки «Обновить».
         if self.data_layers.check_sources(now, &crate::datalayers::file_modified) {
             ctx.request_repaint();

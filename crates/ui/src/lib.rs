@@ -7,6 +7,8 @@
 //! Программа и страница дают загрузчик тайлов своей платформы и место
 //! для отчёта самопроверки, остальное общее.
 
+#[cfg(feature = "addins")]
+pub mod addins;
 pub mod aefcalc;
 pub mod aefclass;
 pub mod aefread;

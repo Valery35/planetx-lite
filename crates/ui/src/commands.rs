@@ -46,6 +46,8 @@ pub enum Command {
     Events,
     /// Окно «Треки».
     Tracks,
+    /// Окно «Аддины».
+    Addins,
     /// Окно «Помощник».
     Assistant,
     /// «Моё место» по геолокации страницы.
@@ -81,6 +83,7 @@ impl Command {
             Self::Share => "tool:share".into(),
             Self::Events => "open:events".into(),
             Self::Tracks => "open:tracks".into(),
+            Self::Addins => "open:addins".into(),
             Self::Assistant => "tool:assistant".into(),
             Self::MyLocation => "tool:my_location".into(),
             Self::Demo(s, d) => format!("demo:{s}:{d}"),
@@ -112,6 +115,7 @@ impl Command {
             Command::Share,
             Command::Events,
             Command::Tracks,
+            Command::Addins,
             Command::Assistant,
             Command::MyLocation,
             Command::ViewContours,
@@ -266,6 +270,14 @@ pub fn actions(lang: Lang, now: &Now) -> Vec<Suggestion> {
         open,
         &["треки", "трек", "gps", "время", "самосвалы", "движение", "tracks", "track", "gps", "motion"],
     );
+    if cfg!(feature = "addins") {
+        add(
+            Command::Addins,
+            tr(lang, "Add-ins"),
+            open,
+            &["аддины", "аддин", "расширения", "плагины", "модули", "буфер", "add-ins", "addins", "plugins", "extensions"],
+        );
+    }
     add(
         Command::Assistant,
         tr(lang, "Assistant"),

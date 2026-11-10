@@ -665,7 +665,7 @@ impl DataLayer {
     }
 
     /// Название объекта n: поле подписей, поле name, иначе слой и номер.
-    fn feature_name(&self, n: usize) -> String {
+    pub(crate) fn feature_name(&self, n: usize) -> String {
         let item = self.data.items.get(n);
         let field = self.label.or_else(|| self.data.fields.iter().position(|f| f.eq_ignore_ascii_case("name")));
         field
@@ -740,6 +740,9 @@ pub enum Act {
     Track,
     /// «Объёмом по отметкам Z».
     ZSolid(bool),
+    /// Команда аддина над объектами слоя: выделенными, без выделения -
+    /// всеми.
+    Addin { addin: String, command: String },
     Up,
     Down,
     /// Перетаскивание: слой - перед слоем before в папку folder, None -
@@ -1861,6 +1864,7 @@ fn menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], ne
         out.push((layer.id, Act::Track));
         chosen = true;
     }
+    chosen |= addin_menu(ui, lang, layer, out);
     ui.separator();
     chosen |= folder_menu(ui, lang, layer, folders, new_folder, out);
     chosen |= side_menu(ui, lang, layer, out);
@@ -1885,6 +1889,44 @@ fn menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, folders: &[String], ne
         chosen = true;
     }
     chosen
+}
+
+/// Команды включённых аддинов, которые принимают геометрию слоя. У
+/// слоя с выделенными объектами команда идёт над ними.
+#[cfg(feature = "addins")]
+fn addin_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, out: &mut Vec<(u64, Act)>) -> bool {
+    let kinds: Vec<&str> = layer
+        .data
+        .items
+        .iter()
+        .filter_map(|i| match i.shape {
+            Geom::Point => Some("point"),
+            Geom::Line => Some("line"),
+            Geom::Polygon => Some("polygon"),
+            Geom::None => None,
+        })
+        .collect();
+    let mut chosen = false;
+    for item in crate::addins::menu_items() {
+        if !(item.kinds.is_empty() || kinds.iter().any(|k| item.kinds.iter().any(|x| x == k))) {
+            continue;
+        }
+        let tip = if layer.selected.is_empty() {
+            tr(lang, "A command of an add-in over all objects of the layer. The result goes to «My layers» as a new layer.").to_string()
+        } else {
+            trf(lang, "A command of an add-in over the selected objects of the layer: {count}. The result goes to «My layers» as a new layer.", &[("count", &layer.selected.len().to_string())])
+        };
+        if ui.button(item.title.get(lang == Lang::RU)).on_hover_text(tip).clicked() {
+            out.push((layer.id, Act::Addin { addin: item.addin, command: item.command }));
+            chosen = true;
+        }
+    }
+    chosen
+}
+
+#[cfg(not(feature = "addins"))]
+fn addin_menu(_ui: &mut egui::Ui, _lang: Lang, _layer: &DataLayer, _out: &mut Vec<(u64, Act)>) -> bool {
+    false
 }
 
 /// Пункты «Копия в Мои метки» и «Сохранить в GeoJSON…» меню слоя.

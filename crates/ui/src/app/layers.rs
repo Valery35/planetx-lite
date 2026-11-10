@@ -656,6 +656,15 @@ impl LiteApp {
                     None => tr(lang, "The layer has no field with dates: choose it in the Time submenu.").to_string(),
                 });
             }
+            // Команда аддина: сначала окно её параметров.
+            #[cfg(feature = "addins")]
+            Act::Addin { addin, command } => {
+                if let Some(l) = self.data_layers.get(id) {
+                    let count = if l.selected.is_empty() { l.data.items.len() } else { l.selected.len() };
+                    let title = l.title.clone();
+                    self.addins.ask_params(id, &title, count, addin, command);
+                }
+            }
             // Год карты: охват шкалы заново, шкала открывается на годе
             // карты, как `edit_map_year` модуля.
             Act::Year(year) => {
@@ -670,6 +679,81 @@ impl LiteApp {
                 self.data_layers.apply(id, act);
             }
         }
+    }
+
+    /// Команда аддина над объектами слоя: выделенными, без выделения -
+    /// всеми. Результат - новый слой «Моих слоёв».
+    #[cfg(feature = "addins")]
+    pub(super) fn run_addin(&mut self, run: crate::addins::Run) {
+        use data::layers::Shape as Geom;
+        let lang = self.lang;
+        let Some(layer) = self.data_layers.get(run.layer) else {
+            return;
+        };
+        let picked: Vec<usize> = if layer.selected.is_empty() { (0..layer.data.items.len()).collect() } else { layer.selected.clone() };
+        let mut features: Vec<addin_api::Feature> = Vec::new();
+        for n in &picked {
+            let Some(item) = layer.data.items.get(*n) else {
+                continue;
+            };
+            let name = layer.feature_name(*n);
+            let all = || -> Vec<Vec<[f64; 3]>> {
+                item.parts.iter().enumerate().map(|(p, part)| part.iter().enumerate().map(|(k, (lat, lon))| [*lat, *lon, item.heights.get(p).and_then(|h| h.get(k)).copied().unwrap_or(0.0)]).collect()).collect()
+            };
+            match item.shape {
+                Geom::Point => features.push(addin_api::Feature { kind: addin_api::Kind::Point, parts: all(), name }),
+                Geom::Line => features.push(addin_api::Feature { kind: addin_api::Kind::Line, parts: all(), name }),
+                // Части полигона Lite - внешние кольца и дыры вперемешку:
+                // каждый внешний контур с его дырами - свой объект аддина.
+                Geom::Polygon => {
+                    for (outer, holes) in crate::datalayers::polygons(&item.parts) {
+                        let ring = |r: &[(f64, f64)]| r.iter().map(|(lat, lon)| [*lat, *lon, 0.0]).collect::<Vec<_>>();
+                        let mut parts = vec![ring(&outer)];
+                        parts.extend(holes.iter().map(|h| ring(h)));
+                        features.push(addin_api::Feature { kind: addin_api::Kind::Polygon, parts, name: name.clone() });
+                    }
+                }
+                Geom::None => {}
+            }
+        }
+        let title = self.addins.manifest(&run.addin).and_then(|m| m.commands.iter().find(|c| c.id == run.command)).map_or(run.command.clone(), |c| c.title.get(lang == crate::i18n::Lang::RU).trim_end_matches('…').to_string());
+        let source = layer.title.clone();
+        let params = serde_json::Value::Object(run.values);
+        // Числа параметров - в название слоя: «ЛЭП · Буфер 100 м».
+        let note: Vec<String> = params.as_object().map(|o| o.values().filter_map(|v| v.as_f64().map(|x| format!("{x}")).or_else(|| v.as_str().map(str::to_string))).collect()).unwrap_or_default();
+        let unit = self.addins.manifest(&run.addin).and_then(|m| m.commands.iter().find(|c| c.id == run.command)).and_then(|c| c.params.first()).and_then(|p| match &p.kind {
+            addin_host::ParamKind::Number { unit, .. } => Some(unit.clone()),
+            _ => None,
+        });
+        let name = match (note.first(), unit) {
+            (Some(n), Some(u)) if !u.is_empty() => format!("{source} · {title} {n} {}", if u == "m" && lang == crate::i18n::Lang::RU { "м" } else { u.as_str() }),
+            _ => format!("{source} · {title}"),
+        };
+        self.open_message = Some(match self.addins.run_command(&run.addin, &run.command, &params, &features) {
+            Ok(out) => {
+                let items: Vec<data::layers::Item> = out
+                    .iter()
+                    .map(|f| data::layers::Item {
+                        shape: match f.kind {
+                            addin_api::Kind::Point => Geom::Point,
+                            addin_api::Kind::Line => Geom::Line,
+                            addin_api::Kind::Polygon => Geom::Polygon,
+                        },
+                        parts: f.parts.iter().map(|p| p.iter().map(|v| (v[0], v[1])).collect()).collect(),
+                        heights: Vec::new(),
+                        values: vec![f.name.clone()],
+                    })
+                    .collect();
+                let count = items.len();
+                let data = data::layers::LayerData { name: name.clone(), epsg: Some(4326), fields: vec!["name".into()], numeric: vec![false], items };
+                if count == 0 || self.data_layers.add(vec![data], &name) == 0 {
+                    trf(lang, "The add-in gave no objects: {name}.", &[("name", &name)])
+                } else {
+                    trf(lang, "Added to «My layers», objects {count}: {title}.", &[("count", &count.to_string()), ("title", &name)])
+                }
+            }
+            Err(e) => trf(lang, "The add-in failed: {e}", &[("e", &e)]),
+        });
     }
 
     /// Состояние для раздела «Слои» и каталога.

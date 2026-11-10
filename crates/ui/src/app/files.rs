@@ -573,6 +573,12 @@ impl LiteApp {
     /// Возвращает позу сцены или ошибку.
     pub(super) fn open_file(&mut self, bytes: &[u8], name: &str, fly: Option<f64>) -> Result<Option<Pose>, String> {
         let lower = name.to_lowercase();
+        // Пакет аддина - окно установки с правами и предупреждением.
+        #[cfg(feature = "addins")]
+        if lower.ends_with(".pxaddin") {
+            self.addins.offer_file(self.lang, name, bytes);
+            return Ok(None);
+        }
         // Растр кровли, которого ждёт подземная модель, - ей.
         if let Some(sub) = self.subsurface.as_mut().filter(|s| s.wants(name)) {
             sub.add_side(name, bytes.to_vec());
@@ -767,7 +773,7 @@ impl LiteApp {
     pub(super) fn pick_file(&mut self, ctx: &egui::Context, now: f64) {
         // Векторные форматы слоёв - из data::layers::EXTENSIONS, на
         // странице и соседние файлы шейпфайла: браузер не видит папку.
-        const BASE: [&str; 8] = ["planetx", "kml", "kmz", "tif", "tiff", "las", "laz", "csv"];
+        const BASE: [&str; 9] = ["planetx", "kml", "kmz", "tif", "tiff", "las", "laz", "csv", "pxaddin"];
         let mut kinds: Vec<&str> = BASE.to_vec();
         kinds.extend(data::layers::EXTENSIONS);
         if cfg!(target_arch = "wasm32") {
