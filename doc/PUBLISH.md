@@ -319,6 +319,23 @@
 - OSGeo Discourse, Reddit r/rust и r/gis, форум OSM, linux.org.ru - ждут слова автора, тексты Reddit в файле постов
 - Лента страницы линейки planetx (planetx-scene/site/feed.json) - не обновлялась
 
+### RustPlanetX 0.5.7, 11 ноября 2026 года
+
+Тексты - site/posts_rustplanetx_0.5.7_social.md. Отмывка рельефа и затенение впадин, очистка выбросов высот Terrarium, внутри Lite 0.28.0 (коммит 771afc5). Первый выпуск скриптом rustplanetx/scripts/release.ps1. По слову автора «Публикуй всюду».
+
+- GitHub: https://github.com/Valery35/rustplanetx/releases/tag/v0.5.7 (коммит 98e7e50, Lite 771afc5)
+- Каталог расширений RustGIS - заявка opengeos/rustgis-plugins#55 переведена на 0.5.7 (заголовок ещё «0.5.4», меняет автор)
+- Dropbox - RustPlanetX.rgplugin 0.5.7
+- Mastodon: https://en.osm.town/@Vaery35/117594039832229251
+- X: https://x.com/Valery35/status/2120253080893833618
+- LinkedIn: https://www.linkedin.com/feed/update/urn:li:activity:7526019014167474179/
+- Facebook - пост в ленте автора 11 ноября 2026 года
+- ВК: https://vk.ru/wall-241229428_63
+- OSGeo Discourse: https://discourse.osgeo.org/t/155878/14
+- Telegram: https://t.me/qgis_isolines/202
+- Сайт informpp.ru - страница линейки `главная-страница/planetx`, в ленте RustPlanetX 0.5.7 (planetx-scene 249380a), опубликовано
+- Reddit r/rust - пишет автор. Форум OSM, linux.org.ru, форум Rust - не берутся
+
 ### RustPlanetX 0.5.6, 10 ноября 2026 года
 
 Тексты - site/posts_rustplanetx_0.5.6_social.md. Слои глобуса - в проект RustGIS, внутри Lite 0.27.0. По слову автора «Публикуй всюду».
