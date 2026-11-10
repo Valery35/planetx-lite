@@ -215,6 +215,22 @@
 - LinkedIn и Facebook - посты в лентах автора
 - Площадки группы «Иногда» (OSGeo, форум OSM, linux.org.ru, Reddit) - не публиковались, выпуск малый
 
+### PlanetX 1.43.1, 11 ноября 2026 года
+
+Тексты - planetx/site/posts_1.43.1_social.md, статьи нет, выпуск малый. По слову автора «Публикуй». В выпуске - высоты Terrarium без выбросов по правилу PlanetX Lite 771afc5 (коммит модуля 38c2ce7).
+
+- Коммит выпуска 451456f
+- GitHub: https://github.com/Valery35/planetx/releases/tag/v1.43.1
+- Каталог QGIS: https://plugins.qgis.org/plugins/planetx/version/1.43.1/ (загружена, ждёт проверки и одобрения)
+- Dropbox - planetx-1.43.1.zip в Dropbox\ИИ\PlanetX
+- Сайт informpp.ru - «Что нового» и главная модуля, опубликовано, страница отдаёт 1.43.1
+- Telegram: https://t.me/qgis_isolines/200 и повтор https://t.me/qgis_isolines/201 (бот выпуска отработал один раз, пост ушёл в канал дважды по кнопке «Опубликовать», повтор удаляет автор)
+- ВК: https://vk.ru/wall-241229428_62 (запись без снимка)
+- Mastodon: https://en.osm.town/@Vaery35/117594050211334557
+- X: https://x.com/Valery35/status/2120253655827775979
+- LinkedIn и Facebook - посты в лентах автора 11 ноября 2026 года
+- Площадки группы «Иногда» - не публиковались, выпуск малый
+
 ### PlanetX 1.43.0, 9 ноября 2026 года
 
 Тексты - planetx/site/posts_1.43_social.md, статьи нет. По слову автора «доделывай и публикуй».
