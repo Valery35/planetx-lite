@@ -312,6 +312,47 @@ def page_main(img):
              "времени остаются.",
              "Full screen for a show. The panels hide, navigation and the "
              "time slider stay."))))
+    # Аддины, решение автора от 10 ноября 2026 года: каталог
+    # planetx-lite-addins и руководство addins/README хранилища.
+    t("addins.a", "Как написать аддин - руководство с примером",
+      "Writing an add-in - a guide with an example")
+    t("addins.url", REPO + "/blob/main/addins/README.ru.md",
+      REPO + "/blob/main/addins/README.md")
+    addins = section(
+        "addins", ("Аддины", "Add-ins"),
+        ("Свои команды в меню слоя", "Own commands in the layer menu"),
+        ("Аддин - модуль WebAssembly в песочнице. Он добавляет команду "
+         "в меню слоя «Моих слоёв», команда получает объекты слоя и отдаёт "
+         "новый слой. Один аддин работает в программе и на странице.",
+         "An add-in is a WebAssembly module in a sandbox. It adds a command "
+         "to the menu of a layer of My layers, the command receives the "
+         "objects of the layer and gives a new layer. One add-in works in "
+         "the program and on the web page."),
+        cards("addins", (
+            ("Каталог", "Catalogue",
+             "Окно «Аддины» ставит, обновляет и удаляет аддины каталога "
+             "planetx-lite-addins. Пакет ставится, только если его SHA-256 "
+             "совпадает с каталогом. Первый аддин - «Буфер».",
+             "The Add-ins window installs, updates and removes add-ins of "
+             "the planetx-lite-addins catalogue. A package is installed only "
+             "when its SHA-256 equals the catalogue. The first add-in is "
+             "Buffer."),
+            ("Песочница", "Sandbox",
+             "У аддина нет файлов, сети и часов. Права видны до установки. "
+             "Каждый вызов ограничен по шагам и памяти.",
+             "An add-in has no files, no network and no clock. Its rights are "
+             "shown before installation. Every call is limited in steps and "
+             "memory."),
+            ("Своя команда", "Own command",
+             "Аддин пишется на Rust с крейтом addin-api. Окно параметров Lite "
+             "рисует по описанию addin.json. Публикация - запрос на слияние "
+             "в каталог.",
+             "An add-in is written in Rust with the addin-api crate. Lite "
+             "draws the window of parameters by the addin.json description. "
+             "Publication is a pull request to the catalogue."))) +
+        '<p class="sub"><a target="_blank" data-i18n="addins.a" '
+        'data-i18n-href="addins.url" href="%s/blob/main/addins/README.ru.md">'
+        '</a></p>' % REPO)
     t("dl.h1", "Windows", "Windows")
     t("dl.p1", "Установщик setup.exe или переносной zip.",
       "The setup.exe installer or a portable zip.")
@@ -376,8 +417,8 @@ def page_main(img):
                '</iframe>\n<figcaption data-i18n="%s"></figcaption></figure>'
                % (vid, ru, t("video.%d" % n, ru, en))
                for n, (vid, ru, en) in enumerate(films, 1))))
-    return "\n".join([hero, video, tasks, idea, phone, controls, download,
-                      pro])
+    return "\n".join([hero, video, tasks, idea, phone, controls, addins,
+                      download, pro])
 
 
 def page_places(img):

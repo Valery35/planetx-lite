@@ -17,6 +17,7 @@ program as a web page, on phones too.
 - [Opening files](#opening-files)
 - [My Places](#my-places)
 - [Layers](#layers)
+- [Add-ins](#add-ins)
 - [Globe menu](#globe-menu)
 - [Recognition](#recognition)
 - [Tracing and object extraction](#tracing-and-object-extraction)
@@ -301,6 +302,57 @@ The check of the row hides the set, the "⋯" menu has «Zoom to layer» and
 again by the file path or by the link, its check stays as it was. A set
 opened on the web page from a file has no path and lives until the page
 closes. Sets are not written into a scene.
+
+## Add-ins
+
+An add-in adds a command to the menu of a layer of My layers. It is a
+WebAssembly module in a sandbox - it has no files, no network and no
+clock. It receives the objects of the layer and gives new objects back.
+One add-in works in the program and on the web page.
+
+Search ▸ «Add-ins» opens the window Add-ins.
+
+- The tab «Catalogue» reads the list of checked add-ins of
+  [planetx-lite-addins](https://github.com/Valery35/planetx-lite-addins).
+  «Install» downloads the package. The package is installed only when
+  its SHA-256 equals the catalogue. The field «Catalogue address»
+  changes the catalogue, «Refresh» reads it again.
+- The tab «Installed» lists the add-ins with the version, the author,
+  the license and the origin. The check turns an add-in off and on.
+  «Update to …» installs a higher version from the catalogue, «Remove»
+  removes the add-in.
+- «From file…» installs a `.pxaddin` package past the catalogue. An
+  opened or dropped `.pxaddin` leads to the same window.
+
+Before installation the window shows the title, the author, the license
+and the rights of the add-in. An add-in from a file comes with a warning
+that the catalogue did not check it. The rights of the first version are
+to receive the objects chosen for a command and to add layers to My
+layers.
+
+A command of an add-in is an item of the «⋯» menu of a layer row, for
+example «Buffer…».
+
+1. Select objects in the Features window or on the globe. Without a
+   selection the command runs over all objects of the layer.
+2. The menu item opens the window of parameters. It shows the layer and
+   the count of objects, Lite draws the fields by the description of
+   the add-in.
+3. «Run» puts the result as a new layer «<layer> · <command>», for
+   example «Roads · Buffer 100 m». An error of the add-in is shown in
+   the status line.
+
+The catalogue withdraws an add-in by an entry in its list, Lite turns
+such an add-in off. The program keeps add-ins in the folder of its data,
+the web page in the storage of the browser.
+
+The first add-in of the catalogue is Buffer. It builds a polygon at a
+given distance around a point, a line or a polygon, inward for a
+polygon (a distance below zero). The buffer is right at the poles and
+across the 180th meridian.
+
+To write an add-in, see [the guide with a complete
+example](../../addins/README.md).
 
 ## Globe menu
 

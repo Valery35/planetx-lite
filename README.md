@@ -39,6 +39,10 @@ The program is free and open source. [Support development](https://github.com/Va
   folder or the whole tree saves as KML, KMZ or a `.planetx` scene.
 - The Demo menu opens PlanetX demo scenes from the `demo` folder of
   [planetx-terrain](https://github.com/Valery35/planetx-terrain).
+- Add-ins: WebAssembly modules in a sandbox add commands to the menu of
+  a layer of My layers. The catalogue is
+  [planetx-lite-addins](https://github.com/Valery35/planetx-lite-addins),
+  the guide to writing them is [`addins/README.md`](addins/README.md).
 - Settings: interface language, globe label language, dark or light
   appearance, vertical exaggeration.
 - 16 interface languages: English, Russian, German, Spanish, French,
@@ -135,6 +139,10 @@ window.
   сценой `.planetx`.
 - Меню «Демо» - сцены модуля из папки `demo` хранилища
   [planetx-terrain](https://github.com/Valery35/planetx-terrain).
+- Аддины - модули WebAssembly в песочнице добавляют команды в меню слоя
+  «Моих слоёв». Каталог -
+  [planetx-lite-addins](https://github.com/Valery35/planetx-lite-addins),
+  руководство, как их писать, - [`addins/README.ru.md`](addins/README.ru.md).
 - Настройки: язык интерфейса, язык подписей на глобусе, тёмное или
   светлое оформление, вертикальный масштаб рельефа.
 - 16 языков интерфейса: английский, русский, немецкий, испанский,
