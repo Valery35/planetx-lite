@@ -284,6 +284,25 @@
 - Форум OSM, linux.org.ru - не публиковались, ждут слова автора
 - Лента страницы линейки planetx (planetx-scene/site/feed.json) - не обновлялась
 
+### PlanetX Lite 0.28.0, 10 ноября 2026 года
+
+Тексты - site/posts_0.28.0_social.md, статья ВК - site/posts_0.28.0.md, описание выпуска - packaging/notes/0.28.0.md. Аддины и руководство по их созданию (addins/README.md и README.ru.md, раздел «Аддины» руководства пользователя, раздел на главной сайта). По слову автора «Давай публикуй. Подробно опиши как аддины создавать всюду».
+
+- Коммит выпуска 6a2ec0c, страница в браузере обновлена (Pages)
+- GitHub: https://github.com/Valery35/planetx-lite/releases/tag/v0.28.0
+- Каталог аддинов: README со ссылкой на руководство, planetx-lite-addins 20a3c9f
+- Dropbox - PlanetX-Lite.zip 0.28.0, собран из файлов выпуска для Windows и страницы, сверен с SHA256SUMS
+- Сайт informpp.ru - «Что нового» (блок 13117 при странице 13014) и главная с разделом «Аддины» (блок 6961 при странице 6855), коммит 6a2ec0c, опубликовано
+- ВК, статья: https://vk.ru/@qgismodules-addiny-planetx-lite-kak-postavit-i-kak-napisat-svoi (со снимком буфера на странице Lite)
+- ВК, запись со статьёй: https://vk.ru/wall-241229428_61
+- Telegram: https://t.me/qgis_isolines/199
+- Mastodon: https://en.osm.town/@Vaery35/117593158777017576
+- X: https://x.com/Valery35/status/2120196642854818265
+- LinkedIn: https://www.linkedin.com/feed/update/urn:li:activity:7525962669288501249/
+- Facebook - пост в ленте автора 10 ноября 2026 года
+- OSGeo Discourse, Reddit r/rust и r/gis, форум OSM, linux.org.ru - ждут слова автора, тексты Reddit в файле постов
+- Лента страницы линейки planetx (planetx-scene/site/feed.json) - не обновлялась
+
 ### RustPlanetX 0.5.6, 10 ноября 2026 года
 
 Тексты - site/posts_rustplanetx_0.5.6_social.md. Слои глобуса - в проект RustGIS, внутри Lite 0.27.0. По слову автора «Публикуй всюду».
