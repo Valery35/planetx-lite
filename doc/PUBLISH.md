@@ -324,7 +324,7 @@
 Тексты - site/posts_rustplanetx_0.5.7_social.md. Отмывка рельефа и затенение впадин, очистка выбросов высот Terrarium, внутри Lite 0.28.0 (коммит 771afc5). Первый выпуск скриптом rustplanetx/scripts/release.ps1. По слову автора «Публикуй всюду».
 
 - GitHub: https://github.com/Valery35/rustplanetx/releases/tag/v0.5.7 (коммит 98e7e50, Lite 771afc5)
-- Каталог расширений RustGIS - заявка opengeos/rustgis-plugins#55 переведена на 0.5.7 (заголовок ещё «0.5.4», меняет автор)
+- Каталог расширений RustGIS - заявка opengeos/rustgis-plugins#55 переведена на 0.5.7, заголовок поправлен на 0.5.7
 - Dropbox - RustPlanetX.rgplugin 0.5.7
 - Mastodon: https://en.osm.town/@Vaery35/117594039832229251
 - X: https://x.com/Valery35/status/2120253080893833618
