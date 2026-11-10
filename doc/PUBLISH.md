@@ -284,6 +284,23 @@
 - Форум OSM, linux.org.ru - не публиковались, ждут слова автора
 - Лента страницы линейки planetx (planetx-scene/site/feed.json) - не обновлялась
 
+### RustPlanetX 0.5.6, 10 ноября 2026 года
+
+Тексты - site/posts_rustplanetx_0.5.6_social.md. Слои глобуса - в проект RustGIS, внутри Lite 0.27.0. По слову автора «Публикуй всюду».
+
+- GitHub: https://github.com/Valery35/rustplanetx/releases/tag/v0.5.6 (коммит e65a7f6, Lite bca0458)
+- Каталог расширений RustGIS - заявка opengeos/rustgis-plugins#55 переведена на 0.5.6
+- Dropbox - RustPlanetX.rgplugin 0.5.6
+- Mastodon: https://en.osm.town/@Vaery35/117589254775950878
+- X: https://x.com/Valery35/status/2119946748894605399
+- LinkedIn: https://www.linkedin.com/feed/update/urn:li:activity:7525712616003162113/
+- Facebook - пост в ленте автора 10 ноября 2026 года
+- ВК: https://vk.ru/wall-241229428_60
+- OSGeo Discourse: https://discourse.osgeo.org/t/155878/13
+- Telegram: https://t.me/qgis_isolines/198
+- Сайт informpp.ru - страница линейки `главная-страница/planetx`, в ленте RustPlanetX 0.5.6 (planetx-scene a5c74d3), опубликовано. Записей Lite 0.27.0 и модуля 1.43.0 в ленте нет - их сессии
+- Reddit r/rust - пишет автор. Форум OSM, linux.org.ru, форум Rust - не берутся
+
 ### RustPlanetX 0.5.5, 10 ноября 2026 года
 
 Тексты - site/posts_rustplanetx_0.5.5_social.md. Выпуск собирает 0.5.3-0.5.5 (Lite 0.26.0 внутри, вид в макет RustGIS, команды и навык для помощника RustGIS, оформление расчётов). 0.5.3 и 0.5.4 отдельно не анонсировались. Ночью, пока автор спал, сделаны GitHub, Dropbox и заявка в каталог. Площадки соцсетей ждут подтверждения списка автором.
@@ -299,7 +316,7 @@
 - ВК: https://vk.ru/wall-241229428_58 (запись с карточкой выпуска GitHub)
 - OSGeo Discourse: https://discourse.osgeo.org/t/155878/11
 - Сайт informpp.ru - страница линейки `главная-страница/planetx`, в ленте RustPlanetX 0.5.5 (planetx-scene 9dd2f06), опубликовано
-- Telegram - не опубликовано: доступ помощника к приложению Telegram не дан, Telegram Web без входа. Текст в файле постов, раздел RU
+- Telegram: https://t.me/qgis_isolines/196 (опубликован позже, не помощником этой сессии)
 - Reddit r/rust - пишет автор, флер Project, текст в файле постов
 - Не берутся - форум OSM, linux.org.ru, форум Rust
 
