@@ -23,7 +23,7 @@ impl LiteApp {
         use crate::layers::Action;
         for action in actions {
             match action {
-                Action::Basemap(b) => self.set_basemap(b),
+                Action::Basemap(b) => self.choose_basemap(b),
                 Action::Sea(on) => {
                     self.settings.sea = on;
                     self.settings_dirty = true;
@@ -891,6 +891,55 @@ impl LiteApp {
     }
 
     /// Сменить основу: снимки прежней забываются.
+    /// Выбор основы пользователем: у подосновы с предупреждением сначала
+    /// окно согласия с условиями, принятое помнится, `_terms_accepted`
+    /// модуля.
+    pub(super) fn choose_basemap(&mut self, basemap: Basemap) {
+        match basemap.ready() {
+            Some(r) if r.warned && !self.settings.terms_ok.iter().any(|k| k == r.key) => self.terms_ask = Some(basemap),
+            _ => self.set_basemap(basemap),
+        }
+    }
+
+    /// Окно «Условия источника» перед подосновой с предупреждением.
+    pub(super) fn terms_window(&mut self, ctx: &egui::Context) {
+        let Some(basemap) = self.terms_ask else {
+            return;
+        };
+        let Some(r) = basemap.ready() else {
+            self.terms_ask = None;
+            return;
+        };
+        let lang = self.lang;
+        let mut answer = None;
+        egui::Window::new(tr(lang, "Terms of the source")).collapsible(false).resizable(false).pivot(egui::Align2::CENTER_CENTER).default_pos(ctx.content_rect().center()).show(ctx, |ui| {
+            ui.set_max_width(420.0);
+            ui.add(egui::Label::new(trf(lang, "{name} is a service whose terms do not allow taking its maps and images in third-party programs by the direct address of the tiles. The source is added by your decision, you bear the responsibility for its use.", &[("name", tr(lang, r.name))])).wrap());
+            ui.horizontal_wrapped(|ui| {
+                ui.label(tr(lang, "Terms of the service:"));
+                ui.hyperlink(r.terms);
+            });
+            ui.horizontal(|ui| {
+                if ui.button(tr(lang, "Add")).clicked() {
+                    answer = Some(true);
+                }
+                if ui.button(tr(lang, "Cancel")).clicked() {
+                    answer = Some(false);
+                }
+            });
+        });
+        match answer {
+            Some(true) => {
+                self.terms_ask = None;
+                self.settings.terms_ok.push(r.key.to_string());
+                self.settings_dirty = true;
+                self.set_basemap(basemap);
+            }
+            Some(false) => self.terms_ask = None,
+            None => {}
+        }
+    }
+
     pub(super) fn set_basemap(&mut self, basemap: Basemap) {
         if basemap == self.basemap {
             return;

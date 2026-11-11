@@ -175,10 +175,14 @@ pub enum ReadyGroup {
     NasaUsgs,
     /// Открытые национальные карты, `national` модуля 1.41.
     National,
+    /// Сервисы без разрешения брать тайлы в сторонних программах:
+    /// Google, Bing, Яндекс, 2ГИС, `warned` модуля. Слово автора от
+    /// 12 ноября 2026 года «добавь подложки с предупреждениями».
+    Warned,
 }
 
 impl ReadyGroup {
-    pub const ALL: [ReadyGroup; 4] = [ReadyGroup::Osm, ReadyGroup::Esri, ReadyGroup::NasaUsgs, ReadyGroup::National];
+    pub const ALL: [ReadyGroup; 5] = [ReadyGroup::Osm, ReadyGroup::Esri, ReadyGroup::NasaUsgs, ReadyGroup::National, ReadyGroup::Warned];
 
     /// Название подменю.
     pub fn name(self) -> &'static str {
@@ -187,6 +191,7 @@ impl ReadyGroup {
             ReadyGroup::Esri => "Esri",
             ReadyGroup::NasaUsgs => "NASA and USGS",
             ReadyGroup::National => "National maps",
+            ReadyGroup::Warned => "With a warning",
         }
     }
 }
@@ -204,6 +209,9 @@ pub struct Ready {
     pub group: ReadyGroup,
     /// Охват районной карты, у мировой - None.
     pub region: Option<net::Region>,
+    /// Условия сервиса не разрешают брать его тайлы в сторонних
+    /// программах: перед первым выбором - окно согласия.
+    pub warned: bool,
 }
 
 const ESRI_TERMS: &str = "https://www.esri.com/en-us/legal/terms/full-master-agreement";
@@ -236,14 +244,24 @@ const fn ready(
     terms: &'static str,
     group: ReadyGroup,
 ) -> Ready {
-    Ready { key, name, url, max_level, credit, terms, group, region: None }
+    Ready { key, name, url, max_level, credit, terms, group, region: None, warned: false }
 }
+
+/// Подоснова с предупреждением, `READY` модуля с флажком warned.
+const fn warned(key: &'static str, name: &'static str, url: &'static str, max_level: u32, credit: &'static str, terms: &'static str) -> Ready {
+    Ready { key, name, url, max_level, credit, terms, group: ReadyGroup::Warned, region: None, warned: true }
+}
+
+const GOOGLE_TERMS: &str = "https://cloud.google.com/maps-platform/terms";
+const BING_TERMS: &str = "https://www.microsoft.com/en-us/maps/product/terms";
+const YANDEX_TERMS: &str = "https://yandex.ru/legal/maps_termsofuse/";
+const DGIS_TERMS: &str = "https://law.2gis.ru/";
 
 /// Районная карта страны, вид `regional` модуля: охват в сотых долях
 /// градуса (запад, юг, восток, север), уровень, с которого берётся сама
 /// карта, и подложка вокруг.
 const fn regional(key: &'static str, name: &'static str, url: &'static str, credit: &'static str, terms: &'static str, area: ([i32; 4], u32), base: &'static str) -> Ready {
-    Ready { key, name, url, max_level: 19, credit, terms, group: ReadyGroup::National, region: Some(net::Region { bbox: area.0, min_level: area.1, base }) }
+    Ready { key, name, url, max_level: 19, credit, terms, group: ReadyGroup::National, region: Some(net::Region { bbox: area.0, min_level: area.1, base }), warned: false }
 }
 
 const ESRI_TOPO: &str = esri!("World_Topo_Map");
@@ -284,7 +302,7 @@ macro_rules! pdok {
 
 /// Готовые подосновы в порядке подменю модуля. Адреса проверены модулем
 /// тайлом у Перми (USGS - у Денвера) 13 и 18 октября 2026 года.
-pub const READY: [Ready; 30] = [
+pub const READY: [Ready; 39] = [
     ready(
         "opentopomap",
         "OpenTopoMap",
@@ -398,16 +416,32 @@ pub const READY: [Ready; 30] = [
         HOLLAND,
         ESRI_IMAGERY,
     ),
+    // Подложки с предупреждением, `READY` модуля: адреса проверены модулем
+    // тайлом у Перми 13 октября 2026 года. Схема Яндекса с
+    // projection=web_mercator совпала с OpenStreetMap, снимки Яндекса этот
+    // параметр не принимают - они в эллиптическом Меркаторе, тайл
+    // собирается пересчётом (`net::ELLIPTIC_ROW`).
+    warned("google_satellite", "Google Satellite", "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", 19, "© Google", GOOGLE_TERMS),
+    warned("google_hybrid", "Google Hybrid", "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", 19, "© Google", GOOGLE_TERMS),
+    warned("google_map", "Google Map", "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", 19, "© Google", GOOGLE_TERMS),
+    warned("google_terrain", "Google Terrain", "https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}", 19, "© Google", GOOGLE_TERMS),
+    warned("bing_aerial", "Bing Aerial", "https://ecn.t1.tiles.virtualearth.net/tiles/a{q}.jpeg?g=14000", 19, "© Microsoft", BING_TERMS),
+    warned("bing_map", "Bing Map", "https://ecn.t1.tiles.virtualearth.net/tiles/r{q}.png?g=14000&mkt=ru-RU&shading=hill", 19, "© Microsoft", BING_TERMS),
+    warned("yandex_satellite", "Yandex Satellite", "https://core-sat.maps.yandex.net/tiles?l=sat&x={x}&y={ey}&z={z}&lang=ru_RU", 19, "© Яндекс", YANDEX_TERMS),
+    warned("yandex_map", "Yandex Map", "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&lang=ru_RU&projection=web_mercator", 19, "© Яндекс", YANDEX_TERMS),
+    warned("dgis_map", "2GIS Map", "https://tile2.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1", 18, "© 2ГИС", DGIS_TERMS),
 ];
 
 impl Basemap {
     /// Встроенные основы.
     pub const ALL: [Basemap; 2] = [Basemap::Esri, Basemap::Osm];
 
-    /// Все основы: встроенные и готовые.
+    /// Все основы: встроенные и готовые. У страницы нет подоснов
+    /// в эллиптическом Меркаторе: их тайл собирает только загрузчик
+    /// программы (`net::elliptic_fetch`).
     pub fn all() -> Vec<Basemap> {
         let mut out = Self::ALL.to_vec();
-        out.extend((0..READY.len()).map(Basemap::Ready));
+        out.extend((0..READY.len()).filter(|n| !(cfg!(target_arch = "wasm32") && READY[*n].url.contains(net::ELLIPTIC_ROW))).map(Basemap::Ready));
         out.extend((0..own_list().len()).map(Basemap::Own));
         out
     }
@@ -557,7 +591,12 @@ mod tests {
         let text = |s: &serde_json::Value, k: &str| s[k].as_str().unwrap_or_default().to_string();
         for r in READY {
             let s = find(r.key);
-            assert_eq!(text(s, "url"), r.url, "{}", r.key);
+            // Эллиптический Меркатор каталог пишет полем projection, Lite -
+            // местом ряда `net::ELLIPTIC_ROW` в адресе.
+            let elliptic = text(s, "projection") == "ellipsoidal";
+            assert_eq!(r.url.contains(net::ELLIPTIC_ROW), elliptic, "{}", r.key);
+            assert_eq!(text(s, "url"), r.url.replace(net::ELLIPTIC_ROW, "{y}"), "{}", r.key);
+            assert_eq!(s["warn"].as_bool().unwrap_or(false), r.warned, "{}", r.key);
             assert_eq!(s["max_level"].as_u64(), Some(u64::from(r.max_level)), "{}", r.key);
             assert_eq!(text(s, "credit"), r.credit, "{}", r.key);
             assert_eq!(text(s, "terms"), r.terms, "{}", r.key);

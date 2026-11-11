@@ -301,13 +301,104 @@ pub fn tile_url(source: &Source, key: TileKey) -> String {
     }
 }
 
+/// Номер тайла Bing (quadkey): цифры 0-3 от уровня 1 до z, `quadkey`
+/// модуля.
+pub fn quadkey(key: TileKey) -> String {
+    let (z, x, y) = key;
+    (1..=z.min(31))
+        .rev()
+        .map(|level| {
+            let mask = 1u32 << (level - 1);
+            char::from(b'0' + u8::from(x & mask != 0) + 2 * u8::from(y & mask != 0))
+        })
+        .collect()
+}
+
+/// Место ряда тайла эллиптического Меркатора EPSG:3395 в шаблоне адреса,
+/// снимки Яндекса. Тайл глобуса собирается из одного-двух тайлов
+/// источника, [`elliptic_tile`].
+pub const ELLIPTIC_ROW: &str = "{ey}";
+
+/// Эксцентриситет эллипсоида WGS84 - эллиптический Меркатор EPSG:3395.
+pub const ECCENTRICITY: f64 = 0.0818191908426215;
+
+/// Строки тайла Web Mercator (z, y) в тайлах эллиптического Меркатора
+/// того же уровня, `elliptic_rows` модуля: первый и последний тайл
+/// и положения середин строк в картинке, сложенной из тайлов первый -
+/// последний, в пикселях от её верха. Столбцы у обеих проекций одни.
+pub fn elliptic_rows(z: u32, y: u32, size: usize) -> (u32, u32, Vec<f64>) {
+    let count = f64::from(1u32 << z.min(30));
+    let rows: Vec<f64> = (0..size)
+        .map(|j| {
+            let v = (f64::from(y) + (j as f64 + 0.5) / size as f64) / count;
+            let s = (std::f64::consts::PI * (1.0 - 2.0 * v)).sinh().atan().sin();
+            let north = s.atanh() - ECCENTRICITY * (ECCENTRICITY * s).atanh();
+            (0.5 - north / (2.0 * std::f64::consts::PI)) * count
+        })
+        .collect();
+    let clamp = |r: f64| r.floor().clamp(0.0, count - 1.0) as u32;
+    let first = clamp(rows.iter().copied().fold(f64::INFINITY, f64::min));
+    let last = clamp(rows.iter().copied().fold(f64::NEG_INFINITY, f64::max));
+    let at = rows.iter().map(|r| (r - f64::from(first)) * size as f64 - 0.5).collect();
+    (first, last, at)
+}
+
+/// Тайл Web Mercator (z, y) из картинок тайлов EPSG:3395 одного столбца
+/// сверху вниз, `elliptic_tile` модуля: строки - линейным смешением
+/// соседних строк сложенной картинки. None - картинки не одной ширины.
+pub fn elliptic_tile(z: u32, y: u32, images: &[Image]) -> Option<Image> {
+    let width = images.first()?.width;
+    if images.iter().any(|i| i.width != width || i.rgba.len() != (i.width * i.height * 4) as usize) {
+        return None;
+    }
+    let stack: Vec<u8> = images.iter().flat_map(|i| i.rgba.iter().copied()).collect();
+    let rows = stack.len() / (width as usize * 4);
+    let (_, _, at) = elliptic_rows(z, y, width as usize);
+    let line = width as usize * 4;
+    let mut out = Vec::with_capacity(at.len() * line);
+    for a in at {
+        let a = a.clamp(0.0, rows.saturating_sub(1) as f64);
+        let low = a.floor() as usize;
+        let high = (low + 1).min(rows.saturating_sub(1));
+        let share = a - low as f64;
+        let (l, h) = (stack.get(low * line..(low + 1) * line)?, stack.get(high * line..(high + 1) * line)?);
+        out.extend(l.iter().zip(h).map(|(p, q)| (f64::from(*p) * (1.0 - share) + f64::from(*q) * share + 0.5).clamp(0.0, 255.0) as u8));
+    }
+    Some(Image { width, height: width, rgba: out })
+}
+
+/// Байты ответа сервера, Err(None) - ответ 404, тайла нет.
+pub type TileBytes = Result<Vec<u8>, Option<String>>;
+
+/// Тайл key источника в эллиптическом Меркаторе по шаблону с местом
+/// [`ELLIPTIC_ROW`]: тайлы источника того же столбца просит get, тайл
+/// глобуса собирается [`elliptic_tile`] и отдаётся картинкой PNG.
+pub fn elliptic_fetch(template: &str, key: TileKey, get: &dyn Fn(&str) -> TileBytes) -> TileBytes {
+    let (z, x, y) = key;
+    let (first, last, _) = elliptic_rows(z, y, TILE_SIZE as usize);
+    let mut images = Vec::new();
+    for row in first..=last {
+        let url = template_url(&template.replace(ELLIPTIC_ROW, &row.to_string()), (z, x, y));
+        let bytes = get(&url)?;
+        images.push(decode_tile(&bytes).map_err(Some)?);
+    }
+    let tile = elliptic_tile(z, y, &images).ok_or_else(|| Some("тайлы эллиптического Меркатора разной ширины".to_string()))?;
+    let img = image::RgbaImage::from_raw(tile.width, tile.height, tile.rgba).ok_or_else(|| Some("тайл не собран".to_string()))?;
+    let mut out = std::io::Cursor::new(Vec::new());
+    img.write_to(&mut out, image::ImageFormat::Png).map_err(|e| Some(e.to_string()))?;
+    Ok(out.into_inner())
+}
+
 /// Адрес тайла key по шаблону с местами {z}, {x}, {y} или {bbox} - рамкой
 /// тайла WMS в метрах EPSG:3857, как `WmsSource` модуля. {-y} - ряд снизу
-/// вверх, как у TMS.
+/// вверх, как у TMS, {q} - номер тайла Bing ([`quadkey`]).
 pub fn template_url(template: &str, key: TileKey) -> String {
     let (z, x, y) = key;
     let flipped = (1u64 << z.min(31)).saturating_sub(1).saturating_sub(u64::from(y));
-    let out = template.replace("{z}", &z.to_string()).replace("{x}", &x.to_string()).replace("{-y}", &flipped.to_string()).replace("{y}", &y.to_string());
+    let mut out = template.replace("{z}", &z.to_string()).replace("{x}", &x.to_string()).replace("{-y}", &flipped.to_string()).replace("{y}", &y.to_string());
+    if out.contains("{q}") {
+        out = out.replace("{q}", &quadkey(key));
+    }
     if out.contains("{bbox}") {
         let b = tile_bbox(key);
         return out.replace("{bbox}", &format!("{:.2},{:.2},{:.2},{:.2}", b[0], b[1], b[2], b[3]));

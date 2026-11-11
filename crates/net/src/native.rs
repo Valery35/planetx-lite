@@ -238,6 +238,10 @@ impl Worker {
 
     /// Байты ответа сервера. Err(None) - ответ 404, тайла нет.
     fn fetch(&self, key: TileKey) -> Result<Vec<u8>, Option<String>> {
+        // Эллиптический Меркатор: тайл собирается из тайлов источника.
+        if self.source.url.contains(crate::ELLIPTIC_ROW) {
+            return crate::elliptic_fetch(self.source.url, key, &|url| self.request(url, 4 << 20));
+        }
         let url = match self.source.tilejson {
             Some(address) => template_url(&self.template(address).map_err(Some)?, key),
             None => tile_url(&self.source, key),

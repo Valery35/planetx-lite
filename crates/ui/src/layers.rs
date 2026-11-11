@@ -1137,7 +1137,14 @@ impl Catalog {
                                 let size = egui::vec2(ui.available_width(), ROW_HEIGHT);
                                 ui.allocate_ui_with_layout(size, egui::Layout::left_to_right(egui::Align::Center), |ui| {
                                     ui.set_min_size(size);
-                                    let check = ui.add_enabled_ui(missing.is_none(), |ui| crate::theme::checkbox(ui, &mut on).clicked()).inner;
+                                    // У строки-окна флажка нет: она открывает окно,
+                                    // на глобусе её нет, как у модуля.
+                                    let check = if matches!(item, Item::Tool(_)) {
+                                        ui.add_space(ui.spacing().interact_size.y + ui.spacing().item_spacing.x);
+                                        false
+                                    } else {
+                                        ui.add_enabled_ui(missing.is_none(), |ui| crate::theme::checkbox(ui, &mut on).clicked()).inner
+                                    };
                                     if check {
                                         self.chosen = Some(item.key());
                                         click(item, state, out);
@@ -1203,6 +1210,7 @@ impl Catalog {
                                 _ if !on && let Some(why) = item.unavailable(state) => (tr(lang, why), false),
                                 Item::Base(_) if on => (tr(lang, "Base map on the globe"), false),
                                 Item::Base(_) => (tr(lang, "Set as base map"), true),
+                                Item::Tool(_) | Item::Wayback | Item::Events if !on => (tr(lang, "Open the window"), true),
                                 _ if on => (tr(lang, "Remove from the globe"), true),
                                 _ => (tr(lang, "Show on the globe"), true),
                             };

@@ -708,6 +708,8 @@ pub struct LiteApp {
     theme_compare: Option<ThemeCompare>,
     /// Строка-окно каталога, чьё окно открыть в этом кадре.
     pending_tool: Option<crate::layers::Tool>,
+    /// Подоснова с предупреждением, ждущая согласия с условиями.
+    terms_ask: Option<Basemap>,
     /// Ширина кадра глобуса в пикселях, для линии шторки.
     globe_width_px: f32,
     /// Линию шторки тянут мышью.
@@ -1443,6 +1445,7 @@ impl LiteApp {
             pair_owner: 0,
             theme_compare: None,
             pending_tool: None,
+            terms_ask: None,
             globe_width_px: 0.0,
             swipe_drag: false,
             layer_swipe: None,
@@ -2669,6 +2672,7 @@ impl LiteApp {
     /// Окно вопроса перед удалением и окно свойств папки.
     fn dialogs(&mut self, ctx: &egui::Context, now: f64) {
         let lang = self.lang;
+        self.terms_window(ctx);
         // Строка-окно каталога: окно у точки взгляда, как пункт меню.
         if let Some(tool) = self.pending_tool.take() {
             use crate::globemenu::Choice;

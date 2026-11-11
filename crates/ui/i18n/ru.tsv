@@ -2419,6 +2419,20 @@ The layer is seen on both sides of the swipe line.	Слой виден по об
 ⇆ Swipe	⇆ Шторка
 Release {day}	Выпуск {day}
 JAXA data	Данные JAXA
+With a warning	С предупреждением
+Terms of the source	Условия источника
+Terms of the service:	Условия сервиса:
+{name} is a service whose terms do not allow taking its maps and images in third-party programs by the direct address of the tiles. The source is added by your decision, you bear the responsibility for its use.	{name} - сервис, условия которого не разрешают брать его карты и снимки в сторонних программах по прямому адресу тайлов. Источник добавляется по вашему решению, ответственность за его использование несёте вы.
+Google Satellite	Google Спутник
+Google Hybrid	Google Гибрид
+Google Map	Google Схема
+Google Terrain	Google Рельеф
+Bing Aerial	Bing Спутник
+Bing Map	Bing Схема
+Yandex Satellite	Яндекс Спутник
+Yandex Map	Яндекс Схема
+2GIS Map	2ГИС Схема
+Open the window	Открыть окно
 JAXA data…	Данные JAXA…
 JAXA Earth monthly sets over the area - land and sea temperature, NDVI, chlorophyll, precipitation, soil moisture, aerosol: the series by months, month rasters and the trend map.	Месячные наборы JAXA Earth по участку - температура суши и моря, NDVI, хлорофилл, осадки, влажность почвы, аэрозоль: ряд по месяцам, растры месяцев и карта тренда.
 JAXA Earth observations by months - median of the area, spread, month rasters and the trend map in My layers. The source is JAXA Earth, data.earth.jaxa.jp.	Наблюдения Земли JAXA по месяцам - медиана участка, разброс, растры месяцев и карта тренда в «Мои слои». Источник - JAXA Earth, data.earth.jaxa.jp.
