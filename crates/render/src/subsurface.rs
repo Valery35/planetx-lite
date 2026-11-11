@@ -18,6 +18,7 @@ use std::collections::BTreeMap;
 use bytemuck::{Pod, Zeroable};
 use globe_core::DVec3;
 use globe_core::camera::Camera;
+use globe_core::shadowmap::{LightFrame, REACH};
 use wgpu::util::DeviceExt;
 
 use crate::{COLOR_FORMAT, DEPTH_FORMAT, depth_fix};
@@ -50,6 +51,9 @@ pub struct SubMesh {
     pub bias: bool,
     /// Сетка видна сквозь поверхность: после тайлов, без глубины.
     pub xray: bool,
+    /// Сетка под солнцем, как здания модуля (`render/buildings.py`): свет
+    /// от солнца, тень в карту теней и тени на себе.
+    pub sunlit: bool,
 }
 
 #[repr(C)]
@@ -57,6 +61,12 @@ pub struct SubMesh {
 struct SubUniform {
     mvp: [f32; 16],
     light: [f32; 4],
+    /// Матрица света: вершина в координаты отсечения карты теней, нули -
+    /// теней нет.
+    shadow_mvp: [f32; 16],
+    /// Тексель карты, запас глубины, доля радиуса угасания, сдвиг по
+    /// нормали в метрах.
+    shadow: [f32; 4],
 }
 
 struct GpuSub {
@@ -67,6 +77,7 @@ struct GpuSub {
     cull_front: bool,
     bias: bool,
     xray: bool,
+    sunlit: bool,
 }
 
 /// Подземные сетки и их конвейеры.
@@ -75,6 +86,7 @@ pub struct Subsurface {
     xray: wgpu::RenderPipeline,
     front_culled: wgpu::RenderPipeline,
     biased: wgpu::RenderPipeline,
+    depth: wgpu::RenderPipeline,
     layout: wgpu::BindGroupLayout,
     stride: u64,
     uniform: wgpu::Buffer,
@@ -96,7 +108,8 @@ pub fn light_at(lat: f64, lon: f64) -> DVec3 {
 }
 
 impl Subsurface {
-    pub fn new(device: &wgpu::Device) -> Self {
+    /// shadow_layout - группа карты теней кадра (`ShadowMap::model_layout`).
+    pub fn new(device: &wgpu::Device, shadow_layout: &wgpu::BindGroupLayout) -> Self {
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("subsurface"),
             source: wgpu::ShaderSource::Wgsl(include_str!("subsurface.wgsl").into()),
@@ -106,15 +119,40 @@ impl Subsurface {
             label: Some("subsurface"),
             entries: &[wgpu::BindGroupLayoutEntry {
                 binding: 0,
-                visibility: wgpu::ShaderStages::VERTEX,
+                visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
                 ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: true, min_binding_size: wgpu::BufferSize::new(size) },
                 count: None,
             }],
         });
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("subsurface"),
+            bind_group_layouts: &[Some(&layout), Some(shadow_layout)],
+            immediate_size: 0,
+        });
+        let depth_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            label: Some("subsurface depth"),
             bind_group_layouts: &[Some(&layout)],
             immediate_size: 0,
+        });
+        let depth = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("subsurface depth"),
+            layout: Some(&depth_layout),
+            vertex: wgpu::VertexState {
+                module: &shader,
+                entry_point: Some("sub_depth_vs"),
+                compilation_options: Default::default(),
+                buffers: &[Some(wgpu::VertexBufferLayout {
+                    array_stride: std::mem::size_of::<SubVertex>() as u64,
+                    step_mode: wgpu::VertexStepMode::Vertex,
+                    attributes: &wgpu::vertex_attr_array![0 => Float32x3],
+                })],
+            },
+            primitive: wgpu::PrimitiveState::default(),
+            depth_stencil: Some(crate::shadow::depth_state()),
+            multisample: wgpu::MultisampleState::default(),
+            fragment: None,
+            multiview_mask: None,
+            cache: None,
         });
         let make = |cull: Option<wgpu::Face>, bias: wgpu::DepthBiasState, depth: bool| {
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -165,7 +203,7 @@ impl Subsurface {
         let stride = size.div_ceil(align) * align;
         let capacity = 8;
         let (uniform, bind) = uniform_buffer(device, &layout, stride, capacity);
-        Self { both, xray, front_culled, biased, layout, stride, uniform, capacity, bind, meshes: BTreeMap::new() }
+        Self { both, xray, front_culled, biased, depth, layout, stride, uniform, capacity, bind, meshes: BTreeMap::new() }
     }
 
     /// Новая сетка name, None или пустая - убрать.
@@ -181,7 +219,7 @@ impl Subsurface {
         };
         let vertices = device.create_buffer_init(&wgpu::util::BufferInitDescriptor { label: Some("subsurface vertices"), contents: bytemuck::cast_slice(&mesh.vertices), usage: wgpu::BufferUsages::VERTEX });
         let indices = device.create_buffer_init(&wgpu::util::BufferInitDescriptor { label: Some("subsurface indices"), contents: bytemuck::cast_slice(&indices), usage: wgpu::BufferUsages::INDEX });
-        self.meshes.insert(name.to_string(), GpuSub { center: mesh.center, vertices, indices, count, cull_front: mesh.cull_front, bias: mesh.bias, xray: mesh.xray });
+        self.meshes.insert(name.to_string(), GpuSub { center: mesh.center, vertices, indices, count, cull_front: mesh.cull_front, bias: mesh.bias, xray: mesh.xray, sunlit: mesh.sunlit });
     }
 
     /// Убрать все сетки.
@@ -189,13 +227,12 @@ impl Subsurface {
         self.meshes.clear();
     }
 
-    /// Нарисовать сетки в открытом проходе кадра: xray false - обычные
-    /// до тайлов, true - сетки xray после тайлов. Возвращает количество
-    /// отрисовок. scale - вертикальный масштаб рельефа не нужен: высоты
-    /// уже на экране.
-    pub fn draw(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, pass: &mut wgpu::RenderPass<'_>, camera: &Camera, xray: bool) -> usize {
-        if !self.meshes.values().any(|m| m.xray == xray) {
-            return 0;
+    /// Величины сеток кадра в видеокарту - до прохода карты теней. sun -
+    /// направление на солнце в ECEF при строке «Солнце», light - карта
+    /// теней кадра. Без солнца свет - отмывки, с северо-запада.
+    pub fn prepare(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, camera: &Camera, sun: Option<[f32; 3]>, light: Option<&LightFrame>) {
+        if self.meshes.is_empty() {
+            return;
         }
         let count = self.meshes.len() as u64;
         if count > self.capacity {
@@ -204,16 +241,60 @@ impl Subsurface {
         }
         let (lat, lon, _) = camera.ellipsoid.ecef_to_geodetic(camera.eye);
         let l = light_at(lat, lon);
-        let light = [l.x as f32, l.y as f32, l.z as f32, AMBIENT];
+        let wash = [l.x as f32, l.y as f32, l.z as f32, AMBIENT];
         let projection = depth_fix() * camera.projection();
         let stride = self.stride as usize;
         let mut bytes = vec![0u8; stride * self.meshes.len()];
         for (chunk, mesh) in bytes.chunks_exact_mut(stride).zip(self.meshes.values()) {
-            let u = SubUniform { mvp: camera.tile_mvp(mesh.center, Some(projection), 1.0).to_cols_array(), light };
+            let lit = sun.filter(|_| mesh.sunlit);
+            let shadow = light.filter(|_| mesh.sunlit);
+            let u = SubUniform {
+                mvp: camera.tile_mvp(mesh.center, Some(projection), 1.0).to_cols_array(),
+                // Под солнцем свет только с лицевой стороны грани: w
+                // отрицательна, как флажок для шейдера.
+                light: lit.map_or(wash, |s| [s[0], s[1], s[2], -AMBIENT]),
+                shadow_mvp: shadow.map_or([0.0; 16], |f| f.matrix(mesh.center).as_mat4().to_cols_array()),
+                shadow: shadow.map_or([0.0; 4], LightFrame::shader_params),
+            };
             let raw = bytemuck::bytes_of(&u);
             chunk[..raw.len()].copy_from_slice(raw);
         }
         queue.write_buffer(&self.uniform, 0, &bytes);
+    }
+
+    /// Глубина сеток под солнцем в открытом проходе карты теней: здания
+    /// бросают тень на землю и друг на друга. Сетка дальше [`REACH`] от
+    /// края карты в неё не попадает.
+    pub fn draw_depth(&self, pass: &mut wgpu::RenderPass<'_>, frame: &LightFrame) -> usize {
+        if !self.meshes.values().any(|m| m.sunlit) {
+            return 0;
+        }
+        pass.set_pipeline(&self.depth);
+        let reach = 1.0 + REACH / frame.radius;
+        let mut drawn = 0;
+        for (slot, mesh) in self.meshes.values().enumerate() {
+            let near = mesh.sunlit && !mesh.xray && frame.project(mesh.center).truncate().length() <= reach;
+            let Some(offset) = u32::try_from(slot as u64 * self.stride).ok().filter(|_| near) else {
+                continue;
+            };
+            pass.set_bind_group(0, &self.bind, &[offset]);
+            pass.set_vertex_buffer(0, mesh.vertices.slice(..));
+            pass.set_index_buffer(mesh.indices.slice(..), wgpu::IndexFormat::Uint32);
+            pass.draw_indexed(0..mesh.count, 0, 0..1);
+            drawn += 1;
+        }
+        drawn
+    }
+
+    /// Нарисовать сетки в открытом проходе кадра: xray false - обычные
+    /// до тайлов, true - сетки xray после тайлов. Величины - из
+    /// [`Subsurface::prepare`] этого кадра. Возвращает количество
+    /// отрисовок.
+    pub fn draw(&self, pass: &mut wgpu::RenderPass<'_>, shadow: &wgpu::BindGroup, xray: bool) -> usize {
+        if !self.meshes.values().any(|m| m.xray == xray) {
+            return 0;
+        }
+        pass.set_bind_group(1, shadow, &[]);
         let mut drawn = 0;
         for (slot, mesh) in self.meshes.values().enumerate() {
             if mesh.xray != xray {

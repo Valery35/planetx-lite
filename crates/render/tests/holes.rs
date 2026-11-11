@@ -578,7 +578,7 @@ fn cut_opens_the_surface_and_glass_does_not() {
     let base = globe.render(&cam, &sel, None, FrameOptions::default()).draws;
     let center = Ellipsoid::wgs84().geodetic_to_ecef(PERM.0, PERM.1, -50.0);
     let v = |x: f32, y: f32| render::SubVertex { offset: [x, y, 0.0], normal: [0.0, 0.0, 1.0], color: [200, 100, 50, 255] };
-    let mesh = render::SubMesh { center, vertices: vec![v(0.0, 0.0), v(30.0, 0.0), v(0.0, 30.0)], indices: vec![0, 1, 2], cull_front: false, bias: false, xray: false };
+    let mesh = render::SubMesh { center, vertices: vec![v(0.0, 0.0), v(30.0, 0.0), v(0.0, 30.0)], indices: vec![0, 1, 2], cull_front: false, bias: false, xray: false, sunlit: false };
     globe.set_subsurface("wells", Some(&mesh));
     assert_eq!(globe.render(&cam, &sel, None, FrameOptions::default()).draws, base + 1);
     globe.set_subsurface("wells", None);
@@ -605,7 +605,7 @@ fn xray_mesh_shows_through_the_surface() {
         render::SubVertex { offset: [p.x as f32, p.y as f32, p.z as f32], normal: [up.x as f32, up.y as f32, up.z as f32], color: [255, 0, 0, 255] }
     };
     let vertices = vec![v(-100.0, -100.0), v(100.0, -100.0), v(100.0, 100.0), v(-100.0, 100.0)];
-    let square = |xray| render::SubMesh { center, vertices: vertices.clone(), indices: vec![0, 1, 2, 0, 2, 3], cull_front: false, bias: false, xray };
+    let square = |xray| render::SubMesh { center, vertices: vertices.clone(), indices: vec![0, 1, 2, 0, 2, 3], cull_front: false, bias: false, xray, sunlit: false };
     let (cx, cy) = (f64::from(cam.width) / 2.0, f64::from(cam.height) / 2.0);
     globe.set_subsurface("wall", Some(&square(false)));
     let hidden = rgb(&grab(&mut globe, &cam, false), cx, cy);
@@ -615,6 +615,47 @@ fn xray_mesh_shows_through_the_surface() {
     let red = |c: [u8; 3]| i32::from(c[0]) - i32::from(c[1]).max(i32::from(c[2]));
     assert!(red(hidden) < 40, "{hidden:?}");
     assert!(red(seen) > 80, "{seen:?}");
+}
+
+#[test]
+fn sunlit_mesh_casts_shadow_like_buildings() {
+    // Плита 40 × 40 м на высоте 60 м к востоку от точки взгляда, солнце
+    // с востока под 45°: тень плиты ложится под точку взгляда на красный
+    // пол. Плита под солнцем (здание) затеняет пол, обычная сетка - нет.
+    let Some((device, queue, _, _gpu)) = device() else {
+        eprintln!("видеокарты нет, проверка пропущена");
+        return;
+    };
+    let mut globe = Globe::new(&device, &queue);
+    let cam = view(PERM.0, PERM.1, 400.0, 0.0, 0.0);
+    let e = Ellipsoid::wgs84();
+    let center = e.geodetic_to_ecef(PERM.0, PERM.1, 1.0);
+    let up = (e.geodetic_to_ecef(PERM.0, PERM.1, 2.0) - center).normalize();
+    let east = globe_core::DVec3::Z.cross(up).normalize();
+    let north = up.cross(east);
+    let v = |x: f64, y: f64, z: f64| {
+        let p = east * x + north * y + up * z;
+        render::SubVertex { offset: [p.x as f32, p.y as f32, p.z as f32], normal: [up.x as f32, up.y as f32, up.z as f32], color: [220, 40, 40, 255] }
+    };
+    let quad = |x: f64, y: f64, half: f64, z: f64| vec![v(x - half, y - half, z), v(x + half, y - half, z), v(x + half, y + half, z), v(x - half, y + half, z)];
+    let floor = render::SubMesh { center, vertices: quad(0.0, 0.0, 150.0, 0.0), indices: vec![0, 1, 2, 0, 2, 3], cull_front: false, bias: false, xray: false, sunlit: true };
+    let slab = |sunlit| render::SubMesh { center, vertices: quad(60.0, 0.0, 20.0, 60.0), indices: vec![0, 1, 2, 0, 2, 3], cull_front: false, bias: false, xray: false, sunlit };
+    let sun = (up + east).normalize();
+    let sel = lod::select(&cam, &|_| true, Options::default());
+    let shot = |globe: &mut Globe| {
+        globe.grab();
+        globe.render(&cam, &sel, None, FrameOptions { count_holes: false, show_holes: false, air: false, ratio: 1.0, sun: Some(sun.to_array()), water: None, tint: None, sky: false, sea_level: 0.0, focus: Some((center.to_array(), 400.0)), relief: None });
+        globe.take_grab().unwrap()
+    };
+    let (cx, cy) = (f64::from(cam.width) / 2.0, f64::from(cam.height) / 2.0);
+    globe.set_subsurface("floor", Some(&floor));
+    globe.set_subsurface("slab", Some(&slab(false)));
+    let open = rgb(&shot(&mut globe), cx, cy);
+    globe.set_subsurface("slab", Some(&slab(true)));
+    let shaded = rgb(&shot(&mut globe), cx, cy);
+    eprintln!("без тени {open:?}, в тени {shaded:?}");
+    assert!(open[0] > 120, "{open:?}");
+    assert!(f64::from(shaded[0]) < 0.75 * f64::from(open[0]), "{shaded:?} против {open:?}");
 }
 
 #[test]

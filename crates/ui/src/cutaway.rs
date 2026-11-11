@@ -65,7 +65,7 @@ pub(crate) fn to_sub(mesh: Option<data::subsurface::Mesh>, bias: bool) -> Option
             color: v.color,
         })
         .collect();
-    Some(render::SubMesh { center: globe_core::DVec3::from_array(mesh.center), vertices, indices: mesh.indices, cull_front: false, bias, xray: false })
+    Some(render::SubMesh { center: globe_core::DVec3::from_array(mesh.center), vertices, indices: mesh.indices, cull_front: false, bias, xray: false, sunlit: false })
 }
 
 impl Cutaway {

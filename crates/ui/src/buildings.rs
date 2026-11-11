@@ -159,6 +159,7 @@ impl Buildings {
                     cull_front: false,
                     bias: false,
                     xray: false,
+                    sunlit: true,
                 };
                 globe.set_subsurface(&name, Some(&sub));
             } else {

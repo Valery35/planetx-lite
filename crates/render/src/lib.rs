@@ -899,6 +899,7 @@ impl Globe {
             cache: None,
         });
         let shadow = shadow::ShadowMap::new(device);
+        let subsurface = subsurface::Subsurface::new(device, &shadow.model_layout);
         let glass_pipeline = make_tile_pipeline("glass", false, true);
         let water_pipeline = make_tile_pipeline("water", true, true);
         let hole_pipeline = |writes: wgpu::ColorWrites, label: &str| {
@@ -1042,7 +1043,7 @@ impl Globe {
             cut: None,
             opacity: 1.0,
             wedge: None,
-            subsurface: subsurface::Subsurface::new(device),
+            subsurface,
             grab_next: false,
             grabbed: Arc::new(Mutex::new(None)),
             draw_layout,
@@ -2298,6 +2299,8 @@ impl Globe {
             for models in [&mut self.models, &mut self.live, &mut self.flight, &mut self.tiles] {
                 models.prepare(&self.device, &self.queue, camera, light.as_ref());
             }
+            let sun = options.sun.map(|s| DVec3::from_array(s).normalize_or_zero().as_vec3().to_array());
+            self.subsurface.prepare(&self.device, &self.queue, camera, sun, light.as_ref());
         }
         let grab_now = std::mem::take(&mut self.grab_next);
         let Some(target) = &self.target else {
@@ -2347,6 +2350,7 @@ impl Globe {
             self.live.draw_depth(&mut pass, frame);
             self.flight.draw_depth(&mut pass, frame);
             self.tiles.draw_depth(&mut pass, frame);
+            draws += self.subsurface.draw_depth(&mut pass, frame);
         }
         {
             let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -2369,7 +2373,7 @@ impl Globe {
             // Подземные сетки - до тайлов: прозрачная поверхность ложится
             // на них смешиванием, как у модуля.
             if !options.sky {
-                draws += self.subsurface.draw(&self.device, &self.queue, &mut pass, camera, false);
+                draws += self.subsurface.draw(&mut pass, &self.shadow.model_bind, false);
             }
             pass.set_pipeline(if self.cut.is_some() { &self.glass_pipeline } else { &self.tile_pipeline });
             pass.set_bind_group(2, &self.air_bind, &[]);
@@ -2442,7 +2446,7 @@ impl Globe {
             }
             // Сетки сквозь поверхность - стенка разреза, без дыр.
             if !options.show_holes && !options.sky {
-                draws += self.subsurface.draw(&self.device, &self.queue, &mut pass, camera, true);
+                draws += self.subsurface.draw(&mut pass, &self.shadow.model_bind, true);
             }
             // Картинки-наложения - под своими объектами.
             if !options.sky {

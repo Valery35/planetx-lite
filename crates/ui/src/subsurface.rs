@@ -530,7 +530,7 @@ fn to_sub(mesh: Option<core::Mesh>, cull_front: bool) -> Option<render::SubMesh>
             color: v.color,
         })
         .collect();
-    Some(render::SubMesh { center: globe_core::DVec3::from_array(mesh.center), vertices, indices: mesh.indices, cull_front, bias: false, xray: false })
+    Some(render::SubMesh { center: globe_core::DVec3::from_array(mesh.center), vertices, indices: mesh.indices, cull_front, bias: false, xray: false, sunlit: false })
 }
 
 /// Сетки модели, `build` модуля. ground - настоящие отметки рельефа
