@@ -65,6 +65,12 @@ impl Wayback {
         self.status.clear();
         if let Some(newest) = self.releases.last().cloned() {
             self.ask_link(&newest, request);
+        } else if self.config.is_none() {
+            // Список выпусков не пришёл или окно закрыли до ответа: без
+            // нового запроса поиск молчал и окно стояло на «0 из 0».
+            let ask = request(ANSWER_BYTES);
+            ask.start(wayback::CONFIG_URL);
+            self.config = Some(ask);
         }
     }
 
@@ -235,5 +241,28 @@ mod tests {
         assert_eq!(w.rows.iter().map(|r| r.number).collect::<Vec<_>>(), [20, 10]);
         assert!(!w.busy());
         assert_eq!(urls.borrow().iter().filter(|u| u.contains("tilemap")).count(), 2);
+    }
+
+    #[test]
+    fn search_asks_releases_again_after_failure() {
+        let config = br#"{"30": {"itemTitle": "Wayback 2026-01-01"}}"#.to_vec();
+        let answers = Rc::new(RefCell::new(Vec::new()));
+        let urls = Rc::new(RefCell::new(Vec::new()));
+        let stub = Stub(answers.clone(), urls.clone(), Rc::new(net::Stats::default()), Rc::new(RefCell::new(String::new())));
+        let request = move |_: u64| -> Box<dyn net::Request> {
+            let mut s = stub.clone();
+            s.3 = Rc::new(RefCell::new(String::new()));
+            Box::new(s)
+        };
+        // Первый запрос списка без ответа.
+        let mut w = Wayback::new(58.0, 56.0, 1000.0, &request);
+        w.step(Lang::EN, &request);
+        assert!(!w.status.is_empty());
+        // Сеть вернулась, поиск в виде заново просит список.
+        answers.borrow_mut().push(("waybackconfig".to_string(), config));
+        w.show_view(58.0, 56.0, 1000.0, &request);
+        w.step(Lang::EN, &request);
+        assert_eq!(w.releases.len(), 1);
+        assert_eq!(urls.borrow().iter().filter(|u| u.contains("waybackconfig")).count(), 2);
     }
 }

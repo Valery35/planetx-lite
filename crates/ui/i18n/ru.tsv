@@ -1438,6 +1438,7 @@ Searching the lidar catalogs IGN LiDAR HD and USGS 3DEP near the point…	Пои
 Lidar point clouds: {error}	Облака точек лидара: {error}
 There are no lidar tiles of IGN LiDAR HD and USGS 3DEP near the point.	У точки нет плиток лидара IGN LiDAR HD и USGS 3DEP.
 Swipe ⇆	Шторка ⇆
+The swipe needs an earlier day of images. The chosen day is the first one, choose a later day.	Шторке нужен более ранний день снимков. Выбран первый день - выберите день позже.
 Compare two days: left of the line on the globe - the images of an earlier day, right - of the chosen day. The line is dragged with the mouse.	Сравнение двух дней: слева от линии на глобусе - снимки более раннего дня, справа - выбранного. Линия тянется мышью.
 Left:	Слева:
 There is no event {key} in the catalogs.	В каталогах нет события {key}.

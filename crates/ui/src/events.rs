@@ -408,7 +408,12 @@ impl Events {
                 ui.horizontal_wrapped(|ui| {
                     let mut on = s.before.is_some();
                     let earlier: Vec<&String> = s.days.iter().filter(|d| **d < s.day).collect();
-                    let r = ui.add_enabled(!earlier.is_empty(), egui::Checkbox::new(&mut on, tr(lang, "Swipe ⇆"))).on_hover_text(tr(lang, "Compare two days: left of the line on the globe - the images of an earlier day, right - of the chosen day. The line is dragged with the mouse."));
+                    // Неактивный флажок молчал: подсказка egui у него не
+                    // видна, пользователь не понимал, почему шторки нет.
+                    let r = ui
+                        .add_enabled(!earlier.is_empty(), egui::Checkbox::new(&mut on, tr(lang, "Swipe ⇆")))
+                        .on_hover_text(tr(lang, "Compare two days: left of the line on the globe - the images of an earlier day, right - of the chosen day. The line is dragged with the mouse."))
+                        .on_disabled_hover_text(tr(lang, "The swipe needs an earlier day of images. The chosen day is the first one, choose a later day."));
                     if r.clicked() {
                         before = Some(on.then(|| events::pre_day(&s.items).filter(|p| *p < s.day).or_else(|| earlier.last().map(|d| d.to_string()))).flatten());
                     }
