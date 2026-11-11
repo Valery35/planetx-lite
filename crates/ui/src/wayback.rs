@@ -17,16 +17,12 @@ use eframe::egui;
 use globe_core::lod::TileKey;
 
 use crate::i18n::{Lang, tr, trf};
+use crate::pairtiles::PairTiles;
 
 /// Наибольший ответ службы, байт.
 const ANSWER_BYTES: u64 = 4 << 20;
 /// Наибольшее количество шагов цепочки изменений.
 const CHAIN_MOST: usize = 64;
-/// Наибольший тайл снимка, байт.
-const TILE_BYTES: u64 = 1 << 20;
-/// Запросов тайлов одной стороны шторки сразу, не больше.
-const FETCH_MOST: usize = 8;
-
 type Requests<'a> = &'a dyn Fn(u64) -> Box<dyn net::Request>;
 
 /// Выпуск левой стороны шторки по умолчанию: новейший из rows (новые
@@ -38,12 +34,6 @@ pub fn compare_release(rows: &[Release], right: &Release) -> Option<Release> {
     rows.iter().find(|r| r.day <= back && r.number != right.number).or_else(|| rows.iter().rev().find(|r| r.number != right.number)).cloned()
 }
 
-/// Адрес тайла выпуска.
-fn tile_address(release: &Release, key: TileKey) -> String {
-    let (z, x, y) = key;
-    wayback::tile_url(release.number).replace("{z}", &z.to_string()).replace("{y}", &y.to_string()).replace("{x}", &x.to_string())
-}
-
 /// Шторка двух выпусков. Сторона 0 - справа («после»), 1 - слева («до»).
 pub struct Compare {
     pub right: Release,
@@ -51,12 +41,12 @@ pub struct Compare {
     /// Линия шторки - доля ширины вида от левого края.
     pub split: f32,
     /// Запросы тайлов сторон.
-    pending: [Vec<(TileKey, Box<dyn net::Request>)>; 2],
+    pending: PairTiles,
 }
 
 impl Compare {
     fn new(right: Release, left: Release) -> Self {
-        Self { right, left, split: 0.5, pending: [Vec::new(), Vec::new()] }
+        Self { right, left, split: 0.5, pending: PairTiles::default() }
     }
 
     /// Выпуск стороны.
@@ -65,37 +55,15 @@ impl Compare {
     }
 
     /// Тайлы стороны side: пришедшие картинки RGBA (None - тайла нет)
-    /// и новые запросы для keys, не больше [`FETCH_MOST`] сразу.
+    /// и новые запросы для keys.
     pub fn tiles(&mut self, side: usize, keys: &[TileKey], request: Requests) -> Vec<(TileKey, Option<Vec<u8>>)> {
-        let release = self.release(side).clone();
-        let Some(pending) = self.pending.get_mut(side) else {
-            return Vec::new();
-        };
-        let mut out = Vec::new();
-        pending.retain(|(key, ask)| match ask.take() {
-            Some(answer) => {
-                out.push((*key, answer.ok().and_then(|b| net::decode_tile(&b).ok()).map(|i| i.rgba)));
-                false
-            }
-            None => true,
-        });
-        for key in keys {
-            if pending.len() >= FETCH_MOST {
-                break;
-            }
-            if pending.iter().any(|(k, _)| k == key) {
-                continue;
-            }
-            let ask = request(TILE_BYTES);
-            ask.start(&tile_address(&release, *key));
-            pending.push((*key, ask));
-        }
-        out
+        let template = wayback::tile_url(self.release(side).number);
+        self.pending.step(side, &template, keys, request)
     }
 
     /// Идут ли запросы тайлов.
     pub fn busy(&self) -> bool {
-        self.pending.iter().any(|p| !p.is_empty())
+        self.pending.busy()
     }
 }
 
@@ -166,9 +134,7 @@ impl Wayback {
         let slot = if side == 0 { &mut c.right } else { &mut c.left };
         if *slot != release {
             *slot = release;
-            if let Some(p) = c.pending.get_mut(side) {
-                p.clear();
-            }
+            c.pending.clear(side);
             if let Some(f) = self.changed.get_mut(side) {
                 *f = true;
             }

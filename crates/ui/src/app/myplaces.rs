@@ -202,6 +202,9 @@ impl LiteApp {
     /// Шкала времени и управление туром сверху вида, подпись остановки
     /// снизу.
     pub(super) fn overlays(&mut self, ctx: &egui::Context, rect: egui::Rect, now: f64) {
+        // Кнопка ⇆ шторки темы GIBS - на шкале, нажатия - после неё.
+        self.theme_compare_bar();
+        self.theme_compare_input();
         // На узком экране открытая панель занимает почти всё окно: шкала
         // ложилась поверх её строк. Показ при этом идёт дальше.
         let covered = self.panel_open && ctx.content_rect().width() < crate::timeline::ONE_ROW;

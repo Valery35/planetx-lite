@@ -734,7 +734,17 @@ impl LiteApp {
     /// Охват шкалы времени - время меток и треков.
     pub(super) fn time_extent(&mut self) {
         // Метки, треки и слои-картинки со временем - снимки по датам.
-        let extent = [self.marks.extent(), self.tracks.span(), self.data_layers.extent()].into_iter().flatten().reduce(|a, b| (a.0.min(b.0), a.1.max(b.1)));
+        // Ряды дат включённых тем NASA GIBS: день темы задаёт шкала, как
+        // ползунок темы модуля.
+        let themes = (0..crate::maps::count())
+            .filter(|n| self.extras_on.contains(&crate::layers::Extra::Map(*n)))
+            .filter_map(crate::maps::entry)
+            .filter_map(|e| match self.theme_days.get(e.key) {
+                Some(ThemeDay::Day(_, ready)) => data::gibs::span(ready),
+                _ => None,
+            })
+            .reduce(|a, b| (a.0.min(b.0), a.1.max(b.1)));
+        let extent = [self.marks.extent(), self.tracks.span(), self.data_layers.extent(), themes].into_iter().flatten().reduce(|a, b| (a.0.min(b.0), a.1.max(b.1)));
         self.timebar.set_extent(extent);
     }
 

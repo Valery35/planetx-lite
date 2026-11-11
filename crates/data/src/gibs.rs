@@ -395,6 +395,21 @@ pub fn step_day(intervals: &[Interval], day: &str, delta: i64) -> Option<String>
     usize::try_from(at).ok().and_then(|i| ordered.get(i).cloned())
 }
 
+/// Шторка сравнения: левая часть по умолчанию - тот же день год назад.
+pub const COMPARE_BACK: f64 = 365.0 * 86400.0;
+
+/// День левой части шторки сравнения по умолчанию, `compare_day` модуля:
+/// тот же день год назад, [`COMPARE_BACK`]. Короткий ряд - его первый
+/// день. at - момент правой части, None - последний день ряда.
+pub fn compare_day(intervals: &[Interval], at: Option<f64>) -> Option<String> {
+    let day = pick_day(intervals, at)?;
+    let back = pick_day(intervals, Some(Day::parse(&day)?.seconds() - COMPARE_BACK))?;
+    if back != day {
+        return Some(back);
+    }
+    days(intervals).into_iter().next()
+}
+
 /// Охват ряда: первый и последний день в секундах UTC.
 pub fn span(intervals: &[Interval]) -> Option<(f64, f64)> {
     let first = intervals.iter().map(|i| i.0).min()?;

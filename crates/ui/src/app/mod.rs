@@ -154,9 +154,29 @@ const ANSWER_BYTES: u64 = 1 << 20;
 const SWIPE_GRIP: f32 = 8.0;
 
 /// Линия шторки пары текстур «после» и «до»: снимков события, без них -
-/// выпусков Wayback. None - шторки пары нет.
-fn pair_swipe(events: &crate::events::Events, wayback: Option<&crate::wayback::Wayback>) -> Option<f32> {
-    events.swipe().or_else(|| wayback.and_then(|w| w.compare.as_ref()).filter(|_| events.layer().is_none()).map(|c| c.split))
+/// выпусков Wayback, без них - дней темы NASA GIBS. None - шторки пары нет.
+fn pair_swipe(events: &crate::events::Events, wayback: Option<&crate::wayback::Wayback>, theme: Option<&ThemeCompare>) -> Option<f32> {
+    if events.layer().is_some() {
+        return events.swipe();
+    }
+    wayback.and_then(|w| w.compare.as_ref()).map(|c| c.split).or_else(|| theme.map(|t| t.split))
+}
+
+/// Шторка сравнения двух дней темы NASA GIBS, `set_compare` модуля:
+/// справа день шкалы времени, слева по умолчанию тот же день год назад.
+/// Тема при шторке уходит из картинки наложения тайла, оба дня ложатся
+/// парой текстур «после» и «до».
+pub(super) struct ThemeCompare {
+    /// Ключ строки темы.
+    pub key: &'static str,
+    pub theme: &'static data::gibs::Theme,
+    /// День слева от линии.
+    pub left: String,
+    /// Линия шторки - доля ширины вида от левого края.
+    pub split: f32,
+    /// Дни сторон, чьи тайлы на глобусе: справа, слева.
+    pub shown: [String; 2],
+    pub tiles: crate::pairtiles::PairTiles,
 }
 /// Предел ответа всего каталога NASA GIBS, байт: 25 октября 2026 года
 /// ответ - 5.8 МБ.
@@ -677,8 +697,10 @@ pub struct LiteApp {
     /// Тайлы снимков события без снимков, по сторонам шторки.
     event_empty: [std::collections::HashSet<TileKey>; 2],
     /// Хозяин пары текстур «после» и «до»: 0 - никто, 1 - снимки события,
-    /// 2 - шторка выпусков Wayback.
+    /// 2 - шторка выпусков Wayback, 3 - шторка дней темы NASA GIBS.
     pair_owner: u8,
+    /// Шторка дней темы NASA GIBS, None - снята.
+    theme_compare: Option<ThemeCompare>,
     /// Ширина кадра глобуса в пикселях, для линии шторки.
     globe_width_px: f32,
     /// Линию шторки тянут мышью.
@@ -1408,6 +1430,7 @@ impl LiteApp {
             pending_event: None,
             event_empty: Default::default(),
             pair_owner: 0,
+            theme_compare: None,
             globe_width_px: 0.0,
             swipe_drag: false,
             layer_swipe: None,
@@ -3069,7 +3092,7 @@ impl LiteApp {
     fn swipe_input(&mut self, ctx: &egui::Context, rect: egui::Rect) -> bool {
         // Шторка пары текстур (снимки события или выпуски Wayback)
         // важнее шторки слоёв: ручка у неё одна.
-        let pair = pair_swipe(&self.events, self.wayback.as_ref());
+        let pair = pair_swipe(&self.events, self.wayback.as_ref(), self.theme_compare.as_ref());
         let events = pair.is_some();
         let Some(share) = pair.or(self.layer_swipe) else {
             self.swipe_drag = false;
@@ -3093,6 +3116,8 @@ impl LiteApp {
                 self.events.split = share;
             } else if let Some(c) = self.wayback.as_mut().and_then(|w| w.compare.as_mut()).filter(|_| events) {
                 c.split = share;
+            } else if let Some(c) = self.theme_compare.as_mut().filter(|_| events) {
+                c.split = share;
             } else {
                 self.layer_swipe = Some(share);
             }
@@ -3105,7 +3130,7 @@ impl LiteApp {
 
     /// Линия шторки и ручка с днями сторон поверх кадра глобуса.
     fn draw_swipe(&self, painter: &egui::Painter, rect: egui::Rect) {
-        let Some(share) = pair_swipe(&self.events, self.wayback.as_ref()).or(self.layer_swipe) else {
+        let Some(share) = pair_swipe(&self.events, self.wayback.as_ref(), self.theme_compare.as_ref()).or(self.layer_swipe) else {
             return;
         };
         let x = rect.left() + share * rect.width();
@@ -3117,7 +3142,13 @@ impl LiteApp {
         // Дни сторон: снимков события или выпусков Wayback.
         let days = match self.events.shown.as_ref().filter(|_| self.events.swipe().is_some()) {
             Some(s) => Some((s.before.clone().unwrap_or_default(), s.day.clone())),
-            None => self.wayback.as_ref().and_then(|w| w.compare.as_ref()).filter(|_| self.events.layer().is_none()).map(|c| (c.left.day.clone(), c.right.day.clone())),
+            None if self.events.layer().is_some() => None,
+            None => self
+                .wayback
+                .as_ref()
+                .and_then(|w| w.compare.as_ref())
+                .map(|c| (c.left.day.clone(), c.right.day.clone()))
+                .or_else(|| self.theme_compare.as_ref().map(|t| (t.left.clone(), self.theme_day(t.key).unwrap_or_default()))),
         };
         if let Some((left, right)) = days {
             let font = egui::FontId::proportional(13.0);
@@ -3342,6 +3373,7 @@ impl LiteApp {
         }
         // Ряды дат тем GIBS: выбран день - тема ложится на глобус.
         let mut days_changed = false;
+        let mut series = false;
         let now_utc = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64());
         for state in self.theme_days.values_mut() {
             if let ThemeDay::Asking(request) = state
@@ -3351,7 +3383,12 @@ impl LiteApp {
                 let ready = data::gibs::ready_intervals(&intervals, now_utc);
                 *state = data::gibs::pick_day(&ready, None).map_or(ThemeDay::Failed, |day| ThemeDay::Day(day, ready));
                 days_changed = true;
+                series = true;
             }
+        }
+        // Пришёл ряд дат темы - он входит в охват шкалы времени.
+        if series {
+            self.time_extent();
         }
         // День темы - по шкале времени: правый край окна шкалы.
         let moment = match self.timebar.window() {
@@ -4380,7 +4417,16 @@ impl eframe::App for LiteApp {
         if let Some(w) = &mut self.wayback {
             w.blocked = event_layer.is_some();
         }
-        let owner = if event_layer.is_some() { 1 } else if wayback_pair { 2 } else { 0 };
+        let theme_pair = event_layer.is_none() && !wayback_pair && self.theme_compare.is_some();
+        let owner = if event_layer.is_some() {
+            1
+        } else if wayback_pair {
+            2
+        } else if theme_pair {
+            3
+        } else {
+            0
+        };
         if owner != self.pair_owner {
             self.pair_owner = owner;
             for side in 0..2 {
@@ -4401,6 +4447,37 @@ impl eframe::App for LiteApp {
                 }
                 for (key, rgba) in compare.tiles(side, &keys, &*self.loaders.request) {
                     match rgba.and_then(|r| data::rastermaps::overlay_rgba(&r)) {
+                        Some(pic) => globe.set_event(side, key, 256, 256, &pic),
+                        None => {
+                            self.event_empty[side].insert(key);
+                        }
+                    }
+                }
+            }
+        }
+        // Шторка темы GIBS: справа день шкалы, слева день шторки. Сменился
+        // день стороны - её тайлы забываются.
+        if let Some(c) = self.theme_compare.as_mut().filter(|_| theme_pair)
+            && let Some(ThemeDay::Day(right, _)) = self.theme_days.get(c.key)
+        {
+            let days = [right.clone(), c.left.clone()];
+            for (side, day) in days.iter().enumerate() {
+                if c.shown[side] != *day {
+                    c.shown[side] = day.clone();
+                    c.tiles.clear(side);
+                    globe.clear_events(side);
+                    self.event_empty[side].clear();
+                }
+                let mut keys: Vec<TileKey> = Vec::new();
+                for key in &selection.draw {
+                    let k = terrain::ancestor(*key, key.0.min(c.theme.level));
+                    if !globe.has_event(side, k) && !self.event_empty[side].contains(&k) && !keys.contains(&k) {
+                        keys.push(k);
+                    }
+                }
+                let template = c.theme.url(day);
+                for (key, rgba) in c.tiles.step(side, &template, &keys, &*self.loaders.request) {
+                    match rgba.and_then(|r| data::gibs::overlay_rgba(&r, data::gibs::OPACITY, c.theme.clear)) {
                         Some(pic) => globe.set_event(side, key, 256, 256, &pic),
                         None => {
                             self.event_empty[side].insert(key);
@@ -4430,7 +4507,7 @@ impl eframe::App for LiteApp {
                 }
             }
         }
-        globe.set_split(pair_swipe(&self.events, self.wayback.as_ref()).map(|f| f * self.globe_width_px));
+        globe.set_split(pair_swipe(&self.events, self.wayback.as_ref(), self.theme_compare.as_ref()).map(|f| f * self.globe_width_px));
         // Шторка слоёв - пока у слоёв есть стороны.
         let swipe = self.layer_swipe.filter(|_| self.data_layers.has_sides()).map(|f| f * self.globe_width_px);
         globe.set_swipe(swipe);
@@ -4842,7 +4919,9 @@ impl eframe::App for LiteApp {
         self.attribution(&ctx, rect);
         // Шкалы карт над подписью источников, крестик убирает карту.
         let maps: Vec<(&'static str, crate::maps::Kind)> = self.vector.map_list().to_vec();
-        let theme = maps.iter().find_map(|(k, m)| match (m, self.theme_days.get(k)) {
+        // Тема под шторкой - не в списке карт, её шкала остаётся.
+        let compared: Option<(&'static str, crate::maps::Kind)> = self.theme_compare.as_ref().map(|c| (c.key, crate::maps::Kind::Theme(c.theme)));
+        let theme = maps.iter().chain(compared.iter()).find_map(|(k, m)| match (m, self.theme_days.get(k)) {
             (crate::maps::Kind::Theme(_), Some(ThemeDay::Day(day, _))) => {
                 let name = crate::maps::index(k).and_then(crate::maps::entry).map_or("", |e| tr(self.lang, e.name));
                 let scale = match self.theme_scales.get(k) {

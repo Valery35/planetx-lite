@@ -69,6 +69,13 @@ pub struct TimeBar {
     /// Левый край показа промежутка на всю шкалу, иначе None.
     sweep: Option<f64>,
     grip: Option<Grip>,
+    /// Шторка сравнения темы NASA GIBS, кнопка ⇆ модуля: None - на
+    /// глобусе нет темы с рядом дат, иначе - включена ли и день слева.
+    pub compare: Option<(bool, String)>,
+    /// Нажата ⇆: включить или снять шторку темы.
+    pub compare_clicked: bool,
+    /// Шаг дня левой части шторки по ряду темы: -1, 1 или 0.
+    pub compare_step: i64,
 }
 
 impl TimeBar {
@@ -236,6 +243,24 @@ impl TimeBar {
                 .on_hover_text(tr(lang, "Play in a loop: at the end of the bar the range starts again from the beginning."));
             if looping.clicked() {
                 self.looping = !self.looping;
+            }
+            if let Some((on, left)) = self.compare.clone() {
+                let swipe = ui.selectable_label(on, "⇆").on_hover_text(tr(
+                    lang,
+                    "Comparison swipe. Left of the swipe the theme is shown on another day, right of it - on the day of the bar. By default the left day is the same day a year earlier. The line is dragged with the mouse.",
+                ));
+                if swipe.clicked() {
+                    self.compare_clicked = true;
+                }
+                if on {
+                    if ui.small_button("‹").on_hover_text(tr(lang, "The day of the left part one step of the theme series back.")).clicked() {
+                        self.compare_step = -1;
+                    }
+                    ui.label(left);
+                    if ui.small_button("›").on_hover_text(tr(lang, "The day of the left part one step of the theme series forward.")).clicked() {
+                        self.compare_step = 1;
+                    }
+                }
             }
         }
     }

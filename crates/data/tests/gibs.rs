@@ -61,6 +61,18 @@ fn step_day_follows_series() {
 }
 
 #[test]
+fn compare_day_is_a_year_back_or_series_start() {
+    // Ежедневный ряд с 2020 года: год назад от последнего дня.
+    let daily = [(Day { year: 2020, month: 1, day: 1 }, Day { year: 2026, month: 9, day: 30 }, 1, 'D')];
+    assert_eq!(gibs::compare_day(&daily, None).as_deref(), Some("2025-09-30"));
+    assert_eq!(gibs::compare_day(&daily, Some(stamp(2026, 3, 10))).as_deref(), Some("2025-03-10"));
+    // Ряд короче года - его первый день.
+    let short = [(Day { year: 2026, month: 6, day: 1 }, Day { year: 2026, month: 9, day: 30 }, 1, 'D')];
+    assert_eq!(gibs::compare_day(&short, None).as_deref(), Some("2026-06-01"));
+    assert_eq!(gibs::compare_day(&[], None), None);
+}
+
+#[test]
 fn gap_gives_previous_day() {
     let intervals = gibs::parse_domains(SMAP);
     assert_eq!(gibs::pick_day(&intervals, Some(stamp(2026, 9, 3))).as_deref(), Some("2026-09-02"));

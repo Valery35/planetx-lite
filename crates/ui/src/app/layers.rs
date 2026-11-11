@@ -261,6 +261,62 @@ impl LiteApp {
         self.settings_dirty = true;
     }
 
+    /// День темы GIBS по ключу строки, None - ряда ещё нет.
+    pub(super) fn theme_day(&self, key: &str) -> Option<String> {
+        match self.theme_days.get(key) {
+            Some(ThemeDay::Day(day, _)) => Some(day.clone()),
+            _ => None,
+        }
+    }
+
+    /// Первая включённая тема GIBS с рядом дат: ключ, тема, готовые дни.
+    fn compare_theme(&self) -> Option<(&'static str, &'static data::gibs::Theme, Vec<data::gibs::Interval>)> {
+        (0..crate::maps::count()).filter(|n| self.extras_on.contains(&crate::layers::Extra::Map(*n))).filter_map(crate::maps::entry).find_map(|e| match (crate::maps::kind(e.key), self.theme_days.get(e.key)) {
+            (Some(crate::maps::Kind::Theme(t)), Some(ThemeDay::Day(_, ready))) if !ready.is_empty() => Some((e.key, t, ready.clone())),
+            _ => None,
+        })
+    }
+
+    /// Кнопка ⇆ шкалы времени - когда на глобусе тема с рядом дат.
+    /// Тема снята - снимается и её шторка.
+    pub(super) fn theme_compare_bar(&mut self) {
+        let theme = self.compare_theme();
+        if let Some(c) = &self.theme_compare
+            && theme.as_ref().is_none_or(|(key, _, _)| *key != c.key)
+        {
+            self.theme_compare = None;
+            self.sync_maps();
+        }
+        self.timebar.compare = theme.map(|_| (self.theme_compare.is_some(), self.theme_compare.as_ref().map_or_else(String::new, |c| c.left.clone())));
+    }
+
+    /// Нажатия ⇆ и ‹ › шкалы времени: шторка темы и шаг её левого дня.
+    pub(super) fn theme_compare_input(&mut self) {
+        let clicked = std::mem::take(&mut self.timebar.compare_clicked);
+        let step = std::mem::take(&mut self.timebar.compare_step);
+        if clicked {
+            if self.theme_compare.take().is_none()
+                && let Some((key, theme, ready)) = self.compare_theme()
+            {
+                let at = match self.timebar.window() {
+                    Some((_, hi)) if hi.is_finite() => Some(hi),
+                    _ => None,
+                };
+                if let Some(left) = data::gibs::compare_day(&ready, at) {
+                    self.theme_compare = Some(ThemeCompare { key, theme, left, split: 0.5, shown: Default::default(), tiles: crate::pairtiles::PairTiles::default() });
+                }
+            }
+            self.sync_maps();
+        }
+        if step != 0
+            && let Some(c) = &mut self.theme_compare
+            && let Some(ThemeDay::Day(_, ready)) = self.theme_days.get(c.key)
+            && let Some(day) = data::gibs::step_day(ready, &c.left, step)
+        {
+            c.left = day;
+        }
+    }
+
     /// Попросить весь каталог NASA GIBS, один раз за запуск.
     pub(super) fn ask_gibs_catalog(&mut self) {
         if self.gibs_catalog.is_none() && !crate::maps::has_catalog() {
@@ -289,6 +345,7 @@ impl LiteApp {
         // дат картинки тайлов ждали бы её и не рисовались. У слоя всего
         // каталога ряд пришёл с каталогом.
         let now_utc = web_time::SystemTime::now().duration_since(web_time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64());
+        let mut extent = false;
         for (id, kind) in &on {
             if let crate::maps::Kind::Theme(theme) = kind
                 && !self.theme_days.contains_key(id)
@@ -301,10 +358,23 @@ impl LiteApp {
                     request.start(&theme.domains_url());
                     ThemeDay::Asking(request)
                 };
+                let ready = matches!(state, ThemeDay::Day(..));
                 self.theme_days.insert(id, state);
+                // Ряд слоя каталога пришёл с каталогом: сразу в охват шкалы.
+                if ready {
+                    extent = true;
+                }
             }
         }
+        if extent {
+            self.time_extent();
+        }
         on.retain(|(id, kind)| !matches!(kind, crate::maps::Kind::Theme(_)) || matches!(self.theme_days.get(id), Some(ThemeDay::Day(..))));
+        // Тема под шторкой - не в картинке наложения: оба её дня лежат
+        // парой текстур шторки.
+        if let Some(c) = &self.theme_compare {
+            on.retain(|(id, _)| *id != c.key);
+        }
         // Цвета горизонталей - по подложке: на снимке жёлтые, на карте
         // коричневые, как у модуля.
         let source = self.basemap.source();

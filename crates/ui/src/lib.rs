@@ -49,6 +49,7 @@ pub mod film;
 pub mod overpass;
 pub mod oam;
 pub mod overture;
+pub mod pairtiles;
 pub mod placeprops;
 pub mod glyphs;
 pub mod gps;

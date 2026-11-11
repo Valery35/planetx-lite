@@ -2417,6 +2417,9 @@ The layer is seen only right of the swipe line.	Слой виден только
 The layer is seen on both sides of the swipe line.	Слой виден по обе стороны шторки.
 ⇆ Layer swipe	⇆ Шторка слоёв
 ⇆ Swipe	⇆ Шторка
+Comparison swipe. Left of the swipe the theme is shown on another day, right of it - on the day of the bar. By default the left day is the same day a year earlier. The line is dragged with the mouse.	Шторка сравнения. Левее шторки тема показана на другой день, правее - на день шкалы. По умолчанию день слева - тот же день год назад. Линию тянут мышью.
+The day of the left part one step of the theme series back.	День левой части на шаг ряда темы назад.
+The day of the left part one step of the theme series forward.	День левой части на шаг ряда темы вперёд.
 Two releases with a swipe: the chosen one right of the line, a release about a year older left of it. The line is dragged with the mouse, the releases of the sides are chosen below.	Два выпуска шторкой. Справа от линии - выбранный выпуск, слева - выпуск примерно на год старше. Линию тянут мышью, выпуски сторон выбираются ниже.
 The swipe is taken by the images of an event. Remove the event images to compare releases.	Шторку занимают снимки события. Чтобы сравнить выпуски, снимки события нужно снять.
 View objects to My layers	Объекты вида в «Мои слои»
