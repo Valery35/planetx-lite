@@ -2414,6 +2414,9 @@ The layer is seen only left of the swipe line. Right of it - layers «Right» an
 The layer is seen only right of the swipe line.	Слой виден только правее шторки.
 The layer is seen on both sides of the swipe line.	Слой виден по обе стороны шторки.
 ⇆ Layer swipe	⇆ Шторка слоёв
+⇆ Swipe	⇆ Шторка
+Two releases with a swipe: the chosen one right of the line, a release about a year older left of it. The line is dragged with the mouse, the releases of the sides are chosen below.	Два выпуска шторкой. Справа от линии - выбранный выпуск, слева - выпуск примерно на год старше. Линию тянут мышью, выпуски сторон выбираются ниже.
+The swipe is taken by the images of an event. Remove the event images to compare releases.	Шторку занимают снимки события. Чтобы сравнить выпуски, снимки события нужно снять.
 View objects to My layers	Объекты вида в «Мои слои»
 Points and lines of the layer in the frame of the view become layers of «My layers» with the fields of the Objects window and the colours of the globe.	Точки и линии слоя в рамке вида ложатся слоями «Моих слоёв» с полями окна «Объекты» и цветами глобуса.
 Globe layers	Слои глобуса

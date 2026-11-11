@@ -289,6 +289,19 @@ impl LiteApp {
         if w.busy() {
             ctx.request_repaint_after(std::time::Duration::from_millis(100));
         }
+        // Выпуск стороны шторки сменился - её тайлы забываются.
+        let changed = std::mem::take(&mut w.changed);
+        if self.pair_owner == 2 {
+            for side in (0..2).filter(|s| changed[*s]) {
+                if let Some(globe) = &mut self.globe {
+                    globe.clear_events(side);
+                }
+                self.event_empty[side].clear();
+            }
+        }
+        let Some(w) = &mut self.wayback else {
+            return;
+        };
         let add = w.add.take();
         if !w.open {
             self.wayback = None;

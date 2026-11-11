@@ -6,9 +6,15 @@
 //! снимок у точки взгляда менялся, перенос темы Wayback модуля. Расчёт -
 //! `data::wayback`. У модуля выпуски идут строкой тем со шкалой времени,
 //! у Lite выбранный выпуск ложится строкой карт, как снимок OpenAerialMap.
+//!
+//! Шторка сравнения, как ⇆ темы Wayback модуля (`set_compare`): справа
+//! выбранный выпуск, слева по умолчанию выпуск около года старше
+//! (`themes.compare_day`). Стороны ложатся парой текстур «после» и «до»,
+//! той же, что у снимков событий.
 
 use data::wayback::{self, Info, Release};
 use eframe::egui;
+use globe_core::lod::TileKey;
 
 use crate::i18n::{Lang, tr, trf};
 
@@ -16,8 +22,82 @@ use crate::i18n::{Lang, tr, trf};
 const ANSWER_BYTES: u64 = 4 << 20;
 /// Наибольшее количество шагов цепочки изменений.
 const CHAIN_MOST: usize = 64;
+/// Наибольший тайл снимка, байт.
+const TILE_BYTES: u64 = 1 << 20;
+/// Запросов тайлов одной стороны шторки сразу, не больше.
+const FETCH_MOST: usize = 8;
 
 type Requests<'a> = &'a dyn Fn(u64) -> Box<dyn net::Request>;
+
+/// Выпуск левой стороны шторки по умолчанию: новейший из rows (новые
+/// первыми) не позже чем за год до right, как `compare_day` модуля.
+/// Короткий ряд - самый старый выпуск. None - других выпусков нет.
+pub fn compare_release(rows: &[Release], right: &Release) -> Option<Release> {
+    let year: i32 = right.day.get(..4)?.parse().ok()?;
+    let back = format!("{:04}{}", year - 1, right.day.get(4..).unwrap_or(""));
+    rows.iter().find(|r| r.day <= back && r.number != right.number).or_else(|| rows.iter().rev().find(|r| r.number != right.number)).cloned()
+}
+
+/// Адрес тайла выпуска.
+fn tile_address(release: &Release, key: TileKey) -> String {
+    let (z, x, y) = key;
+    wayback::tile_url(release.number).replace("{z}", &z.to_string()).replace("{y}", &y.to_string()).replace("{x}", &x.to_string())
+}
+
+/// Шторка двух выпусков. Сторона 0 - справа («после»), 1 - слева («до»).
+pub struct Compare {
+    pub right: Release,
+    pub left: Release,
+    /// Линия шторки - доля ширины вида от левого края.
+    pub split: f32,
+    /// Запросы тайлов сторон.
+    pending: [Vec<(TileKey, Box<dyn net::Request>)>; 2],
+}
+
+impl Compare {
+    fn new(right: Release, left: Release) -> Self {
+        Self { right, left, split: 0.5, pending: [Vec::new(), Vec::new()] }
+    }
+
+    /// Выпуск стороны.
+    pub fn release(&self, side: usize) -> &Release {
+        if side == 0 { &self.right } else { &self.left }
+    }
+
+    /// Тайлы стороны side: пришедшие картинки RGBA (None - тайла нет)
+    /// и новые запросы для keys, не больше [`FETCH_MOST`] сразу.
+    pub fn tiles(&mut self, side: usize, keys: &[TileKey], request: Requests) -> Vec<(TileKey, Option<Vec<u8>>)> {
+        let release = self.release(side).clone();
+        let Some(pending) = self.pending.get_mut(side) else {
+            return Vec::new();
+        };
+        let mut out = Vec::new();
+        pending.retain(|(key, ask)| match ask.take() {
+            Some(answer) => {
+                out.push((*key, answer.ok().and_then(|b| net::decode_tile(&b).ok()).map(|i| i.rgba)));
+                false
+            }
+            None => true,
+        });
+        for key in keys {
+            if pending.len() >= FETCH_MOST {
+                break;
+            }
+            if pending.iter().any(|(k, _)| k == key) {
+                continue;
+            }
+            let ask = request(TILE_BYTES);
+            ask.start(&tile_address(&release, *key));
+            pending.push((*key, ask));
+        }
+        out
+    }
+
+    /// Идут ли запросы тайлов.
+    pub fn busy(&self) -> bool {
+        self.pending.iter().any(|p| !p.is_empty())
+    }
+}
 
 /// Окно архива.
 pub struct Wayback {
@@ -39,17 +119,60 @@ pub struct Wayback {
     pub add: Option<Release>,
     /// Новый поиск у нынешней точки взгляда.
     pub search: bool,
+    /// Шторка двух выпусков, None - снята.
+    pub compare: Option<Compare>,
+    /// Стороны шторки, у которых сменился выпуск: их тайлы забываются.
+    pub changed: [bool; 2],
+    /// Шторку не включить: на глобусе снимки события со своей шторкой.
+    pub blocked: bool,
 }
 
 impl Wayback {
     pub fn new(lat: f64, lon: f64, width: f64, request: Requests) -> Self {
         let ask = request(ANSWER_BYTES);
         ask.start(wayback::CONFIG_URL);
-        Self { open: true, releases: Vec::new(), config: Some(ask), link: None, place: (lat, lon, wayback::search_level(width)), rows: Vec::new(), steps: 0, selected: None, info_ask: None, info: None, status: String::new(), add: None, search: false }
+        Self { open: true, releases: Vec::new(), config: Some(ask), link: None, place: (lat, lon, wayback::search_level(width)), rows: Vec::new(), steps: 0, selected: None, info_ask: None, info: None, status: String::new(), add: None, search: false, compare: None, changed: [false; 2], blocked: false }
     }
 
     pub fn busy(&self) -> bool {
-        self.config.is_some() || self.link.is_some() || self.info_ask.is_some()
+        self.config.is_some() || self.link.is_some() || self.info_ask.is_some() || self.compare.as_ref().is_some_and(Compare::busy)
+    }
+
+    /// Включить или снять шторку. Справа - выбранный выпуск, без выбора -
+    /// новейший с изменениями. Ложь - двух выпусков нет.
+    pub fn set_compare(&mut self, on: bool) -> bool {
+        if !on {
+            if self.compare.take().is_some() {
+                self.changed = [true; 2];
+            }
+            return true;
+        }
+        let Some(right) = self.selected.and_then(|n| self.rows.get(n)).or_else(|| self.rows.first()).cloned() else {
+            return false;
+        };
+        let Some(left) = compare_release(&self.rows, &right) else {
+            return false;
+        };
+        self.compare = Some(Compare::new(right, left));
+        self.changed = [true; 2];
+        true
+    }
+
+    /// Выпуск стороны шторки side.
+    fn set_side(&mut self, side: usize, release: Release) {
+        let Some(c) = &mut self.compare else {
+            return;
+        };
+        let slot = if side == 0 { &mut c.right } else { &mut c.left };
+        if *slot != release {
+            *slot = release;
+            if let Some(p) = c.pending.get_mut(side) {
+                p.clear();
+            }
+            if let Some(f) = self.changed.get_mut(side) {
+                *f = true;
+            }
+        }
     }
 
     /// Новый поиск у точки.
@@ -136,6 +259,8 @@ impl Wayback {
         let mut open = true;
         let mut chosen = None;
         let mut add = false;
+        let mut swipe = None;
+        let mut sides: Vec<(usize, Release)> = Vec::new();
         egui::Window::new(tr(lang, "Wayback imagery archive")).id(egui::Id::unique("planetx-wayback")).open(&mut open).default_width(420.0).show(ctx, |ui| {
             let text = if !self.status.is_empty() {
                 self.status.clone()
@@ -165,11 +290,45 @@ impl Wayback {
                 if ui.add_enabled(self.selected.is_some(), egui::Button::new(tr(lang, "On the globe"))).on_hover_text(tr(lang, "The release lies as a tile layer over the base map, a row in the catalogue.")).clicked() {
                     add = true;
                 }
+                let mut on = self.compare.is_some();
+                let can = self.rows.len() >= 2 || on;
+                if ui.add_enabled(can, egui::Button::selectable(on, tr(lang, "⇆ Swipe"))).on_hover_text(tr(lang, "Two releases with a swipe: the chosen one right of the line, a release about a year older left of it. The line is dragged with the mouse, the releases of the sides are chosen below.")).clicked() {
+                    on = !on;
+                    swipe = Some(on);
+                }
             });
+            if self.blocked {
+                ui.add(egui::Label::new(tr(lang, "The swipe is taken by the images of an event. Remove the event images to compare releases.")).wrap());
+            }
+            if let Some(c) = &self.compare {
+                let (left, right) = (c.left.clone(), c.right.clone());
+                ui.horizontal(|ui| {
+                    for (side, label, current) in [(1usize, tr(lang, "Left"), left), (0usize, tr(lang, "Right"), right)] {
+                        ui.label(label);
+                        egui::ComboBox::from_id_salt(("planetx-wayback-side", side)).selected_text(current.day.clone()).show_ui(ui, |ui| {
+                            for r in &self.rows {
+                                if ui.selectable_label(r.number == current.number, &r.day).clicked() {
+                                    sides.push((side, r.clone()));
+                                }
+                            }
+                        });
+                    }
+                });
+            }
             ui.add(egui::Label::new(tr(lang, "Releases of Esri World Imagery since 2014. A release where the place did not change gives the tile of an earlier one, so only releases with changes are listed.")).wrap());
         });
+        if let Some(on) = swipe {
+            self.set_compare(on);
+        }
+        for (side, release) in sides {
+            self.set_side(side, release);
+        }
         if let Some(n) = chosen {
             self.selected = Some(n);
+            // Выбор в списке - выпуск справа от шторки.
+            if let Some(r) = self.rows.get(n).cloned() {
+                self.set_side(0, r);
+            }
             self.info = None;
             self.info_ask = None;
             let (lat, lon, _) = self.place;
@@ -187,6 +346,7 @@ impl Wayback {
             self.config = None;
             self.link = None;
             self.info_ask = None;
+            self.set_compare(false);
         }
     }
 }
@@ -241,6 +401,58 @@ mod tests {
         assert_eq!(w.rows.iter().map(|r| r.number).collect::<Vec<_>>(), [20, 10]);
         assert!(!w.busy());
         assert_eq!(urls.borrow().iter().filter(|u| u.contains("tilemap")).count(), 2);
+    }
+
+    fn release(number: u64, day: &str) -> Release {
+        Release { number, day: day.into(), meta: String::new() }
+    }
+
+    #[test]
+    fn swipe_left_is_a_release_about_a_year_older() {
+        // Новые первыми, как строки окна.
+        let rows = [release(40, "2026-03-01"), release(30, "2025-06-01"), release(20, "2025-02-01"), release(10, "2019-01-01")];
+        assert_eq!(compare_release(&rows, &rows[0]).map(|r| r.number), Some(20));
+        // Старше на год ничего нет - самый старый выпуск.
+        assert_eq!(compare_release(&rows, &rows[3]).map(|r| r.number), Some(20));
+        assert_eq!(compare_release(&rows[..1], &rows[0]), None);
+    }
+
+    #[test]
+    fn swipe_sides_fetch_tiles_of_their_releases() {
+        let answers = Rc::new(RefCell::new(Vec::new()));
+        let urls = Rc::new(RefCell::new(Vec::new()));
+        let stub = Stub(answers, urls.clone(), Rc::new(net::Stats::default()), Rc::new(RefCell::new(String::new())));
+        let request = move |_: u64| -> Box<dyn net::Request> {
+            let mut s = stub.clone();
+            s.3 = Rc::new(RefCell::new(String::new()));
+            Box::new(s)
+        };
+        let mut w = Wayback::new(58.0, 56.0, 1000.0, &request);
+        w.rows = vec![release(40, "2026-03-01"), release(20, "2025-02-01")];
+        assert!(w.set_compare(true));
+        assert_eq!(w.changed, [true; 2]);
+        assert!(w.compare.is_some());
+        let mut c = w.compare.take().unwrap_or_else(|| Compare::new(release(0, ""), release(0, "")));
+        assert_eq!((c.right.number, c.left.number), (40, 20));
+        let keys = [(16, 44_000, 19_000), (16, 44_001, 19_000)];
+        // Ответов нет: запросы уходят, второй раз не повторяются, тайл
+        // без ответа приходит пустым.
+        assert!(c.tiles(0, &keys, &request).is_empty());
+        let got = c.tiles(1, &keys, &request);
+        assert!(got.is_empty());
+        let sent = urls.borrow().iter().filter(|u| u.contains("/tile/")).cloned().collect::<Vec<_>>();
+        assert_eq!(sent.len(), 4, "{sent:?}");
+        assert!(sent.iter().any(|u| u.contains("/tile/40/16/19000/44000")), "{sent:?}");
+        assert!(sent.iter().any(|u| u.contains("/tile/20/16/19000/44001")), "{sent:?}");
+        // Ответ-ошибка - тайл пуст, запрос снят.
+        let done = c.tiles(0, &[], &request);
+        assert_eq!(done.len(), 2);
+        assert!(done.iter().all(|(_, rgba)| rgba.is_none()));
+        w.compare = Some(c);
+        w.changed = [false; 2];
+        assert!(w.set_compare(false));
+        assert!(w.compare.is_none());
+        assert_eq!(w.changed, [true; 2]);
     }
 
     #[test]

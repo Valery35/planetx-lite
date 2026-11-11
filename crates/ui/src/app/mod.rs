@@ -150,6 +150,12 @@ type MapLoaders = Vec<(u32, Box<dyn TileLoader>)>;
 const ANSWER_BYTES: u64 = 1 << 20;
 /// Половина ширины полосы, за которую берётся линия шторки, точки экрана.
 const SWIPE_GRIP: f32 = 8.0;
+
+/// Линия шторки пары текстур «после» и «до»: снимков события, без них -
+/// выпусков Wayback. None - шторки пары нет.
+fn pair_swipe(events: &crate::events::Events, wayback: Option<&crate::wayback::Wayback>) -> Option<f32> {
+    events.swipe().or_else(|| wayback.and_then(|w| w.compare.as_ref()).filter(|_| events.layer().is_none()).map(|c| c.split))
+}
 /// Предел ответа всего каталога NASA GIBS, байт: 25 октября 2026 года
 /// ответ - 5.8 МБ.
 const GIBS_CATALOG_BYTES: u64 = 32 << 20;
@@ -668,6 +674,9 @@ pub struct LiteApp {
     pending_event: Option<String>,
     /// Тайлы снимков события без снимков, по сторонам шторки.
     event_empty: [std::collections::HashSet<TileKey>; 2],
+    /// Хозяин пары текстур «после» и «до»: 0 - никто, 1 - снимки события,
+    /// 2 - шторка выпусков Wayback.
+    pair_owner: u8,
     /// Ширина кадра глобуса в пикселях, для линии шторки.
     globe_width_px: f32,
     /// Линию шторки тянут мышью.
@@ -1396,6 +1405,7 @@ impl LiteApp {
             events: crate::events::Events::default(),
             pending_event: None,
             event_empty: Default::default(),
+            pair_owner: 0,
             globe_width_px: 0.0,
             swipe_drag: false,
             layer_swipe: None,
@@ -3063,9 +3073,11 @@ impl LiteApp {
     /// Линия шторки снимков события на виде rect: рисуется поверх глобуса,
     /// тянется мышью. Истина - мышь у линии, глобус её не получает.
     fn swipe_input(&mut self, ctx: &egui::Context, rect: egui::Rect) -> bool {
-        // Шторка снимков события важнее шторки слоёв: ручка у неё одна.
-        let events = self.events.swipe().is_some();
-        let Some(share) = self.events.swipe().or(self.layer_swipe) else {
+        // Шторка пары текстур (снимки события или выпуски Wayback)
+        // важнее шторки слоёв: ручка у неё одна.
+        let pair = pair_swipe(&self.events, self.wayback.as_ref());
+        let events = pair.is_some();
+        let Some(share) = pair.or(self.layer_swipe) else {
             self.swipe_drag = false;
             return false;
         };
@@ -3083,8 +3095,10 @@ impl LiteApp {
             && let Some(p) = pos
         {
             let share = ((p.x - rect.left()) / rect.width().max(1.0)).clamp(0.02, 0.98);
-            if events {
+            if self.events.swipe().is_some() {
                 self.events.split = share;
+            } else if let Some(c) = self.wayback.as_mut().and_then(|w| w.compare.as_mut()).filter(|_| events) {
+                c.split = share;
             } else {
                 self.layer_swipe = Some(share);
             }
@@ -3097,7 +3111,7 @@ impl LiteApp {
 
     /// Линия шторки и ручка с днями сторон поверх кадра глобуса.
     fn draw_swipe(&self, painter: &egui::Painter, rect: egui::Rect) {
-        let Some(share) = self.events.swipe().or(self.layer_swipe) else {
+        let Some(share) = pair_swipe(&self.events, self.wayback.as_ref()).or(self.layer_swipe) else {
             return;
         };
         let x = rect.left() + share * rect.width();
@@ -3106,10 +3120,15 @@ impl LiteApp {
         let mid = egui::pos2(x, rect.center().y);
         painter.circle(mid, 11.0, p.plate, egui::Stroke::new(2.0, egui::Color32::WHITE));
         painter.text(mid, egui::Align2::CENTER_CENTER, "⇆", egui::FontId::proportional(14.0), p.plate_text);
-        if let Some(s) = self.events.shown.as_ref().filter(|_| self.events.swipe().is_some()) {
+        // Дни сторон: снимков события или выпусков Wayback.
+        let days = match self.events.shown.as_ref().filter(|_| self.events.swipe().is_some()) {
+            Some(s) => Some((s.before.clone().unwrap_or_default(), s.day.clone())),
+            None => self.wayback.as_ref().and_then(|w| w.compare.as_ref()).filter(|_| self.events.layer().is_none()).map(|c| (c.left.day.clone(), c.right.day.clone())),
+        };
+        if let Some((left, right)) = days {
             let font = egui::FontId::proportional(13.0);
             let shadow = egui::Color32::from_black_alpha(160);
-            for (text, anchor, at) in [(s.before.clone().unwrap_or_default(), egui::Align2::RIGHT_TOP, egui::pos2(x - 8.0, rect.top() + 8.0)), (s.day.clone(), egui::Align2::LEFT_TOP, egui::pos2(x + 8.0, rect.top() + 8.0))] {
+            for (text, anchor, at) in [(left, egui::Align2::RIGHT_TOP, egui::pos2(x - 8.0, rect.top() + 8.0)), (right, egui::Align2::LEFT_TOP, egui::pos2(x + 8.0, rect.top() + 8.0))] {
                 painter.text(at + egui::vec2(1.0, 1.0), anchor, &text, font.clone(), shadow);
                 painter.text(at, anchor, &text, font.clone(), egui::Color32::WHITE);
             }
@@ -4344,9 +4363,45 @@ impl eframe::App for LiteApp {
         self.vector.note_contour_levels(&selection.draw, &sea);
         // Тайлы карт: каждому источнику - его уровни.
         let map_tiles = self.vector.maps_wanted(&selection.draw);
+        // Пару текстур «после» и «до» занимают снимки события, без них -
+        // шторка выпусков Wayback. Хозяин сменился - пара забывается.
+        let event_layer = self.events.layer();
+        let wayback_pair = event_layer.is_none() && self.wayback.as_ref().is_some_and(|w| w.compare.is_some());
+        if let Some(w) = &mut self.wayback {
+            w.blocked = event_layer.is_some();
+        }
+        let owner = if event_layer.is_some() { 1 } else if wayback_pair { 2 } else { 0 };
+        if owner != self.pair_owner {
+            self.pair_owner = owner;
+            for side in 0..2 {
+                globe.clear_events(side);
+                self.event_empty[side].clear();
+            }
+        }
+        if let Some(w) = self.wayback.as_mut().filter(|_| wayback_pair)
+            && let Some(compare) = &mut w.compare
+        {
+            for side in 0..2 {
+                let mut keys: Vec<TileKey> = Vec::new();
+                for key in &selection.draw {
+                    let k = terrain::ancestor(*key, key.0.min(data::wayback::MAX_LEVEL));
+                    if !globe.has_event(side, k) && !self.event_empty[side].contains(&k) && !keys.contains(&k) {
+                        keys.push(k);
+                    }
+                }
+                for (key, rgba) in compare.tiles(side, &keys, &*self.loaders.request) {
+                    match rgba.and_then(|r| data::rastermaps::overlay_rgba(&r)) {
+                        Some(pic) => globe.set_event(side, key, 256, 256, &pic),
+                        None => {
+                            self.event_empty[side].insert(key);
+                        }
+                    }
+                }
+            }
+        }
         // Снимки события «после» и «до» шторки: тайлы кадра не глубже
         // уровня снимков, своей парой текстур тайла.
-        if let Some(layer) = self.events.layer() {
+        if let Some(layer) = event_layer {
             for side in 0..2 {
                 let mut keys: Vec<TileKey> = Vec::new();
                 for key in &selection.draw {
@@ -4365,7 +4420,7 @@ impl eframe::App for LiteApp {
                 }
             }
         }
-        globe.set_split(self.events.swipe().map(|f| f * self.globe_width_px));
+        globe.set_split(pair_swipe(&self.events, self.wayback.as_ref()).map(|f| f * self.globe_width_px));
         // Шторка слоёв - пока у слоёв есть стороны.
         let swipe = self.layer_swipe.filter(|_| self.data_layers.has_sides()).map(|f| f * self.globe_width_px);
         globe.set_swipe(swipe);
