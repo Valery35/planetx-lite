@@ -157,3 +157,15 @@ fn area_steps_and_months() {
     assert_eq!(jaxa::between(&dates, "2025-12", "2026-01"), ["2025-12", "2026-01"]);
     assert_eq!(jaxa::same_month(&["2025-07", "2025-08", "2026-07"], "2026-07"), ["2025-07", "2026-07"]);
 }
+
+/// Условия данных JAXA: подпись называет исследование и JAXA, набор
+/// с данными MODIS - ещё и NASA. Прежде у всех стояло «JAXA Earth».
+#[test]
+fn every_set_credits_its_research_and_jaxa() {
+    for set in SETS {
+        assert!(set.credit.contains("(JAXA") && !set.credit.starts_with("JAXA"), "{}", set.credit);
+    }
+    assert!(jaxa::AEROSOL.credit.contains("JAXA/NASA"));
+    assert!(PRECIPITATION.credit.contains("GSMaP"));
+    assert!(LAND_TEMPERATURE.credit.contains("SGLI"));
+}

@@ -329,7 +329,7 @@ impl JaxaArea {
         };
         let median = m.point.map_or_else(String::new, |p| value_text(lang, b.set, p.median));
         let name = trf(lang, "{name}, {date}", &[("name", &set_title(lang, b.set)), ("date", &m.date)]);
-        let credit = format!("{} {}", trf(lang, "Median of the area {median}.", &[("median", &median)]), credit(lang));
+        let credit = format!("{} {}", trf(lang, "Median of the area {median}.", &[("median", &median)]), credit(lang, b.set));
         let date = m.date.clone();
         self.out = Some((Built { png, bbox: b.grid.bounds(), name, day: date, credit }, false));
         self.status = tr(lang, "The month raster is in My layers.").to_string();
@@ -402,7 +402,7 @@ impl JaxaArea {
             "Theil-Sen slope per year from {count} months, the scale from {low} to {high} per year.",
             &[("count", &run.count.to_string()), ("low", &value_text(lang, b.set, low)), ("high", &value_text(lang, b.set, high))],
         );
-        self.out = Some((Built { png, bbox: b.grid.bounds(), name, day: run.last.clone(), credit: format!("{scale} {note} {}", credit(lang)) }, true));
+        self.out = Some((Built { png, bbox: b.grid.bounds(), name, day: run.last.clone(), credit: format!("{scale} {note} {}", credit(lang, b.set)) }, true));
         self.status = format!("{} {note}", tr(lang, "The trend map is in My layers."));
     }
 
@@ -525,9 +525,10 @@ impl JaxaArea {
     }
 }
 
-/// Подпись данных, `credit_text` модуля.
-fn credit(lang: Lang) -> String {
-    trf(lang, "Data - {credit}, {url}.", &[("credit", jaxa::ATTRIBUTION.0), ("url", jaxa::ATTRIBUTION.1)])
+/// Подпись данных набора set, `credit_text` модуля. Название
+/// исследования и JAXA - по условиям данных JAXA.
+fn credit(lang: Lang, set: &Set) -> String {
+    trf(lang, "Data - {credit}, {url}.", &[("credit", set.credit), ("url", jaxa::SITE)])
 }
 
 /// Картинка PNG сетки RGBA cols × rows.

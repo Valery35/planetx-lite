@@ -22,7 +22,8 @@ use crate::weather::{Field, Grid};
 
 /// Корень наборов в хранилище.
 pub const ROOT: &str = "https://s3.ap-northeast-1.wasabisys.com/je-pds/cog/v1/";
-pub const ATTRIBUTION: (&str, &str) = ("JAXA Earth", "https://data.earth.jaxa.jp/");
+/// Адрес наборов в подписи источника.
+pub const SITE: &str = "https://data.earth.jaxa.jp/";
 /// Шаг сетки глобуса, градусы.
 pub const STEP: f64 = 0.1;
 
@@ -38,6 +39,9 @@ pub struct Set {
     pub offset: f64,
     /// Числа файла без значения: «нет данных» и коды ошибок.
     pub empty: &'static [f64],
+    /// Подпись источника по условиям JAXA: название исследования и JAXA,
+    /// у данных с участием другой организации - обе.
+    pub credit: &'static str,
 }
 
 /// Температура поверхности суши днём, GCOM-C SGLI. Файл - кельвины,
@@ -57,6 +61,7 @@ pub const LAND_TEMPERATURE: Set = Set {
     slope: 0.02,
     offset: -273.15,
     empty: &[65535.0],
+    credit: "GCOM-C/SGLI (JAXA)",
 };
 
 /// Температура поверхности моря днём, GCOM-C SGLI.
@@ -77,6 +82,7 @@ pub const SEA_TEMPERATURE: Set = Set {
     slope: 0.0012,
     offset: -10.0,
     empty: &[65535.0],
+    credit: "GCOM-C/SGLI (JAXA)",
 };
 
 /// Вегетационный индекс NDVI, GCOM-C SGLI.
@@ -95,6 +101,7 @@ pub const NDVI: Set = Set {
     slope: 0.0001,
     offset: -1.0,
     empty: &[65535.0],
+    credit: "GCOM-C/SGLI (JAXA)",
 };
 
 /// Хлорофилл-а в воде, GCOM-C SGLI, мг/м³. Шкала по степеням десяти.
@@ -113,6 +120,7 @@ pub const CHLOROPHYLL: Set = Set {
     slope: 0.0016,
     offset: 0.0,
     empty: &[65535.0],
+    credit: "GCOM-C/SGLI (JAXA)",
 };
 
 /// Осадки GSMaP, средняя интенсивность месяца, мм/ч.
@@ -131,6 +139,7 @@ pub const PRECIPITATION: Set = Set {
     slope: 1.0,
     offset: 0.0,
     empty: &[-999.9, -4.0, -8.0, -99.0],
+    credit: "GSMaP (JAXA)",
 };
 
 /// Влажность почвы, GCOM-W AMSR2, проценты объёма.
@@ -149,6 +158,7 @@ pub const SOIL_MOISTURE: Set = Set {
     slope: 0.1,
     offset: 0.0,
     empty: &[-32768.0, -32761.0, -32762.0, -32763.0, -32764.0, -32765.0, -32766.0, -32767.0],
+    credit: "GCOM-W/AMSR2 (JAXA)",
 };
 
 /// Оптическая толща аэрозоля на 500 нм, MODIS Terra и Aqua.
@@ -167,6 +177,7 @@ pub const AEROSOL: Set = Set {
     slope: 0.001,
     offset: 0.0,
     empty: &[65535.0],
+    credit: "JASMES MODIS (JAXA/NASA)",
 };
 
 /// Наборы строк каталога по порядку.

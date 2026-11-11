@@ -165,7 +165,7 @@ impl crate::registry::Layer for Shown {
     }
 
     fn attribution(&self) -> Option<(&'static str, &'static str)> {
-        Some(jaxa::ATTRIBUTION)
+        Some((self.set.credit, jaxa::SITE))
     }
 
     fn legend(&self, lang: Lang) -> Option<(String, data::gibs::Colormap)> {

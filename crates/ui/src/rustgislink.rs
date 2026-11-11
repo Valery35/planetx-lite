@@ -145,8 +145,10 @@ pub enum News {
     Layer { id: i64, data: Box<LayerData>, style: Box<Style> },
     /// Просьба выполнена, текст - для строки сообщения.
     Done(String),
-    /// Расчёт лёг в проект RustGIS группой с этим названием.
-    Added(String),
+    /// Расчёт или слои глобуса легли в проект RustGIS: верхняя группа
+    /// top называет вид («RustPlanetX - анализ участка», «RustPlanetX -
+    /// слои глобуса»), group - подгруппа.
+    Added { top: String, group: String },
     /// Вид лёг картинкой в макет RustGIS с этим названием. None - в макет,
     /// открытый в RustGIS.
     InLayout(Option<String>),
@@ -1072,7 +1074,7 @@ fn serve(s: &mut dyn Channel, asks: &Receiver<Ask>, stop: &AtomicBool, tell: &dy
         loop {
             match asks.try_recv() {
                 Ok(Ask::AddResult { top, group, vectors, rasters }) => match perform_result(s, &top, &group, &vectors, &rasters) {
-                    Ok(name) => tell(News::Added(name)),
+                    Ok(group) => tell(News::Added { top, group }),
                     Err(e) => tell(News::Failed(e)),
                 },
                 Ok(Ask::Raster { layer, name, max_zoom }) => match cut_raster(s, layer, &name, max_zoom) {

@@ -12,7 +12,9 @@
   - Всегда, каждый выпуск: выпуск GitHub, Dropbox, сайт informpp.ru
     («Что нового» и главная), Telegram @qgis_isolines, ВК (запись
     на стене, статья - только для крупного выпуска), Mastodon, X,
-    LinkedIn, Facebook, каталог QGIS (только модуль).
+    LinkedIn, Facebook, каталог QGIS (только модуль). Выпуск
+    RustPlanetX идёт ещё и в Telegram t.me/rustgis, решение автора
+    от 12 ноября 2026 года.
   - Иногда, крупный выпуск или тема, близкая площадке: OSGeo
     Discourse (ответ в своей теме), форум OSM (пишет только автор,
     когда новое касается данных OSM, без частых постов), linux.org.ru
@@ -49,6 +51,7 @@
 | Сайт informpp.ru | автор | Шесть блоков из `site/pages`, публикация по слову автора |
 | Каталог QGIS (модуль) | Valery35 | plugins.qgis.org |
 | Telegram, @qgis_isolines | автор | Приложение Telegram, текст через буфер, пост один раз |
+| Telegram, t.me/rustgis | автор | Канал с 12 ноября 2026 года - выпуски RustPlanetX и новости RustGIS (работа Qiusheng Wu). Пост выпуска RustPlanetX, как в @qgis_isolines. Новости RustGIS - из утренней задачи «Новости RustGIS для RustPlanetX», только по слову автора |
 | ВК, vk.ru/qgismodules | автор | Пост или статья через Claude in Chrome |
 | Форум OSM, community.openstreetmap.org | Valery35 | Пишет только автор, своими словами. С 7 ноября 2026 года учётная запись без ограничений (уровень доверия 0), темы Lite 149678 и 149680 открыты для ответов, тема 149679 удалена |
 | Форум Rust, users.rust-lang.org | автор, вход через GitHub | Не публиковать: 6 ноября 2026 года учётная запись заморожена с причиной «slop», пост о 0.22.0 удалён |
@@ -335,6 +338,11 @@
 - Facebook - пост в ленте автора 10 ноября 2026 года
 - OSGeo Discourse, Reddit r/rust и r/gis, форум OSM, linux.org.ru - ждут слова автора, тексты Reddit в файле постов
 - Лента страницы линейки planetx (planetx-scene/site/feed.json) - не обновлялась
+
+### Канал RustPlanetX в Telegram, 12 ноября 2026 года
+
+- Канал t.me/rustgis, пост-описание RustPlanetX: https://t.me/rustgis/3 (по слову автора)
+- Закрепление поста ставит автор
 
 ### RustPlanetX 0.5.7, 11 ноября 2026 года
 

@@ -2549,7 +2549,7 @@ No piece of the 3D Tiles set was read	Не прочитан ни один кус
 3D Tiles: these sets were not found: {names}	3D Tiles: не найдены наборы: {names}
 3D Tiles: {title}.	3D Tiles: {title}.
 Link with the open RustGIS	Связь с открытым RustGIS
-Layers of the RustGIS project are listed in the RustGIS project section, switched off: a check shows a layer on the globe in its RustGIS colours. The globe follows the RustGIS map, and the map follows the globe. A click with Identify selects the feature in RustGIS. In RustGIS start the MCP Relay command or tick Let your Agents Control RustGIS in the assistant settings.	Слои проекта RustGIS - в разделе «Проект RustGIS», выключенные: флажок показывает слой на глобусе в цветах RustGIS. Глобус идёт за картой RustGIS, карта - за глобусом. Щелчок инструментом «Объекты» выделяет объект в RustGIS. В RustGIS нужна команда «MCP-релей» или флажок «Let your Agents Control RustGIS» в настройках помощника.
+Layers of the RustGIS project are listed in the RustGIS project section. With Layers as on the RustGIS map a layer is on the globe when it is on the map, without it the layers start switched off. A check shows a layer on the globe in its RustGIS colours. The globe follows the RustGIS map, and the map follows the globe. A click with Identify selects the feature in RustGIS. In RustGIS start the MCP Relay command or tick Let your Agents Control RustGIS in the assistant settings.	Слои проекта RustGIS - в разделе «Проект RustGIS». С флажком «Слои как на карте RustGIS» слой виден на глобусе, когда он включён на карте, без него слои приходят выключенными. Флажок показывает слой на глобусе в цветах RustGIS. Глобус идёт за картой RustGIS, карта - за глобусом. Щелчок инструментом «Объекты» выделяет объект в RustGIS. В RustGIS нужна команда «MCP-релей» или флажок «Let your Agents Control RustGIS» в настройках помощника.
 Linked with RustGIS.	Связь с RustGIS установлена.
 No link with RustGIS: {error}. In RustGIS start the MCP Relay command.	Связи с RustGIS нет: {error}. В RustGIS нужна команда «MCP-релей».
 the MCP relay of RustGIS is off	ретранслятор MCP RustGIS выключен
@@ -2604,7 +2604,7 @@ Saved to «My layers», folder {folder}. The GeoTIFF file is not written: {e}	С
 Saved to «My layers», folder {folder}.	Сохранено в «Мои слои», папка {folder}.
 Saved to «My layers», folder {folder}, the values - {path}.	Сохранено в «Мои слои», папка {folder}, значения - {path}.
 The picture becomes a ground overlay in «My places»: it goes into a scene and a KMZ file.	Картинка становится наложением на землю в «Моих метках»: она войдёт в сцену и в файл KMZ.
-The calculation is added to the RustGIS project, group {group}.	Расчёт добавлен в проект RustGIS, группа {group}.
+Added to the RustGIS project, {top}, group {group}.	Добавлено в проект RustGIS, {top}, группа {group}.
 RustPlanetX - area analysis	RustPlanetX - анализ участка
 The calculation goes to the RustGIS project, group {group}.	Расчёт уходит в проект RustGIS, группа {group}.
 The calculation goes to the RustGIS project, group {group}. The GeoTIFF file is not written: {e}	Расчёт уходит в проект RustGIS, группа {group}. Файл GeoTIFF не записан: {e}

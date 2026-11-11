@@ -506,7 +506,7 @@ pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut S
                 group(ui, "RustGIS", |ui| {
                     ui.checkbox(&mut settings.rustgis, tr(lang, "Link with the open RustGIS")).on_hover_text(tr(
                         lang,
-                        "Layers of the RustGIS project are listed in the RustGIS project section, switched off: a check shows a layer on the globe in its RustGIS colours. The globe follows the RustGIS map, and the map follows the globe. A click with Identify selects the feature in RustGIS. In RustGIS start the MCP Relay command or tick Let your Agents Control RustGIS in the assistant settings.",
+                        "Layers of the RustGIS project are listed in the RustGIS project section. With Layers as on the RustGIS map a layer is on the globe when it is on the map, without it the layers start switched off. A check shows a layer on the globe in its RustGIS colours. The globe follows the RustGIS map, and the map follows the globe. A click with Identify selects the feature in RustGIS. In RustGIS start the MCP Relay command or tick Let your Agents Control RustGIS in the assistant settings.",
                     ));
                     // «Слои как на карте QGIS» окна свойств модуля.
                     ui.checkbox(&mut settings.rustgis_map, tr(lang, "Layers as on the RustGIS map")).on_hover_text(tr(

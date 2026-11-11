@@ -925,3 +925,35 @@ impl LiteApp {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::quiet;
+    use eframe::egui;
+
+    /// Кнопка «⇆ Шторка» окна Wayback в программе: шторка включается
+    /// и держится в следующих кадрах.
+    #[test]
+    fn wayback_swipe_button_works_in_the_app() {
+        let config = br#"{"30": {"itemTitle": "Wayback 2026-01-01"}, "20": {"itemTitle": "Wayback 2020-01-01"}, "15": {"itemTitle": "Wayback 2018-01-01"}, "10": {"itemTitle": "Wayback 2015-01-01"}}"#.to_vec();
+        let answers = std::rc::Rc::new(vec![
+            ("waybackconfig".to_string(), config),
+            ("tilemap/30/".to_string(), br#"{"data":[1],"select":[20]}"#.to_vec()),
+            ("tilemap/15/".to_string(), br#"{"data":[1],"select":[10]}"#.to_vec()),
+        ]);
+        let mut app = quiet::app(answers);
+        let ctx = egui::Context::default();
+        app.open_wayback();
+        let mut shapes = Vec::new();
+        for _ in 0..12 {
+            shapes = quiet::frame(&ctx, &mut app, Vec::new());
+        }
+        let at = quiet::text_at(&shapes, "⇆ Swipe").or_else(|| quiet::text_at(&shapes, "⇆ Шторка"));
+        assert!(at.is_some(), "кнопки нет в кадре");
+        quiet::click(&ctx, &mut app, at.unwrap_or_default());
+        for _ in 0..3 {
+            quiet::frame(&ctx, &mut app, Vec::new());
+        }
+        assert!(app.wayback.as_ref().is_some_and(|w| w.compare.is_some()), "шторка не включилась");
+    }
+}

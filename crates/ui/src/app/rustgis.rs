@@ -6,6 +6,15 @@
 
 use super::*;
 
+/// Имя слоя в проекте RustGIS: один слой - имя слоя глобуса folder,
+/// у нескольких к нему добавляется имя слоя. Прежде слой назывался
+/// по геометрии - «Точки», а не «Электростанции».
+#[cfg_attr(target_arch = "wasm32", allow(dead_code))]
+fn project_layer_name(folder: &str, layer: &str, count: usize) -> String {
+    let stem = data::layers::stem(layer);
+    if count <= 1 || stem.is_empty() || stem == folder { folder.to_string() } else { format!("{folder} - {stem}") }
+}
+
 impl LiteApp {
     /// Связь с RustGIS: запуск и остановка по настройке или `--rustgis`,
     /// вести потока - в этом кадре. Слои проекта - живыми слоями папки
@@ -153,7 +162,10 @@ impl LiteApp {
                 }
                 News::InLayout(Some(layout)) => self.open_message = Some(trf(self.lang, "The view is in the RustGIS layout {layout}.", &[("layout", &layout)])),
                 News::InLayout(None) => self.open_message = Some(tr(self.lang, "The view is in the layout open in RustGIS.").to_string()),
-                News::Added(group) =>self.open_message = Some(trf(self.lang, "The calculation is added to the RustGIS project, group {group}.", &[("group", &group)])),
+                // Сообщение по виду: расчёт или слои глобуса, верхняя
+                // группа называет вид. Прежде слои глобуса тоже
+                // назывались расчётом.
+                News::Added { top, group } => self.open_message = Some(trf(self.lang, "Added to the RustGIS project, {top}, group {group}.", &[("top", &top), ("group", &group)])),
                 News::Tiles { layer, template, max_zoom } => self.rustgis_tiles(layer, &template, max_zoom),
                 News::CutFailed { layer, error } => {
                     if let Some(sync) = &mut self.rustgis {
@@ -308,7 +320,8 @@ impl LiteApp {
         }
         let unix = crate::pointcalc::clock_now();
         let stamp = crate::analysis::clock(unix);
-        let vectors: Vec<(String, String)> = vectors.iter().filter(|l| !l.items.is_empty()).map(|l| (format!("{} {stamp}", data::layers::stem(&l.name)), data::layers::to_geojson(l))).collect();
+        let filled: Vec<&data::layers::LayerData> = vectors.iter().filter(|l| !l.items.is_empty()).collect();
+        let vectors: Vec<(String, String)> = filled.iter().map(|l| (format!("{} {stamp}", project_layer_name(folder, &l.name, filled.len())), data::layers::to_geojson(l))).collect();
         let mut rasters = Vec::new();
         let mut failed = None;
         for picture in &pictures {
@@ -691,5 +704,18 @@ impl LiteApp {
             }
             self.data_act(id, &act, now);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::project_layer_name;
+
+    /// Слой витрины «Электростанции» уходил в RustGIS слоем «Точки».
+    #[test]
+    fn project_layer_is_named_after_the_globe_layer() {
+        assert_eq!(project_layer_name("Электростанции", "Точки", 1), "Электростанции");
+        assert_eq!(project_layer_name("Электростанции", "Линии", 2), "Электростанции - Линии");
+        assert_eq!(project_layer_name("wells", "wells.geojson", 2), "wells");
     }
 }

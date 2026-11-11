@@ -456,6 +456,55 @@ mod tests {
         assert_eq!(w.changed, [true; 2]);
     }
 
+    /// Положение надписи text в кадре: левый верхний угол строки.
+    fn text_at(shapes: &[egui::epaint::ClippedShape], text: &str) -> Option<egui::Pos2> {
+        fn find(shape: &egui::Shape, text: &str) -> Option<egui::Pos2> {
+            match shape {
+                egui::Shape::Text(t) if t.galley.text() == text => Some(t.pos + t.galley.rect.center().to_vec2()),
+                egui::Shape::Vec(v) => v.iter().find_map(|s| find(s, text)),
+                _ => None,
+            }
+        }
+        shapes.iter().find_map(|c| find(&c.shape, text))
+    }
+
+    /// Кадр окна без экрана с событиями events, фигуры кадра.
+    fn window_frame(ctx: &egui::Context, w: &mut Wayback, request: Requests, events: Vec<egui::Event>) -> Vec<egui::epaint::ClippedShape> {
+        let input = egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(1200.0, 900.0))), events, ..Default::default() };
+        let mut out = ctx.run_pass(input,|ctx| w.show(ctx, Lang::EN, request));
+        out.textures_delta.clear();
+        out.shapes
+    }
+
+    #[test]
+    fn swipe_button_turns_the_swipe_on() {
+        let answers = Rc::new(RefCell::new(Vec::new()));
+        let stub = Stub(answers, Rc::new(RefCell::new(Vec::new())), Rc::new(net::Stats::default()), Rc::new(RefCell::new(String::new())));
+        let request = move |_: u64| -> Box<dyn net::Request> {
+            let mut s = stub.clone();
+            s.3 = Rc::new(RefCell::new(String::new()));
+            Box::new(s)
+        };
+        let mut w = Wayback::new(58.0, 56.0, 1000.0, &request);
+        w.config = None;
+        w.rows = vec![release(40, "2026-03-01"), release(20, "2025-02-01")];
+        let ctx = egui::Context::default();
+        let mut shapes = Vec::new();
+        for _ in 0..3 {
+            shapes = window_frame(&ctx, &mut w, &request, Vec::new());
+        }
+        let at = text_at(&shapes, "⇆ Swipe");
+        assert!(at.is_some(), "кнопки нет в кадре");
+        let at = at.unwrap_or_default();
+        let press = |pressed| egui::Event::PointerButton { pos: at, button: egui::PointerButton::Primary, pressed, modifiers: egui::Modifiers::NONE };
+        window_frame(&ctx, &mut w, &request, vec![egui::Event::PointerMoved(at)]);
+        window_frame(&ctx, &mut w, &request, vec![press(true), press(false)]);
+        for _ in 0..3 {
+            window_frame(&ctx, &mut w, &request, Vec::new());
+        }
+        assert!(w.compare.is_some(), "шторка не включилась");
+    }
+
     #[test]
     fn objects_feature_names_release_and_shot() {
         let r = release(40, "2026-03-01");

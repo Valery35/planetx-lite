@@ -195,6 +195,15 @@ impl LiteApp {
         if !crate::tracks::Tracks::split(&layers, name).0.is_empty() {
             return Ok(self.open_tracks(layers, name, fly).flatten());
         }
+        // RustPlanetX: «Моих слоёв» у него нет, слои файла уходят в проект
+        // RustGIS. Прежде они ложились в скрытый список и пропадали.
+        if self.edition.linked() && layers.iter().any(|l| !l.items.is_empty()) {
+            let points: Vec<(f64, f64)> = layers.iter().flat_map(|l| l.items.iter().flat_map(|i| i.parts.iter().flatten().copied())).collect();
+            if let Some(text) = self.layers_to_rustgis(data::layers::stem(name), layers.clone(), Vec::new()) {
+                self.open_message = Some(text);
+                return Ok(self.fly_to_points(&points, fly));
+            }
+        }
         let before = self.data_layers.list.len();
         let source = self.opening_source();
         let count = self.data_layers.add_from(layers, name, source);
@@ -205,15 +214,21 @@ impl LiteApp {
         }
         self.open_message = Some(trf(self.lang, "Layers added: {count}. The «⋯» menu of a row in the My layers section sets the style, labels and extrusion.", &[("count", &count.to_string())]));
         let points: Vec<(f64, f64)> = self.data_layers.list.iter().take(self.data_layers.list.len() - before).flat_map(crate::datalayers::DataLayer::extent_points).collect();
+        Ok(self.fly_to_points(&points, fly))
+    }
+
+    /// Камера - к охвату точек points: перелётом в момент fly или сразу.
+    /// Заданная при запуске поза без перелёта не меняется.
+    fn fly_to_points(&mut self, points: &[(f64, f64)], fly: Option<f64>) -> Option<Pose> {
         let camera = &self.nav.camera;
-        let pose = marks::fit_points(&points, camera.fov_y, camera.aspect());
+        let pose = marks::fit_points(points, camera.fov_y, camera.aspect());
         if let Some(pose) = pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
             match fly {
                 Some(now) => crate::input::fly(&mut self.nav, pose, now),
                 None => self.nav.show(pose),
             }
         }
-        Ok(pose)
+        pose
     }
 
     /// Соседние файлы главного файла name: пришедшие отдельно и, в
@@ -712,14 +727,24 @@ impl LiteApp {
         }
         let points: Vec<(f64, f64)> = found.iter().flat_map(crate::tracks::Layer::places).collect();
         let others: Vec<data::layers::LayerData> = layers.into_iter().enumerate().filter(|(n, _)| rest.contains(n)).map(|(_, l)| l).collect();
-        self.data_layers.add(others, name);
+        // RustPlanetX: остальные слои файла - в проект RustGIS, «Моих
+        // слоёв» у него нет. Его сообщение идёт после сообщения о треках.
+        let to_project = self.edition.linked() && others.iter().any(|l| !l.items.is_empty());
+        let project = if to_project { self.layers_to_rustgis(data::layers::stem(name), others.clone(), Vec::new()) } else { None };
+        if project.is_none() {
+            self.data_layers.add(others, name);
+        }
         let count = found.len();
         let demo = self.tracks.demo_model.is_some();
         self.tracks.add(found, name);
         self.time_extent();
         // Окно «Треки» открывается у своего файла, у демо - нет.
         self.tracks.open |= !demo;
-        self.open_message = Some(trf(self.lang, "Tracks: {count}. The time slider grows the paths.", &[("count", &count.to_string())]));
+        let tracks = trf(self.lang, "Tracks: {count}. The time slider grows the paths.", &[("count", &count.to_string())]);
+        self.open_message = Some(match project {
+            Some(text) => format!("{tracks} {text}"),
+            None => tracks,
+        });
         let camera = &self.nav.camera;
         let pose = marks::fit_points(&points, camera.fov_y, camera.aspect()).map(|p| Pose::new(p.lat, p.lon, p.distance, TRACK_HEADING, TRACK_TILT));
         if let Some(pose) = pose.clone().filter(|_| fly.is_some() || !self.keep_pose) {
@@ -1048,5 +1073,41 @@ impl LiteApp {
                 ctx.request_repaint_after(std::time::Duration::from_secs_f64(SIDECAR_PAUSE));
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::quiet;
+
+    /// Программа без сети и видеокарты.
+    fn quiet_app() -> super::LiteApp {
+        quiet::app(std::rc::Rc::new(Vec::new()))
+    }
+
+    /// Слой из одной точки.
+    fn point_layer() -> Vec<data::layers::LayerData> {
+        let item = data::layers::Item { shape: data::layers::Shape::Point, parts: vec![vec![(58.0, 56.2)]], heights: Vec::new(), values: Vec::new() };
+        vec![data::layers::LayerData { name: "wells".into(), epsg: None, fields: Vec::new(), numeric: Vec::new(), items: vec![item] }]
+    }
+
+    /// У RustPlanetX «Моих слоёв» нет: слой файла уходил в скрытый список
+    /// и пропадал. Теперь он идёт в проект RustGIS, без связи -
+    /// сообщение «Нет связи с RustGIS».
+    #[test]
+    fn file_layers_of_rustplanetx_go_to_the_rustgis_project() {
+        let mut app = quiet_app();
+        app.edition = crate::Edition::RustPlanetX;
+        let before = app.data_layers.list.len();
+        let pose = app.open_vector(point_layer(), "wells.geojson", None);
+        assert!(matches!(pose, Ok(Some(_))), "{pose:?}");
+        assert_eq!(app.data_layers.list.len(), before);
+        let message = app.open_message.clone().unwrap_or_default();
+        assert!(message.contains("RustGIS"), "{message}");
+        // У Lite слой ложится в «Мои слои».
+        let mut lite = quiet_app();
+        let before = lite.data_layers.list.len();
+        assert!(lite.open_vector(point_layer(), "wells.geojson", None).is_ok());
+        assert_eq!(lite.data_layers.list.len(), before + 1);
     }
 }
