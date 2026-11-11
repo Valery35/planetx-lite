@@ -365,6 +365,38 @@ impl LiteApp {
         self.picture_to_layers(tr(lang, "Rumsey maps"), &name, b.png, b.bbox, (!year.is_empty()).then(|| (year.clone(), year)), String::new());
     }
 
+    /// Окно «Данные JAXA»: месяцы участка, растр месяца и карта тренда -
+    /// слоями-картинками «Моих слоёв».
+    pub(super) fn step_jaxa_area(&mut self, ctx: &egui::Context) {
+        let lang = self.lang;
+        let Some(w) = &mut self.jaxa_area else {
+            return;
+        };
+        {
+            let loaders = &self.loaders;
+            let request = |limit: u64| (loaders.request)(limit);
+            w.step(lang, &request);
+            w.show(ctx, lang, &request);
+        }
+        if w.busy() {
+            ctx.request_repaint_after(std::time::Duration::from_millis(100));
+        }
+        let out = w.out.take();
+        if !w.open {
+            self.jaxa_area = None;
+        }
+        let Some((b, trend)) = out else {
+            return;
+        };
+        // Карта тренда - без времени: она о всём ряде. Месяц идёт по шкале.
+        if trend {
+            self.picture_to_layers(tr(lang, "Trend maps"), &b.name, b.png, b.bbox, None, b.credit);
+        } else {
+            let time = data::jaxa::date_seconds(&b.day).map(|_| (format!("{}-01", b.day), format!("{}-28", b.day)));
+            self.picture_to_layers(tr(lang, "JAXA data"), &b.name, b.png, b.bbox, time, b.credit);
+        }
+    }
+
     /// Окно «Космоснимки»: поиск, чтение каналов, готовый снимок -
     /// слоем-картинкой «Моих слоёв», папка «Космоснимки».
     pub(super) fn step_sentinel(&mut self, ctx: &egui::Context, now: f64) {

@@ -215,6 +215,23 @@
 - LinkedIn и Facebook - посты в лентах автора
 - Площадки группы «Иногда» (OSGeo, форум OSM, linux.org.ru, Reddit) - не публиковались, выпуск малый
 
+### PlanetX 1.43.2, 11 ноября 2026 года
+
+Тексты - planetx/site/posts_1.43.2_social.md, статьи нет, выпуск малый. По слову автора «Выпускай» в сессии модуля. В выпуске - исправление шторки Esri Wayback по жалобе пользователя.
+
+- Коммиты 2ede63d (выпуск), cc0c00c (тексты постов)
+- GitHub: https://github.com/Valery35/planetx/releases/tag/v1.43.2
+- Каталог QGIS: https://plugins.qgis.org/plugins/planetx/version/1.43.2/ (загружена, ждёт проверки и одобрения)
+- Dropbox - planetx-1.43.2.zip в Dropbox\ИИ\PlanetX
+- Сайт informpp.ru - «Что нового» и главная модуля, опубликовано, страница отдаёт 1.43.2
+- Telegram: https://t.me/qgis_isolines/204 (бот выпуска)
+- ВК: https://vk.ru/wall-241229428_65 (запись без снимка)
+- Mastodon: https://en.osm.town/@Vaery35/117599402119130278
+- X: https://x.com/Valery35/status/2120596198188859473
+- LinkedIn и Facebook - посты в лентах автора 12 ноября 2026 года
+- Площадки группы «Иногда» - не публиковались, выпуск малый
+- Повтор 1.43.1 в Telegram - удалён пост 200, остался 201
+
 ### PlanetX 1.43.1, 11 ноября 2026 года
 
 Тексты - planetx/site/posts_1.43.1_social.md, статьи нет, выпуск малый. По слову автора «Публикуй». В выпуске - высоты Terrarium без выбросов по правилу PlanetX Lite 771afc5 (коммит модуля 38c2ce7).

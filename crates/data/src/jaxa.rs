@@ -233,6 +233,189 @@ pub fn value(set: &Set, dn: f64) -> f64 {
     dn * set.slope + set.offset
 }
 
+// --- Участок: окно «Данные JAXA…», перенос `core/jaxa.py` модуля ---------
+//
+// Слово автора от 12 ноября 2026 года «Да, переноси». Окно берёт
+// уровень 1 - квадраты по 90°, читается только то, что под участком.
+// Пиксель уровня 1 у наборов разный, [`area_step`].
+
+/// Уровень файлов участка.
+pub const LEVEL: u32 = 1;
+/// Сторона квадрата уровня, градусы.
+pub const QUAD: f64 = 90.0;
+
+/// Пиксель файла уровня 1, градусы: у SGLI 0.025° (около 2.8 км),
+/// у аэрозоля 0.05°, у осадков и влажности почвы 0.1°. Шаги сверены
+/// с файлами модулем 9 ноября 2026 года.
+pub fn area_step(set: &Set) -> f64 {
+    match set.key {
+        "jaxa_aod" => 0.05,
+        "jaxa_precip" | "jaxa_smc" => 0.1,
+        _ => 0.025,
+    }
+}
+
+fn lon_text(value: f64) -> String {
+    let v = value.round() as i64;
+    format!("{}{:03}.00", if v < 0 { 'W' } else { 'E' }, v.abs())
+}
+
+fn lat_text(value: f64) -> String {
+    let v = value.round() as i64;
+    format!("{}{:02}.00", if v < 0 { 'S' } else { 'N' }, v.abs())
+}
+
+/// Адрес файла квадрата уровня 1 с юго-западным углом west, south.
+pub fn quad_url(set: &Set, date: &str, west: f64, south: f64) -> String {
+    let (east, north) = (west + QUAD, south + QUAD);
+    let (w, e, s, n) = (lon_text(west), lon_text(east), lat_text(south), lat_text(north));
+    format!("{ROOT}{}/{date}/{LEVEL}/{w}-{e}/{w}-{s}-{e}-{n}-{}.tiff", set.id, set.band)
+}
+
+/// Углы (запад, юг) квадратов, которые задевает рамка (запад, юг, восток,
+/// север). Рамка через линию перемены дат - две части.
+pub fn quads(bbox: [f64; 4]) -> Vec<(f64, f64)> {
+    let [west, south, east, north] = bbox;
+    if east < west {
+        let mut out = quads([west, south, 180.0, north]);
+        out.extend(quads([-180.0, south, east, north]));
+        return out;
+    }
+    let mut out = Vec::new();
+    for lon in (-180..180).step_by(QUAD as usize) {
+        let lon = f64::from(lon);
+        if lon + QUAD <= west || lon >= east {
+            continue;
+        }
+        for lat in [-90.0, 0.0] {
+            if lat + QUAD <= south || lat >= north {
+                continue;
+            }
+            out.push((lon, lat));
+        }
+    }
+    out
+}
+
+/// Сетка участка по пикселям уровня: west, north - центр левого верхнего
+/// пикселя, градусы, rows, cols - размер, step - шаг.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct AreaGrid {
+    pub west: f64,
+    pub north: f64,
+    pub rows: usize,
+    pub cols: usize,
+    pub step: f64,
+}
+
+/// Часть сетки из одного файла квадрата: угол квадрата, рамка части
+/// по краям пикселей (запад, юг, восток, север), начало и размер части
+/// в сетке участка.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Part {
+    pub quad: (f64, f64),
+    pub bbox: [f64; 4],
+    pub row: usize,
+    pub col: usize,
+    pub rows: usize,
+    pub cols: usize,
+}
+
+/// Сетка пикселей шага step, которые задевает рамка (запад, юг, восток,
+/// север). Узел - середина пикселя, края пикселей на кратных step от -180
+/// и 90.
+pub fn grid_for(bbox: [f64; 4], step: f64) -> AreaGrid {
+    let [west, south, east, north] = bbox;
+    let c0 = ((west + 180.0) / step + 1e-9).floor() as i64;
+    let c1 = ((east + 180.0) / step - 1e-9).ceil() as i64;
+    let r0 = ((90.0 - north) / step + 1e-9).floor() as i64;
+    let r1 = ((90.0 - south) / step - 1e-9).ceil() as i64;
+    let cols = usize::try_from((c1 - c0).max(1)).unwrap_or(1);
+    let rows = usize::try_from((r1 - r0).max(1)).unwrap_or(1);
+    AreaGrid { west: -180.0 + (c0 as f64 + 0.5) * step, north: 90.0 - (r0 as f64 + 0.5) * step, rows, cols, step }
+}
+
+impl AreaGrid {
+    /// Рамка сетки по краям пикселей: запад, юг, восток, север.
+    pub fn bounds(&self) -> [f64; 4] {
+        let west = self.west - self.step / 2.0;
+        let north = self.north + self.step / 2.0;
+        [west, north - self.rows as f64 * self.step, west + self.cols as f64 * self.step, north]
+    }
+
+    /// Части сетки по файлам квадратов, `read_grid` модуля.
+    pub fn parts(&self) -> Vec<Part> {
+        let step = self.step;
+        let gc0 = ((self.west + 180.0) / step - 0.5).round() as i64;
+        let gr0 = ((90.0 - self.north) / step - 0.5).round() as i64;
+        let side = (QUAD / step).round() as i64;
+        let (rows, cols) = (self.rows as i64, self.cols as i64);
+        let mut out = Vec::new();
+        for (qw, qs) in quads(self.bounds()) {
+            let qc0 = ((qw + 180.0) / step).round() as i64;
+            let qr0 = ((90.0 - qs - QUAD) / step).round() as i64;
+            let (c0, c1) = (gc0.max(qc0), (gc0 + cols).min(qc0 + side));
+            let (r0, r1) = (gr0.max(qr0), (gr0 + rows).min(qr0 + side));
+            if c1 <= c0 || r1 <= r0 {
+                continue;
+            }
+            let bbox = [-180.0 + c0 as f64 * step, 90.0 - r1 as f64 * step, -180.0 + c1 as f64 * step, 90.0 - r0 as f64 * step];
+            let at = |v: i64| usize::try_from(v).unwrap_or(0);
+            out.push(Part { quad: (qw, qs), bbox, row: at(r0 - gr0), col: at(c0 - gc0), rows: at(r1 - r0), cols: at(c1 - c0) });
+        }
+        out
+    }
+
+    /// Пиксели участка: inside(широта, долгота) по середине пикселя.
+    /// Участок меньше пикселя берёт пиксель своей середины.
+    pub fn mask(&self, inside: &dyn Fn(f64, f64) -> bool) -> Vec<bool> {
+        let mut out: Vec<bool> = (0..self.rows * self.cols).map(|i| inside(self.north - (i / self.cols) as f64 * self.step, self.west + (i % self.cols) as f64 * self.step)).collect();
+        if !out.iter().any(|m| *m)
+            && let Some(m) = out.get_mut((self.rows / 2) * self.cols + self.cols / 2)
+        {
+            *m = true;
+        }
+        out
+    }
+}
+
+/// Числа файла части part в значения набора в сетку values участка
+/// grid по строкам. Размер не тот - часть остаётся пустой.
+pub fn place(set: &Set, grid: &AreaGrid, part: &Part, raw: &Raw, values: &mut [f64]) -> bool {
+    if raw.shape() != (part.rows, part.cols) {
+        return false;
+    }
+    for r in 0..part.rows {
+        for c in 0..part.cols {
+            let (Some(dn), Some(slot)) = (raw.data().get(r * part.cols + c), values.get_mut((part.row + r) * grid.cols + part.col + c)) else {
+                continue;
+            };
+            *slot = value(set, *dn);
+        }
+    }
+    true
+}
+
+/// Сутки от 1970-01-01 середины месяца «ГГГГ-ММ», None - не месяц.
+pub fn month_day(date: &str) -> Option<f64> {
+    if date.len() != 7 || date.as_bytes().get(4) != Some(&b'-') {
+        return None;
+    }
+    let first = crate::gibs::Day::parse(&format!("{date}-01"))?;
+    Some(first.seconds() / 86400.0 + 14.5)
+}
+
+/// Месяцы dates от first до last включительно («ГГГГ-ММ»).
+pub fn between(dates: &[String], first: &str, last: &str) -> Vec<String> {
+    dates.iter().filter(|d| d.as_str() >= first && d.as_str() <= last).cloned().collect()
+}
+
+/// Месяцы из months с тем же месяцем года, что у date: ряд одного сезона
+/// для тренда между годами.
+pub fn same_month<'a>(months: &[&'a str], date: &str) -> Vec<&'a str> {
+    months.iter().copied().filter(|m| m.get(5..) == date.get(5..)).collect()
+}
+
 /// Сетка мира из двух полушарий одного шага: запад - долготы -180..0,
 /// восток - 0..180, ряды с севера. date - начало даты в секундах UTC.
 pub fn world_grid(set: &Set, west: &Raw, east: &Raw, date: f64) -> Option<Grid> {

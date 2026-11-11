@@ -91,3 +91,69 @@ fn halves_make_one_world() {
     let wide = Raw::filled(2, 4, 0.0);
     assert!(jaxa::world_grid(&LAND_TEMPERATURE, &west, &wide, 0.0).is_none());
 }
+
+// --- Участок, перенос `tests/test_jaxa.py` модуля ------------------------
+
+#[test]
+fn quad_urls_as_files_of_the_set() {
+    let ndvi = &jaxa::NDVI;
+    assert_eq!(jaxa::quad_url(ndvi, "2026-07", 0.0, 0.0), format!("{}{}/2026-07/1/E000.00-E090.00/E000.00-N00.00-E090.00-N90.00-NDVI.tiff", jaxa::ROOT, ndvi.id));
+    // Имя файла сверено с каталогом набора 9 ноября 2026 года.
+    assert_eq!(jaxa::quad_url(ndvi, "2026-07", -180.0, -90.0), format!("{}{}/2026-07/1/W180.00-W090.00/W180.00-S90.00-W090.00-N00.00-NDVI.tiff", jaxa::ROOT, ndvi.id));
+    assert!(jaxa::quad_url(ndvi, "2026-07", -90.0, 0.0).contains("/W090.00-E000.00/W090.00-N00.00-E000.00-N90.00-"));
+}
+
+#[test]
+fn quads_under_a_box() {
+    assert_eq!(jaxa::quads([37.0, 55.0, 38.0, 56.0]), [(0.0, 0.0)]);
+    let mut four = jaxa::quads([-1.0, -1.0, 1.0, 1.0]);
+    four.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    assert_eq!(four, [(-90.0, -90.0), (-90.0, 0.0), (0.0, -90.0), (0.0, 0.0)]);
+    let mut line = jaxa::quads([179.0, 60.0, -179.0, 61.0]);
+    line.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    assert_eq!(line, [(-180.0, 0.0), (90.0, 0.0)]);
+    assert_eq!(jaxa::quads([0.0, 10.0, 10.0, 20.0]), [(0.0, 0.0)]);
+}
+
+#[test]
+fn area_grid_on_pixel_centres() {
+    let grid = jaxa::grid_for([37.01, 55.01, 37.09, 55.04], 0.025);
+    assert!((grid.west - 37.0125).abs() < 1e-9 && (grid.north - 55.0375).abs() < 1e-9, "{grid:?}");
+    assert_eq!((grid.rows, grid.cols), (2, 4));
+    assert_eq!((jaxa::grid_for([37.001, 55.001, 37.002, 55.002], 0.025).rows, jaxa::grid_for([37.001, 55.001, 37.002, 55.002], 0.025).cols), (1, 1));
+    // Участок без пикселей внутри берёт пиксель своей середины.
+    let small = jaxa::grid_for([37.0, 55.0, 37.075, 55.075], 0.025);
+    let mask = small.mask(&|_, _| false);
+    assert_eq!(mask.iter().filter(|m| **m).count(), 1);
+    assert!(mask[small.cols + 1]);
+}
+
+#[test]
+fn parts_split_at_greenwich_and_fill_values() {
+    let set = &jaxa::NDVI;
+    let grid = jaxa::grid_for([-0.05, 10.0, 0.05, 10.05], 0.025);
+    let parts = grid.parts();
+    assert_eq!(parts.len(), 2, "{parts:?}");
+    let mut values = vec![f64::NAN; grid.rows * grid.cols];
+    for part in &parts {
+        // Число файла 12000 - NDVI 0.2.
+        let raw = Raw::filled(part.rows, part.cols, 12000.0);
+        assert!(jaxa::place(set, &grid, part, &raw, &mut values));
+        assert!((part.bbox[2] - part.bbox[0] - part.cols as f64 * 0.025).abs() < 1e-9);
+    }
+    assert!(values.iter().all(|v| (v - 0.2).abs() < 1e-9), "{values:?}");
+    // Не той формы - часть пустая.
+    assert!(!jaxa::place(set, &grid, &parts[0], &Raw::filled(1, 1, 0.0), &mut values));
+}
+
+#[test]
+fn area_steps_and_months() {
+    assert_eq!(jaxa::area_step(&jaxa::NDVI), 0.025);
+    assert_eq!(jaxa::area_step(&jaxa::AEROSOL), 0.05);
+    assert_eq!(jaxa::area_step(&PRECIPITATION), 0.1);
+    assert_eq!(jaxa::month_day("1970-01"), Some(14.5));
+    assert_eq!(jaxa::month_day("1970-00"), None);
+    let dates: Vec<String> = ["2025-11", "2025-12", "2026-01", "2026-02"].map(String::from).to_vec();
+    assert_eq!(jaxa::between(&dates, "2025-12", "2026-01"), ["2025-12", "2026-01"]);
+    assert_eq!(jaxa::same_month(&["2025-07", "2025-08", "2026-07"], "2026-07"), ["2025-07", "2026-07"]);
+}

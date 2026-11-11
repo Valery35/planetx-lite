@@ -509,6 +509,33 @@ impl Series {
 
     /// График ряда, `SeriesChart` модуля.
     fn chart(&mut self, ui: &mut egui::Ui, lang: Lang) {
+        let points = self.points();
+        let line: Vec<(f64, Point)> = points.iter().map(|(d, _, p)| (*d, *p)).collect();
+        let product = self.product.clone();
+        let hover = |i: usize| {
+            let (_, n, p) = points[i];
+            let when = self.scenes[n].when.get(..16).unwrap_or(&self.scenes[n].when).replace('T', " ");
+            trf(
+                lang,
+                "{when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area",
+                &[("when", &when), ("median", &value_text(&product, p.median)), ("low", &value_text(&product, p.low)), ("high", &value_text(&product, p.high)), ("share", &format!("{:.0}", p.share))],
+            )
+        };
+        let (near, clicked) = chart(ui, lang, &line, &|v| value_text(&product, v), &hover);
+        self.hover = near;
+        if let Some(i) = near.filter(|_| clicked) {
+            let n = points[i].1;
+            self.picked = Some(self.scenes[n].id.clone());
+        }
+    }
+}
+
+/// График ряда, `SeriesChart` модуля: точка - медиана, отрезок - от
+/// 10-го до 90-го процентиля. points - сутки от 1970-01-01 и сводка,
+/// label - подпись значения оси, hover - строка точки под мышью.
+/// Возвращает номер точки под мышью и был ли по ней щелчок.
+pub fn chart(ui: &mut egui::Ui, lang: Lang, points: &[(f64, Point)], label: &dyn Fn(f64) -> String, hover: &dyn Fn(usize) -> String) -> (Option<usize>, bool) {
+    {
         let width = ui.available_width().max(300.0);
         let height = (ui.available_height() - 60.0).max(220.0);
         let (rect, response) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::click());
@@ -516,17 +543,16 @@ impl Series {
         let text = ui.visuals().text_color();
         let font = egui::FontId::proportional(11.0);
         let plot = egui::Rect::from_min_max(rect.min + egui::vec2(58.0, 26.0), rect.max - egui::vec2(14.0, 30.0));
-        let points = self.points();
         if points.is_empty() {
             painter.text(plot.center(), egui::Align2::CENTER_CENTER, tr(lang, "No points of the series"), font, text);
-            return;
+            return (None, false);
         }
         let first = points.iter().map(|p| p.0).fold(f64::INFINITY, f64::min);
         let last = points.iter().map(|p| p.0).fold(f64::NEG_INFINITY, f64::max);
         let pad = ((last - first) * 0.03).max(3.0);
         let (x0, x1) = (first - pad, last + pad);
-        let low = points.iter().map(|p| p.2.low).fold(f64::INFINITY, f64::min);
-        let high = points.iter().map(|p| p.2.high).fold(f64::NEG_INFINITY, f64::max);
+        let low = points.iter().map(|p| p.1.low).fold(f64::INFINITY, f64::min);
+        let high = points.iter().map(|p| p.1.high).fold(f64::NEG_INFINITY, f64::max);
         let span = (high - low).max(1e-3);
         let (y0, y1) = (low - span * 0.08, high + span * 0.08);
         let to_screen = |d: f64, v: f64| egui::pos2(plot.left() + ((d - x0) / (x1 - x0)) as f32 * plot.width(), plot.bottom() - ((v - y0) / (y1 - y0)) as f32 * plot.height());
@@ -536,7 +562,7 @@ impl Series {
         while v <= y1 {
             let y = to_screen(x0, v).y;
             painter.line_segment([egui::pos2(plot.left(), y), egui::pos2(plot.right(), y)], grid);
-            painter.text(egui::pos2(plot.left() - 6.0, y), egui::Align2::RIGHT_CENTER, value_text(&self.product, v), font.clone(), text);
+            painter.text(egui::pos2(plot.left() - 6.0, y), egui::Align2::RIGHT_CENTER, label(v), font.clone(), text);
             v += step;
         }
         for (day, label) in series::date_ticks(x0, x1, series::TICKS) {
@@ -544,10 +570,10 @@ impl Series {
             painter.line_segment([egui::pos2(x, plot.top()), egui::pos2(x, plot.bottom())], grid);
             painter.text(egui::pos2(x, plot.bottom() + 4.0), egui::Align2::CENTER_TOP, label, font.clone(), text);
         }
-        for (day, _, p) in &points {
+        for (day, p) in points {
             painter.line_segment([to_screen(*day, p.low), to_screen(*day, p.high)], egui::Stroke::new(3.0, BAND));
         }
-        let line: Vec<egui::Pos2> = points.iter().map(|(d, _, p)| to_screen(*d, p.median)).collect();
+        let line: Vec<egui::Pos2> = points.iter().map(|(d, p)| to_screen(*d, p.median)).collect();
         if line.len() > 1 {
             painter.add(egui::Shape::line(line.clone(), egui::Stroke::new(1.2, POINT)));
         }
@@ -557,21 +583,11 @@ impl Series {
         let near = response.hover_pos().and_then(|pos| {
             line.iter().enumerate().map(|(i, at)| (i, at.distance(pos))).filter(|(_, d)| *d <= PICK).min_by(|a, b| a.1.total_cmp(&b.1)).map(|(i, _)| i)
         });
-        self.hover = near;
         if let Some(i) = near {
-            let (_, n, p) = points[i];
             painter.circle_filled(line[i], 4.5, HOVER);
-            let when = self.scenes[n].when.get(..16).unwrap_or(&self.scenes[n].when).replace('T', " ");
-            let label = trf(
-                lang,
-                "{when}: median {median}, 10-90 % {low} - {high}, without clouds {share} % of the area",
-                &[("when", &when), ("median", &value_text(&self.product, p.median)), ("low", &value_text(&self.product, p.low)), ("high", &value_text(&self.product, p.high)), ("share", &format!("{:.0}", p.share))],
-            );
-            painter.text(egui::pos2(plot.left() + 4.0, rect.top() + 4.0), egui::Align2::LEFT_TOP, label, font, text);
-            if response.clicked() {
-                self.picked = Some(self.scenes[n].id.clone());
-            }
+            painter.text(egui::pos2(plot.left() + 4.0, rect.top() + 4.0), egui::Align2::LEFT_TOP, hover(i), font, text);
         }
+        (near, response.clicked())
     }
 }
 

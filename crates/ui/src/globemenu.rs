@@ -65,6 +65,8 @@ pub enum Choice {
     Recognize,
     Spectral,
     Emit,
+    /// Окно «Данные JAXA» по участку.
+    Jaxa,
     /// «Старые карты «Это Место»…».
     Etomesto,
     /// «Исторические карты Рамсея…».
@@ -277,7 +279,8 @@ impl GlobeMenu {
                                         if !cfg!(target_arch = "wasm32") {
                                             item(ui, "Changes of the terrain…", "Where the terrain changed between two years 2017-2025 - by AlphaEarth embeddings, a 10 m cell.", Choice::Changes);
                                         }
-                                        item(ui, "Minerals by spectrum…", "Spectrum of a pixel of a multi-band raster and the nearest references of the USGS library, classes of the area by the angle between spectra.", Choice::Spectral);
+                                        item(ui, "JAXA data…", "JAXA Earth monthly sets over the area - land and sea temperature, NDVI, chlorophyll, precipitation, soil moisture, aerosol: the series by months, month rasters and the trend map.", Choice::Jaxa);
+                                        item(ui, "Minerals by spectrum…","Spectrum of a pixel of a multi-band raster and the nearest references of the USGS library, classes of the area by the angle between spectra.", Choice::Spectral);
                                         if !cfg!(target_arch = "wasm32") {
                                             item(ui, "EMIT minerals…", "NASA mineral maps from images of the EMIT spectrometer, pixel 60 m, arid regions since 2022. Files by an Earthdata key.", Choice::Emit);
                                         }

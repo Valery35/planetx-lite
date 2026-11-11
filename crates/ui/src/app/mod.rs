@@ -514,6 +514,8 @@ pub struct LiteApp {
     plugged: BTreeMap<usize, Box<dyn crate::registry::Layer>>,
     /// Окно «Карты Рамсея».
     rumsey: Option<crate::rumsey::Rumsey>,
+    /// Окно «Данные JAXA» по участку.
+    jaxa_area: Option<crate::jaxaarea::JaxaArea>,
     /// Окно «Снимки OpenAerialMap».
     oam: Option<crate::oam::Oam>,
     /// Окно «Космоснимки».
@@ -1349,6 +1351,7 @@ impl LiteApp {
             parcels: Vec::new(),
             plugged: BTreeMap::new(),
             rumsey: None,
+            jaxa_area: None,
             oam: None,
             sentinel: None,
             live_objects: Vec::new(),
@@ -2181,6 +2184,18 @@ impl LiteApp {
                     None => self.emit = Some(crate::emit::Emit::new(lat, lon, title)),
                 }
                 self.join_site(&choice, lat, lon);
+            }
+            Choice::Jaxa => {
+                let Some((lat, lon)) = point else {
+                    return;
+                };
+                match &mut self.jaxa_area {
+                    Some(w) => w.open_at(lat, lon),
+                    None => {
+                        let loaders = &self.loaders;
+                        self.jaxa_area = Some(crate::jaxaarea::JaxaArea::new(lat, lon, &|limit: u64| (loaders.request)(limit)));
+                    }
+                }
             }
             Choice::Spectral => {
                 let Some((lat, lon)) = point else {
@@ -4029,6 +4044,7 @@ impl eframe::App for LiteApp {
             || self.parcel_ask.is_some()
             || self.plugged.values().any(|l| l.busy())
             || self.rumsey.as_ref().is_some_and(crate::rumsey::Rumsey::busy)
+            || self.jaxa_area.as_ref().is_some_and(crate::jaxaarea::JaxaArea::busy)
             || self.oam.as_ref().is_some_and(crate::oam::Oam::busy)
             || self.wayback.as_ref().is_some_and(crate::wayback::Wayback::busy)
             || self.sentinel.as_ref().is_some_and(crate::sentinel::Sentinel::busy)
@@ -4286,6 +4302,7 @@ impl eframe::App for LiteApp {
         self.step_lidar(now);
         self.step_events(now);
         self.step_rumsey(&ctx, now);
+        self.step_jaxa_area(&ctx);
         self.step_oam(&ctx, now);
         self.step_wayback(&ctx);
         self.step_sentinel(&ctx, now);

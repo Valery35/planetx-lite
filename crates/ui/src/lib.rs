@@ -48,6 +48,7 @@ pub mod overlayprops;
 pub mod film;
 pub mod overpass;
 pub mod oam;
+pub mod jaxaarea;
 pub mod overture;
 pub mod pairtiles;
 pub mod placeprops;
