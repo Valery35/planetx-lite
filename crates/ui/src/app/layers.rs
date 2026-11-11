@@ -45,6 +45,7 @@ impl LiteApp {
                 Action::GibsCatalog => self.ask_gibs_catalog(),
                 Action::Events => self.events.open(&*self.loaders.request),
                 Action::Wayback => self.open_wayback(),
+                Action::Tool(t) => self.pending_tool = Some(t),
                 Action::RemoveOwn(b) => {
                     if let Some(own) = crate::basemap::own_of(b) {
                         self.settings.own.retain(|o| *o != own);

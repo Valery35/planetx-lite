@@ -2418,6 +2418,15 @@ The layer is seen on both sides of the swipe line.	Слой виден по об
 ⇆ Layer swipe	⇆ Шторка слоёв
 ⇆ Swipe	⇆ Шторка
 Release {day}	Выпуск {day}
+Window «Changes of the terrain»	Окно «Изменения местности»
+Rumsey historical maps	Исторические карты Рамсея
+The window of the search for Sentinel-2, Landsat 1-9, MODIS and ASTER images of the area at the view point - cloud cover over the area, band combinations and indices, the series by dates.	Окно поиска снимков Sentinel-2, Landsat 1-9, MODIS и ASTER участка у точки взгляда - облачность над участком, сочетания каналов и индексы, ряд по датам.
+The window comparing two years at the view point - the years, the range of the change degree, a detailed area with a pixel from 10 m, places of changes to «My placemarks».	Окно сравнения двух лет у точки взгляда - годы, промежуток степени изменения, подробный участок с пикселем от 10 м, места изменений в «Мои метки».
+The window of recognition of the area at the view point - own samples, image colours, similar to a sample, forests, fields, water, overgrown fields.	Окно распознавания участка у точки взгляда - свои образцы, цвета снимка, похожие на образец, леса, поля, вода, заросшие поля.
+Tiles of IGN LiDAR HD point clouds in France and USGS 3DEP in the USA at the view point, points on the globe.	Плитки облаков точек IGN LiDAR HD во Франции и USGS 3DEP в США у точки взгляда, точки на глобусе.
+Open drone and aircraft images in the view frame, newest first, with the pixel, the file size and the license of the image.	Открытые снимки с дронов и самолётов в рамке вида, новые первыми, с пикселем, размером файла и лицензией снимка.
+Maps of the David Rumsey collection at the view point, georeferenced by Stanford control points, with the year of the map.	Карты коллекции Дэвида Рамсея у точки взгляда, привязанные по опорным точкам Стэнфорда, с годом карты.
+The catalog of old maps of the etomesto.com site at the view point. A map opens as a page of the site in the browser.	Каталог старых карт сайта etomesto.com у точки взгляда. Карта открывается страницей сайта в браузере.
 Shot on	Дата съёмки
 Sensor	Съёмочная система
 Resolution, m	Разрешение, м

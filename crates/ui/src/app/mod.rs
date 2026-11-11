@@ -704,6 +704,8 @@ pub struct LiteApp {
     pair_owner: u8,
     /// Шторка дней темы NASA GIBS, None - снята.
     theme_compare: Option<ThemeCompare>,
+    /// Строка-окно каталога, чьё окно открыть в этом кадре.
+    pending_tool: Option<crate::layers::Tool>,
     /// Ширина кадра глобуса в пикселях, для линии шторки.
     globe_width_px: f32,
     /// Линию шторки тянут мышью.
@@ -1437,6 +1439,7 @@ impl LiteApp {
             event_empty: Default::default(),
             pair_owner: 0,
             theme_compare: None,
+            pending_tool: None,
             globe_width_px: 0.0,
             swipe_drag: false,
             layer_swipe: None,
@@ -2651,6 +2654,22 @@ impl LiteApp {
     /// Окно вопроса перед удалением и окно свойств папки.
     fn dialogs(&mut self, ctx: &egui::Context, now: f64) {
         let lang = self.lang;
+        // Строка-окно каталога: окно у точки взгляда, как пункт меню.
+        if let Some(tool) = self.pending_tool.take() {
+            use crate::globemenu::Choice;
+            use crate::layers::Tool;
+            let choice = match tool {
+                Tool::Sentinel => Choice::Sentinel,
+                Tool::Changes => Choice::Changes,
+                Tool::Recognize => Choice::Recognize,
+                Tool::Lidar => Choice::Lidar,
+                Tool::Oam => Choice::Oam,
+                Tool::Rumsey => Choice::Rumsey,
+                Tool::Etomesto => Choice::Etomesto,
+            };
+            let point = Some((self.nav.pose.lat, self.nav.pose.lon));
+            self.globe_menu_choice(ctx, choice, point, None, now);
+        }
         // Окно «Снимки событий».
         let mut event_actions = Vec::new();
         self.events.window(ctx, lang, &mut event_actions);

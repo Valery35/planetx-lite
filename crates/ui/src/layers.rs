@@ -255,6 +255,8 @@ pub enum Action {
     Events,
     /// Окно «Архив снимков Wayback».
     Wayback,
+    /// Окно строки-окна у точки взгляда.
+    Tool(Tool),
     /// Свой источник убрать из списка основ.
     RemoveOwn(Basemap),
     /// Действие меню слоя «Моих слоёв» по его номеру, у папки номер 0.
@@ -746,6 +748,8 @@ fn recipe(item: Item) -> crate::thumbs::Recipe {
         Item::Sat(n) => Recipe::Flat(data::satellites::GROUPS.get(n).map_or_else(Vec::new, |g| vec![[16, 20, 40], g.1, [16, 20, 40]])),
         Item::Events => Recipe::Base,
         Item::Wayback => Recipe::Base,
+        // Превью строки-окна - две полосы, `TOOL_COLORS` модуля.
+        Item::Tool(_) => Recipe::Flat(vec![[70, 120, 190], [235, 235, 235]]),
         Item::Extra(e) => {
             match e {
                 Extra::Dots(l) => l.legend().unwrap_or(Recipe::Base),
@@ -778,6 +782,56 @@ enum Item {
     /// Архив снимков Esri Wayback, тема архива модуля: строка открывает
     /// окно архива со шторкой выпусков.
     Wayback,
+    /// Строка-окно раздела «Архив и съёмка».
+    Tool(Tool),
+}
+
+/// Строка-окно раздела «Архив и съёмка», `TOOLS` модуля: щелчок
+/// открывает окно у точки взгляда, как пункт меню на глобусе.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Tool {
+    Sentinel,
+    Changes,
+    Recognize,
+    Lidar,
+    Oam,
+    Rumsey,
+    Etomesto,
+}
+
+/// Строки-окна по порядку `TOOLS` модуля.
+pub const TOOLS: [Tool; 7] = [Tool::Changes, Tool::Recognize, Tool::Sentinel, Tool::Lidar, Tool::Oam, Tool::Rumsey, Tool::Etomesto];
+
+impl Tool {
+    fn key(self) -> &'static str {
+        match self {
+            Tool::Sentinel => "tool:sentinel",
+            Tool::Changes => "tool:change",
+            Tool::Recognize => "tool:recognize",
+            Tool::Lidar => "tool:lidar",
+            Tool::Oam => "tool:oam",
+            Tool::Rumsey => "tool:rumsey",
+            Tool::Etomesto => "tool:etomesto",
+        }
+    }
+
+    /// Название и подсказка, `tool_names` модуля.
+    fn texts(self) -> (&'static str, &'static str) {
+        match self {
+            Tool::Sentinel => ("Satellite images", "The window of the search for Sentinel-2, Landsat 1-9, MODIS and ASTER images of the area at the view point - cloud cover over the area, band combinations and indices, the series by dates."),
+            Tool::Changes => ("Window «Changes of the terrain»", "The window comparing two years at the view point - the years, the range of the change degree, a detailed area with a pixel from 10 m, places of changes to «My placemarks»."),
+            Tool::Recognize => ("Recognition", "The window of recognition of the area at the view point - own samples, image colours, similar to a sample, forests, fields, water, overgrown fields."),
+            Tool::Lidar => ("Lidar point clouds", "Tiles of IGN LiDAR HD point clouds in France and USGS 3DEP in the USA at the view point, points on the globe."),
+            Tool::Oam => ("OpenAerialMap imagery", "Open drone and aircraft images in the view frame, newest first, with the pixel, the file size and the license of the image."),
+            Tool::Rumsey => ("Rumsey historical maps", "Maps of the David Rumsey collection at the view point, georeferenced by Stanford control points, with the year of the map."),
+            Tool::Etomesto => ("Eto Mesto old maps", "The catalog of old maps of the etomesto.com site at the view point. A map opens as a page of the site in the browser."),
+        }
+    }
+
+    /// Окна, которых нет у страницы, как пунктов меню на глобусе.
+    fn desktop_only(self) -> bool {
+        cfg!(target_arch = "wasm32") && matches!(self, Tool::Changes | Tool::Oam | Tool::Rumsey | Tool::Etomesto)
+    }
 }
 
 impl Item {
@@ -789,6 +843,7 @@ impl Item {
             Item::Sat(n) => format!("sat:{}", sat_key(n)),
             Item::Events => "events".to_string(),
             Item::Wayback => "wayback".to_string(),
+            Item::Tool(t) => t.key().to_string(),
         }
     }
 
@@ -798,7 +853,7 @@ impl Item {
             Item::Group(_) => Category::Map,
             Item::Extra(e) => e.category(),
             Item::Sat(_) => Category::Satellites,
-            Item::Events | Item::Wayback => Category::Archive,
+            Item::Events | Item::Wayback | Item::Tool(_) => Category::Archive,
         }
     }
 
@@ -810,6 +865,7 @@ impl Item {
             Item::Sat(n) => crate::satellites::group_names(lang).get(n).map_or(String::new(), |g| g.1.to_string()),
             Item::Events => tr(lang, "Event imagery").to_string(),
             Item::Wayback => "Esri Wayback".to_string(),
+            Item::Tool(t) => tr(lang, t.texts().0).to_string(),
         }
     }
 
@@ -823,6 +879,7 @@ impl Item {
             Item::Sat(n) => crate::satellites::group_names(lang).get(n).map_or(String::new(), |g| g.2.to_string()),
             Item::Events => tr(lang, "Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.").to_string(),
             Item::Wayback => tr(lang, "Former releases of the Esri World Imagery base map since 2014. The row opens the window «Wayback imagery archive» with the releases where the image at the view point changed. A release lies on the globe as a map row, two releases are compared with a swipe.").to_string(),
+            Item::Tool(t) => tr(lang, t.texts().1).to_string(),
         }
     }
 
@@ -837,6 +894,12 @@ impl Item {
             Item::Sat(_) => "CelesTrak",
             Item::Events => "Vantor, Planet",
             Item::Wayback => "Esri",
+            Item::Tool(Tool::Sentinel) => "Sentinel-2, Landsat, MODIS, ASTER",
+            Item::Tool(Tool::Changes | Tool::Recognize) => "AlphaEarth, Sentinel-2",
+            Item::Tool(Tool::Lidar) => "IGN, USGS 3DEP",
+            Item::Tool(Tool::Oam) => "OpenAerialMap",
+            Item::Tool(Tool::Rumsey) => "David Rumsey Map Collection",
+            Item::Tool(Tool::Etomesto) => "etomesto.com",
             Item::Extra(Extra::Plugged(n)) => crate::registry::get(n).map_or("", |e| e.source()),
             Item::Extra(Extra::Cutaway) => "PREM, CRUST1.0, Slab2",
             Item::Extra(Extra::Paleo) => "PALEOMAP",
@@ -850,7 +913,7 @@ impl Item {
     fn desktop_only(self) -> bool {
         // Окно архива Wayback у страницы не открывается, как пункт меню
         // на глобусе.
-        matches!(self, Item::Extra(e) if e.desktop_only()) || (cfg!(target_arch = "wasm32") && self == Item::Wayback)
+        matches!(self, Item::Extra(e) if e.desktop_only()) || (cfg!(target_arch = "wasm32") && self == Item::Wayback) || matches!(self, Item::Tool(t) if t.desktop_only())
     }
 
     /// Почему строка сейчас недоступна, подсказка заглушки, или None:
@@ -861,7 +924,7 @@ impl Item {
         }
         let earth_only = match self {
             Item::Extra(e) => e.earth_only(),
-            Item::Base(_) | Item::Group(_) | Item::Sat(_) | Item::Events | Item::Wayback => true,
+            Item::Base(_) | Item::Group(_) | Item::Sat(_) | Item::Events | Item::Wayback | Item::Tool(_) => true,
         };
         (earth_only && !state.earth).then_some(EARTH_ONLY)
     }
@@ -874,6 +937,7 @@ impl Item {
             Item::Sat(n) => satellites_row().is_some_and(|e| state.on.contains(&e)) && state.sat_groups.iter().any(|g| g == sat_key(n)),
             Item::Events => state.events,
             Item::Wayback => state.wayback,
+            Item::Tool(_) => false,
         }
     }
 }
@@ -923,6 +987,7 @@ fn items() -> Vec<Item> {
     out.extend((0..data::satellites::GROUPS.len()).map(Item::Sat));
     out.push(Item::Events);
     out.push(Item::Wayback);
+    out.extend(TOOLS.map(Item::Tool));
     // Строк, которых нет у страницы, она не показывает.
     out.retain(|i| !i.desktop_only());
     out
@@ -1170,6 +1235,8 @@ fn click(item: Item, state: &State<'_>, out: &mut Vec<Action>) {
         Item::Events => out.push(Action::Events),
         // Архив Wayback: окно со списком выпусков, снимает его окно.
         Item::Wayback => out.push(Action::Wayback),
+        // Строка-окно: окно у точки взгляда.
+        Item::Tool(t) => out.push(Action::Tool(t)),
         // Группа спутников: щелчок показывает её или убирает, строка
         // «Спутники» включается вместе с группой.
         Item::Sat(n) => {
