@@ -270,6 +270,18 @@ impl LiteApp {
         }
     }
 
+    /// Открыть окно архива Wayback или искать заново у точки взгляда:
+    /// пункт меню на глобусе и строка каталога «Esri Wayback».
+    pub(super) fn open_wayback(&mut self) {
+        let (lat, lon, width) = (self.nav.pose.lat, self.nav.pose.lon, self.view_width());
+        let loaders = &self.loaders;
+        let request = |limit: u64| (loaders.request)(limit);
+        match &mut self.wayback {
+            Some(w) => w.show_view(lat, lon, width, &request),
+            None => self.wayback = Some(crate::wayback::Wayback::new(lat, lon, width, &request)),
+        }
+    }
+
     /// Окно архива Wayback: выбранный выпуск ложится строкой карт.
     pub(super) fn step_wayback(&mut self, ctx: &egui::Context) {
         let lang = self.lang;

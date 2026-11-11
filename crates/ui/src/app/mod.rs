@@ -131,8 +131,10 @@ struct Shot {
 enum ThemeDay {
     /// Запрос ряда дат идёт.
     Asking(Box<dyn net::Request>),
-    /// Последний готовый день ряда.
-    Day(String),
+    /// День ряда и готовые дни ряда: день задаёт шкала времени, как
+    /// ползунок темы модуля, без шкалы - последний готовый день. Пустой
+    /// ряд - день не меняется.
+    Day(String, Vec<data::gibs::Interval>),
     /// Ряда нет: служба не ответила или ответ пуст.
     Failed,
 }
@@ -2220,15 +2222,7 @@ impl LiteApp {
                     }
                 }
             }
-            Choice::Wayback => {
-                let (lat, lon, width) = (self.nav.pose.lat, self.nav.pose.lon, self.view_width());
-                let loaders = &self.loaders;
-                let request = |limit: u64| (loaders.request)(limit);
-                match &mut self.wayback {
-                    Some(w) => w.show_view(lat, lon, width, &request),
-                    None => self.wayback = Some(crate::wayback::Wayback::new(lat, lon, width, &request)),
-                }
-            }
+            Choice::Wayback => self.open_wayback(),
             Choice::Oam => {
                 let view = self.view_box();
                 let loaders = &self.loaders;
@@ -3355,8 +3349,24 @@ impl LiteApp {
             {
                 let intervals = answer.map(|b| data::gibs::parse_domains(&String::from_utf8_lossy(&b))).unwrap_or_default();
                 let ready = data::gibs::ready_intervals(&intervals, now_utc);
-                *state = data::gibs::pick_day(&ready, None).map_or(ThemeDay::Failed, ThemeDay::Day);
+                *state = data::gibs::pick_day(&ready, None).map_or(ThemeDay::Failed, |day| ThemeDay::Day(day, ready));
                 days_changed = true;
+            }
+        }
+        // День темы - по шкале времени: правый край окна шкалы.
+        let moment = match self.timebar.window() {
+            Some((_, hi)) if hi.is_finite() => Some(hi),
+            _ => None,
+        };
+        for (id, state) in &mut self.theme_days {
+            if let ThemeDay::Day(day, ready) = state
+                && let Some(picked) = data::gibs::pick_day(ready, moment)
+                && picked != *day
+            {
+                *day = picked;
+                days_changed = true;
+                // Загрузчик темы - на прежний день, его место займёт новый.
+                self.map_loaders.remove(id);
             }
         }
         if days_changed {
@@ -4833,7 +4843,7 @@ impl eframe::App for LiteApp {
         // Шкалы карт над подписью источников, крестик убирает карту.
         let maps: Vec<(&'static str, crate::maps::Kind)> = self.vector.map_list().to_vec();
         let theme = maps.iter().find_map(|(k, m)| match (m, self.theme_days.get(k)) {
-            (crate::maps::Kind::Theme(_), Some(ThemeDay::Day(day))) => {
+            (crate::maps::Kind::Theme(_), Some(ThemeDay::Day(day, _))) => {
                 let name = crate::maps::index(k).and_then(crate::maps::entry).map_or("", |e| tr(self.lang, e.name));
                 let scale = match self.theme_scales.get(k) {
                     Some(ThemeScale::Ready(s)) => s.clone(),

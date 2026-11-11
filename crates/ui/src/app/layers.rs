@@ -44,6 +44,7 @@ impl LiteApp {
                 }
                 Action::GibsCatalog => self.ask_gibs_catalog(),
                 Action::Events => self.events.open(&*self.loaders.request),
+                Action::Wayback => self.open_wayback(),
                 Action::RemoveOwn(b) => {
                     if let Some(own) = crate::basemap::own_of(b) {
                         self.settings.own.retain(|o| *o != own);
@@ -293,7 +294,8 @@ impl LiteApp {
                 && !self.theme_days.contains_key(id)
             {
                 let state = if theme.intervals.is_some() {
-                    theme.catalog_day(now_utc).map_or(ThemeDay::Failed, ThemeDay::Day)
+                    let ready = theme.intervals.map(|i| data::gibs::ready_intervals(i, now_utc)).unwrap_or_default();
+                    theme.catalog_day(now_utc).map_or(ThemeDay::Failed, |day| ThemeDay::Day(day, ready))
                 } else {
                     let request = (self.loaders.request)(ANSWER_BYTES);
                     request.start(&theme.domains_url());
@@ -302,7 +304,7 @@ impl LiteApp {
                 self.theme_days.insert(id, state);
             }
         }
-        on.retain(|(id, kind)| !matches!(kind, crate::maps::Kind::Theme(_)) || matches!(self.theme_days.get(id), Some(ThemeDay::Day(_))));
+        on.retain(|(id, kind)| !matches!(kind, crate::maps::Kind::Theme(_)) || matches!(self.theme_days.get(id), Some(ThemeDay::Day(..))));
         // Цвета горизонталей - по подложке: на снимке жёлтые, на карте
         // коричневые, как у модуля.
         let source = self.basemap.source();
@@ -323,7 +325,7 @@ impl LiteApp {
         for (id, kind) in &on {
             if !self.map_loaders.contains_key(id) {
                 let mut sources = kind.sources(id);
-                if let (crate::maps::Kind::Theme(theme), Some(ThemeDay::Day(day))) = (kind, self.theme_days.get(id)) {
+                if let (crate::maps::Kind::Theme(theme), Some(ThemeDay::Day(day, _))) = (kind, self.theme_days.get(id)) {
                     let url = lasting(&mut self.lasting, theme.url(day));
                     let name = lasting(&mut self.lasting, format!("gibs-{}-{day}", theme.key));
                     let max_level = theme.level;
@@ -773,6 +775,7 @@ impl LiteApp {
             sat_groups: &self.settings.sat_groups,
             earth: self.planet.earth,
             events: self.events.shown.is_some(),
+            wayback: self.wayback.is_some(),
             data: &self.data_layers,
             tiles: &self.tilesets,
         }

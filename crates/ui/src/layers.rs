@@ -199,6 +199,8 @@ pub struct State<'a> {
     pub earth: bool,
     /// Снимки события на глобусе.
     pub events: bool,
+    /// Окно архива Wayback открыто.
+    pub wayback: bool,
     /// «Мои слои» - векторные слои файлов и результатов.
     pub data: &'a crate::datalayers::DataLayers,
     /// Наборы 3D Tiles.
@@ -251,6 +253,8 @@ pub enum Action {
     GibsCatalog,
     /// Открыть окно «Снимки событий».
     Events,
+    /// Окно «Архив снимков Wayback».
+    Wayback,
     /// Свой источник убрать из списка основ.
     RemoveOwn(Basemap),
     /// Действие меню слоя «Моих слоёв» по его номеру, у папки номер 0.
@@ -741,6 +745,7 @@ fn recipe(item: Item) -> crate::thumbs::Recipe {
         Item::Group(n) => Recipe::Flat(th::vector_colors(n).to_vec()),
         Item::Sat(n) => Recipe::Flat(data::satellites::GROUPS.get(n).map_or_else(Vec::new, |g| vec![[16, 20, 40], g.1, [16, 20, 40]])),
         Item::Events => Recipe::Base,
+        Item::Wayback => Recipe::Base,
         Item::Extra(e) => {
             match e {
                 Extra::Dots(l) => l.legend().unwrap_or(Recipe::Base),
@@ -770,6 +775,9 @@ enum Item {
     Sat(usize),
     /// «Снимки событий» Vantor и Planet: строка открывает окно.
     Events,
+    /// Архив снимков Esri Wayback, тема архива модуля: строка открывает
+    /// окно архива со шторкой выпусков.
+    Wayback,
 }
 
 impl Item {
@@ -780,6 +788,7 @@ impl Item {
             Item::Extra(e) => e.key().to_string(),
             Item::Sat(n) => format!("sat:{}", sat_key(n)),
             Item::Events => "events".to_string(),
+            Item::Wayback => "wayback".to_string(),
         }
     }
 
@@ -789,7 +798,7 @@ impl Item {
             Item::Group(_) => Category::Map,
             Item::Extra(e) => e.category(),
             Item::Sat(_) => Category::Satellites,
-            Item::Events => Category::Archive,
+            Item::Events | Item::Wayback => Category::Archive,
         }
     }
 
@@ -800,6 +809,7 @@ impl Item {
             Item::Extra(e) => tr(lang, e.name()).to_string(),
             Item::Sat(n) => crate::satellites::group_names(lang).get(n).map_or(String::new(), |g| g.1.to_string()),
             Item::Events => tr(lang, "Event imagery").to_string(),
+            Item::Wayback => "Esri Wayback".to_string(),
         }
     }
 
@@ -812,6 +822,7 @@ impl Item {
             Item::Extra(e) => tr(lang, e.tip()).to_string(),
             Item::Sat(n) => crate::satellites::group_names(lang).get(n).map_or(String::new(), |g| g.2.to_string()),
             Item::Events => tr(lang, "Images of earthquakes, floods, fires and hurricanes from two open catalogs. Vantor (formerly Maxar) gives WorldView strips, Planet - PlanetScope, SkySat and Pelican scenes and the quarterly Planet mosaic before the event. The row opens the window «Event imagery» with the list of events. The license of the images is CC BY-NC 4.0 - non-commercial use only.").to_string(),
+            Item::Wayback => tr(lang, "Former releases of the Esri World Imagery base map since 2014. The row opens the window «Wayback imagery archive» with the releases where the image at the view point changed. A release lies on the globe as a map row, two releases are compared with a swipe.").to_string(),
         }
     }
 
@@ -825,6 +836,7 @@ impl Item {
             Item::Extra(Extra::Dots(l)) => l.source(),
             Item::Sat(_) => "CelesTrak",
             Item::Events => "Vantor, Planet",
+            Item::Wayback => "Esri",
             Item::Extra(Extra::Plugged(n)) => crate::registry::get(n).map_or("", |e| e.source()),
             Item::Extra(Extra::Cutaway) => "PREM, CRUST1.0, Slab2",
             Item::Extra(Extra::Paleo) => "PALEOMAP",
@@ -836,7 +848,9 @@ impl Item {
     /// Строка недоступна странице: самолёты ADS-B и кадастр НСПД
     /// не отдают данные браузеру.
     fn desktop_only(self) -> bool {
-        matches!(self, Item::Extra(e) if e.desktop_only())
+        // Окно архива Wayback у страницы не открывается, как пункт меню
+        // на глобусе.
+        matches!(self, Item::Extra(e) if e.desktop_only()) || (cfg!(target_arch = "wasm32") && self == Item::Wayback)
     }
 
     /// Почему строка сейчас недоступна, подсказка заглушки, или None:
@@ -847,7 +861,7 @@ impl Item {
         }
         let earth_only = match self {
             Item::Extra(e) => e.earth_only(),
-            Item::Base(_) | Item::Group(_) | Item::Sat(_) | Item::Events => true,
+            Item::Base(_) | Item::Group(_) | Item::Sat(_) | Item::Events | Item::Wayback => true,
         };
         (earth_only && !state.earth).then_some(EARTH_ONLY)
     }
@@ -859,6 +873,7 @@ impl Item {
             Item::Extra(e) => state.on.contains(&e),
             Item::Sat(n) => satellites_row().is_some_and(|e| state.on.contains(&e)) && state.sat_groups.iter().any(|g| g == sat_key(n)),
             Item::Events => state.events,
+            Item::Wayback => state.wayback,
         }
     }
 }
@@ -907,6 +922,7 @@ fn items() -> Vec<Item> {
     out.push(Item::Extra(Extra::Paleo));
     out.extend((0..data::satellites::GROUPS.len()).map(Item::Sat));
     out.push(Item::Events);
+    out.push(Item::Wayback);
     // Строк, которых нет у страницы, она не показывает.
     out.retain(|i| !i.desktop_only());
     out
@@ -953,7 +969,7 @@ impl Catalog {
             (Category::Tiles, tr(lang, "Map overlays"), tr(lang, "Transparent maps over the base map - sea marks, hiking, cycling, mountain bike and riding routes, ski slopes. Several can be on at once.")),
             (Category::Satellites, tr(lang, "Satellites"), tr(lang, "Groups of artificial satellites from CelesTrak. A click on a group shows it on the globe or removes it.")),
             (Category::Wiki, tr(lang, "Encyclopedia"), tr(lang, "Wikipedia articles with coordinates near the look-at point. A click on an article gives its link and first paragraph.")),
-            (Category::Archive, tr(lang, "Imagery archive"), tr(lang, "Images of extraordinary events from the open catalogs of Vantor and Planet.")),
+            (Category::Archive, tr(lang, "Imagery archive"), tr(lang, "Former releases of the Esri World Imagery base map since 2014 and images of extraordinary events from the open catalogs of Vantor and Planet.")),
             (
                 Category::Gibs,
                 tr(lang, "All NASA GIBS layers"),
@@ -1152,6 +1168,8 @@ fn click(item: Item, state: &State<'_>, out: &mut Vec<Action>) {
         Item::Group(n) => out.push(Action::Rows(toggle_group(state.vector, n))),
         // Снимки событий: окно со списком событий, снимает их окно.
         Item::Events => out.push(Action::Events),
+        // Архив Wayback: окно со списком выпусков, снимает его окно.
+        Item::Wayback => out.push(Action::Wayback),
         // Группа спутников: щелчок показывает её или убирает, строка
         // «Спутники» включается вместе с группой.
         Item::Sat(n) => {
