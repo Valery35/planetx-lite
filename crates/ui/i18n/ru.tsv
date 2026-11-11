@@ -2417,6 +2417,12 @@ The layer is seen only right of the swipe line.	Слой виден только
 The layer is seen on both sides of the swipe line.	Слой виден по обе стороны шторки.
 ⇆ Layer swipe	⇆ Шторка слоёв
 ⇆ Swipe	⇆ Шторка
+Release {day}	Выпуск {day}
+Shot on	Дата съёмки
+Sensor	Съёмочная система
+Resolution, m	Разрешение, м
+Accuracy, m	Точность, м
+Esri Wayback imagery archive	Архив снимков Esri Wayback
 Comparison swipe. Left of the swipe the theme is shown on another day, right of it - on the day of the bar. By default the left day is the same day a year earlier. The line is dragged with the mouse.	Шторка сравнения. Левее шторки тема показана на другой день, правее - на день шкалы. По умолчанию день слева - тот же день год назад. Линию тянут мышью.
 The day of the left part one step of the theme series back.	День левой части на шаг ряда темы назад.
 The day of the left part one step of the theme series forward.	День левой части на шаг ряда темы вперёд.

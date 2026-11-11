@@ -162,6 +162,9 @@ fn pair_swipe(events: &crate::events::Events, wayback: Option<&crate::wayback::W
     wayback.and_then(|w| w.compare.as_ref()).map(|c| c.split).or_else(|| theme.map(|t| t.split))
 }
 
+/// Точка щелчка и сведения о снимках выпусков Wayback в ней.
+type WaybackAsk = ((f64, f64), Vec<(data::wayback::Release, Option<Box<dyn net::Request>>, Option<Option<data::wayback::Info>>)>);
+
 /// Шторка сравнения двух дней темы NASA GIBS, `set_compare` модуля:
 /// справа день шкалы времени, слева по умолчанию тот же день год назад.
 /// Тема при шторке уходит из картинки наложения тайла, оба дня ложатся
@@ -746,6 +749,9 @@ pub struct LiteApp {
     objects: Option<crate::identify::Objects>,
     /// Запрос значения карты под щелчком и его итог.
     map_ask: Option<(crate::mapvalue::Ask, crate::mapvalue::Answer)>,
+    /// Сведения о снимках Wayback под щелчком: точка и по выпуску -
+    /// запрос, пока ответа нет, и ответ.
+    wayback_ask: Option<WaybackAsk>,
     /// Слои точек: землетрясения, вулканы, пожары.
     dots: crate::dots::Dots,
     /// Промежуток шкалы времени, по которому собраны точки.
@@ -1443,6 +1449,7 @@ impl LiteApp {
             was_moving: false,
             objects: None,
             map_ask: None,
+            wayback_ask: None,
             dots: crate::dots::Dots::default(),
             dots_window: None,
             bathy: None,
@@ -2572,8 +2579,42 @@ impl LiteApp {
     }
 
     /// Значение карты значений или готовой карты под точкой, как
-    /// `_ask_tilemap` модуля. Ответ ложится в окно «Объекты».
+    /// `_ask_tilemap` модуля. Ответ ложится в окно «Объекты». Вместе с ним -
+    /// сведения о снимках выпусков Wayback на глобусе, `_ask_wayback`.
     fn ask_map_value(&mut self, lat: f64, lon: f64) {
+        self.wayback_ask = None;
+        if let Some(w) = &self.wayback {
+            // Уровень службы сведений - по масштабу вида, как у модуля.
+            let z = data::geocode::link_zoom(lat, self.view_width()).min(data::wayback::MAX_LEVEL);
+            let asks: Vec<_> = w
+                .shown()
+                .into_iter()
+                .map(|r| {
+                    let ask = data::wayback::metadata_url(&r, lat, lon, z).map(|url| {
+                        let a = (self.loaders.request)(ANSWER_BYTES);
+                        a.start(&url);
+                        a
+                    });
+                    // Адреса сведений нет - сведений нет.
+                    let done = ask.is_none().then_some(None);
+                    (r, ask, done)
+                })
+                .collect();
+            if !asks.is_empty() {
+                self.wayback_ask = Some(((lat, lon), asks));
+            }
+        }
+        self.ask_map_only(lat, lon);
+    }
+
+    /// Группа «Архив снимков Esri Wayback» окна «Объекты» по запросам.
+    fn wayback_group(&self) -> Option<(String, Vec<crate::identify::Feature>)> {
+        let (_, asks) = self.wayback_ask.as_ref()?;
+        let features = asks.iter().map(|(r, _, done)| crate::wayback::info_feature(self.lang, r, done.as_ref())).collect();
+        Some((tr(self.lang, "Esri Wayback imagery archive").to_string(), features))
+    }
+
+    fn ask_map_only(&mut self, lat: f64, lon: f64) {
         let key = self.vector.map_keys().into_iter().find(|k| crate::maps::kind(k).and_then(|m| m.slot()) == Some(1));
         // Уровень карты запроса Macrostrat - по ширине вида, `link_zoom` модуля.
         let pose = &self.nav.pose;
@@ -2652,6 +2693,27 @@ impl LiteApp {
                     Some(slot) => *slot = group,
                     None => objects.groups.push(group),
                 }
+            }
+        }
+        // Пришли сведения о снимке Wayback - группа архива в «Объектах».
+        let mut arrived = false;
+        if let Some((_, asks)) = &mut self.wayback_ask {
+            for (_, ask, done) in asks.iter_mut() {
+                if let Some(answer) = ask.as_ref().and_then(|a| a.take()) {
+                    *done = Some(answer.ok().and_then(|b| data::wayback::parse_metadata(&b)));
+                    *ask = None;
+                    arrived = true;
+                }
+            }
+        }
+        if let Some(objects) = self.objects.as_ref().filter(|o| self.wayback_ask.as_ref().is_some_and(|(at, _)| *at == o.at))
+            && (arrived || !objects.groups.iter().any(|(name, _)| *name == tr(lang, "Esri Wayback imagery archive")))
+            && let Some(group) = self.wayback_group()
+            && let Some(objects) = &mut self.objects
+        {
+            match objects.groups.iter_mut().find(|(name, _)| *name == group.0) {
+                Some(slot) => *slot = group,
+                None => objects.groups.push(group),
             }
         }
         // Окно «Батиметрия водоёма».

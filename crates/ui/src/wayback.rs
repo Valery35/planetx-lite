@@ -34,6 +34,32 @@ pub fn compare_release(rows: &[Release], right: &Release) -> Option<Release> {
     rows.iter().find(|r| r.day <= back && r.number != right.number).or_else(|| rows.iter().rev().find(|r| r.number != right.number)).cloned()
 }
 
+/// Объект группы «Архив снимков Esri Wayback» окна «Объекты»: выпуск
+/// и сведения о снимке в точке, `_identify_wayback` модуля. None в
+/// answer - ответа ещё нет, Some(None) - сведений нет.
+pub fn info_feature(lang: Lang, release: &Release, answer: Option<&Option<Info>>) -> crate::identify::Feature {
+    let title = trf(lang, "Release {day}", &[("day", &release.day)]);
+    let rows = match answer {
+        None => vec![(tr(lang, "Shot on").to_string(), tr(lang, "loading…").to_string())],
+        Some(None) => vec![(tr(lang, "Shot on").to_string(), tr(lang, "none").to_string())],
+        Some(Some(i)) => {
+            let mut rows = vec![(tr(lang, "Shot on").to_string(), i.date.clone())];
+            for (name, value) in [("Source", &i.provider), ("Sensor", &i.sensor)] {
+                if !value.is_empty() {
+                    rows.push((tr(lang, name).to_string(), value.clone()));
+                }
+            }
+            for (name, value) in [("Resolution, m", i.resolution), ("Accuracy, m", i.accuracy)] {
+                if let Some(v) = value {
+                    rows.push((tr(lang, name).to_string(), format!("{v:.2}")));
+                }
+            }
+            rows
+        }
+    };
+    (title, rows)
+}
+
 /// Шторка двух выпусков. Сторона 0 - справа («после»), 1 - слева («до»).
 pub struct Compare {
     pub right: Release,
@@ -104,6 +130,15 @@ impl Wayback {
 
     pub fn busy(&self) -> bool {
         self.config.is_some() || self.link.is_some() || self.info_ask.is_some() || self.compare.as_ref().is_some_and(Compare::busy)
+    }
+
+    /// Выпуски на глобусе для сведений в «Объектах», `_identify_wayback`
+    /// модуля: стороны шторки, без шторки - выбранный в окне выпуск.
+    pub fn shown(&self) -> Vec<Release> {
+        match &self.compare {
+            Some(c) => vec![c.right.clone(), c.left.clone()],
+            None => self.selected.and_then(|n| self.rows.get(n)).cloned().into_iter().collect(),
+        }
     }
 
     /// Включить или снять шторку. Справа - выбранный выпуск, без выбора -
@@ -419,6 +454,16 @@ mod tests {
         assert!(w.set_compare(false));
         assert!(w.compare.is_none());
         assert_eq!(w.changed, [true; 2]);
+    }
+
+    #[test]
+    fn objects_feature_names_release_and_shot() {
+        let r = release(40, "2026-03-01");
+        let info = Info { date: "2025-11-20".into(), provider: "Vantor".into(), sensor: String::new(), resolution: Some(0.3), accuracy: None };
+        let (title, rows) = info_feature(Lang::RU, &r, Some(&Some(info)));
+        assert_eq!(title, "Выпуск 2026-03-01");
+        assert_eq!(rows, vec![("Дата съёмки".to_string(), "2025-11-20".to_string()), ("Источник".to_string(), "Vantor".to_string()), ("Разрешение, м".to_string(), "0.30".to_string())]);
+        assert_eq!(info_feature(Lang::EN, &r, None).1.len(), 1);
     }
 
     #[test]
