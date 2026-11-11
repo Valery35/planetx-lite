@@ -108,12 +108,9 @@ pub struct Settings {
     /// Направление синхронизации с картой RustGIS, ключ
     /// [`crate::rustgislink::Direction`], `PlanetX/sync` модуля.
     pub sync: String,
-    /// Режим «Слои как на карте RustGIS», флажок `follow_legend` окна
-    /// свойств модуля. По умолчанию включён, решение автора от 8 ноября
-    /// 2026 года: флажок ушёл из раздела «Проект RustGIS» в свойства.
-    pub rustgis_map: bool,
-    /// Слои проектов RustGIS, отмеченные на глобусе без режима карты:
-    /// проект и названия слоёв, `read_shown` модуля.
+    /// Слои проектов RustGIS, отмеченные на глобусе: проект и названия
+    /// слоёв, `read_shown` модуля. Видимость на карте RustGIS глобус
+    /// не берёт и не меняет, решение автора от 12 ноября 2026 года.
     pub rustgis_shown: Vec<(String, Vec<String>)>,
 }
 
@@ -167,7 +164,7 @@ fn read_section_color(line: &str) -> Option<SectionColor> {
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { section_colors: Vec::new(), language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, shading: f64::from(render::RELIEF_STRENGTH), light_azimuth: f64::from(render::RELIEF_AZIMUTH), grid: false, air: true, stars: true, sea: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new(), route: "car".into(), opacity: Vec::new(), stretch: true, own: Vec::new(), wms: Vec::new(), geoid_scale: data::geoid::SCALE, links: Vec::new(), sat_groups: data::satellites::DEFAULT_GROUPS.iter().map(|g| g.to_string()).collect(), constellations: true, deepsky: true, sky_imagery: true, ai: crate::ai::AiSettings::default(), analysis_ok: Vec::new(), terms_ok: Vec::new(), earthdata: String::new(), rustgis: false, sync: "both".into(), rustgis_map: true, rustgis_shown: Vec::new() }
+        Self { section_colors: Vec::new(), language: None, labels: String::new(), dark: true, scale: 1.0, sun: false, shading: f64::from(render::RELIEF_STRENGTH), light_azimuth: f64::from(render::RELIEF_AZIMUTH), grid: false, air: true, stars: true, sea: true, relief: true, vector: crate::vector::VectorBase::default().to_text(), coords: "decimal".into(), history: Vec::new(), places_height: 0.0, maps: Vec::new(), basemap: "esri".into(), dots: Vec::new(), route: "car".into(), opacity: Vec::new(), stretch: true, own: Vec::new(), wms: Vec::new(), geoid_scale: data::geoid::SCALE, links: Vec::new(), sat_groups: data::satellites::DEFAULT_GROUPS.iter().map(|g| g.to_string()).collect(), constellations: true, deepsky: true, sky_imagery: true, ai: crate::ai::AiSettings::default(), analysis_ok: Vec::new(), terms_ok: Vec::new(), earthdata: String::new(), rustgis: false, sync: "both".into(), rustgis_shown: Vec::new() }
     }
 }
 
@@ -217,7 +214,6 @@ impl Settings {
             + &if self.earthdata.is_empty() { String::new() } else { format!("earthdata={}\n", self.earthdata) }
             + if self.rustgis { "rustgis=true\n" } else { "" }
             + &if self.sync == "both" { String::new() } else { format!("sync={}\n", self.sync) }
-            + if self.rustgis_map { "" } else { "rustgis_map=false\n" }
             + &self.rustgis_shown.iter().map(|(p, names)| format!("rustgis_shown={p}\t{}\n", names.join("\t"))).collect::<String>()
             + &format!("shading={}\nlight_azimuth={}\n", self.shading, self.light_azimuth)
     }
@@ -280,7 +276,6 @@ impl Settings {
                 "deepsky" => s.deepsky = value != "false",
                 "rustgis" => s.rustgis = value == "true",
                 "sync" if matches!(value, "both" | "map" | "globe") => s.sync = value.to_string(),
-                "rustgis_map" => s.rustgis_map = value != "false",
                 "rustgis_shown" => {
                     let mut parts = value.split('\t');
                     if let Some(project) = parts.next().filter(|p| !p.is_empty()) {
@@ -506,12 +501,7 @@ pub fn window(ctx: &egui::Context, lang: Lang, open: &mut bool, settings: &mut S
                 group(ui, "RustGIS", |ui| {
                     ui.checkbox(&mut settings.rustgis, tr(lang, "Link with the open RustGIS")).on_hover_text(tr(
                         lang,
-                        "Layers of the RustGIS project are listed in the RustGIS project section. With Layers as on the RustGIS map a layer is on the globe when it is on the map, without it the layers start switched off. A check shows a layer on the globe in its RustGIS colours. The globe follows the RustGIS map, and the map follows the globe. A click with Identify selects the feature in RustGIS. In RustGIS start the MCP Relay command or tick Let your Agents Control RustGIS in the assistant settings.",
-                    ));
-                    // «Слои как на карте QGIS» окна свойств модуля.
-                    ui.checkbox(&mut settings.rustgis_map, tr(lang, "Layers as on the RustGIS map")).on_hover_text(tr(
-                        lang,
-                        "With the check the globe shows the layers switched on in RustGIS, a check in the RustGIS project section switches the layer on the map too, and the opacity sets its transparency there. Without the check the checks of the globe are its own, kept for each project, and do not change the map.",
+                        "Layers of the RustGIS project are listed in the RustGIS project section, switched off: a check shows a layer on the globe in its RustGIS colours. The checks and the opacity of the globe are its own, kept for each project, and do not change the map. The globe follows the RustGIS map, and the map follows the globe. A click with Identify selects the feature in RustGIS. In RustGIS start the MCP Relay command or tick Let your Agents Control RustGIS in the assistant settings.",
                     ));
                     // Направление синхронизации, как «Синхронизация»
                     // свойств вида модуля.
@@ -572,15 +562,17 @@ mod tests {
 
     #[test]
     fn settings_round_trip_and_hostile_text() {
-        let s = Settings { section_colors: vec![("Уголь_top".into(), Some([1, 2, 255]), None), ("@host".into(), None, Some([9, 8, 7]))], language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, shading: 0.75, light_azimuth: 280.0, grid: true, air: false, stars: false, sea: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()], route: "foot".into(), opacity: vec![("emag".into(), 0.5)], stretch: false, own: Vec::new(), wms: vec![crate::maps::WmsSaved { name: "Orthos".into(), template: "https://x.org/wms?SERVICE=WMS&BBOX={bbox}".into(), bbox: Some([-76.1, 39.5, -74.4, 40.6]), credit: "X".into(), max_level: None }, crate::maps::WmsSaved { name: "Снимок".into(), template: "https://tiles.openaerialmap.org/a/0/b/{z}/{x}/{y}".into(), bbox: Some([120.1, -8.4, 120.2, -8.3]), credit: "Y, CC BY 4.0".into(), max_level: Some(21) }], geoid_scale: 2000.0, links: vec![("OSM".into(), "https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map={zoom}/{lat}/{lon}".into())], sat_groups: vec!["gnss".into(), "geo".into()], constellations: false, deepsky: false, sky_imagery: false, ai: crate::ai::AiSettings { provider: "anthropic".into(), keys: vec![("anthropic".into(), "sk-ant-1".into())], search: false, ..Default::default() }, analysis_ok: vec!["https://server.arcgisonline.com/x/{z}/{y}/{x}".into()], terms_ok: vec!["google_satellite".into(), "dgis_map".into()], earthdata: "eyJ0.test".into(), rustgis: true, sync: "globe".into(), rustgis_map: false, rustgis_shown: vec![("World Atlas".into(), vec!["Cities".into(), "Реки и озёра".into()])] };
+        let s = Settings { section_colors: vec![("Уголь_top".into(), Some([1, 2, 255]), None), ("@host".into(), None, Some([9, 8, 7]))], language: Some("de".into()), labels: "local".into(), dark: false, scale: 2.5, sun: true, shading: 0.75, light_azimuth: 280.0, grid: true, air: false, stars: false, sea: false, relief: false, vector: "roads,railways;1".into(), coords: "utm".into(), history: vec!["Вологда".into(), "Paris".into()], places_height: 240.0, maps: vec!["emag".into(), "hiking".into()], basemap: "esri_topo".into(), dots: vec!["quakes".into()], route: "foot".into(), opacity: vec![("emag".into(), 0.5)], stretch: false, own: Vec::new(), wms: vec![crate::maps::WmsSaved { name: "Orthos".into(), template: "https://x.org/wms?SERVICE=WMS&BBOX={bbox}".into(), bbox: Some([-76.1, 39.5, -74.4, 40.6]), credit: "X".into(), max_level: None }, crate::maps::WmsSaved { name: "Снимок".into(), template: "https://tiles.openaerialmap.org/a/0/b/{z}/{x}/{y}".into(), bbox: Some([120.1, -8.4, 120.2, -8.3]), credit: "Y, CC BY 4.0".into(), max_level: Some(21) }], geoid_scale: 2000.0, links: vec![("OSM".into(), "https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map={zoom}/{lat}/{lon}".into())], sat_groups: vec!["gnss".into(), "geo".into()], constellations: false, deepsky: false, sky_imagery: false, ai: crate::ai::AiSettings { provider: "anthropic".into(), keys: vec![("anthropic".into(), "sk-ant-1".into())], search: false, ..Default::default() }, analysis_ok: vec!["https://server.arcgisonline.com/x/{z}/{y}/{x}".into()], terms_ok: vec!["google_satellite".into(), "dgis_map".into()], earthdata: "eyJ0.test".into(), rustgis: true, sync: "globe".into(), rustgis_shown: vec![("World Atlas".into(), vec!["Cities".into(), "Реки и озёра".into()])] };
         assert_eq!(Settings::from_text(&s.to_text()), s);
         // Отмывка: сила в пределах 0..1, азимут по кругу.
         let h = Settings::from_text("shading=7\nlight_azimuth=-45\n");
         assert_eq!((h.shading, h.light_azimuth), (1.0, 315.0));
         assert_eq!((Settings::default().shading, Settings::default().light_azimuth), (0.5, 315.0));
-        // «Слои как на карте RustGIS» включены по умолчанию, и в старых
-        // настройках с прежним ключом rustgis_follow тоже.
-        assert!(Settings::default().rustgis_map && Settings::from_text("rustgis_follow=C:/a.rgis\n").rustgis_map);
+        // Режима «Слои как на карте RustGIS» больше нет, решение автора
+        // от 12 ноября 2026 года: старые ключи ничего не меняют
+        // и в настройки не пишутся.
+        assert_eq!(Settings::from_text("rustgis_map=true\nrustgis_follow=C:/a.rgis\n"), Settings::default());
+        assert!(!Settings::default().to_text().contains("rustgis_map"));
         // Отмеченные слои - по ключу проекта.
         let mut p = Settings::default();
         p.set_rustgis_shown("w", vec!["x\ty".into()]);

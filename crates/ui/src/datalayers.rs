@@ -1957,7 +1957,7 @@ pub fn live_menu(ui: &mut egui::Ui, lang: Lang, layer: &DataLayer, out: &mut Vec
     ui.horizontal(|ui| {
         ui.label(tr(lang, "Opacity"));
         let slider = ui.add(egui::Slider::new(&mut percent, 5.0..=100.0).fixed_decimals(0).suffix(" %"));
-        if slider.on_hover_text(tr(lang, "Opacity of the layer on the globe. In the mode Layers as on the RustGIS map - on the map too.")).changed() {
+        if slider.on_hover_text(tr(lang, "Opacity of the layer on the globe. The RustGIS map keeps its own.")).changed() {
             let mut style = layer.style;
             style.opacity = percent / 100.0;
             out.push((id, Act::Style(style)));

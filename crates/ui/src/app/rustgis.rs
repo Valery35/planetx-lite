@@ -68,22 +68,21 @@ impl LiteApp {
                 News::State(state) => {
                     let order: Vec<i64> = state.layers.iter().filter(|l| l.drawn()).map(|l| l.id).collect();
                     self.data_layers.sync_live(&order);
-                    let follow = self.settings.rustgis_map;
                     let saved = self.settings.rustgis_shown_of(&state.project).to_vec();
                     let mut pictures = Vec::new();
                     let moved = self.rustgis.as_mut().and_then(|sync| {
                         let other = sync.take_state(&state);
-                        // Режим карты - видимость с карты RustGIS на каждом
-                        // опросе, `_legend_changed` модуля. Другой проект -
-                        // его отметки из настроек глобуса.
-                        if follow || other {
+                        // Видимость слоёв глобуса и карты RustGIS не связана,
+                        // решение автора от 12 ноября 2026 года. Другой
+                        // проект - его отметки из настроек глобуса.
+                        if other {
                             for id in &order {
-                                self.data_layers.show_live(*id, sync.wanted(*id, follow, &saved));
+                                self.data_layers.show_live(*id, sync.wanted(*id, &saved));
                             }
                             // Растры и тайловые слои - только те, чья
                             // видимость сменилась.
                             for row in sync.rows.iter().filter(|r| r.kind.is_picture()) {
-                                let on = Bridge::wanted_row(row, follow, &saved);
+                                let on = Bridge::wanted_row(row, &saved);
                                 if on != sync.pictures_on.contains(&row.key) {
                                     pictures.push((row.key.clone(), on));
                                 }
@@ -134,11 +133,10 @@ impl LiteApp {
                     let label = crate::rustgislink::kept_label(before, self.data_layers.live_label(id), label);
                     let new = self.data_layers.live_shown(id).is_none();
                     self.data_layers.set_live(FOLDER, id, &name, (*data, colors), look, label);
-                    // Новый слой: на глобусе, если он включён на карте
-                    // в режиме карты или отмечен в настройках проекта.
+                    // Новый слой: на глобусе, только если он отмечен
+                    // в настройках проекта, иначе приходит выключенным.
                     if new && let Some(sync) = &self.rustgis {
-                        let follow = self.settings.rustgis_map;
-                        let on =sync.wanted(id, follow, self.settings.rustgis_shown_of(&sync.project));
+                        let on = sync.wanted(id, self.settings.rustgis_shown_of(&sync.project));
                         self.data_layers.show_live(id, on);
                     }
                 }
@@ -204,14 +202,6 @@ impl LiteApp {
                 ctx.request_repaint();
             }
         }
-        self.rustgis_follow_mode();
-        // Прозрачность для карты - когда ползунок отпущен.
-        if !ctx.input(|i| i.pointer.any_down())
-            && let Some(sync) = &mut self.rustgis
-            && let Some((layer, percent)) = sync.fade.take()
-        {
-            sync.link.ask(crate::rustgislink::Ask::Transparency { layer, percent });
-        }
         crate::datalayers::RUSTGIS_LINKED.store(self.rustgis.as_ref().is_some_and(|s| s.connected), std::sync::atomic::Ordering::Relaxed);
         // Вид глобуса - на карту, когда глобус постоял. На других телах
         // синхронизации нет, как у модуля.
@@ -226,32 +216,6 @@ impl LiteApp {
             }
             // Покой глобуса досчитывается и без движения мыши.
             ctx.request_repaint_after(std::time::Duration::from_secs_f64(crate::rustgislink::SETTLE_SECONDS));
-        }
-    }
-
-    /// Режим «Слои как на карте RustGIS» в свойствах вида сменился:
-    /// флажки глобуса - с карты RustGIS или отметки проекта из настроек.
-    #[cfg(not(target_arch = "wasm32"))]
-    fn rustgis_follow_mode(&mut self) {
-        let follow = self.settings.rustgis_map;
-        let Some(sync) = &mut self.rustgis else {
-            return;
-        };
-        if !sync.connected || sync.follow == Some(follow) {
-            return;
-        }
-        sync.follow = Some(follow);
-        let saved = self.settings.rustgis_shown_of(&sync.project).to_vec();
-        let mut pictures = Vec::new();
-        for row in &sync.rows {
-            match row.key {
-                crate::rustgislink::RowKey::Layer(id) if !row.kind.is_picture() => self.data_layers.show_live(id, sync.wanted(id, follow, &saved)),
-                _ if row.kind.is_picture() => pictures.push((row.key.clone(), crate::rustgislink::Bridge::wanted_row(row, follow, &saved))),
-                _ => {}
-            }
-        }
-        for (key, on) in pictures {
-            self.rustgis_picture(&key, on);
         }
     }
 
@@ -583,9 +547,6 @@ impl LiteApp {
         let pictures_on = sync.pictures_on.clone();
         let cutting: Vec<crate::rustgislink::RowKey> = sync.cut.keys().map(|id| crate::rustgislink::RowKey::Layer(*id)).filter(|k| !sync.pictures.contains_key(k)).collect();
         let project = sync.project.clone();
-        // Режим «Слои как на карте RustGIS» - в свойствах вида, как
-        // «Слои как на карте QGIS» окна свойств модуля.
-        let follow = self.settings.rustgis_map;
         if rows.is_empty() {
             ui.label(egui::RichText::new(tr(lang, "The RustGIS project has no layers.")).color(muted));
             return;
@@ -664,44 +625,26 @@ impl LiteApp {
             } else if let crate::rustgislink::RowKey::Layer(id) = key {
                 self.data_layers.show_live(id, on);
             }
-            if follow {
-                if let Some(sync) = &mut self.rustgis {
-                    match &key {
-                        crate::rustgislink::RowKey::Layer(id) => {
-                            sync.on_map.retain(|i| i != id);
-                            if on {
-                                sync.on_map.push(*id);
-                            }
-                            sync.link.ask(crate::rustgislink::Ask::Visibility { layer: *id, visible: on });
-                        }
-                        crate::rustgislink::RowKey::Tiles(id) => sync.link.ask(crate::rustgislink::Ask::TilesVisibility { id: id.clone(), visible: on }),
-                    }
-                    // Строка уже показывает новое состояние до ответа карты.
-                    if let Some(row) = sync.rows.iter_mut().find(|r| r.key == key) {
-                        row.on_map = on;
-                    }
-                }
-            } else {
-                let mut saved = self.settings.rustgis_shown_of(&project).to_vec();
-                saved.retain(|n| *n != name);
-                if on {
-                    saved.push(name);
-                }
-                self.settings.set_rustgis_shown(&project, saved);
-                self.settings_dirty = true;
+            // Флажок глобуса карту RustGIS не трогает: отметки свои,
+            // хранятся по проекту.
+            let mut saved = self.settings.rustgis_shown_of(&project).to_vec();
+            saved.retain(|n| *n != name);
+            if on {
+                saved.push(name);
             }
+            self.settings.set_rustgis_shown(&project, saved);
+            self.settings_dirty = true;
         }
-        // Действия меню слоя. Непрозрачность в режиме карты - и на карту,
-        // когда ползунок отпущен.
         let now = ui.ctx().input(|i| i.time);
+        self.rustgis_layer_acts(acts, now);
+    }
+
+    /// Действия меню слоя раздела «Проект RustGIS». Непрозрачность своя
+    /// у глобуса, как видимость, на карту RustGIS не уходит, слова автора
+    /// от 12 ноября 2026 года - «Своя, как видимость».
+    #[cfg(not(target_arch = "wasm32"))]
+    fn rustgis_layer_acts(&mut self, acts: Vec<(u64, crate::datalayers::Act)>, now: f64) {
         for (id, act) in acts {
-            if follow
-                && let crate::datalayers::Act::Style(style) = &act
-                && let Some(live) = self.data_layers.get(id).and_then(|l| l.live)
-                && let Some(sync) = &mut self.rustgis
-            {
-                sync.fade = Some((live, (100.0 - style.opacity * 100.0).round().clamp(0.0, 100.0) as u8));
-            }
             self.data_act(id, &act, now);
         }
     }
@@ -717,5 +660,32 @@ mod tests {
         assert_eq!(project_layer_name("Электростанции", "Точки", 1), "Электростанции");
         assert_eq!(project_layer_name("Электростанции", "Линии", 2), "Электростанции - Линии");
         assert_eq!(project_layer_name("wells", "wells.geojson", 2), "wells");
+    }
+
+    /// Непрозрачность слоя проекта своя у глобуса, как видимость, слова
+    /// автора от 12 ноября 2026 года - «Своя, как видимость». Прежде
+    /// ползунок глобуса слал `layer.transparency` на карту RustGIS.
+    #[test]
+    fn globe_opacity_does_not_go_to_the_rustgis_map() {
+        let mut app = super::super::quiet::app(std::rc::Rc::new(Vec::new()));
+        app.settings.rustgis = true;
+        let (link, asks) = crate::rustgislink::Link::probe();
+        let mut bridge = crate::rustgislink::Bridge::new(link);
+        bridge.connected = true;
+        app.rustgis = Some(bridge);
+        let item = data::layers::Item { shape: data::layers::Shape::Point, parts: vec![vec![(58.0, 56.2)]], heights: Vec::new(), values: Vec::new() };
+        let layer = data::layers::LayerData { name: "Cities".into(), epsg: None, fields: Vec::new(), numeric: Vec::new(), items: vec![item] };
+        app.data_layers.set_live(crate::rustgislink::FOLDER, 7, "Cities", (layer, vec![[200, 0, 0]]), crate::datalayers::Style::new(0), None);
+        let id = app.data_layers.live_layer(7).map(|l| l.id);
+        assert!(id.is_some());
+        let mut style = crate::datalayers::Style::new(0);
+        style.opacity = 0.5;
+        app.rustgis_layer_acts(vec![(id.unwrap_or_default(), crate::datalayers::Act::Style(style))], 0.0);
+        let ctx = eframe::egui::Context::default();
+        app.step_rustgis(&ctx, 1.0);
+        let sent: Vec<crate::rustgislink::Ask> = asks.try_iter().collect();
+        assert!(!sent.iter().any(|a| matches!(a, crate::rustgislink::Ask::Transparency { .. })), "прозрачность ушла на карту");
+        // На глобусе непрозрачность сменилась.
+        assert_eq!(app.data_layers.live_layer(7).map(|l| l.style.opacity), Some(0.5));
     }
 }

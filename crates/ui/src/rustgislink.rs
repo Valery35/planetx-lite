@@ -205,6 +205,16 @@ impl Link {
     }
 }
 
+#[cfg(test)]
+impl Link {
+    /// Связь без потока для тестов: просьбы окна - в приёмник.
+    pub(crate) fn probe() -> (Link, Receiver<Ask>) {
+        let (asks, ask_rx) = channel();
+        let (_news_tx, news) = channel();
+        (Link { asks, news, stop: Arc::new(AtomicBool::new(false)) }, ask_rx)
+    }
+}
+
 impl Drop for Link {
     fn drop(&mut self) {
         self.stop.store(true, Ordering::SeqCst);
@@ -1374,14 +1384,8 @@ pub struct Bridge {
     /// Синхронизацию только включили, глобус ведёт: его вид уходит
     /// на карту сразу, без ожидания покоя.
     push_now: bool,
-    /// Режим «Слои как на карте RustGIS», по которому расставлены флажки
-    /// глобуса. Другой в настройках - флажки расставляются заново.
-    pub follow: Option<bool>,
     /// Открытое меню строки раздела «Проект RustGIS».
     pub menu: Option<String>,
-    /// Прозрачность слоя для карты RustGIS, в процентах: уходит, когда
-    /// ползунок отпущен, а не на каждом кадре протяжки.
-    pub fade: Option<(i64, u8)>,
     /// Команда «layout» ждёт снимка: её номер и когда пришла. Снимок -
     /// когда перелёт кончился и место загрузилось.
     pub layout_reply: Option<(serde_json::Value, f64)>,
@@ -1415,9 +1419,7 @@ impl Bridge {
             sync: false,
             direction: Direction::Both,
             push_now: false,
-            follow: None,
             menu: None,
-            fade: None,
             layout_reply: None,
             shooting: None,
             labels: HashMap::new(),
@@ -1540,11 +1542,11 @@ impl Bridge {
         other
     }
 
-    /// Должна ли строка быть на глобусе: в режиме «Слои как на карте
-    /// RustGIS» (follow) - как на карте, иначе - отмечена ли она
-    /// в настройках проекта (saved - названия слоёв).
-    pub fn wanted_row(row: &Row, follow: bool, saved: &[String]) -> bool {
-        if follow { row.on_map } else { saved.contains(&row.name) }
+    /// Должна ли строка быть на глобусе: отмечена ли она в настройках
+    /// проекта (saved - названия слоёв). Видимость на карте RustGIS
+    /// глобус не берёт, решение автора от 12 ноября 2026 года.
+    pub fn wanted_row(row: &Row, saved: &[String]) -> bool {
+        saved.contains(&row.name)
     }
 
     /// Строка по ключу.
@@ -1552,15 +1554,11 @@ impl Bridge {
         self.rows.iter().find(|r| r.key == *key)
     }
 
-    /// Должен ли слой id быть на глобусе: в режиме «Слои как на карте
-    /// RustGIS» (follow) - как на карте, иначе - отмечен ли он
-    /// в настройках проекта (saved - названия слоёв).
-    pub fn wanted(&self, id: i64, follow: bool, saved: &[String]) -> bool {
-        if follow {
-            self.on_map.contains(&id)
-        } else {
-            self.names.iter().any(|(i, n)| *i == id && saved.contains(n))
-        }
+    /// Должен ли слой id быть на глобусе: отмечен ли он в настройках
+    /// проекта (saved - названия слоёв). Новый слой проекта приходит
+    /// выключенным, видимость на карте RustGIS глобус не берёт.
+    pub fn wanted(&self, id: i64, saved: &[String]) -> bool {
+        self.names.iter().any(|(i, n)| *i == id && saved.contains(n))
     }
 }
 
@@ -2069,11 +2067,12 @@ mod tests {
         Bridge::new(Link { asks: channel::<Ask>().0, news, stop: Arc::new(AtomicBool::new(false)) })
     }
 
-    /// Слои на глобусе как у модуля: в режиме карты - видимость с карты
-    /// RustGIS, без него - отметки проекта из настроек. Другой проект -
-    /// его отметки читаются заново.
+    /// Слои на глобусе - только отметки проекта из настроек. Слой,
+    /// включённый на карте RustGIS, приходит на глобус выключенным:
+    /// прежде режим «Слои как на карте RustGIS» его включал. Другой
+    /// проект - его отметки читаются заново.
     #[test]
-    fn layers_follow_the_map_or_the_project() {
+    fn layers_come_switched_off_and_follow_only_the_project() {
         let mut s = bridge();
         let state = data::rustgis::parse_state(
             r#"{"name":"Atlas","path":null,"layers":[{"id":1,"name":"Cities","type":"Point","visible":true},{"id":2,"name":"Lakes","type":"Polygon","visible":false},{"id":3,"name":"DEM","type":"Raster","visible":true,"extent":[56,57,57,58]}],
@@ -2085,17 +2084,19 @@ mod tests {
         assert_eq!(s.project, "Atlas");
         // Объекты читаются только у векторов.
         assert_eq!(s.names.len(), 2);
-        assert!(s.wanted(1, true, &[]) && !s.wanted(2, true, &[]));
+        // Cities включён на карте, но на глобус приходит выключенным.
+        let fresh = crate::settings::Settings::default();
+        assert!(!s.wanted(1, fresh.rustgis_shown_of("Atlas")) && !s.wanted(2, fresh.rustgis_shown_of("Atlas")));
         let saved = vec!["Lakes".to_string()];
-        assert!(!s.wanted(1, false, &saved) && s.wanted(2, false, &saved));
+        assert!(!s.wanted(1, &saved) && s.wanted(2, &saved));
         // В строках раздела - все слои в порядке карты, тайловые под ними.
         let kinds: Vec<RowKind> = s.rows.iter().map(|r| r.kind).collect();
         assert_eq!(kinds, [RowKind::Points, RowKind::Polygons, RowKind::Raster, RowKind::Tiles]);
         let dem = s.row(&RowKey::Layer(3)).cloned();
         assert!(dem.as_ref().is_some_and(|r| r.kind.is_picture() && r.extent.is_some()));
-        assert!(dem.as_ref().is_some_and(|r| Bridge::wanted_row(r, true, &[])));
+        assert!(dem.as_ref().is_some_and(|r| !Bridge::wanted_row(r, &[])));
         let sat = s.row(&RowKey::Tiles("sat".into())).cloned();
-        assert!(sat.as_ref().is_some_and(|r| !Bridge::wanted_row(r, true, &[]) && Bridge::wanted_row(r, false, &["Imagery".to_string()])));
+        assert!(sat.as_ref().is_some_and(|r| !Bridge::wanted_row(r, &[]) && Bridge::wanted_row(r, &["Imagery".to_string()])));
         let mut other = state.clone();
         other.project = "C:/gis/other.rgis".into();
         assert!(s.take_state(&other));
