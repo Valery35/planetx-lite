@@ -320,6 +320,23 @@
 - Форум OSM, linux.org.ru - не публиковались, ждут слова автора
 - Лента страницы линейки planetx (planetx-scene/site/feed.json) - не обновлялась
 
+### PlanetX Lite 0.29.0, 12 ноября 2026 года
+
+Тексты - site/posts_0.29.0_social.md, описание выпуска - packaging/notes/0.29.0.md. Архив Esri Wayback со шторкой, темы NASA GIBS по шкале времени, окно «Данные JAXA», девять подложек с предупреждением, тени 3D-зданий. По слову автора «Выпускай».
+
+- Коммит выпуска 00cba36, метка v0.29.0, сборка выпуска и Pages зелёные
+- GitHub: https://github.com/Valery35/planetx-lite/releases/tag/v0.29.0
+- Dropbox - PlanetX-Lite.zip 0.29.0, собран из файлов выпуска для Windows и страницы, сверен с SHA256SUMS
+- Сайт informpp.ru - «Что нового» (блок 13872 при странице 13761) и главная (блок 6961, номер версии), коммит 00cba36, опубликовано
+- ВК, запись: https://vk.ru/wall-241229428_66
+- Mastodon: https://en.osm.town/@Vaery35/117600807700808873
+- X: https://x.com/Valery35/status/2120686186939232345
+- LinkedIn: https://www.linkedin.com/feed/update/urn:li:activity:7526452191574769664/
+- Facebook - пост в ленте автора 12 ноября 2026 года
+- Telegram @qgis_isolines - не опубликован: доступ к приложению Telegram не дан, текст RU в файле постов
+- OSGeo Discourse, Reddit, linux.org.ru - ждут слова автора. Форум OSM - учётная запись заблокирована
+- Лента страницы линейки planetx (planetx-scene/site/feed.json) - не обновлялась
+
 ### PlanetX Lite 0.28.0, 10 ноября 2026 года
 
 Тексты - site/posts_0.28.0_social.md, статья ВК - site/posts_0.28.0.md, описание выпуска - packaging/notes/0.28.0.md. Аддины и руководство по их созданию (addins/README.md и README.ru.md, раздел «Аддины» руководства пользователя, раздел на главной сайта). По слову автора «Давай публикуй. Подробно опиши как аддины создавать всюду».
