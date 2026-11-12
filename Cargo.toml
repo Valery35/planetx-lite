@@ -100,3 +100,45 @@ unimplemented = "deny"
 # Зависимости в отладочной сборке оптимизированы: декодер PNG и wgpu
 # без этого тормозят кадр.
 opt-level = 2
+
+[profile.size]
+# Сборка на размер для пакета RustPlanetX: предел каталога RustGIS -
+# 64 МиБ. Обычный выпуск Lite собирается профилем release.
+# `cargo build --profile size -p planetx-rustgis`.
+inherits = "release"
+lto = true
+opt-level = "s"
+
+# Горячие крейты кадра - отрисовка, тайлы, геометрия, разбор картинок -
+# остаются на полной оптимизации. Замер «Эльбруса» 12 ноября 2026 года,
+# кадров за полёт: release 668-712, всё на "s" 685, так - 697.
+[profile.size.package.render]
+opt-level = 3
+[profile.size.package.globe-core]
+opt-level = 3
+[profile.size.package.terrain]
+opt-level = 3
+[profile.size.package.wgpu]
+opt-level = 3
+[profile.size.package.wgpu-core]
+opt-level = 3
+[profile.size.package.wgpu-hal]
+opt-level = 3
+[profile.size.package.egui]
+opt-level = 3
+[profile.size.package.epaint]
+opt-level = 3
+[profile.size.package.egui-wgpu]
+opt-level = 3
+[profile.size.package.png]
+opt-level = 3
+[profile.size.package.fdeflate]
+opt-level = 3
+[profile.size.package.miniz_oxide]
+opt-level = 3
+[profile.size.package.zune-jpeg]
+opt-level = 3
+[profile.size.package.jpeg-decoder]
+opt-level = 3
+[profile.size.package.image]
+opt-level = 3
