@@ -635,14 +635,24 @@ pub(crate) fn popup(ui: &mut egui::Ui, menu_open: &mut Option<String>, key: &str
         return;
     }
     let id = egui::Id::unique(("layers-menu", key));
-    let area = egui::Area::new(id).order(egui::Order::Foreground).fixed_pos(rect.left_bottom()).show(ui.ctx(), |ui| {
+    // Область - меню, как меню глобуса: подменю («С предупреждением»
+    // выбора подложки) открывается сбоку. Простая область делала из
+    // подменю выпадающий список поверх своего меню, и меню закрывало
+    // первые пункты, 13 ноября 2026 года.
+    let area = egui::Area::new(id).kind(egui::UiKind::Menu).order(egui::Order::Foreground).fixed_pos(rect.left_bottom()).show(ui.ctx(), |ui| {
         egui::Frame::menu(ui.style()).show(ui, |ui| {
             ui.set_min_width(rect.width().min(260.0));
-            add(ui)
+            // Пункты во всю ширину меню: подменю встаёт за правым краем
+            // меню, а не за краем короткой кнопки.
+            ui.with_layout(egui::Layout::top_down_justified(egui::Align::LEFT), add).inner
         })
         .inner
     });
-    let outside = ui.ctx().input(|i| i.pointer.any_click() && i.pointer.interact_pos().is_some_and(|p| !area.response.rect.contains(p) && !rect.contains(p)));
+    // Щелчок в подменю - своей области того же слоя поверх всего - меню
+    // не закрывает.
+    let ctx = ui.ctx();
+    let clicked_at = ctx.input(|i| i.pointer.interact_pos().filter(|_| i.pointer.any_click()));
+    let outside = clicked_at.is_some_and(|p| !area.response.rect.contains(p) && !rect.contains(p) && ctx.layer_id_at(p).is_none_or(|l| l.order != egui::Order::Foreground));
     let escape = ui.ctx().input(|i| i.key_pressed(egui::Key::Escape));
     if area.inner || outside || escape {
         *menu_open = None;
@@ -881,6 +891,13 @@ impl Item {
             Item::Wayback => tr(lang, "Former releases of the Esri World Imagery base map since 2014. The row opens the window «Wayback imagery archive» with the releases where the image at the view point changed. A release lies on the globe as a map row, two releases are compared with a swipe.").to_string(),
             Item::Tool(t) => tr(lang, t.texts().1).to_string(),
         }
+    }
+
+    /// Вторая строка на языке lang. Источник - имя собственное, группа
+    /// подложек («С предупреждением») - через перевод. Прежде группа
+    /// стояла по-английски и в русском каталоге.
+    fn subtitle_text(self, lang: Lang) -> &'static str {
+        tr(lang, self.subtitle())
     }
 
     /// Вторая строка: источник, `subtitle` модуля.
@@ -1161,7 +1178,7 @@ impl Catalog {
                                             ui.painter().rect_filled(rect, 3.0, egui::Color32::from_rgb(r, g, b));
                                         }
                                     }
-                                    let sub = item.subtitle();
+                                    let sub = item.subtitle_text(lang);
                                     let mut label = egui::text::LayoutJob::default();
                                     let body = egui::TextFormat { font_id: egui::TextStyle::Body.resolve(ui.style()), color: ui.visuals().text_color(), ..Default::default() };
                                     label.append(&item.name(lang), 0.0, body.clone());
@@ -1202,7 +1219,7 @@ impl Catalog {
                         Some(item) => {
                             ui.label(egui::RichText::new(item.name(lang)).strong());
                             if !item.subtitle().is_empty() {
-                                ui.label(egui::RichText::new(item.subtitle()).italics());
+                                ui.label(egui::RichText::new(item.subtitle_text(lang)).italics());
                             }
                             ui.label(item.tip(lang));
                             let on = item.is_on(state);
@@ -1269,5 +1286,102 @@ fn click(item: Item, state: &State<'_>, out: &mut Vec<Action>) {
                 out.push(Action::Extra(e, true));
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Строка подложки Google в русском каталоге подписывалась группой
+    /// «With a warning» без перевода.
+    #[test]
+    fn warned_basemap_subtitle_is_translated() {
+        let warned = Basemap::all().into_iter().find(|b| b.ready().is_some_and(|r| r.group == crate::basemap::ReadyGroup::Warned));
+        assert!(warned.is_some());
+        let item = Item::Base(warned.unwrap_or(Basemap::Esri));
+        assert_eq!(item.subtitle_text(Lang::RU), "С предупреждением");
+        assert_eq!(item.subtitle_text(Lang::EN), "With a warning");
+        assert_eq!(Item::Base(Basemap::Esri).subtitle_text(Lang::RU), "Esri");
+    }
+
+    const WARNED: [&str; 3] = ["Google Спутник", "Google Гибрид", "Google Схема"];
+
+    /// Кадр меню строки с подменю, фигуры кадра.
+    fn menu_frame(ctx: &egui::Context, open: &mut Option<String>, events: Vec<egui::Event>) -> Vec<egui::epaint::ClippedShape> {
+        menu_frame_chosen(ctx, open, events, &mut None)
+    }
+
+    /// Кадр меню строки, выбранный пункт подменю - в chosen.
+    fn menu_frame_chosen(ctx: &egui::Context, open: &mut Option<String>, events: Vec<egui::Event>, chosen: &mut Option<&'static str>) -> Vec<egui::epaint::ClippedShape> {
+        let input = egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(1200.0, 800.0))), events, ..Default::default() };
+        let mut out = ctx.run_ui(input, |ui| {
+            let row = egui::Rect::from_min_size(egui::pos2(10.0, 300.0), egui::vec2(240.0, 20.0));
+            popup(ui, open, "base", row, |ui| {
+                let _ = ui.button("Esri World Imagery");
+                ui.menu_button("С предупреждением", |ui| {
+                    for name in WARNED {
+                        if ui.button(name).clicked() {
+                            *chosen = Some(name);
+                        }
+                    }
+                });
+                let _ = ui.button("Добавить источник тайлов…");
+                chosen.is_some()
+            });
+        });
+        out.textures_delta.clear();
+        out.shapes
+    }
+
+    fn text_at(shapes: &[egui::epaint::ClippedShape], text: &str) -> Option<egui::Pos2> {
+        fn find(shape: &egui::Shape, text: &str) -> Option<egui::Pos2> {
+            match shape {
+                egui::Shape::Text(t) if t.galley.text() == text => Some(t.pos + t.galley.rect.center().to_vec2()),
+                egui::Shape::Vec(v) => v.iter().find_map(|s| find(s, text)),
+                _ => None,
+            }
+        }
+        shapes.iter().find_map(|c| find(&c.shape, text))
+    }
+
+    /// Подменю «С предупреждением» выбора подложки ложилось под своё меню:
+    /// «Google Спутник» закрывало меню, его нельзя было выбрать.
+    #[test]
+    fn submenu_items_are_not_covered_by_their_menu() {
+        let ctx = egui::Context::default();
+        let mut open = Some("base".to_string());
+        let mut shapes = Vec::new();
+        for _ in 0..3 {
+            shapes = menu_frame(&ctx, &mut open, Vec::new());
+        }
+        let at = text_at(&shapes, "С предупреждением").unwrap_or_default();
+        let press = |pressed| egui::Event::PointerButton { pos: at, button: egui::PointerButton::Primary, pressed, modifiers: egui::Modifiers::NONE };
+        menu_frame(&ctx, &mut open, vec![egui::Event::PointerMoved(at)]);
+        menu_frame(&ctx, &mut open, vec![press(true)]);
+        menu_frame(&ctx, &mut open, vec![press(false)]);
+        for _ in 0..3 {
+            shapes = menu_frame(&ctx, &mut open, Vec::new());
+        }
+        assert!(open.is_some(), "меню закрылось");
+        // Пункт подменю не лежит на своём меню: какое из них выше, egui
+        // решает по последнему щелчку, в программе выше было меню.
+        let parent = ctx.memory(|m| m.area_rect(egui::Id::unique(("layers-menu", "base"))));
+        assert!(parent.is_some());
+        let parent = parent.unwrap_or(egui::Rect::NOTHING);
+        for name in WARNED {
+            let pos = text_at(&shapes, name);
+            assert!(pos.is_some(), "{name} нет в кадре");
+            assert!(pos.is_some_and(|p| !parent.contains(p)), "{name} {pos:?} лежит на меню {parent:?}");
+        }
+        // Щелчок по пункту подменю выбирает его и закрывает меню.
+        let at = text_at(&shapes, "Google Спутник").unwrap_or_default();
+        let press = |pressed| egui::Event::PointerButton { pos: at, button: egui::PointerButton::Primary, pressed, modifiers: egui::Modifiers::NONE };
+        let mut chosen = None;
+        menu_frame_chosen(&ctx, &mut open, vec![egui::Event::PointerMoved(at)], &mut chosen);
+        menu_frame_chosen(&ctx, &mut open, vec![press(true)], &mut chosen);
+        menu_frame_chosen(&ctx, &mut open, vec![press(false)], &mut chosen);
+        assert_eq!(chosen, Some("Google Спутник"));
+        assert!(open.is_none());
     }
 }

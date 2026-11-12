@@ -32,6 +32,10 @@
 //! стоит флажок «Пускать агентов MCP». Окна не открывает. `--mcp` -
 //! открыть программу с этим флажком.
 //!
+//! `--profile папка` или `PLANETX_LITE_HOME=папка` - свои настройки
+//! и «Мои слои» в этой папке, общие папки пользователя не трогаются
+//! (`home`). Кэш тайлов общий.
+//!
 //! `--rustgis` - открыть программу со связью с открытым RustGIS
 //! (`ui::rustgislink`), у RustPlanetX связь есть всегда. `rustgis-plugin` -
 //! расширение RustGIS, его запускает RustGIS. В сессии расширения глобус
@@ -45,6 +49,7 @@ use net::native::{Loader, Requests, default_cache_dir};
 use net::{ESRI, OPENFREEMAP, OSM, TERRARIUM};
 use ui::{Edition, Scenario};
 
+mod home;
 mod window;
 
 /// Предел файла сцены по ссылке, байт.
@@ -192,7 +197,7 @@ pub fn main(edition: Edition) -> ExitCode {
     let demo_cache = default_cache_dir().and_then(|d| Some(d.parent()?.join("demo")));
     // Файлы - аргументы без «--», которые не значения флагов, по порядку:
     // растр высот, потом сцена.
-    const VALUED: [&str; 5] = ["--check", "--pose", "--shot", "--demo", "--event"];
+    const VALUED: [&str; 6] = ["--check", "--pose", "--shot", "--demo", "--event", home::FLAG];
     let plain: Vec<&String> = args
         .iter()
         .enumerate()
@@ -217,9 +222,12 @@ pub fn main(edition: Edition) -> ExitCode {
         }
     }
     let result = Arc::new(Mutex::new(None));
+    // Своя папка настроек и «Моих слоёв» - `--profile` или PLANETX_LITE_HOME.
+    let own = home::chosen(&args, std::env::var_os(home::ENV));
+    let paths = home::dirs(own.as_deref(), eframe::storage_dir(STORAGE), dirs::data_dir(), USER_DIR);
     // Окно, закрытое свёрнутым, eframe восстановил бы крошечным.
-    if let Some(dir) = eframe::storage_dir(STORAGE) {
-        window::fix_saved_window(&dir);
+    if let Some(dir) = &paths.storage {
+        window::fix_saved_window(dir);
     }
     let mut viewport = egui::ViewportBuilder::default().with_title(title).with_inner_size(WINDOW);
     if let Some(icon) = ui::credits::window_icon() {
@@ -229,8 +237,10 @@ pub fn main(edition: Edition) -> ExitCode {
         renderer: eframe::Renderer::Wgpu,
         viewport,
         event_loop_builder: display_server(),
+        persistence_path: paths.storage_file.clone(),
         ..Default::default()
     };
+    let user_dir = paths.user.clone();
     let shared = result.clone();
     let run = eframe::run_native(
         STORAGE,
@@ -263,8 +273,8 @@ pub fn main(edition: Edition) -> ExitCode {
                 app = app.with_demo_cache(dir);
             }
             // «Мои слои» - в папке данных пользователя, не в кэше.
-            if let Some(dir) = dirs::data_dir() {
-                app = app.with_user_dir(dir.join(USER_DIR));
+            if let Some(dir) = user_dir {
+                app = app.with_user_dir(dir);
             }
             // Соседние файлы шейпфайла - из папки первого файла.
             if let Some(dir) = files.first().and_then(|p| p.parent()) {

@@ -16,7 +16,7 @@ const MIN_SIDE: f64 = 200.0;
 /// ставит свёрнутое окно.
 const OFF_SCREEN: f64 = -10_000.0;
 /// Имя файла хранилища eframe.
-const FILE: &str = "app.ron";
+pub(crate) const FILE: &str = "app.ron";
 
 /// Число после метки key в тексте записи окна.
 fn number_after(text: &str, key: &str) -> Option<f64> {

@@ -339,6 +339,13 @@
 - OSGeo Discourse, Reddit r/rust и r/gis, форум OSM, linux.org.ru - ждут слова автора, тексты Reddit в файле постов
 - Лента страницы линейки planetx (planetx-scene/site/feed.json) - не обновлялась
 
+### RustPlanetX 0.5.9, 12 ноября 2026 года
+
+- GitHub: https://github.com/Valery35/rustplanetx/releases/tag/v0.5.9 (внутри Lite 1728d86)
+- Dropbox - опубликован
+- Каталог RustGIS: заявку открывает автор, ветка rustplanetx-0.5.9
+- Ответ .a1ex - в RustGIS Chat
+
 ### Канал RustPlanetX в Telegram, 12 ноября 2026 года
 
 - Канал t.me/rustgis, пост-описание RustPlanetX: https://t.me/rustgis/3 (по слову автора)

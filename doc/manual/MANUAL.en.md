@@ -17,6 +17,7 @@ program as a web page, on phones too.
 - [Opening files](#opening-files)
 - [My Places](#my-places)
 - [Layers](#layers)
+- [Imagery archive and comparison](#imagery-archive-and-comparison)
 - [Add-ins](#add-ins)
 - [Globe menu](#globe-menu)
 - [Recognition](#recognition)
@@ -188,7 +189,11 @@ The Layers section shows everything on the globe:
 
 - the Add data button - the catalog: base maps, the vector base and the
   grid, the atmosphere and the sun;
-- "Base map · name" - a click opens the choice of the basemap;
+- "Base map · name" - a click opens the choice of the basemap. The base
+  maps of Google, Bing, Yandex and 2GIS stand in a group with a warning.
+  Before the first choice of such a map the window Terms of the source
+  links to the terms of the service, the Add button sets the map. Yandex
+  imagery is in the program only;
 - "Terrain · Terrarium" - the checkbox turns the terrain on, a click on
   the name opens the terrain menu;
 - layers of the catalog that are on: Atmosphere, Sun, Grid. The checkbox
@@ -302,6 +307,42 @@ The check of the row hides the set, the "⋯" menu has «Zoom to layer» and
 again by the file path or by the link, its check stays as it was. A set
 opened on the web page from a file has no path and lives until the page
 closes. Sets are not written into a scene.
+
+3D buildings under the sun cast shadows on the terrain and on each
+other when the sun is on in View properties.
+
+## Imagery archive and comparison
+
+The rows of the catalog section Archive and survey open their windows:
+satellite images, terrain changes, recognition, lidar, OpenAerialMap,
+Rumsey maps and Eto Mesto.
+
+The Esri Wayback archive - the row Esri Wayback or the globe menu item
+Wayback imagery archive…. Program only.
+
+- The window looks for the releases of Esri World Imagery since 2014
+  where the place at the view point changed. A release without changes
+  gives the tile of an earlier one, so only releases with changes are
+  listed. The width of the view sets the size of the searched place,
+  the Search in the view button searches again.
+- A double click or the On the globe button puts a release as a map row.
+- The ⇆ Swipe button compares two releases. Right of the line is the
+  chosen one, left of it a release about a year older. The Left and
+  Right lists change the releases of the sides, the line is dragged with
+  the mouse.
+- A click with Identify shows the date of the shot, the source and the
+  pixel size for the releases on the globe.
+
+NASA GIBS themes follow the time slider: the slider sets the day of the
+theme. The ⇆ button of the slider compares the theme with the same day
+a year earlier, ‹ › step the left day.
+
+The JAXA data window - Area analysis ▸ JAXA data… of the globe menu. The
+set is land or sea temperature, NDVI, chlorophyll-a, GSMaP rain, soil
+moisture or aerosol. The area is a square at the point. The monthly
+series is drawn as a chart and written to CSV. A month raster and a
+Theil-Sen trend map go to My layers. Each set has its own credit, for
+example "GCOM-C/SGLI (JAXA)".
 
 ## Add-ins
 

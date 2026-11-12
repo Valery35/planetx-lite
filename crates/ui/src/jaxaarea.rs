@@ -36,6 +36,11 @@ pub const MONTH_WORKERS: usize = 6;
 const ANSWER_BYTES: u64 = 4 << 20;
 /// Пикселей тренда за кадр.
 const TREND_STEP: usize = 4096;
+/// Высота под графиком сверх строки, которую оставляет `series::chart`:
+/// флажок и строка состояния, точки экрана.
+const BELOW_CHART: f32 = 60.0;
+/// Наименьшая полоса графика, точки экрана: график в ней не ниже 220.
+const CHART_LEAST: f32 = 280.0;
 
 /// Название набора окна, `set_titles` модуля.
 pub fn set_title(lang: Lang, set: &Set) -> String {
@@ -475,7 +480,12 @@ impl JaxaArea {
                     &[("when", &labels[i]), ("median", &value_text(lang, current, p.median)), ("low", &value_text(lang, current, p.low)), ("high", &value_text(lang, current, p.high)), ("share", &format!("{:.0}", p.share))],
                 )
             };
-            let (near, clicked) = crate::series::chart(ui, lang, &points, &|v| value_text(lang, current, v), &hover);
+            // График - в своей полосе: под ним флажок, строка состояния
+            // и ряд кнопок. Прежде он брал всю высоту окна, а `chart`
+            // оставляет снизу место на одну строку - окно росло каждый
+            // кадр и уводило кнопки за край экрана.
+            let band = egui::vec2(ui.available_width(), (ui.available_height() - BELOW_CHART).max(CHART_LEAST));
+            let (near, clicked) = ui.allocate_ui(band, |ui| crate::series::chart(ui, lang, &points, &|v| value_text(lang, current, v), &hover)).inner;
             if let Some(i) = near.filter(|_| clicked) {
                 self.chosen = labels.get(i).cloned();
                 if let Some(p) = points.get(i) {
@@ -551,6 +561,47 @@ mod tests {
         assert_eq!(value_text(Lang::EN, &jaxa::LAND_TEMPERATURE, 20.04), "20.0\u{a0}°C");
         assert_eq!(value_text(Lang::EN, &jaxa::NDVI, 0.51234), "0.512");
         assert_eq!(value_text(Lang::EN, &jaxa::PRECIPITATION, 0.25), "0.25\u{a0}mm/h");
+    }
+
+    /// Запрос без ответа.
+    struct Silent(net::Stats);
+
+    impl net::Request for Silent {
+        fn start(&self, _: &str) {}
+        fn take(&self) -> Option<Result<Vec<u8>, String>> {
+            None
+        }
+        fn stats(&self) -> &net::Stats {
+            &self.0
+        }
+    }
+
+    /// Кнопки окна уходили под нижний край экрана: график брал всю высоту
+    /// окна и оставлял снизу место на одну строку, а под ним их три.
+    #[test]
+    fn buttons_stay_inside_the_window() {
+        let request = |_: u64| Box::new(Silent(net::Stats::default())) as Box<dyn net::Request>;
+        let mut w = JaxaArea::new(58.0, 56.2, &request);
+        w.status = "Months in the set: 106, from 2018-01 to 2026-10.".into();
+        let ctx = egui::Context::default();
+        let screen = egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(1400.0, 800.0));
+        let mut shapes = Vec::new();
+        // Окно росло на несколько точек каждый кадр.
+        for _ in 0..60 {
+            let input = egui::RawInput { screen_rect: Some(screen), ..Default::default() };
+            let mut out = ctx.run_pass(input, |ctx| w.show(ctx, Lang::EN, &request));
+            out.textures_delta.clear();
+            shapes = out.shapes;
+        }
+        let window = ctx.memory(|m| m.area_rect(egui::Id::unique("planetx-jaxa-area"))).unwrap();
+        let build = shapes.iter().find_map(|c| match &c.shape {
+            egui::Shape::Text(t) if t.galley.text() == "Build" => Some(t.pos + t.galley.rect.size()),
+            _ => None,
+        });
+        let build = build.expect("кнопки Build нет в кадре");
+        assert!(window.bottom() <= screen.bottom(), "окно {window:?} ниже экрана");
+        assert!(window.contains(build), "Build {build:?} вне окна {window:?}");
+        assert!(window.height() <= 600.0, "окно выросло до {}", window.height());
     }
 
     /// Живая проверка, как у модуля: участок 50 км у Перми, NDVI за
