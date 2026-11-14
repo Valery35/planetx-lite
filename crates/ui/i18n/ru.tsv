@@ -2715,3 +2715,12 @@ The check turns the add-in on or off.	Флажок включает и выкл�
 Update to {version}	Обновить до {version}
 Update|add-in	Обновить
 Add-ins not loaded: {names}	Аддины не загружены - {names}
+Municipalities of Russia	Муниципальные образования России
+Borders of the municipal districts, municipal and urban okrugs of Russia as of 1 January 2025 after the SberIndex versioned reference book, about 2570 units. Names show near the look-at point. A click inside a unit shows its type, OKTMO code, region and centre. The first switch-on downloads about 4 MB.	Границы муниципальных районов, муниципальных и городских округов России на 1 января 2025 года по версионному справочнику СберИндекса, около 2570 образований. Названия видны у точки взгляда. Щелчок внутри образования показывает его тип, код ОКТМО, регион и центр. Первое включение скачивает около 4 МБ.
+SberIndex	СберИндекс
+SberIndex - CC BY-SA 4.0	СберИндекс - CC BY-SA 4.0
+The municipal borders did not load.	Границы муниципальных образований не загрузились.
+OKTMO	ОКТМО
+Region	Регион
+In these borders since	В этих границах с
+Administrative centre	Административный центр

@@ -525,6 +525,7 @@ impl LiteApp {
         for layer in self.plugged.values_mut() {
             let stepped = layer.step(&cx);
             painters |= stepped.painters;
+            self.geo.lines_dirty |= stepped.lines;
             message = stepped.message.or(message);
             if let Some(ms) = stepped.tick {
                 ctx.request_repaint_after(std::time::Duration::from_millis(ms));

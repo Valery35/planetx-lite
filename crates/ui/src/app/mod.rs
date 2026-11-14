@@ -3573,6 +3573,7 @@ impl LiteApp {
             let mut sets = self.dots.line_sets();
             sets.extend(self.geo.line_set());
             sets.extend(self.data_layers.line_set());
+            sets.extend(self.plugged.values().filter_map(|l| l.lines()));
             if self.vector.set_line_sets(sets)
                 && let Some(globe) = &mut self.globe
             {

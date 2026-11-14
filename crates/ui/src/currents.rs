@@ -361,7 +361,7 @@ impl crate::registry::Layer for Currents {
     fn step(&mut self, cx: &crate::registry::Ctx<'_>) -> crate::registry::Stepped {
         let message = Currents::step(self, cx.lang, cx.now, cx.moment, cx.view, cx.request);
         // Струйки бегут - кадры идут по такту частиц.
-        crate::registry::Stepped { message, painters: std::mem::take(&mut self.changed), tick: Some(u64::from(flow::TICK_MS)) }
+        crate::registry::Stepped { message, painters: std::mem::take(&mut self.changed), tick: Some(u64::from(flow::TICK_MS)), lines: false }
     }
 
     fn painter(&self) -> Option<crate::vector::Painter> {

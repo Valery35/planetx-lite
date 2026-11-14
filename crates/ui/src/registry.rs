@@ -73,6 +73,8 @@ pub struct Stepped {
     pub painters: bool,
     /// Следующий кадр не позже стольких миллисекунд: слой движется.
     pub tick: Option<u64>,
+    /// Линии слоя сменились - наборы линий собираются заново.
+    pub lines: bool,
 }
 
 /// Описание слоя каталога - строка реестра.
@@ -115,6 +117,10 @@ pub trait Layer {
     fn step(&mut self, cx: &Ctx<'_>) -> Stepped;
     /// Картинка тайлов над картами, без неё - None.
     fn painter(&self) -> Option<Painter> {
+        None
+    }
+    /// Линии слоя в картинке наложения тайлов, как разломы «Недр».
+    fn lines(&self) -> Option<Arc<Vec<data::linesets::Line>>> {
         None
     }
     /// Рисунок поверх глобуса в кадре. view - широта, долгота точки
@@ -224,6 +230,8 @@ pub static ALL: &[&dyn Entry] = &[
     &crate::wiki::ENTRY,
     &crate::buildings::ENTRY,
     &crate::overture::ENTRY,
+    #[cfg(feature = "earth")]
+    &crate::munis::ENTRY,
     #[cfg(feature = "live")]
     &crate::live::ENTRIES[0],
     #[cfg(feature = "live")]
@@ -264,7 +272,7 @@ mod tests {
         // Ключи прежние: сохранённые флажки и сцены находят строки.
         let mut kept = vec!["wiki", "buildings", "overture"];
         if cfg!(feature = "earth") {
-            kept.extend(["mining", "jaxa_lst", "jaxa_sst", "jaxa_ndvi", "jaxa_chla", "jaxa_precip", "jaxa_smc", "jaxa_aod"]);
+            kept.extend(["mining", "munis", "jaxa_lst", "jaxa_sst", "jaxa_ndvi", "jaxa_chla", "jaxa_precip", "jaxa_smc", "jaxa_aod"]);
         }
         if cfg!(feature = "live") {
             kept.extend(["currents", "weather_temperature", "weather_wind", "weather_aurora", "vessels", "aircraft", "trains", "satellites"]);

@@ -128,6 +128,7 @@ pub mod linesets;
 pub mod lines;
 pub mod menulinks;
 pub mod mining;
+pub mod munis;
 pub mod movers;
 pub mod mvt;
 pub mod netcdf;

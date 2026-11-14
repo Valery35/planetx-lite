@@ -157,6 +157,8 @@ impl LiteApp {
                         }
                     }
                 } else if let Some(mut layer) = self.plugged.remove(&n) {
+                    // Линии снятой строки уходят из картинки тайлов.
+                    self.geo.lines_dirty |= layer.lines().is_some();
                     // Живые объекты снятой строки: камера следом отпускает,
                     // модели, точки и подписи собираются заново.
                     if layer.satellites().is_some() {

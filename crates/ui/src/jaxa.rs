@@ -151,7 +151,7 @@ impl crate::registry::Layer for Shown {
     fn step(&mut self, cx: &crate::registry::Ctx<'_>) -> crate::registry::Stepped {
         let message = self.advance(cx.lang, cx.moment, cx.request);
         let tick = self.busy().then_some(100);
-        crate::registry::Stepped { message, painters: std::mem::take(&mut self.changed), tick }
+        crate::registry::Stepped { message, painters: std::mem::take(&mut self.changed), tick, lines: false }
     }
 
     fn painter(&self) -> Option<crate::vector::Painter> {

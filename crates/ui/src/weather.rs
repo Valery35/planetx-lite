@@ -330,7 +330,7 @@ impl crate::registry::Layer for Shown {
             // Струйки бегут - кадры идут по такту частиц.
             tick = Some(u64::from(flow::TICK_MS));
         }
-        crate::registry::Stepped { message, painters: std::mem::take(&mut w.changed), tick }
+        crate::registry::Stepped { message, painters: std::mem::take(&mut w.changed), tick, lines: false }
     }
 
     fn painter(&self) -> Option<crate::vector::Painter> {

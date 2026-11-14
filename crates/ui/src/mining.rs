@@ -236,7 +236,7 @@ impl crate::registry::Entry for Entry {
 impl crate::registry::Layer for Mining {
     fn step(&mut self, cx: &crate::registry::Ctx<'_>) -> crate::registry::Stepped {
         let message = Mining::step(self, cx.lang);
-        crate::registry::Stepped { message, painters: std::mem::take(&mut self.changed), tick: None }
+        crate::registry::Stepped { message, painters: std::mem::take(&mut self.changed), tick: None, lines: false }
     }
 
     fn painter(&self) -> Option<crate::vector::Painter> {
