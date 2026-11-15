@@ -222,9 +222,10 @@ pub use data::layers::{Polygon, Ring, polygons};
 /// Точки слоя: места, цвет, размер, непрозрачность.
 pub type DotSet = (Vec<(f64, f64)>, [u8; 3], f32, f32);
 
-/// Точка внутри частей многоугольника по правилу чёт-нечет.
+/// Точка внутри частей многоугольника по правилу чёт-нечет. Части -
+/// без скачка через шов 180° у долготы точки.
 fn inside_parts(parts: &[Vec<(f64, f64)>], lat: f64, lon: f64) -> bool {
-    parts.iter().filter(|p| p.len() > 2).filter(|p| data::site::inside(&[(lat, lon)], p).first().copied().unwrap_or(false)).count() % 2 == 1
+    parts.iter().filter(|p| p.len() > 2).filter(|p| data::site::inside(&[(lat, lon)], &data::linesets::unwrap(p, lon)).first().copied().unwrap_or(false)).count() % 2 == 1
 }
 
 /// Ключ выбора подписей: тот же, пока вид не сдвинулся на долю [`STEP`]
@@ -2171,6 +2172,17 @@ mod tests {
 
     use super::*;
     use data::layers::Item;
+
+    #[test]
+    fn click_finds_polygon_across_the_date_line() {
+        // Кольцо 60..64 с.ш. от 176 в.д. до 176 з.д.: щелчок по обе стороны
+        // шва - внутри, на 120 в.д. - снаружи.
+        let ring = vec![(60.0, 176.0), (60.0, -176.0), (64.0, -176.0), (64.0, 176.0), (60.0, 176.0)];
+        let parts = [ring];
+        assert!(inside_parts(&parts, 62.0, 179.0));
+        assert!(inside_parts(&parts, 62.0, -179.0));
+        assert!(!inside_parts(&parts, 62.0, 120.0));
+    }
 
     fn item(shape: Geom, parts: Vec<Vec<(f64, f64)>>, values: &[&str]) -> Item {
         Item { shape, parts, heights: Vec::new(), values: values.iter().map(|v| v.to_string()).collect() }

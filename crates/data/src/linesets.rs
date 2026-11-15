@@ -107,8 +107,25 @@ fn tile_box(z: u32, x: u32, y: u32) -> (f64, f64, f64, f64) {
     (lat(f64::from(y) + 1.0), lon(f64::from(x)), lat(f64::from(y)), lon(f64::from(x) + 1.0))
 }
 
+/// Долготы кольца без скачков через шов 180°: каждая точка - не дальше
+/// 180° от предыдущей, первая - не дальше 180° от reference. Долготы
+/// могут выйти за ±180, кольцо остаётся целым.
+pub fn unwrap(ring: &[(f64, f64)], reference: f64) -> Vec<(f64, f64)> {
+    let near = |lon: f64, to: f64| lon - ((lon - to) / 360.0).round() * 360.0;
+    let mut prev = reference;
+    ring.iter()
+        .map(|&(lat, lon)| {
+            let lon = if lon.is_finite() { near(lon, prev) } else { lon };
+            prev = lon;
+            (lat, lon)
+        })
+        .collect()
+}
+
 /// Линии наборов на картинке тайла key, RGBA с премноженной альфой.
-/// Шаг через линию перемены дат разрывает линию. Пустая картинка - None.
+/// Кольцо или линия через шов 180° не рвётся и не замыкается хордой
+/// через всю карту: долготы идут без скачка ([`unwrap`]), часть за швом
+/// рисуется ещё раз со сдвигом на 360°. Пустая картинка - None.
 pub fn draw(key: (u32, u32, u32), sets: &[&[Line]]) -> Option<Vec<u8>> {
     let (z, x, y) = key;
     let (s, w, n, e) = tile_box(z, x, y);
@@ -124,18 +141,21 @@ pub fn draw(key: (u32, u32, u32), sets: &[&[Line]]) -> Option<Vec<u8>> {
             }
             let mut path = tiny_skia::PathBuilder::new();
             let closed = line.fill.is_some();
-            for ring in std::iter::once(&line.points).chain(line.holes.iter()) {
-                let mut last: Option<f64> = None;
-                for (lat, lon) in ring {
-                    let (px, py) = pixel(z, x, y, *lat, *lon);
-                    match last {
-                        Some(prev) if (lon - prev).abs() <= 180.0 => path.line_to(px, py),
-                        _ => path.move_to(px, py),
+            let reference = line.points.first().map_or(0.0, |p| p.1);
+            let rings: Vec<Vec<(f64, f64)>> = std::iter::once(&line.points).chain(line.holes.iter()).map(|r| unwrap(r, reference)).collect();
+            // Кольцо за швом 180° рисуется ещё раз со сдвигом на 360°:
+            // его часть за швом ложится в тайлы другого края карты.
+            let (lo, hi) = rings.iter().flatten().fold((f64::INFINITY, f64::NEG_INFINITY), |(a, b), p| (a.min(p.1), b.max(p.1)));
+            let shifts = [0.0, -360.0, 360.0];
+            for shift in shifts.into_iter().filter(|s| *s == 0.0 || (*s < 0.0 && hi > 180.0) || (*s > 0.0 && lo < -180.0)) {
+                for ring in &rings {
+                    for (n, (lat, lon)) in ring.iter().enumerate() {
+                        let (px, py) = pixel(z, x, y, *lat, *lon + shift);
+                        if n == 0 { path.move_to(px, py) } else { path.line_to(px, py) }
                     }
-                    last = Some(*lon);
-                }
-                if closed && last.is_some() {
-                    path.close();
+                    if closed && !ring.is_empty() {
+                        path.close();
+                    }
                 }
             }
             let Some(path) = path.finish() else {

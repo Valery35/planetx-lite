@@ -188,7 +188,12 @@ pub type Polygon = (Ring, Vec<Ring>);
 /// вложен глубже всех.
 pub fn polygons(parts: &[Ring]) -> Vec<Polygon> {
     let rings: Vec<&Ring> = parts.iter().filter(|p| p.len() > 2).collect();
-    let within = |i: usize, j: usize| i != j && rings[i].first().is_some_and(|p| crate::site::inside(&[*p], rings[j]).first().copied().unwrap_or(false));
+    // Кольцо j - без скачка через шов 180° у долготы точки: кольца
+    // у Чукотки в полярной проекции после пересчёта в градусы
+    // прыгают с +179 на -179.
+    let within = |i: usize, j: usize| {
+        i != j && rings[i].first().is_some_and(|p| crate::site::inside(&[*p], &crate::linesets::unwrap(rings[j], p.1)).first().copied().unwrap_or(false))
+    };
     let depth: Vec<usize> = (0..rings.len()).map(|i| (0..rings.len()).filter(|&j| within(i, j)).count()).collect();
     let mut out: Vec<(usize, Ring, Vec<Ring>)> = (0..rings.len()).filter(|&i| depth[i].is_multiple_of(2)).map(|i| (i, rings[i].clone(), Vec::new())).collect();
     for i in (0..rings.len()).filter(|&i| !depth[i].is_multiple_of(2)) {

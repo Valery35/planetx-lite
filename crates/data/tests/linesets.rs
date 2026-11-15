@@ -119,6 +119,49 @@ fn draw_line_on_tile() {
     assert!(linesets::draw((4, 3, 2), &[&lines]).is_none());
 }
 
+/// Залитые столбцы картинки тайла: есть ли в столбце непрозрачный пиксель.
+fn filled_columns(rgba: &[u8]) -> Vec<bool> {
+    let side = linesets::SIZE as usize;
+    (0..side).map(|x| (0..side).any(|y| rgba.get((y * side + x) * 4 + 3).is_some_and(|a| *a > 0))).collect()
+}
+
+#[test]
+fn polygon_across_the_date_line_is_cut_not_striped() {
+    // Квадрат 60..64 с.ш. от 176 в.д. до 176 з.д. через меридиан 180 -
+    // кольцо прыгает с +178 на -178, как у слоёв в полярной проекции
+    // после пересчёта в градусы. Тайлы уровня 2 - восточный x=3
+    // и западный x=0, ряд y=1.
+    let ring = vec![(60.0, 176.0), (60.0, -176.0), (64.0, -176.0), (64.0, 176.0), (60.0, 176.0)];
+    let lines = [linesets::Line::polygon(ring.clone(), Vec::new(), [255, 0, 0, 255], 2.0, [0, 0, 255, 255])];
+    let east = filled_columns(&linesets::draw((2, 3, 1), &[&lines]).unwrap_or_default());
+    let west = filled_columns(&linesets::draw((2, 0, 1), &[&lines]).unwrap_or_default());
+    let middle = linesets::draw((2, 1, 1), &[&lines]);
+    // Квадрат залит у правого края восточного тайла и у левого края
+    // западного, середина тайлов и средний тайл пусты: полос нет.
+    let side = linesets::SIZE as usize;
+    assert!(east.len() == side && east[side - 3..].iter().all(|c| *c), "восток у шва не залит");
+    assert!(east[..side - 20].iter().all(|c| !*c), "полоса в восточном тайле");
+    assert!(west.len() == side && west[..3].iter().all(|c| *c), "запад у шва не залит");
+    assert!(west[20..].iter().all(|c| !*c), "полоса в западном тайле");
+    assert!(middle.is_none(), "полоса в среднем тайле");
+    // Линия через шов тоже непрерывна у края обоих тайлов.
+    let line = [linesets::Line::new(vec![(62.0, 176.0), (62.0, -176.0)], [255, 0, 0, 255], 2.0)];
+    let east = filled_columns(&linesets::draw((2, 3, 1), &[&line]).unwrap_or_default());
+    let west = filled_columns(&linesets::draw((2, 0, 1), &[&line]).unwrap_or_default());
+    assert!(east.len() == side && east[side - 1] && west.len() == side && west[0]);
+}
+
+#[test]
+fn hole_across_the_date_line_stays_a_hole() {
+    // Внешнее кольцо 60..64 с.ш., 176 в.д. - 176 з.д., дыра за швом
+    // у 178 з.д. Без учёта шва дыра выходила отдельным многоугольником.
+    let outer = vec![(60.0, 176.0), (60.0, -176.0), (64.0, -176.0), (64.0, 176.0), (60.0, 176.0)];
+    let hole = vec![(61.0, -179.0), (61.0, -177.0), (63.0, -177.0), (63.0, -179.0), (61.0, -179.0)];
+    let polygons = data::layers::polygons(&[outer, hole]);
+    assert_eq!(polygons.len(), 1);
+    assert_eq!(polygons[0].1.len(), 1);
+}
+
 #[test]
 fn polygon_with_hole_filled_on_tile() {
     // Квадрат на большую часть тайла 0/0/0 с дырой посередине, без
