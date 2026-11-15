@@ -352,6 +352,19 @@
 - Форум OSM, linux.org.ru - не публиковались, ждут слова автора
 - Лента страницы линейки planetx (planetx-scene/site/feed.json) - не обновлялась
 
+### RustPlanetX 0.6.1, 15 ноября 2026 года
+
+Тексты - site/posts_rustplanetx_0.6.1_social.md. Внутри Lite 0.30.0 (коммит c2a507d), пакет на размер (профиль size). Сведения от сессии RustPlanetX через управление.
+
+- GitHub: https://github.com/Valery35/rustplanetx/releases/tag/v0.6.1
+- Dropbox - пакет обновлён в Dropbox\ИИ\RustPlanetX
+- ВК: https://vk.ru/wall-241229428_77
+- Telegram: https://t.me/qgis_isolines/219 и https://t.me/rustgis/9
+- Mastodon: https://en.osm.town/@Vaery35/117619993385027892
+- X: https://x.com/Valery35/status/2121914013336375594
+- LinkedIn и Facebook - посты в лентах автора 15 ноября 2026 года
+- OSGeo Discourse - не опубликован, в Chrome нет входа
+
 ### PlanetX Lite 0.30.0, 15 ноября 2026 года
 
 Тексты - site/posts_0.30.0_social.md, описание выпуска - packaging/notes/0.30.0.md. Главное - многоугольники и линии через меридиан 180 без хорды через Берингов пролив, дыры и щелчок у шва, слой «Муниципальные образования России» (СберИндекс), высоты I3S с геоидом. По слову автора «Выпускай» в чате Lite.
