@@ -130,8 +130,9 @@ fn other_formats_round_trip() {
 
 #[test]
 fn mapinfo_from_its_files() {
-    // terrio пишет пару .mif и .mid архивом.
-    let files = members(&written(POINTS, "wells.mif"));
+    // terrio пишет пару .mif и .mid архивом, с 0.9.0 - только под именем
+    // .mif.zip.
+    let files = members(&written(POINTS, "wells.mif.zip"));
     let (_, mif) = files.iter().find(|(n, _)| n.ends_with(".mif")).unwrap();
     let around: Vec<(String, Vec<u8>)> = files.iter().filter(|(n, _)| n.ends_with(".mid")).cloned().collect();
     let sidecars = layers::sidecars_of("wells.mif", &around);
