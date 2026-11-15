@@ -186,13 +186,71 @@ pub struct I3s {
     textures: Vec<(usize, Vec<u8>, Box<dyn net::Request>)>,
     /// Страницы, которые не прочлись.
     bad_pages: usize,
+    /// Запрос тайла геоида у слоя с высотами над эллипсоидом: тайл,
+    /// точка слоя и запрос.
+    geoid: Option<GeoidAsk>,
 }
+
+/// Запрос тайла геоида: тайл, точка слоя (широта, долгота) и запрос.
+type GeoidAsk = (globe_core::lod::TileKey, (f64, f64), Box<dyn net::Request>);
 
 impl I3s {
     pub fn new(index: scene::i3s::Index) -> Self {
-        Self { index, pages: Vec::new(), textures: Vec::new(), bad_pages: 0 }
+        Self { index, pages: Vec::new(), textures: Vec::new(), bad_pages: 0, geoid: None }
+    }
+
+    /// Шаг поправки на геоид: тайл геоида просится, когда известна точка
+    /// слоя, пришедший даёт высоту геоида. Тайл не пришёл - слой ложится
+    /// без поправки, как раньше.
+    fn step_geoid(&mut self, tree: &mut Tree, request: &dyn Fn(u64) -> Box<dyn net::Request>) {
+        if !self.index.needs_geoid() {
+            return;
+        }
+        match &self.geoid {
+            None => {
+                if let Some(point) = self.index.geoid_point() {
+                    let key = geoid_key(point.0, point.1);
+                    let (z, x, y) = key;
+                    let url = data::geoid::TILE_URL.replace("{z}", &z.to_string()).replace("{x}", &x.to_string()).replace("{y}", &y.to_string());
+                    let r = request(ANSWER_LIMIT);
+                    r.start(&url);
+                    self.geoid = Some((key, point, r));
+                }
+            }
+            Some((key, (lat, lon), r)) => {
+                if let Some(answer) = r.take() {
+                    let undulation = answer.ok().and_then(|bytes| geoid_height(&bytes, *key, *lat, *lon)).unwrap_or(0.0);
+                    self.index.set_geoid(tree, undulation);
+                    self.geoid = None;
+                }
+            }
+        }
     }
 }
+
+/// Тайл геоида самого подробного уровня над точкой.
+fn geoid_key(lat: f64, lon: f64) -> globe_core::lod::TileKey {
+    let (u, v) = terrain::mercator_share(lat, lon);
+    let z = data::geoid::MAX_LEVEL;
+    let n = 1u32 << z;
+    let nf = f64::from(n);
+    (z, ((u * nf) as u32).min(n - 1), ((v * nf) as u32).min(n - 1))
+}
+
+/// Высота геоида EGM2008 над эллипсоидом в точке из тайла геоида key
+/// в записи Terrarium, метры. Испорченный тайл - None.
+fn geoid_height(bytes: &[u8], key: globe_core::lod::TileKey, lat: f64, lon: f64) -> Option<f64> {
+    let image = net::decode_tile(bytes).ok()?;
+    let heights = terrain::decode(&image.rgba, 4, None, terrain::Encoding::Terrarium);
+    let tile = terrain::HeightTile::new(key.0, key.1, key.2, heights)?;
+    let (u, v) = terrain::mercator_share(lat, lon);
+    let h = terrain::sample(&tile, u, v);
+    // Геоид EGM2008 - от -107 до +86 м, остальное - не тайл геоида.
+    (h.is_finite() && h.abs() < GEOID_LIMIT).then_some(h)
+}
+
+/// Наибольшая высота геоида по модулю с запасом, метры.
+const GEOID_LIMIT: f64 = 150.0;
 
 /// Набор на глобусе.
 pub struct Set {
@@ -275,6 +333,7 @@ impl Set {
         let Some(layer) = &mut self.i3s else {
             return;
         };
+        layer.step_geoid(&mut self.tree, request);
         let mut i = 0;
         while i < layer.pages.len() {
             let Some(answer) = layer.pages[i].1.take() else {
@@ -548,6 +607,12 @@ impl Tilesets {
                 }
             }
             set.step_i3s(&view, globe, ellipsoid, frame, request);
+            // Слой с высотами над эллипсоидом ждёт высоты геоида: куски
+            // без поправки легли бы не на своей высоте.
+            if set.i3s.as_ref().is_some_and(|l| l.index.needs_geoid()) {
+                busy = true;
+                continue;
+            }
             let selection = set.tree.select(&view, THRESHOLD, &|n| set.loaded.contains_key(&n) || set.failed.contains(&n));
             for &(n, _) in &selection.load {
                 if let Source::Url { .. } = set.source {
@@ -692,6 +757,27 @@ mod tests {
 
     use super::*;
     use scene::sceneexport as se;
+
+    #[test]
+    fn geoid_height_comes_from_a_terrarium_tile() {
+        // Тайл геоида 14.25 м везде: в любой точке тайла - 14.25 м.
+        let rgb = data::geoid::encode(&[14.25])[0];
+        let side = terrain::SIZE as u32;
+        let img = image::RgbaImage::from_pixel(side, side, image::Rgba([rgb[0], rgb[1], rgb[2], 255]));
+        let mut png = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png).unwrap();
+        let key = geoid_key(37.77, -122.42);
+        assert_eq!(key.0, data::geoid::MAX_LEVEL);
+        let h = geoid_height(&png, key, 37.77, -122.42).unwrap();
+        assert!((h - 14.25).abs() < 0.01, "{h}");
+        // Не картинка и высоты вне геоида - нет высоты.
+        assert!(geoid_height(b"not a png", key, 37.77, -122.42).is_none());
+        let rgb = data::geoid::encode(&[900.0])[0];
+        let img = image::RgbaImage::from_pixel(side, side, image::Rgba([rgb[0], rgb[1], rgb[2], 255]));
+        let mut png = Vec::new();
+        img.write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png).unwrap();
+        assert!(geoid_height(&png, key, 37.77, -122.42).is_none());
+    }
 
     #[test]
     fn own_export_opens_as_a_set_at_its_place() {

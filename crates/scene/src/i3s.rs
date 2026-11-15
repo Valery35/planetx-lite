@@ -24,9 +24,17 @@
 //! Геометрия - буфер Draco (`compressedAttributes`) или несжатый буфер
 //! «атрибут за атрибутом». В слоях на WGS84 вершины - смещения от центра
 //! узла, x и y в градусах долготы и широты (у Draco - числа, умноженные
-//! на `i3s-scale_x` и `i3s-scale_y` метаданных атрибута), z в метрах. Высоты слоя -
-//! над геоидом, как высоты рельефа глобуса. Слои в проекции, текстуры
-//! только DDS или KTX2 и Building Scene Layer пока не читаются.
+//! на `i3s-scale_x` и `i3s-scale_y` метаданных атрибута), z в единицах
+//! высот слоя. Слои в проекции, текстуры только DDS или KTX2 и Building
+//! Scene Layer пока не читаются.
+//!
+//! Высоты глобуса - над геоидом, как у рельефа. Систему и единицы высот
+//! слоя называет `heightModelInfo`: `gravity_related_height` - над
+//! геоидом, `ellipsoidal` - над эллипсоидом, единицы - `heightUnit`.
+//! Без описания высоты над эллипсоидом у системы 4979 и вертикальной
+//! системы 115700, у прочих - над геоидом. Высоты над эллипсоидом ждут
+//! высоты геоида в точке слоя ([`Index::set_geoid`]): одна поправка
+//! на весь слой, геоид на охвате города меняется на доли метра.
 
 use std::collections::{HashMap, HashSet};
 
@@ -75,6 +83,45 @@ pub struct Layer {
     squared: bool,
     geometries: Vec<Geometry>,
     materials: Vec<Material>,
+    /// Высоты над эллипсоидом, а не над геоидом.
+    pub ellipsoidal: bool,
+    /// Метров в единице высот слоя.
+    pub unit: f64,
+}
+
+/// Метров в единице высот `heightUnit` I3S. Неизвестная - None.
+fn height_unit(name: &str) -> Option<f64> {
+    Some(match name {
+        "meter" => 1.0,
+        "millimeter" => 0.001,
+        "centimeter" => 0.01,
+        "decimeter" => 0.1,
+        "kilometer" => 1000.0,
+        "foot" => 0.3048,
+        "us-foot" => 1200.0 / 3937.0,
+        "us-inch" => 100.0 / 3937.0,
+        "us-yard" => 3600.0 / 3937.0,
+        "us-mile" => 6_336_000.0 / 3937.0,
+        "clarke-foot" => 0.304_797_265_4,
+        "sears-foot" => 0.304_799_471_5,
+        "gold-coast-foot" => 0.304_799_710_1,
+        _ => return None,
+    })
+}
+
+/// Система и единицы высот слоя: над эллипсоидом ли и метров в единице.
+fn height_model(v: &Value, wkid: u64) -> Result<(bool, f64), ModelError> {
+    let info = v.get("heightModelInfo");
+    let unit = match info.and_then(|i| i.get("heightUnit")).and_then(Value::as_str) {
+        Some(name) => height_unit(name).ok_or_else(|| error(format!("I3S height unit {name} is not supported")))?,
+        None => 1.0,
+    };
+    let vcs = v.get("spatialReference").and_then(|s| s.get("vcsWkid")).and_then(Value::as_u64);
+    let ellipsoidal = match info.and_then(|i| i.get("heightModel")).and_then(Value::as_str) {
+        Some(model) => model == "ellipsoidal",
+        None => wkid == 4979 || vcs == Some(115_700),
+    };
+    Ok((ellipsoidal, unit))
 }
 
 /// Сетка узла: определение и ресурс геометрии, материал и его ресурс.
@@ -125,6 +172,7 @@ pub fn layer(data: &[u8]) -> Result<Layer, ModelError> {
     if wkid != 4326 && wkid != 4979 {
         return Err(error(format!("I3S layer in a projected system (wkid {wkid}) is not supported yet")));
     }
+    let (ellipsoidal, unit) = height_model(&v, wkid)?;
     let pages = v.get("nodePages").ok_or_else(|| error("I3S layer without node pages, version 1.7 or newer is needed"))?;
     let per_page = count(pages.get("nodesPerPage")).filter(|n| (1..=100_000).contains(n)).ok_or_else(|| error("bad nodesPerPage"))?;
     let root = count(pages.get("rootIndex")).unwrap_or(0);
@@ -169,7 +217,7 @@ pub fn layer(data: &[u8]) -> Result<Layer, ModelError> {
         let e = <[f64; 4]>::try_from(e).ok()?;
         (e.iter().all(|x| x.is_finite()) && e[1].abs() <= 90.0 && e[3].abs() <= 90.0 && e[0] <= e[2] && e[1] <= e[3]).then_some(e)
     });
-    Ok(Layer { name: v.get("name").and_then(Value::as_str).unwrap_or_default().to_string(), kind, extent, per_page, root, squared, geometries, materials })
+    Ok(Layer { name: v.get("name").and_then(Value::as_str).unwrap_or_default().to_string(), kind, extent, per_page, root, squared, geometries, materials, ellipsoidal, unit })
 }
 
 /// Узлы страницы page: номер узла и узел. Враждебная страница - ошибка.
@@ -228,12 +276,52 @@ pub struct Index {
     expanded: HashSet<usize>,
     /// Страницы, которые попрошены или пришли.
     asked: HashSet<usize>,
+    /// Высота геоида над эллипсоидом в точке слоя, метры. У слоя
+    /// с высотами над эллипсоидом None - поправка ещё не пришла.
+    geoid: Option<f64>,
 }
 
 impl Index {
     /// Слой layer, дерево уточняет тайлы выше threshold пикселей.
     pub fn new(layer: Layer, ellipsoid: Ellipsoid, threshold: f64) -> Self {
-        Self { layer, ellipsoid, threshold, nodes: HashMap::new(), of_tile: Vec::new(), expanded: HashSet::new(), asked: HashSet::new() }
+        let geoid = (!layer.ellipsoidal).then_some(0.0);
+        Self { layer, ellipsoid, threshold, nodes: HashMap::new(), of_tile: Vec::new(), expanded: HashSet::new(), asked: HashSet::new(), geoid }
+    }
+
+    /// Ждёт ли слой высоты геоида: высоты над эллипсоидом, поправки нет.
+    /// Пока ждёт, куски слоя не строятся.
+    pub fn needs_geoid(&self) -> bool {
+        self.geoid.is_none()
+    }
+
+    /// Точка (широта, долгота) для высоты геоида: центр охвата слоя,
+    /// без охвата - центр корня, когда его страница пришла.
+    pub fn geoid_point(&self) -> Option<(f64, f64)> {
+        if let Some([w, s, e, n]) = self.layer.extent {
+            return Some((0.5 * (s + n), 0.5 * (w + e)));
+        }
+        self.nodes.get(&self.layer.root).map(|r| (r.center[1], r.center[0]))
+    }
+
+    /// Высота геоида над эллипсоидом в точке слоя, метры. Центры тайлов,
+    /// построенных раньше, пересчитываются. У слоя с высотами над
+    /// геоидом поправки нет, вызов ничего не меняет.
+    pub fn set_geoid(&mut self, tree: &mut Tree, undulation: f64) {
+        if !self.layer.ellipsoidal || !undulation.is_finite() {
+            return;
+        }
+        self.geoid = Some(undulation);
+        for (t, i) in self.of_tile.iter().enumerate() {
+            if let (Some(node), Some(tile)) = (self.nodes.get(i), tree.nodes.get_mut(t)) {
+                let [lon, lat, h] = node.center;
+                tile.center = self.ellipsoid.geodetic_to_ecef(lat, lon, self.height(h));
+            }
+        }
+    }
+
+    /// Высота слоя h в высоту глобуса: метры над геоидом.
+    fn height(&self, h: f64) -> f64 {
+        h * self.layer.unit - self.geoid.unwrap_or(0.0)
     }
 
     /// Адрес страницы page от папки слоя.
@@ -296,7 +384,7 @@ impl Index {
             error: self.tile_error(node),
             add: false,
             children: Vec::new(),
-            center: self.ellipsoid.geodetic_to_ecef(lat, lon, h),
+            center: self.ellipsoid.geodetic_to_ecef(lat, lon, self.height(h)),
             radius: node.radius,
             depth,
         }
@@ -363,6 +451,9 @@ impl Index {
     /// Кусок тайла t из байтов геометрии и картинки текстуры: части
     /// в ECEF.
     pub fn piece(&self, t: usize, geometry: &[u8], texture: Option<Vec<u8>>) -> Result<Piece, ModelError> {
+        if self.needs_geoid() {
+            return Err(error("I3S layer waits for the geoid height"));
+        }
         let i = *self.of_tile.get(t).ok_or_else(|| error("no such tile"))?;
         let node = self.nodes.get(&i).ok_or_else(|| error("no such node"))?;
         let mesh = node.mesh.ok_or_else(|| error("node has no mesh"))?;
@@ -370,7 +461,7 @@ impl Index {
         let (positions, uv) = if def.draco { draco(geometry)? } else { plain(geometry, def.normals, def.uv)? };
         let [lon, lat, h] = node.center;
         let e = &self.ellipsoid;
-        let points: Vec<DVec3> = positions.iter().map(|p| e.geodetic_to_ecef(lat + p.y, lon + p.x, h + p.z)).collect();
+        let points: Vec<DVec3> = positions.iter().map(|p| e.geodetic_to_ecef(lat + p.y, lon + p.x, self.height(h + p.z))).collect();
         let material = mesh.material.and_then(|m| self.layer.materials.get(m));
         let rgba = material.map_or(WHITE, |m| m.rgba);
         let mut pictures = Pictures::new();

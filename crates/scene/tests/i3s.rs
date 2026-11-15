@@ -136,3 +136,81 @@ fn draco_offsets_are_degrees_and_metres() {
     // Тайл без сетки - ошибка.
     assert!(index.piece(0, &stream, None).is_err());
 }
+
+/// Слой с описанием высот hmi вместо умолчания.
+fn layer_with(hmi: &str) -> String {
+    LAYER.replace("\"spatialReference\"", &format!("\"heightModelInfo\":{hmi},\"spatialReference\""))
+}
+
+/// Вершины сетки узла 2 из трёх точек со смещением 20 вверх у третьей.
+fn heights_of(index: &Index) -> Vec<f64> {
+    let e = Ellipsoid::wgs84();
+    let stream = draco_stream(&[[0.0, 0.0, 0.0], [0.001, 0.0, 0.0], [0.0, 0.001, 20.0]], &[[0, 1, 2]]);
+    index.piece(2, &stream, None).unwrap().parts[0].positions.iter().map(|p| e.ecef_to_geodetic(*p).2).collect()
+}
+
+#[test]
+fn feet_become_metres() {
+    // Высоты слоя в футах ложились метрами, здания в 3.3 раза выше.
+    let e = Ellipsoid::wgs84();
+    let text = layer_with(r#"{"heightModel":"gravity_related_height","vertCRS":"NAVD_1988","heightUnit":"foot"}"#);
+    let mut index = Index::new(i3s::layer(text.as_bytes()).unwrap(), e, 16.0);
+    let mut tree = Tree::default();
+    index.add_page(&mut tree, 0, PAGE0.as_bytes()).unwrap();
+    index.add_page(&mut tree, 1, PAGE1.as_bytes()).unwrap();
+    assert!(!index.needs_geoid());
+    let h = heights_of(&index);
+    assert!((h[0] - 150.0 * 0.3048).abs() < 0.05, "{h:?}");
+    assert!((h[2] - 170.0 * 0.3048).abs() < 0.05, "{h:?}");
+    assert!((e.ecef_to_geodetic(tree.nodes[2].center).2 - 150.0 * 0.3048).abs() < 1e-6);
+    let us = layer_with(r#"{"heightModel":"gravity_related_height","heightUnit":"us-foot"}"#);
+    assert!(i3s::layer(us.as_bytes()).is_ok());
+    // Неизвестные единицы - отказ, а не высоты наугад.
+    let odd = layer_with(r#"{"heightModel":"gravity_related_height","heightUnit":"cubit"}"#);
+    assert!(i3s::layer(odd.as_bytes()).unwrap_err().0.contains("cubit"));
+}
+
+#[test]
+fn ellipsoidal_heights_wait_for_the_geoid() {
+    // Высоты над эллипсоидом ложились как высоты над геоидом: слой висел
+    // или тонул на высоту геоида, до сотни метров.
+    let e = Ellipsoid::wgs84();
+    let text = layer_with(r#"{"heightModel":"ellipsoidal","heightUnit":"meter"}"#);
+    let mut index = Index::new(i3s::layer(text.as_bytes()).unwrap(), e, 16.0);
+    let mut tree = Tree::default();
+    assert!(index.needs_geoid());
+    // Охвата нет: точка для высоты геоида - центр корня, когда он пришёл.
+    assert_eq!(index.geoid_point(), None);
+    index.add_page(&mut tree, 0, PAGE0.as_bytes()).unwrap();
+    assert_eq!(index.geoid_point(), Some((55.75, 37.6)));
+    index.add_page(&mut tree, 1, PAGE1.as_bytes()).unwrap();
+    // Геоид в этом месте на 14 м выше эллипсоида: высоты глобуса на 14 м
+    // ниже высот слоя, и центры тайлов, построенные раньше, тоже.
+    index.set_geoid(&mut tree, 14.0);
+    assert!(!index.needs_geoid());
+    let h = heights_of(&index);
+    assert!((h[0] - 136.0).abs() < 0.05 && (h[2] - 156.0).abs() < 0.05, "{h:?}");
+    for n in &tree.nodes {
+        assert!((e.ecef_to_geodetic(n.center).2 - 136.0).abs() < 1e-6);
+    }
+    // Охват слоя даёт точку сразу.
+    let with_extent = text.replace("\"nodePages\"", "\"store\":{\"extent\":[37.5,55.7,37.7,55.8]},\"nodePages\"");
+    let index = Index::new(i3s::layer(with_extent.as_bytes()).unwrap(), e, 16.0);
+    let (lat, lon) = index.geoid_point().unwrap();
+    assert!((lat - 55.75).abs() < 1e-9 && (lon - 37.6).abs() < 1e-9);
+}
+
+#[test]
+fn height_model_without_info() {
+    // Без heightModelInfo: wkid 4979 и вертикальная система 115700 -
+    // высоты над эллипсоидом, иначе - над геоидом, как у сервисов Esri.
+    let e = Ellipsoid::wgs84();
+    let plain = Index::new(i3s::layer(LAYER.as_bytes()).unwrap(), e, 16.0);
+    assert!(!plain.needs_geoid());
+    let wkid = LAYER.replace("\"wkid\":4326", "\"wkid\":4979");
+    assert!(Index::new(i3s::layer(wkid.as_bytes()).unwrap(), e, 16.0).needs_geoid());
+    let vcs = LAYER.replace("\"wkid\":4326", "\"wkid\":4326,\"vcsWkid\":115700");
+    assert!(Index::new(i3s::layer(vcs.as_bytes()).unwrap(), e, 16.0).needs_geoid());
+    let egm = LAYER.replace("\"wkid\":4326", "\"wkid\":4326,\"vcsWkid\":5773");
+    assert!(!Index::new(i3s::layer(egm.as_bytes()).unwrap(), e, 16.0).needs_geoid());
+}
