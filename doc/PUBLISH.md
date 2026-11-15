@@ -224,7 +224,7 @@
 
 - Коммит выпуска d53d818
 - GitHub: https://github.com/Valery35/planetx/releases/tag/v1.44.1
-- Каталог QGIS - не загружена, вход автора на plugins.qgis.org истёк
+- Каталог QGIS: https://plugins.qgis.org/plugins/planetx/version/1.44.1/ (загружена после входа автора, ждёт проверки и одобрения)
 - Dropbox - planetx-1.44.1.zip в Dropbox\ИИ\PlanetX, 1.44.0 перенесена в arhiv
 - Сайт informpp.ru - «Что нового» и главная модуля, опубликовано вместе со страницами Lite 0.30.0 и Isoliner3D по согласию их сессий
 - Telegram - пост бота в канале
