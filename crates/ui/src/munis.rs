@@ -42,7 +42,7 @@ impl registry::Entry for Entry {
         "Municipalities of Russia"
     }
     fn tip(&self) -> &'static str {
-        "Borders of the municipal districts, municipal and urban okrugs of Russia as of 1 January 2025 after the SberIndex versioned reference book, about 2570 units. Names show near the look-at point. A click inside a unit shows its type, OKTMO code, region and centre. The first switch-on downloads about 4 MB."
+        "Borders of the municipal districts, municipal and urban okrugs of Russia as of 1 January 2025 after the SberIndex versioned reference book, about 2570 units. Names show near the look-at point. A click inside a unit shows its type, OKTMO code, region and centre. The first switch-on downloads about 2.5 MB."
     }
     fn category(&self) -> Category {
         Category::Local

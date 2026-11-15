@@ -26,10 +26,15 @@ CC BY-SA 4.0. Итог - `munis.json.gz` того же устройства, н�
 5. Названия, тип, ОКТМО, регион и центр из таблицы, только нынешняя
    структура (year_to 9999).
 
+6. С ключом --arcs граница пишется дугами: общий список `arcs`
+   и у муниципалитета `parts` - кольца из номеров дуг, `-i-1` - дуга
+   в обратную сторону. Общая граница соседей записана один раз. Дуги
+   режет `build_arcs` Topoliner по узлам, где меняется набор соседей.
+
 Запуск - Python из QGIS (GDAL, shapely 2.1, pandas):
 
     set TOPOLINER=C:\\Dev\\topoliner\\topoliner
-    python build_munis_clean.py очищенное.gpkg таблица.xlsx munis.json.gz [допуск_м]
+    python build_munis_clean.py очищенное.gpkg таблица.xlsx munis.json.gz [допуск_м] [--arcs]
 
 15 ноября 2026 года при допуске 300 м: 2570 образований, 760 647 точек,
 4 149 018 байт. Заливка - 57 щелей, 2.3 км². Узел вставлен один.
@@ -128,9 +133,51 @@ def text(value):
     return "" if pd.isna(value) else str(value).strip()
 
 
+def to_arcs(per_obj):
+    """
+    Кольца «широта, долгота…» - в дуги и ссылки на них.
+
+    Возвращает (arcs, parts): arcs - плоские списки точек, parts[k] -
+    кольца объекта k как списки номеров дуг. Повторы точек подряд, след
+    округления, снимаются. Сборка колец из дуг сверяется с исходными
+    кольцами по кругу, расхождение останавливает сборку.
+    """
+    sys.path.insert(0, os.environ["TOPOLINER"])
+    from topo_simplify import build_arcs
+    rings, owner = [], []
+    for k, flats in per_obj.items():
+        for flat in flats:
+            pts = []
+            for p in zip(flat[0::2], flat[1::2]):
+                if not pts or p != pts[-1]:
+                    pts.append(p)
+            while len(pts) > 1 and pts[0] == pts[-1]:
+                pts.pop()
+            if len(set(pts)) >= 3:
+                rings.append(pts)
+                owner.append(k)
+    arcs, paths = build_arcs(rings, grid=1e-7)
+    parts = {}
+    for ring, k, path in zip(rings, owner, paths):
+        refs = [idx if not rev else -idx - 1 for idx, rev in path]
+        back = []
+        for idx, rev in path:
+            seq = arcs[idx][::-1] if rev else arcs[idx]
+            back.extend(seq if not back else seq[1:])
+        back = back[:-1]
+        n = len(ring)
+        if len(back) != n or not any(back == ring[s:] + ring[:s] for s in range(n) if ring[s] == back[0]):
+            raise SystemExit("arcs do not rebuild a ring of unit %r" % k)
+        parts.setdefault(k, []).append(refs)
+    flat_arcs = [[c for p in a for c in p] for a in arcs]
+    return flat_arcs, parts
+
+
 def main():
     cov, xlsx, out = sys.argv[1], sys.argv[2], sys.argv[3]
-    tol = float(sys.argv[4]) if len(sys.argv) > 4 else TOLERANCE
+    with_arcs = "--arcs" in sys.argv
+    args = [a for a in sys.argv[4:] if a != "--arcs"]
+    tol = float(args[0]) if args else TOLERANCE
     src = osr.SpatialReference()
     src.ImportFromEPSG(3576)
     src.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
@@ -185,6 +232,7 @@ def main():
                 if len(r.coords) >= 4:
                     per_obj.setdefault(k, []).append(lonlat(r, east))
 
+    arcs, parts = to_arcs(per_obj) if with_arcs else (None, None)
     x = pd.read_excel(xlsx)
     x = x[x.year_to == 9999]
     names = {r.id_m: r for r in x.itertuples()}
@@ -205,18 +253,26 @@ def main():
             "from": int(row.year_from),
             "lat": round(lat, DIGITS),
             "lon": round(lon, DIGITS),
-            "rings": per_obj[k],
         })
+        if with_arcs:
+            units[-1]["parts"] = parts.get(k, [])
+        else:
+            units[-1]["rings"] = per_obj[k]
     data = {
         "source": "СберИндекс, «Версионный справочник границ и преобразований муниципальных образований России», 2026",
         "license": "CC BY-SA 4.0",
         "date": "2025-01-01",
-        "units": units,
     }
+    if with_arcs:
+        data["arcs"] = arcs
+    data["units"] = units
     raw = json.dumps(data, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     with open(out, "wb") as f:
         f.write(gzip.compress(raw, compresslevel=9, mtime=0))
-    points = sum(len(r) // 2 for u in units for r in u["rings"])
+    if with_arcs:
+        points = sum(len(a) // 2 for a in arcs)
+    else:
+        points = sum(len(r) // 2 for u in units for r in u["rings"])
     print(f"filled={filled} nodes={nodes} units={len(units)} points={points} json={len(raw)}")
 
 

@@ -65,6 +65,58 @@ fn real_file_finds_perm() {
     assert!(m.lines().len() > 2570);
 }
 
+/// Квадраты A и B с общей стороной по 31° в.д., записанные дугами.
+/// Дуга 0 - общая сторона, 1 - остаток A, 2 - остаток B.
+const ARCS: &str = r#"{"arcs":[
+  [50,31,51,31],
+  [51,31,51,30,50,30,50,31],
+  [50,31,50,32,51,32,51,31]],
+ "units":[
+ {"id":"m_a","name":"А","lat":50.5,"lon":30.5,"parts":[[0,1]]},
+ {"id":"m_b","name":"Б","lat":50.5,"lon":31.5,"parts":[[2,-1]]},
+ {"id":"m_x","name":"Мимо","lat":1,"lon":1,"parts":[[7]]}
+]}"#;
+
+#[test]
+fn arcs_build_rings_and_shared_border_is_drawn_once() {
+    let m = munis::parse(ARCS.as_bytes()).unwrap_or_default();
+    // Ссылка мимо списка дуг портит кольцо, муниципалитет без колец отброшен.
+    assert_eq!(m.units.len(), 2);
+    assert_eq!(m.units[0].rings[0], vec![(50.0, 31.0), (51.0, 31.0), (51.0, 30.0), (50.0, 30.0), (50.0, 31.0)]);
+    assert_eq!(m.units[1].rings[0], vec![(50.0, 31.0), (50.0, 32.0), (51.0, 32.0), (51.0, 31.0), (50.0, 31.0)]);
+    assert_eq!(m.unit_at(50.5, 30.5).map(|u| u.id.as_str()), Some("m_a"));
+    assert_eq!(m.unit_at(50.5, 31.5).map(|u| u.id.as_str()), Some("m_b"));
+    // Линий три - по дугам, общая сторона одна, а не две.
+    assert_eq!(m.lines().len(), 3);
+}
+
+/// Файл дугами из `PLANETX_MUNIS_ARCS` против файла кольцами
+/// из `PLANETX_MUNIS`: тот же муниципалитет в каждой точке сетки.
+#[test]
+fn real_arcs_file_matches_rings_file() {
+    let (Some(arcs), Some(rings)) = (std::env::var_os("PLANETX_MUNIS_ARCS"), std::env::var_os("PLANETX_MUNIS")) else {
+        return;
+    };
+    let a = munis::parse(&std::fs::read(arcs).unwrap_or_default()).unwrap_or_default();
+    let r = munis::parse(&std::fs::read(rings).unwrap_or_default()).unwrap_or_default();
+    assert_eq!(a.units.len(), 2570);
+    let mut checked = 0;
+    for i in 0..60 {
+        for j in 0..90 {
+            let lat = 42.0 + i as f64 * 0.5;
+            let lon = 20.0 + j as f64 * 1.8;
+            let x = a.unit_at(lat, lon).map(|u| u.id.as_str());
+            assert_eq!(x, r.unit_at(lat, lon).map(|u| u.id.as_str()), "{lat} {lon}");
+            checked += usize::from(x.is_some());
+        }
+    }
+    assert!(checked > 1000, "{checked}");
+    // Дуг больше, чем колец, они режутся в узлах. Точек меньше: общая
+    // граница соседей записана один раз.
+    let points = |m: &munis::Munis| m.lines().iter().map(|l| l.points.len()).sum::<usize>();
+    assert!(points(&a) * 10 < points(&r) * 7, "{} {}", points(&a), points(&r));
+}
+
 #[test]
 fn broken_file_is_an_error() {
     assert!(munis::parse(b"").is_err());
