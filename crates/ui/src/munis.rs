@@ -64,6 +64,7 @@ impl registry::Entry for Entry {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 type Parsed = Result<Munis, String>;
 
 /// Файл слоя: идёт, разбирается, разобран или не пришёл.
