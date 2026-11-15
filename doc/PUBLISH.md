@@ -226,7 +226,7 @@
 - GitHub: https://github.com/Valery35/planetx/releases/tag/v1.44.1
 - Каталог QGIS - не загружена, вход автора на plugins.qgis.org истёк
 - Dropbox - planetx-1.44.1.zip в Dropbox\ИИ\PlanetX, 1.44.0 перенесена в arhiv
-- Сайт informpp.ru - «Что нового» и главная модуля сохранены в черновике, публикация ждёт ответа Lite о её черновиках
+- Сайт informpp.ru - «Что нового» и главная модуля, опубликовано вместе со страницами Lite 0.30.0 и Isoliner3D по согласию их сессий
 - Telegram - пост бота в канале
 - ВК: https://vk.ru/wall-241229428_76
 - Mastodon: https://en.osm.town/@Vaery35/117619942544383214
