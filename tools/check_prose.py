@@ -24,6 +24,7 @@ import tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PATTERNS = (
     "README.md",
+    "doc/PLAN.md",
     "crates/ui/i18n/ru.tsv",
     "packaging/notes/*.md",
     "site/posts_*.md",
@@ -39,6 +40,7 @@ STOP = re.compile(
     r"simply|seamless\w*"
     r")(?![\w-])", re.IGNORECASE)
 CODE = re.compile(r"`[^`\n]*`")
+LIST = re.compile(r"\s*(?:[-*]|\d+[.)])\s")
 URL = re.compile(r"https?://[^\s)\]>\"']+|&\w+;|&#\d+;")
 
 
@@ -54,6 +56,7 @@ def prose_lines(path):
     """Строки прозы файла: номер и текст без кода и адресов."""
     tsv = path.endswith(".tsv")
     fence = False
+    in_list = False
     with open(path, encoding="utf-8") as fh:
         for n, line in enumerate(fh, 1):
             if line.lstrip().startswith("```"):
@@ -67,6 +70,15 @@ def prose_lines(path):
                 if len(parts) < 2:
                     continue
                 line = parts[1]
+            else:
+                # Точка с запятой в конце строки перечня - разметка
+                # перечня, а не пунктуация прозы (свод, «Пунктуация»).
+                if LIST.match(line):
+                    in_list = True
+                elif not line.strip() or not line.startswith(" "):
+                    in_list = False
+                if in_list:
+                    line = re.sub(r";\s*$", "\n", line)
             yield n, URL.sub(" ", CODE.sub(" ", line))
 
 
@@ -91,6 +103,11 @@ def self_test():
                "Строка с точкой с запятой; вот она.\n"
                "Строка со стоп-словом, правится руками.\n"
                "Код `a; b` и адрес https://x.org/?a=1;b=2 не в счёт.\n"
+               "- строка перечня с точкой с запятой в конце;\n"
+               "  и её продолжение тоже;\n"
+               "- последняя строка перечня.\n"
+               "\n"
+               "Обычный абзац в конце строки тоже ловится;\n"
                "```\nfn f(); // — в блоке кода не в счёт\n```\n")
     with tempfile.TemporaryDirectory() as tmp:
         path = os.path.join(tmp, "README.md")
@@ -98,10 +115,11 @@ def self_test():
             fh.write(planted)
         found = check(path, tmp)
     kinds = sorted(f.split(" ", 1)[1].split(" ")[0] for f in found)
-    if kinds != ["длинное", "стоп-слово", "точка"]:
+    if kinds != ["длинное", "стоп-слово", "точка", "точка"]:
         print("сторож ошибается: %s" % found)
         return 1
-    print("сторож краснеет на трёх подложенных нарушениях, код пропускает")
+    print("сторож краснеет на четырёх подложенных нарушениях, "
+          "код и концы строк перечня пропускает")
     return 0
 
 
