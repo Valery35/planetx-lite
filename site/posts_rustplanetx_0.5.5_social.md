@@ -67,7 +67,7 @@ RustPlanetX is a plugin for [RustGIS](https://github.com/opengeos/RustGIS), a de
 What is in 0.5.5:
 
 - **Commands for the assistant** - the plugin declares `fly` and `layout` commands and ships an Agent Skills `SKILL.md`. The RustGIS assistant reads the skill and calls the commands: a flight with a tilt and heading, or the globe's view into a page layout (`layout.addElement` with a picture).
-- **Two transports** - with `"session": true` (opengeos/RustGIS#1553) a command arrives as a JSON line on the running globe's stdin. A RustGIS without sessions starts the program per command; it hands the command to the open globe through a folder and waits for the answer.
+- **Two transports** - with `"session": true` (opengeos/RustGIS#1553) a command arrives as a JSON line on the running globe's stdin. A RustGIS without sessions starts the program per command. It hands the command to the open globe through a folder and waits for the answer.
 - **Styled results** - analysis rasters carry their colour scale, written as a QGIS QML style and applied in RustGIS with `style.importQgis`.
 
 The package is for Windows, RustGIS 0.5.0 or newer.

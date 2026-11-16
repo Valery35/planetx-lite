@@ -76,8 +76,8 @@ built from the source code of this repository by
 `.github/workflows/release.yml` will be signed, every release approved
 by hand. Project roles:
 
-- committer - [Valery35](https://github.com/Valery35);
-- reviewer - [Valery35](https://github.com/Valery35);
+- committer - [Valery35](https://github.com/Valery35),
+- reviewer - [Valery35](https://github.com/Valery35),
 - approver - [Valery35](https://github.com/Valery35).
 
 ## Privacy

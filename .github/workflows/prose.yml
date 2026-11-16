@@ -1,0 +1,31 @@
+# PlanetX Lite - глобус PlanetX без QGIS.
+# Copyright (C) 2026 ООО «Информ++». Лицензия Apache 2.0.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Сторож прозы - длинное тире, точка с запятой и стоп-слова в текстах
+# для людей, свод C:\Dev\workplace\TEXTS.md. Отдельно от CI, потому что
+# CI правку одних документов пропускает.
+
+name: Проза
+
+on:
+  push:
+    branches: [main]
+    paths: ["**.md", "crates/ui/i18n/ru.tsv", "tools/check_prose.py", ".github/workflows/prose.yml"]
+  pull_request:
+    paths: ["**.md", "crates/ui/i18n/ru.tsv", "tools/check_prose.py", ".github/workflows/prose.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prose:
+    name: Сторож прозы
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Сторож краснеет на подложенных нарушениях
+        run: python3 -I tools/check_prose.py --self-test
+      - name: Тексты Lite
+        run: python3 -I tools/check_prose.py
