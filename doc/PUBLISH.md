@@ -362,6 +362,18 @@
 - С 16.11.2026 сборка ленты, отправка planetx-scene и публикация
   страницы линейки - без вопроса автору
 
+### RustPlanetX 0.6.2, 16 ноября 2026 года
+
+Тексты - rustplanetx/site/posts_0.6.2_social.md. Сведения от сессии RustPlanetX.
+
+- GitHub: https://github.com/Valery35/rustplanetx/releases/tag/v0.6.2
+- ВК: https://vk.ru/wall-241229428_86
+- Mastodon: https://en.osm.town/@Vaery35/117627568617392241
+- X: https://x.com/Valery35/status/2122398872970596827
+- LinkedIn: https://www.linkedin.com/feed/update/urn:li:activity:7528164920845099008/
+- Facebook: https://www.facebook.com/valery35/posts/pfbid024zQwgHZkAt3XdAx89KEY8SfgPAzycfhFH1z9EfaFo8K7zZZ9LtGrfm7JeKrhv9Myl
+- Лента страницы линейки - planetx-scene 5e39505, страница опубликована 16 ноября 2026 года
+
 ### RustPlanetX 0.6.1, 15 ноября 2026 года
 
 Тексты - site/posts_rustplanetx_0.6.1_social.md. Внутри Lite 0.30.0 (коммит c2a507d), пакет на размер (профиль size). Сведения от сессии RustPlanetX через управление.
