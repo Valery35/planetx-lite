@@ -7,3 +7,4 @@ addins/*/target/
 **/*.rs.bk
 .vscode/
 .idea/
+.claude/
