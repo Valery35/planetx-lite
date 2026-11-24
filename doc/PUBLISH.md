@@ -104,7 +104,7 @@
 - X: https://x.com/Valery35/status/2125346134335832158
 - Facebook: https://www.facebook.com/valery35/posts/pfbid0uh91BRaWKda1zY5W4Qv6MZJbZGEkBk8rSjRuuqCBKU3kDnBmFQ162qQeXnNbnGjCl
 - LinkedIn - пост в ленте автора
-- ВК - ждёт входа автора
+- ВК: https://vk.ru/wall-241229428_87
 - Площадки группы «Иногда» - не публиковались, выпуск малый
 
 ### PlanetX Lite 0.22.0, 4 ноября 2026 года
