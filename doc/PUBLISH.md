@@ -90,6 +90,23 @@
 
 ## Журнал публикаций
 
+### PlanetX 1.45.2, 25 ноября 2026 года
+
+Тексты - planetx/site/posts_1.45.2_social.md, статьи нет, выпуск малый. Исправление шипов на вальмовых крышах сложных контуров. По слову автора «Публикуй».
+
+- Коммит выпуска 0412979, тексты 3bfaa16
+- GitHub: https://github.com/Valery35/planetx/releases/tag/v1.45.2
+- Каталог QGIS: https://plugins.qgis.org/plugins/planetx/version/1.45.2/
+- Dropbox - planetx-1.45.2.zip в Dropbox\ИИ\PlanetX, 1.45.1 перенесена в arhiv
+- Сайт informpp.ru - «Что нового» и главная модуля
+- Telegram - пост бота в канале
+- Mastodon: https://en.osm.town/@Vaery35/117673680589664014
+- X: https://x.com/Valery35/status/2125346134335832158
+- Facebook: https://www.facebook.com/valery35/posts/pfbid0uh91BRaWKda1zY5W4Qv6MZJbZGEkBk8rSjRuuqCBKU3kDnBmFQ162qQeXnNbnGjCl
+- LinkedIn - пост в ленте автора
+- ВК - ждёт входа автора
+- Площадки группы «Иногда» - не публиковались, выпуск малый
+
 ### PlanetX Lite 0.22.0, 4 ноября 2026 года
 
 - GitHub: https://github.com/Valery35/planetx-lite/releases/tag/v0.22.0
@@ -523,3 +540,10 @@
 - Форум OSM - не публикуется, учётная запись отключена, данных OSM выпуск не касается
 - linux.org.ru - не публикуется, пакет только для Windows
 - Форум Rust - не публикуется, учётная запись заморожена
+## Isoliner 5.13.61, 17.11.2026
+
+- GitHub - https://github.com/Valery35/qgis-isoliner/releases/tag/5.13.61 (рабочий процесс по метке, архив grid_isolines.zip, sha256 af704feaa307b1c9e720ed35c15b856dbd1ae8de2e9aeaf688e11effaa890214)
+- Dropbox - `ИИ\Isoliner\grid_isolines.zip`, файл сверен с выпуском по сумме
+- Mastodon - https://en.osm.town/@Vaery35/117631807490585967
+- Каталог QGIS - ждёт входа автора
+- Сайт, Telegram, ВК, X, LinkedIn, Facebook - не сделаны
